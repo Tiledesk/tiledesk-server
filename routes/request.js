@@ -185,6 +185,14 @@ router.post('/', function(req, res) {
                           </td>
                         </tr>
 
+
+                        <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                          <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                            Clicca <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/requests">qui</a> per aprire il pannello di controllo: 
+                          </td>
+                        </tr>
+                       
+
                      
         
                            
