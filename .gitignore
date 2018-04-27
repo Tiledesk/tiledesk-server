@@ -1,0 +1,4 @@
+node_modules
+config/.firebase-key
+.package-lock.json
+bin
