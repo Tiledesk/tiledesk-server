@@ -45,7 +45,8 @@ router.post('/', function(req, res) {
 
     var emailPassword = process.env.EMAIL_PASSWORD;
 
-    
+    console.log('emailPassword ', emailPassword);
+
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
@@ -53,8 +54,8 @@ router.post('/', function(req, res) {
         //port: 587,
         secure: false, // true for 465, false for other ports
         auth: {
-            // user: 'postmaster@mg.tiledesk.com', 
-            user:'postmaster@sandbox019eceb238bc4f0091d2f03f5c9e797c.mailgun.org',
+             user: 'postmaster@mg.tiledesk.com', 
+            //user:'postmaster@sandbox019eceb238bc4f0091d2f03f5c9e797c.mailgun.org',
 
             pass: emailPassword
         }
