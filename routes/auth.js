@@ -134,17 +134,17 @@ router.post('/signup', function (req, res) {
                          </div>
                       </tr>
 
-                      <!--
+                    
                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
           
-                          <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #1976d2; margin: 0;" align="center" bgcolor="#1976d2" valign="top">
+                          <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top;  font-weight: 500; text-align: center; border-radius: 3px 3px 0 0;  margin: 0;" align="center"; valign="top">
                             <div>
                               <h2>Welcome</h2>
                             </div>
           
                           </td>
                         </tr>
-                    -->
+                   
 
                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                           <td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">

@@ -153,7 +153,7 @@ router.post('/', function(req, res) {
 
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
         
-                        <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; margin: 0;" align="center"  valign="top">
+                        <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; margin: 0;" align="center"  valign="top">
                           <div>
                             <h2>New Support Request</h2>
                           </div>
