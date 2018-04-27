@@ -30,6 +30,7 @@ router.post('/signup', function (req, res) {
 
 
       var emailPassword = process.env.EMAIL_PASSWORD;
+      console.log('emailPassword ', emailPassword);
 
       // create reusable transporter object using the default SMTP transport
       let transporter = nodemailer.createTransport({
