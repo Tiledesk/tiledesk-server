@@ -20,6 +20,10 @@ var UserSchema = new Schema({
     lastname: {
         type: String,
         // required: true
+    },
+    emailverified: {
+        type: Boolean,
+        // required: true
     }
 });
 
