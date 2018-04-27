@@ -13,18 +13,19 @@ router.post('/signup', function (req, res) {
     res.json({ success: false, msg: 'Please pass email and password.' });
   } else {
     var newUser = new User({
-      _id: new mongoose.Types.ObjectId(), 
+      _id: new mongoose.Types.ObjectId(),
       email: req.body.email,
       password: req.body.password,
       firstname: req.body.firstname,
-      lastname: req.body.lastname
+      lastname: req.body.lastname,
+      emailverified: false
     });
     // save the user
     newUser.save(function (err, savedUser) {
       if (err) {
         return res.json({ success: false, msg: 'Email already exists.', err: err });
       }
-      console.log('savedUser ', savedUser);
+      console.log('-- >> -- >> savedUser ', savedUser);
 
 
 
@@ -34,23 +35,23 @@ router.post('/signup', function (req, res) {
 
       // create reusable transporter object using the default SMTP transport
       let transporter = nodemailer.createTransport({
-          host: 'smtp.mailgun.org',
-          //port: 587,
-          secure: false, // true for 465, false for other ports
-          auth: {
-              user: 'postmaster@mg.tiledesk.com', 
-              pass: emailPassword
-          }
+        host: 'smtp.mailgun.org',
+        //port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: 'postmaster@mg.tiledesk.com',
+          pass: emailPassword
+        }
       });
 
       // setup email data with unicode symbols
       let mailOptions = {
-          from: 'postmaster@mg.tiledesk.com', // sender address
-          to: savedUser.email,
-          bcc: 'info@frontiere21.it',
-          subject: 'Welcome to TileDesk', // Subject line
-          //text: 'Hello world?', // plain text body
-          html: `
+        from: 'postmaster@mg.tiledesk.com', // sender address
+        to: savedUser.email,
+        bcc: 'info@frontiere21.it',
+        subject: 'Welcome to TileDesk', // Subject line
+        //text: 'Hello world?', // plain text body
+        html: `
           <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
           <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
           
@@ -191,15 +192,15 @@ router.post('/signup', function (req, res) {
 
       // send mail with defined transport object
       transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-              return console.log(error);
-          }
-          console.log('Message sent: %s', info.messageId);
-          // Preview only available when sending through an Ethereal account
-          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        if (error) {
+          return console.log(error);
+        }
+        console.log('Message sent: %s', info.messageId);
+        // Preview only available when sending through an Ethereal account
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
-          // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-          // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+        // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+        // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
       });
 
 
@@ -236,7 +237,7 @@ router.post('/signup', function (req, res) {
 // }
 
 router.post('/signin', function (req, res) {
-  console.log("req.body.email",req.body.email);
+  console.log("req.body.email", req.body.email);
 
   User.findOne({
     email: req.body.email
@@ -255,12 +256,31 @@ router.post('/signin', function (req, res) {
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           console.log("my 401");
-          res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+          res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
         }
       });
     }
   });
 });
+
+// VERIFY EMAIL
+router.put('/verifyemail/:userid', function (req, res) {
+
+  console.log('VERIFY EMAIL REQ BODY ', req.body);
+
+  User.findByIdAndUpdate(req.params.userid, req.body, { new: false, upsert: false }, function (err, findUser) {
+    if (err) {
+      console.log(err);
+      return res.status(500).send({ success: false, msg: err });
+    }
+    console.log(findUser);
+    if (!findUser) {
+      return res.status(404).send({ success: false, msg: 'User not found' });
+    }
+    res.json(findUser);
+  });
+});
+
 
 
 module.exports = router;
