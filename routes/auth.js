@@ -135,15 +135,15 @@ router.post('/signup', function (req, res) {
                       </tr>
 
                     
-                        // <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                        <!-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
           
-                        //   <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top;  font-weight: 500; text-align: center; border-radius: 3px 3px 0 0;  margin: 0;" align="center"; valign="top">
-                        //     <div>
-                        //       <h2>Welcome</h2>
-                        //     </div>
+                           <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top;  font-weight: 500; text-align: center; border-radius: 3px 3px 0 0;  margin: 0;" align="center"; valign="top">
+                             <div>
+                               <h2>Welcome</h2>
+                             </div>
           
-                        //   </td>
-                        // </tr>
+                           </td>
+                        </tr> -->
                    
 
                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -153,7 +153,7 @@ router.post('/signup', function (req, res) {
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                   <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${savedUser.firstname} ${savedUser.lastname},</strong>
-                                  // <br> welcome on TileDesk.com.
+                                  <!-- <br> welcome on TileDesk.com. -->
                                   <br><br> Thank you for signin up with TileDesk.
                                   <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/verify/email/${savedUser._id}"> click here to verify your email address. </a> </span>
                                   <br><br>Give us your feedback! We need your advice. Send an email to info@frontiere21.it
