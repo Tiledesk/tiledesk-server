@@ -166,7 +166,7 @@ function createRemoteFaq(faqkb_remotekey, savedFaq) {
     if (res && (res.statusCode === 200 || res.statusCode === 201)) {
       // console.log('FAQ KB KEY POST REQUEST BODY ', body);
       console.log('FAQ REMOTE POST BODY ', body);
-      
+
 
     }
     if (err) {
@@ -215,15 +215,63 @@ router.post('/:askbot', function (req, res) {
 
 router.put('/:faqid', function (req, res) {
 
-  console.log(req.body);
+  console.log('UPDATE FAQ ', req.body);
 
   Faq.findByIdAndUpdate(req.params.faqid, req.body, { new: true, upsert: true }, function (err, updatedFaq) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
     res.json(updatedFaq);
+
+    updateRemoteFaq(updatedFaq)
   });
 });
+
+// NEW - UPDATE REMOTE FAQ
+function updateRemoteFaq(updatedFaq) {
+  console.log('has been called UPDATE FAQ FUNCTION ', updatedFaq)
+  Faq_kb.findById(updatedFaq.id_faq_kb, function (err, faq_kb) {
+    if (err) {
+      console.log('FAQKB GET BY ID ERROR ', err)
+    }
+    if (!faq_kb) {
+      console.log('FAQKB GET BY ID - OBJECT NOT FOUND')
+    }
+    if (faq_kb) {
+      console.log('UPDATE FAQ - FOUND FAQ-KB ', faq_kb )
+
+      var json = {
+        'question': updatedFaq.question,
+        'answer': updatedFaq.question
+      };
+      var options = {
+        url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faq_kb.kbkey_remote + '/knowledgebase/' + updatedFaq._id ,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+        },
+        json: json
+      };
+
+      request(options, function (err, res, body) {
+        console.log('UPDATE FAQ PUT body ', body);
+        if (res && (res.statusCode === 200 || res.statusCode === 201)) {
+          // console.log('FAQ KB KEY POST REQUEST BODY ', body);
+          console.log('UPDATE FAQ PUT BODY ', body);
+        }
+        if (err) {
+          console.log('UPDATE FAQ PUT ERROR ', err);
+        }
+      });
+
+    }
+
+
+  })
+
+}
 
 
 router.delete('/:faqid', function (req, res) {
