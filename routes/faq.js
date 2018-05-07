@@ -233,20 +233,28 @@ function updateRemoteFaq(updatedFaq) {
   console.log('has been called UPDATE FAQ FUNCTION ', updatedFaq)
   Faq_kb.findById(updatedFaq.id_faq_kb, function (err, faq_kb) {
     if (err) {
-      console.log('FAQKB GET BY ID ERROR ', err)
+      console.log('UPDATE REMOTE FAQ - FAQKB GET BY ID ERROR ', err)
     }
     if (!faq_kb) {
-      console.log('FAQKB GET BY ID - OBJECT NOT FOUND')
+      console.log('UPDATE REMOTE FAQ - FAQKB GET BY ID - OBJECT NOT FOUND')
     }
     if (faq_kb) {
-      console.log('UPDATE FAQ - FOUND FAQ-KB ', faq_kb )
+      console.log('UPDATE REMOTE FAQ - FOUND FAQ-KB ', faq_kb)
 
       var json = {
-        'question': updatedFaq.question,
-        'answer': updatedFaq.question
+        "conversation": "",
+        "index_in_conversation": 2,
+        "question": updatedFaq.question,
+        "answer": updatedFaq.answer,
+        "question_scored_terms": [],
+        "verified": true,
+        "topics": "",
+        "doctype": "normal",
+        "state": "",
+        "status": 0
       };
       var options = {
-        url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faq_kb.kbkey_remote + '/knowledgebase/' + updatedFaq._id ,
+        url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faq_kb.kbkey_remote + '/knowledgebase/' + updatedFaq._id,
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -256,35 +264,159 @@ function updateRemoteFaq(updatedFaq) {
       };
 
       request(options, function (err, res, body) {
-        console.log('UPDATE FAQ PUT body ', body);
+        console.log('UPDATE REMOTE FAQ PUT body ', body);
         if (res && (res.statusCode === 200 || res.statusCode === 201)) {
           // console.log('FAQ KB KEY POST REQUEST BODY ', body);
-          console.log('UPDATE FAQ PUT BODY ', body);
+          console.log('UPDATE REMOTE FAQ - PUT BODY ', body);
         }
         if (err) {
-          console.log('UPDATE FAQ PUT ERROR ', err);
+          console.log('UPDATE REMOTE FAQ - PUT ERROR ', err);
         }
       });
 
     }
 
-
   })
 
 }
 
-
+// DELETE REMOTE AND LOCAL FAQ
 router.delete('/:faqid', function (req, res) {
 
-  console.log(req.body);
+  // deleteRemoteFaq(req.params.faqid)
 
-  Faq.remove({ _id: req.params.faqid }, function (err, faq) {
+  // Faq.remove({ _id: req.params.faqid }, function (err, faq) {
+  //   if (err) {
+  //     return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+  //   }
+  //   res.json(faq);
+
+  // });
+  console.log('DELETE FAQ - FAQ ID ', req.params.faqid)
+
+  Faq.findById(req.params.faqid, function (err, faq) {
     if (err) {
-      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      console.log('DELETE FAQ - FIND FAQ BY ID - ERROR GETTING OBJECT')
+
     }
-    res.json(faq);
+    if (!faq) {
+      console.log('DELETE FAQ - FIND FAQ BY ID - OBJECT NOT FOUND')
+    }
+    console.log('DELETE FAQ - FAQ-KB ID ', faq.id_faq_kb)
+
+    Faq_kb.findById(faq.id_faq_kb, function (err, faq_kb) {
+      if (err) {
+        console.log('DELETE FAQ - FAQKB GET BY ID ERROR ', err)
+      }
+      if (!faq_kb) {
+        console.log('DELETE FAQ  - FAQKB GET BY ID - OBJECT NOT FOUND')
+      }
+
+      if (faq_kb) {
+        console.log('DELETE FAQ  - FOUND FAQ-KB REMOTE KEY ', faq_kb.kbkey_remote)
+
+        var options = {
+          url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faq_kb.kbkey_remote + '/knowledgebase/' + req.params.faqid,
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+          },
+
+        };
+
+        request(options, function (err, res, body) {
+
+          if (res && (res.statusCode === 200 || res.statusCode === 201)) {
+            // console.log('FAQ KB KEY POST REQUEST BODY ', body);
+            console.log('DELETE REMOTE FAQ - PUT BODY ', body);
+          }
+
+          if (err) {
+            console.log('DELETE REMOTE FAQ - PUT ERROR ', err);
+          }
+        });
+
+
+        // DELETE FAQ FROM LOCAL
+        Faq.remove({ _id: req.params.faqid }, function (err, faq) {
+          if (err) {
+            return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+          }
+          res.json(faq);
+
+        });
+      }
+
+
+    })
   });
+
 });
+
+// NEW - DELETE REMOTE FAQ
+
+// function deleteRemoteFaq(id_faq) {
+
+//   console.log('DELETE FAQ - FAQ ID ', id_faq)
+
+//   Faq.findById(id_faq, function (err, faq) {
+//     if (err) {
+//       console.log('DELETE FAQ - FIND FAQ BY ID - ERROR GETTING OBJECT')
+
+//     }
+//     if (!faq) {
+//       console.log('DELETE FAQ - FIND FAQ BY ID - OBJECT NOT FOUND')
+//     }
+//     console.log('DELETE FAQ - FAQ-KB ID ', faq.id_faq_kb)
+
+//     Faq_kb.findById(faq.id_faq_kb, function (err, faq_kb) {
+//       if (err) {
+//         console.log('DELETE FAQ - FAQKB GET BY ID ERROR ', err)
+//       }
+//       if (!faq_kb) {
+//         console.log('DELETE FAQ  - FAQKB GET BY ID - OBJECT NOT FOUND')
+//       }
+//       if (faq_kb) {
+//         console.log('DELETE FAQ  - FOUND FAQ-KB REMOTE KEY ', faq_kb.kbkey_remote)
+
+//         var options = {
+//           url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faq_kb.kbkey_remote + '/knowledgebase/' + id_faq,
+//           method: 'DELETE',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+//           },
+
+//         };
+
+//         request(options, function (err, res, body) {
+
+//           if (res && (res.statusCode === 200 || res.statusCode === 201)) {
+//             // console.log('FAQ KB KEY POST REQUEST BODY ', body);
+//             console.log('DELETE REMOTE FAQ - PUT BODY ', body);
+
+//             // DELETE FAQ FROM LOCAL
+//             Faq.remove({ _id: id_faq }, function (err, faq) {
+//               if (err) {
+//                 return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+//               }
+//               res.json(faq);
+
+//             });
+
+//           }
+
+//           if (err) {
+//             console.log('DELETE REMOTE FAQ - PUT ERROR ', err);
+//           }
+//         });
+//       }
+
+
+//     })
+//   });
+// }
 
 
 router.get('/:faqid', function (req, res) {
