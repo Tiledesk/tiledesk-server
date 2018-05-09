@@ -123,6 +123,22 @@ router.delete('/:project_userid', function (req, res) {
 //   });
 // });
 
+router.get('/details/:project_userid', function (req, res) {
+  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+  Project_user.find({ _id: req.params.project_userid }).
+    populate('id_user').
+    exec(function (err, project_users) {
+      if (err) {
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
+      if (!project_users) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      res.json(project_users);
+    });
+
+});
+
 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID
