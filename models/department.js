@@ -20,6 +20,10 @@ var DepartmentSchema = new Schema({
     type: String,
     required: true
   },
+  id_group: {
+    type: String,
+    // required: true
+  },
   default: {
     type: Boolean,
     default:false

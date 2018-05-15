@@ -35,6 +35,8 @@ var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
 
+var group = require('./routes/group');
+
 var app = express();
 
 // view engine setup
@@ -99,6 +101,8 @@ app.use('/projects', project);
 app.use('/:projectid/people', person);
 app.use('/:projectid/project_users', project_user);
 app.use('/:projectid/requests', request);
+
+app.use('/:projectid/groups', group);
 
 app.use('/apps', tenant);
 

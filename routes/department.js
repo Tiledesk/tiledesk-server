@@ -3,6 +3,7 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Department = require("../models/department");
 var Project_user = require("../models/project_user");
+var Group = require("../models/group");
 
 
 router.post('/', function (req, res) {
@@ -12,6 +13,7 @@ router.post('/', function (req, res) {
     routing: req.body.routing,
     name: req.body.name,
     default: req.body.default,
+    id_group: req.body.id_group,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
@@ -94,25 +96,53 @@ router.get('/:departmentid/operators', function (req, res) {
 
     } else if (department.routing === 'assigned') {
       console.log('OPERATORS - routing ASSIGNED - PRJCT-ID ', req.projectid)
+      console.log('OPERATORS - routing ASSIGNED - DEPT GROUP-ID ', department.id_group)
 
-      Project_user.find({ id_project: req.projectid, user_available: true }, function (err, project_users) {
-        if (err) {
-          console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-          return next(err);
-        }
-        console.log('OPERATORS - routing ASSIGNED - MEMBERS LENGHT ', project_users.length)
-        console.log('OPERATORS - routing ASSIGNED - MEMBERS ', project_users)
-        if (project_users.length > 0) {
-          var operator = project_users[Math.floor(Math.random() * project_users.length)];
-          // console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
-          return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
+      if (department.id_group == null || department.id_group == undefined) {
 
-        } else {
+        console.log('OPERATORS - routing ASSIGNED - !!! DEPT HAS NOT GROUP ID')
 
-          return res.json({ department: department, operators: [] });
+        Project_user.find({ id_project: req.projectid, user_available: true }, function (err, project_users) {
+          if (err) {
+            console.log('-- > 2 DEPT FIND BY ID ERR ', err)
+            return next(err);
+          }
+          console.log('OPERATORS - routing ASSIGNED - MEMBERS LENGHT ', project_users.length)
+          console.log('OPERATORS - routing ASSIGNED - MEMBERS ', project_users)
+          if (project_users.length > 0) {
+            var operator = project_users[Math.floor(Math.random() * project_users.length)];
+            console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
+            return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
 
-        }
-      });
+          } else {
+
+            return res.json({ department: department, operators: [] });
+
+          }
+        });
+
+      } else {
+
+        console.log('OPERATORS - routing ASSIGNED - !!! DEPT HAS GROUP ID')
+        Group.find({ _id: department.id_group }, function (err, group) {
+
+          if (err) {
+            console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
+            return next(err);
+          }
+
+          if (group) {
+            console.log('-- > OPERATORS - GROUP FOUND:: ', group );
+            console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length )
+            var operator = group[0].members[Math.floor(Math.random() * group[0].members.length)];
+            console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER ID (FROM A GROUP)', operator)
+            return res.json({ department: department, operators: [{ id_user: operator }] });
+          }
+        });
+      }
+
+
+
     }
   });
 });
