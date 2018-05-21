@@ -11,6 +11,7 @@ router.post('/', function (req, res) {
   var newGroup = new Group({
     name: req.body.name,
     members: req.body.members,
+    trashed: false,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id

@@ -15,6 +15,9 @@ var GroupSchema = new Schema({
     type: String,
     // required: true
   },
+  trashed: {
+    type: Boolean,
+  },
   createdBy: {
     type: String,
     required: true
