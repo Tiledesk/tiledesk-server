@@ -8,7 +8,7 @@ var Group = require("../models/group");
 
 router.post('/', function (req, res) {
 
-  console.log("req.body", req.body);
+  console.log("DEPT REQ BODY ", req.body);
   var newDepartment = new Department({
     routing: req.body.routing,
     name: req.body.name,
@@ -29,6 +29,7 @@ router.post('/', function (req, res) {
       console.log('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
+    console.log('NEW DEPT SAVED ', savedDepartment)
     res.json(savedDepartment);
   });
 });
