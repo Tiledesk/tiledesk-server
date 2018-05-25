@@ -8,7 +8,7 @@ var Group = require("../models/group");
 
 router.post('/', function (req, res) {
 
-  console.log("req.body", req.body);
+  console.log("DEPT REQ BODY ", req.body);
   var newDepartment = new Department({
     routing: req.body.routing,
     name: req.body.name,
@@ -29,6 +29,7 @@ router.post('/', function (req, res) {
       console.log('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
+    console.log('NEW DEPT SAVED ', savedDepartment)
     res.json(savedDepartment);
   });
 });
@@ -173,6 +174,132 @@ router.get('/:departmentid/operators', function (req, res) {
 });
 // ./END - GET OPERATORS OF A DEPT
 
+// START - GET MY DEPTS
+
+// ============= GET ALL GROUPS WITH THE PASSED PROJECT ID =============
+// router.get('/mydepartments', function (req, res) {
+
+//   console.log("req projectid", req.projectid);
+
+//   var departments_array = []
+
+//   // PROMISE ALL EXAMPLE 
+//   // https://stackoverflow.com/questions/47746190/execute-multiple-queries-at-once-in-mongoose
+//   Promise.all([
+//     Department.find({ "id_project": req.projectid, id_group: null }, function (err, departments) {
+//       if (err) return next(err);
+//       // console.log('3) GET MY DEPTS - NULL DEPTS ', departments)
+//       // departments_array.push(departments);
+//       // console.log('-- -- -- array of depts - null', arr)
+//     }),
+
+//     Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
+//       if (err) return next(err);
+//       // console.log('1) GET MY DEPTS - GROUPS ', groups)
+
+//       groups.forEach(group => {
+//         // console.log('GET MY DEPTS - GROUP (in which are between the members) NAME: ', group.name, ', ID GROUP: ', group._id, ', GROUPS MEMBERS ', group.members)
+
+//         // , id_group: group._id
+//         // $or: [{ id_group: group._id }, { id_group: null }]
+//         Department.find({ "id_project": req.projectid, id_group: group._id }, function (err, departments) {
+//           if (err) return next(err);
+//           // console.log('2) GET MY DEPTS - DEPTS WITH THE GROUP ID (of which are member) ', departments)
+
+//           // departments.forEach(dept => {
+//           //   console.log('2A) GET MY DEPTS - DEPTS NAME: ', dept.name, ', WITH THE GROUP ID ', dept.id_group)
+//           // });
+//           // res.json(departments);
+//         });
+
+//         // Department.find({ "id_project": req.projectid, id_group: null }, function (err, departments) {
+//         //   if (err) return next(err);
+//         //   console.log('3) GET MY DEPTS - NULL DEPTS ', departments)
+//         // });
+
+//         // res.json(groups);
+//         // console.log()
+//       });
+
+//     })
+
+//   ]).then(([dep, deps]) => {
+//     console.log('XCXCX', dep, deps)
+//   });
+
+// })
+
+// NEW
+router.get('/mydepartments', function (req, res) {
+
+  console.log("req projectid", req.projectid);
+
+  Department.find({ "id_project": req.projectid }, function (err, departments) {
+    if (err) return next(err);
+    // console.log('1) GET MY DEPTS - ALL DEPTS ARRAY ', departments)
+    // departments_array.push(departments);
+    // console.log('-- -- -- array of depts - null', arr)
+
+    Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
+      if (err) return next(err);
+      // console.log('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
+
+      var mydepts = []
+
+
+      departments.forEach(dept => {
+
+        // console.log('3) DEPT ', dept)
+        if (dept.id_group == null) {
+          console.log('DEPT NAME (null/undefined) ', dept.name, ', dept id ', dept._id)
+          mydepts.push(dept._id);
+
+
+          // FOR DEBUG
+          // mydepts.forEach(mydept => {
+          //   console.log('- MY DEPT NAME: ', mydept.name, ', ID GROUP: ', mydept.id_group)
+          // });
+          // console.log('- MY DEPTS ARRAY ', mydepts)
+        }
+        else {
+          deptContainsMyGroup(groups)
+          // groups.forEach(group => {
+          //   console.log('4) GROUP ', group)
+          //   if ( group._id == dept.id_group) {
+          //     mydepts.push(dept);
+          //     console.log('-- MY DEPTS ARRAY ', mydepts)
+          //   }
+          // });
+          // console.log('-- MY DEPTS ARRAY ', mydepts)
+        }
+
+        function deptContainsMyGroup(groups) {
+
+          groups.forEach(group => {
+            // console.log('4) GROUP ', group)
+            if (group._id == dept.id_group) {
+              console.log('DEPT NAME (my departments) ', dept.name, ', dept id ', dept._id)
+              mydepts.push(dept._id);
+            }
+          });
+        }
+
+
+      });
+      return res.json(mydepts);
+    })
+
+
+  });
+
+
+
+
+
+})
+
+// ======================== ./END - GET MY DEPTS ========================
+
 router.get('/:departmentid', function (req, res) {
   console.log(req.body);
 
@@ -222,6 +349,8 @@ router.get('/', function (req, res) {
 
   Department.find({ "id_project": req.projectid }, function (err, departments) {
     if (err) return next(err);
+
+
     res.json(departments);
   });
 });

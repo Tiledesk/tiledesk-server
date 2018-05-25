@@ -5,6 +5,20 @@ var Group = require("../models/group");
 
 
 
+// TEMP
+Group.findByProjectId = function (projectId, callback) {
+  console.log('-1')
+  console.log('GROUP MODEL - FIND BY PROJECT ID');
+
+  Group.find({ "id_project": projectId, trashed: false }, function (err, groups) {
+    console.log('-3');
+    
+    callback(err, groups);
+  });
+};
+// FINE TEMP
+
+
 router.post('/', function (req, res) {
 
   console.log('SAVE GROUP ', req.body);
@@ -74,10 +88,18 @@ router.get('/', function (req, res) {
   console.log("req projectid", req.projectid);
 
   // Group.find(function (err, groups) {
-  Group.find({ "id_project": req.projectid }, function (err, groups) {
+  // Group.find({ "id_project": req.projectid }, function (err, groups) {
+  //   if (err) return next(err);
+  //   res.json(groups);
+  // });
+  console.log('-0')
+  Group.findByProjectId(req.projectid, function (err, groups) {
+
+    // console.log('4')
     if (err) return next(err);
     res.json(groups);
   });
+  console.log('-2')
 });
 
 module.exports = router;
