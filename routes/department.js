@@ -140,8 +140,8 @@ router.get('/:departmentid/operators', function (req, res) {
             // var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
             // console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
             var selectedoperator = selectsOperator(project_users);
-
-            return res.json({ department: department, agents: project_users, operators: [{ id_user: operator.id_user }] });
+            // operator.id_user
+            return res.json({ department: department, agents: project_users, operators: [{ id_user: selectedoperator }] });
 
           } else {
 
@@ -215,9 +215,9 @@ function selectsOperator(project_users) {
     }
     //return projectUser.user_available;
   })
-  console.log('-- > XX OPERATORS - GROUP FOUND:: PROJECT USER AVAILABLE ', project_users_available)
+  console.log('-- > OPERATORS - PROJECT USER AVAILABLE ', project_users_available)
   var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
-  console.log('OPERATORS - routing ASSIGNED - SELECTED (FROM A GROUP) MEMBER ID', operator.id_user);
+  console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
 
   return operator.id_user
 }
