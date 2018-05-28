@@ -92,8 +92,23 @@ router.get('/:departmentid/operators', function (req, res) {
 
     } else if (department.routing === 'pooled') {
 
-      console.log('OPERATORS - routing POOLED')
-      return res.json({ department: department, operators: [] });
+      Project_user.find({ id_project: req.projectid }, function (err, project_users) {
+        if (err) {
+          console.log('-- > 2 DEPT FIND BY ID ERR ', err)
+          return next(err);
+        }
+        console.log('OPERATORS - routing pooled - MEMBERS LENGHT ', project_users.length)
+        console.log('OPERATORS - routing pooled - MEMBERS ', project_users)
+
+        if (project_users.length > 0) {
+          return res.json({ department: department, agents: project_users, operators: [] });
+
+        } else {
+
+          return res.json({ department: department, operators: [] });
+
+        }
+      });
 
     } else if (department.routing === 'assigned') {
       console.log('OPERATORS - routing ASSIGNED - PRJCT-ID ', req.projectid)
@@ -103,7 +118,8 @@ router.get('/:departmentid/operators', function (req, res) {
 
         console.log('OPERATORS - routing ASSIGNED - !!! DEPT HAS NOT GROUP ID')
 
-        Project_user.find({ id_project: req.projectid, user_available: true }, function (err, project_users) {
+        // , user_available: true
+        Project_user.find({ id_project: req.projectid }, function (err, project_users) {
           if (err) {
             console.log('-- > 2 DEPT FIND BY ID ERR ', err)
             return next(err);
@@ -112,9 +128,20 @@ router.get('/:departmentid/operators', function (req, res) {
           console.log('OPERATORS - routing ASSIGNED - MEMBERS ', project_users)
 
           if (project_users.length > 0) {
-            var operator = project_users[Math.floor(Math.random() * project_users.length)];
-            console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
-            return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
+            // var project_users_available = project_users.filter(function (projectUser) {
+
+            //   if (projectUser.user_available == true) {
+            //     return true;
+            //   }
+            //   //return projectUser.user_available;
+
+            // })
+            // console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER AVAILABLE ', project_users_available);
+            // var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
+            // console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
+            var selectedoperator = selectsOperator(project_users);
+
+            return res.json({ department: department, agents: project_users, operators: [{ id_user: operator.id_user }] });
 
           } else {
 
@@ -138,7 +165,8 @@ router.get('/:departmentid/operators', function (req, res) {
             console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
             console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
 
-            Project_user.find({ id_project: req.projectid, id_user: group[0].members, user_available: true }, function (err, project_users) {
+            // , user_available: true
+            Project_user.find({ id_project: req.projectid, id_user: group[0].members }, function (err, project_users) {
               if (err) {
                 console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE - ERR ', err)
                 return (err);
@@ -147,10 +175,20 @@ router.get('/:departmentid/operators', function (req, res) {
                 console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE (IN THE GROUP) LENGHT ', project_users.length);
 
                 if (project_users.length > 0) {
-                  var operator = project_users[Math.floor(Math.random() * project_users.length)];
-                  console.log('OPERATORS - routing ASSIGNED - SELECTED (FROM A GROUP) MEMBER ID', operator.id_user);
 
-                  return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
+
+                  // var project_users_available = project_users.filter(function(projectUser) {
+                  //   if (projectUser.user_available == true) {
+                  //     return true;
+                  //   }
+                  //   //return projectUser.user_available;
+                  // })
+                  // console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER AVAILABLE ', project_users_available)
+                  // var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
+                  // console.log('OPERATORS - routing ASSIGNED - SELECTED (FROM A GROUP) MEMBER ID', operator.id_user);
+                  var selectedoperator = selectsOperator(project_users);
+                  // operator.id_user
+                  return res.json({ department: department, agents: project_users, operators: [{ id_user: selectedoperator }] });
 
                 } else {
 
@@ -166,70 +204,32 @@ router.get('/:departmentid/operators', function (req, res) {
           }
         });
       }
-
-
-
     }
   });
 });
+
+function selectsOperator(project_users) {
+  var project_users_available = project_users.filter(function (projectUser) {
+    if (projectUser.user_available == true) {
+      return true;
+    }
+    //return projectUser.user_available;
+  })
+  console.log('-- > XX OPERATORS - GROUP FOUND:: PROJECT USER AVAILABLE ', project_users_available)
+  var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
+  console.log('OPERATORS - routing ASSIGNED - SELECTED (FROM A GROUP) MEMBER ID', operator.id_user);
+
+  return operator.id_user
+}
+
 // ./END - GET OPERATORS OF A DEPT
 
 // START - GET MY DEPTS
 
+
+// !!! NO MORE USED 
 // ============= GET ALL GROUPS WITH THE PASSED PROJECT ID =============
-// router.get('/mydepartments', function (req, res) {
 
-//   console.log("req projectid", req.projectid);
-
-//   var departments_array = []
-
-//   // PROMISE ALL EXAMPLE 
-//   // https://stackoverflow.com/questions/47746190/execute-multiple-queries-at-once-in-mongoose
-//   Promise.all([
-//     Department.find({ "id_project": req.projectid, id_group: null }, function (err, departments) {
-//       if (err) return next(err);
-//       // console.log('3) GET MY DEPTS - NULL DEPTS ', departments)
-//       // departments_array.push(departments);
-//       // console.log('-- -- -- array of depts - null', arr)
-//     }),
-
-//     Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
-//       if (err) return next(err);
-//       // console.log('1) GET MY DEPTS - GROUPS ', groups)
-
-//       groups.forEach(group => {
-//         // console.log('GET MY DEPTS - GROUP (in which are between the members) NAME: ', group.name, ', ID GROUP: ', group._id, ', GROUPS MEMBERS ', group.members)
-
-//         // , id_group: group._id
-//         // $or: [{ id_group: group._id }, { id_group: null }]
-//         Department.find({ "id_project": req.projectid, id_group: group._id }, function (err, departments) {
-//           if (err) return next(err);
-//           // console.log('2) GET MY DEPTS - DEPTS WITH THE GROUP ID (of which are member) ', departments)
-
-//           // departments.forEach(dept => {
-//           //   console.log('2A) GET MY DEPTS - DEPTS NAME: ', dept.name, ', WITH THE GROUP ID ', dept.id_group)
-//           // });
-//           // res.json(departments);
-//         });
-
-//         // Department.find({ "id_project": req.projectid, id_group: null }, function (err, departments) {
-//         //   if (err) return next(err);
-//         //   console.log('3) GET MY DEPTS - NULL DEPTS ', departments)
-//         // });
-
-//         // res.json(groups);
-//         // console.log()
-//       });
-
-//     })
-
-//   ]).then(([dep, deps]) => {
-//     console.log('XCXCX', dep, deps)
-//   });
-
-// })
-
-// NEW
 router.get('/mydepartments', function (req, res) {
 
   console.log("req projectid", req.projectid);
