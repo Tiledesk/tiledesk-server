@@ -236,13 +236,13 @@ router.get('/mydepartments', function (req, res) {
 
   Department.find({ "id_project": req.projectid }, function (err, departments) {
     if (err) return next(err);
-    // console.log('1) GET MY DEPTS - ALL DEPTS ARRAY ', departments)
+    console.log('1) FIND MY DEPTS - ALL DEPTS ARRAY ', departments)
     // departments_array.push(departments);
     // console.log('-- -- -- array of depts - null', arr)
 
     Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
       if (err) return next(err);
-      // console.log('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
+      console.log('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
 
       var mydepts = []
 
@@ -251,7 +251,7 @@ router.get('/mydepartments', function (req, res) {
 
         // console.log('3) DEPT ', dept)
         if (dept.id_group == null) {
-          console.log('DEPT NAME (null/undefined) ', dept.name, ', dept id ', dept._id)
+          console.log('DEPT NAME (when null/undefined) ', dept.name, ', dept id ', dept._id)
           mydepts.push(dept._id);
 
 
