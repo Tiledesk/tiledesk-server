@@ -34,172 +34,119 @@ router.post('/', function(req, res) {
   newRequest.save(function(err, savedRequest) {
     if (err) {
       console.log('Error saving object.',err);
-
       return res.status(500).send({success: false, msg: 'Error saving object.', err:err});
     }
 
 
 
-    var emailBody = 
-           `
-            <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-            <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-            
-              <head>
-                <meta name="viewport" content="width=device-width" />
-                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-                <title>New support request from TileDesk</title>
-            
-                <style type="text/css">
-                  img {
-                    max-width: 100%;
-                    margin-left:16px;
-                    margin-bottom:16px;
-                    text-align:center !important;
-                  }
-                  body {
-                    -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;
-                  }
-                  body {
-                    background-color: #f6f6f6;
-                  }
-            
-                  @media only screen and (max-width: 640px) {
-                    body {
-                      padding: 0 !important;
-                    }
-                    h1 {
-                      font-weight: 800 !important; margin: 20px 0 5px !important;
-                      text-align:center !important;
-                    }
-                    h2 {
-                      font-weight: 800 !important; margin: 20px 0 5px !important;
-                    }
-                    h3 {
-                      font-weight: 800 !important; margin: 20px 0 5px !important;
-                    }
-                    h4 {
-                      font-weight: 800 !important; margin: 20px 0 5px !important;
-                    }
-                    h1 {
-                      font-size: 22px !important;
-                    }
-                    h2 {
-                      font-size: 18px !important;
-                    }
-                    h3 {
-                      font-size: 16px !important;
-                    }
-                    .container {
-                      padding: 0 !important; width: 100% !important;
-                    }
-                    .content {
-                      padding: 0 !important;
-                    }
-                    .content-wrap {
-                      padding: 10px !important;
-                    }
-                    .invoice {
-                      width: 100% !important;
-                    }
-                  }
-                </style>
-              </head>
-            
-              <body itemscope itemtype="http://schema.org/EmailMessage" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
-            
-                <table class="body-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
-                  <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                    <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
-                    <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
-                      <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
-                        <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
-                        
-                        <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+    // console.log("--> DEPT ID ", req.params.departmentid);
 
-                        <div style="text-align:center">
-                          <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
-                          </a>
-                        </div>
-                        </tr>
-
-                        <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-            
-                            <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; margin: 0;" align="center"  valign="top">
-                              <div>
-                                <h2>New Support Request</h2>
-                              </div>
-            
-                            </td>
-                          </tr>
-                          
-                          <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                            <td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
-                              <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-            
-                              
-
-                            <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                              <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                Richiedente: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.requester_fullname}</strong>
-                              </td>
-                            </tr>
-
-                            <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                            <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                            Id Richiedente: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.requester_id}</strong>
-                            </td>
-                            </tr>
-
-                            <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                              <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                Testo della richiesta: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.first_text}</strong>
-                              </td>
-                            </tr>
+    // let query;
+    // if (req.body.departmentid) {
+    //   query = { _id: req.body.departmentid, id_project: req.projectid };
+    // }
+    // else {
+    //   query = { default: true, id_project: req.projectid };
+    // }
+    // console.log('query', query);
+    
 
 
-                            <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                              <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                <!-- Clicca <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/requests">qui</a> per aprire il pannello di controllo: -->
-                                Clicca <a href="https://support.tiledesk.com/dashboard/#/projects">qui</a> per aprire il pannello di controllo. 
-                                
-                              </td>
-                            </tr>
-                          
+  // Department.findOne(query, function (err, department) {
+  //   if (err) {
+  //     console.log('Error searching department ', err)
+  //     return res.status(500).send({ success: false, msg: 'Error getting object.' });
+  //   }
+  //   if (!department) {
+  //     return res.status(404).send({ success: false, msg: 'Object not found.' });
+  //   }
 
-                        
-            
-                              
-                                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                  <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                        <div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">
-                          <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                            <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                              <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
-                              </td>
-                            </tr>
-                          </table>
-                        </div>
-                      </div>
-                    </td>
-                    <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
-                  </tr>
-                </table>
-              </body>
-            </html>
-            `;
+  //   console.log('Department.routing ', department.routing)
+
+  //   if (department.routing === 'fixed') {
+
+  //     // notifico all'amministratore
+
+  //   } else if (department.routing === 'pooled') {
+  //     //notifico a tutti i membri
+  //   } else if (department.routing === 'assigned') {
+  //     // notifico all'operatore selezionato e all'admin
+  //     console.log('OPERATORS - routing ASSIGNED - PRJCT-ID ', req.projectid)
+  //     console.log('OPERATORS - routing ASSIGNED - DEPT GROUP-ID ', department.id_group)
+
+  //     if (department.id_group == null || department.id_group == undefined) {
+
+  //       console.log('OPERATORS - routing ASSIGNED - !!! DEPT HAS NOT GROUP ID')
+
+  //       Project_user.find({ id_project: req.projectid, user_available: true }, function (err, project_users) {
+  //         if (err) {
+  //           console.log('-- > 2 DEPT FIND BY ID ERR ', err)
+  //           return next(err);
+  //         }
+  //         console.log('OPERATORS - routing ASSIGNED - MEMBERS LENGHT ', project_users.length)
+  //         console.log('OPERATORS - routing ASSIGNED - MEMBERS ', project_users)
+
+  //         if (project_users.length > 0) {
+  //           var operator = project_users[Math.floor(Math.random() * project_users.length)];
+  //           console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER  ID', operator.id_user)
+  //           return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
+
+  //         } else {
+
+  //           return res.json({ department: department, operators: [] });
+
+  //         }
+  //       });
+
+  //     } else {
+
+  //       console.log('OPERATORS - routing ASSIGNED - !!! DEPT HAS GROUP ID')
+  //       Group.find({ _id: department.id_group }, function (err, group) {
+
+  //         if (err) {
+  //           console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
+  //           return next(err);
+  //         }
+
+  //         if (group) {
+  //           console.log('-- > OPERATORS - GROUP FOUND:: ', group);
+  //           console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
+  //           console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
+
+  //           Project_user.find({ id_project: req.projectid, id_user: group[0].members, user_available: true }, function (err, project_users) {
+  //             if (err) {
+  //               console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE - ERR ', err)
+  //               return (err);
+  //             }
+  //             if (project_users) {
+  //               console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE (IN THE GROUP) LENGHT ', project_users.length);
+
+  //               if (project_users.length > 0) {
+  //                 var operator = project_users[Math.floor(Math.random() * project_users.length)];
+  //                 console.log('OPERATORS - routing ASSIGNED - SELECTED (FROM A GROUP) MEMBER ID', operator.id_user);
+
+  //                 return res.json({ department: department, operators: [{ id_user: operator.id_user }] });
+
+  //               } else {
+
+  //                 return res.json({ department: department, operators: [] });
+
+  //               }
+
+  //             }
+  //           })
+  //           // var operator = group[0].members[Math.floor(Math.random() * group[0].members.length)];
+  //           // console.log('OPERATORS - routing ASSIGNED - SELECTED MEMBER ID (FROM A GROUP)', operator)
+  //           // return res.json({ department: department, operators: [{ id_user: operator }] });
+  //         }
+  //       });
+  //     }
+    
+  
 
 
-    emailService.send("andrea.leo@frontiere21.it", 'New Support Request from TileDesk', emailBody, savedRequest);
+
+    emailService.send("andrea.leo@frontiere21.it", 'New Support Request from TileDesk', savedRequest);
 
 
 
@@ -246,6 +193,7 @@ router.post('/', function(req, res) {
     
 
     res.json(savedRequest);
+    
   });
 });
 
