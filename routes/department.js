@@ -105,7 +105,7 @@ router.get('/:departmentid/operators', function (req, res) {
 
         } else {
 
-          return res.json({ department: department, operators: [] });
+          return res.json({ department: department, agents: [], operators: [] });
 
         }
       });
@@ -145,7 +145,7 @@ router.get('/:departmentid/operators', function (req, res) {
 
           } else {
 
-            return res.json({ department: department, operators: [] });
+            return res.json({ department: department, agents: [], operators: [] });
 
           }
         });
@@ -192,7 +192,7 @@ router.get('/:departmentid/operators', function (req, res) {
 
                 } else {
 
-                  return res.json({ department: department, operators: [] });
+                  return res.json({ department: department, agents: [], operators: [] });
 
                 }
 
