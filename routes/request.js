@@ -41,6 +41,8 @@ router.post('/', function(req, res) {
 
     console.log("savedRequest",savedRequest);
 
+    let availableOperators = Request.filterAvailableOperators(savedRequest.agents);
+
     console.log("--> DEPT ID ", req.body.departmentid);
 
     let query;

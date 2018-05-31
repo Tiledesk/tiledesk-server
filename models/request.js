@@ -99,4 +99,17 @@ var RequestSchema = new Schema({
 }
 );
 
+RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
+  var project_users_available = project_users.filter(function (projectUser) {
+    if (projectUser.user_available == true) {
+
+      return true;
+    }
+
+  });
+  console.log('++ AVAILABLE PROJECT USERS ', project_users_available)
+
+  return project_users_available;
+}
+
 module.exports = mongoose.model('request', RequestSchema);
