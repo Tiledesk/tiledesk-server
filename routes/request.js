@@ -39,6 +39,7 @@ router.post('/', function(req, res) {
     }
 
 
+    console.log("savedRequest",savedRequest);
 
     console.log("--> DEPT ID ", req.body.departmentid);
 
