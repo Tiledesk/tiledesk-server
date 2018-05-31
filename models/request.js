@@ -88,7 +88,7 @@ var RequestSchema = new Schema({
     type: String,
     required: true
   },
-  agents: [{ type: [Project_user], required: false }],
+  // agents: [{ type: [Project_user], required: false }],
   // available_agents: [{ type: [Project_user], required: true }]
 },{
   timestamps: true
