@@ -25,6 +25,7 @@ router.post('/', function(req, res) {
     first_text: req.body.first_text,
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipientFullname,
+    agents: req.body.agents,
     support_status: req.body.support_status,
     id_project: req.projectid,
     createdBy: req.user.id,
@@ -39,16 +40,16 @@ router.post('/', function(req, res) {
 
 
 
-    // console.log("--> DEPT ID ", req.params.departmentid);
+    console.log("--> DEPT ID ", req.body.departmentid);
 
-    // let query;
-    // if (req.body.departmentid) {
-    //   query = { _id: req.body.departmentid, id_project: req.projectid };
-    // }
-    // else {
-    //   query = { default: true, id_project: req.projectid };
-    // }
-    // console.log('query', query);
+    let query;
+    if (req.body.departmentid) {
+      query = { _id: req.body.departmentid, id_project: req.projectid };
+    }
+    else {
+      query = { default: true, id_project: req.projectid };
+    }
+    console.log('query', query);
     
 
 
