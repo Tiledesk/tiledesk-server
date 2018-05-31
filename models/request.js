@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var Project_user = require("../models/project_user");
+var ProjectUserSchema = require("../models/project_user").schema;
 
 
 // var newRequest = {};
@@ -12,6 +12,9 @@ var Project_user = require("../models/project_user");
 // newRequest.membersCount = Object.keys(group_members).length;
 // newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.UNSERVED;
 // newRequest.app_id = app_id;
+
+
+
 
 
 var RequestSchema = new Schema({
@@ -89,6 +92,7 @@ var RequestSchema = new Schema({
     required: true
   },
   // agents: [{ type: [Project_user], required: false }],
+  agents: [ProjectUserSchema],
   // available_agents: [{ type: [Project_user], required: true }]
 },{
   timestamps: true
