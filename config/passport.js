@@ -5,6 +5,9 @@ var ExtractJwt = passportJWT.ExtractJwt;
 var passportHttp = require("passport-http");  
 var BasicStrategy = passportHttp.BasicStrategy;
 
+
+// var AnonymousStrategy = require('passport-anonymous').Strategy;
+
 // load up the user model
 var User = require('../models/user');
 var config = require('../config/database'); // get db config file
@@ -82,4 +85,9 @@ module.exports = function(passport) {
       });
     }
   ));
+  
+  // https://github.com/jaredhanson/passport-anonymous
+
+  // passport.use(new AnonymousStrategy());
+
 };

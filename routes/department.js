@@ -5,6 +5,8 @@ var Department = require("../models/department");
 var Project_user = require("../models/project_user");
 var Group = require("../models/group");
 
+// var passport = require('passport');
+// var validtoken = require('.../middleware/valid-token')
 
 router.post('/', function (req, res) {
 
@@ -343,7 +345,8 @@ router.get('/:departmentid', function (req, res) {
 
 
 
-router.get('/', function (req, res) {
+// router.get('/', passport.authenticate(['anonymous'], { session: false }), function (req, res) {
+  router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
 
