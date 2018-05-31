@@ -7,6 +7,10 @@ var DepartmentSchema = new Schema({
     type: String,
     // required: true
   },
+  bot_only: {
+    type: Boolean,
+    // required: true
+  },
   routing: {
     type: String,
     default:"pooled"

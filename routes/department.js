@@ -21,6 +21,7 @@ router.post('/', function (req, res) {
 
   if (req.body.id_bot) {
     newDepartment.id_bot = req.body.id_bot;
+    newDepartment.bot_only = req.body.bot_only;
   }
 
 
