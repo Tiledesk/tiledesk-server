@@ -176,4 +176,21 @@ router.get('/:user_id/:project_id', function (req, res) {
     // });
   });
 
+  // NEW - AS ABOVE BUT RETURN ONLY THE AVAILABLE
+  router.get('/availables', function (req, res) {
+    // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+    Project_user.find({ id_project: req.projectid }).
+      populate('id_user').
+      exec(function (err, project_users) {
+        // console.log('PROJECT USER ROUTES - project_users: ', project_users)
+        res.json(project_users);
+      });
+    // , function (err, project_users) {
+    //   if (err) return next(err);
+    //   console.log('PROJECT USER ROUTES - project_users ', project_users)
+    //   res.json(project_users);
+    // });
+  });
+
+
   module.exports = router;
