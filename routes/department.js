@@ -66,7 +66,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
   });
 });
 
-// START - GET OPERATORS OF A DEPT - 7 giu 2018 NK
+// START - GET OPERATORS OF A DEPT - 7 giu 2018 Nikola
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   console.log("»»» »»» --> DEPT ID ", req.params.departmentid);
 
