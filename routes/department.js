@@ -116,9 +116,13 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
       console.log('nn son entrato ')
     }
 
-    
-    if ((department.id_bot != null || department.id_bot != undefined) && (!req.query.nobot) ) {
-      
+
+    if ((department.id_bot != null || department.id_bot != undefined) && (!req.query.nobot)) {
+
+      // if (department.id_group == null || department.id_group == undefined) {
+        // MAKE X 'BOT' AS FOR 'ASSIGNED' AND 'POOLED': IF THERE IS A GROUP THE BOT WILL BE VISIBLE ONLY BY THE GROUP MEMBERS 
+        // OTHERWISE THE BOT WILL BE VISIBLE TO ALL USERS (BECAUSE THERE IS NO GROUP)
+        console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
         console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
         console.log('OPERATORS - »»»» nobot ', !req.params.nobot)
         Project_user.find({ id_project: req.projectid }, function (err, project_users) {
@@ -126,8 +130,8 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
             console.log('-- > 2 DEPT FIND BY ID ERR ', err)
             return next(err);
           }
-          console.log('OPERATORS - routing pooled - MEMBERS LENGHT ', project_users.length)
-          console.log('OPERATORS - routing pooled - MEMBERS ', project_users)
+          console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length)
+          console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
           if (project_users.length > 0) {
             var _available_agents = getAvailableOperator(project_users);
             return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
@@ -135,8 +139,25 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
             return res.json({ department: department, available_agents: [], agents: [], operators: [{ id_user: 'bot_' + department.id_bot }] });
           }
         });
-      }
-    
+
+      // MAKE X 'BOT' AS FOR 'ASSIGNED' AND 'POOLED': IF THERE IS A GROUP THE BOT WILL BE VISIBLE ONLY BY THE GROUP MEMBERS
+      // } else {
+      //   console.log('OPERATORS - BOT IS DEFINED  - !!! DEPT HAS GROUP ID')
+      //   Group.find({ _id: department.id_group }, function (err, group) {
+      //     if (err) {
+      //       console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
+      //       return next(err);
+      //     }
+      //     if (group) {
+      //       console.log('-- > OPERATORS - GROUP FOUND:: ', group);
+      //       console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
+      //       console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
+      //     }
+      //   });
+      // }
+
+    }
+    // !! No more used: moved in the 'else if' of assigned 
     // else if (department.routing === 'pooled') {
     //   Project_user.find({ id_project: req.projectid }, function (err, project_users) {
     //     if (err) {
@@ -154,18 +175,19 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
     //   });
     // }
     else if (department.routing === 'assigned' || department.routing === 'pooled') {
-      console.log('OPERATORS - routing ASSIGNED or POOLED - PRJCT-ID ', req.projectid)
-      console.log('OPERATORS - routing ASSIGNED or POOLED - DEPT GROUP-ID ', department.id_group)
-      // example USE CASE: ASSIGNED - ALL USERS
+      console.log('OPERATORS - routing ', department.routing, ' - PRJCT-ID ', req.projectid)
+      console.log('OPERATORS - routing ', department.routing, ' - DEPT GROUP-ID ', department.id_group)
+
       if (department.id_group == null || department.id_group == undefined) {
+        // example USE CASE: ASSIGNED OR POOLED TO ALL USERS (BECAUSE THERE IS NO GROUP)
         console.log('OPERATORS - routing ASSIGNED or POOLED - !!! DEPT HAS NOT GROUP ID')
         Project_user.find({ id_project: req.projectid }, function (err, project_users) {
           if (err) {
             console.log('-- > 2 DEPT FIND BY ID ERR ', err)
             return next(err);
           }
-          console.log('OPERATORS - routing ASSIGNED or POOLED - MEMBERS LENGHT ', project_users.length)
-          console.log('OPERATORS - routing ASSIGNED or POOLED - MEMBERS ', project_users)
+          console.log('OPERATORS - routing ', department.routing, ' - MEMBERS LENGHT ', project_users.length)
+          console.log('OPERATORS - routing ', department.routing, ' - MEMBERS ', project_users)
           if (project_users) {
             if (project_users.length > 0) {
               var selectedoperator = []
@@ -183,6 +205,13 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
         });
       } else {
         console.log('OPERATORS - routing ASSIGNED or POOLED - !!! DEPT HAS GROUP ID')
+        // WF: SE ESISTE UN GRUPPO OTTENGO GLI ID DEI MEMBRI DEL GRUPPO E CON QUESTI TROVO I CORRISPONDENTI PROJECT-USERS CHE PASSO AD:
+        //    1) AGENTS: LA TSD CONFRONTANDO L'ID DEL CURRENT USER CON GLI ID CONTENUTI NELL'OGGETTO AGENTS (CHE SARA' CONTENUTO NELLA RICHIESTA) 
+        //       DETERMINA QUALI RICHIESTE VISUALIZZARE (SARANNO VISUALIZZATE SOLO LE RICHIESTE IN L'ID DEL CURRENT USER DELLA TSD 
+        //       CORRISPONDE AD UNO CONTENUTO IN AGENT) 
+        //    2) getRandomAvailableOperator() DETERMINA selectedoperator (CIOè L'OPERATORE A CUI SARA' ASSEGNATA LA RICHIESTA)
+        //       FILTRA I PROJECT-USER DISPONIBILI E TRAMITE UNA FUNZIONE RANDOM NE SELEZIONA UNO CHE VIENE ASSEGNATO A selectedoperator
+        //    3) getAvailableOperator() DETERMINA _available_agents FILTRA I PROJECT-USER DISPONIBILI CHE VENGONO ASSEGNATI A _available_agents     
         Group.find({ _id: department.id_group }, function (err, group) {
           if (err) {
             console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
@@ -193,13 +222,14 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
             console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
             console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
             // , user_available: true
+            //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
             Project_user.find({ id_project: req.projectid, id_user: group[0].members }, function (err, project_users) {
               if (err) {
-                console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE - ERR ', err)
+                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER - ERR ', err)
                 return next(err);
               }
               if (project_users) {
-                console.log('-- > OPERATORS - GROUP FOUND:: USER AVAILABLE (IN THE GROUP) LENGHT ', project_users.length);
+                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
                 if (project_users.length > 0) {
                   var selectedoperator = []
                   if (department.routing === 'assigned') {
