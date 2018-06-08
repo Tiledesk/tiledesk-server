@@ -72,9 +72,14 @@ var RequestSchema = new Schema({
     type: String,
     required: false
   },
-  departmentId: {
-    type: String,
-    required: false
+  // departmentId: {
+  //   type: String,
+  //   required: false
+  // },
+  departmentid: {
+    type: Schema.Types.ObjectId,
+    ref: 'department'
+    // required: true
   },
   departmentName: {
     type: String,
@@ -94,6 +99,15 @@ var RequestSchema = new Schema({
   },
   // agents: [{ type: [Project_user], required: false }],
   agents: [ProjectUserSchema],
+  
+  available_agents: [ProjectUserSchema],
+
+  assigned_operator_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'user'
+    // required: true
+  },
+
   // available_agents: [{ type: [Project_user], required: true }]
 },{
   timestamps: true
