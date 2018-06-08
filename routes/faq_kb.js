@@ -2,6 +2,7 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
+var Department = require("../models/department");
 
 
 // START - CREATE FAQ KB KEY 
@@ -106,7 +107,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
 router.get('/:faq_kbid', function (req, res) {
 
-  console.log(req.body);
+  // console.log(req.body);
 
   Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {
     if (err) {
@@ -115,7 +116,29 @@ router.get('/:faq_kbid', function (req, res) {
     if (!faq_kb) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
-    res.json(faq_kb);
+
+    if (req.query.departmentid) {
+
+      console.log("req.query.departmentid",req.query.departmentid);
+
+        Department.findById(req.query.departmentid, function (err, department) {
+          if (err) {
+            console.log(err);
+            return res.status(500).send({ success: false, msg: 'Error getting department.' });
+          }
+          if (!department) {
+            console.log("Department not found", req.query.departmentid);
+            return res.status(404).send({ success: false, msg: 'Department not found.' });
+          } else {
+            console.log("department", department);
+            faq_kb.department = department;
+            res.json(faq_kb);          }
+        });
+
+    } else {
+      res.json(faq_kb);
+    }
+    
   });
 });
 
