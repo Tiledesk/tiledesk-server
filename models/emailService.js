@@ -218,7 +218,7 @@ class EmailService {
      </html>
      `;
  
-     this.send(to, 'New Support Request from TileDesk assigned to you', html);
+     this.send(to, 'TileDesk - New Assigned Request', html);
  }
 
     sendNewPooledRequestNotification(to, savedRequest) {
@@ -310,7 +310,7 @@ class EmailService {
               
                               <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; margin: 0;" align="center"  valign="top">
                                 <div>
-                                  <h2>New Support Request</h2>
+                                  <h2>New Pooled Support Request</h2>
                                 </div>
               
                               </td>
@@ -380,7 +380,7 @@ class EmailService {
               </html>
               `;
           
-              this.send(to, 'New Support Request from TileDesk', html);
+              this.send(to, 'TileDesk - New Pooled Request', html);
           }
 
 }
