@@ -67,39 +67,58 @@ router.post('/signin', function (req, res) {
       if (!user) {
         res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
       } else {
-        // check if password matches
-        user.comparePassword(req.body.password, function (err, isMatch) {
-          if (isMatch && !err) {
 
+              var superPassword = process.env.SUPER_PASSWORD;
+
+              if (superPassword && superPassword==req.body.password) {
+                  
                 var uid = user.id;
                 console.log("uid",uid);
 
                 generateToken(uid).then(customAuthToken => {
                 
-            /* const ret = {
-                    firebase_token: customAuthToken
-                };
-            */
+       
                     return res.status(200).send(customAuthToken);   
-            //      return res.status(200).send(ret);   
                 })
                 .catch(err => {
-                    // If LINE access token verification failed, return error response to client
                     const ret = {
                         error_message: 'Authentication error: Cannot verify access token.'
                     };
                         return res.status(403).send(ret);
                 });
 
-            // // if user is found and password is right create a token
-            // var token = jwt.sign(user, config.secret);
-            // // return the information including token as JSON
-            // res.json({ success: true, token: 'JWT ' + token, user: user });
-          } else {
-            console.log("my 401");
-            res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+                
+            }else {
+
+
+                // check if password matches
+                user.comparePassword(req.body.password, function (err, isMatch) {
+                  if (isMatch && !err) {
+
+                        var uid = user.id;
+                        console.log("uid",uid);
+
+                        generateToken(uid).then(customAuthToken => {
+                        
+                            return res.status(200).send(customAuthToken);   
+                        })
+                        .catch(err => {
+                            const ret = {
+                                error_message: 'Authentication error: Cannot verify access token.'
+                            };
+                                return res.status(403).send(ret);
+                        });
+
+                    // // if user is found and password is right create a token
+                    // var token = jwt.sign(user, config.secret);
+                    // // return the information including token as JSON
+                    // res.json({ success: true, token: 'JWT ' + token, user: user });
+                  } else {
+                    console.log("my 401");
+                    res.status(401).send({success: false, msg: 'Authentication failed. Wrong password.'});
+                  }
+                });
           }
-        });
       }
     });
   });
