@@ -23,7 +23,7 @@ mongoose.connect(databaseUri || config.database);
 
 var auth = require('./routes/auth');
 var contact = require('./routes/contact');
-var tenant = require('./routes/tenant');
+//var tenant = require('./routes/tenant');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
@@ -88,23 +88,23 @@ app.use('/:projectid', projectIdSetter);
 // app.use('/:projectid', [passport.authenticate('basic', { session: false })]);
 
 // http://aleksandrov.ws/2013/09/12/restful-api-with-nodejs-plus-mongodb/
-app.use('/:projectid', [passport.authenticate(['basic','jwt'], { session: false }), validtoken]);
+// app.use('/:projectid', [passport.authenticate(['basic','jwt'], { session: false }), validtoken]);
 
 
-app.use('/:projectid/contacts', contact);
-app.use('/:projectid/messages', message);
+app.use('/:projectid/contacts', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], contact);
+app.use('/:projectid/messages',[passport.authenticate(['basic','jwt'], { session: false }), validtoken], message);
 app.use('/:projectid/departments', department);
-app.use('/:projectid/faq', faq);
-app.use('/:projectid/bots', bot);
-app.use('/:projectid/faq_kb', faq_kb);
-app.use('/projects', project);
-app.use('/:projectid/people', person);
+app.use('/:projectid/faq', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], faq);
+app.use('/:projectid/bots', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], bot);
+app.use('/:projectid/faq_kb', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], faq_kb);
+app.use('/projects', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], project);
+app.use('/:projectid/people', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], person);
 app.use('/:projectid/project_users', project_user);
-app.use('/:projectid/requests', request);
+app.use('/:projectid/requests', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/groups', group);
+app.use('/:projectid/groups', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], group);
 
-app.use('/apps', tenant);
+//app.use('/apps', tenant);
 
 
 
