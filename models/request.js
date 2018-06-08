@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
+// var ProjectUserSchema = require("../models/project_user");
 
 
 // var newRequest = {};

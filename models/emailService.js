@@ -12,6 +12,7 @@ class EmailService {
         
         
         var emailPassword = process.env.EMAIL_PASSWORD;
+        
 
         console.log('emailPassword ', emailPassword);
     
@@ -32,15 +33,35 @@ class EmailService {
 
     }
 
-    send(to, subject, savedRequest) {
-        // setup email data with unicode symbols
-          let mailOptions = {
-              from: config.from, // sender address
-              to: to,
-              bcc: config.bcc,
-              subject: subject, // Subject line
-              //text: 'Hello world?', // plain text body
-              html: `
+    send(to, subject, html) {
+      let mailOptions = {
+        from: config.from, // sender address
+        to: to,
+        bcc: config.bcc,
+        subject: subject, // Subject line
+        //text: 'Hello world?', // plain text body
+        html: html
+      };
+      console.log('mailOptions', mailOptions);
+
+    // send mail with defined transport object
+      this.getTransport().sendMail(mailOptions, (error, info) => {
+          if (error) {
+              return console.log(error);
+          }
+          console.log('Message sent: %s', info.messageId);
+          // Preview only available when sending through an Ethereal account
+          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+          // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+          // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+      });
+
+  }
+
+    sendNewRequestNotification(to, savedRequest) {
+        
+             var html = `
               <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
               <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
               
@@ -151,6 +172,13 @@ class EmailService {
                               </td>
                               </tr>
 
+                              
+                              // <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                              // <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                              //   Dipartimento: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.departmentName}</strong>
+                              // </td>
+                              // </tr>
+
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                   Testo della richiesta: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.first_text}</strong>
@@ -195,24 +223,9 @@ class EmailService {
                   </table>
                 </body>
               </html>
-              `
-          };
-          console.log('mailOptions', mailOptions);
-
-
-          // send mail with defined transport object
-            this.getTransport().sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    return console.log(error);
-                }
-                console.log('Message sent: %s', info.messageId);
-                // Preview only available when sending through an Ethereal account
-                console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-
-                // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-                // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-            });
-
+              `;
+          
+              this.send(to, 'New Support Request from TileDesk', html);
           }
 
 }
