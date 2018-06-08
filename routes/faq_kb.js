@@ -107,7 +107,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
 router.get('/:faq_kbid', function (req, res) {
 
-  // console.log(req.body);
+   console.log(req.query);
 
   Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {
     if (err) {

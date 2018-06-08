@@ -1,7 +1,7 @@
 
 // unused
 module.exports = function(req, res, next) {
-        console.log("valid-token");
+        // console.log("valid-token");
         var token = getToken(req.headers);
         // console.log("token", token);
         if (token) {
