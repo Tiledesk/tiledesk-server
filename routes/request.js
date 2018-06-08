@@ -98,7 +98,7 @@ router.post('/', function(req, res) {
         
       });
 
-      }else if (savedRequest.support_status==200) {
+      }else if (savedRequest.support_status==200) { //ASSIGNED
         console.log("assigned_operator_id", savedRequest.assigned_operator_id);
 
         User.findById( savedRequest.assigned_operator_id, function (err, user) {
@@ -109,7 +109,7 @@ router.post('/', function(req, res) {
             console.log("User not found",  savedRequest.assigned_operator_id);
           } else {
             console.log("User email", user.email);
-            emailService.sendNewPooledRequestNotification(user.email, savedRequest);
+            emailService.sendNewAssignedRequestNotification(user.email, savedRequest);
           }
         });
 
