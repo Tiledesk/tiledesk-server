@@ -91,7 +91,7 @@ router.post('/', function(req, res) {
             console.log("User not found", project_user.id_user);
           } else {
             console.log("User email", user.email);
-            // emailService.sendNewPooledRequestNotification(user.email, savedRequest);
+            emailService.sendNewPooledRequestNotification(user.email, savedRequest);
           }
         });
 
@@ -109,7 +109,7 @@ router.post('/', function(req, res) {
             console.log("User not found",  savedRequest.assigned_operator_id);
           } else {
             console.log("User email", user.email);
-            // emailService.sendNewPooledRequestNotification(user.email, savedRequest);
+            emailService.sendNewPooledRequestNotification(user.email, savedRequest);
           }
         });
 
