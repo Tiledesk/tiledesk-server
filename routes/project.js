@@ -125,7 +125,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 });
 
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
-router.get('/:projectid/availables', function (req, res) {
+router.get('/:projectid/users/availables', function (req, res) {
   console.log("PROJECT USER ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
   Project_user.find({ id_project: req.params.projectid, user_available: true }).
     populate('id_user').
