@@ -5,9 +5,7 @@ var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var User = require("../models/user");
 
-var passport = require('passport');
-require('../config/passport')(passport);
-var validtoken = require('../middleware/valid-token')
+
 // var User = require("../models/user");
 
 
@@ -34,7 +32,7 @@ var validtoken = require('../middleware/valid-token')
 // });
 
 // NEW: INVITE A USER
-router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.post('/invite', function (req, res) {
 
   console.log('-> INVITE USER ', req.body);
 
@@ -84,7 +82,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
 
 
-router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.put('/:project_userid', function (req, res) {
 
   console.log(req.body);
 
@@ -97,7 +95,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 });
 
 
-router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.delete('/:project_userid', function (req, res) {
 
   console.log(req.body);
 
@@ -126,7 +124,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 //   });
 // });
 
-router.get('/details/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.get('/details/:project_userid', function (req, res) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.find({ _id: req.params.project_userid }).
     populate('id_user').
@@ -146,7 +144,7 @@ router.get('/details/:project_userid', [passport.authenticate(['basic', 'jwt'], 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID
  */
-router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.get('/:user_id/:project_id', function (req, res) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
   console.log("--> USER ID ", req.params.user_id);
   console.log("--> PROJECT ID ", req.params.project_id);
@@ -164,7 +162,7 @@ router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { s
  * WF: 1. GET PROJECT-USER by the passed project ID
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */
-router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.get('/', function (req, res) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.find({ id_project: req.projectid }).
     populate('id_user').
@@ -177,28 +175,6 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   //   console.log('PROJECT USER ROUTES - project_users ', project_users)
   //   res.json(project_users);
   // });
-});
-
-// NEW - AS ABOVE BUT RETURN ONLY THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER
-router.get('/availables', function (req, res) {
-  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  Project_user.find({ id_project: req.projectid, user_available: true }).
-    populate('id_user').
-    exec(function (err, project_users) {
-      console.log('PROJECT USER ROUTES - AVAILABLES project_users: ', project_users);
-      console.log('PROJECT USER ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
-
-      user_available_array = [];
-      project_users.forEach(project_user => {
-
-        user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-      });
-
-      console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
-
-      res.json(user_available_array);
-    });
-
 });
 
 

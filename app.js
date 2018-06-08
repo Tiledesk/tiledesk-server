@@ -97,9 +97,9 @@ app.use('/:projectid/departments', department);
 app.use('/:projectid/faq', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], faq);
 app.use('/:projectid/bots', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], bot);
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], faq_kb);
-app.use('/projects', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], project);
+app.use('/projects', project);
 app.use('/:projectid/people', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], person);
-app.use('/:projectid/project_users', project_user);
+app.use('/:projectid/project_users', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], project_user);
 app.use('/:projectid/requests', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic','jwt'], { session: false }), validtoken], group);
