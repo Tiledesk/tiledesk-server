@@ -256,7 +256,7 @@ router.post('/signin', function (req, res) {
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
-          console.log("my 401");
+          // console.log("my 401");
           res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
         }
       });
