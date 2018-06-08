@@ -132,6 +132,8 @@ router.get('/:faq_kbid', function (req, res) {
           } else {
             console.log("department", department);
             faq_kb.set("department", department);
+            console.log("faq_kb", faq_kb);
+
             res.json(faq_kb);          
           }
         });
