@@ -131,8 +131,9 @@ router.get('/:faq_kbid', function (req, res) {
             return res.status(404).send({ success: false, msg: 'Department not found.' });
           } else {
             console.log("department", department);
-            faq_kb.department = department;
-            res.json(faq_kb);          }
+            faq_kb.set("department", department);
+            res.json(faq_kb);          
+          }
         });
 
     } else {
