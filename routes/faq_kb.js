@@ -132,6 +132,7 @@ router.get('/:faq_kbid', function (req, res) {
           } else {
             console.log("department", department);
             
+            // https://github.com/Automattic/mongoose/issues/4614
             faq_kb._doc.department = department;
             console.log("faq_kb", faq_kb);
 
