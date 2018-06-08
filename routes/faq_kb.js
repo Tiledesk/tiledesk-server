@@ -124,11 +124,13 @@ router.get('/:faq_kbid', function (req, res) {
         Department.findById(req.query.departmentid, function (err, department) {
           if (err) {
             console.log(err);
-            return res.status(500).send({ success: false, msg: 'Error getting department.' });
+            // return res.status(500).send({ success: false, msg: 'Error getting department.' });
+            res.json(faq_kb);        
           }
           if (!department) {
             console.log("Department not found", req.query.departmentid);
-            return res.status(404).send({ success: false, msg: 'Department not found.' });
+            // return res.status(404).send({ success: false, msg: 'Department not found.' });
+            res.json(faq_kb);
           } else {
             console.log("department", department);
             
