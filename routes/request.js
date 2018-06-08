@@ -3,18 +3,34 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Request = require("../models/request");
 var emailService = require("../models/emailService");
+var Project_userApi = require("../controllers/project_user");
+var User = require("../models/user");
 
 // const Email = require('email-templates');
 
 // var newRequest = {};
-// newRequest.created_on = admin.firestore.FieldValue.serverTimestamp();
+// newRequest.created_on = admin.firestore.FieldValue.serverTimestamp();  //SALTO
 // newRequest.requester_id = message.sender;
 // newRequest.requester_fullname = message.sender_fullname;
 // newRequest.first_text = message.text;
-// newRequest.members = group_members;
-// newRequest.membersCount = Object.keys(group_members).length;
-// newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.UNSERVED;
+// newRequest.departmentid = departmentid;
+// newRequest.members = group_members;  //SALTO
+// newRequest.membersCount = Object.keys(group_members).length; //SALTO
+// newRequest.agents = agents;
+// newRequest.availableAgents = availableAgents;
+// newRequest.assigned_operator_id = assigned_operator_id;
+// if (newRequest.membersCount==2){
+//     newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.UNSERVED;
+// }else {
+//     newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.SERVED;
+// }
+// if (message.attributes != null) {
+//     newRequest.attributes = message.attributes;
+// }
 // newRequest.app_id = app_id;
+
+
+
 
 router.post('/', function(req, res) {
 
@@ -23,9 +39,12 @@ router.post('/', function(req, res) {
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
+    departmentid: req.body.departmentid,
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipientFullname,
     agents: req.body.agents,
+    availableAgents: req.body.availableAgents,
+    assigned_operator_id:  req.body.assigned_operator_id,
     support_status: req.body.support_status,
     id_project: req.projectid,
     createdBy: req.user.id,
@@ -41,18 +60,91 @@ router.post('/', function(req, res) {
 
     console.log("savedRequest",savedRequest);
 
-    let availableOperators = Request.filterAvailableOperators(savedRequest.agents);
 
-    console.log("--> DEPT ID ", req.body.departmentid);
+    try {
 
-    let query;
-    if (req.body.departmentid) {
-      query = { _id: req.body.departmentid, id_project: req.projectid };
+    // let availableOperators = Request.filterAvailableOperators(savedRequest.agents);
+    
+    // console.log("availableOperators",availableOperators);
+
+
+    // availableOperators.forEach(function(projectUser) {
+    //   projectUser.populate("id_user").exec(function (err, projectUserWithUser) {
+    //     console.log("projectUserWithUser" , projectUserWithUser);
+        
+    //   });
+    // });
+
+     if (savedRequest.support_status==100) { //POOLED
+    // throw "ciao";
+      var allAgents = savedRequest.agents;
+       console.log("allAgents", allAgents);
+
+      allAgents.forEach(project_user => {
+        console.log("project_user", project_user);
+
+        User.findById(project_user.id_user, function (err, user) {
+          if (err) {
+            console.log(err);
+          }
+          if (!user) {
+            console.log("User not found", project_user.id_user);
+          } else {
+            console.log("User email", user.email);
+            emailService.sendNewPooledRequestNotification(user.email, savedRequest);
+          }
+        });
+
+        
+      });
+
+      }else if (savedRequest.support_status==200) { //ASSIGNED
+        console.log("assigned_operator_id", savedRequest.assigned_operator_id);
+
+        User.findById( savedRequest.assigned_operator_id, function (err, user) {
+          if (err) {
+            console.log(err);
+          }
+          if (!user) {
+            console.log("User not found",  savedRequest.assigned_operator_id);
+          } else {
+            console.log("User email", user.email);
+            emailService.sendNewAssignedRequestNotification(user.email, savedRequest);
+          }
+        });
+
+        // emailService.sendNewAssignedRequestNotification(user.email, savedRequest);
+      }else {
+
+      }
+    } catch (e) {
+      console.log("Errore sending email", e);
     }
-    else {
-      query = { default: true, id_project: req.projectid };
-    }
-    console.log('query', query);
+ 
+
+    // emailService.sendNewRequestNotification("andrea.leo@frontiere21.it", savedRequest);
+
+
+    // console.log("--> DEPT ID ", req.body.departmentid);
+
+  //   Project_userApi.findByDepartmentAndProjectId(req.body.departmentid, req.projectid, function (err, project_users) {
+  //   // .populate('id_user').exec(function (err, project_users) {
+  //     if (err) {
+  //       console.log('Error getting findByDepartmentAndProjectId', err)
+  //       return next(err);
+  //     }
+
+  //     console.log("project_users", project_users);
+  //  });
+
+    // let query;
+    // if (req.body.departmentid) {
+    //   query = { _id: req.body.departmentid, id_project: req.projectid };
+    // }
+    // else {
+    //   query = { default: true, id_project: req.projectid };
+    // }
+    // console.log('query', query);
     
 
 
@@ -150,7 +242,6 @@ router.post('/', function(req, res) {
 
 
 
-    emailService.send("andrea.leo@frontiere21.it", 'New Support Request from TileDesk', savedRequest);
 
 
 
