@@ -17,12 +17,13 @@ router.put('/updateuser/:userid', function (req, res) {
     if (err) {
       console.log(err);
       return res.status(500).send({ success: false, msg: err });
+      
     }
     console.log('UPDATED USER ' ,updatedUser);
     if (!updatedUser) {
       return res.status(404).send({ success: false, msg: 'User not found' });
     }
-    res.json(updatedUser);
+    res.json({success: true, updatedUser});
   });
 });
 
