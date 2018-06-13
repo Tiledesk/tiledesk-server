@@ -131,8 +131,9 @@ router.get('/:projectid/users/availables', function (req, res) {
     populate('id_user').
     exec(function (err, project_users) {
       console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
-      console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
-
+      if (project_users) {
+        console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+      }
       user_available_array = [];
       project_users.forEach(project_user => {
 
