@@ -28,20 +28,49 @@ router.put('/updateuser/:userid', function (req, res) {
 });
 
 router.put('/changepsw', function (req, res) {
-  console.log("CHANGE PSW - USER ID", req.body.email);
+  console.log('CHANGE PSW - USER ID: ', req.body.userid);
 
-  // User.findOne({ email: req.body.email }, function (err, user) {
-  //   if (err) throw err;
+  User.findOne({ _id: req.body.userid }, function (err, user) {
+    if (err) throw err;
+    console.log('CHANGE PSW - FINDONE ERROR ', err)
+    if (!user) {
+      console.log('CHANGE PSW - FINDONE USER NOT FOUND ', err)
+      res.status(401).send({ success: false, msg: 'User not found.' });
+    } else {
+      console.log('CHANGE PSW - FOUND USER ', user)
+      // check if password matches
 
-  //   if (!user) {
-  //     res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
-  //   } else {
-  //     // check if password matches
+      if (req.body.oldpsw) {
+        console.log('CHANGE PSW - OLD PSW: ', req.body.oldpsw);
 
-  //     if (req.body.password) {
-  //     }
-  //   }
-  // });
+        user.comparePassword(req.body.oldpsw, function (err, isMatch) {
+          if (isMatch && !err) {
+            // if user is found and old password is right
+            console.log('* THE PSW MATCH CURRENT PSW * PROCEED WITH THE UPDATE')
+            console.log('CHANGE PSW - NEW PSW: ', req.body.newpsw);
+
+            user.password = req.body.newpsw
+
+            user.save(function (err, saveUser) {
+
+              if (err) {
+                console.log('--- > USER SAVE -ERROR ', err)
+                return res.status(500).send({ success: false, msg: 'Error saving object.' });
+              }
+              console.log('--- > USER SAVED  ', saveUser)
+              res.status(200).json({ message: 'Password change successful' });
+
+            });
+
+          } else {
+            console.log('THE PSW DOES NOT MATCH CURRENT PSW ')
+            res.status(401).send({ success: false, msg: 'Current password is invalid.' });
+          }
+        });
+
+      }
+    }
+  });
 });
 
 

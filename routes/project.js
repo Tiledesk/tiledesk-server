@@ -136,7 +136,7 @@ router.get('/:projectid/users/availables', function (req, res) {
       }
       user_available_array = [];
       project_users.forEach(project_user => {
-
+        console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
         user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
       });
 

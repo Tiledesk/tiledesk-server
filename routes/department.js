@@ -391,7 +391,7 @@ router.get('/:departmentid', function (req, res) {
     console.log("query", query);
 
     Department.findOne(query, function (err, department) {
-      if (err) return next(err);
+      if (err) return (err);
 
       return res.json(department);
     });
