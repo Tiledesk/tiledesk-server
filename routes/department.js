@@ -128,7 +128,7 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
         Project_user.find({ id_project: req.projectid }, function (err, project_users) {
           if (err) {
             console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-            return next(err);
+            return (err);
           }
           console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length)
           console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
@@ -184,7 +184,7 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
         Project_user.find({ id_project: req.projectid }, function (err, project_users) {
           if (err) {
             console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-            return next(err);
+            return (err);
           }
           console.log('OPERATORS - routing ', department.routing, ' - MEMBERS LENGHT ', project_users.length)
           console.log('OPERATORS - routing ', department.routing, ' - MEMBERS ', project_users)
@@ -215,7 +215,7 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
         Group.find({ _id: department.id_group }, function (err, group) {
           if (err) {
             console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
-            return next(err);
+            return (err);
           }
           if (group) {
             console.log('-- > OPERATORS - GROUP FOUND:: ', group);
@@ -224,9 +224,10 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
             // , user_available: true
             //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
             Project_user.find({ id_project: req.projectid, id_user: group[0].members }, function (err, project_users) {
+              console.log('-- > OPERATORS - GROUP FOUND:: PROJECT ID ',req.projectid);
               if (err) {
-                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER - ERR ', err)
-                return next(err);
+                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER - ERR ', err);
+                return (err);
               }
               if (project_users) {
                 console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);

@@ -27,22 +27,22 @@ router.put('/updateuser/:userid', function (req, res) {
   });
 });
 
-// router.put('/changepassword', function (req, res) {
-//   console.log("req.body.email", req.body.email);
+router.put('/changepsw', function (req, res) {
+  console.log("CHANGE PSW - USER ID", req.body.email);
 
-//   User.findOne({ email: req.body.email }, function (err, user) {
-//     if (err) throw err;
+  // User.findOne({ email: req.body.email }, function (err, user) {
+  //   if (err) throw err;
 
-//     if (!user) {
-//       res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
-//     } else {
-//       // check if password matches
+  //   if (!user) {
+  //     res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
+  //   } else {
+  //     // check if password matches
 
-//       if (req.body.password) {
-//       }
-//     }
-//   });
-// });
+  //     if (req.body.password) {
+  //     }
+  //   }
+  // });
+});
 
 
 module.exports = router;
