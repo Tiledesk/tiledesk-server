@@ -20,6 +20,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     name: req.body.name,
     // createdBy: req.body.id_user,
     // updatedBy: req.body.id_user
+    activeOperatingHours: false,
+    operatingHours: req.body.hours,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
@@ -78,7 +80,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
 // PROJECT PUT
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log(req.body);
+  console.log('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -126,7 +128,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
 router.get('/:projectid/users/availables', function (req, res) {
-  console.log("PROJECT USER ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
+  console.log("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
   Project_user.find({ id_project: req.params.projectid, user_available: true }).
     populate('id_user').
     exec(function (err, project_users) {
@@ -144,6 +146,88 @@ router.get('/:projectid/users/availables', function (req, res) {
 
       res.json(user_available_array);
     });
+
+});
+
+// NEW - TIMETABLES AND AVAILABLE USERS
+router.get('/:projectid/users/newavailables', function (req, res) {
+  // orari attivi?
+  //  no > goto: normal
+  //  si > 
+  //    now = Date();
+  //    tomorrow = Date() + 24;
+  //    Project.openAt?(projectId, tomorrow, function() {
+  //      no > rispondi con user_available_array = []; return;
+  //      si > goto: normal
+  //    });0
+
+  // normal:
+  console.log("PROJECT-ROUTES - NEW AVAILABLES - projectid: ", req.params.projectid);
+  console.log("PROJECT-ROUTES - NEW AVAILABLES - REQ BODY: ", req.body);
+  Project.findById(req.params.projectid, function (err, project) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!project) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    console.log("PROJECT-ROUTES - NEW AVAILABLES - REQ BODY: ", project);
+
+    if (project) {
+
+      if (project.activeOperatingHours === true) {
+        // OPERATING HOURS IS ACTIVE - CHECK IF THE CURRENT TIME IS OUT OF THE TIME OF ACTIVITY
+        console.log('»»» OPERATING HOURS IS ACTIVE - CHECK HOURS')
+        var timestampMillSec = Date.now(); 
+        // console.log('»»» NOW TIMESTAMP (MS) ', timestampMillSec);
+        var timestamp = timestampMillSec / 1000
+        console.log('»»» NOW TIMESTAMP ', timestamp);
+        var operatingHours = project.operatingHours
+        console.log('»»» OPERATING HOURS ', JSON.parse(operatingHours));
+      } else {
+        // OPERATING HOURS IS NOT ACTIVE - NORMALLY PROCESS
+        console.log('»»» OPERATING HOURS IS NOT ACTIVE')
+        Project_user.find({ id_project: req.params.projectid, user_available: true }).
+        populate('id_user').
+        exec(function (err, project_users) {
+          console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+          if (project_users) {
+            console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+          }
+          user_available_array = [];
+          project_users.forEach(project_user => {
+            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+            user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+          });
+
+          console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+
+          res.json(user_available_array);
+        });
+      }
+    }
+    // res.json(project);
+  });
+
+
+
+  // Project_user.find({ id_project: req.params.projectid, user_available: true }).
+  //   populate('id_user').
+  //   exec(function (err, project_users) {
+  //     console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+  //     if (project_users) {
+  //       console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+  //     }
+  //     user_available_array = [];
+  //     project_users.forEach(project_user => {
+  //       console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+  //       user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+  //     });
+
+  //     console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+
+  //     res.json(user_available_array);
+  //   });
 
 });
 

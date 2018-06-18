@@ -8,6 +8,12 @@ var ProjectSchema = new Schema({
     type: String,
     required: true
   },
+  activeOperatingHours: {
+    type: Boolean,
+  },
+  operatingHours: {
+    type: Object,
+  },
   createdBy: {
     type: String,
     required: true
