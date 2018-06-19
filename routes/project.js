@@ -178,32 +178,107 @@ router.get('/:projectid/users/newavailables', function (req, res) {
       if (project.activeOperatingHours === true) {
         // OPERATING HOURS IS ACTIVE - CHECK IF THE CURRENT TIME IS OUT OF THE TIME OF ACTIVITY
         console.log('»»» OPERATING HOURS IS ACTIVE - CHECK HOURS')
-        var timestampMillSec = Date.now(); 
-        // console.log('»»» NOW TIMESTAMP (MS) ', timestampMillSec);
-        var timestamp = timestampMillSec / 1000
-        console.log('»»» NOW TIMESTAMP ', timestamp);
+
+        // DATE NOW UTC(0) IN MILLISECONDS
+        var dateNowMillSec = Date.now();
+        console.log('»»» DATE NOW (UTC(0) in ms)', dateNowMillSec);
+
+        // CONVERT DATE NOW UTC(0) FROM MS IN DATE FORMAT
+        var dateNow = new Date(dateNowMillSec);
+        console.log('* * »»»» FOR DEBUG - DATE NOW (UTC(0)): ', dateNow);
+
+        // PROJECT OPERATING HOURS 
         var operatingHours = project.operatingHours
-        console.log('»»» OPERATING HOURS ', JSON.parse(operatingHours));
+        var operatingHoursPars = JSON.parse(operatingHours)
+        console.log('»»» OPERATING HOURS PARSED: ', operatingHoursPars);
+
+        // PROJECT TIMEZONE OFFSET (from the UTC(0)) (e.g: +2)
+        var prjcTimezoneOffset = operatingHoursPars.tz
+        console.log('»»» OPERATING HOURS -> TIMEZONE OFFSET: ', prjcTimezoneOffset);
+
+        // PROJECT TIMEZONE OFFSET (from the UTC(0)) HOUR (e.g: 2)
+        var prjcTimezoneOffsetHour = prjcTimezoneOffset.substr(1);
+        console.log('TIMEZONE OFFSET HOUR: ', prjcTimezoneOffsetHour);
+
+        // PROJECT TIMEZONE OFFSET HOUR CONVERTED IN MS
+        var prjcTimezoneOffsetMillSec = prjcTimezoneOffsetHour * 3600000;
+        console.log('TIMEZONE OFFSET HOUR in MS: ', prjcTimezoneOffsetMillSec);
+
+        // console.log('DATE NOW (to STRING): ', dateNow.toString());
+
+        // TIMEZONE OFFSET DIRECTION (e.g.: + or -)
+        var timezoneDirection = prjcTimezoneOffset.charAt(0)
+        console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+
+
+        // https://stackoverflow.com/questions/5834318/are-variable-operators-possible
+        var operators = {
+          '+': function (dateNowMs, tzMs) { return dateNowMs + tzMs },
+          '-': function (dateNowMs, tzMs) { return dateNowMs - tzMs },
+        }
+
+        // ON THE BASIS OF 'TIMEZONE DIRECTION' ADDS OR SUBSTRATES THE 'TIMEZONE OFFSET' (IN MILLISECONDS) OF THE PROJECT TO THE 'DATE NOW' (IN MILLISECONDS)
+        var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTimezoneOffsetMillSec)
+        // var dateNowPlusTzOffsetMs = dateNowMillSec + timezoneOffsetMillSec
+        console.log('NEW DATE NOW (in ms) (IS THE DATE NOW UTC(0)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', newDateNowMs)
+
+        // TRANSFORM IN DATE THE DATE NOW (IN MILLSEC) TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
+        var newDateNow = new Date(newDateNowMs);
+        // var dateNowPlusTzOffset = new Date(1529249066000);
+        console.log('* * »»»» NEW DATE NOW ', newDateNow);
+
+        // console.log('»»»» ', typeof (hour));
+        // GET THE NEW DATE NOW DAY 
+        var newDateNow_weekDay = newDateNow.getDay();
+        console.log('* * »»»» NEW DATE NOW -> WEEK DAY ', newDateNow_weekDay);
+
+        // TRASFORM IN STRING THE NEW DATE NOW (IS THE DATE NOW TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
+        var newDateNowTOStr = newDateNow.toISOString();
+
+        // GET THE NEW DATE NOE HOUR
+        var newDateNow_hour = newDateNowTOStr.substring(
+          newDateNowTOStr.lastIndexOf("T") + 1,
+          newDateNowTOStr.lastIndexOf(".")
+        );
+        console.log('* * »»»» NEW DATE NOW -> HOURS ', newDateNow_hour);
+
+        // operatingHoursPars.forEach(operatingHour => {
+        //   console.log('OPERATING HOUR ', operatingHour)
+        // });
+
+
+        // il date.string ritorna la data al timestamp corrente
+        // var dateNowPlusTzOffsetToStr = dateNowPlusTzOffset.toString();
+        // console.log('DATE NOW + OFFSET (to STRING): ', dateNowPlusTzOffsetToStr);
+
+        // var date = new Date();
+        // console.log('»»» DATE ', date.toUTCString());
+        // console.log('»»» DATE 2', date.toLocaleTimeString());
+
+        // console.log('FORMATTED DATA ', formattedTime);
+        // var timestamp = timestampMillSec / 1000
+        // console.log('»»» NOW TIMESTAMP ', timestamp);
+
       } else {
         // OPERATING HOURS IS NOT ACTIVE - NORMALLY PROCESS
         console.log('»»» OPERATING HOURS IS NOT ACTIVE')
         Project_user.find({ id_project: req.params.projectid, user_available: true }).
-        populate('id_user').
-        exec(function (err, project_users) {
-          console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
-          if (project_users) {
-            console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
-          }
-          user_available_array = [];
-          project_users.forEach(project_user => {
-            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-            user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+          populate('id_user').
+          exec(function (err, project_users) {
+            console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+            if (project_users) {
+              console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+            }
+            user_available_array = [];
+            project_users.forEach(project_user => {
+              console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+              user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+            });
+
+            console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+
+            res.json(user_available_array);
           });
-
-          console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
-
-          res.json(user_available_array);
-        });
       }
     }
     // res.json(project);
