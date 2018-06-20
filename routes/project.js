@@ -241,11 +241,32 @@ router.get('/:projectid/users/newavailables', function (req, res) {
           newDateNowTOStr.lastIndexOf(".")
         );
         console.log('* * »»»» NEW DATE NOW -> HOURS ', newDateNow_hour);
+        console.log('TYPE OF OPERATING HOURS PARSED ', typeof (operatingHoursPars))
 
-        // operatingHoursPars.forEach(operatingHour => {
-        //   console.log('OPERATING HOUR ', operatingHour)
-        // });
+        // FOR DEBUG
+        days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+        console.log('DAYS 0 ', days[0])
+        for (var operatingHoursweekDay in operatingHoursPars) {
+          if (operatingHoursweekDay != 'tz') {
+            console.log("weekDay (as number): " + operatingHoursweekDay);
+            // console.log("OpetatingHours: " + operatingHoursPars[operatingHoursweekDay]);
 
+            if (newDateNow_weekDay == operatingHoursweekDay) {
+              console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') MATCHS TO OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
+
+              operatingHoursPars[operatingHoursweekDay].forEach(operatingHour => {
+                console.log('OPERATING HOUR ', operatingHour)
+                var startTime = operatingHour.start;
+                var endTime = operatingHour.end;
+                console.log('REQUEST TIME (@THE PROJECT UTC) ', newDateNow_hour )
+                console.log('on',days[newDateNow_weekDay] ,'the START OPERATING HOURS is AT: ', startTime);
+                console.log('on',days[newDateNow_weekDay] ,'the END OPERATING HOURS is AT: ', endTime)
+              });
+            } else {
+              console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') NOT MATCHS TO THE OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
+            }
+          }
+        }
 
         // il date.string ritorna la data al timestamp corrente
         // var dateNowPlusTzOffsetToStr = dateNowPlusTzOffset.toString();
