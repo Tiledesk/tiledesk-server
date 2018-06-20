@@ -245,7 +245,13 @@ router.get('/:projectid/users/newavailables', function (req, res) {
 
         // FOR DEBUG
         days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
-        console.log('DAYS 0 ', days[0])
+        // console.log('DAYS 0 ', days[0]);
+
+        // ====================================================================================================================
+        //  =======  RUN A FOR TO DETERMINE IF THE CURRENT-DAY MATCHS WITH ONES OF THE WEEKDAY OF THE OPERATING HOURS   ======
+        // ====================================================================================================================
+        user_available_array = [];
+        var result = res.json(user_available_array);;
         for (var operatingHoursweekDay in operatingHoursPars) {
           if (operatingHoursweekDay != 'tz') {
             console.log("weekDay (as number): " + operatingHoursweekDay);
@@ -258,55 +264,97 @@ router.get('/:projectid/users/newavailables', function (req, res) {
                 console.log('OPERATING HOUR ', operatingHour)
                 var startTime = operatingHour.start;
                 var endTime = operatingHour.end;
-                console.log('REQUEST TIME (@THE PROJECT UTC) ', newDateNow_hour )
-                console.log('on',days[newDateNow_weekDay] ,'the START OPERATING HOURS is AT: ', startTime);
-                console.log('on',days[newDateNow_weekDay] ,'the END OPERATING HOURS is AT: ', endTime)
+                console.log('REQUEST TIME (@THE PROJECT UTC) ', newDateNow_hour);
+                console.log('on', days[newDateNow_weekDay], 'the START OPERATING HOURS is AT: ', startTime);
+                console.log('on', days[newDateNow_weekDay], 'the END OPERATING HOURS is AT: ', endTime);
+
+                // MOMENT 
+                var moment = require('moment');
+                // var currentTime = moment();
+                // console.log('MOMEMT CURRENT TIME ', currentTime)
+                var moment_newDateNow_hour = moment(newDateNow_hour, "HH:mm");
+                var moment_StartTime = moment(startTime, "HH:mm");
+                var moment_EndTime = moment(endTime, "HH:mm");
+                console.log('MOMENT REQUEST TIME (@THE PROJECT UTC)', moment_newDateNow_hour);
+                console.log('MOMENT START TIME ', moment_StartTime);
+                console.log('MOMENT ./END TIME ', moment_EndTime);
+
+                var requestIsBetweenOperating = moment_newDateNow_hour.isBetween(moment_StartTime, moment_EndTime);
+                console.log('REQUEST IS BETWEEN OPERATING HOURS ', requestIsBetweenOperating);
+
+                if (requestIsBetweenOperating == false) {
+                  // USE CASE: THE OPERATING HOURS ARE ACTIVE AND THE DAY OF THE REQUEST MATCH WITH THE OPERATING HOURS WEEK-DAY
+                  //           but the time of the request is outside the OPERATING hours
+                  console.log('THE DAY MATCHS BUT NOT THE TIME - SORRY WE ARE CLOSED - NO OPERATORS AVAILABLE')
+                  user_available_array = [];
+                  res.json(user_available_array);
+
+                } else {
+
+                  console.log('OK WE ARE OPENED - FIND THE AVAILABLE OPERATORS')
+                  findAvailableUsers(req.params.projectid);
+                }
               });
-            } else {
-              console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') NOT MATCHS TO THE OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
             }
+            // else {
+            // USE CASE: THE OPERATING HOURS ARE ACTIVE BUT THE DAY OF THE REQUEST DOES NOT MATCH WITH THE OPERATING HOURS WEEK-DAY
+            //           SO IS TO CONSIDER AS NO USER AVAILABLE 
+            // console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') NOT MATCHS TO THE OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
+            // console.log('THE DAY NOT MATCHS - SORRY WE ARE CLOSED');
+
+            // // user_available_array = [];
+            // // res.json(user_available_array);
+
+            // }
           }
         }
-
-        // il date.string ritorna la data al timestamp corrente
-        // var dateNowPlusTzOffsetToStr = dateNowPlusTzOffset.toString();
-        // console.log('DATE NOW + OFFSET (to STRING): ', dateNowPlusTzOffsetToStr);
-
-        // var date = new Date();
-        // console.log('»»» DATE ', date.toUTCString());
-        // console.log('»»» DATE 2', date.toLocaleTimeString());
-
-        // console.log('FORMATTED DATA ', formattedTime);
-        // var timestamp = timestampMillSec / 1000
-        // console.log('»»» NOW TIMESTAMP ', timestamp);
-
+        return result;
       } else {
         // OPERATING HOURS IS NOT ACTIVE - NORMALLY PROCESS
         console.log('»»» OPERATING HOURS IS NOT ACTIVE')
-        Project_user.find({ id_project: req.params.projectid, user_available: true }).
-          populate('id_user').
-          exec(function (err, project_users) {
-            console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
-            if (project_users) {
-              console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
-            }
-            user_available_array = [];
-            project_users.forEach(project_user => {
-              console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-              user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-            });
 
-            console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+        findAvailableUsers(req.params.projectid);
 
-            res.json(user_available_array);
-          });
+        // Project_user.find({ id_project: req.params.projectid, user_available: true }).
+        //   populate('id_user').
+        //   exec(function (err, project_users) {
+        //     console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+        //     if (project_users) {
+        //       console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+        //     }
+        //     user_available_array = [];
+        //     project_users.forEach(project_user => {
+        //       console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+        //       user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+        //     });
+
+        //     console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+
+        //     res.json(user_available_array);
+        //   });
       }
     }
-    // res.json(project);
   });
 
+  function findAvailableUsers(projectid) {
+    Project_user.find({ id_project: projectid, user_available: true }).
+      populate('id_user').
+      exec(function (err, project_users) {
+        console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+        if (project_users) {
+          console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+        }
+        user_available_array = [];
+        project_users.forEach(project_user => {
+          console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+          user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+        });
 
+        console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
 
+        res.json(user_available_array);
+      });
+  }
   // Project_user.find({ id_project: req.params.projectid, user_available: true }).
   //   populate('id_user').
   //   exec(function (err, project_users) {
