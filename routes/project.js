@@ -175,9 +175,28 @@ router.get('/:projectid/users/newavailables', function (req, res) {
 
     if (project) {
 
-      if (project.activeOperatingHours === true) {
+      // for debug 
+      if (project.operatingHours) {
+        // console.log('»»» OPERATING HOURS IS NOT EMPTY ')
+        var operatingHoursIsEmpty = false
+      } else {
+        console.log('»»» OPERATING HOURS IS EMPTY - JUMP TO FIND AVAILABLE USERS ')
+        var operatingHoursIsEmpty = true
+      }
+
+      // for debug 
+      if (project.activeOperatingHours == true) {
+        // console.log('»»» OPERATING HOURS IS NOT ACTIVE ')
+        var operatingHoursIsActive = true
+      } else {
+        // console.log('»»» OPERATING HOURS IS NOT ACTIVE ')
+        var operatingHoursIsActive = false
+      }
+
+
+      if (project.activeOperatingHours === true && project.operatingHours) {
         // OPERATING HOURS IS ACTIVE - CHECK IF THE CURRENT TIME IS OUT OF THE TIME OF ACTIVITY
-        console.log('»»» OPERATING HOURS IS ACTIVE - CHECK HOURS')
+        console.log('»»» OPERATING HOURS IS ACTIVE', project.activeOperatingHours, ' - CHECK HOURS')
 
         // DATE NOW UTC(0) IN MILLISECONDS
         var dateNowMillSec = Date.now();
@@ -188,6 +207,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         console.log('* * »»»» FOR DEBUG - DATE NOW (UTC(0)): ', dateNow);
 
         // PROJECT OPERATING HOURS 
+
         var operatingHours = project.operatingHours
         var operatingHoursPars = JSON.parse(operatingHours)
         console.log('»»» OPERATING HOURS PARSED: ', operatingHoursPars);
@@ -227,10 +247,12 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         // var dateNowPlusTzOffset = new Date(1529249066000);
         console.log('* * »»»» NEW DATE NOW ', newDateNow);
 
+        // FOR DEBUG
+        days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
         // console.log('»»»» ', typeof (hour));
         // GET THE NEW DATE NOW DAY 
         var newDateNow_weekDay = newDateNow.getDay();
-        console.log('* * »»»» NEW DATE NOW -> WEEK DAY ', newDateNow_weekDay);
+        console.log('* * »»»» NEW DATE NOW -> WEEK DAY #', newDateNow_weekDay, '"', days[newDateNow_weekDay], '"');
 
         // TRASFORM IN STRING THE NEW DATE NOW (IS THE DATE NOW TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
         var newDateNowTOStr = newDateNow.toISOString();
@@ -241,30 +263,46 @@ router.get('/:projectid/users/newavailables', function (req, res) {
           newDateNowTOStr.lastIndexOf(".")
         );
         console.log('* * »»»» NEW DATE NOW -> HOURS ', newDateNow_hour);
-        console.log('TYPE OF OPERATING HOURS PARSED ', typeof (operatingHoursPars))
+        // console.log('TYPE OF OPERATING HOURS PARSED ', typeof (operatingHoursPars))
 
-        // FOR DEBUG
-        days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+
         // console.log('DAYS 0 ', days[0]);
 
         // ====================================================================================================================
-        //  =======  RUN A FOR TO DETERMINE IF THE CURRENT-DAY MATCHS WITH ONES OF THE WEEKDAY OF THE OPERATING HOURS   ======
+        //    ===  RUN A FOR LOOP TO DETERMINE IF THE CURRENT-DAY MATCHS WITH ONES OF THE WEEKDAY OF THE OPERATING HOURS  ===
         // ====================================================================================================================
-        user_available_array = [];
-        var result = res.json(user_available_array);;
+        // user_available_array = [];
+        // var result = res.json(user_available_array);
+
+        // var result = '';
         for (var operatingHoursweekDay in operatingHoursPars) {
           if (operatingHoursweekDay != 'tz') {
-            console.log("weekDay (as number): " + operatingHoursweekDay);
+            // console.log("weekDay (as number): " + operatingHoursweekDay);
             // console.log("OpetatingHours: " + operatingHoursPars[operatingHoursweekDay]);
 
+            // user_available_array = [];
+            // var usersavailable = res.json(user_available_array);
+            // console.log('-»» -»» USERS AVAILABLE ', user_available_array);
+
+            // - USE CASE 1) THE CURRENT DAY (@THE PRJCT TZ) MATCHES TO A WEEK-DAY OF THE OPERATING HOURS:
+            //   -- USE CASE 1A) THE CURRENT TIME (@THE PRJCT TZ) IS !NOT BETWEEN 
+            //                   THE START TIME AND THE END TIME OF THE OPERATING HOURS: 
+            //                   RETURNS THE ARRAY OF THE AVAILABLE USERS EMPTY
+            //
+            //   -- USE CASE 1B) THE CURRENT TIME (@THE PRJCT TZ) IS BETWEEN 
+            //                   THE START TIME AND THE END TIME THE OPERATING HOURS: 
+            //                   RUNS 'FIND AVAILABLE USERS' 
+            //
+            // - USE CASE 2) THE CURRENT DAY (@THE PRJCT TZ) DOES !NOT MATCHES A WEEK-DAY OF THE OPERATING HOURS:
+            //               RETURN THE ARRAY OF USERS AVAILABLE EMPTY
             if (newDateNow_weekDay == operatingHoursweekDay) {
-              console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') MATCHS TO OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
+              console.log(':) :) THE CURRENT DAY "', days[newDateNow_weekDay], '" (@THE PRJCT TZ) MATCHES TO OPERATING-HOURS WEEK-DAY "', days[operatingHoursweekDay], '"')
 
               operatingHoursPars[operatingHoursweekDay].forEach(operatingHour => {
                 console.log('OPERATING HOUR ', operatingHour)
                 var startTime = operatingHour.start;
                 var endTime = operatingHour.end;
-                console.log('REQUEST TIME (@THE PROJECT UTC) ', newDateNow_hour);
+                console.log('CURRENT TIME (@THE PRJCT TZ) ', newDateNow_hour);
                 console.log('on', days[newDateNow_weekDay], 'the START OPERATING HOURS is AT: ', startTime);
                 console.log('on', days[newDateNow_weekDay], 'the END OPERATING HOURS is AT: ', endTime);
 
@@ -275,43 +313,69 @@ router.get('/:projectid/users/newavailables', function (req, res) {
                 var moment_newDateNow_hour = moment(newDateNow_hour, "HH:mm");
                 var moment_StartTime = moment(startTime, "HH:mm");
                 var moment_EndTime = moment(endTime, "HH:mm");
-                console.log('MOMENT REQUEST TIME (@THE PROJECT UTC)', moment_newDateNow_hour);
-                console.log('MOMENT START TIME ', moment_StartTime);
-                console.log('MOMENT ./END TIME ', moment_EndTime);
+                // console.log('MOMENT REQUEST TIME (@THE PROJECT UTC)', moment_newDateNow_hour);
+                // console.log('MOMENT START TIME ', moment_StartTime);
+                // console.log('MOMENT ./END TIME ', moment_EndTime);
 
-                var requestIsBetweenOperating = moment_newDateNow_hour.isBetween(moment_StartTime, moment_EndTime);
-                console.log('REQUEST IS BETWEEN OPERATING HOURS ', requestIsBetweenOperating);
+                var currentTimeIsBetween = moment_newDateNow_hour.isBetween(moment_StartTime, moment_EndTime);
+                console.log(':) :) THE CURRENT TIME (@THE PRJCT TZ) IS BETWEEN OPERATING HOURS ', currentTimeIsBetween);
 
-                if (requestIsBetweenOperating == false) {
+                if (currentTimeIsBetween == false) {
                   // USE CASE: THE OPERATING HOURS ARE ACTIVE AND THE DAY OF THE REQUEST MATCH WITH THE OPERATING HOURS WEEK-DAY
                   //           but the time of the request is outside the OPERATING hours
-                  console.log('THE DAY MATCHS BUT NOT THE TIME - SORRY WE ARE CLOSED - NO OPERATORS AVAILABLE')
-                  user_available_array = [];
-                  res.json(user_available_array);
+                  console.log('THE CURRENT DAY (@THE PRJCT TZ) MATCHES ! BUT THE CURRENT TIME (@THE PRJCT TZ) IS OUTSIDE THE OPERATING HOURS')
+
+                  // user_available_array = [];
+                  // console.log('-»» -»» USERS AVAILABLE ', user_available_array);
+                  // result = res.json(user_available_array);
+
+                  result = 'onlyDayMatches'
 
                 } else {
+                  console.log(':) :) THE CURRENT DAY AND THE CURRENT TIME (@THE PRJCT TZ) MATCHES WITH THE OPERATING HOURS SO:')
+                  console.log('      ---> OK WE ARE OPENED -> RUNS: FIND THE AVAILABLE OPERATORS <---');
 
-                  console.log('OK WE ARE OPENED - FIND THE AVAILABLE OPERATORS')
-                  findAvailableUsers(req.params.projectid);
+                  // result = findAvailableUsers(req.params.projectid);
+                  result = 'dayAndTimeMatches'
                 }
               });
             }
-            // else {
-            // USE CASE: THE OPERATING HOURS ARE ACTIVE BUT THE DAY OF THE REQUEST DOES NOT MATCH WITH THE OPERATING HOURS WEEK-DAY
-            //           SO IS TO CONSIDER AS NO USER AVAILABLE 
-            // console.log('TODAY @THE PROJECT UTC (', days[newDateNow_weekDay], ') NOT MATCHS TO THE OPERATING-HOURS WEEK-DAY ', days[operatingHoursweekDay])
-            // console.log('THE DAY NOT MATCHS - SORRY WE ARE CLOSED');
+            else {
+              // console.log('! THE CURRENT DAY (@THE PRJCT TZ) DOES !NOT MATCHES ANYONE OF THE OPERATING HOURS WEEKDAYS ');
 
-            // // user_available_array = [];
-            // // res.json(user_available_array);
+              // return usersavailable;
 
-            // }
+              // USE CASE: THE OPERATING HOURS ARE ACTIVE BUT THE DAY OF THE REQUEST DOES NOT MATCH WITH THE OPERATING HOURS WEEK-DAY
+              //          SO IS TO CONSIDER AS NO USER AVAILABLE 
+              console.log('!!! THE CURRENT DAY: "', days[newDateNow_weekDay], '" (@THE PRJCT TZ)  NOT MATCHES TO THE OPERATING-HOURS WEEK-DAY: "', days[operatingHoursweekDay], '"')
+              // console.log('THE DAY NOT MATCHS - SORRY WE ARE CLOSED');
+
+              // ****** THIS RETURN ERROR: Can't set headers after they are sent.  ******
+              // (because it is called for every day, which is not the current day, present in the object 'operating hours' )
+
+              // user_available_array = [];
+              // result = res.json(user_available_array);
+              result = 'dayNotMatches'
+
+            }
           }
         }
-        return result;
+        // 
+
+        console.log('/* /* /* CALL RESULT', result);
+        if (result == 'dayAndTimeMatches') {
+          findAvailableUsers(req.params.projectid);
+        } else {
+
+          user_available_array = [];
+          res.json(user_available_array);
+        }
+        // return result;
+
       } else {
-        // OPERATING HOURS IS NOT ACTIVE - NORMALLY PROCESS
-        console.log('»»» OPERATING HOURS IS NOT ACTIVE')
+        // OPERATING HOURS IS NOT ACTIVE or OPERATING HOURS IS EMPTY - NORMALLY PROCESS
+        console.log('»»» OPERATING HOURS IS ACTIVE ', operatingHoursIsActive)
+        console.log('»»» OPERATING HOURS IS EMPTY ', operatingHoursIsEmpty)
 
         findAvailableUsers(req.params.projectid);
 
