@@ -216,6 +216,10 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         var prjcTimezoneOffset = operatingHoursPars.tz
         console.log('»»» OPERATING HOURS -> TIMEZONE OFFSET: ', prjcTimezoneOffset);
 
+        if (prjcTimezoneOffset == undefined) {
+          return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
+        }
+        
         var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset)
 
         console.log('* * »»»» CURRENT DATE @ THE PROJECT TZ', dateNowAtPrjctTz)
@@ -291,7 +295,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         console.log('»»» OPERATING HOURS IS ACTIVE ', operatingHoursIsActive)
         console.log('»»» OPERATING HOURS IS EMPTY ', operatingHoursIsEmpty)
 
-         
+
         findAvailableUsers(req.params.projectid);
 
         // Project_user.find({ id_project: req.params.projectid, user_available: true }).
