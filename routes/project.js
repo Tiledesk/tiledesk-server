@@ -412,43 +412,73 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     var prjct_timezone_name = prjcTimezoneName
     console.log('K --> PROJECT TIMEZONE NAME ', prjct_timezone_name);
 
-    // =============================================================
-    //  === NEW - GET TIMEZONE OFFSET USING get-timezone-offset ===
-    // =============================================================
+    // =====================================================================
+    //  === NEW - GET TIMEZONE OFFSET USING get-timezone-offset library ===
+    // It returns, from the Area/Location passed, the offset in minutes of the Area/Location from UTC: 
+    // > the minutes have negative sign if the timezone is after the UTC
+    // > the minutes have no sign if the timezone is before the UTC time 
+    // ... | -10 | -9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | UTC | +1 | +2 | +3 | +4 | +5 ...
+    //                                                 ↑    ↑    ↑     ↑    ↑    ↑           
+    //                    here the minutes returned have no sign    | here the minutes returned have negative sign
+    //     (e.g. for the timezone Europe/Rome the offset is -120)   | (e.g. for the timezone Europe/Rome the offset is -120)
+    //                                       
+    // =====================================================================
     var now = new Date();
     console.log('K --> NOW ', now)
 
-    // OFFSET TEST
-    var offset = getTimezoneOffset('America/New_York', now);
+    // ======== OFFSET TEST Area/Location
+    // var offset = getTimezoneOffset('America/New_York', now);
+    // var offset = getTimezoneOffset('Etc/UTC', now);
+    var offset = getTimezoneOffset('America/Argentina/Rio_Gallegos', now);
+    
 
     // var offset = getTimezoneOffset(prjct_timezone_name, now);
 
     console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
-    var offsetStr = offset.toString();
-    console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offsetStr, ' TyPE OF ', typeof (offsetStr));
 
 
-    var prjcTzOffsetMin = offsetStr.substr(1);
-    console.log('K --> TIMEZONE OFFSET MINUTE: ', prjcTzOffsetMin);
+    // var offsetStr = offset.toString();
+    // console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offsetStr, ' TyPE OF ', typeof (offsetStr));
+    // var prjcTzOffsetMin = offsetStr.substr(1);
+    // console.log('K --> TIMEZONE OFFSET MINUTE: ', prjcTzOffsetMin);
+    // var prjcTzOffsetMillsec = prjcTzOffsetMin * 60000;
+    // console.log('K --> TIMEZONE OFFSET MILLISECONDS: ', prjcTzOffsetMillsec);
 
-    var prjcTzOffsetMillsec = prjcTzOffsetMin * 60000; 
-    console.log('K --> TIMEZONE OFFSET MILLISECONDS: ', prjcTzOffsetMillsec);
+    if (offset < 0) {
+      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS AFTER UTC -> OFFSET ', offset);
+      var _offset = offset * -1
+      console.log('K --> OFFSET CONVERTED ', _offset);
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', _offset / 60, ')"');
+      // TIMEZONE OFFSET DIRECTION +
+      var timezoneDirection = '+'
+      console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
-    var offsetSign = offsetStr.charAt(0);
-    console.log('K --> TIMEZONE OFFSET SIGN: ', offsetSign);
+      var prjcTzOffsetMillsec = _offset * 60000;
+      console.log('K --> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    } else {
+
+      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS BEFORE UTC OR IS UTC -> OFFSET ', offset)
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', offset / 60, ')"');
+      var timezoneDirection = '-'
+      console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+
+      var prjcTzOffsetMillsec = offset * 60000;
+      console.log('K --> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    }
+
 
     // PROJECT TIMEZONE OFFSET (from the UTC(0)) HOUR (e.g: 2)
-    var prjcTimezoneOffsetHour = prjcTimezoneOffset.substr(1);
-    console.log('TIMEZONE OFFSET HOUR: ', prjcTimezoneOffsetHour);
+    // var prjcTimezoneOffsetHour = prjcTimezoneOffset.substr(1);
+    // console.log('TIMEZONE OFFSET HOUR: ', prjcTimezoneOffsetHour);
 
     // PROJECT TIMEZONE OFFSET HOUR CONVERTED IN MS
-    var prjcTimezoneOffsetMillSec = prjcTimezoneOffsetHour * 3600000;
-    console.log('TIMEZONE OFFSET HOUR in MS: ', prjcTimezoneOffsetMillSec);
+    // var prjcTimezoneOffsetMillSec = prjcTimezoneOffsetHour * 3600000;
+    // console.log('TIMEZONE OFFSET HOUR in MS: ', prjcTimezoneOffsetMillSec);
 
     // TIMEZONE OFFSET DIRECTION (e.g.: + or -)
-    var timezoneDirection = prjcTimezoneOffset.charAt(0)
-    console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+    // var timezoneDirection = prjcTimezoneOffset.charAt(0)
+    // console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
     // https://stackoverflow.com/questions/5834318/are-variable-operators-possible
     var operators = {
@@ -457,9 +487,11 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     }
 
     // ON THE BASIS OF 'TIMEZONE DIRECTION' ADDS OR SUBSTRATES THE 'TIMEZONE OFFSET' (IN MILLISECONDS) OF THE PROJECT TO THE 'DATE NOW' (IN MILLISECONDS)
-    var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTimezoneOffsetMillSec)
+    // var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTimezoneOffsetMillSec)
+    // console.log('NEW DATE NOW (in ms) (IS THE DATE NOW UTC(0)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', newDateNowMs)
 
-    console.log('NEW DATE NOW (in ms) (IS THE DATE NOW UTC(0)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', newDateNowMs)
+    var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTzOffsetMillsec)
+    console.log('DATE @ the PRJCT TZ (in ms):', newDateNowMs, ' IS = TO THE DATE NOW UTC ', dateNowMillSec, ' (in ms)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', prjcTzOffsetMillsec)
 
     // TRANSFORM IN DATE THE DATE NOW (IN MILLSEC) TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
     var newDateNow = new Date(newDateNowMs);
