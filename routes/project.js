@@ -6,6 +6,8 @@ var Project_user = require("../models/project_user");
 var Department = require("../models/department");
 var mongoose = require('mongoose');
 
+var getTimezoneOffset = require("get-timezone-offset")
+
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
 require('../config/passport')(passport);
@@ -213,14 +215,17 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         var operatingHoursPars = JSON.parse(operatingHours)
         console.log('»»» OPERATING HOURS PARSED: ', operatingHoursPars);
         // PROJECT TIMEZONE OFFSET (from the UTC(0)) (e.g: +2)
-        var prjcTimezoneOffset = operatingHoursPars.tz
-        console.log('»»» OPERATING HOURS -> TIMEZONE OFFSET: ', prjcTimezoneOffset);
+        var prjcTimezoneOffset = operatingHoursPars.tz;
+        var prjcTimezoneName = operatingHoursPars.tzname;
+
+        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE OFFSET NAME: ', prjcTimezoneOffset);
+        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE OFFSET HOURS: ', prjcTimezoneName);
 
         if (prjcTimezoneOffset == undefined) {
           return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
         }
-        
-        var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset)
+
+        var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset, prjcTimezoneName)
 
         console.log('* * »»»» CURRENT DATE @ THE PROJECT TZ', dateNowAtPrjctTz)
 
@@ -395,7 +400,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
       });
   }
 
-  function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset) {
+  function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset, prjcTimezoneName) {
     // DATE NOW UTC(0) IN MILLISECONDS
     var dateNowMillSec = Date.now();
     console.log('»»» DATE NOW (UTC(0) in ms)', dateNowMillSec);
@@ -404,6 +409,34 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     var dateNow = new Date(dateNowMillSec);
     console.log('* * »»»» FOR DEBUG - DATE NOW (UTC(0)): ', dateNow);
 
+    var prjct_timezone_name = prjcTimezoneName
+    console.log('K --> PROJECT TIMEZONE NAME ', prjct_timezone_name);
+
+    // =============================================================
+    //  === NEW - GET TIMEZONE OFFSET USING get-timezone-offset ===
+    // =============================================================
+    var now = new Date();
+    console.log('K --> NOW ', now)
+
+    // OFFSET TEST
+    var offset = getTimezoneOffset('America/New_York', now);
+
+    // var offset = getTimezoneOffset(prjct_timezone_name, now);
+
+    console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
+
+    var offsetStr = offset.toString();
+    console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offsetStr, ' TyPE OF ', typeof (offsetStr));
+
+
+    var prjcTzOffsetMin = offsetStr.substr(1);
+    console.log('K --> TIMEZONE OFFSET MINUTE: ', prjcTzOffsetMin);
+
+    var prjcTzOffsetMillsec = prjcTzOffsetMin * 60000; 
+    console.log('K --> TIMEZONE OFFSET MILLISECONDS: ', prjcTzOffsetMillsec);
+
+    var offsetSign = offsetStr.charAt(0);
+    console.log('K --> TIMEZONE OFFSET SIGN: ', offsetSign);
 
     // PROJECT TIMEZONE OFFSET (from the UTC(0)) HOUR (e.g: 2)
     var prjcTimezoneOffsetHour = prjcTimezoneOffset.substr(1);
@@ -425,13 +458,12 @@ router.get('/:projectid/users/newavailables', function (req, res) {
 
     // ON THE BASIS OF 'TIMEZONE DIRECTION' ADDS OR SUBSTRATES THE 'TIMEZONE OFFSET' (IN MILLISECONDS) OF THE PROJECT TO THE 'DATE NOW' (IN MILLISECONDS)
     var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTimezoneOffsetMillSec)
-    // var dateNowPlusTzOffsetMs = dateNowMillSec + timezoneOffsetMillSec
+
     console.log('NEW DATE NOW (in ms) (IS THE DATE NOW UTC(0)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', newDateNowMs)
 
     // TRANSFORM IN DATE THE DATE NOW (IN MILLSEC) TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
     var newDateNow = new Date(newDateNowMs);
-    // var dateNowPlusTzOffset = new Date(1529249066000);
-    // console.log('* * »»»» NEW DATE NOW ', newDateNow);
+
 
     return newDateNow
 

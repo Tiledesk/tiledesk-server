@@ -16,6 +16,7 @@
     "express-session": "^1.15.2",
     "fast-csv": "^2.4.1",
     "firebase-admin": "^5.10.0",
+    "get-timezone-offset": "^1.0.3",
     "jade": "~1.11.0",
     "jsonwebtoken": "^7.3.0",
     "moment": "^2.22.2",
