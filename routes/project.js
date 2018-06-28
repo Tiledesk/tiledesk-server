@@ -218,10 +218,10 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         var prjcTimezoneOffset = operatingHoursPars.tz;
         var prjcTimezoneName = operatingHoursPars.tzname;
 
-        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE OFFSET NAME: ', prjcTimezoneOffset);
-        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE OFFSET HOURS: ', prjcTimezoneName);
+        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE OFFSET OFFSET - !NO MORE USED : ', prjcTimezoneOffset);
+        console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
 
-        if (prjcTimezoneOffset == undefined) {
+        if (prjcTimezoneName == undefined) {
           return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
         }
 
