@@ -5,7 +5,7 @@ var Project = require("../models/project");
 var Project_user = require("../models/project_user");
 var Department = require("../models/department");
 var mongoose = require('mongoose');
-
+var operatingHoursService = require("../models/operatingHoursService");
 var getTimezoneOffset = require("get-timezone-offset")
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
@@ -168,6 +168,16 @@ router.get('/:projectid/users/newavailables', function (req, res) {
   // normal:
   console.log("PROJECT-ROUTES - NEW AVAILABLES - projectid: ", req.params.projectid);
   console.log("PROJECT-ROUTES - NEW AVAILABLES - REQ BODY: ", req.body);
+
+  // RETURN TRUE IF THE the time of the request (calculated to the project timezone) 
+  // is in the range of the opening hours of the project
+
+  // operatingHoursService.projectIsOpenNow(req.params.projectid, function(data){
+  //   console.log('[ O ] [ H ] [ S ] -> IS OPEN THE PROJECT ', data )
+  // });
+
+
+
   Project.findById(req.params.projectid, function (err, project) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
@@ -425,6 +435,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     console.log('* * »»»» FOR DEBUG - DATE NOW (UTC(0)): ', dateNow);
 
     var prjct_timezone_name = prjcTimezoneName
+    // var prjct_timezone_name = ''
     console.log('K --> PROJECT TIMEZONE NAME ', prjct_timezone_name);
 
     // =====================================================================
