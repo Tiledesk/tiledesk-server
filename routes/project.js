@@ -225,7 +225,22 @@ router.get('/:projectid/users/newavailables', function (req, res) {
           return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
         }
 
-        var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset, prjcTimezoneName)
+        // =========================================== 
+        //  ======== DATE NOW @ PRJCT TIMEZONE ======
+        // =========================================== 
+        try {
+          var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneOffset, prjcTimezoneName)
+        } catch (error) {
+
+          console.log('K --> »»» ADD OR SUBSTRACT PROJECT TZ OFFSET FROM DATE NOW ERROR', error)
+          return res.status(500).send({ success: false, msg: error.message });
+        }
+
+        // var dateNowAtPrjctTzIsValid = dateNowAtPrjctTz instanceof Date && !isNaN(dateNowAtPrjctTz.valueOf())
+        // console.log('* * »»»» CURRENT DATE @ THE PROJECT TZ IS A VALID DATE ', dateNowAtPrjctTzIsValid);
+        // if (dateNowAtPrjctTzIsValid == false) {
+        //   return;
+        // }
 
         console.log('* * »»»» CURRENT DATE @ THE PROJECT TZ', dateNowAtPrjctTz)
 
@@ -424,15 +439,25 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     //                                       
     // =====================================================================
     var now = new Date();
-    console.log('K --> NOW ', now)
+    console.log('K --> NOW @ UTC', now)
 
     // ======== OFFSET TEST Area/Location
     // var offset = getTimezoneOffset('America/New_York', now);
     // var offset = getTimezoneOffset('Etc/UTC', now);
-    var offset = getTimezoneOffset('America/Argentina/Rio_Gallegos', now);
-    
+    // var offset = getTimezoneOffset('America/Argentina/Rio_Gallegos', now);
 
-    // var offset = getTimezoneOffset(prjct_timezone_name, now);
+    try {
+      var offset = getTimezoneOffset(prjct_timezone_name, now);
+
+    } catch (error) {
+      console.log('K »» »» --> GET TIMEZONE OFFSET - ERROR ', error.message);
+
+      // WITH TROW send THE ERROR to the CALLER (IN THE MAIN WF)
+      throw error
+      // if(err) {
+      //return res.status(500).send({ success: false, msg: error.message });
+      // }
+    }
 
     console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
