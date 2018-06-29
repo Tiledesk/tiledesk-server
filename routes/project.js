@@ -428,16 +428,29 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     console.log('K --> PROJECT TIMEZONE NAME ', prjct_timezone_name);
 
     // =====================================================================
-    //  === NEW - GET TIMEZONE OFFSET USING get-timezone-offset library ===
+    //  === GET TIMEZONE OFFSET USING * get-timezone-offset * library ===
     // It returns, from the Area/Location passed, the offset in minutes of the Area/Location from UTC: 
     // > the minutes have negative sign if the timezone is after the UTC
     // > the minutes have no sign if the timezone is before the UTC time 
     // ... | -10 | -9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | UTC | +1 | +2 | +3 | +4 | +5 ...
     //                                                 ↑    ↑    ↑     ↑    ↑    ↑           
     //                    here the minutes returned have no sign    | here the minutes returned have negative sign
-    //     (e.g. for the timezone Europe/Rome the offset is -120)   | (e.g. for the timezone Europe/Rome the offset is -120)
+    //   (e.g. for the timezone America/New_York the offset is 240) | (e.g. for the timezone Europe/Rome the offset is -120)
     //                                       
     // =====================================================================
+
+    // =====================================================================
+    //  === GET TIMEZONE OFFSET USING * moment-timezone * library ===
+    // It returns, from the Area/Location passed, the offset in minutes of the Area/Location from UTC: 
+    // > the minutes have NO sign if the timezone is after the UTC
+    // > the minutes have NEGATIVE sign if the timezone is before the UTC time 
+    //       ... | -10 | -9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | UTC | +1 | +2 | +3 | +4 | +5 ...
+    //                                                  ↑    ↑    ↑    ↑    ↑    ↑           
+    //                here the minutes returned have negative sign  |  0  | here the minutes returned have no sign
+    //  (e.g. for the timezone America/New_York the offset is -240) |  0  | (e.g. for the timezone Europe/Rome the offset is 120)
+    //                                       
+    // =====================================================================
+
     var now = new Date();
     console.log('K --> NOW @ UTC', now)
 
@@ -446,46 +459,64 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     // var offset = getTimezoneOffset('Etc/UTC', now);
     // var offset = getTimezoneOffset('America/Argentina/Rio_Gallegos', now);
 
-    try {
-      var offset = getTimezoneOffset(prjct_timezone_name, now);
 
-    } catch (error) {
-      console.log('K »» »» --> GET TIMEZONE OFFSET - ERROR ', error.message);
+    /* using * get-timezone-offset * library */
+    // try { 
+    //   var offset = getTimezoneOffset(prjct_timezone_name, now);
 
-      // WITH TROW send THE ERROR to the CALLER (IN THE MAIN WF)
-      throw error
-      // if(err) {
-      //return res.status(500).send({ success: false, msg: error.message });
-      // }
-    }
+    // } catch (error) {
+    //   console.log('K »» »» --> GET TIMEZONE OFFSET - ERROR ', error.message);
 
-    console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
+    //   throw error
 
+    // }
+    // console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
+    // if (offset < 0) {
+    //   console.log('K --> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS AFTER UTC -> OFFSET ', offset);
+    //   var _offset = offset * -1
+    //   console.log('K --> OFFSET CONVERTED ', _offset);
+    //   console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', _offset / 60, ')"');
+    //   // TIMEZONE OFFSET DIRECTION +
+    //   var timezoneDirection = '+'
+    //   console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
-    // var offsetStr = offset.toString();
-    // console.log('K --> Timezone IN  ', prjct_timezone_name, ' IS ', offsetStr, ' TyPE OF ', typeof (offsetStr));
-    // var prjcTzOffsetMin = offsetStr.substr(1);
-    // console.log('K --> TIMEZONE OFFSET MINUTE: ', prjcTzOffsetMin);
-    // var prjcTzOffsetMillsec = prjcTzOffsetMin * 60000;
-    // console.log('K --> TIMEZONE OFFSET MILLISECONDS: ', prjcTzOffsetMillsec);
+    //   var prjcTzOffsetMillsec = _offset * 60000;
+    //   console.log('K --> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    // } else {
+
+    //   console.log('K --> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS BEFORE UTC OR IS UTC -> OFFSET ', offset)
+    //   console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', offset / 60, ')"');
+    //   var timezoneDirection = '-'
+    //   console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+
+    //   var prjcTzOffsetMillsec = offset * 60000;
+    //   console.log('K --> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    // }
+
+    // ============>> using * moment-timezone * library
+    var moment_tz = require('moment-timezone');
+    var offset = moment_tz.tz(moment_tz.utc(), prjcTimezoneName).utcOffset()
+    console.log('K --> K --> K --> K --> TIMEZONE OFFSET (USING MOMENT-TZ) ', offset);
+
+    console.log('K --> K --> K --> K --> Timezone IN  ', prjct_timezone_name, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
     if (offset < 0) {
-      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS AFTER UTC -> OFFSET ', offset);
+      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS BEFORE UTC -> OFFSET ', offset);
       var _offset = offset * -1
       console.log('K --> OFFSET CONVERTED ', _offset);
-      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', _offset / 60, ')"');
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', _offset / 60,')"');
       // TIMEZONE OFFSET DIRECTION +
-      var timezoneDirection = '+'
+      var timezoneDirection = '-'
       console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
       var prjcTzOffsetMillsec = _offset * 60000;
       console.log('K --> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
     } else {
 
-      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS BEFORE UTC OR IS UTC -> OFFSET ', offset)
-      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', offset / 60, ')"');
-      var timezoneDirection = '-'
+      console.log('K --> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS AFTER UTC OR IS UTC -> OFFSET ', offset)
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', offset / 60,')"');
+      var timezoneDirection = '+'
       console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
       var prjcTzOffsetMillsec = offset * 60000;
