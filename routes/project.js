@@ -131,10 +131,40 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
 router.get('/:projectid/users/availables', function (req, res) {
   console.log("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
-  Project_user.find({ id_project: req.params.projectid, user_available: true }).
+
+  _findAvailableUsers(req.params.projectid, res);
+
+  // operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
+  //   console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
+  //   console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR: ', err)
+
+  //   if (err) {
+  //     getError(err)
+  //     // return res.status(500).send({ success: false, msg: err });
+  //   } else if (isOpen) {
+
+  //     console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> FIND AVAILABLE');
+  //     _findAvailableUsers(req.params.projectid, res);
+
+  //   } else {
+  //     console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
+  //     // closed
+  //     user_available_array = [];
+  //     res.json(user_available_array);
+  //   }
+  // });
+
+});
+
+function _findAvailableUsers(projectid, res) {
+  Project_user.find({ id_project: projectid, user_available: true }).
     populate('id_user').
     exec(function (err, project_users) {
       console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+      if (err) {
+        console.log('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
       if (project_users) {
         console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
       }
@@ -148,8 +178,8 @@ router.get('/:projectid/users/availables', function (req, res) {
 
       res.json(user_available_array);
     });
+}
 
-});
 
 
 
@@ -172,9 +202,27 @@ router.get('/:projectid/users/newavailables', function (req, res) {
   // RETURN TRUE IF THE the time of the request (calculated to the project timezone) 
   // is in the range of the opening hours of the project
 
-  // operatingHoursService.projectIsOpenNow(req.params.projectid, function(data){
-  //   console.log('[ O ] [ H ] [ S ] -> IS OPEN THE PROJECT ', data )
-  // });
+  operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
+    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
+    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR: ', err)
+
+    if (err) {
+      getError(err)
+      // return res.status(500).send({ success: false, msg: err });
+
+    } else if (isOpen) {
+
+      console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> FIND AVAILABLE');
+      findAvailableUsers(req.params.projectid);
+
+
+    } else {
+      console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
+      // closed
+      user_available_array = [];
+      res.json(user_available_array);
+    }
+  });
 
 
 
@@ -209,9 +257,9 @@ router.get('/:projectid/users/newavailables', function (req, res) {
 
       if (project.activeOperatingHours == true && project.operatingHours == '') {
 
-        console.log('»»» OPERATING HOURS IS ACTIVE', project.activeOperatingHours, ' BUT OBJECT OPERATING HOURS IS EMPTY')
-        user_available_array = [];
-        res.json(user_available_array);
+        console.log('»»» »»» »»» OPERATING HOURS IS ACTIVE', project.activeOperatingHours, ' BUT OBJECT OPERATING HOURS IS EMPTY')
+        // user_available_array = [];
+        // res.json(user_available_array);
 
         return;
       }
@@ -232,7 +280,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         console.log('»»» OPERATING HOURS -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
 
         if (prjcTimezoneName == undefined) {
-          return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
+          // return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
         }
 
         // =========================================== 
@@ -288,23 +336,23 @@ router.get('/:projectid/users/newavailables', function (req, res) {
             // use case 1: THE CURRENT DAY (@ PRJCT TZ) MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
             //           THE CURRENT TIME (@ PRJCT TZ) IS BETWEEN THE START TIME AND THE END TIME
             console.log('USE CASE 1')
-            findAvailableUsers(req.params.projectid);
+            // findAvailableUsers(req.params.projectid);
 
           } else {
 
             // use case 3: THE CURRENT DAY (@ PRJCT TZ) MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
             //           THE CURRENT TIME (@ PRJCT TZ) IS ! NOT BETWEEN THE START TIME AND THE END TIME
             console.log('USE CASE 3')
-            user_available_array = [];
-            res.json(user_available_array);
+            // user_available_array = [];
+            // res.json(user_available_array);
           }
 
         } else {
 
           // use case 2: THE CURRENT DAY (@ PRJCT TZ) ! NOT MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
           console.log('USE CASE 2')
-          user_available_array = [];
-          res.json(user_available_array);
+          // user_available_array = [];
+          // res.json(user_available_array);
         }
 
         // prjctIsOpenAt(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz);
@@ -326,7 +374,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
         console.log('»»» OPERATING HOURS IS EMPTY ', operatingHoursIsEmpty)
 
 
-        findAvailableUsers(req.params.projectid);
+        // findAvailableUsers(req.params.projectid);
 
         // Project_user.find({ id_project: req.params.projectid, user_available: true }).
         //   populate('id_user').
@@ -348,6 +396,39 @@ router.get('/:projectid/users/newavailables', function (req, res) {
       }
     }
   });
+
+  function getError(err) {
+    var errcode = err.errorCode
+    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR CODE: ', errcode);
+    switch (errcode) {
+      case 1000:
+        errMsg = err.msg;
+        console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+        res.status(500).send({ success: false, msg: errMsg });
+        break;
+      case 1010:
+        errMsg = err.msg;
+        console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+        res.status(404).send({ success: false, msg: errMsg });
+        break;
+      case 1020:
+        errMsg = err.msg;
+        console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+        res.status(500).send({ success: false, msg: errMsg });
+        break;
+      case 2000:
+        errMsg = err.msg;
+        console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+        res.status(500).send({ success: false, msg: errMsg });
+        break;
+      case 3000:
+        errMsg = err.msg;
+        console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+        res.status(500).send({ success: false, msg: errMsg });
+        break;
+    }
+
+  }
 
   function checkWeekDays(operatingHoursPars, dayNowAtPrjctTz) {
     for (var operatingHoursweekDay in operatingHoursPars) {
@@ -516,7 +597,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
       console.log('K --> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS BEFORE UTC -> OFFSET ', offset);
       var _offset = offset * -1
       console.log('K --> OFFSET CONVERTED ', _offset);
-      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', _offset / 60,')"');
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(-', _offset / 60, ')"');
       // TIMEZONE OFFSET DIRECTION +
       var timezoneDirection = '-'
       console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
@@ -526,7 +607,7 @@ router.get('/:projectid/users/newavailables', function (req, res) {
     } else {
 
       console.log('K --> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS AFTER UTC OR IS UTC -> OFFSET ', offset)
-      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', offset / 60,')"');
+      console.log('K --> FOR DEBUG: ', prjct_timezone_name, 'is at "UTC(+', offset / 60, ')"');
       var timezoneDirection = '+'
       console.log('TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
