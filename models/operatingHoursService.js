@@ -29,19 +29,14 @@ class OperatingHoursService {
       if (project) {
         // console.log("[ O ] [ H ] [ S ] -> PROJECT FOUND: ", project);
         console.log("O ---> [ OHS ] -> PRJCT: IS ACTIVE OPERATING HOURS: ", project.activeOperatingHours);
-        console.log("O ---> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS: ", project.operatingHours);
+        // console.log("O ---> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS: ", project.operatingHours);
 
-        // if (project.operatingHours == undefined) {
-
-        //   console.log('O -----> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS IS UNDEFINED -> ', project.activeOperatingHours)
-        //   callback(null,  { errorCode: 1020, msg: 'Operating hours undefined.' });
-        // }
 
         // IF ACTIVE-OPERATING-HOURS IS SET TO FALSE:
         // THE OPERATING-HOURS MUST NOT BE CONSIDERED AND THE AVAILABILITY WILL BE EVALUATED DIRECTLY ACCORDING TO 
         // AVAILABILITY OF THE USERS (THE PROJECT IS CONSIDERED OPEN 24 HOURS ON 24 AND SEVEN DAYS ON SEVEN)  
         if (project.activeOperatingHours == false) {
-          console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours)
+          // console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours)
           console.log('O ---> [ OHS ] -> * USE CASE 0 * OPERATING HOURS ARE NOT ACTIVE')
           callback(true, null);
         }
@@ -68,14 +63,14 @@ class OperatingHoursService {
             var prjcTimezoneName = operatingHoursPars.tzname;
 
             if (prjcTimezoneName == undefined || prjcTimezoneName == '' || prjcTimezoneName == null) {
-              console.log('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
+              // console.log('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
               // callback('Timezone undefined.');
               callback(null, { errorCode: 2000, msg: 'Timezone undefined.' });
               return;
               // return res.status(500).send({ success: false, msg: 'Timezone undefined.' });
 
             } else {
-              console.log('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
+              // console.log('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
 
               // ==============================================================================
               //   ===================== * PROJECT TIMEZONE IS DEFINED * ====================
@@ -102,16 +97,16 @@ class OperatingHoursService {
                   dateNowAtPrjctTzToStr.lastIndexOf("T") + 1,
                   dateNowAtPrjctTzToStr.lastIndexOf(".")
                 );
-                console.log('O ---> [ OHS ] -> **** TIME @ PRJCT TZ ', timeNowAtPrjctTz);
+                // console.log('O ---> [ OHS ] -> **** TIME @ PRJCT TZ ', timeNowAtPrjctTz);
 
                 var currentDayMatchesOneOfTheOpeningPrjctDays = checkDay(operatingHoursPars, dayNowAtPrjctTz);
-                console.log('O ---> [ OHS ] -> THE DAY MATCHES: ', currentDayMatchesOneOfTheOpeningPrjctDays, ' !!!' );
+                // console.log('O ---> [ OHS ] -> THE DAY MATCHES: ', currentDayMatchesOneOfTheOpeningPrjctDays, ' !!!' );
 
                 if (currentDayMatchesOneOfTheOpeningPrjctDays == true) {
 
 
                   var currentTimeIsBetweenOperatingTimes = checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz);
-                  console.log('O ---> [ OHS ] -> THE TIMES MATCHES', currentTimeIsBetweenOperatingTimes, ' !!!');
+                  // console.log('O ---> [ OHS ] -> THE TIMES MATCHES', currentTimeIsBetweenOperatingTimes, ' !!!');
                   if (currentTimeIsBetweenOperatingTimes == true) {
 
                     // use case 1: THE CURRENT DAY (@ PRJCT TZ) MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
@@ -163,11 +158,11 @@ class OperatingHoursService {
 function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
   // DATE NOW UTC(0) IN MILLISECONDS
   var dateNowMillSec = Date.now();
-  console.log('O ---> [ OHS ] -> DATE NOW (UTC) in ms ', dateNowMillSec);
+  // console.log('O ---> [ OHS ] -> DATE NOW (UTC) in ms ', dateNowMillSec);
 
   // CONVERT DATE NOW UTC(0) FROM MS IN DATE FORMAT
   var dateNow = new Date(dateNowMillSec);
-  console.log('O ---> [ OHS ] -> FOR DEBUG - DATE NOW (UTC): ', dateNow);
+  // console.log('O ---> [ OHS ] -> FOR DEBUG - DATE NOW (UTC): ', dateNow);
 
   // =====================================================================
   //  === GET TIMEZONE OFFSET USING * moment-timezone * library ===
@@ -185,28 +180,28 @@ function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
   var offset = moment_tz.tz(moment_tz.utc(), prjcTimezoneName).utcOffset()
   // console.log('O -----> [ OHS ] -> TIMEZONE OFFSET (USING MOMENT-TZ) ', offset);
 
-  console.log('O ---> [ OHS ] -> Timezone IN  ', prjcTimezoneName, ' IS ', offset, ' TyPE OF ', typeof (offset));
+  // console.log('O ---> [ OHS ] -> Timezone IN  ', prjcTimezoneName, ' IS ', offset, ' TyPE OF ', typeof (offset));
 
   if (offset < 0) {
-    console.log('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS BEFORE UTC -> OFFSET ', offset);
+    // console.log('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS NEGATIVE: THE TZ IS BEFORE UTC -> OFFSET ', offset);
     var _offset = offset * -1
-    console.log('O ---> [ OHS ] -> OFFSET CONVERTED ', _offset);
-    console.log('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(-', _offset / 60, ')"');
+    // console.log('O ---> [ OHS ] -> OFFSET CONVERTED ', _offset);
+    // console.log('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(-', _offset / 60, ')"');
     // TIMEZONE OFFSET DIRECTION +
     var timezoneDirection = '-'
-    console.log('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+    // console.log('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
     var prjcTzOffsetMillsec = _offset * 60000;
-    console.log('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    // console.log('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
   } else {
 
-    console.log('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS AFTER UTC OR IS UTC -> OFFSET ', offset)
-    console.log('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(+', offset / 60, ')"');
+    // console.log('O ---> [ OHS ] -> THE SIGN OF THE OFFSET RETURNED IS ! NOT NEGATIVE: THE TZ IS AFTER UTC OR IS UTC -> OFFSET ', offset)
+    // console.log('O ---> [ OHS ] -> FOR DEBUG: ', prjcTimezoneName, 'is at "UTC(+', offset / 60, ')"');
     var timezoneDirection = '+'
-    console.log('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
+    // console.log('O ---> [ OHS ] -> TIMEZONE OFFSET DIRECTION: ', timezoneDirection);
 
     var prjcTzOffsetMillsec = offset * 60000;
-    console.log('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
+    // console.log('O ---> [ OHS ] -> TIMEZONE OFFSET in MILLISECONDS: ', prjcTzOffsetMillsec);
   }
 
 
@@ -218,7 +213,7 @@ function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
 
   // ON THE BASIS OF 'TIMEZONE DIRECTION' ADDS OR SUBSTRATES THE 'TIMEZONE OFFSET' (IN MILLISECONDS) OF THE PROJECT TO THE 'DATE NOW' (IN MILLISECONDS)
   var newDateNowMs = operators[timezoneDirection](dateNowMillSec, prjcTzOffsetMillsec)
-  console.log('O ---> [ OHS ] -> DATE@PRJCT TZ (in ms):', newDateNowMs, ' IS = TO THE DATE NOW UTC ', dateNowMillSec, ' (in ms)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', prjcTzOffsetMillsec)
+  // console.log('O ---> [ OHS ] -> DATE@PRJCT TZ (in ms):', newDateNowMs, ' IS = TO THE DATE NOW UTC ', dateNowMillSec, ' (in ms)', timezoneDirection, 'PRJC TZ OFFSET (in ms): ', prjcTzOffsetMillsec)
 
   // TRANSFORM IN DATE THE DATE NOW (IN MILLSEC) TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
   var newDateNow = new Date(newDateNowMs);
@@ -255,9 +250,9 @@ function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
           // console.log('O -----> [ OHS ] -> OPERATING HOUR ', operatingHour)
           var startTime = operatingHour.start;
           var endTime = operatingHour.end;
-          console.log('CURRENT TIME (@THE PRJCT TZ) ', timeNowAtPrjctTz);
-          console.log('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the START OPERATING HOURS is AT: ', startTime);
-          console.log('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the END OPERATING HOURS is AT: ', endTime);
+          // console.log('CURRENT TIME (@THE PRJCT TZ) ', timeNowAtPrjctTz);
+          // console.log('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the START OPERATING HOURS is AT: ', startTime);
+          // console.log('O ---> [ OHS ] -> on', days[dayNowAtPrjctTz], 'the END OPERATING HOURS is AT: ', endTime);
 
           // MOMENT 
           var moment = require('moment');
@@ -271,7 +266,7 @@ function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
           // console.log('MOMENT ./END TIME ', moment_EndTime);
 
           var currentTimeIsBetween = moment_currentTime.isBetween(moment_StartTime, moment_EndTime);
-          console.log('O ---> [ OHS ] -> CURRENT TIME (@THE PRJCT TZ) IS BETWEEN OPERATING HOURS ', currentTimeIsBetween);
+          console.log('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
 
           if (currentTimeIsBetween == true) {
             // USE CASE: THE OPERATING HOURS ARE ACTIVE AND THE DAY OF THE REQUEST MATCH WITH THE OPERATING HOURS WEEK-DAY

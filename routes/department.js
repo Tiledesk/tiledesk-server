@@ -8,7 +8,7 @@ var Group = require("../models/group");
 var passport = require('passport');
 require('../config/passport')(passport);
 var validtoken = require('../middleware/valid-token')
-
+var operatingHoursService = require("../models/operatingHoursService");
 // var passport = require('passport');
 // var validtoken = require('.../middleware/valid-token')
 
@@ -66,13 +66,12 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
   });
 });
 
-// START - GET OPERATORS OF A DEPT - 7 giu 2018 Nikola
+// START - GET OPERATORS OF A DEPT - 3 giu 2018 Nikola - Andrea L. - Andrea S.
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   console.log("»»» »»» --> DEPT ID ", req.params.departmentid);
 
-
   let query;
-  if (req.params.departmentid == 'default') {
+  if (req.params.departmentid == 'default' || req.params.departmentid == undefined) {
     query = { default: true, id_project: req.projectid };
   } else {
     query = { _id: req.params.departmentid };
@@ -88,19 +87,12 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
     }
     console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
     console.log('OPERATORS - »»» DEPARTMENT - ID BOT ', department.id_bot)
-    // if (department.routing === 'fixed') {
 
-    // NEW 
-    // this works (and return true) if (for example) ?nobot=true
-    // var nobot = getQueryStringKeynobot(req.url);
-
-    var nobot = req.query.nobot;
-
+    // start code FOR DEBUG
+    // NOTE: TO TEST '?nobot = true' see in the tiledesk dashboard: mongodb-department.service > testChat21AssignesFunction
     if (req.query.nobot) {
-
-      console.log('nobot IS == true ', req.query.nobot)
+      console.log('nobot IS == true ? ', req.query.nobot)
       console.log('»»»» »»»» nobot is == TRUE - JUMP TO ASSIGNED / POOLED ')
-
     } else if (!req.query.nobot) {
       console.log('nobot IS != true ', req.query.nobot)
       if ((department.id_bot == null || department.id_bot == undefined)) {
@@ -109,189 +101,331 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
         console.log('»»»» »»»» BOT EXIST and nobot is != TRUE - ASSIGN THE SELECTED BOT ')
       }
     }
+    // /.end code FOR DEBUG 
 
-    if (!req.query.nobot) {
-      console.log('son entrato ')
-    } else {
-      console.log('nn son entrato ')
-    }
-
-
+    // IF EXIST THE BOT AND nobot IS NOT UNDEFINED IN OPERATORS IS RETURNED THE ID OF THE BOT
     if ((department.id_bot != null || department.id_bot != undefined) && (!req.query.nobot)) {
 
       // if (department.id_group == null || department.id_group == undefined) {
-        // MAKE X 'BOT' AS FOR 'ASSIGNED' AND 'POOLED': IF THERE IS A GROUP THE BOT WILL BE VISIBLE ONLY BY THE GROUP MEMBERS 
-        // OTHERWISE THE BOT WILL BE VISIBLE TO ALL USERS (BECAUSE THERE IS NO GROUP)
-        console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
-        console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
-        console.log('OPERATORS - »»»» nobot ', !req.params.nobot)
-        Project_user.find({ id_project: req.projectid }, function (err, project_users) {
-          if (err) {
-            console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-            return (err);
-          }
-          console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length)
-          console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
-          if (project_users.length > 0) {
-            var _available_agents = getAvailableOperator(project_users);
-            return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
-          } else {
-            return res.json({ department: department, available_agents: [], agents: [], operators: [{ id_user: 'bot_' + department.id_bot }] });
-          }
+      // MAKE X 'BOT' AS FOR 'ASSIGNED' AND 'POOLED': IF THERE IS A GROUP THE BOT WILL BE VISIBLE ONLY BY THE GROUP MEMBERS 
+      // OTHERWISE THE BOT WILL BE VISIBLE TO ALL USERS (BECAUSE THERE IS NO GROUP)
+      console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
+      console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
+      console.log('OPERATORS - »»»» nobot ', req.params.nobot)
+
+      Project_user.find({ id_project: req.projectid }, function (err, project_users) {
+        if (err) {
+          console.log('-- > 2 DEPT FIND BY ID ERR ', err)
+          return (err);
+        }
+        console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
+        // if (project_users && project_users.length > 0) {
+        console.log('OPERATORS - BOT IS DEFINED - MEMBERS LENGHT ', project_users.length);
+
+        // getAvailableOperatorsWithOperatingHours: IN BASE ALLE 'OPERATING HOURS' DEL PROGETTO ESEGUE 
+        // getAvailableOperator CHE RITORNA I PROJECT USER DISPONIBILI
+        getAvailableOperatorsWithOperatingHours(project_users, req.projectid).then(function (_available_agents) {
+
+          console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
+
+          return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
+        }).catch(function (error) {
+
+          console.error("Write failed: ", error);
+
+          sendError(error, res);
+          console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
         });
-
-      // MAKE X 'BOT' AS FOR 'ASSIGNED' AND 'POOLED': IF THERE IS A GROUP THE BOT WILL BE VISIBLE ONLY BY THE GROUP MEMBERS
-      // } else {
-      //   console.log('OPERATORS - BOT IS DEFINED  - !!! DEPT HAS GROUP ID')
-      //   Group.find({ _id: department.id_group }, function (err, group) {
-      //     if (err) {
-      //       console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
-      //       return next(err);
-      //     }
-      //     if (group) {
-      //       console.log('-- > OPERATORS - GROUP FOUND:: ', group);
-      //       console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
-      //       console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
-      //     }
-      //   });
-      // }
-
+        // } else {
+        //   return res.json({ department: department, available_agents: [], agents: [], operators: [{ id_user: 'bot_' + department.id_bot }] });
+        // }
+      });
     }
-    // !! No more used: moved in the 'else if' of assigned 
-    // else if (department.routing === 'pooled') {
-    //   Project_user.find({ id_project: req.projectid }, function (err, project_users) {
-    //     if (err) {
-    //       console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-    //       return next(err);
-    //     }
-    //     console.log('OPERATORS - routing pooled - MEMBERS LENGHT ', project_users.length)
-    //     console.log('OPERATORS - routing pooled - MEMBERS ', project_users)
-    //     if (project_users.length > 0) {
-    //       var _available_agents = availableAgents(project_users);
-    //       return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: [] });
-    //     } else {
-    //       return res.json({ department: department, available_agents: [], agents: [], operators: [] });
-    //     }
-    //   });
-    // }
-    else if (department.routing === 'assigned' || department.routing === 'pooled') {
+
+    else { // if (department.routing === 'assigned' || department.routing === 'pooled') {
       console.log('OPERATORS - routing ', department.routing, ' - PRJCT-ID ', req.projectid)
       console.log('OPERATORS - routing ', department.routing, ' - DEPT GROUP-ID ', department.id_group)
 
-      if (department.id_group == null || department.id_group == undefined) {
-        // example USE CASE: ASSIGNED OR POOLED TO ALL USERS (BECAUSE THERE IS NO GROUP)
-        console.log('OPERATORS - routing ASSIGNED or POOLED - !!! DEPT HAS NOT GROUP ID')
-        Project_user.find({ id_project: req.projectid }, function (err, project_users) {
-          if (err) {
-            console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-            return (err);
-          }
-          console.log('OPERATORS - routing ', department.routing, ' - MEMBERS LENGHT ', project_users.length)
-          console.log('OPERATORS - routing ', department.routing, ' - MEMBERS ', project_users)
-          if (project_users) {
-            if (project_users.length > 0) {
-              var selectedoperator = []
-              if (department.routing === 'assigned') {
-                selectedoperator = getRandomAvailableOperator(project_users);
-              }
-              // var selectedoperator = selectsOperator(project_users);
-              var _available_agents = getAvailableOperator(project_users);
-              // operator.id_user
-              return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: selectedoperator });
-            } else {
-              return res.json({ department: department, available_agents: [], agents: [], operators: [] });
-            }
-          }
-        });
-      } else {
-        console.log('OPERATORS - routing ASSIGNED or POOLED - !!! DEPT HAS GROUP ID')
-        // WF: SE ESISTE UN GRUPPO OTTENGO GLI ID DEI MEMBRI DEL GRUPPO E CON QUESTI TROVO I CORRISPONDENTI PROJECT-USERS CHE PASSO AD:
-        //    1) AGENTS: LA TSD CONFRONTANDO L'ID DEL CURRENT USER CON GLI ID CONTENUTI NELL'OGGETTO AGENTS (CHE SARA' CONTENUTO NELLA RICHIESTA) 
-        //       DETERMINA QUALI RICHIESTE VISUALIZZARE (SARANNO VISUALIZZATE SOLO LE RICHIESTE IN L'ID DEL CURRENT USER DELLA TSD 
-        //       CORRISPONDE AD UNO CONTENUTO IN AGENT) 
-        //    2) getRandomAvailableOperator() DETERMINA selectedoperator (CIOè L'OPERATORE A CUI SARA' ASSEGNATA LA RICHIESTA)
-        //       FILTRA I PROJECT-USER DISPONIBILI E TRAMITE UNA FUNZIONE RANDOM NE SELEZIONA UNO CHE VIENE ASSEGNATO A selectedoperator
-        //    3) getAvailableOperator() DETERMINA _available_agents FILTRA I PROJECT-USER DISPONIBILI CHE VENGONO ASSEGNATI A _available_agents     
-        Group.find({ _id: department.id_group }, function (err, group) {
-          if (err) {
-            console.log('-- > OPERATORS - GROUP FIND BY ID ERR ', err)
-            return (err);
-          }
-          if (group) {
-            console.log('-- > OPERATORS - GROUP FOUND:: ', group);
-            console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS LENGHT: ', group[0].members.length);
-            console.log('-- > OPERATORS - GROUP FOUND:: MEMBERS ID: ', group[0].members);
-            // , user_available: true
-            //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
-            Project_user.find({ id_project: req.projectid, id_user: group[0].members }, function (err, project_users) {
-              console.log('-- > OPERATORS - GROUP FOUND:: PROJECT ID ',req.projectid);
-              if (err) {
-                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER - ERR ', err);
-                return (err);
-              }
-              if (project_users) {
-                console.log('-- > OPERATORS - GROUP FOUND:: PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
-                if (project_users.length > 0) {
-                  var selectedoperator = []
-                  if (department.routing === 'assigned') {
-                    selectedoperator = getRandomAvailableOperator(project_users);
-                  }
-                  // var selectedoperator = selectsOperator(project_users);
-                  var _available_agents = getAvailableOperator(project_users);
-                  // operator.id_user
-                  return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: selectedoperator });
-                } else {
-                  return res.json({ department: department, available_agents: [], agents: [], operators: [] });
-                }
-              }
-            })
-          }
-        });
-      }
+
+      /* ---------------------------------------------------------------------------------
+       *  findProjectUsersAllAndAvailableWithOperatingHours return: 
+       *  * available_agents (available project users considering personal availability in the range of the operating hours) 
+       *  * agents (i.e., all the project users) 
+       *  * operators (i.e. the id of a user selected random from the available project users considering personal availability in the range of the operating hours)
+       * --------------------------------------------------------------------------------*/
+      findProjectUsersAllAndAvailableWithOperatingHours(req.projectid, department).then(function (value) {
+
+        console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
+        value['department'] = department
+        return res.json(value)
+
+      }).catch(function (error) {
+        console.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
+      });
     }
   });
 });
 
-function getQueryStringKeynobot(request_url) {
-  var url = require('url');
+function findProjectUsersAllAndAvailableWithOperatingHours(projectid, department) {
 
-  var url_parts = url.parse(request_url, true);
-  console.log("»»» --> URL PARTS ", url_parts);
-  var urlquery = url_parts.query;
-  // console.log("»»» --> URL PARTS - QUERY ", urlquery);
+  return new Promise(function (resolve, reject) {
+    console.error('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
 
-  var urlqueryArray = Object.keys(urlquery)
-  console.log("»»» --> URL PARTS - QUERY ARRAY ", urlqueryArray);
+    if (department.id_group != null) {
 
-  console.log("»»» --> URL PARTS - QUERY ARRAY CONTAINS nobot ", urlqueryArray.includes('nobot'));
+      resolve(findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department));
 
-  return urlqueryArray.includes('nobot');
-}
+    } else {
 
-function getAvailableOperator(project_users) {
-  var project_users_available = project_users.filter(function (projectUser) {
-    if (projectUser.user_available == true) {
+      resolve(findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department));
 
-      return true;
     }
 
   });
-  console.log('++ AVAILABLE PROJECT USERS ', project_users_available)
+};
 
+function findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department) {
+  return new Promise(function (resolve, reject) {
+
+    Group.find({ _id: department.id_group }, function (err, group) {
+      if (err) {
+        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
+        reject(err);
+      }
+      if (group) {
+        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> GROUP FOUND:: ', group);
+        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS LENGHT: ', group[0].members.length);
+        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS ID: ', group[0].members);
+        // , user_available: true
+        //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
+        Project_user.find({ id_project: projectid, id_user: group[0].members }, function (err, project_users) {
+          console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
+          if (err) {
+            console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
+            reject(err);
+          }
+          if (project_users && project_users.length > 0) {
+            console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
+
+            // var _available_agents = getAvailableOperatorsWithOperatingHours(project_users, projectid);
+            // NK NEW
+            getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
+              var _available_agents = _available_agents
+              // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> AVAILABLE AGENT ', _available_agents);
+
+              var selectedoperator = []
+              if (department.routing === 'assigned') {
+                selectedoperator = getRandomAvailableOperator(_available_agents);
+              }
+              resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+
+            }).catch(function (error) {
+
+              // console.error("Write failed: ", error);
+
+              sendError(error, res);
+              console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_group ] - AVAILABLE AGENT - ERROR ', error);
+            });
+            // NK NEW
+
+            // var selectedoperator = []
+            // if (department.routing === 'assigned') {
+            //   selectedoperator = getRandomAvailableOperator(_available_agents);
+            // }
+            // resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+
+          } else {
+            // return res.json({ department: department, available_agents: [], agents: [], operators: [] });
+            resolve({ available_agents: [], agents: [], operators: [] })
+          }
+
+        })
+      }
+    });
+  });
+}
+
+
+function findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department) {
+
+  return new Promise(function (resolve, reject) {
+    Project_user.find({ id_project: projectid }, function (err, project_users) {
+      if (err) {
+        console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
+        reject(err);
+      }
+      console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS LENGHT ', project_users.length)
+      console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS ', project_users)
+
+
+      if (project_users && project_users.length > 0) {
+        // var _available_agents = getAvailableOperatorsWithOperatingHours(project_users, projectid);
+        // NK NEW
+        getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
+          var _available_agents = _available_agents
+          // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> AVAILABLE AGENT ', _available_agents);
+
+          var selectedoperator = []
+          if (department.routing === 'assigned') {
+            selectedoperator = getRandomAvailableOperator(_available_agents);
+          }
+          resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+
+        }).catch(function (error) {
+
+          // console.error("Write failed: ", error);
+
+          sendError(error, res);
+          console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_nogroup ] - AVAILABLE AGENT - ERROR ', error);
+        });
+
+        // NK NEW
+
+
+        // var selectedoperator = []
+        // if (department.routing === 'assigned') {
+        //   selectedoperator = getRandomAvailableOperator(_available_agents);
+        // }
+        // console.log('D-1-B -> [ findProjectUsersForAssignedPooledRouting_nogroup ] - AVAILABLE AGENT ', _available_agents);
+        // resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+      } else {
+        // return res.json({ department: department, available_agents: [], agents: [], operators: [] });
+        resolve({ available_agents: [], agents: [], operators: [] })
+      }
+
+    });
+  });
+}
+
+// USED WHEN ID BOT IS DEFINED
+// function __getAvailableOperatorWithOperatingHours(project_users, projectid) {
+//   return new Promise(function (resolve, reject) {
+//     operatingHoursService.projectIsOpenNow(projectid, function (isOpen, err) {
+//       console.log('D ---> [ OHS ] -> [ PROJECT ROUTES ] -> PROJECT ID: ', projectid);
+//       console.log('D ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
+//       console.log('D ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR: ', err)
+
+//       if (err) {
+//         // reject(err);
+//         sendError(err, res);
+//         // return res.status(500).send({ success: false, msg: err });
+//       } else if (isOpen) {
+//         let availableOperator = getAvailableOperator(project_users);
+//         console.log('D ---> [ OHS ] -> [ PROJECT ROUTES ] -> availableOperator ', availableOperator)
+//         resolve(availableOperator);
+
+//       } else {
+//         console.log('D ---> [ OHS ] -> [ PROJECT ROUTES ] -> availableOperator ')
+//         resolve([]);
+//       }
+//     });
+//   });
+// }
+
+
+function getAvailableOperatorsWithOperatingHours(project_users, projectid) {
+
+  return new Promise(function (resolve, reject) {
+
+    if (project_users && project_users.length > 0) {
+
+      operatingHoursService.projectIsOpenNow(projectid, function (isOpen, err) {
+        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> PROJECT ID: ', projectid);
+        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT: ', isOpen);
+        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - ERROR: ', err)
+
+        if (err) {
+          reject(err);
+          // sendError(err, res);
+
+        } else if (isOpen) {
+
+          var _available_agents = getAvailableOperator(project_users);
+
+          resolve(_available_agents);
+          // console.log('D -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> AVAILABLE PROJECT USERS (returned by getAvailableOperator): ', _available_agents)
+          // resolve(findProjectUsersForAssignedPooledRouting_nogroup(projectid, department));
+        } else {
+          // resolve({ available_agents: [], agents: [], operators: [] });
+          resolve([]);
+          //resolve(res.json({ department: department, available_agents: [], agents: [], operators: [] }););
+        }
+      });
+    } else {
+      resolve([]);
+    }
+
+  });
+}
+
+// FILTER ALL THE PROJECT USERS FOR AVAILABLE = TRUE
+function getAvailableOperator(project_users) {
+  var project_users_available = project_users.filter(function (projectUser) {
+    if (projectUser.user_available == true) {
+      return true;
+    }
+  });
+  // console.log('D -> [GET AVAILABLE PROJECT-USER ] - AVAILABLE PROJECT USERS (getAvailableOperator): ', project_users_available)
   return project_users_available
 }
 
-function getRandomAvailableOperator(project_users) {
+
+
+function sendError(err, res) {
+  if (err.errorCode == undefined) {
+    err = { errCode: 3000, msg: err.message }
+  }
+
+  var errcode = err.errorCode
+  console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR CODE: ', errcode);
+
+  switch (errcode) {
+    // Project.findById -> Error getting object.
+    case 1000:
+      errMsg = err.msg;
+      console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+      res.status(500).send({ success: false, msg: errMsg });
+      break;
+    // Project.findById -> Object not found.
+    case 1010:
+      errMsg = err.msg;
+      console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+      res.status(404).send({ success: false, msg: errMsg });
+      break;
+    //  Operating hours is empty (e.g, "operatingHours" : "")
+    case 1020:
+      errMsg = err.msg;
+      console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+      res.status(500).send({ success: false, msg: errMsg });
+      break;
+    // Timezone undefined. (e.g., "tzname":null; tzname: ""; undefined)
+    case 2000:
+      errMsg = err.msg;
+      console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+      res.status(500).send({ success: false, msg: errMsg });
+      break;
+    // function addOrSubstractProjcTzOffsetFromDateNow ERROR
+    case 3000:
+      errMsg = err.msg;
+      console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR TEXT: ', errMsg);
+      res.status(500).send({ success: false, msg: errMsg });
+      break;
+  }
+
+}
+
+
+function getRandomAvailableOperator(project_users_available) {
   // var project_users_available = project_users.filter(function (projectUser) {
   //   if (projectUser.user_available == true) {
   //     return true;
   //   }
   //   //return projectUser.user_available;
   // })
-  var project_users_available = getAvailableOperator(project_users);
+  // var project_users_available = getAvailableOperator(project_users);
 
-  console.log('-- > OPERATORS - PROJECT USER AVAILABLE ', project_users_available);
-  console.log('-- > OPERATORS - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
+  // console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE ', project_users_available);
+  console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
   if (project_users_available.length > 0) {
     var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
     console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
@@ -306,12 +440,10 @@ function getRandomAvailableOperator(project_users) {
 
   }
 }
-
 // ./END - GET OPERATORS OF A DEPT
 
+
 // START - GET MY DEPTS
-
-
 // !!! NO MORE USED 
 // ============= GET ALL GROUPS WITH THE PASSED PROJECT ID =============
 router.get('/mydepartments', function (req, res) {
