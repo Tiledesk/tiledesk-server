@@ -32,10 +32,12 @@ class OperatingHoursService {
         // console.log("O ---> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS: ", project.operatingHours);
 
 
-        // IF ACTIVE-OPERATING-HOURS IS SET TO FALSE:
+        // IF ACTIVE-OPERATING-HOURS 
+        // - IS FALSE (activeOperatingHours is set to false when is created a new project) or 
+        // - IS UNDEFINED (e.g.: for the project created before of the implementention of the property activeOperatingHours=false ) 
         // THE OPERATING-HOURS MUST NOT BE CONSIDERED AND THE AVAILABILITY WILL BE EVALUATED DIRECTLY ACCORDING TO 
         // AVAILABILITY OF THE USERS (THE PROJECT IS CONSIDERED OPEN 24 HOURS ON 24 AND SEVEN DAYS ON SEVEN)  
-        if (project.activeOperatingHours == false) {
+        if (project.activeOperatingHours == false || project.activeOperatingHours == undefined ) {
           // console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours)
           console.log('O ---> [ OHS ] -> * USE CASE 0 * OPERATING HOURS ARE NOT ACTIVE')
           callback(true, null);
