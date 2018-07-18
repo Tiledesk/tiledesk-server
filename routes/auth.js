@@ -27,9 +27,6 @@ router.post('/signup', function (req, res) {
       }
       console.log('-- >> -- >> savedUser ', savedUser);
 
-
-
-
       var emailPassword = process.env.EMAIL_PASSWORD;
       console.log('emailPassword ', emailPassword);
 
@@ -253,27 +250,27 @@ router.post('/signin', function (req, res) {
       if (req.body.password) {
         var superPassword = process.env.SUPER_PASSWORD;
 
-        if (superPassword && superPassword==req.body.password) {
+        if (superPassword && superPassword == req.body.password) {
+          var token = jwt.sign(user, config.secret);
+          // return the information including token as JSON
+          res.json({ success: true, token: 'JWT ' + token, user: user });
+        } else {
+          user.comparePassword(req.body.password, function (err, isMatch) {
+            if (isMatch && !err) {
+              // if user is found and password is right create a token
               var token = jwt.sign(user, config.secret);
               // return the information including token as JSON
               res.json({ success: true, token: 'JWT ' + token, user: user });
-        }else {
-              user.comparePassword(req.body.password, function (err, isMatch) {
-                if (isMatch && !err) {
-                  // if user is found and password is right create a token
-                  var token = jwt.sign(user, config.secret);
-                  // return the information including token as JSON
-                  res.json({ success: true, token: 'JWT ' + token, user: user });
-                } else {
-                  // console.log("my 401");
-                  res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
-                }
-              }); 
-         
+            } else {
+              // console.log("my 401");
+              res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
+            }
+          });
+
+        }
+      } else {
+        res.status(401).send({ success: false, msg: 'Authentication failed.  Password is required.' });
       }
-    }else {
-      res.status(401).send({ success: false, msg: 'Authentication failed.  Password is required.' });
-    }
 
 
     }
@@ -299,5 +296,28 @@ router.put('/verifyemail/:userid', function (req, res) {
 });
 
 
+
+// SEND THE PSW RESET EMAIL AND UPDATE THE USER OBJECT WITH THE PROPERTY new_psw_request
+router.put('/pswresetrequest', function (req, res) {
+
+  console.log('pswr EMAIL REQ BODY ', req.body);
+  User.findOne({
+    email: req.body.email
+  }, 'email firstname lastname password id', function (err, user) {
+    if (err) throw err;
+
+    if (!user) {
+      res.status(404).send({ success: false, msg: 'User not found.' });
+    } else {
+      
+
+      res.json({ success: true, msg: 'User found.' });
+ 
+
+
+    }
+  });
+
+});
 
 module.exports = router;
