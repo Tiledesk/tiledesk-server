@@ -333,9 +333,16 @@ router.put('/pswresetrequest', function (req, res) {
         }
 
         console.log('PSW RESET REQUEST - UPDATED USER ', updatedUser);
-        
+
         if (updatedUser) {
-          emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
+          try {
+            console.log('PSW RESET REQUEST - SENDING EMAIL ', err)
+            emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
+          }
+          catch (err) {
+            console.log('PSW RESET REQUEST - SEND EMAIL ERR ', err)
+          }
+          return res.json({ success: true, msg: 'Successfully updated user.' });
         }
       });
       // res.json({ success: true, msg: 'User found.' });
