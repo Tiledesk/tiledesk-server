@@ -312,7 +312,7 @@ router.put('/pswresetrequest', function (req, res) {
     }
 
     if (!user) {
-      res.status(404).send({ success: false, msg: 'User not found.' });
+      res.json({ success: false, msg: 'User not found.' });
     } else if (user) {
 
       console.log('PSW RESET REQUEST - USER FOUND ', user);

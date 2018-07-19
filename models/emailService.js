@@ -498,9 +498,8 @@ class EmailService {
                                     <!-- <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span> -->
                                     <br><br>If you did not forgot your password you can safely ignore this email.
                                     <br><br><span style="font-size:12px; ">If you're having trouble clicking the "Reset My Password" button, copy and paste the URL below into your web browser: </span>
-<br>
-<span style="color:#03a5e8; font-size:12px; ">https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}</span>
-
+                                    <br>
+                                    <span style="color:#03a5e8; font-size:12px; ">https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}</span>
                                     <br><br> Team TileDesk
                                   </td>
                                 </tr>
