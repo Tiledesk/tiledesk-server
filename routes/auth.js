@@ -340,7 +340,7 @@ router.put('/pswresetrequest', function (req, res) {
             console.log('PSW RESET REQUEST - SENDING EMAIL ', err)
             emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
-            return res.json({ success: true, msg: 'Successfully updated user.' });
+            return res.json({ success: true, user: updatedUser });
           // }
           // catch (err) {
           //   console.log('PSW RESET REQUEST - SEND EMAIL ERR ', err)

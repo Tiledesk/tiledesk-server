@@ -463,38 +463,37 @@ class EmailService {
                       <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
                         <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
                          
-                        <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-  
-                            <div style="text-align:center">
-                              <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                                <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
-                              </a>
-                           </div>
-                        </tr>
-  
-                      
-                          <!-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-            
-                             <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top;  font-weight: 500; text-align: center; border-radius: 3px 3px 0 0;  margin: 0;" align="center"; valign="top">
-                               <div>
-                                 <h2>Welcome</h2>
-                               </div>
-            
-                             </td>
-                          </tr> -->
-                     
+                          <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+    
+                              <div style="text-align:center">
+                                <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
+                                  <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
+                                </a>
+                            </div>
+                          </tr>
   
                           <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
                               <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
             
+
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                    <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${userFirstname} ${userLastname},</strong>
-                                    <!-- <br> welcome on TileDesk.com. -->
-                                    <br><br> Thank you for signin up with TileDesk.
-                                    <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span>
-                                    <br><br>Give us your feedback! We need your advice. Send an email to info@frontiere21.it
+                                  <h2 style="text-align: center; letter-spacing: 1px; ">Password Reset</h2>
+
+                                    <br> <br<strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${userFirstname} ${userLastname},</strong>
+                                    
+                                    <br> <br>
+                                    Seems like  you forgot your password for TileDesk. If this is true, click below to reset your password
+                                    <div style="text-align: center;">
+                                      <br><br>
+                                      <a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      Reset My Password
+                                      </a>
+                                    </div>
+                                    <!-- <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span> -->
+                                    <br><br>If you did not forgot your password you can safely ignore this email.
                                     <br><br> Team TileDesk
                                   </td>
                                 </tr>
