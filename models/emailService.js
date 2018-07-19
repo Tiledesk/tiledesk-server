@@ -467,7 +467,7 @@ class EmailService {
     
                               <div style="text-align:center">
                                 <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                                  <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
+                                  <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px; margin-bottom:0px" class="CToWUd">
                                 </a>
                             </div>
                           </tr>
@@ -480,7 +480,9 @@ class EmailService {
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
 
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                  <h2 style="text-align: center; letter-spacing: 1px; ">Password Reset</h2>
+                                    <h2 style="text-align: center; letter-spacing: 1px; margin-top: 0px ">
+                                      Password Reset
+                                    </h2>
 
                                     <br> <br<strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${userFirstname} ${userLastname},</strong>
                                     
