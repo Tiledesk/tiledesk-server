@@ -5,7 +5,10 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
 var Person = require("../models/person");
+var uniqid = require('uniqid');
+var emailService = require("../models/emailService");
 const nodemailer = require('nodemailer');
+
 //var emailTemplates = require('../config/email_templates');
 
 router.post('/signup', function (req, res) {
@@ -300,19 +303,43 @@ router.put('/verifyemail/:userid', function (req, res) {
 // SEND THE PSW RESET EMAIL AND UPDATE THE USER OBJECT WITH THE PROPERTY new_psw_request
 router.put('/pswresetrequest', function (req, res) {
 
-  console.log('pswr EMAIL REQ BODY ', req.body);
-  User.findOne({
-    email: req.body.email
-  }, 'email firstname lastname password id', function (err, user) {
-    if (err) throw err;
+  console.log('PSW RESET REQUEST - EMAIL REQ BODY ', req.body);
+
+  User.findOne({ email: req.body.email }, function (err, user) {
+    if (err) {
+      console.log('PSW RESET REQUEST - ERROR ', err);
+      return res.status(500).send({ success: false, msg: err });
+    }
 
     if (!user) {
       res.status(404).send({ success: false, msg: 'User not found.' });
-    } else {
-      
+    } else if (user) {
 
-      res.json({ success: true, msg: 'User found.' });
- 
+      console.log('PSW RESET REQUEST - USER FOUND ', user);
+      console.log('PSW RESET REQUEST - USER FOUND - ID ', user._id);
+      var reset_psw_request_id = uniqid()
+
+      console.log('PSW RESET REQUEST - UNIC-ID GENERATED ', reset_psw_request_id)
+
+      User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }, function (err, updatedUser) {
+
+        if (err) {
+          console.log(err);
+          return res.status(500).send({ success: false, msg: err });
+        }
+
+        if (!updatedUser) {
+          return res.status(404).send({ success: false, msg: 'User not found' });
+        }
+
+        console.log('PSW RESET REQUEST - UPDATED USER ', updatedUser);
+        
+        if (updatedUser) {
+          emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
+        }
+      });
+      // res.json({ success: true, msg: 'User found.' });
+
 
 
     }

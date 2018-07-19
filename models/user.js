@@ -24,6 +24,9 @@ var UserSchema = new Schema({
     emailverified: {
         type: Boolean,
         // required: true
+    },
+    resetpswrequestid: {
+        type: String,
     }
 });
 

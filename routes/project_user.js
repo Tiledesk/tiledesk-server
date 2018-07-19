@@ -58,6 +58,18 @@ router.post('/invite', function (req, res) {
       return res.status(403).send({ success: false, msg: 'Forbidden.' });
 
     } else {
+
+      // Project_user.findOne({
+      //   email: req.body.email
+      // }, 'email firstname lastname password id', function (err, projectuser) {
+      //   console.log('PROJECT USER FOUND ', projectuser)
+        
+      //   if (projectuser) {
+      //     return res.status(403).send({ success: false, msg: 'Forbidden.' });
+      //   }
+
+      // }) 
+
       var newProject_user = new Project_user({
         _id: new mongoose.Types.ObjectId(),
         id_project: req.body.id_project,
