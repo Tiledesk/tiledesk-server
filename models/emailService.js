@@ -461,16 +461,17 @@ class EmailService {
                     <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
                     <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
                       <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
+
+                          <div style="text-align:center">
+                            <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
+                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
+                          </a>
+                        </div>
                         <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
                          
-                          <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-    
-                              <div style="text-align:center">
-                                <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                                  <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px; margin-bottom:0px" class="CToWUd">
-                                </a>
-                            </div>
-                          </tr>
+                         <!-- <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                              
+                          </tr> -->
   
                           <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
@@ -480,7 +481,7 @@ class EmailService {
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
 
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                    <h2 style="text-align: center; letter-spacing: 1px; margin-top: 0px ">
+                                    <h2 style="text-align: center; letter-spacing: 1px; ">
                                       Password Reset
                                     </h2>
 
@@ -496,6 +497,10 @@ class EmailService {
                                     </div>
                                     <!-- <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span> -->
                                     <br><br>If you did not forgot your password you can safely ignore this email.
+                                    <br><br><span style="font-size:12px; ">If you're having trouble clicking the "Reset My Password" button, copy and paste the URL below into your web browser: </span>
+<br>
+<span style="color:#03a5e8; font-size:12px; ">https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}</span>
+
                                     <br><br> Team TileDesk
                                   </td>
                                 </tr>
