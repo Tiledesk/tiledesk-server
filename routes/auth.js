@@ -335,8 +335,9 @@ router.put('/requestresetpsw', function (req, res) {
 
         if (updatedUser) {
 
-          // try {
-          // console.log('REQUEST RESET PSW - SENDING EMAIL ', err)
+         /**
+          * SEND THE PASSWORD RESET REQUEST EMAIL
+          */
           emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
           return res.json({ success: true, user: updatedUser });
@@ -372,7 +373,7 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
       return res.status(404).send({ success: false, msg: 'Invalid password reset key' });
     }
 
-    if (user) {
+    if (user && req.body.password) {
       console.log('--> RESET PSW - User Found ', user);
       console.log('--> RESET PSW - User ID Found ', user._id);
 
@@ -386,13 +387,42 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
           return res.status(500).send({ success: false, msg: 'Error saving object.' });
         }
         console.log('--- > USER SAVED  ', saveUser)
-        res.status(200).json({ message: 'Password change successful', user:  saveUser});
+
+        emailService.sendYourPswHasBeenChangedEmail(saveUser.email, saveUser.firstname, saveUser.lastname);
+
+        res.status(200).json({ message: 'Password change successful', user: saveUser });
 
       });
-
-     }
-
+    }
   });
 })
+
+/**
+ * CHECK IF EXSIST resetpswrequestid
+ * if no
+ */
+router.get('/checkpswresetkey/:resetpswrequestid', function (req, res) {
+  console.log("--> CHECK RESET PSW REQUEST ID", req.params.resetpswrequestid);
+
+  User.findOne({ resetpswrequestid: req.params.resetpswrequestid }, function (err, user) {
+
+    if (err) {
+      console.log('--> CHECK RESET PSW REQUEST ID - Error getting user ', err)
+      return (err);
+    }
+
+    if (!user) {
+      console.log('--> CHECK RESET PSW REQUEST ID - PSW RESET KEY is', err)
+      return res.status(404).send({ success: false, msg: 'Invalid password reset key' });
+    }
+
+    if (user) {
+
+      res.status(200).json({ message: 'Valid password reset key', user: user });
+
+    }
+  });
+})
+
 
 module.exports = router;
