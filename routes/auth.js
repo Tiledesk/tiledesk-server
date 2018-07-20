@@ -338,7 +338,7 @@ router.put('/requestresetpsw', function (req, res) {
          /**
           * SEND THE PASSWORD RESET REQUEST EMAIL
           */
-          emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
+          emailService.sendPasswordResetRequestEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
           return res.json({ success: true, user: updatedUser });
           // }
