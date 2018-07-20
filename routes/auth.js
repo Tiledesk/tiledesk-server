@@ -204,10 +204,6 @@ router.post('/signup', function (req, res) {
         // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
       });
 
-
-
-
-
       return res.json({ success: true, msg: 'Successfully created new user.' });
       // savePerson(req, res, savedUser.id)
     });
@@ -299,15 +295,18 @@ router.put('/verifyemail/:userid', function (req, res) {
 });
 
 
+/**
+ * *** REQUEST RESET PSW ***
+ * SEND THE RESET PSW EMAIL AND UPDATE THE USER OBJECT WITH THE PROPERTY new_psw_request
+ * TO WHICH ASSIGN (AS VALUE) A UNIQUE ID
+ */
+router.put('/requestresetpsw', function (req, res) {
 
-// SEND THE PSW RESET EMAIL AND UPDATE THE USER OBJECT WITH THE PROPERTY new_psw_request
-router.put('/pswresetrequest', function (req, res) {
-
-  console.log('PSW RESET REQUEST - EMAIL REQ BODY ', req.body);
+  console.log('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
 
   User.findOne({ email: req.body.email }, function (err, user) {
     if (err) {
-      console.log('PSW RESET REQUEST - ERROR ', err);
+      console.log('REQUEST RESET PSW - ERROR ', err);
       return res.status(500).send({ success: false, msg: err });
     }
 
@@ -315,11 +314,11 @@ router.put('/pswresetrequest', function (req, res) {
       res.json({ success: false, msg: 'User not found.' });
     } else if (user) {
 
-      console.log('PSW RESET REQUEST - USER FOUND ', user);
-      console.log('PSW RESET REQUEST - USER FOUND - ID ', user._id);
+      console.log('REQUEST RESET PSW - USER FOUND ', user);
+      console.log('REQUEST RESET PSW - USER FOUND - ID ', user._id);
       var reset_psw_request_id = uniqid()
 
-      console.log('PSW RESET REQUEST - UNIC-ID GENERATED ', reset_psw_request_id)
+      console.log('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 
       User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }, function (err, updatedUser) {
 
@@ -332,29 +331,68 @@ router.put('/pswresetrequest', function (req, res) {
           return res.status(404).send({ success: false, msg: 'User not found' });
         }
 
-        console.log('PSW RESET REQUEST - UPDATED USER ', updatedUser);
+        console.log('REQUEST RESET PSW - UPDATED USER ', updatedUser);
 
         if (updatedUser) {
-          
-          // try {
-            console.log('PSW RESET REQUEST - SENDING EMAIL ', err)
-            emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
-            return res.json({ success: true, user: updatedUser });
+          // try {
+          // console.log('REQUEST RESET PSW - SENDING EMAIL ', err)
+          emailService.sendPasswordResetEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
+
+          return res.json({ success: true, user: updatedUser });
           // }
           // catch (err) {
           //   console.log('PSW RESET REQUEST - SEND EMAIL ERR ', err)
           // }
-          
+
         }
       });
       // res.json({ success: true, msg: 'User found.' });
-
-
-
     }
   });
 
 });
+
+/**
+ * *** RESET PSW ***
+ */
+router.put('/resetpsw/:resetpswrequestid', function (req, res) {
+  console.log("--> RESET PSW - REQUEST ID", req.params.resetpswrequestid);
+  console.log("--> RESET PSW - NEW PSW ", req.body.password);
+
+  User.findOne({ resetpswrequestid: req.params.resetpswrequestid }, function (err, user) {
+
+    if (err) {
+      console.log('--> RESET PSW - Error getting user ', err)
+      return (err);
+    }
+
+    if (!user) {
+      console.log('--> RESET PSW - INVALID PSW RESET KEY', err)
+      return res.status(404).send({ success: false, msg: 'Invalid password reset key' });
+    }
+
+    if (user) {
+      console.log('--> RESET PSW - User Found ', user);
+      console.log('--> RESET PSW - User ID Found ', user._id);
+
+      user.password = req.body.password;
+      user.resetpswrequestid = '';
+
+      user.save(function (err, saveUser) {
+
+        if (err) {
+          console.log('--- > USER SAVE -ERROR ', err)
+          return res.status(500).send({ success: false, msg: 'Error saving object.' });
+        }
+        console.log('--- > USER SAVED  ', saveUser)
+        res.status(200).json({ message: 'Password change successful', user:  saveUser});
+
+      });
+
+     }
+
+  });
+})
 
 module.exports = router;
