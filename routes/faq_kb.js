@@ -63,6 +63,7 @@ router.post('/', function (req, res) {
     url: req.body.url,
     id_project: req.projectid,
     kbkey_remote: req.body.kbkey_remote,
+    trashed: false,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
@@ -107,7 +108,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
 router.get('/:faq_kbid', function (req, res) {
 
-   console.log(req.query);
+  console.log(req.query);
 
   Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {
     if (err) {
@@ -119,33 +120,34 @@ router.get('/:faq_kbid', function (req, res) {
 
     if (req.query.departmentid) {
 
-      console.log("req.query.departmentid",req.query.departmentid);
+      console.log("»»» »»» req.query.departmentid", req.query.departmentid);
 
-        Department.findById(req.query.departmentid, function (err, department) {
-          if (err) {
-            console.log(err);
-            // return res.status(500).send({ success: false, msg: 'Error getting department.' });
-            res.json(faq_kb);        
-          }
-          if (!department) {
-            console.log("Department not found", req.query.departmentid);
-            // return res.status(404).send({ success: false, msg: 'Department not found.' });
-            res.json(faq_kb);
-          } else {
-            console.log("department", department);
-            
-            // https://github.com/Automattic/mongoose/issues/4614
-            faq_kb._doc.department = department;
-            console.log("faq_kb", faq_kb);
+      Department.findById(req.query.departmentid, function (err, department) {
+        if (err) {
+          console.log(err);
+          // return res.status(500).send({ success: false, msg: 'Error getting department.' });
+          res.json(faq_kb);
+        }
+        if (!department) {
+          console.log("Department not found", req.query.departmentid);
+          // return res.status(404).send({ success: false, msg: 'Department not found.' });
+          res.json(faq_kb);
+        } else {
+          console.log("department", department);
 
-            res.json(faq_kb);          
-          }
-        });
+          // https://github.com/Automattic/mongoose/issues/4614
+          faq_kb._doc.department = department;
+          console.log("faq_kb", faq_kb);
+
+          res.json(faq_kb);
+        }
+      });
 
     } else {
+      console.log('¿¿ MY USECASE ?? ')
       res.json(faq_kb);
     }
-    
+
   });
 });
 
@@ -160,10 +162,13 @@ router.get('/', function (req, res) {
   //   query.id_project = req.query.id_project;
   // }
 
-  console.log("req projectid", req.projectid);
-   
-  Faq_kb.find({ "id_project": req.projectid }, function (err, faq_kb) {
-    if (err) return next(err);
+  console.log("GET FAQ-KB req projectid", req.projectid);
+  // , "trashed": { $in: [null, false]}
+  Faq_kb.find({ "id_project": req.projectid}, function (err, faq_kb) {
+    if (err) {
+      console.log('GET FAQ-KB ERROR ', err)
+      return (err);
+    }
 
     res.json(faq_kb);
 
