@@ -165,19 +165,21 @@ function findAndSendAvailableUsers(projectid, res) {
         console.log('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      if (project_users) {
+      if (project_users && project_users.id_user) {
         console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+
+        user_available_array = [];
+        project_users.forEach(project_user => {
+          console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+          user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+        });
+
+        console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+
+        res.json(user_available_array);
       }
-      user_available_array = [];
-      project_users.forEach(project_user => {
-        console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-        user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-      });
-
-      console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
-
-      res.json(user_available_array);
     });
+
 }
 
 function sendError(err, res) {
