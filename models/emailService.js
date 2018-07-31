@@ -818,7 +818,7 @@ class EmailService {
             `;
 
 
-            this.send(to, `TileDesk - Your have been invited to the '${projectName}'project`, html);
+            this.send(to, `TileDesk - Your have been invited to the '${projectName}' project`, html);
            }
 
 
