@@ -4,7 +4,8 @@ var router = express.Router();
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var User = require("../models/user");
-
+var emailService = require("../models/emailService");
+var Project = require("../models/project");
 
 // var User = require("../models/user");
 
@@ -46,7 +47,7 @@ router.post('/invite', function (req, res) {
 
     if (!user) {
 
-      return res.status(401).send({ success: false, msg: 'User not found.' });
+      return res.status(404).send({ success: false, msg: 'User not found.' });
 
     } else if (req.user.id == user._id) {
       console.log('-> -> FOUND USER ID', user._id)
@@ -66,12 +67,10 @@ router.post('/invite', function (req, res) {
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
       Project_user.find({ id_project: req.body.id_project }, function (err, projectuser) {
         console.log('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
-        if (err) {
-          console.log('INVITE USER - FIND PROJECT USERS ERROR ', err)
-        }
+        if (err) throw err;
 
         if (!projectuser) {
-          return res.status(401).send({ success: false, msg: 'Project user not found.' });
+          return res.status(404).send({ success: false, msg: 'Project user not found.' });
         }
 
         if (projectuser) {
@@ -124,7 +123,40 @@ router.post('/invite', function (req, res) {
               console.log('--- > ERROR ', err)
               return res.status(500).send({ success: false, msg: 'Error saving object.' });
             }
+
             res.json(savedProject_user);
+
+            // found the project by the project id to indicate the project name in the email
+            // Project.findOne({ _id: req.body.id_project }, function (err, project) {
+
+            //   if (err) throw err;
+      
+            //   if (!project) {
+            //     return res.json({ success: false, msg: 'Project not found.' });
+            //   }
+      
+            //   if (project) {
+            //     console.log('INVITE USER - PROJECT FOUND BY PROJECT ID ' , project)
+            //     if (project){
+            //       var projectName = project.name;
+                
+            //     }
+            //   }
+            // });
+
+            console.log('INVITED USER (IS THE USER FOUND BY EMAIL) ', user);
+            console.log('EMAIL of THE INVITED USER ', req.body.email);
+            console.log('ROLE of THE INVITED USER ', req.body.role);
+            console.log('PROJECT NAME ', req.body.role);
+            console.log('LOGGED USER ID ', req.user.id);
+            console.log('LOGGED USER NAME ', req.user.firstname);
+            console.log('LOGGED USER NAME ', req.user.lastname);
+
+            if (user) {
+              var invitedUserFirstname = user.firstname
+              var invitedUserLastname = user.lastname
+            }
+            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, invitedUserFirstname, invitedUserLastname, req.body.role)
           });
 
         }
