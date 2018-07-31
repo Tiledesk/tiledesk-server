@@ -37,11 +37,11 @@ router.post('/invite', function (req, res) {
   console.log('-> INVITE USER ', req.body);
 
   // var email = req.body.email
-  console.log('INVITE USER EMAIL', req.body.email);
+  console.log('»»» INVITE USER EMAIL', req.body.email);
+  console.log('»»» CURRENT USER ID', req.user.id);
+  console.log('»»» PROJECT ID', req.body.id_project);
 
-  User.findOne({
-    email: req.body.email
-  }, 'email firstname lastname password id', function (err, user) {
+  User.findOne({ email: req.body.email }, function (err, user) {
     if (err) throw err;
 
     if (!user) {
@@ -52,43 +52,84 @@ router.post('/invite', function (req, res) {
       console.log('-> -> FOUND USER ID', user._id)
       console.log('-> -> CURRENT USER ID', req.user.id);
       // if the current user id is = to the id of found user return an error:
-      // (a user is not allowed to invite himself) 
+      // (to a user is not allowed to invite oneself) 
 
       console.log('XXX XXX FORBIDDEN')
-      return res.status(403).send({ success: false, msg: 'Forbidden.' });
+      return res.status(403).send({ success: false, msg: 'Forbidden. It is not allowed to invite oneself', code: 4000 });
 
     } else {
 
-      // Project_user.findOne({
-      //   email: req.body.email
-      // }, 'email firstname lastname password id', function (err, projectuser) {
-      //   console.log('PROJECT USER FOUND ', projectuser)
-        
-      //   if (projectuser) {
-      //     return res.status(403).send({ success: false, msg: 'Forbidden.' });
-      //   }
-
-      // }) 
-
-      var newProject_user = new Project_user({
-        _id: new mongoose.Types.ObjectId(),
-        id_project: req.body.id_project,
-        id_user: user._id,
-        role: req.body.role,
-        user_available: true,
-        createdBy: req.user.id,
-        updatedBy: req.user.id
-      });
-
-      newProject_user.save(function (err, savedProject_user) {
+      /**
+       * *** IT IS NOT ALLOWED TO INVITE A USER WHO IS ALREADY A MEMBER OF THE PROJECT *** 
+       * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
+       * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
+       * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
+      Project_user.find({ id_project: req.body.id_project }, function (err, projectuser) {
+        console.log('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
-          console.log('--- > ERROR ', err)
-          return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          console.log('INVITE USER - FIND PROJECT USERS ERROR ', err)
         }
-        res.json(savedProject_user);
-      });
-    }
 
+        if (!projectuser) {
+          return res.status(401).send({ success: false, msg: 'Project user not found.' });
+        }
+
+        if (projectuser) {
+
+          try {
+            projectuser.forEach(p_user => {
+              if (p_user) {
+                // console.log('»»»» FOUND USER ID: ', user._id, ' TYPE OF ', typeof (user._id))
+                // console.log('»»»» PRJCT USER > USER ID: ', p_user.id_user, ' TYPE OF ', typeof (p_user.id_user));
+                var projectUserId = p_user.id_user.toString();
+                var foundUserId = user._id.toString()
+
+                console.log('»»»» FOUND USER ID: ', foundUserId, ' TYPE OF ', typeof (foundUserId))
+                console.log('»»»» PRJCT USER > USER ID: ', projectUserId, ' TYPE OF ', typeof (projectUserId));
+
+                // var n = projectuser.includes('5ae6c62c61c7d54bf119ac73');
+                // console.log('USER IS ALREADY A MEMBER OF THE PROJECT ', n)
+                if (projectUserId == foundUserId) {
+                  // if ('5ae6c62c61c7d54bf119ac73' == '5ae6c62c61c7d54bf119ac73') {
+
+                  console.log('»»»» THE PRJCT-USER ID ', p_user.id_user, ' MATCHES THE FOUND USER-ID', user._id)
+                  console.log('»»»» USER IS ALREADY A MEMBER OF THE PROJECT ')
+
+                  // cannot use continue or break inside a JavaScript Array.prototype.forEach loop. However, there are other options:
+                  throw new Error('User is already a member'); // break
+                  // return res.status(403).send({ success: false, msg: 'Forbidden. User is already a member' });
+                }
+              }
+            });
+          }
+          catch (e) {
+            console.log('»»» ERROR ', e)
+            return res.status(403).send({ success: false, msg: 'Forbidden. User is already a member', code: 4001 });
+          }
+
+          console.log('NO ERROR, SO CREATE AND SAVE A NEW PROJECT USER ')
+
+          var newProject_user = new Project_user({
+            _id: new mongoose.Types.ObjectId(),
+            id_project: req.body.id_project,
+            id_user: user._id,
+            role: req.body.role,
+            user_available: true,
+            createdBy: req.user.id,
+            updatedBy: req.user.id
+          });
+
+          newProject_user.save(function (err, savedProject_user) {
+            if (err) {
+              console.log('--- > ERROR ', err)
+              return res.status(500).send({ success: false, msg: 'Error saving object.' });
+            }
+            res.json(savedProject_user);
+          });
+
+        }
+      })
+    }
   });
 });
 
