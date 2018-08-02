@@ -163,8 +163,11 @@ router.get('/', function (req, res) {
   // }
 
   console.log("GET FAQ-KB req projectid", req.projectid);
-  // , "trashed": { $in: [null, false]}
-  Faq_kb.find({ "id_project": req.projectid}, function (err, faq_kb) {
+  /**
+   * if filter only for 'trashed = false', 
+   * the bots created before the implementation of the 'trashed' property are not returned 
+   */
+  Faq_kb.find({ "id_project": req.projectid , "trashed": { $in: [null, false]}}, function (err, faq_kb) {
     if (err) {
       console.log('GET FAQ-KB ERROR ', err)
       return (err);

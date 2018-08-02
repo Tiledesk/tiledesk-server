@@ -165,7 +165,8 @@ function findAndSendAvailableUsers(projectid, res) {
         console.log('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      if (project_users && project_users.id_user) {
+      // && project_users.id_user
+      if (project_users) {
         console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
 
         user_available_array = [];
