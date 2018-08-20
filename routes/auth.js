@@ -238,7 +238,7 @@ router.post('/signin', function (req, res) {
 
   User.findOne({
     email: req.body.email
-  }, 'email firstname lastname password id', function (err, user) {
+  }, 'email firstname lastname password emailverified id', function (err, user) {
     if (err) throw err;
 
     if (!user) {
