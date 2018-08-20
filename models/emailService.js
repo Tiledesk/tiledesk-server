@@ -790,7 +790,7 @@ class EmailService {
                                     <div style="text-align: center;">
                                       <br><br>
                                       <a href="https://support.tiledesk.com/dashboard/#/projects" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
-                                        GO TO THE PROJECT
+                                        GO TO CONSOLE
                                       </a>
                                     </div>
 
