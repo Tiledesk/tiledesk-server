@@ -682,7 +682,7 @@ class EmailService {
           /**
            * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ********
            */
-          sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
+          sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
             var html = `
 
@@ -777,7 +777,7 @@ class EmailService {
                                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
 
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                    <h2 style="text-align: center; letter-spacing: 1px; font-weight: 500 ">
+                                    <h2 style="text-align: center; letter-spacing: 1px; font-weight: 400; line-height:24px ">
                                       ${currentUserFirstname} ${currentUserLastname} have been invited you to the TileDesk project <strong> ${projectName}</strong> 
                                     </h2>
 
@@ -786,6 +786,14 @@ class EmailService {
                                     <br> <br>
                                     I invited you to take on the role of  ${invitedUserRole} of the TileDesk <strong> ${projectName}</strong> project
                                 
+
+                                    <div style="text-align: center;">
+                                      <br><br>
+                                      <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                        GO TO THE PROJECT
+                                      </a>
+                                    </div>
+
                                     <br><br> Team TileDesk
                                   </td>
                                 </tr>
