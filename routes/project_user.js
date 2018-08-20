@@ -156,7 +156,7 @@ router.post('/invite', function (req, res) {
               var invitedUserFirstname = user.firstname
               var invitedUserLastname = user.lastname
             }
-            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
+            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, invitedUserFirstname, invitedUserLastname, req.body.role)
           });
 
         }

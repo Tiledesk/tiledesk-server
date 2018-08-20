@@ -682,7 +682,7 @@ class EmailService {
           /**
            * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ********
            */
-          sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
+          sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
             var html = `
 
@@ -789,7 +789,7 @@ class EmailService {
 
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <a href="https://support.tiledesk.com/dashboard/#/projects" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                         GO TO THE PROJECT
                                       </a>
                                     </div>
