@@ -97,6 +97,18 @@ var RequestSchema = new Schema({
     type: String,
     required: true
   },
+
+  
+  rating: {
+    type: Number,
+    required: false,
+  },
+  rating_message: {
+    type: String,
+    required: false,
+  }, 
+
+
   // agents: [{ type: [Project_user], required: false }],
   agents: [ProjectUserSchema],
   

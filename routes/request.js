@@ -5,6 +5,10 @@ var Request = require("../models/request");
 var emailService = require("../models/emailService");
 var Project_userApi = require("../controllers/project_user");
 var User = require("../models/user");
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema,
+    ObjectId = Schema.ObjectId;
+   ObjectId = Schema.ObjectId;
 
 // const Email = require('email-templates');
 
@@ -296,6 +300,22 @@ router.post('/', function(req, res) {
   });
 });
 
+router.patch('/:requestid', function(req, res) {
+  console.log(req.body);
+  // const update = _.assign({ "updatedAt": new Date() }, req.body);
+  const update = req.body;
+  console.log(update);
+
+ // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
+
+ Request.findByIdAndUpdate(req.params.requestid,  {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
+    if (err) {
+      return res.status(500).send({success: false, msg: 'Error updating object.'});
+    }
+    res.json(updatedMessage);
+  });
+
+});
 // router.put('/:messageid', function(req, res) {
   
 //     console.log(req.body);
