@@ -217,7 +217,7 @@ class EmailService {
      </html>
      `;
  
-     this.send(to, 'TileDesk - New Assigned Request', html);
+     this.send(to, '[TileDesk] New Assigned Request', html);
  }
 
     sendNewPooledRequestNotification(to, savedRequest) {
@@ -380,7 +380,7 @@ class EmailService {
               </html>
               `;
           
-              this.send(to, 'TileDesk - New Pooled Request', html);
+              this.send(to, '[TileDesk] New Pooled Request', html);
           }
 
           /**
@@ -532,7 +532,7 @@ class EmailService {
             `;
 
 
-            this.send(to, 'TileDesk - Password reset request', html);
+            this.send(to, '[TileDesk] Password reset request', html);
            }
 
           /**
@@ -676,7 +676,7 @@ class EmailService {
             `;
 
 
-            this.send(to, 'TileDesk - Your password has been changed', html);
+            this.send(to, '[TileDesk] Your password has been changed', html);
            }
 
           /**
@@ -826,7 +826,7 @@ class EmailService {
             `;
 
 
-            this.send(to, `TileDesk - Your have been invited to the '${projectName}' project`, html);
+            this.send(to, `[TileDesk] Your have been invited to the '${projectName}' project`, html);
            }
 
 
