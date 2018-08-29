@@ -546,10 +546,10 @@ router.get('/:departmentid', function (req, res) {
 router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
-  console.log("rreq.params.sort", req.params.sort);
+  console.log("rreq.query.sort", req.query.sort);
 
 
-  if (req.params.sort) {
+  if (req.query.sort) {
       Department.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, departments) { 
         if (err) return next(err);
     
