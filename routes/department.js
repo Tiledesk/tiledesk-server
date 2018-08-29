@@ -547,12 +547,25 @@ router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
 
-  Department.find({ "id_project": req.projectid }, function (err, departments) {
-    if (err) return next(err);
+  if (req.params.sort) {
+      Department.find({}).sort({updatedAt: 'asc'}).exec(function(err, docs) { 
+        if (err) return next(err);
+    
+    
+        res.json(departments);
+      });
+  }else {
+      Department.find({ "id_project": req.projectid }, function (err, departments) {
+        if (err) return next(err);
+    
+    
+        res.json(departments);
+      });
+  }
+ 
 
+  
 
-    res.json(departments);
-  });
 });
 
 module.exports = router;
