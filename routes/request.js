@@ -359,12 +359,29 @@ router.patch('/:requestid', function(req, res) {
 
 
 
-// router.get('/', function(req, res) {
 
-//     Message.find(function (err, messages) {
-//       if (err) return next(err);
-//       res.json(messages);
-//     });
-// });
+router.get('/', function (req, res) {
+
+  console.log("req projectid", req.projectid);
+  console.log("rreq.query.sort", req.query.sort);
+
+
+  if (req.query.sort) {
+      Request.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
+        if (err) return next(err);
+    
+    
+        res.json(requests);
+      });
+  }else {
+    Request.find({ "id_project": req.projectid }, function (err, requests) {
+        if (err) return next(err);
+    
+    
+        res.json(requests);
+      });
+  }
+});
+
 
 module.exports = router;
