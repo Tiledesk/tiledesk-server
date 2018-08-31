@@ -3,30 +3,30 @@
 ## Signup
 
 ```
-curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledesk.com/auth/signup
+curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledesk.com/v1/auth/signup
 ```
 
 ### Signin
 
 ```
-curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledesk.com/auth/signin
+curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledesk.com/v1/auth/signin
 ```
 
 ### Firebase signin
 
 ```
-curl -v -X POST -d 'email=andrea.leo@f21sdadsadasdwqeq.it&password=123456' https://api.tiledesk.com/firebase/auth/signin
+curl -v -X POST -d 'email=andrea.leo@f21sdadsadasdwqeq.it&password=123456' https://api.tiledesk.com/v1/firebase/auth/signin
 ```
 
 ### Departments 
 
 ```
-curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/5ab0f32757066e0014bfd718/departments
+curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f32757066e0014bfd718/departments
 ```
 
 #### Get the available operator for a specific department
 ```
-curl -v -X GET -u andrea.leo@frontiere21.it:123456 https://api.tiledesk.com/5ad4c101e774ac0014ae0d07/departments/5ad5c2c9c975820014ba901b/operators
+curl -v -X GET -u andrea.leo@frontiere21.it:123456 https://api.tiledesk.com/v1/5ad4c101e774ac0014ae0d07/departments/5ad5c2c9c975820014ba901b/operators
 ```
 
 
@@ -36,7 +36,7 @@ curl -v -X GET -u andrea.leo@frontiere21.it:123456 https://api.tiledesk.com/5ad4
 #### List
 
 ```
-curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/5ab0f32757066e0014bfd718/faq_kb
+curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f32757066e0014bfd718/faq_kb
 ```
 
 
