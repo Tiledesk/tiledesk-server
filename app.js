@@ -82,7 +82,7 @@ var projectIdSetter = function (req, res, next) {
 
 app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  res.send('Test auth ok.');
+  res.send('{"success":true}');
 });
 
 app.use('/firebase/auth', firebaseAuth);
