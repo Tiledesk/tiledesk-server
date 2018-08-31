@@ -81,6 +81,10 @@ var projectIdSetter = function (req, res, next) {
 }
 
 app.use('/auth', auth);
+app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+  res.send('Test auth ok.');
+});
+
 app.use('/firebase/auth', firebaseAuth);
 
 app.use('/:projectid', projectIdSetter);
@@ -109,6 +113,31 @@ app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session
 
 //app.use('/apps', tenant);
 
+
+// function keepalive() {
+//   console.log('keepalive2 ');
+
+//   var options = {
+//     url: 'https://us-central1-chat-v2-dev.cloudfunctions.net/supportapi/tilechat/requests?token=chat21-secret-orgAa,',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     json: {"sender_fullname": "Bash", "text":"ping from API","projectid":"5b45e1c75313c50014b3abc6"}
+//   };
+
+//   setInterval(function() {
+//     request(options, function (err, res, body) {
+    
+//       console.log('keepalive  ok');
+
+//       if (err) {
+//         console.log('keepalive ERROR ', err);
+//       }
+//     });
+//   }, 3000);
+// }
+// app.use(keepalive());
 
 
 // catch 404 and forward to error handler
