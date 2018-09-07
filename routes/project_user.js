@@ -130,16 +130,16 @@ router.post('/invite', function (req, res) {
             // Project.findOne({ _id: req.body.id_project }, function (err, project) {
 
             //   if (err) throw err;
-      
+
             //   if (!project) {
             //     return res.json({ success: false, msg: 'Project not found.' });
             //   }
-      
+
             //   if (project) {
             //     console.log('INVITE USER - PROJECT FOUND BY PROJECT ID ' , project)
             //     if (project){
             //       var projectName = project.name;
-                
+
             //     }
             //   }
             // });
@@ -156,7 +156,7 @@ router.post('/invite', function (req, res) {
               var invitedUserFirstname = user.firstname
               var invitedUserLastname = user.lastname
             }
-            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, invitedUserFirstname, invitedUserLastname, req.body.role)
+            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
           });
 
         }
