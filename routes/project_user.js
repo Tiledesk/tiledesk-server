@@ -227,9 +227,9 @@ router.get('/details/:project_userid', function (req, res) {
 
 
 /**
- * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID
+ * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
  */
-router.get('/:user_id/:project_id', function (req, res) {
+router.get('/:user_id/:project_id', function (req, res, next) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
   console.log("--> USER ID ", req.params.user_id);
   console.log("--> PROJECT ID ", req.params.project_id);
