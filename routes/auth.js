@@ -279,9 +279,9 @@ router.post('/signin', function (req, res) {
 // VERIFY EMAIL
 router.put('/verifyemail/:userid', function (req, res) {
 
-  console.log('VERIFY EMAIL REQ BODY ', req.body);
+  console.log('VERIFY EMAIL - REQ BODY ', req.body);
 
-  User.findByIdAndUpdate(req.params.userid, req.body, { new: false, upsert: false }, function (err, findUser) {
+  User.findByIdAndUpdate(req.params.userid, req.body, { new: true, upsert: true }, function (err, findUser) {
     if (err) {
       console.log(err);
       return res.status(500).send({ success: false, msg: err });
@@ -290,6 +290,7 @@ router.put('/verifyemail/:userid', function (req, res) {
     if (!findUser) {
       return res.status(404).send({ success: false, msg: 'User not found' });
     }
+    console.log('VERIFY EMAIL - RETURNED USER ', findUser);
     res.json(findUser);
   });
 });

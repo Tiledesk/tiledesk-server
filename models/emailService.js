@@ -7,59 +7,59 @@ class EmailService {
 
 
 
-    getTransport() {
-
-        
-        
-        var emailPassword = process.env.EMAIL_PASSWORD;
-        
-
-        console.log('emailPassword ', emailPassword);
-    
-    
-        // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport({
-            host: config.host,
-            //port: 587,
-            secure: false, // true for 465, false for other ports
-            auth: {
-                user: config.username,     
-                pass: emailPassword
-            }
-        });
-
-        return transporter;
+  getTransport() {
 
 
-    }
 
-    send(to, subject, html) {
-      let mailOptions = {
-        from: config.from, // sender address
-        to: to,
-        bcc: config.bcc,
-        subject: subject, // Subject line
-        //text: 'Hello world?', // plain text body
-        html: html
-      };
-      console.log('mailOptions', mailOptions);
+    var emailPassword = process.env.EMAIL_PASSWORD;
+
+
+    console.log('emailPassword ', emailPassword);
+
+
+    // create reusable transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport({
+      host: config.host,
+      //port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: config.username,
+        pass: emailPassword
+      }
+    });
+
+    return transporter;
+
+
+  }
+
+  send(to, subject, html) {
+    let mailOptions = {
+      from: config.from, // sender address
+      to: to,
+      bcc: config.bcc,
+      subject: subject, // Subject line
+      //text: 'Hello world?', // plain text body
+      html: html
+    };
+    console.log('mailOptions', mailOptions);
 
     // send mail with defined transport object
-      this.getTransport().sendMail(mailOptions, (error, info) => {
-          if (error) {
-              return console.log(error);
-          }
-          console.log('Message sent: %s', info.messageId);
-          // Preview only available when sending through an Ethereal account
-          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    this.getTransport().sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log('Message sent: %s', info.messageId);
+      // Preview only available when sending through an Ethereal account
+      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
-          // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-          // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-      });
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    });
 
   }
   sendNewAssignedRequestNotification(to, savedRequest) {
-        
+
     var html = `
      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
      <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -216,13 +216,13 @@ class EmailService {
        </body>
      </html>
      `;
- 
-     this.send(to, '[TileDesk] New Assigned Request', html);
- }
 
-    sendNewPooledRequestNotification(to, savedRequest) {
-        
-             var html = `
+    this.send(to, '[TileDesk] New Assigned Request', html);
+  }
+
+  sendNewPooledRequestNotification(to, savedRequest) {
+
+    var html = `
               <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
               <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
               
@@ -379,16 +379,16 @@ class EmailService {
                 </body>
               </html>
               `;
-          
-              this.send(to, '[TileDesk] New Pooled Request', html);
-          }
 
-          /**
-           * ******** EMAIL: PASSWORD RESET REQUEST ********
-           */
-          sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname ) {
+    this.send(to, '[TileDesk] New Pooled Request', html);
+  }
 
-            var html = `
+  /**
+   * ******** EMAIL: PASSWORD RESET REQUEST ********
+   */
+  sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
+
+    var html = `
 
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
             <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -532,15 +532,15 @@ class EmailService {
             `;
 
 
-            this.send(to, '[TileDesk] Password reset request', html);
-           }
+    this.send(to, '[TileDesk] Password reset request', html);
+  }
 
-          /**
-           * ********  EMAIL: YOUR PASSWORD HAS BEEN CHANGED ********
-           */
-          sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname ) {
+  /**
+   * ********  EMAIL: YOUR PASSWORD HAS BEEN CHANGED ********
+   */
+  sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
 
-            var html = `
+    var html = `
 
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
             <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -676,15 +676,15 @@ class EmailService {
             `;
 
 
-            this.send(to, '[TileDesk] Your password has been changed', html);
-           }
+    this.send(to, '[TileDesk] Your password has been changed', html);
+  }
 
-          /**
-           * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ********
-           */
-          sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
+  /**
+   * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ********
+   */
+  sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
-            var html = `
+    var html = `
 
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
             <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -789,8 +789,8 @@ class EmailService {
 
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <a href="https://support.tiledesk.com/dashboard/#/projects" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
-                                        GO TO CONSOLE
+                                      <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                        GO TO THE PROJECT
                                       </a>
                                     </div>
 
@@ -826,8 +826,8 @@ class EmailService {
             `;
 
 
-            this.send(to, `[TileDesk] Your have been invited to the '${projectName}' project`, html);
-           }
+    this.send(to, `[TileDesk] Your have been invited to the '${projectName}' project`, html);
+  }
 
 
 
@@ -846,6 +846,6 @@ var emailService = new EmailService();
 //             RECEIVED : 200, //received from the recipient client
 //             RETURN_RECEIPT: 250, //return receipt from the recipient client
 //             SEEN : 300 //seen
-    
+
 //         }
 module.exports = emailService;
