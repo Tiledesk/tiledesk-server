@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  
+  h1 Chat Transcript
+
+  each message in messages
+    p [#{message.createdAt.toDateString()}] #{message.sender}: #{message.text}
+
+

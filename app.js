@@ -39,6 +39,8 @@ var group = require('./routes/group');
 
 // new 
 var users = require('./routes/users');
+var publicRequest = require('./routes/public-request');
+
 
 var app = express();
 
@@ -100,7 +102,10 @@ app.use('/:projectid', projectIdSetter);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/:projectid/contacts', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], contact);
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
+
 app.use('/:projectid/departments', department);
+app.use('/public/requests', publicRequest);
+
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
 app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], bot);
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
@@ -110,6 +115,7 @@ app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], group);
+
 
 //app.use('/apps', tenant);
 

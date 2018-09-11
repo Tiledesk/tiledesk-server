@@ -377,7 +377,6 @@ router.get('/', function (req, res) {
     Request.find({ "id_project": req.projectid }, function (err, requests) {
         if (err) return next(err);
     
-    
         res.json(requests);
       });
   }
