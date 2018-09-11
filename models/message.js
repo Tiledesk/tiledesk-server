@@ -6,9 +6,17 @@ var MessageSchema = new Schema({
     type: String,
     required: true
   },
+  senderFullname: {
+    type: String,
+    required: false
+  },
   recipient: {
     type: String,
     required: true
+  },
+  recipientFullname: {
+    type: String,
+    required: false
   },
   text: {
     type: String,

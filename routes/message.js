@@ -10,7 +10,9 @@ router.post('/', function(req, res) {
   console.log(req.body);
   var newMessage = new Message({
     sender: req.body.sender,
+    senderFullname: req.body.sender_fullname,
     recipient: req.body.recipient,
+    recipientFullname: req.body.recipient_fullname,
     text: req.body.text,
     id_project: req.projectid,
     createdBy: req.user.id,
