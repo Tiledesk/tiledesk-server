@@ -58,7 +58,7 @@ class EmailService {
     });
 
   }
-  sendNewAssignedRequestNotification(to, savedRequest) {
+  sendNewAssignedRequestNotification(to, savedRequest, project) {
 
     var html = `
      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -177,11 +177,17 @@ class EmailService {
                      </td>
                      </tr>
 
+
+                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                       Project Name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${project.name}</strong>
+                     </td>
+                     </tr>
                                        
 
                      <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                         Click <a href="https://support.tiledesk.com/dashboard/#/projects">here</a> to open the dashboard. 
+                         Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.requester_id}/messages">here</a> to open the dashboard. 
                          
                        </td>
                      </tr>
@@ -220,7 +226,7 @@ class EmailService {
     this.send(to, '[TileDesk] New Assigned Request', html);
   }
 
-  sendNewPooledRequestNotification(to, savedRequest) {
+  sendNewPooledRequestNotification(to, savedRequest, project) {
 
     var html = `
               <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -339,13 +345,18 @@ class EmailService {
                               </td>
                               </tr>
 
-                              
+                              <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                              <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                                Project Name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${project.name}</strong>
+                              </td>
+                              </tr>
                           
 
 
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                  Click <a href="https://support.tiledesk.com/dashboard/#/projects">here</a> to open the dashboard.
+                                  Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.requester_id}/messages">here</a> to open the dashboard.
+                                  
                                 </td>
                               </tr>
                             
