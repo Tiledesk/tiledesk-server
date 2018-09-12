@@ -36,9 +36,9 @@ mongoose.set('debug', true);
    
       
     AnalyticResult.aggregate([
-        { "$match": {"id_project": req.projectid } },
+        // { "$match": {"id_project": req.projectid } },
         // { "$match": {} },
-        // { $match: {"id_project":req.projectid, "createdAt" : { $gte : (new Date().getTime() - 1000*60*60*24*30) }} },
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"}, 
