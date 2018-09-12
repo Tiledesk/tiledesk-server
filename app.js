@@ -40,6 +40,7 @@ var group = require('./routes/group');
 // new 
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
+var analytics = require('./routes/analytics');
 
 
 var app = express();
@@ -115,6 +116,7 @@ app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], group);
+app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], analytics);
 
 
 //app.use('/apps', tenant);
