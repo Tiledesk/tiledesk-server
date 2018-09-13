@@ -44,8 +44,12 @@ router.post('/', function(req, res) {
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
     departmentid: req.body.departmentid,
-    // recipient: req.body.recipient,
-    // recipientFullname: req.body.recipientFullname,
+
+    recipient: req.body.recipient,
+    recipientFullname: req.body.recipient_fullname,
+    sender: req.body.sender,
+    senderFullname: req.body.sender_fullname,
+
     agents: req.body.agents,
     availableAgents: req.body.availableAgents,
     assigned_operator_id:  req.body.assigned_operator_id,

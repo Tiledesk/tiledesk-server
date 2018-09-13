@@ -45,19 +45,25 @@ var RequestSchema = new Schema({
     required: true,
     default: 0
   }, 
-  // recipient: {
-  //   type: String,
-  //   required: true
-  // },
-  // recipientFullname: {
-  //   type: String,
-  //   required: false
-  // },
-  
-  // type: {
-  //   type: String,
-  //   required: false
-  // },
+
+
+  sender: {
+    type: String,
+    required: false
+  },
+  senderFullname: {
+    type: String,
+    required: false
+  },
+  recipient: {
+    type: String,
+    required: false
+  },
+  recipientFullname: {
+    type: String,
+    required: false
+  },
+
 
   id_project: {
     type: String,
@@ -72,10 +78,7 @@ var RequestSchema = new Schema({
     type: String,
     required: false
   },
-  // departmentId: {
-  //   type: String,
-  //   required: false
-  // },
+
   departmentid: {
     type: Schema.Types.ObjectId,
     ref: 'department'
