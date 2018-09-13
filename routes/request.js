@@ -38,7 +38,7 @@ var Schema = mongoose.Schema,
 
 router.post('/', function(req, res) {
 
-  console.log(req.body);
+  console.log("req.body", req.body);
   var newRequest = new Request({
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
