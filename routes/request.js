@@ -2,6 +2,7 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Request = require("../models/request");
+var Message = require("../models/message");
 var emailService = require("../models/emailService");
 var Project_userApi = require("../controllers/project_user");
 var User = require("../models/user");
@@ -39,16 +40,33 @@ var Schema = mongoose.Schema,
 router.post('/', function(req, res) {
 
   console.log("req.body", req.body);
+
+  console.log("req.projectid", req.projectid);
+  console.log("req.user.id", req.user.id);
+
+
+  var first_message = new Message({
+    sender: req.body.first_message.sender,
+    senderFullname: req.body.first_message.sender_fullname,
+    recipient: req.body.first_message.recipient,
+    recipientFullname: req.body.first_message.recipient_fullname,
+    text: req.body.first_message.text,
+    id_project: req.projectid,
+    createdBy: req.user.id,
+    updatedBy: req.user.id
+  });
+
   var newRequest = new Request({
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
     departmentid: req.body.departmentid,
 
-    recipient: req.body.recipient,
-    recipientFullname: req.body.recipient_fullname,
-    sender: req.body.sender,
-    senderFullname: req.body.sender_fullname,
+    // recipient: req.body.recipient,
+    // recipientFullname: req.body.recipient_fullname,
+    // sender: req.body.sender,
+    // senderFullname: req.body.sender_fullname,
+    first_message: first_message,
 
     agents: req.body.agents,
     availableAgents: req.body.availableAgents,

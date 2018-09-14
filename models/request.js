@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
+var MessageSchema = require("../models/message").schema;
+
 // var ProjectUserSchema = require("../models/project_user");
 
 
@@ -47,23 +49,25 @@ var RequestSchema = new Schema({
   }, 
 
 
-  sender: {
-    type: String,
-    required: false
-  },
-  senderFullname: {
-    type: String,
-    required: false
-  },
-  recipient: {
-    type: String,
-    required: false
-  },
-  recipientFullname: {
-    type: String,
-    required: false
-  },
+  // sender: {
+  //   type: String,
+  //   required: false
+  // },
+  // senderFullname: {
+  //   type: String,
+  //   required: false
+  // },
+  // recipient: {
+  //   type: String,
+  //   required: false
+  // },
+  // recipientFullname: {
+  //   type: String,
+  //   required: false
+  // },
 
+
+  first_message: MessageSchema,
 
   id_project: {
     type: String,
