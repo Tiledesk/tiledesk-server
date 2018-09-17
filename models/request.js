@@ -3,19 +3,6 @@ var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
 var MessageSchema = require("../models/message").schema;
 
-// var ProjectUserSchema = require("../models/project_user");
-
-
-// var newRequest = {};
-// newRequest.created_on = admin.firestore.FieldValue.serverTimestamp();
-// newRequest.requester_id = message.sender;
-// newRequest.requester_fullname = message.sender_fullname;
-// newRequest.first_text = message.text;
-// newRequest.members = group_members;
-// newRequest.membersCount = Object.keys(group_members).length;
-// newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.UNSERVED;
-// newRequest.app_id = app_id;
-
 
 
 
@@ -27,59 +14,26 @@ var RequestSchema = new Schema({
   },
   requester_fullname: {
     type: String,
-    required: true
+    required: false
   },
   first_text: {
     type: String,
     required: true
   },
-  members: {
-    type: Object,
-    required: false
-  },
-  membersCount: {
+  // membersCount: {
+  //   type: Number,
+  //   required: false,
+  //   default:0
+  // },
+  support_status: {
     type: Number,
     required: false,
-    default:0
-  },
-  support_status: {
-    type: String,
-    required: true,
-    default: 0
+    default: 100
   }, 
 
 
-  // sender: {
-  //   type: String,
-  //   required: false
-  // },
-  // senderFullname: {
-  //   type: String,
-  //   required: false
-  // },
-  // recipient: {
-  //   type: String,
-  //   required: false
-  // },
-  // recipientFullname: {
-  //   type: String,
-  //   required: false
-  // },
-
-
-  first_message: MessageSchema,
-
-  id_project: {
-    type: String,
-    required: true
-  },
-  id_app: {
-    type: String,
-    required: true,
-    default:"default"
-  },
-  userAgent: {
-    type: String,
+  participants: {
+    type: Array,
     required: false
   },
 
@@ -88,24 +42,12 @@ var RequestSchema = new Schema({
     ref: 'department'
     // required: true
   },
-  departmentName: {
-    type: String,
-    required: false
-  },
-  sourcePage: {
-    type: String,
-    required: false
-  },
-  language: {
-    type: String,
-    required: false
-  },
-  createdBy: {
-    type: String,
-    required: true
-  },
 
+
+
+  first_message: MessageSchema,
   
+  //rating
   rating: {
     type: Number,
     required: false,
@@ -116,9 +58,10 @@ var RequestSchema = new Schema({
   }, 
 
 
-  // agents: [{ type: [Project_user], required: false }],
+  // all the agents of the project or the department at the request time 
   agents: [ProjectUserSchema],
   
+  // all the available agents of the project or the department at the request time
   available_agents: [ProjectUserSchema],
 
   assigned_operator_id: {
@@ -127,7 +70,34 @@ var RequestSchema = new Schema({
     // required: true
   },
 
-  // available_agents: [{ type: [Project_user], required: true }]
+
+  // others
+  sourcePage: {
+    type: String,
+    required: false
+  },
+  language: {
+    type: String,
+    required: false
+  },
+  userAgent: {
+    type: String,
+    required: false
+  },
+
+
+
+
+  id_project: {
+    type: String,
+    required: true
+  },
+
+  createdBy: {
+    type: String,
+    required: true
+  },
+
 },{
   timestamps: true
 }

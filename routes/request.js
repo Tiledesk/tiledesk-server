@@ -11,28 +11,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
-// const Email = require('email-templates');
-
-// var newRequest = {};
-// newRequest.created_on = admin.firestore.FieldValue.serverTimestamp();  //SALTO
-// newRequest.requester_id = message.sender;
-// newRequest.requester_fullname = message.sender_fullname;
-// newRequest.first_text = message.text;
-// newRequest.departmentid = departmentid;
-// newRequest.members = group_members;  //SALTO
-// newRequest.membersCount = Object.keys(group_members).length; //SALTO
-// newRequest.agents = agents;
-// newRequest.availableAgents = availableAgents;
-// newRequest.assigned_operator_id = assigned_operator_id;
-// if (newRequest.membersCount==2){
-//     newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.UNSERVED;
-// }else {
-//     newRequest.support_status = chatSupportApi.CHATSUPPORT_STATUS.SERVED;
-// }
-// if (message.attributes != null) {
-//     newRequest.attributes = message.attributes;
-// }
-// newRequest.app_id = app_id;
 
 
 
@@ -45,33 +23,44 @@ router.post('/', function(req, res) {
   console.log("req.user.id", req.user.id);
 
 
-  var first_message = new Message({
-    sender: req.body.first_message.sender,
-    senderFullname: req.body.first_message.sender_fullname,
-    recipient: req.body.first_message.recipient,
-    recipientFullname: req.body.first_message.recipient_fullname,
-    text: req.body.first_message.text,
-    id_project: req.projectid,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
+  // var first_message = new Message({
+  //   sender: req.body.requester_id,
+  //   senderFullname: req.body.requester_fullname,
+  //   recipient: req.body.first_message.recipient,
+  //   recipientFullname: req.body.first_message.recipient_fullname,
+  //   text: req.body.first_message.text,
+  //   id_project: req.projectid,
+  //   createdBy: req.user.id,
+  //   updatedBy: req.user.id
+  // });
 
   var newRequest = new Request({
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
+    support_status: req.body.support_status,
+    partecipants: req.body.partecipants,
     departmentid: req.body.departmentid,
 
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipient_fullname,
     // sender: req.body.sender,
     // senderFullname: req.body.sender_fullname,
-    first_message: first_message,
+    // first_message: first_message,
+
+    rating: req.body.rating,
+    rating_message: req.body.rating_message,
 
     agents: req.body.agents,
     availableAgents: req.body.availableAgents,
     assigned_operator_id:  req.body.assigned_operator_id,
-    support_status: req.body.support_status,
+
+    //others
+    sourcePage: req.body.sourcePage,
+    language: req.body.language,
+    userAgent: req.body.userAgent,
+
+    //standard
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
@@ -189,46 +178,7 @@ router.patch('/:requestid', function(req, res) {
   });
 
 });
-// router.put('/:messageid', function(req, res) {
-  
-//     console.log(req.body);
-    
-//     Message.findByIdAndUpdate(req.params.messageid, req.body, {new: true, upsert:true}, function(err, updatedMessage) {
-//       if (err) {
-//         return res.status(500).send({success: false, msg: 'Error updating object.'});
-//       }
-//       res.json(updatedMessage);
-//     });
-//   });
 
-
-//   router.delete('/:messageid', function(req, res) {
-  
-//     console.log(req.body);
-    
-//     Message.remove({_id:req.params.messageid}, function(err, Message) {
-//       if (err) {
-//         return res.status(500).send({success: false, msg: 'Error deleting object.'});
-//       }
-//       res.json(Message);
-//     });
-//   });
-
-
-//   router.get('/:messageid', function(req, res) {
-  
-//     console.log(req.body);
-    
-//     Message.findById(req.params.messageid, function(err, message) {
-//       if (err) {
-//         return res.status(500).send({success: false, msg: 'Error getting object.'});
-//       }
-//       if(!message){
-//         return res.status(404).send({success: false, msg: 'Object not found.'});
-//       }
-//       res.json(message);
-//     });
-//   });
 
 
 

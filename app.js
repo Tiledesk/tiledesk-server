@@ -42,6 +42,7 @@ var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
 var analytics = require('./routes/analytics');
 
+var chat21Request = require('./routes/chat21-request');
 
 var app = express();
 
@@ -101,6 +102,8 @@ app.use('/:projectid', projectIdSetter);
 // app.use('/:projectid', [passport.authenticate(['basic','jwt'], { session: false }), validtoken]);
 
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+// app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
+
 app.use('/:projectid/contacts', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], contact);
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
 
@@ -118,6 +121,8 @@ app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], group);
 app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], analytics);
 
+// http://localhost:3000/chat21/requests
+app.use('/chat21/requests',  chat21Request);
 
 //app.use('/apps', tenant);
 
