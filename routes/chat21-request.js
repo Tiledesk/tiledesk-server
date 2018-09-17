@@ -19,8 +19,8 @@ router.post('/', function(req, res) {
 
   console.log("chat21 req.body", req.body);
 
-  console.log("req.projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+  // console.log("req.projectid", req.projectid);
+  // console.log("req.user.id", req.user.id);
 
 
 
