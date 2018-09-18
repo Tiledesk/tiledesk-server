@@ -28,7 +28,7 @@ router.post('/', function(req, res) {
     var message = req.body.data;
     console.log("chat21 message", message);
 
-    var departmentid = message.attributes.departmentid;
+    var departmentid = message.attributes.departmentId;
     console.log("chat21 departmentid", departmentid);
 
     var sourcePage = message.attributes.sourcePage;
@@ -69,6 +69,8 @@ router.post('/', function(req, res) {
       updatedBy: req.user.id
     });
   
+    console.log("newRequest",newRequest);
+
     newRequest.save(function(err, savedRequest) {
       if (err) {
         console.log('Error saving object.',err);
