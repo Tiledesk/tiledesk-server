@@ -51,7 +51,7 @@ router.post('/', function(req, res) {
     var projectid = message.projectid;
     console.log("chat21 projectid", projectid);
 
-    requestservice.create(message.sender, message.sender_fullname, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
+    requestservice.create(message.recipient, message.sender_fullname, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
       res.json(result);
     });
 
