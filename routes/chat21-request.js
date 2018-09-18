@@ -29,14 +29,17 @@ router.post('/', function(req, res) {
     var message = req.body.data;
     console.log("chat21 message", message);
 
-    var departmentid = message.attributes.departmentId;
-    console.log("chat21 departmentid", departmentid);
+    var departmentid = "default";
 
     var sourcePage;
     var client;
     var language;
 
     if (message.attributes) {
+
+      departmentid = message.attributes.departmentId;
+      console.log("chat21 departmentid", departmentid);
+
       sourcePage = message.attributes.sourcePage;
       console.log("chat21 sourcePage", sourcePage);
       
