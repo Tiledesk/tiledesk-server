@@ -50,6 +50,7 @@ router.post('/', function(req, res) {
       // support_status: req.body.support_status,
       // partecipants: req.body.partecipants,
       departmentid: departmentid,
+      first_message: message,
   
       // rating: req.body.rating,
       // rating_message: req.body.rating_message,
@@ -88,6 +89,43 @@ router.post('/', function(req, res) {
       res.json(savedRequest);
       
     });
+
+  } else if (req.body.event_type == "new-message") {
+
+    console.log("new-message","new-message");
+
+    var message = req.body.data;
+    console.log("chat21 message", message);
+
+
+    var projectid = message.projectid;
+    console.log("chat21 projectid", projectid);
+
+    
+
+    var newMessage = new Message({
+      sender: message.sender,
+      senderFullname: message.sender_fullname,
+      recipient: message.recipient,
+      recipientFullname: message.recipient_fullname,
+      text: message.text,
+      id_project: projectid,
+      createdBy: "system",
+      updatedBy: "system"
+    });
+  
+    console.log("newMessage", newMessage);
+
+
+    newMessage.save(function(err, savedMessage) {
+      if (err) {
+        console.log(err);
+  
+        return res.status(500).send({success: false, msg: 'Error saving object.', err:err});
+      }
+      res.json(savedMessage);
+    });
+
 
   } else {
     res.json("Not implemented");
