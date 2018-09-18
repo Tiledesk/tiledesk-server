@@ -65,8 +65,8 @@ router.post('/', function(req, res) {
   
       //standard
       id_project: projectid,
-      createdBy: req.user.id,
-      updatedBy: req.user.id
+      createdBy: "system",
+      updatedBy: "system"
     });
   
     console.log("newRequest",newRequest);
