@@ -67,7 +67,7 @@ getOperators(departmentid, projectid, nobot) {
 
             // getAvailableOperatorsWithOperatingHours: IN BASE ALLE 'OPERATING HOURS' DEL PROGETTO ESEGUE 
             // getAvailableOperator CHE RITORNA I PROJECT USER DISPONIBILI
-            return that.findProjectUsersAllAndAvailableWithOperatingHoursgetAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
+            return that.getAvailableOperatorsWithOperatingHours(project_users, projectid).then(function (_available_agents) {
 
               console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
