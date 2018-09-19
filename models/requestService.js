@@ -26,7 +26,7 @@ class RequestService {
               first_text: first_text,
               // support_status: req.body.support_status,
               // partecipants: req.body.partecipants,
-              departmentid: departmentid,
+              departmentid: result.department._id,
 
           
               // rating: req.body.rating,
