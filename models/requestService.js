@@ -60,7 +60,11 @@ class RequestService {
                 console.log("savedRequest",savedRequest);
                 
                 // console.log("XXXXXXXXXXXXXXXX");
-                that.sendEmail(id_project, savedRequest);
+
+                if (id_project!="5b45e1c75313c50014b3abc6") {
+                  that.sendEmail(id_project, savedRequest);
+
+                }
                 
                 
             
