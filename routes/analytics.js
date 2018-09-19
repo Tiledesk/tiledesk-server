@@ -29,7 +29,7 @@ var mongoose = require('mongoose');
 //   {$sort:{_id:1}},
 // ])
 
-  router.get('/requests', function(req, res) {
+  router.get('/requests/aggregate/day', function(req, res) {
   
     console.log(req.params);
     console.log("req.projectid",  req.projectid);    
@@ -50,6 +50,37 @@ var mongoose = require('mongoose');
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}}
+    ])
+    // .exec((err, result) => {
+      .exec(function(err, result) {
+
+     
+  //, function (err, result) {
+        if (err) {
+            console.log(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          console.log(result);
+
+          res.json(result);
+    });
+
+  });
+
+
+
+  router.get('/requests/count', function(req, res) {
+  
+    console.log(req.params);
+    console.log("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        // { "$match": {"id_project": req.projectid } },
+        // { "$match": {} },
+        { "$match": {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { "$count": "totalCount" }
+      
     ])
     // .exec((err, result) => {
       .exec(function(err, result) {
