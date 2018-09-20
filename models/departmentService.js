@@ -23,10 +23,10 @@ getOperators(departmentid, projectid, nobot) {
       return Department.findOne(query, function (err, department) {
         if (err) {
           console.log('-- > 1 DEPT FIND BY ID ERR ', err)
-          reject(err);
+          return reject(err);
         }
         if (!department) {
-          reject({ success: false, msg: 'Object not found.' });
+          return reject({ success: false, msg: 'Object not found.' });
         }
         console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
         console.log('OPERATORS - »»» DEPARTMENT - ID BOT ', department.id_bot)
@@ -59,7 +59,7 @@ getOperators(departmentid, projectid, nobot) {
           return Project_user.find({ id_project: projectid }, function (err, project_users) {
             if (err) {
               console.log('-- > 2 DEPT FIND BY ID ERR ', err)
-              reject(err);
+              return reject(err);
             }
             console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
             // if (project_users && project_users.length > 0) {
@@ -71,14 +71,14 @@ getOperators(departmentid, projectid, nobot) {
 
               console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
-              resolve ({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
+              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
             }).catch(function (error) {
 
               console.error("Write failed: ", error);
 
               console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
 
-              reject(error);
+              return reject(error);
             });
             
           });
@@ -99,11 +99,11 @@ getOperators(departmentid, projectid, nobot) {
 
             console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
             value['department'] = department
-            resolve(value);
+            return resolve(value);
 
           }).catch(function (error) {
             console.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
-            reject(error);
+            return reject(error);
           });
         }
       });
@@ -118,11 +118,11 @@ getOperators(departmentid, projectid, nobot) {
 
     if (department.id_group != null) {
 
-      resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department));
 
     } else {
 
-      resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department));
 
     }
 
@@ -137,7 +137,7 @@ getOperators(departmentid, projectid, nobot) {
     return Group.find({ _id: department.id_group }, function (err, group) {
       if (err) {
         console.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
-        reject(err);
+        return reject(err);
       }
       if (group) {
         console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> GROUP FOUND:: ', group);
@@ -149,7 +149,7 @@ getOperators(departmentid, projectid, nobot) {
           console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
           if (err) {
             console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
-            reject(err);
+            return reject(err);
           }
           if (project_users && project_users.length > 0) {
             console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
@@ -164,14 +164,14 @@ getOperators(departmentid, projectid, nobot) {
               if (department.routing === 'assigned') {
                 selectedoperator = that.getRandomAvailableOperator(_available_agents);
               }
-              resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+              return resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
 
             }).catch(function (error) {
 
               // console.error("Write failed: ", error);
               console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_group ] - AVAILABLE AGENT - ERROR ', error);
 
-              reject(error);
+              return reject(error);
               //sendError(error, res);
             });
             // NK NEW
@@ -183,7 +183,7 @@ getOperators(departmentid, projectid, nobot) {
             // resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
 
           } else {
-            resolve({ available_agents: [], agents: [], operators: [] })
+            return resolve({ available_agents: [], agents: [], operators: [] })
           }
 
         })
@@ -201,7 +201,7 @@ getOperators(departmentid, projectid, nobot) {
     return Project_user.find({ id_project: projectid }, function (err, project_users) {
       if (err) {
         console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
-        reject(err);
+        return reject(err);
       }
       console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS LENGHT ', project_users.length)
       console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS ', project_users)
@@ -218,13 +218,13 @@ getOperators(departmentid, projectid, nobot) {
           if (department.routing === 'assigned') {
             selectedoperator = that.getRandomAvailableOperator(_available_agents);
           }
-          resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+          return resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
 
         }).catch(function (error) {
 
           // console.error("Write failed: ", error);
           console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_nogroup ] - AVAILABLE AGENT - ERROR ', error);
-          reject(error);
+          return reject(error);
 
         });
 
@@ -238,7 +238,7 @@ getOperators(departmentid, projectid, nobot) {
         // console.log('D-1-B -> [ findProjectUsersForAssignedPooledRouting_nogroup ] - AVAILABLE AGENT ', _available_agents);
         // resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
       } else {
-        resolve({ available_agents: [], agents: [], operators: [] })
+        return resolve({ available_agents: [], agents: [], operators: [] })
       }
 
     });
@@ -263,23 +263,23 @@ getOperators(departmentid, projectid, nobot) {
 
         if (err) {
           console.error(err); 
-          reject(err);
+          return reject(err);
           // sendError(err, res);
 
         } else if (isOpen) {
 
           var _available_agents = that.getAvailableOperator(project_users);
 
-          resolve(_available_agents);
+          return resolve(_available_agents);
           // console.log('D -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> AVAILABLE PROJECT USERS (returned by getAvailableOperator): ', _available_agents)
           // resolve(findProjectUsersForAssignedPooledRouting_nogroup(projectid, department));
         } else {
           // resolve({ available_agents: [], agents: [], operators: [] });
-          resolve([]);
+          return resolve([]);
         }
       });
     } else {
-      resolve([]);
+      return resolve([]);
     }
 
   });

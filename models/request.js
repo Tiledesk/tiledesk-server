@@ -8,6 +8,10 @@ var MessageSchema = require("../models/message").schema;
 
 
 var RequestSchema = new Schema({
+  request_id: {
+    type: String,
+    required: false
+  },
   requester_id: {
     type: String,
     required: true
@@ -115,5 +119,9 @@ RequestSchema.statics.filterAvailableOperators = function filterAvailableOperato
 
   return project_users_available;
 }
+
+RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
+RequestSchema.index({ id_project: 1, type: -1 }); // schema level
+
 
 module.exports = mongoose.model('request', RequestSchema);

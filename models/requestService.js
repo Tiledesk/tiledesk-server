@@ -5,22 +5,30 @@ var Request = require("../models/request");
 var emailService = require("../models/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
+var mongoose = require('mongoose');
 
 
 class RequestService {
 
 
 
-
   create(requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent) {
+      return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent);
+  };
+
+  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent) {
+
+    console.log("request_id", request_id);
+
 
     var that = this;
 
     return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-        console.log("result1111", result);
+        console.log("result", result);
 
             var newRequest = new Request({
+              request_id: request_id,
               requester_id: requester_id,
               requester_fullname: requester_fullname,
               first_text: first_text,
@@ -47,13 +55,17 @@ class RequestService {
               createdBy: requester_id,
               updatedBy: requester_id
             });
-          
+                   
+
+            console.log('newRequest.',newRequest);
+
+
             return new Promise(function (resolve, reject) {
 
-              newRequest.save(function(err, savedRequest) {
+             return newRequest.save(function(err, savedRequest) {
                 if (err) {
-                  console.log('Error saving object.',err);
-                  reject(err);
+                  console.error('Error saving object.',err);
+                  return reject(err);
                 }
             
             
@@ -68,7 +80,7 @@ class RequestService {
                 
                 
             
-                resolve(savedRequest);
+                return resolve(savedRequest);
                 
               });
           });
@@ -92,11 +104,11 @@ class RequestService {
    
      Project.findById(projectid, function(err, project){
        if (err) {
-         console.log(err);
+         console.error(err);
        }
    
        if (!project) {
-         console.log("Project not found", req.projectid);
+         console.warn("Project not found", req.projectid);
        } else {
          
          console.log("Project", project);
@@ -105,17 +117,17 @@ class RequestService {
                  if (savedRequest.support_status==100) { //POOLED
                  // throw "ciao";
                    var allAgents = savedRequest.agents;
-                   console.log("allAgents", allAgents);
+                  // console.log("allAgents", allAgents);
    
                    allAgents.forEach(project_user => {
-                     console.log("project_user", project_user);
+                   //  console.log("project_user", project_user);
    
                      User.findById(project_user.id_user, function (err, user) {
                        if (err) {
-                         console.log(err);
+                       //  console.log(err);
                        }
                        if (!user) {
-                         console.log("User not found", project_user.id_user);
+                         console.warn("User not found", project_user.id_user);
                        } else {
                          console.log("User email", user.email);
                          if (user.emailverified) {
@@ -137,7 +149,7 @@ class RequestService {
                          console.log(err);
                        }
                        if (!user) {
-                         console.log("User not found",  savedRequest.assigned_operator_id);
+                         console.warn("User not found",  savedRequest.assigned_operator_id);
                        } else {
                          console.log("User email", user.email);
                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);

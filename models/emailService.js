@@ -42,7 +42,7 @@ class EmailService {
       //text: 'Hello world?', // plain text body
       html: html
     };
-    console.log('mailOptions', mailOptions);
+    // console.log('mailOptions', mailOptions);
 
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
@@ -51,7 +51,7 @@ class EmailService {
       }
       console.log('Message sent: %s', info.messageId);
       // Preview only available when sending through an Ethereal account
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+      // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
       // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
       // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
@@ -187,7 +187,7 @@ class EmailService {
 
                      <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.requester_id}/messages">here</a> to open the dashboard.
+                       Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.request_id}/messages">here</a> to open the dashboard.
                          
                        </td>
                      </tr>
@@ -355,7 +355,7 @@ class EmailService {
 
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                  Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.requester_id}/messages">here</a> to open the dashboard.
+                                  Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.request_id}/messages">here</a> to open the dashboard.
                                 </td>
                               </tr>
                             
