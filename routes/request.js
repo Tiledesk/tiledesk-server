@@ -38,7 +38,9 @@ router.post('/', function(req, res) {
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
+//    status: req.body.status,
     support_status: req.body.support_status,
+
     partecipants: req.body.partecipants,
     departmentid: req.body.departmentid,
 
@@ -66,7 +68,7 @@ router.post('/', function(req, res) {
     updatedBy: req.user.id
   });
 
-  newRequest.save(function(err, savedRequest) {
+  return newRequest.save(function(err, savedRequest) {
     if (err) {
       console.log('Error saving object.',err);
       return res.status(500).send({success: false, msg: 'Error saving object.', err:err});
@@ -80,7 +82,7 @@ router.post('/', function(req, res) {
      
     
 
-    res.json(savedRequest);
+    return res.json(savedRequest);
     
   });
 });
@@ -95,11 +97,11 @@ router.patch('/:requestid', function(req, res) {
 
  // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
 
- Request.findByIdAndUpdate(req.params.requestid,  {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
+ return Request.findByIdAndUpdate(req.params.requestid,  {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
     if (err) {
       return res.status(500).send({success: false, msg: 'Error updating object.'});
     }
-    res.json(updatedMessage);
+    return res.json(updatedMessage);
   });
 
 });
@@ -115,17 +117,19 @@ router.get('/', function (req, res) {
 
 
   if (req.query.sort) {
-      Request.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
+      return Request.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
         if (err) return next(err);
     
-    
-        res.json(requests);
+        
+        return res.json(requests);
       });
   }else {
-    Request.find({ "id_project": req.projectid }, function (err, requests) {
+    return Request.find({ "id_project": req.projectid }).
+    populate('departmentid').
+    exec(function (err, requests) {
         if (err) return next(err);
     
-        res.json(requests);
+        return res.json(requests);
       });
   }
 });
