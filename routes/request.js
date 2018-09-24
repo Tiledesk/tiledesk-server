@@ -114,17 +114,28 @@ router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
   console.log("rreq.query.sort", req.query.sort);
+  console.log('REQUEST ROUTE - QUERY ', req.query)
 
+  var query = { "id_project": req.projectid };
+
+  if (req.query.dept_id) {
+    query.departmentid = req.query.dept_id;
+    console.log('REQUEST ROUTE - QUERY DEPT ID', query)
+  }
+  // if (req.query.start){
+  //   // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
+  //   query.createdAt = { $gte : new Date(req.query.start) }, { $lte : new Date(req.query.end) }
+  // }
 
   if (req.query.sort) {
-      return Request.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
+      return Request.find(query).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
         if (err) return next(err);
-    
         
         return res.json(requests);
       });
   }else {
-    return Request.find({ "id_project": req.projectid }).
+
+    return Request.find(query).
     populate('departmentid').
     exec(function (err, requests) {
         if (err) return next(err);
