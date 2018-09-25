@@ -9,13 +9,13 @@ var User = require("../models/user");
 var Project = require("../models/project");
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
-   ObjectId = Schema.ObjectId;
+  ObjectId = Schema.ObjectId;
+var moment = require('moment');
 
 
 
 
-
-router.post('/', function(req, res) {
+router.post('/', function (req, res) {
 
   console.log("req.body", req.body);
 
@@ -38,9 +38,11 @@ router.post('/', function(req, res) {
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
-    status: req.body.status,
+    //    status: req.body.status,
+    support_status: req.body.support_status,
+
     partecipants: req.body.partecipants,
-    department: req.body.department,
+    departmentid: req.body.departmentid,
 
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipient_fullname,
@@ -53,7 +55,7 @@ router.post('/', function(req, res) {
 
     agents: req.body.agents,
     availableAgents: req.body.availableAgents,
-    assigned_operator_id:  req.body.assigned_operator_id,
+    assigned_operator_id: req.body.assigned_operator_id,
 
     //others
     sourcePage: req.body.sourcePage,
@@ -66,38 +68,38 @@ router.post('/', function(req, res) {
     updatedBy: req.user.id
   });
 
-  return newRequest.save(function(err, savedRequest) {
+  return newRequest.save(function (err, savedRequest) {
     if (err) {
-      console.log('Error saving object.',err);
-      return res.status(500).send({success: false, msg: 'Error saving object.', err:err});
+      console.log('Error saving object.', err);
+      return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
     }
 
 
-    console.log("savedRequest",savedRequest);
-    
+    console.log("savedRequest", savedRequest);
+
     // console.log("XXXXXXXXXXXXXXXX");
     this.sendEmail(req.projectid, savedRequest);
-     
-    
+
+
 
     return res.json(savedRequest);
-    
+
   });
 });
 
 
 
-router.patch('/:requestid', function(req, res) {
+router.patch('/:requestid', function (req, res) {
   console.log(req.body);
   // const update = _.assign({ "updatedAt": new Date() }, req.body);
   const update = req.body;
   console.log(update);
 
- // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
+  // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
 
- return Request.findByIdAndUpdate(req.params.requestid,  {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
+  return Request.findByIdAndUpdate(req.params.requestid, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
-      return res.status(500).send({success: false, msg: 'Error updating object.'});
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
     return res.json(updatedMessage);
   });
@@ -108,25 +110,55 @@ router.patch('/:requestid', function(req, res) {
 
 
 
-router.get('/', function (req, res) {
+router.get('/', function (req, res, next) {
 
   console.log("req projectid", req.projectid);
   console.log("rreq.query.sort", req.query.sort);
+  console.log('REQUEST ROUTE - QUERY ', req.query)
 
+  var query = { "id_project": req.projectid };
+
+  if (req.query.dept_id) {
+    query.departmentid = req.query.dept_id;
+    console.log('REQUEST ROUTE - QUERY DEPT ID', query.departmentid)
+  }
+
+  if (req.query.start_date && req.query.end_date) {
+    console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date)
+    console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date)
+    // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
+    //  { $gte : new Date(req.query.start_date) },
+    // var formattedStartDate = moment(req.query.start_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
+    // var formattedEndDate = moment(req.query.end_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
+
+    // console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
+    // console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
+
+
+    var formattedStartDate = new Date(+req.query.start_date);
+    var formattedEndDate = new Date(+req.query.end_date);
+    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
+    console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
+    query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+
+    // query.createdAt = { $gte: new Date(req.query.start_date), $lte: new Date(req.query.end_date) }
+    // query.createdAt = { $gte: req.query.start_date, $lte: req.query.end_date }
+    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt)
+  }
 
   if (req.query.sort) {
-      return Request.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, requests) { 
+    return Request.find(query).sort({ updatedAt: 'desc' }).exec(function (err, requests) {
+      if (err) return next(err);
+
+      return res.json(requests);
+    });
+  } else {
+    console.log('REQUEST ROUTE - REQUEST FIND ', query)
+    return Request.find(query).
+      populate('departmentid').
+      exec(function (err, requests) {
         if (err) return next(err);
-    
-        
-        return res.json(requests);
-      });
-  }else {
-    return Request.find({ "id_project": req.projectid }).
-    populate('department').
-    exec(function (err, requests) {
-        if (err) return next(err);
-    
+        console.log('REQUEST ROUTE - REQUEST FIND ERR ', err)
         return res.json(requests);
       });
   }
