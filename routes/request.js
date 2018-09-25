@@ -128,20 +128,33 @@ router.get('/', function (req, res, next) {
     console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date)
     // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
     //  { $gte : new Date(req.query.start_date) },
-    // var formattedStartDate = moment(req.query.start_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
-    // var formattedEndDate = moment(req.query.end_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
 
-    // console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
+
+    /**
+     * USING TIMESTAMP  in MS    */
+    // var formattedStartDate = new Date(+req.query.start_date);
+    // var formattedEndDate = new Date(+req.query.end_date);
+    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+
+    /**
+     * USING EPOC    */
+    // var startDateutcSeconds = +req.query.start_date;
+    // var d = new Date(0);
+    // var formattedStartDate = d.setUTCSeconds(startDateutcSeconds);
+
+    /**
+     * USING MOMENT      */
+    var formattedStartDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+    var formattedEndDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+    query.createdAt = { $gte: new Date(Date.parse(formattedStartDate)).toISOString(), $lte: new Date(Date.parse(formattedEndDate)).toISOString() }
+   
+    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
+    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedEndDate)
+    // console.log('REQUEST ROUTE - REQ QUERY formattedStartDate TO DATE', formattedStartDate.toDate())
     // console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
 
 
-    var formattedStartDate = new Date(+req.query.start_date);
-    var formattedEndDate = new Date(+req.query.end_date);
-    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
-    console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
-    query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
-    // query.createdAt = { $gte: new Date(req.query.start_date), $lte: new Date(req.query.end_date) }
     // query.createdAt = { $gte: req.query.start_date, $lte: req.query.end_date }
     console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt)
   }
