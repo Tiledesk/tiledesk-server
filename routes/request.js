@@ -117,7 +117,7 @@ router.get('/', function (req, res, next) {
   console.log('REQUEST ROUTE - QUERY ', req.query)
 
   var limit = 5;
-  var page =1;
+  var page = 0;
 
   if (req.query.page) {
     page = req.query.page;
