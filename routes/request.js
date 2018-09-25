@@ -134,8 +134,15 @@ router.get('/', function (req, res, next) {
     // console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
     // console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
 
+
+    var formattedStartDate = new Date(+req.query.start_date);
+    var formattedEndDate = new Date(+req.query.end_date);
+    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
+    console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
+    query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+
     // query.createdAt = { $gte: new Date(req.query.start_date), $lte: new Date(req.query.end_date) }
-    query.createdAt = { $gte: req.query.start_date, $lte: req.query.end_date }
+    // query.createdAt = { $gte: req.query.start_date, $lte: req.query.end_date }
     console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt)
   }
 
