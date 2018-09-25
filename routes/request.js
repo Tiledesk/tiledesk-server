@@ -194,9 +194,22 @@ router.get('/', function (req, res, next) {
     skip(skip).limit(limit).
       populate('departmentid').
       exec(function (err, requests) {
-        if (err) return next(err);
-        console.log('REQUEST ROUTE - REQUEST FIND ERR ', err)
-        return res.json(requests);
+        if (err) {
+          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+          return next(err);
+        }
+        console.log('REQUEST ROUTE - REQUEST ', requests);
+
+        return Request.count(query, function(err, totalRowCount) {
+
+          var objectToReturn = {
+            count: totalRowCount,
+            requests : requests
+          };
+          console.log('objectToReturn ', objectToReturn);
+          return res.json(objectToReturn);
+        });
+       
       });
   }
 });
