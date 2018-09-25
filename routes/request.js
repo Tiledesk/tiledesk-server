@@ -38,11 +38,9 @@ router.post('/', function(req, res) {
     requester_id: req.body.requester_id,
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
-//    status: req.body.status,
-    support_status: req.body.support_status,
-
+    status: req.body.status,
     partecipants: req.body.partecipants,
-    departmentid: req.body.departmentid,
+    department: req.body.department,
 
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipient_fullname,
@@ -125,7 +123,7 @@ router.get('/', function (req, res) {
       });
   }else {
     return Request.find({ "id_project": req.projectid }).
-    populate('departmentid').
+    populate('department').
     exec(function (err, requests) {
         if (err) return next(err);
     
