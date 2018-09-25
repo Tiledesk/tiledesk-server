@@ -24,6 +24,8 @@ router.post('/', function(req, res) {
   if (req.body.event_type == "first-message") {
 
     var message = req.body.data;
+
+    
     console.log("chat21 message", message);
 
     var departmentid = "default";
@@ -77,15 +79,15 @@ router.post('/', function(req, res) {
     console.log("chat21 message", message);
 
 
-    if (!projectid) {
-      console.log("projectid is null. Not a support message");
-      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-    }
+ 
 
     var projectid = message.projectid;
     console.log("chat21 projectid", projectid);
 
-    
+    if (!projectid) {
+      console.log("projectid is null. Not a support message");
+      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+    }
 
     var newMessage = new Message({
       sender: message.sender,
