@@ -23,6 +23,9 @@ router.post('/', function(req, res) {
 // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "first-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"5ad5bd52c975820014ba900a", "attributes": {"departmentId":"5b8eb4955ca4d300141fb2cc"}}}' http://localhost:3000/chat21/requests
   if (req.body.event_type == "first-message") {
 
+    console.log("event_type","first-message");
+
+
     var message = req.body.data;
 
     
@@ -73,7 +76,7 @@ router.post('/', function(req, res) {
 
   } else if (req.body.event_type == "new-message") {
 
-    console.log("new-message","new-message");
+    console.log("event_type","new-message");
 
     var message = req.body.data;
     console.log("chat21 message", message);
