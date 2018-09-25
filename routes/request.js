@@ -123,27 +123,53 @@ router.get('/', function (req, res, next) {
     console.log('REQUEST ROUTE - QUERY DEPT ID', query.departmentid)
   }
 
+  /**
+   * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
     console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date)
     console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date)
     // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
     //  { $gte : new Date(req.query.start_date) },
-    // var formattedStartDate = moment(req.query.start_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
-    // var formattedEndDate = moment(req.query.end_date, 'dd/mm/yyyy').format('yyyy, mm, dd')
+    var contractMoment = moment(req.query.end_date, 'DD/MM/YYYY');
 
-    // console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
-    // console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
+    // var end = moment(contractMoment).add(1, 'days');
+
+    // var contractMoment = moment(contract, '03/09/2018');
+    // var end = moment(contractMoment).add(1, 'day');
+
+    /**
+     * USING TIMESTAMP  in MS    */
+    // var formattedStartDate = new Date(+req.query.start_date);
+    // var formattedEndDate = new Date(+req.query.end_date);
+    // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
 
-    var formattedStartDate = new Date(+req.query.start_date);
-    var formattedEndDate = new Date(+req.query.end_date);
-    console.log('REQUEST ROUTE - REQ QUERY formattedStartDate ', formattedStartDate)
-    console.log('REQUEST ROUTE - REQ QUERY formattedEndDate ', formattedEndDate)
-    query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+    /**
+     * USING MOMENT      */
+    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    // query.createdAt = { $gte: new Date(req.query.start_date), $lte: new Date(req.query.end_date) }
-    // query.createdAt = { $gte: req.query.start_date, $lte: req.query.end_date }
+    console.log('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
+    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
+
+    // ADD ONE DAY TO THE END DAY
+    var date = new Date(endDate);
+    var newdate = new Date(date);
+    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
+    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+    // var endDate_plusOneDay =   endDate.add(1).day();
+    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+
+    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt)
+
+  } else if (req.query.start_date && !req.query.end_date) {
+    console.log('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)')
+    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+
+    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() }
+    console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt)
   }
 
   if (req.query.sort) {
