@@ -42,7 +42,7 @@ router.post('/', function (req, res) {
     status: req.body.status,
 
     participants: req.body.participants,
-    departmentid: req.body.departmentid,
+    department: req.body.department,
 
     // recipient: req.body.recipient,
     // recipientFullname: req.body.recipient_fullname,
@@ -129,8 +129,8 @@ router.get('/', function (req, res, next) {
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
-    query.departmentid = req.query.dept_id;
-    console.log('REQUEST ROUTE - QUERY DEPT ID', query.departmentid);
+    query.department = req.query.dept_id;
+    console.log('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
   /**
