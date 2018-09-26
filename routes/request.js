@@ -184,7 +184,7 @@ router.get('/', function (req, res, next) {
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
     skip(skip).limit(limit).
-      populate('departmentid').
+      populate('department').
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
