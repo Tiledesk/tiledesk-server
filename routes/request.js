@@ -116,18 +116,28 @@ router.get('/', function (req, res, next) {
   console.log("rreq.query.sort", req.query.sort);
   console.log('REQUEST ROUTE - QUERY ', req.query)
 
+  var limit = 5;
+  var page = 0;
+
+  if (req.query.page) {
+    page = req.query.page;
+  }
+
+  var skip = page * limit;
+  console.log('REQUEST ROUTE - SKIP PAGE ', skip);
+
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
     query.departmentid = req.query.dept_id;
-    console.log('REQUEST ROUTE - QUERY DEPT ID', query.departmentid)
+    console.log('REQUEST ROUTE - QUERY DEPT ID', query.departmentid);
   }
 
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date)
-    console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date)
+    console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
+    console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
     // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
     //  { $gte : new Date(req.query.start_date) },
     var contractMoment = moment(req.query.end_date, 'DD/MM/YYYY');
@@ -162,14 +172,14 @@ router.get('/', function (req, res, next) {
     // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt)
+    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)')
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+    console.log('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
+    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() }
-    console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt)
+    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
+    console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
   if (req.query.sort) {
@@ -181,11 +191,25 @@ router.get('/', function (req, res, next) {
   } else {
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
+    skip(skip).limit(limit).
       populate('departmentid').
       exec(function (err, requests) {
-        if (err) return next(err);
-        console.log('REQUEST ROUTE - REQUEST FIND ERR ', err)
-        return res.json(requests);
+        if (err) {
+          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+          return next(err);
+        }
+        console.log('REQUEST ROUTE - REQUEST ', requests);
+
+        return Request.count(query, function(err, totalRowCount) {
+
+          var objectToReturn = {
+            count: totalRowCount,
+            requests : requests
+          };
+          console.log('objectToReturn ', objectToReturn);
+          return res.json(objectToReturn);
+        });
+       
       });
   }
 });
