@@ -11,7 +11,8 @@ var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
 
-
+var admin = require('../utils/firebaseConnector');
+const firestore = admin.firestore();
 
 
 router.post('/', function(req, res) {
@@ -106,10 +107,71 @@ router.post('/', function(req, res) {
         return res.status(500).send({success: false, msg: 'Error creating message', err:err });
       });
    
+      
+      // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LMv9XYr_Pnjckc5iiPj", "data": { "channel_type": "direct", "is_new": false, "last_message_text": "grazie altrettanto", "recipient": "5ad5bd40c975820014ba9009", "recipient_fullname": "Andrea Sponziello", "sender": "5ba6740a162921001555e419", "sender_fullname": "Umberto Benedetti", "status": 2, "timestamp": 1537809094728, "type": "text" } }' http://localhost:3000/chat21/requests
 
-  } else {
-    res.json("Not implemented");
-  }
+    } else if (req.body.event_type == "deleted-conversation") {
+      console.log("event_type","deleted-conversation");
+
+      var conversation = req.body.data;
+      console.log("conversation",conversation);
+
+      var user_id = req.body.user_id;
+      console.log("user_id",user_id);
+
+      var recipient_id = req.body.recipient_id;
+      console.log("recipient_id",recipient_id);
+
+ 
+      if (!recipient_id.startsWith("support-group")){
+        console.log("not a support conversation");
+        return res.status(400).send({success: false, msg: "not a support conversation" });
+      }
+
+      if (user_id!="system"){
+        console.log("not a system conversation");
+        return res.status(400).send({success: false, msg: "not a system conversation" });
+      }
+
+
+      var conversationRef = firestore.collection('conversations').doc(recipient_id);
+      return conversationRef.get()
+          .then(doc => {
+            if (!doc.exists) {
+              console.log('No such document!');
+            } else {
+              var firestoreConversation =  doc.data();
+              console.log('firestoreConversation',firestoreConversation);
+
+              var firestoreSupportStatus = firestoreConversation.support_status;
+              console.log('firestoreSupportStatus', firestoreSupportStatus);
+
+              var firestoreMembers = firestoreConversation.members;
+              console.log('firestoreMembers', firestoreMembers);
+
+              var firestoreMembersAsArray = Object.keys(firestoreMembers);
+              console.log('firestoreMembersAsArray', firestoreMembersAsArray);
+              
+              return requestservice.setParticipantsByRequestId(recipient_id, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
+                // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
+                return requestservice.changeStatusByRequestId(recipient_id, firestoreSupportStatus).then(function(updatedStatusRequest) {
+                  console.log('updatedStatusRequest', updatedStatusRequest);
+                  return res.json(updatedStatusRequest);
+                });
+              });
+             
+
+            }
+          })
+          .catch(err => {
+            console.log('Error getting document', err);
+          });
+
+
+
+    } else {
+      res.json("Not implemented");
+    }
 
   
 
