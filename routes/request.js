@@ -39,9 +39,9 @@ router.post('/', function (req, res) {
     requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
     //    status: req.body.status,
-    support_status: req.body.support_status,
+    status: req.body.status,
 
-    partecipants: req.body.partecipants,
+    participants: req.body.participants,
     departmentid: req.body.departmentid,
 
     // recipient: req.body.recipient,
@@ -78,7 +78,7 @@ router.post('/', function (req, res) {
     console.log("savedRequest", savedRequest);
 
     // console.log("XXXXXXXXXXXXXXXX");
-    this.sendEmail(req.projectid, savedRequest);
+    // this.sendEmail(req.projectid, savedRequest);
 
 
 

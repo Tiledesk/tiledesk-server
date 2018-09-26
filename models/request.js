@@ -29,7 +29,7 @@ var RequestSchema = new Schema({
   //   required: false,
   //   default:0
   // },
-  support_status: {
+  status: {
     type: Number,
     required: false,
     default: 100
@@ -41,7 +41,7 @@ var RequestSchema = new Schema({
     required: false
   },
 
-  departmentid: {
+  department: {
     type: Schema.Types.ObjectId,
     ref: 'department'
     // required: true

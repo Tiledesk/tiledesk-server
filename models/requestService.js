@@ -12,11 +12,11 @@ class RequestService {
 
 
 
-  create(requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent) {
-      return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent);
+  create(requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+      return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status);
   };
 
-  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent) {
+  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
 
     console.log("request_id", request_id);
 
@@ -32,9 +32,9 @@ class RequestService {
               requester_id: requester_id,
               requester_fullname: requester_fullname,
               first_text: first_text,
-              // support_status: req.body.support_status,
-              // partecipants: req.body.partecipants,
-              departmentid: result.department._id,
+              status: status,
+              // participants: req.body.participants,
+              department: result.department._id,
 
           
               // rating: req.body.rating,
@@ -93,6 +93,77 @@ class RequestService {
     
 
   }
+
+
+  changeStatusByRequestId(request_id, newstatus) {
+
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+        return Request.findOneAndUpdate({request_id: request_id}, {status: newstatus}, {new: true, upsert:true}, function(err, updatedRequest) {
+            if (err) {
+              console.error(err);
+              return reject(err);
+            }
+           // console.log("updatedRequest", updatedRequest);
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
+  setParticipantsByRequestId(request_id, participants) {
+    return new Promise(function (resolve, reject) {
+      // console.log("request_id", request_id);
+      // console.log("participants", participants);
+
+      return Request.findOneAndUpdate({request_id: request_id}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
+        if (err) {
+          console.error("Error setParticipantsByRequestId", err);
+          return reject(err);
+        }
+        return resolve(updatedRequest);
+      });
+
+      // return Request.findOne({request_id: request_id}).then(function (request) {
+      //   console.log("request", request);
+      //     request.participants=participants;
+      //     console.log("request after", request);
+      //     return request.save().then(function(savedRequest) {
+      //       return resolve(savedRequest);
+      //     }).catch(function (err) {
+      //       return reject(err);
+      //     });
+      // });
+    });
+  }
+
+  addParticipant(id, member) {
+    console.log("id", id);
+    console.log("member", member);
+
+    return Request.findById(id).then(function (request) {
+        request.participants.push(member);
+        if (request.participants>0) {
+          request.status = 200;
+        }
+        return request.save();
+    })
+  }
+
+  removeParticipant(id, member) {
+    console.log("id", id);
+    console.log("member", member);
+    
+    return Request.findById(id).then(function (request) {
+        request.participants.push(member);
+        if (request.participants>0) {
+          request.status = 200;
+        }
+        return request.save();
+    })
+  }
   
 
 
@@ -114,7 +185,7 @@ class RequestService {
          console.log("Project", project);
    
    
-                 if (savedRequest.support_status==100) { //POOLED
+                 if (savedRequest.status==100) { //POOLED
                  // throw "ciao";
                    var allAgents = savedRequest.agents;
                   // console.log("allAgents", allAgents);
@@ -141,7 +212,7 @@ class RequestService {
                      
                    });
    
-                   }else if (savedRequest.support_status==200) { //ASSIGNED
+                   }else if (savedRequest.status==200) { //ASSIGNED
                      console.log("assigned_operator_id", savedRequest.assigned_operator_id);
    
                      User.findById( savedRequest.assigned_operator_id, function (err, user) {
