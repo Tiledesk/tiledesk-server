@@ -206,7 +206,7 @@ router.get('/', function (req, res, next) {
             count: totalRowCount,
             requests : requests
           };
-          console.log('objectToReturn ', objectToReturn);
+          console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
           return res.json(objectToReturn);
         });
        
