@@ -4,6 +4,7 @@ var router = express.Router();
 var Request = require("../models/request");
 var Message = require("../models/message");
 var requestservice = require('../models/requestService');
+var messageservice = require('../models/messageService');
 var Project_userApi = require("../controllers/project_user");
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
@@ -75,6 +76,14 @@ router.post('/', function(req, res) {
 
 
   } else if (req.body.event_type == "new-message") {
+    //with projectid
+    // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"987654321"}}' http://localhost:3000/chat21/requests
+    //with recipient with existing projectid
+    // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text"}}' http://localhost:3000/chat21/requests
+
+    //with recipient with no projectid
+    // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"1234567891234567891", "recipient_fullname":"Andrea Leo","text":"text"}}' http://localhost:3000/chat21/requests
+
 
     console.log("event_type","new-message");
 
@@ -87,34 +96,16 @@ router.post('/', function(req, res) {
     var projectid = message.projectid;
     console.log("chat21 projectid", projectid);
 
-    if (!projectid) {
-      console.log("projectid is null. Not a support message");
-      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-    }
 
-    var newMessage = new Message({
-      sender: message.sender,
-      senderFullname: message.sender_fullname,
-      recipient: message.recipient,
-      recipientFullname: message.recipient_fullname,
-      text: message.text,
-      id_project: projectid,
-      createdBy: "system",
-      updatedBy: "system"
-    });
-  
-    console.log("newMessage", newMessage);
+    return messageservice.create(message.sender, message.sender_fullname, message.recipient, message.recipient_fullname, message.text,
+      projectid, "system").then(function(savedMessage){
+        return res.json(savedMessage);
 
-
-    newMessage.save(function(err, savedMessage) {
-      if (err) {
-        console.log(err);
-  
-        return res.status(500).send({success: false, msg: 'Error saving newMessage.', err:err});
-      }
-      res.json(savedMessage);
-    });
-
+      }).catch(function(err){
+        console.error("Error creating message", err);
+        return res.status(500).send({success: false, msg: 'Error creating message', err:err });
+      });
+   
 
   } else {
     res.json("Not implemented");
