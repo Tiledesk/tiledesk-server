@@ -116,7 +116,7 @@ router.get('/', function (req, res, next) {
   console.log("rreq.query.sort", req.query.sort);
   console.log('REQUEST ROUTE - QUERY ', req.query)
 
-  var limit = 5;
+  var limit = 40; // No of request per page
   var page = 0;
 
   if (req.query.page) {
@@ -138,14 +138,6 @@ router.get('/', function (req, res, next) {
   if (req.query.start_date && req.query.end_date) {
     console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
     console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
-    // query.createdAt = { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }}
-    //  { $gte : new Date(req.query.start_date) },
-    var contractMoment = moment(req.query.end_date, 'DD/MM/YYYY');
-
-    // var end = moment(contractMoment).add(1, 'days');
-
-    // var contractMoment = moment(contract, '03/09/2018');
-    // var end = moment(contractMoment).add(1, 'day');
 
     /**
      * USING TIMESTAMP  in MS    */
@@ -203,10 +195,11 @@ router.get('/', function (req, res, next) {
         return Request.count(query, function(err, totalRowCount) {
 
           var objectToReturn = {
+            perPage: limit,
             count: totalRowCount,
             requests : requests
           };
-          console.log('objectToReturn ', objectToReturn);
+          console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
           return res.json(objectToReturn);
         });
        
