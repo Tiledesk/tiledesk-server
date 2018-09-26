@@ -5,37 +5,44 @@
 const rp = require('request-promise');
 const express = require('express');
 const bodyParser = require('body-parser');
-var firebaseConfig = require('../config/firebase');
 var router = express.Router();
 var User = require("../models/user");
 
 
-// Firebase Setup
-const admin = require('firebase-admin');
+// // Firebase Setup
+// var firebaseConfig = require('../config/firebase');
+// const admin = require('firebase-admin');
 
 
-var private_key = process.env.FIREBASE_PRIVATE_KEY;
-var client_email = process.env.FIREBASE_CLIENT_EMAIL;
+// var private_key = process.env.FIREBASE_PRIVATE_KEY;
+// var client_email = process.env.FIREBASE_CLIENT_EMAIL;
 
-// https://stackoverflow.com/questions/41287108/deploying-firebase-app-with-service-account-to-heroku-environment-variables-wit
-var serviceAccount;
+// // https://stackoverflow.com/questions/41287108/deploying-firebase-app-with-service-account-to-heroku-environment-variables-wit
+// var serviceAccount;
 
-if (!private_key || !client_email) {
-  serviceAccount = require('../config/.firebase-key/chat-v2-dev-firebase-adminsdk-z2x9h-37eb9c38c5.json');
-  console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.');
-}else {
-    serviceAccount = {
-        "private_key": private_key.replace(/\\n/g, '\n'),
-        "client_email": client_email,
-      };
-}
+// if (!private_key || !client_email) {
+//   serviceAccount = require('../config/.firebase-key/chat-v2-dev-firebase-adminsdk-z2x9h-37eb9c38c5.json');
+//   console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.');
+// }else {
+//     serviceAccount = {
+//         "private_key": private_key.replace(/\\n/g, '\n'),
+//         "client_email": client_email,
+//       };
+// }
 
  
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: firebaseConfig.databaseURL
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: firebaseConfig.databaseURL
+// });
+
+
+
+
+var admin = require('../utils/firebaseConnector');
+
+
 
 // Load config file
 //const config = require('./config.json');
