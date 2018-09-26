@@ -11,8 +11,9 @@ var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
 
-var admin = require('../utils/firebaseConnector');
-const firestore = admin.firestore();
+//var admin = require('../utils/firebaseConnector');
+
+// const firestore = admin.firestore();
 
 
 router.post('/', function(req, res) {
@@ -134,38 +135,38 @@ router.post('/', function(req, res) {
       }
 
 
-      var conversationRef = firestore.collection('conversations').doc(recipient_id);
-      return conversationRef.get()
-          .then(doc => {
-            if (!doc.exists) {
-              console.log('No such document!');
-            } else {
-              var firestoreConversation =  doc.data();
-              console.log('firestoreConversation',firestoreConversation);
+      // var conversationRef = firestore.collection('conversations').doc(recipient_id);
+      // return conversationRef.get()
+      //     .then(doc => {
+      //       if (!doc.exists) {
+      //         console.log('No such document!');
+      //       } else {
+      //         var firestoreConversation =  doc.data();
+      //         console.log('firestoreConversation',firestoreConversation);
 
-              var firestoreSupportStatus = firestoreConversation.support_status;
-              console.log('firestoreSupportStatus', firestoreSupportStatus);
+      //         var firestoreSupportStatus = firestoreConversation.support_status;
+      //         console.log('firestoreSupportStatus', firestoreSupportStatus);
 
-              var firestoreMembers = firestoreConversation.members;
-              console.log('firestoreMembers', firestoreMembers);
+      //         var firestoreMembers = firestoreConversation.members;
+      //         console.log('firestoreMembers', firestoreMembers);
 
-              var firestoreMembersAsArray = Object.keys(firestoreMembers);
-              console.log('firestoreMembersAsArray', firestoreMembersAsArray);
+      //         var firestoreMembersAsArray = Object.keys(firestoreMembers);
+      //         console.log('firestoreMembersAsArray', firestoreMembersAsArray);
               
-              return requestservice.setParticipantsByRequestId(recipient_id, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
-                // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
-                return requestservice.changeStatusByRequestId(recipient_id, firestoreSupportStatus).then(function(updatedStatusRequest) {
-                  console.log('updatedStatusRequest', updatedStatusRequest);
-                  return res.json(updatedStatusRequest);
-                });
-              });
+      //         return requestservice.setParticipantsByRequestId(recipient_id, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
+      //           // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
+      //           return requestservice.changeStatusByRequestId(recipient_id, firestoreSupportStatus).then(function(updatedStatusRequest) {
+      //             console.log('updatedStatusRequest', updatedStatusRequest);
+      //             return res.json(updatedStatusRequest);
+      //           });
+      //         });
              
 
-            }
-          })
-          .catch(err => {
-            console.log('Error getting document', err);
-          });
+      //       }
+      //     })
+      //     .catch(err => {
+      //       console.log('Error getting document', err);
+      //     });
 
 
 
