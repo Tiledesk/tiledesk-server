@@ -11,9 +11,9 @@ var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
 
-//var admin = require('../utils/firebaseConnector');
+var admin = require('../utils/firebaseConnector');
 
-// const firestore = admin.firestore();
+ const firestore = admin.firestore();
 
 
 router.post('/', function(req, res) {
