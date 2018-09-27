@@ -185,7 +185,7 @@ router.get('/', function (req, res, next) {
   }
 
 
-  var direction = "desc";
+  var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   } 
