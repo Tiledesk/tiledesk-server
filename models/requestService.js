@@ -6,6 +6,7 @@ var emailService = require("../models/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
 var mongoose = require('mongoose');
+var messageService = require('../models/messageService');
 
 
 class RequestService {
@@ -23,67 +24,69 @@ class RequestService {
 
     var that = this;
 
-    return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+    return new Promise(function (resolve, reject) {
 
-        console.log("result", result);
+        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-            var newRequest = new Request({
-              request_id: request_id,
-              requester_id: requester_id,
-              requester_fullname: requester_fullname,
-              first_text: first_text,
-              status: status,
-              // participants: req.body.participants,
-              department: result.department._id,
+          console.log("result", result);
 
-          
-              // rating: req.body.rating,
-              // rating_message: req.body.rating_message,
-          
-               agents: result.agents,
-               availableAgents: result.available_agents,
+              var newRequest = new Request({
+                request_id: request_id,
+                requester_id: requester_id,
+                requester_fullname: requester_fullname,
+                first_text: first_text,
+                status: status,
+                // participants: req.body.participants,
+                department: result.department._id,
 
-               // assigned_operator_id:  result.assigned_operator_id,
-          
-              //others
-              sourcePage: sourcePage,
-              language: language,
-              userAgent: userAgent,
-          
-              //standard
-              id_project: id_project,
-              createdBy: requester_id,
-              updatedBy: requester_id
-            });
-                   
-
-            console.log('newRequest.',newRequest);
-
-
-            return new Promise(function (resolve, reject) {
-
-             return newRequest.save(function(err, savedRequest) {
-                if (err) {
-                  console.error('Error saving object.',err);
-                  return reject(err);
-                }
             
+                // rating: req.body.rating,
+                // rating_message: req.body.rating_message,
             
-                console.log("savedRequest",savedRequest);
-                
-                // console.log("XXXXXXXXXXXXXXXX");
+                agents: result.agents,
+                availableAgents: result.available_agents,
 
-                if (id_project!="5b45e1c75313c50014b3abc6") {
-                  that.sendEmail(id_project, savedRequest);
-
-                }
-                
-                
+                // assigned_operator_id:  result.assigned_operator_id,
             
-                return resolve(savedRequest);
-                
+                //others
+                sourcePage: sourcePage,
+                language: language,
+                userAgent: userAgent,
+            
+                //standard
+                id_project: id_project,
+                createdBy: requester_id,
+                updatedBy: requester_id
               });
-          });
+                    
+
+              console.log('newRequest.',newRequest);
+
+
+          
+
+              return newRequest.save(function(err, savedRequest) {
+                  if (err) {
+                    console.error('Error saving object.',err);
+                    return reject(err);
+                  }
+              
+              
+                  console.log("savedRequest",savedRequest);
+                  
+                  // console.log("XXXXXXXXXXXXXXXX");
+
+                  if (id_project!="5b45e1c75313c50014b3abc6") {
+                    that.sendEmail(id_project, savedRequest);
+
+                  }
+                  
+                  
+              
+                  return resolve(savedRequest);
+                  
+                });
+            });
 
 
     });
@@ -112,6 +115,47 @@ class RequestService {
     });
 
   }
+
+  closeRequestByRequestId(request_id) {
+
+    var that = this;
+    return new Promise(function (resolve, reject) {
+     console.log("request_id", request_id);
+
+        return that.changeStatusByRequestId(request_id, 1000).then(function(updatedRequest) {
+            console.log("updatedRequest", updatedRequest);
+            return messageService.getTranscriptByRequestId(request_id).then(function(transcript) {
+              console.log("transcript", transcript);
+              return that.updateTrascriptByRequestId(request_id, transcript).then(function(updatedRequest) {
+                return resolve(updatedRequest);
+              });
+            });
+          }).catch(function(err)  {
+              console.error(err);
+              return reject(err);
+          });
+    });
+
+  }
+
+  updateTrascriptByRequestId(request_id, transcript) {
+
+    return new Promise(function (resolve, reject) {
+      console.log("request_id", request_id);
+      console.log("transcript", transcript);
+
+        return Request.findOneAndUpdate({request_id: request_id}, {transcript: transcript}, {new: true, upsert:true}, function(err, updatedRequest) {
+            if (err) {
+              console.error(err);
+              return reject(err);
+            }
+           // console.log("updatedRequest", updatedRequest);
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
 
   setParticipantsByRequestId(request_id, participants) {
     return new Promise(function (resolve, reject) {
