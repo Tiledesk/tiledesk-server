@@ -133,6 +133,16 @@ router.get('/', function (req, res, next) {
     console.log('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
+  if (req.query.full_text) {
+    console.log('req.query.fulltext', req.query.full_text);
+    query.$text = {"$search": req.query.full_text};
+  }
+
+  if (req.query.status) {
+    console.log('req.query.status', req.query.status);
+    query.status = req.query.status;
+  }
+
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {

@@ -127,6 +127,7 @@ RequestSchema.statics.filterAvailableOperators = function filterAvailableOperato
 
 RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
 RequestSchema.index({ id_project: 1, type: -1 }); // schema level
+// https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
 RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
  {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
  //
