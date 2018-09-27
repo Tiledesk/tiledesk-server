@@ -184,17 +184,22 @@ router.get('/', function (req, res, next) {
     console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
-  if (req.query.sort) {
-    return Request.find(query).sort({ updatedAt: 'desc' }).exec(function (err, requests) {
-      if (err) return next(err);
 
-      return res.json(requests);
-    });
-  } else {
+  var direction = "desc";
+  if (req.query.direction) {
+    direction = req.query.direction;
+  } 
+
+  var sortField = "updatedAt";
+  if (req.query.sort) {
+    sortField = req.query.sort;
+  } 
+
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
+      sort({ sortField: direction }).
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
@@ -214,7 +219,7 @@ router.get('/', function (req, res, next) {
         });
        
       });
-  }
+  
 });
 
 
