@@ -20,12 +20,16 @@ getOperators(departmentid, projectid, nobot) {
         query = { _id: departmentid };
       }
       console.log('query', query);
-      return Department.findOne(query, function (err, department) {
+      // console.log('here');
+      return Department.findOne(query).exec(function (err, department) {
+        // console.log('here1');
+
         if (err) {
-          console.log('-- > 1 DEPT FIND BY ID ERR ', err)
+          console.error('-- > 1 DEPT FIND BY ID ERR ', err)
           return reject(err);
         }
         if (!department) {
+          log.error("Department not found for query ", query);
           return reject({ success: false, msg: 'Object not found.' });
         }
         console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
@@ -56,7 +60,7 @@ getOperators(departmentid, projectid, nobot) {
           console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           console.log('OPERATORS - »»»» nobot ', nobot)
 
-          return Project_user.find({ id_project: projectid }, function (err, project_users) {
+          return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
             if (err) {
               console.log('-- > 2 DEPT FIND BY ID ERR ', err)
               return reject(err);
@@ -134,7 +138,7 @@ getOperators(departmentid, projectid, nobot) {
 
   return new Promise(function (resolve, reject) {
 
-    return Group.find({ _id: department.id_group }, function (err, group) {
+    return Group.find({ _id: department.id_group }).exec(function (err, group) {
       if (err) {
         console.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
@@ -145,7 +149,7 @@ getOperators(departmentid, projectid, nobot) {
         console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS ID: ', group[0].members);
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
-        return Project_user.find({ id_project: projectid, id_user: group[0].members }, function (err, project_users) {
+        return Project_user.find({ id_project: projectid, id_user: group[0].members }).exec(function (err, project_users) {
           console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
           if (err) {
             console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
@@ -198,7 +202,7 @@ getOperators(departmentid, projectid, nobot) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
-    return Project_user.find({ id_project: projectid }, function (err, project_users) {
+    return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
       if (err) {
         console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
