@@ -51,6 +51,11 @@ var RequestSchema = new Schema({
 
   first_message: MessageSchema,
   
+  
+  transcript: {
+    type: String
+  },
+
   //rating
   rating: {
     type: Number,
@@ -122,6 +127,9 @@ RequestSchema.statics.filterAvailableOperators = function filterAvailableOperato
 
 RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
 RequestSchema.index({ id_project: 1, type: -1 }); // schema level
-
+RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
+ {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+ //
+//RequestSchema.index({name: 'transcript_fulltext', 'transcript': 'text'},);
 
 module.exports = mongoose.model('request', RequestSchema);
