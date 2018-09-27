@@ -191,7 +191,7 @@ router.get('/', function (req, res, next) {
   } 
   console.log("direction",direction);
 
-  var sortField = "updatedAt";
+  var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   } 
