@@ -11,7 +11,7 @@ var Message = require("../models/message");
   
     console.log(req.params);
     console.log("here");    
-    Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+    return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
@@ -20,7 +20,7 @@ var Message = require("../models/message");
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
-      res.json(messages);
+      return res.json(messages);
     });
 
   });
@@ -30,7 +30,7 @@ var Message = require("../models/message");
   
     console.log(req.params);
     console.log("here");    
-    Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+    return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
@@ -39,7 +39,7 @@ var Message = require("../models/message");
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
-      res.render('messages', { title: 'Tiledesk', messages: messages});
+      return res.render('messages', { title: 'Tiledesk', messages: messages});
     });
 
   });
