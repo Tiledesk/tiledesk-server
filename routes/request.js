@@ -189,17 +189,24 @@ router.get('/', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   } 
+  console.log("direction",direction);
 
   var sortField = "updatedAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   } 
+  console.log("sortField",sortField);
+
+  var sortQuery={};
+  sortQuery[sortField] = direction;
+
+  console.log("sort query", sortQuery);
 
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
-      sort({ sortField: direction }).
+      sort(sortQuery).
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
