@@ -40,6 +40,12 @@ curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f3275
 ```
 
 
+## Analytics
+```
+curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f32757066e0014bfd718/analytics/requests
+
+```
+
 
 # TILEDESK LOCALHOST REST API
 
@@ -68,9 +74,13 @@ curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:30
 ### Create 
 
 ```
-curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"requester_id":"io", "requester_fullname":"Andrea Leo", "first_text":"firstText", "support_status":200}' http://localhost:3000/5ab0f32757066e0014bfd718/requests
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"requester_id":"io", "requester_fullname":"Andrea Leo", "first_text":"firstText"}' http://localhost:3000/5ab0f32757066e0014bfd718/requests
 ```
 
+
+```
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"requester_id":"io", "requester_fullname":"Andrea Leo", "first_text":"firstText", "first_message": {"sender": "123", "senderFullname":"Andrea leo", "recipient":"321", "recipientFullname":"Nicola","text":"ciao"}}' http://localhost:3000/5ab0f32757066e0014bfd718/requests
+```
 
 ### Patch 
 
@@ -117,3 +127,22 @@ curl -X GET -u andrea.leo@f21.it:123456 http://localhost:3000/5ad706aa7009f70267
 ```
 curl -v -X GET -u andrea.leo@f21.it:123456 http://localhost:3000/5ab0f32757066e0014bfd718/faq_kb
 ```
+
+
+
+
+
+
+
+db.getCollection('requests').find({"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }})
+db.getCollection('requests').count({"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }})
+
+
+
+db.requests.aggregate( [
+   { $match: {"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }} },
+   { $count: "totalCount" }
+] )
+
+
+{ $group: { _id: "$state", totalPop: { $sum: "$pop" } } }
