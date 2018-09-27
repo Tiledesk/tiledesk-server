@@ -109,7 +109,7 @@ router.post('/', function(req, res) {
       });
    
       
-      // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LMv9XYr_Pnjckc5iiPj", "data": { "channel_type": "direct", "is_new": false, "last_message_text": "grazie altrettanto", "recipient": "5ad5bd40c975820014ba9009", "recipient_fullname": "Andrea Sponziello", "sender": "5ba6740a162921001555e419", "sender_fullname": "Umberto Benedetti", "status": 2, "timestamp": 1537809094728, "type": "text" } }' http://localhost:3000/chat21/requests
+      // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
 
     } else if (req.body.event_type == "deleted-conversation") {
       console.log("event_type","deleted-conversation");
@@ -155,7 +155,7 @@ router.post('/', function(req, res) {
               
               return requestservice.setParticipantsByRequestId(recipient_id, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
                 // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
-                return requestservice.changeStatusByRequestId(recipient_id, firestoreSupportStatus).then(function(updatedStatusRequest) {
+                return requestservice.closeRequestByRequestId(recipient_id).then(function(updatedStatusRequest) {
                   console.log('updatedStatusRequest', updatedStatusRequest);
                   return res.json(updatedStatusRequest);
                 });
