@@ -102,6 +102,53 @@ class MessageService {
   };  
 
 
+  getTranscriptByRequestId(requestid) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        return Message.find({"recipient": requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+            if (err) {
+                console.error("Error getting the transcript", err);
+                return reject(err);
+            }
+    
+            if(!messages){
+                return resolve(messages); 
+            }
+
+            console.log("messages", messages);
+
+            var transcript = '';
+            // messages.forEach(message => {
+                for (var i = 0; i < messages.length; i++) {
+                    var message = messages[i];
+                    console.log("message", message);
+                    console.log("message.createdAt", message.createdAt);
+                    
+
+                    transcript = transcript  +
+                        message.createdAt.toLocaleString('it', { timeZone: 'UTC' }) +
+                        ' ' + message.senderFullname + 
+                        ': ' + message.text;
+
+                        //not add line break for last message
+                        if (i<messages.length-1){
+                            transcript = transcript  + '\r\n';
+                        }
+
+                        console.log("transcript", transcript);
+                }
+            // });
+
+            console.log("final transcript", transcript);
+
+            // each message in messages
+            // p [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] #{message.senderFullname}: #{message.text}
+            resolve(transcript);
+    
+        });
+    });
+  }
+
 
 
 
