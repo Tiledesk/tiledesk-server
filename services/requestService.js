@@ -17,11 +17,15 @@ class RequestService {
       return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status);
   };
 
-  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
+  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
 
     // console.log("request_id", request_id);
 
 
+    if (!departmentid) {
+      departmentid ='default';
+    }
+    
     var that = this;
 
     return new Promise(function (resolve, reject) {
@@ -44,7 +48,7 @@ class RequestService {
                 // rating_message: req.body.rating_message,
             
                 agents: result.agents,
-                availableAgents: result.available_agents,
+                //availableAgents: result.available_agents,
 
                 // assigned_operator_id:  result.assigned_operator_id,
             
@@ -72,7 +76,7 @@ class RequestService {
                   }
               
               
-                  console.info("savedRequest",savedRequest);
+                  console.info("Request created",savedRequest);
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
