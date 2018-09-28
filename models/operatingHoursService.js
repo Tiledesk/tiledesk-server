@@ -9,16 +9,17 @@ class OperatingHoursService {
 
     // console.log('O ---> [ OHS ] -> PROJECT ID ', projectId)
     Project.findById(projectId, function (err, project) {
+      // console.log("XXXXXXXX project", project);
       if (err) {
         console.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
         // throw error
         callback(null, { errorCode: 1000, msg: 'Error getting object.' });
         return;
       }
-      else if (!project) {
+      if (!project) {
         console.error("O ---> [ OHS ] -> PROJECT NOT FOUND");
         // throw error
-        callback(null, { errorCode: 1010, msg: 'Object not found.' });
+        callback(null, { errorCode: 1010, msg: 'project not found for id', projectId });
         return;
       }
 
