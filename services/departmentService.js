@@ -42,7 +42,7 @@ getOperators(departmentid, projectid, nobot) {
 
   var that = this;
   return new Promise(function (resolve, reject) {
-      // console.log("»»» »»» --> DEPT ID ", departmentid);
+       // console.log("»»» »»» --> DEPT ID ", departmentid);
 
       let query;
       if (departmentid == 'default' || departmentid == undefined) {
@@ -50,7 +50,7 @@ getOperators(departmentid, projectid, nobot) {
       } else {
         query = { _id: departmentid };
       }
-      // console.log('query', query);
+       // console.log('query', query);
       return Department.findOne(query).exec(function (err, department) {
         // return Department.findOne(query).exec().then(function (department) {
 
@@ -58,6 +58,7 @@ getOperators(departmentid, projectid, nobot) {
           console.error('-- > 1 DEPT FIND BY ID ERR ', err)
           return reject(err);
         }
+        // console.log("department", department);
         if (!department) {
           console.error("Department not found for query ", query);
           return reject({ success: false, msg: 'Object not found.' });
@@ -283,12 +284,15 @@ getOperators(departmentid, projectid, nobot) {
           return reject(err);
           // sendError(err, res);
 
-        } else if (isOpen) {
+        } 
+        
+        if (isOpen) {
 
           var _available_agents = that.getAvailableOperator(project_users);
 
           return resolve(_available_agents);
         } else {
+          // console.logO ---> [ OHS ] -> PROJECT NOT FOUND("HERERERERERERE");
           return resolve([]);
         }
       });
