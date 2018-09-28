@@ -25,7 +25,7 @@ class ProjectService {
           });
           // console.log('NEW PROJECT ', newProject)
         
-          newProject.save(function (err, savedProject) {
+          return newProject.save(function (err, savedProject) {
             if (err) {
               console.error('--- > ERROR ', err)
               return reject({ success: false, msg: 'Error saving object.' });
@@ -44,15 +44,15 @@ class ProjectService {
               updatedBy: createdBy
             });
         
-            newProject_user.save(function (err, savedProject_user) {
+           return  newProject_user.save(function (err, savedProject_user) {
               if (err) {
                 console.error('--- > ERROR ', err)
                 return reject(err);
               }
 
 
-                departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
-                  // console.info("Project created", )
+              return departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
+                console.info("Project created", savedProject );
                 return resolve(savedProject);
               });
             });
