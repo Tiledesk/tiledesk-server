@@ -3,8 +3,42 @@ var Department = require("../models/department");
 var Project_user = require("../models/project_user");
 var Group = require("../models/group");
 var operatingHoursService = require("../models/operatingHoursService");
+var mongoose = require('mongoose');
 
 class DepartmentService {
+
+  createDefault(project_id, createdBy) {
+    return this.create('Default Department', project_id, 'assigned', createdBy, true);
+  }
+
+  create(name, id_project, routing, createdBy, isdefault) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        // CREATE DEFAULT DEPARTMENT
+        var newDepartment = new Department({
+          _id: new mongoose.Types.ObjectId(),
+          // id_bot: 'undefined',
+          // routing: 'pooled',
+          routing: routing,
+          name: name,
+          id_project: id_project,
+          default: isdefault,
+          createdBy: createdBy,
+          updatedBy: createdBy
+        });
+    
+        return newDepartment.save(function (err, savedDepartment) {
+          if (err) {
+            console.log('--- > ERROR ', err);
+            reject(err);
+            // return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }
+          console.log('Default Department created');
+          return resolve(savedDepartment);
+          // res.json(savedDepartment);
+        });
+      });
+  }
 
 // START - GET OPERATORS OF A DEPT - 3 giu 2018 Nikola - Andrea L. - Andrea S.
 getOperators(departmentid, projectid, nobot) {
@@ -22,6 +56,7 @@ getOperators(departmentid, projectid, nobot) {
       console.log('query', query);
       // console.log('here');
       return Department.findOne(query).exec(function (err, department) {
+        // return Department.findOne(query).exec().then(function (department) {
         // console.log('here1');
 
         if (err) {

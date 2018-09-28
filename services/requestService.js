@@ -1,12 +1,12 @@
 'use strict';
 
-var departmentService = require('../models/departmentService');
+var departmentService = require('../services/departmentService');
 var Request = require("../models/request");
 var emailService = require("../models/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
 var mongoose = require('mongoose');
-var messageService = require('../models/messageService');
+var messageService = require('../services/messageService');
 
 
 class RequestService {
@@ -17,7 +17,7 @@ class RequestService {
       return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status);
   };
 
-  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
 
     console.log("request_id", request_id);
 
@@ -98,13 +98,13 @@ class RequestService {
   }
 
 
-  changeStatusByRequestId(request_id, newstatus) {
+  changeStatusByRequestId(request_id, id_project, newstatus) {
 
     return new Promise(function (resolve, reject) {
      // console.log("request_id", request_id);
      // console.log("newstatus", newstatus);
 
-        return Request.findOneAndUpdate({request_id: request_id}, {status: newstatus}, {new: true, upsert:true}, function(err, updatedRequest) {
+        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
               console.error(err);
               return reject(err);
@@ -116,18 +116,59 @@ class RequestService {
 
   }
 
-  closeRequestByRequestId(request_id) {
+
+  setClosedAtByRequestId(request_id, id_project, closed_at) {
+
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false}, function(err, updatedRequest) {
+            if (err) {
+              console.error(err);
+              return reject(err);
+            }
+           // console.log("updatedRequest", updatedRequest);
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
+  incrementMessagesCountByRequestId(request_id, id_project) {
+
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
+            if (err) {
+              console.error(err);
+              return reject(err);
+            }
+           // console.log("updatedRequest", updatedRequest);
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
+
+  closeRequestByRequestId(request_id, id_project) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
-     console.log("request_id", request_id);
+     // console.log("request_id", request_id);
+     
 
-        return that.changeStatusByRequestId(request_id, 1000).then(function(updatedRequest) {
-            console.log("updatedRequest", updatedRequest);
-            return messageService.getTranscriptByRequestId(request_id).then(function(transcript) {
-              console.log("transcript", transcript);
-              return that.updateTrascriptByRequestId(request_id, transcript).then(function(updatedRequest) {
-                return resolve(updatedRequest);
+        return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
+            // console.log("updatedRequest", updatedRequest);
+            return messageService.getTranscriptByRequestId(request_id, id_project).then(function(transcript) {
+             // console.log("transcript", transcript);
+              return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
+                return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
+                  return resolve(updatedRequest);
+                });
               });
             });
           }).catch(function(err)  {
@@ -138,13 +179,13 @@ class RequestService {
 
   }
 
-  updateTrascriptByRequestId(request_id, transcript) {
+  updateTrascriptByRequestId(request_id, id_project, transcript) {
 
     return new Promise(function (resolve, reject) {
       console.log("request_id", request_id);
       console.log("transcript", transcript);
 
-        return Request.findOneAndUpdate({request_id: request_id}, {transcript: transcript}, {new: true, upsert:true}, function(err, updatedRequest) {
+        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
               console.error(err);
               return reject(err);
@@ -157,12 +198,12 @@ class RequestService {
   }
 
 
-  setParticipantsByRequestId(request_id, participants) {
+  setParticipantsByRequestId(request_id, id_project, participants) {
     return new Promise(function (resolve, reject) {
       // console.log("request_id", request_id);
       // console.log("participants", participants);
 
-      return Request.findOneAndUpdate({request_id: request_id}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
+      return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
         if (err) {
           console.error("Error setParticipantsByRequestId", err);
           return reject(err);
