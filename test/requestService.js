@@ -1,3 +1,6 @@
+//During the test the env variable is set to test
+process.env.NODE_ENV = 'test';
+
 // require('./controllers/todo.controller.test.js');
 var expect = require('chai').expect;
 
@@ -16,6 +19,7 @@ mongoose.connect(config.databasetest);
 var requestservice = require('../services/requestService');
 var messageservice = require('../services/messageService');
 var projectService = require('../services/projectService');
+// var departmentService = require('../services/departmentService');
 
 var Request = require("../models/request");
 
@@ -28,6 +32,17 @@ describe('RequestService()', function () {
        requestservice.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
           console.log("test resolve");
           expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.requester_id).to.equal("requester_id1");
+          expect(savedRequest.requester_fullname).to.equal("requester_fullname1");
+          expect(savedRequest.first_text).to.equal("first_text");
+          expect(savedRequest.agents).to.have.lengthOf(1);
+          console.log("savedProject._id", savedProject._id, typeof savedProject._id);
+          console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
+
+          expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+          // aiuto
+          // expect(savedRequest.department).to.equal("requester_id1");
           done();
         }).catch(function(err) {
             console.log("test reject");
@@ -53,77 +68,6 @@ describe('RequestService()', function () {
 
   });
 });
-
-describe('ProjectService()', function () {
-  it('createProject', function (done) {
-
-     projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
-        console.log("createProject resolve");
-         expect(savedProject.name).to.equal("test1");
-        done();
-    }).catch(function(err) {
-        console.error("test reject", err);
-        assert.isNotOk(err,'Promise error');
-        done();
-    });
-  });
-});
-
-
-
-describe('MessageService()', function () {
-  it('createMessage', function (done) {
-    // this.timeout(10000);
-
-      projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
-      messageservice.create("5badfe5d553d1844ad654072", "test sender", "testrecipient-createMessage", "test recipient fullname", "hello",
-          savedProject._id, "5badfe5d553d1844ad654072").then(function(savedMessage){
-            requestservice.incrementMessagesCountByRequestId(savedMessage.recipient, savedProject._id).then(function() {    
-          console.log("test resolve");
-
-          expect(savedMessage.text).to.equal("hello");
-          done();
-
-        }).catch(function(err){
-          assert.isNotOk(err,'Promise error');
-          done();
-        });
-
-      });
-    });
-  });
-});
-
-
-
-describe('MessageService()', function () {
-  it('createMessageAndUpdateTwoMessagesCount', function (done) {
-    // this.timeout(10000);
-
-      projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
-        requestservice.createWithId("request_id-createTwoMessage", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
-         messageservice.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "test recipient fullname", "hello",
-            savedProject._id, "5badfe5d553d1844ad654072").then(function(savedMessage){
-              Promise.all([requestservice.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
-                requestservice.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {                
-                  Request.findOne({"request_id": "request_id-createTwoMessage"}).exec().then(function(req) {
-                    console.log("test resolve", req);
-
-                    expect(req.messages_count).to.equal(2);
-                    done();                         
-                  }).catch(function(err){
-                    console.error("test reject", err);
-                    assert.isNotOk(err,'Promise error');
-                    done();
-                  });
-              });
-          });
-        });
-    });
-  });
-});
-
-
 
 describe('RequestService()', function () {
   it('closeRequest', function (done) {
