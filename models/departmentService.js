@@ -29,7 +29,7 @@ getOperators(departmentid, projectid, nobot) {
           return reject(err);
         }
         if (!department) {
-          log.error("Department not found for query ", query);
+          console.error("Department not found for query ", query);
           return reject({ success: false, msg: 'Object not found.' });
         }
         console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
