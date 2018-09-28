@@ -19,7 +19,7 @@ class RequestService {
 
   createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
 
-    console.log("request_id", request_id);
+    // console.log("request_id", request_id);
 
 
     var that = this;
@@ -28,7 +28,7 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-          console.log("result", result);
+          // console.log("result", result);
 
               var newRequest = new Request({
                 request_id: request_id,
@@ -60,7 +60,7 @@ class RequestService {
               });
                     
 
-              console.log('newRequest.',newRequest);
+              // console.log('newRequest.',newRequest);
 
 
           
@@ -72,7 +72,7 @@ class RequestService {
                   }
               
               
-                  console.log("savedRequest",savedRequest);
+                  console.info("savedRequest",savedRequest);
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 

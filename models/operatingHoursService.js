@@ -7,18 +7,16 @@ class OperatingHoursService {
 
   projectIsOpenNow(projectId, callback) {
 
-    console.log('O ---> [ OHS ] -> PROJECT ID ', projectId)
+    // console.log('O ---> [ OHS ] -> PROJECT ID ', projectId)
     Project.findById(projectId, function (err, project) {
       if (err) {
-        console.log("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
-        // return res.status(500).send({ success: false, msg: 'Error getting object.' });
+        console.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
         // throw error
         callback(null, { errorCode: 1000, msg: 'Error getting object.' });
         return;
       }
       else if (!project) {
-        console.log("O ---> [ OHS ] -> PROJECT NOT FOUND");
-        // return res.status(404).send({ success: false, msg: 'Object not found.' });
+        console.error("O ---> [ OHS ] -> PROJECT NOT FOUND");
         // throw error
         callback(null, { errorCode: 1010, msg: 'Object not found.' });
         return;
@@ -28,7 +26,7 @@ class OperatingHoursService {
 
       if (project) {
         // console.log("[ O ] [ H ] [ S ] -> PROJECT FOUND: ", project);
-        console.log("O ---> [ OHS ] -> PRJCT: IS ACTIVE OPERATING HOURS: ", project.activeOperatingHours);
+        // console.log("O ---> [ OHS ] -> PRJCT: IS ACTIVE OPERATING HOURS: ", project.activeOperatingHours);
         // console.log("O ---> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS: ", project.operatingHours);
 
 
@@ -39,7 +37,7 @@ class OperatingHoursService {
         // AVAILABILITY OF THE USERS (THE PROJECT IS CONSIDERED OPEN 24 HOURS ON 24 AND SEVEN DAYS ON SEVEN)  
         if (project.activeOperatingHours == false || project.activeOperatingHours == undefined ) {
           // console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours)
-          console.log('O ---> [ OHS ] -> * USE CASE 0 * OPERATING HOURS ARE NOT ACTIVE')
+          // console.log('O ---> [ OHS ] -> * USE CASE 0 * OPERATING HOURS ARE NOT ACTIVE')
           callback(true, null);
         }
 
@@ -47,14 +45,14 @@ class OperatingHoursService {
         // POSSO CONSIDERARLO UN ERRORE (E DI CONSEGUENZA RITORNARE UN ERRORE) 
         // O COMUNQUE VALUTARE L'INTEZIONE DELL'UTENTE CHE HA ATTIVATO GLI ORARI DI APERTURA E CONSIDERARE IL PROGETTO COME CHIUSO
         if (project.activeOperatingHours == true && project.operatingHours == '') {
-          console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE', project.activeOperatingHours, ' BUT OBJECT OPERATING HOURS IS EMPTY')
+          // console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE', project.activeOperatingHours, ' BUT OBJECT OPERATING HOURS IS EMPTY')
           callback(null, { errorCode: 1020, msg: 'Operating hours is empty' });
           return;
         }
 
         if (project.activeOperatingHours == true) {
           // OPERATING HOURS IS ACTIVE - CHECK IF THE CURRENT TIME IS OUT OF THE TIME OF ACTIVITY
-          console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours, ' - CHECK HOURS')
+          // console.log('O ---> [ OHS ] -> OPERATING HOURS IS ACTIVE? -> ', project.activeOperatingHours, ' - CHECK HOURS')
 
           // PROJECT OPERATING HOURS 
           if (project.operatingHours) {
@@ -82,14 +80,14 @@ class OperatingHoursService {
               //    THE CURRENT DATE @ THE PROJECT TZ   
               try {
                 var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName);
-                console.log('O ---> [ OHS ] -> *** CURRENT DATE @ THE PROJECT TZ ***', dateNowAtPrjctTz);
+                // console.log('O ---> [ OHS ] -> *** CURRENT DATE @ THE PROJECT TZ ***', dateNowAtPrjctTz);
 
                 // FOR DEBUG (TO VIEW, IN DEBUG, THE NAME OF THE DAY INSTEAD OF THE NUMBER OF THE DAY)
                 var days = { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
 
                 // WEEK DAY @ THE PROJECT TZ (note: the week day is represented as a number) 
                 var dayNowAtPrjctTz = dateNowAtPrjctTz.getDay();
-                console.log('O ---> [ OHS ] -> *** DAY @ PRJCT TZ #', dayNowAtPrjctTz, '"', days[dayNowAtPrjctTz], '"');
+                // console.log('O ---> [ OHS ] -> *** DAY @ PRJCT TZ #', dayNowAtPrjctTz, '"', days[dayNowAtPrjctTz], '"');
 
                 // TRASFORM IN STRING THE DATE @ THE PRJCT TZ (IS THE DATE NOW TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
                 var dateNowAtPrjctTzToStr = dateNowAtPrjctTz.toISOString();
@@ -113,7 +111,7 @@ class OperatingHoursService {
 
                     // use case 1: THE CURRENT DAY (@ PRJCT TZ) MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
                     //             THE CURRENT TIME (@ PRJCT TZ) IS BETWEEN THE START TIME AND THE END TIME
-                    console.log('O ---> [ OHS ] -> * USE CASE 1 * DAY & TIMES MATCHES')
+                    // console.log('O ---> [ OHS ] -> * USE CASE 1 * DAY & TIMES MATCHES')
                     // findAvailableUsers(req.params.projectid);
                     callback(true, null);
 
@@ -121,7 +119,7 @@ class OperatingHoursService {
 
                     // use case 3: THE CURRENT DAY (@ PRJCT TZ) MATCHES TO A DAY OF PRJCT OPERATING HOURS BUT 
                     //             THE CURRENT TIME (@ PRJCT TZ) IS ! NOT BETWEEN THE START TIME AND THE END TIME
-                    console.log('O ---> [ OHS ] -> * USE CASE 3 * DAY MATCHES BUT TIMES ! NOT')
+                    // console.log('O ---> [ OHS ] -> * USE CASE 3 * DAY MATCHES BUT TIMES ! NOT')
                     // user_available_array = [];
                     // res.json(user_available_array);
                     callback(false, null);
@@ -130,7 +128,7 @@ class OperatingHoursService {
                 } else {
 
                   // use case 2: THE CURRENT DAY (@ PRJCT TZ) ! NOT MATCHES TO A DAY OF PRJCT OPERATING HOURS AND 
-                  console.log('O ---> [ OHS ] -> * USE CASE 2 * DAY ! NOT MATCHES')
+                  // console.log('O ---> [ OHS ] -> * USE CASE 2 * DAY ! NOT MATCHES')
                   // user_available_array = [];
                   // res.json(user_available_array);
                   callback(false, null);
@@ -138,7 +136,7 @@ class OperatingHoursService {
 
               } catch (error) {
 
-                console.log('O ---> [ OHS ] -> ERROR ADD/SUBSTRACT PRJCT TZ OFFSET FROM DATE NOW - ERROR: ', error)
+                // console.log('O ---> [ OHS ] -> ERROR ADD/SUBSTRACT PRJCT TZ OFFSET FROM DATE NOW - ERROR: ', error)
                 // return res.status(500).send({ success: false, msg: error.message });
                 callback(null, { errorCode: 3000, msg: error.message });
                 return;

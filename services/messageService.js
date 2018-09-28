@@ -37,7 +37,7 @@ class MessageService {
                 updatedBy: createdBy
             });
             
-            console.log("create new message", newMessage);
+            // console.log("create new message", newMessage);
 
             return newMessage.save(function(err, savedMessage) {
                 if (err) {
@@ -82,7 +82,7 @@ class MessageService {
               
                 
 
-                console.log("create new message with id_project from request lookup", newMessage);
+                // console.log("create new message with id_project from request lookup", newMessage);
     
                 return newMessage.save(function(err, savedMessage) {
                     if (err) {

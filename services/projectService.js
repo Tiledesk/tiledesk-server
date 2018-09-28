@@ -27,7 +27,7 @@ class ProjectService {
         
           newProject.save(function (err, savedProject) {
             if (err) {
-              console.log('--- > ERROR ', err)
+              console.error('--- > ERROR ', err)
               return reject({ success: false, msg: 'Error saving object.' });
             }
             // console.log('--- SAVE PROJECT ', savedProject)
@@ -46,12 +46,13 @@ class ProjectService {
         
             newProject_user.save(function (err, savedProject_user) {
               if (err) {
-                console.log('--- > ERROR ', err)
+                console.error('--- > ERROR ', err)
                 return reject(err);
               }
 
 
-              departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
+                departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
+                  // console.info("Project created", )
                 return resolve(savedProject);
               });
             });
