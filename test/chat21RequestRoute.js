@@ -161,6 +161,44 @@ describe('Request', () => {
 
 
 
+
+        it('deleted-archivedconversation', (done) => {
+
+            projectService.create("test-deleted-archivedconversation", userid).then(function(savedProject) {
+                requestService.createWithId("support-group-test-deleted-archivedconversation", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+                    requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
+
+                        
+
+                        var webhookContent =     { "event_type": 'deleted-archivedconversation', "createdAt": 1538156223681, 
+                                "app_id": 'tilechat',"user_id": "system", "recipient_id": "support-group-test-deleted-archivedconversation",
+                                "data": {"attributes" : {"projectid" : savedProject._id} }};
+                            
+                
+                        chai.request(server)
+                            .post('/chat21/requests')
+                            .send(webhookContent)
+                            .end((err, res) => {
+                                console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+                                res.body.should.have.property('status').eql(200);
+                                
+
+                                res.body.should.have.property('participants').to.have.lengthOf(1);
+                                // res.body.should.have.property('participants').contains("agentid1");
+                                // res.body.should.have.property('participants').contains(userid);
+                            
+                            done();
+                            });
+                    });
+                });
+            });
+        });
+
+
+
     });
 
 

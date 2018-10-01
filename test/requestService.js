@@ -123,6 +123,41 @@ describe('RequestService()', function () {
 
 
 
+
+  it('reopenRequest', function (done) {
+
+    projectService.create("test1", userid).then(function(savedProject) {
+      requestService.createWithId("request_id-reopenRequest", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+        
+            requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
+              requestService.reopenRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(reopenedRequest) {
+                
+                  console.log("resolve reopenedRequest", reopenedRequest);
+
+                  //check closedRequest
+                  expect(closedRequest.status).to.equal(1000);
+                  expect(closedRequest.closed_at).to.not.equal(null);      
+                  expect(closedRequest.participants).to.have.lengthOf(1);          
+
+                  //check reopenedRequest
+                  expect(reopenedRequest.status).to.equal(200);
+                  expect(reopenedRequest.closed_at).to.not.equal(null);      
+                  expect(reopenedRequest.participants).to.have.lengthOf(1);          
+                  
+          
+                  done();                         
+                }).catch(function(err){
+                  console.error("test reject", err);
+                  assert.isNotOk(err,'Promise error');
+                  done();
+                });
+            });
+          });   
+  });
+});
+
+
+
   it('addparticipant', function (done) {
 
   projectService.create("addparticipant-project", userid).then(function(savedProject) {
