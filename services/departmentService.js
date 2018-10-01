@@ -12,13 +12,16 @@ class DepartmentService {
   }
 
   create(name, id_project, routing, createdBy, isdefault) {
+
+    if (!isdefault) {
+      isdefault = false;
+    }
+    
     var that = this;
     return new Promise(function (resolve, reject) {
-        // CREATE DEFAULT DEPARTMENT
         var newDepartment = new Department({
           _id: new mongoose.Types.ObjectId(),
           // id_bot: 'undefined',
-          // routing: 'pooled',
           routing: routing,
           name: name,
           id_project: id_project,
@@ -32,7 +35,7 @@ class DepartmentService {
             console.log('--- > ERROR ', err);
             reject(err);
           }
-          console.log('Default Department created');
+          console.info('Default Department created', savedDepartment);
           return resolve(savedDepartment);
         });
       });

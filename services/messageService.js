@@ -115,14 +115,14 @@ class MessageService {
                 return resolve(messages); 
             }
 
-            console.log("messages", messages);
+            // console.log("messages", messages);
 
             var transcript = '';
             // messages.forEach(message => {
                 for (var i = 0; i < messages.length; i++) {
                     var message = messages[i];
-                    console.log("message", message);
-                    console.log("message.createdAt", message.createdAt);
+                    // console.log("message", message);
+                    // console.log("message.createdAt", message.createdAt);
                     
 
                     transcript = transcript  +
@@ -135,11 +135,11 @@ class MessageService {
                             transcript = transcript  + '\r\n';
                         }
 
-                        console.log("transcript", transcript);
+                        // console.log("transcript", transcript);
                 }
             // });
 
-            console.log("final transcript", transcript);
+            // console.log("final transcript", transcript);
 
             // each message in messages
             // p [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] #{message.senderFullname}: #{message.text}
