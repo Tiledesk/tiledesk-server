@@ -16,21 +16,24 @@ var mongoose = require('mongoose');
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
 
-var requestservice = require('../services/requestService');
-var messageservice = require('../services/messageService');
+var requestService = require('../services/requestService');
+var messageService = require('../services/messageService');
 var projectService = require('../services/projectService');
 
 var Request = require("../models/request");
 
 
-describe('MessageService()', function () {
+describe('messageService()', function () {
+
+  var userid = "5badfe5d553d1844ad654072";
+
   it('createMessage', function (done) {
     // this.timeout(10000);
 
-      projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
-      messageservice.create("5badfe5d553d1844ad654072", "test sender", "testrecipient-createMessage", "test recipient fullname", "hello",
-          savedProject._id, "5badfe5d553d1844ad654072").then(function(savedMessage){
-            requestservice.incrementMessagesCountByRequestId(savedMessage.recipient, savedProject._id).then(function() {    
+      projectService.create("test1", userid).then(function(savedProject) {
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "test recipient fullname", "hello",
+          savedProject._id, userid).then(function(savedMessage){
+            requestService.incrementMessagesCountByRequestId(savedMessage.recipient, savedProject._id).then(function() {    
           console.log("test resolve");
 
           expect(savedMessage.text).to.equal("hello");
@@ -44,20 +47,18 @@ describe('MessageService()', function () {
       });
     });
   });
-});
 
 
 
-describe('MessageService()', function () {
   it('createMessageAndUpdateTwoMessagesCount', function (done) {
     // this.timeout(10000);
 
-      projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
-        requestservice.createWithId("request_id-createTwoMessage", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
-         messageservice.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "test recipient fullname", "hello",
-            savedProject._id, "5badfe5d553d1844ad654072").then(function(savedMessage){
-              Promise.all([requestservice.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
-                requestservice.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {                
+      projectService.create("test1", userid).then(function(savedProject) {
+        requestService.createWithId("request_id-createTwoMessage", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+         messageService.create(userid, "test sender", savedRequest.request_id, "test recipient fullname", "hello",
+            savedProject._id, userid).then(function(savedMessage){
+              Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
+                requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {                
                   Request.findOne({"request_id": "request_id-createTwoMessage"}).exec().then(function(req) {
                     console.log("test resolve", req);
 
@@ -73,5 +74,13 @@ describe('MessageService()', function () {
         });
     });
   });
-});
 
+
+
+
+
+
+
+
+
+});

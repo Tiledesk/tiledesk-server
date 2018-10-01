@@ -2,8 +2,11 @@
 process.env.NODE_ENV = 'test';
 
 // require('./controllers/todo.controller.test.js');
-var expect = require('chai').expect;
 
+var chai = require("chai");
+chai.config.includeStack = true;
+
+var expect = chai.expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var mongoose = require('mongoose');
@@ -118,6 +121,71 @@ describe('RequestService()', function () {
     });
   });
 
+
+
+  it('addparticipant', function (done) {
+
+  projectService.create("addparticipant-project", userid).then(function(savedProject) {
+    // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+     requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+       var member = 'agent1';
+       requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
+        console.log("resolve", savedRequestParticipant);
+        expect(savedRequestParticipant.request_id).to.equal("request_id1");
+        expect(savedRequestParticipant.requester_id).to.equal("requester_id1");
+        expect(savedRequestParticipant.requester_fullname).to.equal("requester_fullname1");
+        expect(savedRequestParticipant.first_text).to.equal("first_text");
+        expect(savedRequestParticipant.agents).to.have.lengthOf(1);
+        expect(savedRequestParticipant.status).to.equal(200);
+        expect(savedRequestParticipant.participants).to.have.lengthOf(2);
+        expect(savedRequestParticipant.participants).to.contains(userid);
+        expect(savedRequestParticipant.participants).to.contains(member);
+        expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
+
+        done();
+      }).catch(function(err) {
+          console.log("test reject");
+          assert.isNotOk(err,'Promise error');
+          done();
+      });
+    });
+  });
+});
+
+
+
+
+
+it('removeparticipant', function (done) {
+
+  projectService.create("removeparticipant-project", userid).then(function(savedProject) {
+    // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+     requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+       requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
+        console.log("resolve", savedRequestParticipant);
+        
+        //savedRequest is assigned -> 200
+        expect(savedRequest.status).to.equal(200);
+
+        //savedRequestParticipant is unserved -> 100
+        expect(savedRequestParticipant.request_id).to.equal("request_id1");
+        expect(savedRequestParticipant.requester_id).to.equal("requester_id1");
+        expect(savedRequestParticipant.requester_fullname).to.equal("requester_fullname1");
+        expect(savedRequestParticipant.first_text).to.equal("first_text");
+        expect(savedRequestParticipant.agents).to.have.lengthOf(1);
+        expect(savedRequestParticipant.status).to.equal(100);
+        expect(savedRequestParticipant.participants).to.have.lengthOf(0);
+        expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
+        
+        done();
+      }).catch(function(err) {
+          console.log("test reject");
+          assert.isNotOk(err,'Promise error');
+          done();
+      });
+    });
+  });
+});
 
 
 

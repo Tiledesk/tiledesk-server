@@ -20,9 +20,13 @@ var projectService = require('../services/projectService');
 
 
 describe('ProjectService()', function () {
+
+  var userid = "5badfe5d553d1844ad654072";
+
+
   it('createProject', function (done) {
 
-     projectService.create("test1", "5badfe5d553d1844ad654072").then(function(savedProject) {
+     projectService.create("test1", userid).then(function(savedProject) {
         console.log("createProject resolve");
          expect(savedProject.name).to.equal("test1");
         done();
