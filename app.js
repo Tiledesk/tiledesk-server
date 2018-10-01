@@ -16,10 +16,15 @@ var validtoken = require('./middleware/valid-token')
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
-  console.log('DATABASE_URI not specified, falling back to localhost.');
+  console.error('DATABASE_URI not specified, falling back to localhost.');
 }
+var autoIndex = true;
+if (process.env.MONGOOSE_AUTOINDEX) {
+  autoIndex = process.env.MONGOOSE_AUTOINDEX;
+}
+console.info("autoIndex", autoIndex);
 
-mongoose.connect(databaseUri || config.database);
+mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
 
 var auth = require('./routes/auth');
 var contact = require('./routes/contact');
