@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test": "mocha"
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
+    "chai-http": "^4.2.0",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
     "debug": "~2.6.0",
