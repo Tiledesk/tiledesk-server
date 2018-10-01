@@ -133,16 +133,3 @@ curl -v -X GET -u andrea.leo@f21.it:123456 http://localhost:3000/5ab0f32757066e0
 
 
 
-
-db.getCollection('requests').find({"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }})
-db.getCollection('requests').count({"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }})
-
-
-
-db.requests.aggregate( [
-   { $match: {"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new ISODate("2018-08-12T20:15:31Z") }} },
-   { $count: "totalCount" }
-] )
-
-
-{ $group: { _id: "$state", totalPop: { $sum: "$pop" } } }
