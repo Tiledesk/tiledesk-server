@@ -44,6 +44,46 @@ describe('RequestService()', function () {
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.contains(userid);
+          expect(savedRequest.createdBy).to.equal("requester_id1");
+
+          // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
+          // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
+
+          expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+          // aiuto
+          // expect(savedRequest.department).to.equal("requester_id1");
+          done();
+        }).catch(function(err) {
+            console.log("test reject");
+            assert.isNotOk(err,'Promise error');
+            done();
+        });
+    });
+
+  });
+
+
+
+
+
+  var userid = "5badfe5d553d1844ad654072";
+
+  it('createWithIdAndCreatedBy', function (done) {
+    // this.timeout(10000);
+
+     projectService.create("createWithIdAndCreatedBy", userid).then(function(savedProject) {
+      // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+       requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
+          console.log("test resolve");
+          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.requester_id).to.equal("requester_id1");
+          expect(savedRequest.requester_fullname).to.equal("requester_fullname1");
+          expect(savedRequest.first_text).to.equal("first_text");
+          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.status).to.equal(200);
+          expect(savedRequest.participants).to.contains(userid);
+          expect(savedRequest.createdBy).to.equal("user1");
           
           // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
           // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
@@ -183,6 +223,7 @@ describe('RequestService()', function () {
           assert.isNotOk(err,'Promise error');
           done();
       });
+
     });
   });
 });
