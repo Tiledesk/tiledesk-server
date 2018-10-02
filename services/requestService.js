@@ -323,7 +323,7 @@ class RequestService {
         if (!request) {
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
-        
+
       // return Request.findById(id).then(function (request) {
           request.participants.push(member);
 
@@ -347,6 +347,16 @@ class RequestService {
 
     
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+        
+        if (err){
+          console.error(err);
+          return reject(err);
+        }
+
+        if (!request) {
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+
         var index = request.participants.indexOf(member);
         // console.log("index", index);
 
