@@ -146,7 +146,7 @@ router.post('/', function(req, res) {
     return messageService.create(message.sender, message.sender_fullname, message.recipient, message.recipient_fullname, message.text,
       projectid, "system").then(function(savedMessage){
         return requestService.incrementMessagesCountByRequestId(message.recipient, projectid).then(function(savedRequest) {
-          console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+          // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
           if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
             console.log("updateWaitingTimeByRequestId");
             return requestService.updateWaitingTimeByRequestId(message.recipient, projectid).then(function(upRequest) {
