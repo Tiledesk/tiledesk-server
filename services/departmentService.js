@@ -112,9 +112,9 @@ getOperators(departmentid, projectid, nobot) {
               return resolve ({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
             }).catch(function (error) {
 
-              console.error("Write failed: ", error);
+              // console.error("Write failed: ", error);
 
-              console.error("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
+              console.error("Error D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
 
               return reject(error);
             });
