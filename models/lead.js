@@ -2,6 +2,11 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var LeadSchema = new Schema({
+  
+  lead_id: { 
+    type: String,
+    required: true
+  },
   fullname: {
     type: String,
     required: true

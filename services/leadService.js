@@ -2,30 +2,69 @@
 
 var Lead = require("../models/lead");
 var mongoose = require('mongoose');
+const uuidv4 = require('uuid/v4');
 
 class LeadService {
 
 
-  createIfNotExists(fullname, email, id_project, createdBy) {
+  findByEmail(email, id_project) {
     var that = this;
-    return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
-        if (err) {
-          return that.create(fullname, email, id_project, createdBy);
-        }
-        if (!lead) {
-          return that.create(fullname, email, id_project, createdBy);
-        }
-        return lead;
-    
+    return new Promise(function (resolve, reject) {
+      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
+          if (err) {
+            return reject(err);
+          }
+          if (!lead) {
+            return resolve(null);
+          }
+          return resolve(lead);
+      
+      });
+    });
+  }
+
+ 
+
+
+  createIfNotExists(fullname, email, id_project, createdBy) {
+    return this.createIfNotExistsWithLeadId(null, fullname, email, id_project, createdBy);
+  }
+
+  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
+          if (err) {
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
+          }
+          if (!lead) {
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
+          }
+          return resolve(lead);
+      
+      });
     });
   }
 
   create(fullname, email, id_project, createdBy) {
+    return this.createWitId(null, fullname, email, id_project, createdBy);
+  }
+
+  createWitId(lead_id, fullname, email, id_project, createdBy) {
+
+    if (!createdBy) {
+      createdBy = "system";
+    }
+
+    if (!lead_id) {
+      lead_id = uuidv4();
+    }
 
     return new Promise(function (resolve, reject) {
 
     
       var newLead = new Lead({
+        lead_id: lead_id,
         fullname: fullname,
         email: email,
         id_project: id_project,
@@ -44,6 +83,7 @@ class LeadService {
         //   // return res.status(404).send({success: false, msg: 'lead not found' + JSON.stringify(newLead)});
 
         // }
+        console.info('Lead created ', newLead);
         return resolve(savedLead);
       });
     });
