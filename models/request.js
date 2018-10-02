@@ -15,11 +15,13 @@ var RequestSchema = new Schema({
   requester_id: {
     type: String,
     required: true
+    // type: Schema.Types.ObjectId,
+    // ref: 'lead'
   },
-  requester_fullname: {
-    type: String,
-    required: false
-  },
+  // requester_fullname: {
+  //   type: String,
+  //   required: false
+  // },
   first_text: {
     type: String,
     required: true
@@ -49,11 +51,35 @@ var RequestSchema = new Schema({
 
 
 
-  first_message: MessageSchema,
-  
-  
+  // first_message: MessageSchema,
+
   transcript: {
     type: String
+  },
+
+  // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served. Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
+  waiting_time: {
+    type: Number
+  },
+
+
+
+  //messages_count Integer The number of conversation parts in this conversation.
+  //TODO
+  messages_count: {
+    type: Number,
+    default: 0
+  },
+
+  closed_at: {
+    type: Date
+  },
+
+  //tags List A list of tags associated with the conversation.
+//TODO
+  tags: {
+    type: Array,
+    required: false
   },
 
   //rating
@@ -71,13 +97,13 @@ var RequestSchema = new Schema({
   agents: [ProjectUserSchema],
   
   // all the available agents of the project or the department at the request time
-  available_agents: [ProjectUserSchema],
+  // available_agents: [ProjectUserSchema],
 
-  assigned_operator_id: {
-    type: Schema.Types.ObjectId,
-    ref: 'user'
-    // required: true
-  },
+  // assigned_operator_id: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'user'
+  //   // required: true
+  // },
 
 
   // others
@@ -128,8 +154,12 @@ RequestSchema.statics.filterAvailableOperators = function filterAvailableOperato
 RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
 RequestSchema.index({ id_project: 1, type: -1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
-RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
+
+// RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
+RequestSchema.index({transcript: 'text', rating_message: 'text'},
  {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+
+
  //
 //RequestSchema.index({name: 'transcript_fulltext', 'transcript': 'text'},);
 

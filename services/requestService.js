@@ -7,23 +7,39 @@ var Project = require("../models/project");
 var User = require("../models/user");
 var mongoose = require('mongoose');
 var messageService = require('../services/messageService');
+var leadService = require('../services/leadService');
 
 
 class RequestService {
 
 
 
-  create(requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-      return this.createWithId(null, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status);
+  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy);
   };
 
-  createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+  // createWithIdAndLead(request_id, requester_fullname, requester_email, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+  //   var that = this;
+  //   return new Promise(function (resolve, reject) {
+  //       return leadService.createIfNotExists(requester_fullname, requester_email, id_project, createdBy).then(function(createdLead) {
+  //         return that.createWithId(request_id, createdLead._id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function(savedRequest) {
+  //           return resolve(savedRequest);
+  //         });
+  //       });
+  //   });
+  // }
+
+  createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
 
     // console.log("request_id", request_id);
 
 
     if (!departmentid) {
       departmentid ='default';
+    }
+
+    if (!createdBy) {
+      createdBy = requester_id;
     }
     
     var that = this;
@@ -32,15 +48,25 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-          // console.log("result", result);
+          // console.log("getOperators", result);
+
+          var status = 100;
+          var assigned_operator_id;
+          var participants = [];
+          if (result.operators && result.operators.length>0) {
+            assigned_operator_id = result.operators[0].id_user;
+            status = 200;
+            participants.push(assigned_operator_id);
+          }
+          // console.log("assigned_operator_id", assigned_operator_id);
+          // console.log("status", status);
 
               var newRequest = new Request({
                 request_id: request_id,
                 requester_id: requester_id,
-                requester_fullname: requester_fullname,
                 first_text: first_text,
                 status: status,
-                // participants: req.body.participants,
+                participants: participants,
                 department: result.department._id,
 
             
@@ -59,8 +85,8 @@ class RequestService {
             
                 //standard
                 id_project: id_project,
-                createdBy: requester_id,
-                updatedBy: requester_id
+                createdBy: createdBy,
+                updatedBy: createdBy
               });
                     
 
@@ -81,8 +107,9 @@ class RequestService {
                   // console.log("XXXXXXXXXXXXXXXX");
 
                   if (id_project!="5b45e1c75313c50014b3abc6") {
-                    that.sendEmail(id_project, savedRequest);
-
+                    if (process.env.NODE_ENV!= 'test') {
+                      that.sendEmail(id_project, savedRequest);
+                    }
                   }
                   
                   
@@ -157,6 +184,27 @@ class RequestService {
 
   }
 
+  updateWaitingTimeByRequestId(request_id, id_project) {
+
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+
+        var waitingTime = Date.now() - request.createdAt;
+        console.log("waitingTime", waitingTime);
+
+       
+        request.waiting_time = waitingTime;
+          // console.log(" request",  request);
+        return resolve(request.save());
+      });
+
+    });
+
+  }
+
 
   closeRequestByRequestId(request_id, id_project) {
 
@@ -183,11 +231,44 @@ class RequestService {
 
   }
 
+
+  reopenRequestByRequestId(request_id, id_project) {
+
+    var that = this;
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     
+        return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+          if (err){
+            console.error(err);
+            return reject(err);
+          }
+          if (!request) {
+            console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+            return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
+          }
+
+          if (request.participants.length>0) {
+            request.status = 200;
+          } else {
+            request.status = 100;
+          }
+
+          return resolve(request.save());
+
+        }).catch(function(err)  {
+              console.error(err);
+              return reject(err);
+          });
+    });
+
+  }
+
   updateTrascriptByRequestId(request_id, id_project, transcript) {
 
     return new Promise(function (resolve, reject) {
-      console.log("request_id", request_id);
-      console.log("transcript", transcript);
+      // console.log("request_id", request_id);
+      // console.log("transcript", transcript);
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
@@ -228,30 +309,56 @@ class RequestService {
     });
   }
 
-  addParticipant(id, member) {
-    console.log("id", id);
-    console.log("member", member);
+  addParticipantByRequestId(request_id, id_project, member) {
+    // console.log("request_id", request_id);
+    // console.log("id_project", id_project);
+    // console.log("member", member);
 
-    return Request.findById(id).then(function (request) {
-        request.participants.push(member);
-        if (request.participants>0) {
-          request.status = 200;
+    return new Promise(function (resolve, reject) {
+      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+        if (err){
+          console.error(err);
+          return reject(err);
         }
-        return request.save();
-    })
+      // return Request.findById(id).then(function (request) {
+          request.participants.push(member);
+
+          if (request.participants.length>0) {
+            request.status = 200;
+          } else {
+            request.status = 100;
+          }
+
+          return resolve(request.save());
+      });
+   });
   }
 
-  removeParticipant(id, member) {
-    console.log("id", id);
-    console.log("member", member);
+  removeParticipantByRequestId(request_id, id_project, member) {
+    // console.log("request_id", request_id);
+    // console.log("id_project", id_project);
+    // console.log("member", member);
+
+    return new Promise(function (resolve, reject) {
+
     
-    return Request.findById(id).then(function (request) {
-        request.participants.push(member);
-        if (request.participants>0) {
-          request.status = 200;
-        }
-        return request.save();
-    })
+      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+        var index = request.participants.indexOf(member);
+        // console.log("index", index);
+
+        if (index > -1) {
+          request.participants.splice(index, 1);
+          // console.log(" request.participants",  request.participants);
+        }      
+        if (request.participants.length>0) {
+            request.status = 200;
+          } else {
+            request.status = 100;
+          }
+          // console.log(" request",  request);
+        return resolve(request.save());
+      });
+    });
   }
   
 
@@ -302,14 +409,14 @@ class RequestService {
                    });
    
                    }else if (savedRequest.status==200) { //ASSIGNED
-                     console.log("assigned_operator_id", savedRequest.assigned_operator_id);
+                     console.log("participants", savedRequest.participants[0]);
    
-                     User.findById( savedRequest.assigned_operator_id, function (err, user) {
+                     User.findById( savedRequest.participants[0], function (err, user) {
                        if (err) {
                          console.log(err);
                        }
                        if (!user) {
-                         console.warn("User not found",  savedRequest.assigned_operator_id);
+                         console.warn("User not found",  savedRequest.participants[0]);
                        } else {
                          console.log("User email", user.email);
                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);

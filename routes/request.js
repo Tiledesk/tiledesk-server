@@ -23,20 +23,8 @@ router.post('/', function (req, res) {
   console.log("req.user.id", req.user.id);
 
 
-  // var first_message = new Message({
-  //   sender: req.body.requester_id,
-  //   senderFullname: req.body.requester_fullname,
-  //   recipient: req.body.first_message.recipient,
-  //   recipientFullname: req.body.first_message.recipient_fullname,
-  //   text: req.body.first_message.text,
-  //   id_project: req.projectid,
-  //   createdBy: req.user.id,
-  //   updatedBy: req.user.id
-  // });
-
   var newRequest = new Request({
     requester_id: req.body.requester_id,
-    requester_fullname: req.body.requester_fullname,
     first_text: req.body.first_text,
     //    status: req.body.status,
     status: req.body.status,
@@ -54,8 +42,8 @@ router.post('/', function (req, res) {
     rating_message: req.body.rating_message,
 
     agents: req.body.agents,
-    availableAgents: req.body.availableAgents,
-    assigned_operator_id: req.body.assigned_operator_id,
+    // availableAgents: req.body.availableAgents,
+    // assigned_operator_id: req.body.assigned_operator_id,
 
     //others
     sourcePage: req.body.sourcePage,
