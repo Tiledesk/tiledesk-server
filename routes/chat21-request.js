@@ -141,6 +141,11 @@ router.post('/', function(req, res) {
       console.log("chat21 projectid", projectid);
     }
 
+    if (!projectid) {
+      console.log("projectid is null. Not a support message");
+      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+    }
+    
     if (!message.recipient.startsWith("support-group")) {
       console.log("recipient not starts wiht support-group. Not a support message");
       return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
