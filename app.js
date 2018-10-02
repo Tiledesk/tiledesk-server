@@ -27,7 +27,7 @@ console.info("autoIndex", autoIndex);
 mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
 
 var auth = require('./routes/auth');
-var contact = require('./routes/contact');
+var lead = require('./routes/lead');
 //var tenant = require('./routes/tenant');
 var message = require('./routes/message');
 var department = require('./routes/department');
@@ -109,7 +109,7 @@ app.use('/:projectid', projectIdSetter);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 // app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/contacts', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], contact);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], lead);
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
 
 app.use('/:projectid/departments', department);
