@@ -54,7 +54,7 @@ describe('messageService()', function () {
     // this.timeout(10000);
 
       projectService.create("test1", userid).then(function(savedProject) {
-        requestService.createWithId("request_id-createTwoMessage", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+        requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
          messageService.create(userid, "test sender", savedRequest.request_id, "test recipient fullname", "hello",
             savedProject._id, userid).then(function(savedMessage){
               Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),

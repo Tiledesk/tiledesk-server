@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 // require('./controllers/todo.controller.test.js');
 
 var chai = require("chai");
-chai.config.includeStack = true;
+// chai.config.includeStack = true;
 
 var expect = chai.expect;
 var assert = require('chai').assert;
@@ -34,12 +34,11 @@ describe('RequestService()', function () {
     // this.timeout(10000);
 
      projectService.create("createWithId", userid).then(function(savedProject) {
-      // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-       requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+       requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
           console.log("test resolve");
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester_id).to.equal("requester_id1");
-          expect(savedRequest.requester_fullname).to.equal("requester_fullname1");
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
@@ -74,11 +73,10 @@ describe('RequestService()', function () {
 
      projectService.create("createWithIdAndCreatedBy", userid).then(function(savedProject) {
       // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-       requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
+       requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
           console.log("test resolve");
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester_id).to.equal("requester_id1");
-          expect(savedRequest.requester_fullname).to.equal("requester_fullname1");
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
@@ -111,11 +109,10 @@ describe('RequestService()', function () {
      projectService.create("createWithIdWithPooledDepartment", userid).then(function(savedProject) {
       departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
       // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-       requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
+       requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
           console.log("resolve savedRequest");
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester_id).to.equal("requester_id1");
-          expect(savedRequest.requester_fullname).to.equal("requester_fullname1");
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(100);
@@ -138,7 +135,7 @@ describe('RequestService()', function () {
   it('closeRequest', function (done) {
 
       projectService.create("test1", userid).then(function(savedProject) {
-        requestService.createWithId("request_id-closeRequest", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+        requestService.createWithId("request_id-closeRequest", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
           Promise.all([
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "test recipient fullname", "hello1",
             savedProject._id, "5badfe5d553d1844ad654072"),
@@ -167,7 +164,7 @@ describe('RequestService()', function () {
   it('reopenRequest', function (done) {
 
     projectService.create("test1", userid).then(function(savedProject) {
-      requestService.createWithId("request_id-reopenRequest", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+      requestService.createWithId("request_id-reopenRequest", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
         
             requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
               requestService.reopenRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(reopenedRequest) {
@@ -201,14 +198,13 @@ describe('RequestService()', function () {
   it('addparticipant', function (done) {
 
   projectService.create("addparticipant-project", userid).then(function(savedProject) {
-    // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-     requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+     requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
        var member = 'agent1';
        requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
         console.log("resolve", savedRequestParticipant);
         expect(savedRequestParticipant.request_id).to.equal("request_id1");
         expect(savedRequestParticipant.requester_id).to.equal("requester_id1");
-        expect(savedRequestParticipant.requester_fullname).to.equal("requester_fullname1");
         expect(savedRequestParticipant.first_text).to.equal("first_text");
         expect(savedRequestParticipant.agents).to.have.lengthOf(1);
         expect(savedRequestParticipant.status).to.equal(200);
@@ -236,7 +232,7 @@ it('removeparticipant', function (done) {
 
   projectService.create("removeparticipant-project", userid).then(function(savedProject) {
     // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-     requestService.createWithId("request_id1", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+     requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
        requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
         console.log("resolve", savedRequestParticipant);
         
@@ -246,7 +242,6 @@ it('removeparticipant', function (done) {
         //savedRequestParticipant is unserved -> 100
         expect(savedRequestParticipant.request_id).to.equal("request_id1");
         expect(savedRequestParticipant.requester_id).to.equal("requester_id1");
-        expect(savedRequestParticipant.requester_fullname).to.equal("requester_fullname1");
         expect(savedRequestParticipant.first_text).to.equal("first_text");
         expect(savedRequestParticipant.agents).to.have.lengthOf(1);
         expect(savedRequestParticipant.status).to.equal(100);

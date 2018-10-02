@@ -64,7 +64,7 @@ describe('Request', () => {
         it('new-message', (done) => {
 
         projectService.create("test-new-message", userid).then(function(savedProject) {
-            requestService.createWithId("support-group-newmessageid", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+            requestService.createWithId("support-group-newmessageid", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
 
                 let webhookContent = {"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
                 "recipient":savedRequest.request_id, "recipient_fullname":"Andrea Leo","text":"text", 
@@ -94,7 +94,7 @@ describe('Request', () => {
         it('join-member', (done) => {
 
             projectService.create("test-join-member", userid).then(function(savedProject) {
-                requestService.createWithId("join-member", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+                requestService.createWithId("join-member", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
     
                     var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": 'agentid1', "data": { "member_id": 'agentid1', "group":  { "createdOn": 1538156223311,
@@ -133,7 +133,7 @@ describe('Request', () => {
         it('leave-member', (done) => {
 
             projectService.create("test-leave-member", userid).then(function(savedProject) {
-                requestService.createWithId("leave-member", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+                requestService.createWithId("leave-member", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
     
                     var webhookContent =     { "event_type": 'leave-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": userid, "id_project":savedProject._id, "data": { "member_id": userid, "group":  { "createdOn": 1538156223311,
@@ -167,7 +167,7 @@ describe('Request', () => {
         it('deleted-archivedconversation', (done) => {
 
             projectService.create("test-deleted-archivedconversation", userid).then(function(savedProject) {
-                requestService.createWithId("support-group-test-deleted-archivedconversation", "requester_id1", "requester_fullname1", savedProject._id, "first_text").then(function(savedRequest) {
+                requestService.createWithId("support-group-test-deleted-archivedconversation", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
                     requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
 
                         
