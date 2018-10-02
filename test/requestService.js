@@ -44,7 +44,11 @@ describe('RequestService()', function () {
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
+          expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
+          console.log("savedRequest.participants[0]", savedRequest.participants[0]);
+          expect(savedRequest.participants[0].toString()).to.equal(userid);
+          
           expect(savedRequest.createdBy).to.equal(createdLead._id.toString());
 
           // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
