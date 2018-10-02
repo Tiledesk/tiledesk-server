@@ -71,7 +71,7 @@ router.put('/:leadid', function(req, res) {
 
 router.get('/', function(req, res) {
 
-    Lead.find(function (err, leads) {
+    Lead.find({ "id_project": req.projectid },function (err, leads) {
       if (err) return next(err);
       res.json(leads);
     });
