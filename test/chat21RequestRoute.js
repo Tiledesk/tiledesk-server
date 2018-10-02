@@ -46,7 +46,7 @@ describe('Request', () => {
             var request_id = "support-group-123456789123456789";
             let webhookContent = {"event_type": "first-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
             "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
-            "attributes": {"projectid":savedProject._id} }
+            "attributes": {"projectId":savedProject._id} }
                };
 
             chai.request(server)
@@ -74,7 +74,7 @@ describe('Request', () => {
               let webhookContent = {
                   "event_type": "first-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
                   "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
-                  "attributes": {"projectid":savedProject._id, "userEmail": "a1@a1.it", "userFullname":"Andrea"} }
+                  "attributes": {"projectId":savedProject._id, "userEmail": "a1@a1.it", "userFullname":"Andrea"} }
                 };
   
               chai.request(server)
@@ -110,7 +110,7 @@ describe('Request', () => {
 
                 let webhookContent = {"event_type": "new-message", "data":{"sender":userid, "sender_fullname": "agent", 
                 "recipient":savedRequest.request_id, "recipient_fullname":"Andrea Leo","text":"text", 
-                "projectid":savedProject._id}};
+                "attributes": {"projectId":savedProject._id} }};
 
                 chai.request(server)
                     .post('/chat21/requests')
@@ -149,7 +149,7 @@ describe('Request', () => {
     
                     var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": 'agentid1', "data": { "member_id": 'agentid1', "group":  { "createdOn": 1538156223311,
-                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectid":savedProject._id} } } }
+                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
             
                     chai.request(server)
@@ -188,7 +188,7 @@ describe('Request', () => {
     
                     var webhookContent =     { "event_type": 'leave-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": userid, "id_project":savedProject._id, "data": { "member_id": userid, "group":  { "createdOn": 1538156223311,
-                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectid":savedProject._id} } } }
+                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
             
                     chai.request(server)
@@ -225,7 +225,7 @@ describe('Request', () => {
 
                         var webhookContent =     { "event_type": 'deleted-archivedconversation', "createdAt": 1538156223681, 
                                 "app_id": 'tilechat',"user_id": "system", "recipient_id": "support-group-test-deleted-archivedconversation",
-                                "data": {"attributes" : {"projectid" : savedProject._id} }};
+                                "data": {"attributes" : {"projectId" : savedProject._id} }};
                             
                 
                         chai.request(server)

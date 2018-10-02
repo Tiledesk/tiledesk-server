@@ -46,7 +46,7 @@ router.post('/', function(req, res) {
 
     if (message.attributes) {
 
-      projectid = message.attributes.projectid;
+      projectid = message.attributes.projectId;
       console.log("chat21 projectid", projectid);
 
       departmentid = message.attributes.departmentId;
@@ -134,8 +134,12 @@ router.post('/', function(req, res) {
 
  
 
-    var projectid = message.projectid;
-    console.log("chat21 projectid", projectid);
+    var projectid;
+    if (message.attributes) {
+
+      projectid = message.attributes.projectId;
+      console.log("chat21 projectid", projectid);
+    }
 
     if (!message.recipient.startsWith("support-group")) {
       console.log("recipient not starts wiht support-group. Not a support message");
@@ -289,7 +293,7 @@ router.post('/', function(req, res) {
 
       var id_project;
       if (group && group.attributes) {
-        id_project = group.attributes.projectid;
+        id_project = group.attributes.projectId;
       }else {
         console.error("id_project "+ id_project+ "isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
@@ -323,7 +327,7 @@ router.post('/', function(req, res) {
 
     var id_project;
       if (group && group.attributes) {
-        id_project = group.attributes.projectid;
+        id_project = group.attributes.projectId;
       }else {
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
@@ -366,7 +370,7 @@ router.post('/', function(req, res) {
 
       var id_project;
       if (conversation && conversation.attributes) {
-        id_project = conversation.attributes.projectid;
+        id_project = conversation.attributes.projectId;
       }else {
         return res.status(400).send({success: false, msg: "not a support deleting archived conversation" });
       }
