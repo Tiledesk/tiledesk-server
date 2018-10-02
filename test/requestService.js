@@ -175,6 +175,35 @@ describe('RequestService()', function () {
   });
 
  
+  it('updageWaitingTimeRequest', function (done) {
+    this.timeout(1000);
+    var messageSender = "5badfe5d553d1844ad654072";
+    projectService.create("test1", userid).then(function(savedProject) {
+      requestService.createWithId("request_id-waitingTimeRequest", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+          setTimeout(function () {
+              Promise.all([
+                messageService.create(messageSender, "test sender", savedRequest.request_id, "test recipient fullname", "hello1",
+                savedProject._id, messageSender),
+                messageService.create(messageSender, "test sender", savedRequest.request_id, "test recipient fullname", "hello2",
+                savedProject._id, messageSender)]).then(function(all) {
+                  requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
+                        console.log("resolve closedRequest", upRequest);
+                        expect(upRequest.status).to.equal(200);
+                        expect(upRequest.waiting_time).to.not.equal(null);
+                        expect(upRequest.waiting_time).to.gte(500);
+                      
+                        done();                         
+                      }).catch(function(err){
+                        console.error("test reject", err);
+                        assert.isNotOk(err,'Promise error');
+                        done();
+                      });
+                  });
+            }, 500);
+        });
+  });
+});
+
 
 
   it('closeRequest', function (done) {

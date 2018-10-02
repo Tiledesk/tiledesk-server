@@ -108,7 +108,7 @@ describe('Request', () => {
         projectService.create("test-new-message", userid).then(function(savedProject) {
             requestService.createWithId("support-group-newmessageid", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
 
-                let webhookContent = {"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
+                let webhookContent = {"event_type": "new-message", "data":{"sender":userid, "sender_fullname": "agent", 
                 "recipient":savedRequest.request_id, "recipient_fullname":"Andrea Leo","text":"text", 
                 "projectid":savedProject._id}};
 
@@ -121,8 +121,17 @@ describe('Request', () => {
                         res.body.should.be.a('object');
                         res.body.should.have.property('sender');
                         res.body.should.have.property('recipient').eql(savedRequest.request_id);
+
+                        Request.findById(savedRequest._id, function(err, request) {
+                            console.log("request",  request);
+                            expect(request.waiting_time).to.not.equal(null);
+                            expect(request.waiting_time).to.gt(0);
+                            done();
+                        });
+                       
+
                         
-                    done();
+                   
                     });
             });
             });
