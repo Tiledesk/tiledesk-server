@@ -23,6 +23,7 @@ var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');
 var projectService = require('../services/projectService');
 var departmentService = require('../services/departmentService');
+var leadService = require('../services/leadService');
 
 var Request = require("../models/request");
 
@@ -30,20 +31,21 @@ describe('RequestService()', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 
-  it('createWithId', function (done) {
+  it('createWithIdAndCreateNewLead', function (done) {
     // this.timeout(10000);
 
      projectService.create("createWithId", userid).then(function(savedProject) {
+      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-       requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
-          console.log("test resolve");
+       requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+          console.log("resolve", savedRequest);
           expect(savedRequest.request_id).to.equal("request_id1");
-          expect(savedRequest.requester_id).to.equal("requester_id1");
+          expect(savedRequest.requester_id).to.equal(createdLead._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.contains(userid);
-          expect(savedRequest.createdBy).to.equal("requester_id1");
+          expect(savedRequest.createdBy).to.equal(createdLead._id.toString());
 
           // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
           // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
@@ -59,8 +61,47 @@ describe('RequestService()', function () {
             done();
         });
     });
+  });
 
   });
+
+
+
+  // it('createWithIdLead', function (done) {
+  //   // this.timeout(10000);
+
+  //    projectService.create("createWithId", userid).then(function(savedProject) {
+  //     leadService.createIfNotExists("leadfullname", "email@email.com",  savedProject._id).then(function(lead) {
+  //     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+  //      requestService.createWithId("request_id1", lead._id,  savedProject._id, "first_text").then(function(savedRequest) {
+  //        leadService.findByEmail("email@email.com", savedProject._id).then(function(lead) {
+  //         console.log("resolve", savedRequest);
+  //         expect(savedRequest.request_id).to.equal("request_id1");
+  //         expect(savedRequest.requester_id).to.equal(lead._id.toString());
+  //         expect(savedRequest.first_text).to.equal("first_text");
+  //         expect(savedRequest.agents).to.have.lengthOf(1);
+  //         expect(savedRequest.status).to.equal(200);
+  //         expect(savedRequest.participants).to.contains(userid);
+  //         expect(savedRequest.createdBy).to.equal(lead._id.toString());
+
+  //         // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
+  //         // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
+
+  //         expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+  //         // aiuto
+  //         // expect(savedRequest.department).to.equal("requester_id1");
+  //         done();
+  //       }).catch(function(err) {
+  //           console.log("test reject");
+  //           assert.isNotOk(err,'Promise error');
+  //           done();
+  //       });
+  //     });
+  //     });
+  // });
+
+  // });
 
 
 
@@ -72,7 +113,7 @@ describe('RequestService()', function () {
     // this.timeout(10000);
 
      projectService.create("createWithIdAndCreatedBy", userid).then(function(savedProject) {
-      // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
        requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
           console.log("test resolve");
           expect(savedRequest.request_id).to.equal("request_id1");
@@ -108,7 +149,7 @@ describe('RequestService()', function () {
 
      projectService.create("createWithIdWithPooledDepartment", userid).then(function(savedProject) {
       departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
-      // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
        requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
           console.log("resolve savedRequest");
           expect(savedRequest.request_id).to.equal("request_id1");
@@ -231,7 +272,7 @@ describe('RequestService()', function () {
 it('removeparticipant', function (done) {
 
   projectService.create("removeparticipant-project", userid).then(function(savedProject) {
-    // createWithId(request_id, requester_id, requester_fullname, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
      requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
        requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
         console.log("resolve", savedRequestParticipant);

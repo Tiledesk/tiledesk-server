@@ -5,6 +5,7 @@ let mongoose = require("mongoose");
 var Request = require("../models/request");
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
+var Lead = require('../models/lead');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -12,6 +13,9 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
 
+// chai.config.includeStack = true;
+
+var expect = chai.expect;
 
 chai.use(chaiHttp);
 
@@ -37,12 +41,13 @@ describe('Request', () => {
 
       it('first-message', (done) => {
 
-        projectService.create("test-first-message", userid).then(function(savedProject) {
+          projectService.create("test-first-message", userid).then(function(savedProject) {
 
             var request_id = "support-group-123456789123456789";
             let webhookContent = {"event_type": "first-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
             "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
-            "projectid":savedProject._id}};
+            "attributes": {"projectid":savedProject._id} }
+               };
 
             chai.request(server)
                 .post('/chat21/requests')
@@ -53,11 +58,48 @@ describe('Request', () => {
                     res.body.should.be.a('object');
                     res.body.should.have.property('request_id');
                     res.body.should.have.property('request_id').eql(request_id);
+                    res.body.should.have.property('requester_id').eql("sender");
               
                 done();
                 });
-         });
-         });
+          });
+        });
+
+
+        it('first-messageWithEmailAndFullname', (done) => {
+
+            projectService.create("test-first-message", userid).then(function(savedProject) {
+  
+              var request_id = "support-group-123456789123456789";
+              let webhookContent = {
+                  "event_type": "first-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
+                  "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
+                  "attributes": {"projectid":savedProject._id, "userEmail": "a1@a1.it", "userFullname":"Andrea"} }
+                };
+  
+              chai.request(server)
+                  .post('/chat21/requests')
+                  .send(webhookContent)
+                  .end((err, res) => {
+                      console.log("res",  res);
+                      console.log("res.body",  res.body);
+                      res.should.have.status(200);
+                      res.body.should.be.a('object');
+                      res.body.should.have.property('request_id');
+                      res.body.should.have.property('request_id').eql(request_id);
+
+                        Lead.findById(res.body.requester_id, function(err, lead) {
+                            console.log("lead res", lead);
+                            // res.body.should.have.property('requester_id').eql("sender");
+                            expect(lead.fullname).equal("Andrea");
+                            expect(lead.email).to.equal("a1@a1.it");
+                            done();
+                        });
+                
+                 
+                  });
+            });
+          });
 
 
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"987654321"}}' http://localhost:3000/chat21/requests
