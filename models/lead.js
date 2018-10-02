@@ -1,11 +1,17 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var ContactSchema = new Schema({
+var LeadSchema = new Schema({
   fullname: {
     type: String,
     required: true
   },
+
+  email: {
+    type: String,
+    required: true
+  },
+
   id_project: {
     type: String,
     required: true
@@ -19,4 +25,4 @@ var ContactSchema = new Schema({
 }
 );
 
-module.exports = mongoose.model('contact', ContactSchema);
+module.exports = mongoose.model('lead', LeadSchema);
