@@ -33,7 +33,8 @@
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "serve-favicon": "~2.3.2",
-    "uniqid": "^5.0.3"
+    "uniqid": "^5.0.3",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",
