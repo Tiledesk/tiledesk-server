@@ -131,6 +131,12 @@ router.get('/', function (req, res, next) {
     query.status = req.query.status;
   }
 
+  // USER & BOTS
+  if (req.query.participant) {
+    console.log('req.query.participant', req.query.participant);
+    query.participant = req.query.participant;
+  }
+
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
