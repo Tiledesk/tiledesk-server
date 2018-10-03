@@ -134,7 +134,7 @@ router.get('/', function (req, res, next) {
   // USER & BOTS
   if (req.query.participant) {
     console.log('req.query.participant', req.query.participant);
-    query.participant = req.query.participant;
+    query.participants = req.query.participant;
   }
 
   /**
