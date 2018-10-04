@@ -71,7 +71,7 @@ router.get('/:leadid', function (req, res) {
 
 router.get('/', function (req, res) {
 
-  var limit = 5; // Number of leads per page
+  var limit = 25; // Number of leads per page
   var page = 0;
 
   if (req.query.page) {
