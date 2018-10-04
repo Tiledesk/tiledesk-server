@@ -131,7 +131,12 @@ router.get('/', function (req, res, next) {
     query.status = req.query.status;
   }
 
-  // USER & BOTS
+  if (req.query.requester_id) {
+    console.log('req.query.requester_id', req.query.requester_id);
+    query.requester_id = req.query.requester_id;
+  }
+
+  // USERS & BOTS
   if (req.query.participant) {
     console.log('req.query.participant', req.query.participant);
     query.participants = req.query.participant;
