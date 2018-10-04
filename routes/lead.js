@@ -79,10 +79,15 @@ router.get('/', function (req, res) {
   }
 
   var skip = page * limit;
-  console.log('REQUEST ROUTE - SKIP PAGE ', skip);
+  console.log('LEAD ROUTE - SKIP PAGE ', skip);
 
 
   var query = { "id_project": req.projectid };
+
+  if (req.query.full_text) {
+    console.log('LEAD ROUTE req.query.fulltext', req.query.full_text);
+    query.$text = {"$search": req.query.full_text};
+  }
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
