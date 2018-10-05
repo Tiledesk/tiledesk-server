@@ -104,7 +104,7 @@ router.get('/', function (req, res, next) {
   console.log("rreq.query.sort", req.query.sort);
   console.log('REQUEST ROUTE - QUERY ', req.query)
 
-  var limit = 40; // No of request per page
+  var limit = 40; // Number of request per page
   var page = 0;
 
   if (req.query.page) {
@@ -129,6 +129,17 @@ router.get('/', function (req, res, next) {
   if (req.query.status) {
     console.log('req.query.status', req.query.status);
     query.status = req.query.status;
+  }
+
+  if (req.query.requester_id) {
+    console.log('req.query.requester_id', req.query.requester_id);
+    query.requester_id = req.query.requester_id;
+  }
+
+  // USERS & BOTS
+  if (req.query.participant) {
+    console.log('req.query.participant', req.query.participant);
+    query.participants = req.query.participant;
   }
 
   /**
