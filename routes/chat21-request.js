@@ -159,7 +159,12 @@ router.post('/', function(req, res) {
                       // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
     return messageService.create(message.sender, message.sender_fullname, message.recipient, message.recipient_fullname, message.text,
       projectid, "system").then(function(savedMessage){
+        //get projectid from savedMessage.id_project
         return requestService.incrementMessagesCountByRequestId(message.recipient, savedMessage.id_project).then(function(savedRequest) {
+          if (!savedRequest) {
+            console.error("Error savedRequest is undefined.", err);
+            return res.status(500).send({success: false, msg: "Error savedRequest is undefined.", err:err });
+          }
           // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
           if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
             console.log("updateWaitingTimeByRequestId");
