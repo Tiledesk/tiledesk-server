@@ -286,11 +286,13 @@ router.post('/', function(req, res) {
     }else if (req.body.event_type == "join-member") {
       console.log("event_type","join-member");
 
-      var data = req.body.data;
-      console.log("data",data);
+      console.log("req.body",req.body);
 
-      var group = data.group;
-      console.log("group",group);
+      var data = req.body.data;
+      //console.log("data",data);
+
+      // var group = data.group;
+      // console.log("group",group);
 
       var new_member = req.body.member_id;
       console.log("new_member",new_member);
@@ -324,8 +326,11 @@ router.post('/', function(req, res) {
   }else if (req.body.event_type == "leave-member") {
     console.log("event_type","leave-member");
     
+    console.log("req.body",req.body);
+
+
     var data = req.body.data;
-    console.log("data",data);
+    // console.log("data",data);
 
     var group = data.group;
     console.log("group",group);
@@ -357,8 +362,11 @@ router.post('/', function(req, res) {
 
       console.log("event_type","deleted-archivedconversation");
 
+      console.log("req.body",req.body);
+
+      
       var conversation = req.body.data;
-      console.log("conversation",conversation);
+      // console.log("conversation",conversation);
 
       var user_id = req.body.user_id;
       console.log("user_id",user_id);

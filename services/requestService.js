@@ -392,7 +392,7 @@ class RequestService {
          console.warn("Project not found", req.projectid);
        } else {
          
-         console.log("Project", project);
+         // console.log("Project", project);
    
    
                  if (savedRequest.status==100) { //POOLED
@@ -410,7 +410,7 @@ class RequestService {
                        if (!user) {
                          console.warn("User not found", project_user.id_user);
                        } else {
-                         console.log("User email", user.email);
+                         console.log("Sending sendNewPooledRequestNotification to user with email", user.email);
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
