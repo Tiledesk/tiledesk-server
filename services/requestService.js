@@ -432,7 +432,7 @@ class RequestService {
                        if (!user) {
                          console.warn("User not found",  savedRequest.participants[0]);
                        } else {
-                         console.log("User email", user.email);
+                         console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
                        }
                      });

@@ -286,7 +286,7 @@ router.post('/', function(req, res) {
     }else if (req.body.event_type == "join-member") {
       console.log("event_type","join-member");
 
-      console.log("req.body",req.body);
+      console.log("req.body", JSON.stringify(req.body));
 
       var data = req.body.data;
       //console.log("data",data);
@@ -326,7 +326,7 @@ router.post('/', function(req, res) {
   }else if (req.body.event_type == "leave-member") {
     console.log("event_type","leave-member");
     
-    console.log("req.body",req.body);
+    console.log("req.body", JSON.stringify(req.body));
 
 
     var data = req.body.data;
@@ -364,7 +364,7 @@ router.post('/', function(req, res) {
 
       console.log("req.body",req.body);
 
-      
+
       var conversation = req.body.data;
       // console.log("conversation",conversation);
 
