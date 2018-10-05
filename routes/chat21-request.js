@@ -159,11 +159,11 @@ router.post('/', function(req, res) {
                       // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
     return messageService.create(message.sender, message.sender_fullname, message.recipient, message.recipient_fullname, message.text,
       projectid, "system").then(function(savedMessage){
-        return requestService.incrementMessagesCountByRequestId(message.recipient, projectid).then(function(savedRequest) {
+        return requestService.incrementMessagesCountByRequestId(message.recipient, savedMessage.id_project).then(function(savedRequest) {
           // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
           if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
             console.log("updateWaitingTimeByRequestId");
-            return requestService.updateWaitingTimeByRequestId(message.recipient, projectid).then(function(upRequest) {
+            return requestService.updateWaitingTimeByRequestId(message.recipient, savedMessage.id_project).then(function(upRequest) {
               console.log("new-message response ok updateWaitingTimeByRequestId");
               return res.json(savedMessage);
             });
@@ -315,6 +315,7 @@ router.post('/', function(req, res) {
       console.log("id_project", id_project);
 
       return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+        console.error("Join memeber ok");
         return res.json(updatedRequest);
       }).catch(function(err){
         console.error("Error joining memeber", err);
@@ -351,6 +352,7 @@ router.post('/', function(req, res) {
       console.log("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+      console.error("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){
       console.error("Error leaving memeber", err);
