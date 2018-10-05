@@ -291,7 +291,7 @@ router.post('/', function(req, res) {
       var data = req.body.data;
       //console.log("data",data);
 
-      // var group = data.group;
+      var group = data.group;
       // console.log("group",group);
 
       var new_member = req.body.member_id;
