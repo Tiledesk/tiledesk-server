@@ -83,7 +83,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  console.log("projectid", projectid);
+  console.log("projectIdSetter projectid", projectid);
 
   req.projectid = projectid;
   next()

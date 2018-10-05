@@ -3,7 +3,8 @@ var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
 var MessageSchema = require("../models/message").schema;
 
-
+//https://github.com/Automattic/mongoose/issues/5924
+mongoose.plugin(schema => { schema.options.usePushEach = true });
 
 
 

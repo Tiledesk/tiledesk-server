@@ -97,7 +97,7 @@ class RequestService {
 
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
-                    console.error('Error saving object.',err);
+                    console.error('Error createWithId the request.',err);
                     return reject(err);
                   }
               

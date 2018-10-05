@@ -18,7 +18,10 @@ var admin = require('../utils/firebaseConnector');
 
 router.post('/', function(req, res) {
 
-  console.log("chat21 req.body", req.body);
+  //console.log("chat21-request req.body", req.body);
+
+
+
 
   // console.log("req.projectid", req.projectid);
   // console.log("req.user.id", req.user.id);
@@ -36,9 +39,11 @@ router.post('/', function(req, res) {
 
     var departmentid = "default";
 
+    var language = message.language;
+    console.log("chat21 language", language);
+
     var sourcePage;
     var client;
-    var language;
     var userEmail;
     var userFullname;
     var projectid;
@@ -58,8 +63,7 @@ router.post('/', function(req, res) {
       client = message.attributes.client;
       console.log("chat21 client", client);
   
-      language = message.attributes.language;
-      console.log("chat21 language", language);
+     
 
       userEmail = message.attributes.userEmail;
       console.log("chat21 userEmail", userEmail);
@@ -84,13 +88,14 @@ router.post('/', function(req, res) {
 
     if (userEmail) {
 
+      console.log("userEmail is defined");
                         // ccreateIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
         return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid).then(function(createdLead) {
             // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
               return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
                 return res.json(result);
               }).catch(function (err) {
-                console.log("err", err);
+                console.log( 'Error creating the request object.', err);
                 return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
               });
         });
@@ -159,9 +164,11 @@ router.post('/', function(req, res) {
           if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
             console.log("updateWaitingTimeByRequestId");
             return requestService.updateWaitingTimeByRequestId(message.recipient, projectid).then(function(upRequest) {
+              console.log("new-message response ok updateWaitingTimeByRequestId");
               return res.json(savedMessage);
             });
           }else {
+            console.log("new-message response ok");
             return res.json(savedMessage);
           }
         });
