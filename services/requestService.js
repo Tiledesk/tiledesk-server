@@ -360,7 +360,9 @@ class RequestService {
 
 
       // return Request.findById(id).then(function (request) {
+        if (request.participants.indexOf(member)==-1){
           request.participants.push(member);
+        }
 
           if (request.participants.length>0) {
             request.status = 200;
