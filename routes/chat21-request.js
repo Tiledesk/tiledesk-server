@@ -162,8 +162,8 @@ router.post('/', function(req, res) {
         //get projectid from savedMessage.id_project
         return requestService.incrementMessagesCountByRequestId(message.recipient, savedMessage.id_project).then(function(savedRequest) {
           if (!savedRequest) {
-            console.error("Error savedRequest is undefined.", err);
-            return res.status(500).send({success: false, msg: "Error savedRequest is undefined.", err:err });
+            console.error("Error savedRequest is undefined.");
+            return res.status(500).send({success: false, msg: "Error savedRequest is undefined."});
           }
           // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
           if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
@@ -319,14 +319,24 @@ router.post('/', function(req, res) {
       }
       console.log("id_project", id_project);
 
-      return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-        console.error("Join memeber ok");
-        return res.json(updatedRequest);
-      }).catch(function(err){
-        console.error("Error joining memeber", err);
-        return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
-      });
-  
+      // return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      //   if (err){
+      //     console.error(err);
+      //      return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
+      //   }
+      //   if (!request) {
+      //     return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+      //   }
+      //   aiutoooooo
+
+        return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+          console.error("Join memeber ok");
+          return res.json(updatedRequest);
+        }).catch(function(err){
+          console.error("Error joining memeber", err);
+          return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
+        });
+    // });
 
 
   }else if (req.body.event_type == "leave-member") {
