@@ -14,10 +14,10 @@ var MessageSchema = new Schema({
     type: String,
     required: true
   },
-  recipientFullname: {
-    type: String,
-    required: false
-  },
+  // recipientFullname: {
+  //   type: String,
+  //   required: false
+  // },
   text: {
     type: String,
     required: true
