@@ -31,12 +31,15 @@ describe('messageService()', function () {
     // this.timeout(10000);
 
       projectService.create("test1", userid).then(function(savedProject) {
-      messageService.create(userid, "test sender", "testrecipient-createMessage", "test recipient fullname", "hello",
+        // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
           savedProject._id, userid).then(function(savedMessage){
-            requestService.incrementMessagesCountByRequestId(savedMessage.recipient, savedProject._id).then(function() {    
-          console.log("test resolve");
-
+            console.log("resolve savedMessage", savedMessage);
+     
           expect(savedMessage.text).to.equal("hello");
+          expect(savedMessage.sender).to.equal(userid);
+          expect(savedMessage.senderFullname).to.equal("test sender");
+          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
           done();
 
         }).catch(function(err){
@@ -46,7 +49,7 @@ describe('messageService()', function () {
 
       });
     });
-  });
+  
 
 
 
@@ -55,7 +58,7 @@ describe('messageService()', function () {
 
       projectService.create("test1", userid).then(function(savedProject) {
         requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
-         messageService.create(userid, "test sender", savedRequest.request_id, "test recipient fullname", "hello",
+         messageService.create(userid, "test sender", savedRequest.request_id, "hello",
             savedProject._id, userid).then(function(savedMessage){
               Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
                 requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {                

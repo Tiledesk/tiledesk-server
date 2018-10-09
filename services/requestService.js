@@ -13,6 +13,39 @@ var leadService = require('../services/leadService');
 class RequestService {
 
 
+  // createWithIdAndSaveMessage(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+  //   var that = this;
+  //   return new Promise(function (resolve, reject) {
+
+  //       return that.createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function (newRequest) {
+
+  //         return messageService.create(requester_id, message.sender_fullname, request_id, first_text,
+  //           id_project, createdBy).then(function(savedMessage){
+  //             // console.log("savedMessageXXX ");
+  //             //get projectid from savedMessage.id_project
+  //             return that.incrementMessagesCountByRequestId(newRequest.request_id, newRequest.id_project).then(function(savedRequest) {
+              
+  //               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+  //               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
+  //                 console.log("updateWaitingTimeByRequestId");
+  //                 return that.updateWaitingTimeByRequestId(newRequest.request_id, newRequest.id_project).then(function(upRequest) {
+  //                   console.log("new-message response ok updateWaitingTimeByRequestId");
+  //                   return resolve(upRequest);
+  //                 });
+  //               }else {
+  //                 console.log("new-message response ok");
+  //                 return resolve(savedRequest);
+  //               }
+  //             });
+  //           });
+  //           // .catch(function(err){
+  //           //   console.error("Error creating message", err);
+  //           //   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
+  //           // });
+  //       });
+  //  });
+
+  // }
 
   create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
       return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy);

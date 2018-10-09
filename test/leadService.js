@@ -39,6 +39,29 @@ describe('LeadService()', function () {
 
 
 
+
+  it('createWithoutEmail', function (done) {
+    projectService.create("test1", userid).then(function(savedProject) {
+    // create(fullname, email, id_project, createdBy)
+     leadService.create("fullname", null, savedProject._id, userid).then(function(savedLead) {
+        console.log("resolve", savedLead);
+         expect(savedLead.fullname).to.equal("fullname");
+         expect(savedLead.email).to.equal(null);
+         expect(savedLead.id_project).to.equal(savedProject._id.toString());
+         expect(savedLead.lead_id).to.not.equal(null);
+
+        done();
+    }).catch(function(err) {
+        console.error("test reject", err);
+        assert.isNotOk(err,'Promise error');
+        done();
+    });
+  });
+  });
+
+
+
+
   it('createIfNotExists-already-exists', function (done) {
     projectService.create("test1", userid).then(function(savedProject) {
     // create(fullname, email, id_project, createdBy)
@@ -90,6 +113,33 @@ describe('LeadService()', function () {
 
 
 
+
+
+  it('createIfNotExistsWithId-already-exists', function (done) {
+    projectService.create("test1", userid).then(function(savedProject) {
+    // create(fullname, email, id_project, createdBy)
+    var lead_id = "lead_id_" + savedProject._id;
+     leadService.createWitId(lead_id, "fullname","email@email.com", savedProject._id, userid).then(function(savedLead) {
+      console.log("savedLead", savedLead);
+      leadService.createIfNotExistsWithLeadId(lead_id, "fullname", "email@email.com", savedProject._id, userid).then(function(savedLeadIfNotExists) {
+        console.log("savedLeadIfNotExists", savedLeadIfNotExists);
+         expect(savedLead.fullname).to.equal("fullname");
+         expect(savedLead.email).to.equal("email@email.com");
+         expect(savedLead.lead_id).to.equal(lead_id);
+         expect(savedLead.id_project).to.equal(savedProject._id.toString());
+         expect(savedLeadIfNotExists._id.toString()).to.equal(savedLead._id.toString());
+         expect(savedLeadIfNotExists.lead_id).to.equal(lead_id);
+
+        done();
+    }).catch(function(err) {
+        console.error("test reject", err);
+        assert.isNotOk(err,'Promise error');
+        done();
+    });
+
+   });
+  });
+  });
 
 
 

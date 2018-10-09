@@ -182,9 +182,9 @@ describe('RequestService()', function () {
       requestService.createWithId("request_id-waitingTimeRequest", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
           setTimeout(function () {
               Promise.all([
-                messageService.create(messageSender, "test sender", savedRequest.request_id, "test recipient fullname", "hello1",
+                messageService.create(messageSender, "test sender", savedRequest.request_id,  "hello1",
                 savedProject._id, messageSender),
-                messageService.create(messageSender, "test sender", savedRequest.request_id, "test recipient fullname", "hello2",
+                messageService.create(messageSender, "test sender", savedRequest.request_id, "hello2",
                 savedProject._id, messageSender)]).then(function(all) {
                   requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
                         console.log("resolve closedRequest", upRequest);
@@ -211,9 +211,9 @@ describe('RequestService()', function () {
       projectService.create("test1", userid).then(function(savedProject) {
         requestService.createWithId("request_id-closeRequest", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
           Promise.all([
-            messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "test recipient fullname", "hello1",
+            messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
             savedProject._id, "5badfe5d553d1844ad654072"),
-            messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "test recipient fullname", "hello2",
+            messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
             savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
               requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
                     console.log("resolve closedRequest", closedRequest);

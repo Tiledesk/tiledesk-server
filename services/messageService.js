@@ -19,18 +19,24 @@ class MessageService {
     //   updatedBy: "system"
 
 
-  create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
+
+  create(sender, senderFullname, recipient, text, id_project, createdBy) {
 
     return new Promise(function (resolve, reject) {
 
+        if (!createdBy) {
+            createdBy = sender;
+          }
     
-        if (id_project) {
+          
+    
+        // if (id_project) {
 
             var newMessage = new Message({
                 sender: sender,
                 senderFullname: senderFullname,
                 recipient: recipient,
-                recipientFullname: recipientFullname,
+                // recipientFullname: recipientFullname,
                 text: text,
                 id_project: id_project,
                 createdBy: createdBy,
@@ -44,56 +50,57 @@ class MessageService {
                     console.error(err);
                     return reject(err);
                 }
+                console.log("Message created", savedMessage);
                 return resolve(savedMessage);
             });
 
-        } else {
+        // } else {
             //lookup from requests
-            return Request.findOne({request_id: recipient}, function(err, request) {
-                if (err) {
-                    console.error(err);
-                    return reject(err);
-                }
-                if (request) {
+            // return Request.findOne({request_id: recipient}, function(err, request) {
+            //     if (err) {
+            //         console.error(err);
+            //         return reject(err);
+            //     }
+            //     if (request) {
                     
-                    var newMessage = new Message({
-                        sender: sender,
-                        senderFullname: senderFullname,
-                        recipient: recipient,
-                        recipientFullname: recipientFullname,
-                        text: text,
-                        id_project: request.id_project,
-                        createdBy: createdBy,
-                        updatedBy: createdBy
-                    });
+            //         var newMessage = new Message({
+            //             sender: sender,
+            //             senderFullname: senderFullname,
+            //             recipient: recipient,
+            //             recipientFullname: recipientFullname,
+            //             text: text,
+            //             id_project: request.id_project,
+            //             createdBy: createdBy,
+            //             updatedBy: createdBy
+            //         });
 
-                }else {
-                    var newMessage = new Message({
-                        sender: sender,
-                        senderFullname: senderFullname,
-                        recipient: recipient,
-                        recipientFullname: recipientFullname,
-                        text: text,
-                        id_project: "undefined",
-                        createdBy: createdBy,
-                        updatedBy: createdBy
-                    });
-                }
+            //     }else {
+            //         var newMessage = new Message({
+            //             sender: sender,
+            //             senderFullname: senderFullname,
+            //             recipient: recipient,
+            //             recipientFullname: recipientFullname,
+            //             text: text,
+            //             id_project: "undefined",
+            //             createdBy: createdBy,
+            //             updatedBy: createdBy
+            //         });
+            //     }
               
                 
 
-                // console.log("create new message with id_project from request lookup", newMessage);
+            //     // console.log("create new message with id_project from request lookup", newMessage);
     
-                return newMessage.save(function(err, savedMessage) {
-                    if (err) {
-                        console.error(err);
-                        return reject(err);
-                    }
-                    return resolve(savedMessage);
-                });
+            //     return newMessage.save(function(err, savedMessage) {
+            //         if (err) {
+            //             console.error(err);
+            //             return reject(err);
+            //         }
+            //         return resolve(savedMessage);
+            //     });
 
-              });
-        }
+            //   });
+        // }
     
        
 

@@ -27,13 +27,32 @@ class LeadService {
 
 
   createIfNotExists(fullname, email, id_project, createdBy) {
-    return this.createIfNotExistsWithLeadId(null, fullname, email, id_project, createdBy);
+    var that = this;
+    return new Promise(function (resolve, reject) {
+      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
+          if (err) {
+            return resolve(that.create(fullname, email, id_project, createdBy));
+          }
+          if (!lead) {
+            return resolve(that.create(fullname, email, id_project, createdBy));
+          }
+          return resolve(lead);
+      
+      });
+    });
   }
+
+  
+  create(fullname, email, id_project, createdBy) {
+    return this.createWitId(null, fullname, email, id_project, createdBy);
+  }
+
+
 
   createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy) {
     var that = this;
     return new Promise(function (resolve, reject) {
-      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
+      return Lead.findOne({lead_id: lead_id, id_project: id_project}, function(err, lead)  {
           if (err) {
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
           }
@@ -46,10 +65,7 @@ class LeadService {
     });
   }
 
-  create(fullname, email, id_project, createdBy) {
-    return this.createWitId(null, fullname, email, id_project, createdBy);
-  }
-
+  
   createWitId(lead_id, fullname, email, id_project, createdBy) {
 
     if (!createdBy) {
