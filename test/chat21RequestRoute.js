@@ -215,6 +215,37 @@ describe('Request', () => {
 
 
 
+        it('join-member-butnottherequesterid', (done) => {
+
+            projectService.create("test-join-member", userid).then(function(savedProject) {
+                leadService.createIfNotExistsWithLeadId("requester_id1-join-member-butnottherequesterid", "leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+                requestService.createWithId("join-member-requestid", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+    
+                    var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
+                            "app_id": 'tilechat', "member_id": createdLead.lead_id, "data": { "member_id": createdLead.lead_id, "group":  { "createdOn": 1538156223311,
+                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
+                        
+            
+                    chai.request(server)
+                        .post('/chat21/requests')
+                        .send(webhookContent)
+                        .end((err, res) => {
+                            //console.log("res",  res);
+                            console.log("res.body",  res.body);
+                            res.should.have.status(400);
+                            
+                           
+                        done();
+                        });
+                    });
+                        
+                });
+                });
+        });
+
+
+
+
 
 
 

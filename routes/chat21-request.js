@@ -3,6 +3,7 @@ var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Request = require("../models/request");
 var Message = require("../models/message");
+var Lead = require("../models/lead");
 var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');
 var leadService = require('../services/leadService');
@@ -27,92 +28,92 @@ router.post('/', function(req, res) {
   // console.log("req.user.id", req.user.id);
 
 
-  if (req.body.event_type == "first-message") {
+  // if (req.body.event_type == "first-message") {
 
-    console.log("event_type","first-message");
+  //   console.log("event_type","first-message");
 
 
-    var message = req.body.data;
+  //   var message = req.body.data;
 
     
-    console.log("chat21 message", message);
+  //   console.log("chat21 message", message);
 
-    var departmentid = "default";
+  //   var departmentid = "default";
 
-    var language = message.language;
-    console.log("chat21 language", language);
+  //   var language = message.language;
+  //   console.log("chat21 language", language);
 
-    var sourcePage;
-    var client;
-    var userEmail;
-    var userFullname;
-    var projectid;
+  //   var sourcePage;
+  //   var client;
+  //   var userEmail;
+  //   var userFullname;
+  //   var projectid;
 
 
-    if (message.attributes) {
+  //   if (message.attributes) {
 
-      projectid = message.attributes.projectId;
-      console.log("chat21 projectid", projectid);
+  //     projectid = message.attributes.projectId;
+  //     console.log("chat21 projectid", projectid);
 
-      departmentid = message.attributes.departmentId;
-      console.log("chat21 departmentid", departmentid);
+  //     departmentid = message.attributes.departmentId;
+  //     console.log("chat21 departmentid", departmentid);
 
-      sourcePage = message.attributes.sourcePage;
-      console.log("chat21 sourcePage", sourcePage);
+  //     sourcePage = message.attributes.sourcePage;
+  //     console.log("chat21 sourcePage", sourcePage);
       
-      client = message.attributes.client;
-      console.log("chat21 client", client);
+  //     client = message.attributes.client;
+  //     console.log("chat21 client", client);
   
      
 
-      userEmail = message.attributes.userEmail;
-      console.log("chat21 userEmail", userEmail);
+  //     userEmail = message.attributes.userEmail;
+  //     console.log("chat21 userEmail", userEmail);
 
-      userFullname = message.attributes.userFullname;
-      console.log("chat21 userFullname", userFullname);
-    }
+  //     userFullname = message.attributes.userFullname;
+  //     console.log("chat21 userFullname", userFullname);
+  //   }
     
 
      
 
-    if (!projectid) {
-      console.log("projectid is null. Not a support message");
-      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-    }
-    if (!message.recipient.startsWith("support-group")) {
-      console.log("recipient not starts wiht support-group. Not a support message");
-      return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
-    }
+  //   if (!projectid) {
+  //     console.log("projectid is null. Not a support message");
+  //     return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+  //   }
+  //   if (!message.recipient.startsWith("support-group")) {
+  //     console.log("recipient not starts wiht support-group. Not a support message");
+  //     return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
+  //   }
 
    
 
-    if (userEmail) {
+  //   if (userEmail) {
 
-      console.log("userEmail is defined");
-                        // ccreateIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-        return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid).then(function(createdLead) {
-            // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-              return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
-                return res.json(result);
-              }).catch(function (err) {
-                console.log( 'Error creating the request object.', err);
-                return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-              });
-        });
+  //     console.log("userEmail is defined");
+  //                       // ccreateIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
+  //       return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid).then(function(createdLead) {
+  //           // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
+  //             return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
+  //               return res.json(result);
+  //             }).catch(function (err) {
+  //               console.log( 'Error creating the request object.', err);
+  //               return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
+  //             });
+  //       });
           
 
-    }else {
+  //   }else {
 
-                        // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-          return requestService.createWithId(message.recipient, message.sender, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
-            return res.json(result);
-          }).catch(function (err) {
-            console.log("err", err);
+  //                       // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
+  //         return requestService.createWithId(message.recipient, message.sender, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
+  //           return res.json(result);
+  //         }).catch(function (err) {
+  //           console.log("err", err);
 
-            return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-          });
+  //           return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
+  //         });
 
-    }
+  //   }
 
 
    
@@ -121,7 +122,9 @@ router.post('/', function(req, res) {
 
 
 
-  } else if (req.body.event_type == "new-message") {
+  // } 
+  // else 
+  if (req.body.event_type == "new-message") {
     //with projectid
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"987654321"}}' http://localhost:3000/chat21/requests
     //with recipient with existing projectid
@@ -134,53 +137,152 @@ router.post('/', function(req, res) {
     console.log("event_type", "new-message");
 
     var message = req.body.data;
+ 
     console.log("chat21 message", message);
 
 
- 
+        return Request.findOne({request_id: message.recipient}, function(err, request) {
+          // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
 
-    var projectid;
-    if (message.attributes) {
-
-      projectid = message.attributes.projectId;
-      console.log("chat21 projectid", projectid);
-    }
-
-    // if (!projectid) {
-    //   console.log("projectid is null. Not a support message");
-    //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-    // }
-    
-    if (!message.recipient.startsWith("support-group")) {
-      console.log("recipient not starts wiht support-group. Not a support message");
-      return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
-    }
-
-                      // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
-    return messageService.create(message.sender, message.sender_fullname, message.recipient, message.recipient_fullname, message.text,
-      projectid, "system").then(function(savedMessage){
-        //get projectid from savedMessage.id_project
-        return requestService.incrementMessagesCountByRequestId(message.recipient, savedMessage.id_project).then(function(savedRequest) {
-          if (!savedRequest) {
-            console.error("Error savedRequest is undefined.");
-            return res.status(500).send({success: false, msg: "Error savedRequest is undefined."});
+          if (err) {
+            return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
           }
-          // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-          if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
-            console.log("updateWaitingTimeByRequestId");
-            return requestService.updateWaitingTimeByRequestId(message.recipient, savedMessage.id_project).then(function(upRequest) {
-              console.log("new-message response ok updateWaitingTimeByRequestId");
-              return res.json(savedMessage);
-            });
-          }else {
-            console.log("new-message response ok");
-            return res.json(savedMessage);
+
+          if (!request) { //the request doen't exists create it
+
+                console.log("request not exists", request);
+                
+                var departmentid = "default";
+
+                var language = message.language;
+                console.log("chat21 language", language);
+            
+                var sourcePage;
+                var client;
+                var userEmail;
+                var userFullname;
+                var projectid;
+            
+            
+                if (message.attributes) {
+            
+                  projectid = message.attributes.projectId;
+                  console.log("chat21 projectid", projectid);
+            
+                  departmentid = message.attributes.departmentId;
+                  console.log("chat21 departmentid", departmentid);
+            
+                  sourcePage = message.attributes.sourcePage;
+                  console.log("chat21 sourcePage", sourcePage);
+                  
+                  client = message.attributes.client;
+                  console.log("chat21 client", client);
+              
+                
+            
+                  userEmail = message.attributes.userEmail;
+                  console.log("chat21 userEmail", userEmail);
+            
+                  userFullname = message.attributes.userFullname;
+                  console.log("chat21 userFullname", userFullname);
+                }
+                
+            
+                
+            
+                if (!projectid) {
+                  console.log("projectid is null. Not a support message");
+                  return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+                }
+                if (!message.recipient.startsWith("support-group")) {
+                  console.log("recipient not starts wiht support-group. Not a support message");
+                  return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
+                }
+            
+              
+                if (!userFullname) {
+                  userFullname = message.sender_fullname;
+                }
+              
+                  // console.log("userEmail is defined");
+                                    // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
+                  return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid)
+                  .then(function(createdLead) {
+                    // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
+                      return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
+                        // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+                        return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+                          projectid).then(function(savedMessage){
+                                      // console.log("savedMessageXXX ");
+                                      //get projectid from savedMessage.id_project
+                            return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+                              return res.json(savedRequestWithIncrement);
+                            });
+                          
+                        
+                      }).catch(function (err) {
+                        console.log( 'Error creating the request object.', err);
+                        return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
+                      });
+                  });
+                });
+                  
+            
+              
+
+
+          } else {
+
+        
+
+            console.log("request  exists", request);
+
+            // var projectid;
+            // if (message.attributes) {
+        
+            //   projectid = message.attributes.projectId;
+            //   console.log("chat21 projectid", projectid);
+            // }
+        
+            // if (!projectid) {
+            //   console.log("projectid is null. Not a support message");
+            //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+            // }
+            
+            if (!message.recipient.startsWith("support-group")) {
+              console.log("recipient not starts wiht support-group. Not a support message");
+              return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
+            }
+        
+                            // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
+                return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+                  request.id_project).then(function(savedMessage){
+                    return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
+                      // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                       
+                      if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
+                        console.log("updateWaitingTimeByRequestId");
+                        return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
+                          return res.json(upRequest);
+                        });
+                      }else {
+                        return res.json(savedRequest);
+                      }
+                    });
+                  }).catch(function(err){
+                    console.error("Error creating message", err);
+                    return res.status(500).send({success: false, msg: 'Error creating message', err:err });
+                  });
+
+
+
           }
+        
+
+
         });
-      }).catch(function(err){
-        console.error("Error creating message", err);
-        return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-      });
+
+ 
    
       
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
@@ -319,24 +421,38 @@ router.post('/', function(req, res) {
       }
       console.log("id_project", id_project);
 
-      // return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
-      //   if (err){
-      //     console.error(err);
-      //      return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
-      //   }
-      //   if (!request) {
-      //     return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
-      //   }
-      //   aiutoooooo
+      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+        if (err){
+          console.error(err);
+           return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
+        }
+        if (!request) {
+          return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
+        }
 
-        return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-          console.error("Join memeber ok");
-          return res.json(updatedRequest);
-        }).catch(function(err){
-          console.error("Error joining memeber", err);
-          return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
+        // aiutoooooo
+        return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead){
+          console.log("lead",lead);
+          console.log("request",request);
+          if (lead && lead._id.toString() == request.requester_id.toString()) {
+            console.log("don't  joining requester_id or a lead");
+            return res.status(400).send({success: false, msg: "don't  joining requester_id or a lead" });
+          }else {
+            return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
+              console.error("Join memeber ok");
+              return res.json(updatedRequest);
+            }).catch(function(err){
+              console.error("Error joining memeber", err);
+              return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
+            });
+          }
+         
+
+
         });
-    // });
+
+       
+    });
 
 
   }else if (req.body.event_type == "leave-member") {
