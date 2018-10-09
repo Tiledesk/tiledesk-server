@@ -210,7 +210,7 @@ class RequestService {
               console.error(err);
               return reject(err);
             }
-           // console.log("updatedRequest", updatedRequest);
+           console.log("Message count +1");
             return resolve(updatedRequest);
           });
     });
@@ -226,11 +226,12 @@ class RequestService {
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
 
         var waitingTime = Date.now() - request.createdAt;
-        console.log("waitingTime", waitingTime);
+        // console.log("waitingTime", waitingTime);
 
        
         request.waiting_time = waitingTime;
           // console.log(" request",  request);
+        console.log("Request  waitingTime setted");
         return resolve(request.save());
       });
 
