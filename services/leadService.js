@@ -54,11 +54,13 @@ class LeadService {
     return new Promise(function (resolve, reject) {
       return Lead.findOne({lead_id: lead_id, id_project: id_project}, function(err, lead)  {
           if (err) {
+            console.error("Error createIfNotExistsWithLeadId", err);
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
           }
           if (!lead) {
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
           }
+          console.error("lead already exists createIfNotExistsWithLeadId");
           return resolve(lead);
       
       });
