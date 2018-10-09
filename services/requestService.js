@@ -89,7 +89,7 @@ class RequestService {
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
             status = 200;
-            participants.push(assigned_operator_id);
+            participants.push(assigned_operator_id.toString());
           }
           // console.log("assigned_operator_id", assigned_operator_id);
           // console.log("status", status);
