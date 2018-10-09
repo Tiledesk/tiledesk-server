@@ -791,7 +791,7 @@ class EmailService {
 
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                     <h2 style="text-align: center; letter-spacing: 1px; font-weight: 400; line-height:24px ">
-                                      ${currentUserFirstname} ${currentUserLastname} have been invited you to the TileDesk project <strong> ${projectName}</strong> 
+                                      ${currentUserFirstname} ${currentUserLastname} has invited you to the TileDesk project <strong> ${projectName}</strong> 
                                     </h2>
 
                                     <br> <br<strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${invitedUserFirstname} ${invitedUserLastname},</strong>
@@ -839,7 +839,7 @@ class EmailService {
             `;
 
 
-    this.send(to, `[TileDesk] Your have been invited to the '${projectName}' project`, html);
+    this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
   }
 
 
