@@ -38,7 +38,7 @@ var mongoose = require('mongoose');
     AnalyticResult.aggregate([
         // { "$match": {"id_project": req.projectid } },
         // { "$match": {} },
-        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }} },
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"}, 
@@ -49,7 +49,7 @@ var mongoose = require('mongoose');
               "_id":{"year":"$year", "month":"$month", "day":"$day"}, 
               "count":{"$sum":1}
         }},
-        { "$sort": {"_id":-1}},  
+        { "$sort": {"_id":1}},  
         { "$limit": 7 },
     ])
     // .exec((err, result) => {
