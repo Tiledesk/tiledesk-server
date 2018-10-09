@@ -332,7 +332,7 @@ function getAvailableOperatorsWithOperatingHours(project_users, projectid) {
       operatingHoursService.projectIsOpenNow(projectid, function (isOpen, err) {
         console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> PROJECT ID: ', projectid);
         console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT: ', isOpen);
-        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - ERROR: ', err)
+        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - EROR: ', err)
 
         if (err) {
           reject(err);
