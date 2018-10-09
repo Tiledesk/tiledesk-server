@@ -461,7 +461,7 @@ class RequestService {
    
                      User.findById( savedRequest.participants[0], function (err, user) {
                        if (err) {
-                         console.log(err);
+                         console.error("Error sending email to " + savedRequest.participants[0], err);
                        }
                        if (!user) {
                          console.warn("User not found",  savedRequest.participants[0]);
