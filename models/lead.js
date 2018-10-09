@@ -14,7 +14,7 @@ var LeadSchema = new Schema({
 
   email: {
     type: String,
-    required: true
+    required: false
   },
 
   id_project: {
