@@ -354,25 +354,40 @@ router.post('/', function(req, res) {
                   return res.status(404).send({success: false, msg: "Request with query " + JSON.stringify(query) + " not found" });
                 }
               
-                  var requesterIdIndex = firestoreMembersAsArray.indexOf(request.requester_id);      
-                  if (requesterIdIndex > -1) {
-                    firestoreMembersAsArray.splice(requesterIdIndex, 1);
-                  }     
-                  console.log('firestoreMembersAsArray', firestoreMembersAsArray);
+                
+
+
+                  //TODO remove requester id from participants                 
+                  
+                  return Lead.findById(request.requester_id, function(err, lead){
+                    console.log("lead",lead);
+                    console.log("request",request);
+                    if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
+                      var requesterLeadIdIndex = firestoreMembersAsArray.indexOf(lead.lead_id);      
+                      if (requesterLeadIdIndex > -1) {
+                        firestoreMembersAsArray.splice(requesterLeadIdIndex, 1);
+                      }
+                    }
+
+
+                    console.log('firestoreMembersAsArray', firestoreMembersAsArray);
 
               
-                  return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
-                    // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
-                    // manca id
-                    return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
-                      console.log('updatedStatusRequest', updatedStatusRequest);
-                      return res.json(updatedStatusRequest);
+                    return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
+                      // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
+                      // manca id
+                      return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
+                        console.log('updatedStatusRequest', updatedStatusRequest);
+                        return res.json(updatedStatusRequest);
+                      });
+                    }).catch(function(err){
+                      console.error("Error closing request", err);
+                      return res.status(500).send({success: false, msg: 'Error closing request', err:err });
                     });
-                  }).catch(function(err){
-                    console.error("Error closing request", err);
-                    return res.status(500).send({success: false, msg: 'Error closing request', err:err });
-                  });
 
+
+
+                  });
             });
 
 
@@ -430,7 +445,6 @@ router.post('/', function(req, res) {
           return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
         }
 
-        // aiutoooooo
         return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead){
           console.log("lead",lead);
           console.log("request",request);
