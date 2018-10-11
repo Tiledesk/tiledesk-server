@@ -15,7 +15,8 @@ Step to run locally:
 
 # Deploy on Heroku
 
-To see the log run : 'heroku logs --tail -a chat21-api-nodejs'
+To see the log run : 'heroku logs  -n 2000 --tail -a chat21-api-nodejs'
+
 
 To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articles/route-53
 
