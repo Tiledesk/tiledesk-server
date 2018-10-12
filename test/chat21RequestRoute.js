@@ -26,7 +26,7 @@ chai.use(chaiHttp);
 // npm test -- ./test/chat21RequestRoute.js
 
 //Our parent block
-describe('Request', () => {
+describe('Chat21Requests', () => {
     // beforeEach((done) => { //Before each test we empty the database
     //     Book.remove({}, (err) => { 
     //        done();           

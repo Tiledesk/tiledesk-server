@@ -1,5 +1,4 @@
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
 var Department = require("../models/department");

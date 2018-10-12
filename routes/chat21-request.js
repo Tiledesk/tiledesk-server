@@ -1,5 +1,4 @@
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Request = require("../models/request");
 var Message = require("../models/message");

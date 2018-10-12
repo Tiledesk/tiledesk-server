@@ -224,7 +224,10 @@ class RequestService {
      // console.log("newstatus", newstatus);
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
-
+        if (err) {
+          console.error(err);
+          return reject(err);
+        }
         var waitingTime = Date.now() - request.createdAt;
         // console.log("waitingTime", waitingTime);
 

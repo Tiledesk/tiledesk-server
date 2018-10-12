@@ -1,5 +1,4 @@
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Group = require("../models/group");
 

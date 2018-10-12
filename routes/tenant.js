@@ -1,6 +1,5 @@
 var mongoose = require('mongoose');
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Tenant = require("../models/tenant");
 
