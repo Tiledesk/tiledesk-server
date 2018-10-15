@@ -1,15 +1,23 @@
 {
-  "name": "node-rest-auth",
-  "version": "0.0.0",
+  "name": "tiledesk-api-nodejs",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
     "test": "mocha"
   },
+  "author": "Andrea Leo - Frontiere21 SRL",
+  "license": "AGPL-3.0",
+  "homepage": "https://www.tiledesk.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
+  },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
+    "@chat21/chat21-node-sdk": "1.0.4",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
     "debug": "~2.6.0",

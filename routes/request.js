@@ -1,5 +1,4 @@
 var express = require('express');
-var jwt = require('jsonwebtoken');
 var router = express.Router();
 var Request = require("../models/request");
 var Message = require("../models/message");
@@ -11,6 +10,19 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
+var requestService = require('../services/requestService');
+
+var Chat21 = require('@chat21/chat21-node-sdk');
+var firebaseService = require("../services/firebaseService");
+
+var chat21 = new Chat21({
+  url: 'https://us-central1-chat-v2-dev.cloudfunctions.net',
+  appid: 'tilechat',
+  // url: process.env.CHAT21_URL,
+  // appid: process.env.CHAT21_APPID,
+  oauth: true,
+});
+
 
 
 
@@ -93,6 +105,51 @@ router.patch('/:requestid', function (req, res) {
   });
 
 });
+
+
+router.post('/:requestid/assign', function (req, res) {
+
+  console.log(req.params.requestid);
+  console.log("req projectid", req.projectid);
+  console.log("req.user.id", req.user.id);
+  
+  const assignee = req.body.assignee;
+  console.log("assignee", assignee);
+
+  return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
+    console.log("customAuthToken", customAuthToken);
+    // console.log("chat21", chat21);
+    // console.log("chat21.auth", chat21.auth);
+    
+    chat21.auth.setCurrentToken(customAuthToken);
+    console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+    
+    return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
+      return chat21.groups.join(assignee, req.params.requestid).then(function(data){
+            console.log("join resolve ", data);
+            return res.json(data);
+
+        });
+    });
+
+  });
+
+
+  
+   
+  
+
+  // return requestService.removeParticipantByRequestId(request_id, req.projectid, req.user.id).then(function(request) {
+  //   if (err) {
+  //     return res.status(500).send({ success: false, msg: 'Error updating object.' });
+  //   }
+  //   return requestService.addParticipantByRequestId(request_id, req.projectid, req.params.assignee).then(function(request) {
+  //     return res.json(request);
+  //   });
+  // });
+
+});
+
 
 
 

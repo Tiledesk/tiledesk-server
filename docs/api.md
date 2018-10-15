@@ -42,7 +42,12 @@ curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f3275
 
 ## Analytics
 ```
-curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ab0f32757066e0014bfd718/analytics/requests
+curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ad5bd52c975820014ba900a/analytics/requests/count
+
+```
+
+```
+curl -v -X GET -u andrea.leo@f21.it:123456 https://api.tiledesk.com/v1/5ad5bd52c975820014ba900a/analytics/requests/waiting
 
 ```
 
