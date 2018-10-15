@@ -944,7 +944,7 @@ class EmailService {
                             <!-- <br> welcome on TileDesk.com. -->
                             <br><br> Thank you for signin up with TileDesk.
                             <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/verify/email/${savedUser._id}"> click here to verify your email address. </a> </span>
-                            <br><br>Give us your feedback! We need your advice. Send an email to info@frontiere21.it
+                            <br><br>Give us your feedback! We need your advice. Send an email to <a href="mailto:info@frontiere21.it">info@frontiere21.it</a>
                             <br><br> Team TileDesk
                           </td>
                         </tr>

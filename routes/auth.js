@@ -30,7 +30,7 @@ router.post('/signup', function (req, res) {
       }
       console.log('-- >> -- >> savedUser ', savedUser);
 
-      emailService.sendVerifyEmailAddress(savedUser.email, savedUser)
+      emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
       
       // var emailPassword = process.env.EMAIL_PASSWORD;
       // console.log('emailPassword ', emailPassword);

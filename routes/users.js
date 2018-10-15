@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var User = require("../models/user");
+var emailService = require("../models/emailService");
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -71,6 +72,17 @@ router.put('/changepsw', function (req, res) {
       }
     }
   });
+});
+
+router.get('/resendverifyemail', function (req, res) {
+  console.log('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
+  try {
+    emailService.sendVerifyEmailAddress(req.user.email, req.user);
+    res.status(200).json({ message: 'Verify email successfully sent' });
+  } catch (e) {
+    console.log("RE-SEND VERIFY EMAIL error", e);
+    res.status(500).json({ message: e });
+  }
 });
 
 
