@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+//not in use
 var PersonSchema = new Schema({
   firstname: {
     type: String,
