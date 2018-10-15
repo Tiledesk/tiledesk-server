@@ -15,12 +15,19 @@ var requestService = require('../services/requestService');
 var Chat21 = require('@chat21/chat21-node-sdk');
 var firebaseService = require("../services/firebaseService");
 
+var admin = require('../utils/firebaseConnector');
+
+var firebaseConfig = require('../config/firebase');
+var chat21Config = require('../config/chat21');
+
 var chat21 = new Chat21({
-  url: 'https://us-central1-chat-v2-dev.cloudfunctions.net',
-  appid: 'tilechat',
+  url: chat21Config.url,
+  appid: chat21Config.appid,
   // url: process.env.CHAT21_URL,
   // appid: process.env.CHAT21_APPID,
   oauth: true,
+  firebase_apikey:  process.env.FIREBASE_APIKEY,
+  firebase_database: firebaseConfig.databaseURL
 });
 
 
@@ -117,22 +124,26 @@ router.post('/:requestid/assign', function (req, res) {
   console.log("assignee", assignee);
 
   return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-    console.log("customAuthToken", customAuthToken);
-    // console.log("chat21", chat21);
-    // console.log("chat21.auth", chat21.auth);
-    
-    chat21.auth.setCurrentToken(customAuthToken);
-    console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
-    
-    return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
-      return chat21.groups.join(assignee, req.params.requestid).then(function(data){
-            console.log("join resolve ", data);
-            return res.json(data);
-
+        console.log("customAuthToken", customAuthToken);
+        // console.log("chat21", chat21);
+        // console.log(" admin.auth()", JSON.stringify(admin.auth()));
+        // console.log(" admin", admin.auth());
+        
+       return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
+          chat21.auth.setCurrentToken(idToken);
+          console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+          return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
+            return chat21.groups.join(assignee, req.params.requestid).then(function(data){
+                  // console.log("join resolve ", data);
+                  return res.json(data);
+              });
+          });
         });
     });
 
-  });
+   
+
+  
 
 
   
@@ -158,7 +169,7 @@ router.post('/:requestid/assign', function (req, res) {
 router.get('/', function (req, res, next) {
 
   console.log("req projectid", req.projectid);
-  console.log("rreq.query.sort", req.query.sort);
+  console.log("req.query.sort", req.query.sort);
   console.log('REQUEST ROUTE - QUERY ', req.query)
 
   var limit = 40; // Number of request per page

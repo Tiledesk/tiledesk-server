@@ -545,7 +545,7 @@ router.get('/:departmentid', function (req, res) {
 router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
-  console.log("rreq.query.sort", req.query.sort);
+  console.log("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {

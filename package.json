@@ -14,10 +14,10 @@
     "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
   },
   "dependencies": {
+    "@chat21/chat21-node-sdk": "^1.0.5",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
-    "@chat21/chat21-node-sdk": "1.0.4",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
     "debug": "~2.6.0",
