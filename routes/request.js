@@ -26,6 +26,7 @@ var chat21 = new Chat21({
   // url: process.env.CHAT21_URL,
   // appid: process.env.CHAT21_APPID,
   oauth: true,
+  
   firebase_apikey:  process.env.FIREBASE_APIKEY,
   firebase_database: firebaseConfig.databaseURL
 });
@@ -139,6 +140,8 @@ router.post('/:requestid/assign', function (req, res) {
               });
           });
         });
+    }).catch(function(err) {
+      return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
     });
 
    
