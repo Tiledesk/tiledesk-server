@@ -78,10 +78,10 @@ router.get('/resendverifyemail', function (req, res) {
   console.log('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
   try {
     emailService.sendVerifyEmailAddress(req.user.email, req.user);
-    res.status(200).json({ message: 'Verify email successfully sent' });
+    res.status(200).json({ success: true, message: 'Verify email successfully sent' });
   } catch (e) {
     console.log("RE-SEND VERIFY EMAIL error", e);
-    res.status(500).json({ message: e });
+    res.status(500).json({ success: false, message: e });
   }
 });
 
