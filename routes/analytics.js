@@ -19,7 +19,7 @@ router.get('/requests/count', function(req, res) {
   AnalyticResult.aggregate([
       // { "$match": {"id_project": req.projectid } },
       // { "$match": {} },
-      { "$match": {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (7 * 24 * 60 * 60 * 1000))) }} },
+      { "$match": {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
       { "$count": "totalCount" }
     
   ])
