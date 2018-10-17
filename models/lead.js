@@ -9,7 +9,7 @@ var LeadSchema = new Schema({
   },
   fullname: {
     type: String,
-    required: true
+    required: false
   },
 
   email: {
