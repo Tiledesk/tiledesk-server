@@ -15,7 +15,7 @@ curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledes
 ### Firebase signin
 
 ```
-curl -v -X POST -d 'email=andrea.leo@f21sdadsadasdwqeq.it&password=123456' https://api.tiledesk.com/v1/firebase/auth/signin
+curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://api.tiledesk.com/v1/firebase/auth/signin
 ```
 
 ### Departments 
@@ -72,6 +72,12 @@ curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:30
 
 ```
 curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:3000/firebase/auth/signin
+```
+
+## Firebase createtoken
+
+```
+curl -v -X POST -u andrea.leo@f21.it:123456 http://localhost:3000/firebase/createtoken
 ```
 
 ## Requests 
