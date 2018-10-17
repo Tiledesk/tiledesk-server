@@ -87,13 +87,14 @@ router.get('/resendverifyemail', function (req, res) {
 
 router.get('/:userid', function (req, res) {
 
-  User.findById(req.params.userid, function (err, user) {
+  User.findById(req.params.userid, 'firstname lastname _id', function (err, user) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!User) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
+    console.log("GET USER BY ID RES JSON", user);
     res.json(user);
   });
 });
