@@ -10,30 +10,6 @@ var User = require("../models/user");
 var firebaseService = require("../services/firebaseService");
 
 
-// var admin = require('../utils/firebaseConnector');
-
-
-
-// // Load config file
-// //const config = require('./config.json');
-
-// function generateToken(uid) {
-
-// //remove username from otherParameters
-// 	//otherParameters["username"]=undefined;
-// 	// delete otherParameters.username;
-  
-//       // STEP 3: Generate Firebase Custom Auth Token
-//       const tokenPromise = admin.auth().createCustomToken(uid);
-//     //   const tokenPromise = admin.auth().createCustomToken(uid,otherParameters);
-//       tokenPromise.then(token => {
-//         console.log('Created Custom token for UID "', uid, '" Token:', token);
-// 	    // console.log('Other parameters; ', otherParameters);
-//       });
-      
-//       return tokenPromise;
-// }
-
 
 router.post('/signin', function (req, res) {
     User.findOne({
@@ -101,35 +77,3 @@ router.post('/signin', function (req, res) {
   });
   
   module.exports = router;
-
-// router.post('/signin', function (req, res) {
-
-//   if (req.param('username') === undefined) {
-//     const ret = {
-//       error_message: 'Username not found'
-//     };
-//     return res.status(400).send(ret);
-//   }
-
-//   const reqToken = "test";
-//   const reqUsername = req.param('username');
-
-//   verifySimpleAlfrescoToken(reqToken, reqUsername, req.query)
-//     .then(customAuthToken => {
-     
-//    /* const ret = {
-//         firebase_token: customAuthToken
-//       };
-// */
-//       return res.status(200).send(customAuthToken);   
-// //      return res.status(200).send(ret);   
-//     })
-//     .catch(err => {
-//       // If LINE access token verification failed, return error response to client
-//       const ret = {
-//         error_message: 'Authentication error: Cannot verify access token.'
-//       };
-//       return res.status(403).send(ret);
-//     });
-
-// });
