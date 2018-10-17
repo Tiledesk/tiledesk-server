@@ -91,7 +91,7 @@ router.get('/:userid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
-    if (!User) {
+    if (!user) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
     console.log("GET USER BY ID RES JSON", user);
