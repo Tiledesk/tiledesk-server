@@ -135,7 +135,7 @@ router.get('/:projectid/users/availables', function (req, res) {
 
   operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
     console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
-    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - ERROR: ', err)
+    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
 
     if (err) {
       sendError(err, res);
