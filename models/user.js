@@ -11,7 +11,9 @@ var UserSchema = new Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
+        // select: false
     },
     firstname: {
         type: String,
@@ -29,6 +31,13 @@ var UserSchema = new Schema({
         type: String,
     }
 });
+
+// UserSchema.set('toJSON', {
+//     transform: function(doc, ret, opt) {
+//         delete ret['password']
+//         return ret
+//     }
+// });
 
 UserSchema.pre('save', function (next) {
     var user = this;
