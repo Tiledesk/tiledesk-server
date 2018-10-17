@@ -376,7 +376,7 @@ function sendError(err, res) {
   }
 
   var errcode = err.errorCode
-  console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - ERROR CODE: ', errcode);
+  console.log('D ---> [ OHS ] -> [ OPERATORS ] -> IS OPEN THE PROJECT - EROR CODE: ', errcode);
 
   switch (errcode) {
     // Project.findById -> Error getting object.
