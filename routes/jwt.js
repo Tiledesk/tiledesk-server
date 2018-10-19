@@ -7,7 +7,7 @@ var router = express.Router();
 var config = require('../config/database'); 
 var jwt = require('jsonwebtoken');
 var validtoken = require('../middleware/valid-token');
-var secret = process.env.SECRET || config.secret;
+// var secret = process.env.SECRET || config.secret;
 var requestUtil = require('../utils/requestUtil');
 var Project = require('../models/project');
 
@@ -37,7 +37,7 @@ router.post('/decode', validtoken, function (req, res) {
       }
 
       if (!project.jwtSecret) {
-        return res.status(404).send({ success: false, msg: 'Project hasnt  a publicKey' });
+        return res.status(404).send({ success: false, msg: 'Project hasnt  a jwtSecret' });
     }
 
 

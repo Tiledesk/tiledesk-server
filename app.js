@@ -100,7 +100,7 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 });
 
 app.use('/firebase/auth', firebaseAuth);
-app.use('/firebase', firebase);
+
 
 
 
@@ -140,6 +140,7 @@ app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], analytics);
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], key);
 app.use('/:projectid/jwt', jwtroute);
+app.use('/:projectid/firebase', firebase);
 
 //app.use('/apps', tenant);
 
