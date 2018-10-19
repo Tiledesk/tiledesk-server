@@ -9,9 +9,9 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 require('./config/passport')(passport);
 var config = require('./config/database');
-var cors = require('cors')
+var cors = require('cors');
 
-var validtoken = require('./middleware/valid-token')
+var validtoken = require('./middleware/valid-token');
 
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
@@ -48,7 +48,9 @@ var publicRequest = require('./routes/public-request');
 var analytics = require('./routes/analytics');
 
 var chat21Request = require('./routes/chat21-request');
-
+var firebase = require('./routes/firebase');
+var jwtroute = require('./routes/jwt');
+var key = require('./routes/key');
 var app = express();
 
 // view engine setup
@@ -85,7 +87,10 @@ var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
   console.log("projectIdSetter projectid", projectid);
 
-  req.projectid = projectid;
+  // if (projectid) {
+    req.projectid = projectid;
+  // }
+  
   next()
 }
 
@@ -95,6 +100,9 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 });
 
 app.use('/firebase/auth', firebaseAuth);
+app.use('/firebase', firebase);
+
+
 
 app.use('/:projectid', projectIdSetter);
 
@@ -130,7 +138,8 @@ app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { sessi
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], group);
 app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], analytics);
-
+app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], key);
+app.use('/:projectid/jwt', jwtroute);
 
 //app.use('/apps', tenant);
 
