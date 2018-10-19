@@ -14,6 +14,18 @@ var ProjectSchema = new Schema({
   operatingHours: {
     type: Object,
   },
+  publicKey: {
+    type: String,
+    select: false
+  },
+  privateKey: {
+    type: String,
+    select: false
+  },
+  jwtSecret: {
+    type: String,
+    select: false
+  },
   createdBy: {
     type: String,
     required: true
