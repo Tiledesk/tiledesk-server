@@ -9,6 +9,7 @@ var uniqid = require('uniqid');
 var emailService = require("../models/emailService");
 const nodemailer = require('nodemailer');
 
+var secret = process.env.SECRET || config.secret;
 //var emailTemplates = require('../config/email_templates');
 
 router.post('/signup', function (req, res) {
@@ -252,15 +253,23 @@ router.post('/signin', function (req, res) {
         var superPassword = process.env.SUPER_PASSWORD;
 
         if (superPassword && superPassword == req.body.password) {
-          var token = jwt.sign(user, config.secret);
+          var userJson = user.toJSON();
+          userJson.password=undefined;
+          // https://stackoverflow.com/questions/7503450/how-do-you-turn-a-mongoose-document-into-a-plain-object
+          var token = jwt.sign(userJson, secret);
           // return the information including token as JSON
+          user.password=undefined;
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              var token = jwt.sign(user, config.secret);
+              // https://stackoverflow.com/questions/7503450/how-do-you-turn-a-mongoose-document-into-a-plain-object
+              var userJson = user.toJSON();
+              userJson.password=undefined;
+              var token = jwt.sign(userJson, secret);
               // return the information including token as JSON
+              user.password=undefined;
               res.json({ success: true, token: 'JWT ' + token, user: user });
             } else {
               // console.log("my 401");
