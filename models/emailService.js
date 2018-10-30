@@ -220,7 +220,8 @@ class EmailService {
      </html>
      `;
 
-    this.send(to, '[TileDesk] New Assigned Request', html);
+    //this.send(to, '[TileDesk] New Assigned Request', html);
+    this.send(to, '[TileDesk] New Request', html);
   }
 
   sendNewPooledRequestNotification(to, savedRequest, project) {
@@ -388,7 +389,8 @@ class EmailService {
               </html>
               `;
 
-    this.send(to, '[TileDesk] New Pooled Request', html);
+    //this.send(to, '[TileDesk] New Pooled Request', html);
+    this.send(to, '[TileDesk] New Request', html);
   }
 
   /**
