@@ -1,7 +1,6 @@
 {
-  "name": "tiledesk-api-nodejs",
+  "name": "@tiledesk/tiledesk-api-nodejs",
   "version": "1.0.0",
-  "private": true,
   "scripts": {
     "start": "node ./bin/www",
     "test": "mocha"
@@ -12,6 +11,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
+  },
+  "engines": {
+    "node": "6.11.3"
   },
   "dependencies": {
     "@chat21/chat21-node-sdk": "^1.0.5",
