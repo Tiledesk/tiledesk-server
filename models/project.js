@@ -17,6 +17,9 @@ var ProjectSchema = new Schema({
   settings: {
     type: Object,
   },
+  widget: {
+    type: Object,
+  },
   publicKey: {
     type: String,
     select: false
