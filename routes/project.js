@@ -23,6 +23,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // updatedBy: req.body.id_user
     activeOperatingHours: false,
     operatingHours: req.body.hours,
+    widget:  req.body.widget,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
