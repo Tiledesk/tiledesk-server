@@ -17,6 +17,7 @@ var mongoose = require('mongoose');
 mongoose.connect(config.databasetest);
 
 var userService = require('../services/userService');
+var admin = require('../utils/firebaseConnector');
 
 
 describe('UserService()', function () {
@@ -39,6 +40,23 @@ describe('UserService()', function () {
         done();
     });
   });
+
+
+
+  it('getUser', function (done) {
+    // admin.auth().getUser('5aaa99024c3b110014b478f0')
+    admin.auth().getUser('5ad0653c23c4150014695747')
+    
+    .then(function(userRecord) {
+      // See the UserRecord reference doc for the contents of userRecord.
+      console.log("Successfully fetched user data:", userRecord.toJSON());
+      done();
+    })
+    .catch(function(error) {
+      console.log("Error fetching user data:", error);
+    });
+  });
+
 });
 
 

@@ -234,6 +234,35 @@ describe('RequestService()', function () {
 
 
 
+  it('closeRequestAndSendTranscript', function (done) {
+
+    projectService.create("test1", userid, {email: {autoSendTranscriptToRequester:true}}).then(function(savedProject) {
+     leadService.createIfNotExists("leadfullname", "andrea.leo@frontiere21.it", savedProject._id).then(function(createdLead) {
+      requestService.createWithId("request_id-closeRequest", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        Promise.all([
+          messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
+          savedProject._id, "5badfe5d553d1844ad654072"),
+          messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
+          savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
+            requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
+                  console.log("resolve closedRequest", closedRequest);
+                  expect(closedRequest.status).to.equal(1000);
+                  expect(closedRequest.closed_at).to.not.equal(null);
+                  expect(closedRequest.transcript).to.contains("hello1");
+                  expect(closedRequest.transcript).to.contains("hello2");
+                  done();                         
+                }).catch(function(err){
+                  console.error("test reject", err);
+                  assert.isNotOk(err,'Promise error');
+                  done();
+                });
+            });
+        });
+      });
+  });
+});
+
+
 
   it('reopenRequest', function (done) {
 
