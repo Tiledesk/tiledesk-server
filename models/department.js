@@ -28,6 +28,14 @@ var DepartmentSchema = new Schema({
     type: String,
     // required: true
   },
+  online_msg: {
+    type: String,
+    // required: true
+  },
+  offline_msg: {
+    type: String,
+    // required: true
+  },
   default: {
     type: Boolean,
     default:false
