@@ -264,7 +264,7 @@ class RequestService {
                       Project.findById(id_project, function(err, project){                        
                         if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
                           return Lead.findById(updatedRequest.requester_id, function(err, lead){
-                             if (lead) {
+                             if (lead && lead.email) {
                               return that.sendTranscriptByEmail(lead.email, request_id, id_project);
                              }
                               
