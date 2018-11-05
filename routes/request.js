@@ -15,7 +15,7 @@ var requestService = require('../services/requestService');
 var Chat21 = require('@chat21/chat21-node-sdk');
 var firebaseService = require("../services/firebaseService");
 
-var admin = require('../utils/firebaseConnector');
+// var admin = require('../utils/firebaseConnector');
 
 var firebaseConfig = require('../config/firebase');
 var chat21Config = require('../config/chat21');
@@ -26,11 +26,12 @@ var chat21 = new Chat21({
   // url: process.env.CHAT21_URL,
   // appid: process.env.CHAT21_APPID,
   oauth: true,
-  
+
   firebase_apikey:  process.env.FIREBASE_APIKEY,
   firebase_database: firebaseConfig.databaseURL
 });
 
+var messageService = require('../services/messageService');
 
 
 
@@ -114,6 +115,70 @@ router.patch('/:requestid', function (req, res) {
 
 });
 
+router.post('/:requestid/share/email', function (req, res) {
+
+  console.log("req.params.requestid", req.params.requestid);
+  console.log("req projectid", req.projectid);
+  console.log("req.user.id", req.user.id);
+  
+  const sendTo = req.query.to;
+  console.log("sendTo", sendTo);
+
+
+  return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function(result) {
+    return res.json({'success':true});
+  }).catch(function (err) {
+    console.error("err", err);
+    return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
+  });
+  //  return Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
+  //   .populate('department')
+  //   .exec(function(err, request) { 
+  //   if (err){
+  //     console.error(err);
+  //     return res.status(500).send({ success: false, msg: 'Error getting request.',err:err });
+  //   }
+  //   if (!request) {
+  //     console.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
+  //     return res.status(404).send({"success":false, msg:"Request not found for request_id "+ req.params.requestid  + " and id_project " + req.projectid});
+  //   }
+    
+
+
+  //   return Message.find({"recipient": req.params.requestid,id_project : req.projectid})
+  //     .sort({updatedAt: 'asc'})
+  //     .exec(function(err, messages) { 
+  //     if (err) {
+  //       return res.status(500).send({success: false, msg: 'Error getting messages.'});
+  //     }
+
+  //     if(!messages){
+  //       return res.status(404).send({success: false, msg: 'Object not found.'});
+  //     }
+
+  //     console.log("request", request);
+
+  //     emailService.sendRequestTranscript(sendTo, messages, request);
+  //     return res.json({'success':true});
+
+    
+  //   });
+
+  //   });
+
+  // return messageService.getTranscriptByRequestId(req.params.requestid, req.projectid).then(function(transcript) {
+  //   console.log("transcript", transcript);
+  //   emailService.sendRequestTranscript(sendTo, transcript);
+  //   return res.json({'success':true});
+  // }).catch(function (err) {
+  //   return res.status(500).send({ success: false, msg: 'Error getting the request transcript.',err:err });
+  // });
+
+ 
+
+
+
+});
 
 router.post('/:requestid/assign', function (req, res) {
 

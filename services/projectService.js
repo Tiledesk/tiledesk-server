@@ -8,7 +8,7 @@ var departmentService = require('../services/departmentService');
 class ProjectService {
 
 
-  create(name, createdBy) {
+  create(name, createdBy, settings) {
 
     return new Promise(function (resolve, reject) {
 
@@ -20,6 +20,7 @@ class ProjectService {
             // updatedBy: req.body.id_user
             activeOperatingHours: false,
             //operatingHours: req.body.hours,
+            settings: settings,
             createdBy: createdBy,
             updatedBy: createdBy
           });

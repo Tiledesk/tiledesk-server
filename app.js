@@ -10,7 +10,7 @@ var passport = require('passport');
 require('./config/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
-
+var Project = require("./models/project");
 var validtoken = require('./middleware/valid-token');
 
 
@@ -35,7 +35,7 @@ var faq = require('./routes/faq');
 var bot = require('./routes/bot');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-var person = require('./routes/person');
+// var person = require('./routes/person.old');
 var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
@@ -94,6 +94,33 @@ var projectIdSetter = function (req, res, next) {
   next()
 }
 
+var projectSetter = function (req, res, next) {
+  var projectid = req.params.projectid;
+  console.log("projectSetter projectid", projectid);
+
+  if (projectid) {
+    Project.findById(projectid, function(err, project){
+      if (err) {
+        console.error(err);
+      }
+  
+      if (!project) {
+        console.warn("Project not found", req.projectid);
+      } 
+
+      req.project = project;
+      console.log("req.project", req.project);
+      next(); //call next one time for projectSetter function
+    });
+  
+  }else {
+    next()
+  }
+  
+
+}
+
+
 app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   res.send('{"success":true}');
@@ -104,7 +131,9 @@ app.use('/firebase/auth', firebaseAuth);
 
 
 
-app.use('/:projectid', projectIdSetter);
+ app.use('/:projectid', [projectIdSetter]);
+//app.use('/:projectid', [projectIdSetter, projectSetter]);
+
 
 //app.use('/:projectid', [passport.authenticate('jwt', { session: false}), passport.authenticate('basic', { session: false }), validtoken]);
 // app.use('/:projectid', [passport.authenticate('jwt', { session: false}), validtoken]);
@@ -132,7 +161,7 @@ app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: f
 app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], bot);
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
 app.use('/projects', project);
-app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
+// app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], project_user);
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 

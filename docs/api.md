@@ -99,6 +99,10 @@ curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -
 curl -v -X PATCH -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"rating":5, "rating_message":"Great"}' http://localhost:3000/5ab0f32757066e0014bfd718/requests/5b800a7f52ee93a525ca0d8c
 ```
 
+### Share by email
+```
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/5bc7678f3cbc8921530fffbb/requests/request_id-waitingTimeRequest/share/email?to=andrea.leo@frontiere21.it
+```
 
 ## Departments 
 

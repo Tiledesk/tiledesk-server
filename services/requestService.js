@@ -5,9 +5,11 @@ var Request = require("../models/request");
 var emailService = require("../models/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
+var Message = require("../models/message");
 var mongoose = require('mongoose');
 var messageService = require('../services/messageService');
 var leadService = require('../services/leadService');
+var Lead = require('../models/lead');
 
 
 class RequestService {
@@ -256,6 +258,23 @@ class RequestService {
              // console.log("transcript", transcript);
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
+                  
+                  //send auto transcript
+                  try {                
+                      Project.findById(id_project, function(err, project){                        
+                        if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
+                          return Lead.findById(updatedRequest.requester_id, function(err, lead){
+                             if (lead) {
+                              return that.sendTranscriptByEmail(lead.email, request_id, id_project);
+                             }
+                              
+                           });
+                        }
+                      });
+                    }catch(e) {
+                      console.error("error sendTranscriptByEmail ", e);
+                    }
+
                   return resolve(updatedRequest);
                 });
               });
@@ -411,6 +430,48 @@ class RequestService {
           }
           // console.log(" request",  request);
         return resolve(request.save());
+      });
+    });
+  }
+
+
+
+  sendTranscriptByEmail(sendTo, request_id, id_project) {
+    return new Promise(function (resolve, reject) {
+      return Request.findOne({request_id: request_id, id_project: id_project})
+      .populate('department')
+      .exec(function(err, request) { 
+      if (err){
+        console.error(err);
+        return reject(err);
+      }
+      if (!request) {
+        console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+        return reject("Request not found for request_id "+ request_id  + " and id_project " + id_project);
+      }
+      
+
+
+      return Message.find({"recipient": request_id, id_project : id_project})
+        .sort({updatedAt: 'asc'})
+        .exec(function(err, messages) { 
+        if (err) {
+          return res.status(500).send({success: false, msg: 'Error getting messages.'});
+        }
+
+        if(!messages){
+          return reject(err);
+        }
+
+      
+
+        emailService.sendRequestTranscript(sendTo, messages, request);
+        console.log("sendTranscriptByEmail sent");
+        return resolve({sendTo: sendTo, messages: messages, request: request});
+
+      
+      });
+
       });
     });
   }

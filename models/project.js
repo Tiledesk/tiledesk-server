@@ -14,6 +14,9 @@ var ProjectSchema = new Schema({
   operatingHours: {
     type: Object,
   },
+  settings: {
+    type: Object,
+  },
   publicKey: {
     type: String,
     select: false
