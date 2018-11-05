@@ -110,6 +110,8 @@ class MessageService {
 
 
   getTranscriptByRequestId(requestid, id_project) {
+    console.log("requestid", requestid);
+    console.log("id_project", id_project);
     var that = this;
     return new Promise(function (resolve, reject) {
         return Message.find({"recipient": requestid, id_project: id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
@@ -118,11 +120,13 @@ class MessageService {
                 return reject(err);
             }
     
+            console.log("messages", messages);
+
             if(!messages){
                 return resolve(messages); 
             }
 
-            // console.log("messages", messages);
+            
 
             var transcript = '';
             // messages.forEach(message => {
