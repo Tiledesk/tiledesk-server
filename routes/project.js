@@ -23,7 +23,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // updatedBy: req.body.id_user
     activeOperatingHours: false,
     operatingHours: req.body.hours,
-    widget:  req.body.widget,
+    widget: req.body.widget,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
@@ -171,8 +171,12 @@ function findAndSendAvailableUsers(projectid, res) {
 
         user_available_array = [];
         project_users.forEach(project_user => {
-          console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-          user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+          if (project_user.id_user) {
+            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+            user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+          } else {
+            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+          }
         });
 
         console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);

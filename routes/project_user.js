@@ -5,6 +5,8 @@ var mongoose = require('mongoose');
 var User = require("../models/user");
 var emailService = require("../models/emailService");
 var Project = require("../models/project");
+// var PendingInvitation = require("../models/pending-invitation");
+var pendinginvitation = require("../services/pendingInvitationService");
 
 // var User = require("../models/user");
 
@@ -45,8 +47,17 @@ router.post('/invite', function (req, res) {
     if (err) throw err;
 
     if (!user) {
-
-      return res.status(404).send({ success: false, msg: 'User not found.' });
+      /*
+       * *** USER NOT FOUND > SAVE EMAIL AND PROJECT ID IN PENDING INVITATION *** */
+      return pendinginvitation.saveInPendingInvitation(req.body.id_project, req.body.project_name, req.body.email, req.body.role, req.user.id, req.user.firstname, req.user.lastname)
+        .then(function (savedPendingInvitation) {
+          return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
+        })
+        .catch(function (err) {
+          return res.send(err);
+          // return res.status(500).send(err);
+        });
+      // return res.status(404).send({ success: false, msg: 'User not found.' });
 
     } else if (req.user.id == user._id) {
       console.log('-> -> FOUND USER ID', user._id)
@@ -64,16 +75,18 @@ router.post('/invite', function (req, res) {
        * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
-      Project_user.find({ id_project: req.body.id_project }, function (err, projectuser) {
+      return Project_user.find({ id_project: req.body.id_project }, function (err, projectuser) {
         console.log('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
-        if (err) throw err;
+        if (err) {
+          return res.status(500).send(err);
+        }
 
         if (!projectuser) {
+          // console.log('*** PRJCT-USER NOT FOUND ***')
           return res.status(404).send({ success: false, msg: 'Project user not found.' });
         }
 
         if (projectuser) {
-
           try {
             projectuser.forEach(p_user => {
               if (p_user) {
@@ -117,13 +130,29 @@ router.post('/invite', function (req, res) {
             updatedBy: req.user.id
           });
 
-          newProject_user.save(function (err, savedProject_user) {
+          return newProject_user.save(function (err, savedProject_user) {
             if (err) {
               console.log('--- > ERROR ', err)
               return res.status(500).send({ success: false, msg: 'Error saving object.' });
             }
 
-            res.json(savedProject_user);
+
+
+            console.log('INVITED USER (IS THE USER FOUND BY EMAIL) ', user);
+            console.log('EMAIL of THE INVITED USER ', req.body.email);
+            console.log('ROLE of THE INVITED USER ', req.body.role);
+            console.log('PROJECT NAME ', req.body.role);
+            console.log('LOGGED USER ID ', req.user.id);
+            console.log('LOGGED USER NAME ', req.user.firstname);
+            console.log('LOGGED USER NAME ', req.user.lastname);
+
+
+            var invitedUserFirstname = user.firstname
+            var invitedUserLastname = user.lastname
+
+            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
+            
+            return res.json(savedProject_user);
 
             // found the project by the project id to indicate the project name in the email
             // Project.findOne({ _id: req.body.id_project }, function (err, project) {
@@ -143,19 +172,6 @@ router.post('/invite', function (req, res) {
             //   }
             // });
 
-            console.log('INVITED USER (IS THE USER FOUND BY EMAIL) ', user);
-            console.log('EMAIL of THE INVITED USER ', req.body.email);
-            console.log('ROLE of THE INVITED USER ', req.body.role);
-            console.log('PROJECT NAME ', req.body.role);
-            console.log('LOGGED USER ID ', req.user.id);
-            console.log('LOGGED USER NAME ', req.user.firstname);
-            console.log('LOGGED USER NAME ', req.user.lastname);
-
-            if (user) {
-              var invitedUserFirstname = user.firstname
-              var invitedUserLastname = user.lastname
-            }
-            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
           });
 
         }
@@ -163,7 +179,6 @@ router.post('/invite', function (req, res) {
     }
   });
 });
-
 
 
 router.put('/:project_userid', function (req, res) {
