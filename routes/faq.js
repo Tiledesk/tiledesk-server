@@ -73,6 +73,7 @@ router.post('/', function (req, res) {
     question: req.body.question,
     answer: req.body.answer,
     id_project: req.projectid,
+    topic: req.body.topic,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });

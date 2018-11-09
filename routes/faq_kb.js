@@ -2,13 +2,13 @@ var express = require('express');
 var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
 var Department = require("../models/department");
-
+var faqService = require("../services/faqService");
 
 // START - CREATE FAQ KB KEY 
 var request = require('request');
 
 // THIS CALLBACK IS PERFORMED WHEN IS CREATED A NEW FAQKB (router.post)
-function createFaqKbRemote(faqkb_id) {
+function createFaqKbRemote(faqkb_id, faq_kb) {
   var json = {
     "username": "frontiere21",
     "password": "password",
@@ -31,6 +31,16 @@ function createFaqKbRemote(faqkb_id) {
       console.log('FAQ-KB REMOTE POST: FAQKB KEY RETURNED ', body.kbkey);
 
       updateFaqKbKey(faqkb_id, body.kbkey)
+
+
+     /**
+      * ONCE THAT THE BOT HAS BEEN CREATED AND THAT THIS HAS BEEN UPDATED WITH THE REMOTE ID
+      * IT IS PERFORMED THE AUTOMATIC CREATION OF THE 'GREETINGS AND OPERATIONAL FAQS'
+      * THE CREATION IS PERFORMED AT POINT IN WICH IS OBTAINED THE REMOTE ID OF THE BOT BECAUSE  IT
+      * IS NECESSARY FOR THE CREATION OF THE 'REMOTE FAQS'
+      */
+      faqService.createGreetingsAndOperationalsFaqs(faqkb_id, faq_kb.createdBy, faq_kb.id_project, body.kbkey);
+
     }
     if (err) {
       console.log('FAQ-KB REMOTE POST ERROR ', err);
@@ -49,6 +59,9 @@ function updateFaqKbKey(faqkb_id, remotefaqkb_key) {
         return res.status(500).send({ success: false, msg: 'Error updating updateFaqKbKey object.' });
       }
       // res.json(updatedFaq_kb);
+
+
+
     });
 }
 
@@ -72,12 +85,17 @@ router.post('/', function (req, res) {
       console.log('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
-    console.log('SAVED FAQFAQ KB ', savedFaq_kb)
+    console.log('-> -> SAVED FAQFAQ KB ', savedFaq_kb)
     res.json(savedFaq_kb);
 
-    createFaqKbRemote(savedFaq_kb._id)
+
+
+    createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+
+
   });
 });
+
 
 router.put('/:faq_kbid', function (req, res) {
 
@@ -166,7 +184,7 @@ router.get('/', function (req, res) {
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  Faq_kb.find({ "id_project": req.projectid , "trashed": { $in: [null, false]}}, function (err, faq_kb) {
+  Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, faq_kb) {
     if (err) {
       console.log('GET FAQ-KB ERROR ', err)
       return (err);

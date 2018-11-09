@@ -18,6 +18,11 @@ var FaqSchema = new Schema({
     type: String,
     required: true
   },
+  topic: {
+    type: String,
+    default: "default"
+    // required: true
+  },
   createdBy: {
     type: String,
     required: true
