@@ -10,9 +10,9 @@ block content
 
       each message in messages
         p(class="transcript-p") 
-        span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] 
-        span(class="transcript-chat-sender") #{message.senderFullname}: 
-        span(class="transcript-chat-msg") #{message.text}
+          span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] 
+          span(class="transcript-chat-sender") #{message.senderFullname}: 
+          span(class="transcript-chat-msg") #{message.text}
       
     p(class="transcript-powered-by")  Powered by   
       a(href="https://tiledesk.com/", target="_blank") tiledesk
