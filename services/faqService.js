@@ -9,16 +9,17 @@ class FaqService {
     var that = this;
     return new Promise(function (resolve, reject) {
 
+      // { 'question': 'Operator', 'answer': '\\agent', 'topic': 'operational' },
+      // { 'question': 'Agent', 'answer': '\\agent', 'topic': 'operational' },
+      // { 'question': 'Human', 'answer': '\\agent', 'topic': 'operational' },
+      // { 'question': 'Operatore', 'answer': '\\agent', 'topic': 'operational' },
+      // { 'question': 'Agente', 'answer': '\\agent', 'topic': 'operational' },
+      // { 'question': 'Umano', 'answer': '\\agent', 'topic': 'operational' }
+
       var faqsArray = [
         { 'question': 'Ciao', 'answer': 'Ciao', 'topic': 'greetings' },
         { 'question': 'Hi', 'answer': 'Hi', 'topic': 'greetings' },
-        { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
-        { 'question': 'Operator', 'answer': '\\agent', 'topic': 'operational' },
-        { 'question': 'Agent', 'answer': '\\agent', 'topic': 'operational' },
-        { 'question': 'Human', 'answer': '\\agent', 'topic': 'operational' },
-        { 'question': 'Operatore', 'answer': '\\agent', 'topic': 'operational' },
-        { 'question': 'Agente', 'answer': '\\agent', 'topic': 'operational' },
-        { 'question': 'Umano', 'answer': '\\agent', 'topic': 'operational' }
+        { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' }
       ]
 
       faqsArray.forEach(faq => {
