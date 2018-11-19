@@ -41,7 +41,7 @@ describe('Authorization', () => {
                         
             
                     chai.request(server)
-                        .get('/'+ savedProject._id + '/requests/' + savedRequest._id )
+                        .get('/'+ savedProject._id + '/requests/' + savedRequest.request_id )
                         .auth(email, pwd)
                         .end((err, res) => {
                             //console.log("res",  res);

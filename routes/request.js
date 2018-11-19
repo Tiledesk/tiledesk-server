@@ -106,7 +106,7 @@ router.patch('/:requestid', function (req, res) {
 
   // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
 
-  return Request.findByIdAndUpdate(req.params.requestid, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
+  return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
@@ -369,7 +369,7 @@ router.get('/:requestid', function (req, res) {
 
   console.log("get request by id ", req.params.requestid);
 
-  Request.findById(req.params.requestid, function (err, request) {
+  Request.findOne({"request_id":req.params.requestid}, function (err, request) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
