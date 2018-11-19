@@ -11,6 +11,7 @@ require('./config/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
+var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
 
 
@@ -94,9 +95,99 @@ var projectIdSetter = function (req, res, next) {
   next()
 }
 
+// function HasRole(role) {
+//   return function(req, res, next) {
+
+//     Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
+//     exec(function (err, project_user) {
+//       // if (err) return next(err);
+//       console.log("project_user",project_user);
+//       if (project_user &&  project_user.role== role) {
+//         next(); 
+//       }
+//       else {
+//         var err = new Error('You dont have required role');
+//         err.status = 403;
+//         next(err);
+//       }
+//     });
+
+   
+//   }
+// }
+var ROLES =  {
+  "agent": ["agent"],
+  "admin": ["agent", "admin"],
+  "owner": ["agent", "admin", "owner"],
+};
+
+
+function HasRole(role) {
+  // console.log("HasRole");
+  return function(req, res, next) {
+    console.log("req.projectuser", req.projectuser);
+    console.log("req.user", req.user);
+    console.log("role", role);
+
+    Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
+      exec(function (err, project_user) {
+        if (err) {
+          console.error(err);
+          return next(err);
+        }
+        
+        req.projectuser = project_user;
+        console.log("req.projectuser", req.projectuser);
+
+        if (req.projectuser && req.projectuser.length>0) {
+          
+          var userRole = project_user[0].role;
+          console.log("userRole", userRole);
+
+          if (!role) {
+            next();
+          }else {
+
+            var hierarchicalRoles = ROLES[userRole];
+            console.log("hierarchicalRoles", hierarchicalRoles);
+
+            if ( hierarchicalRoles.includes(role)) {
+              next();
+            }else {
+              res.status(403).send({success: false, msg: 'you dont have the required role.'});
+            }
+          }
+        }else {
+        
+          res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
+        }
+
+    });
+
+  }
+  
+}
+
+// var getProjectUser = function (req, res, next) {
+//   console.log("getProjectUser");
+//   Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
+//     exec(function (err, project_user) {
+//       if (err) {
+//         console.error(err);
+//         return next(err);
+//       }
+      
+//       req.projectuser = project_user;
+//       console.log("req.projectuser", req.projectuser);
+//       next();
+
+//   });
+// }
+
+
 var projectSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  console.log("projectSetter projectid", projectid);
+  //console.log("projectSetter projectid", projectid);
 
   if (projectid) {
     Project.findById(projectid, function(err, project){
@@ -106,11 +197,13 @@ var projectSetter = function (req, res, next) {
   
       if (!project) {
         console.warn("Project not found", req.projectid);
-      } 
-
-      req.project = project;
-      console.log("req.project", req.project);
-      next(); //call next one time for projectSetter function
+        next();
+      } else {
+        req.project = project;
+        console.log("req.project", req.project);
+        next(); //call next one time for projectSetter function
+      }
+    
     });
   
   }else {
@@ -131,8 +224,8 @@ app.use('/firebase/auth', firebaseAuth);
 
 
 
- app.use('/:projectid', [projectIdSetter]);
-//app.use('/:projectid', [projectIdSetter, projectSetter]);
+//  app.use('/:projectid', [projectIdSetter]);
+app.use('/:projectid', [projectIdSetter, projectSetter]);
 
 
 //app.use('/:projectid', [passport.authenticate('jwt', { session: false}), passport.authenticate('basic', { session: false }), validtoken]);
@@ -146,32 +239,54 @@ app.use('/firebase/auth', firebaseAuth);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 // app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], lead);
-app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], lead);
+app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], message);
 
 app.use('/:projectid/departments', department);
 app.use('/public/requests', publicRequest);
 
-// http://localhost:3000/chat21/requests
 app.use('/chat21/requests',  chat21Request);
 
 
 
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
-app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], bot);
-app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq);
+app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], bot);
+app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq_kb);
 app.use('/projects', project);
-// app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], project_user);
-app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], analytics);
-app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], key);
+app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], request);
+
+app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], group);
+app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], analytics);
+app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
 
 //app.use('/apps', tenant);
+// app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
+
+
+
+
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
 
 
 // function keepalive() {
@@ -200,22 +315,5 @@ app.use('/:projectid/firebase', firebase);
 // app.use(keepalive());
 
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
 
 module.exports = app;

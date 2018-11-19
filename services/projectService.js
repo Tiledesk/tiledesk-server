@@ -54,6 +54,8 @@ class ProjectService {
 
               return departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
                 console.info("Project created", savedProject );
+                // console.info("Project user created", savedProject_user );
+                // console.info("Department created", createdDepartment );
                 return resolve(savedProject);
               });
             });

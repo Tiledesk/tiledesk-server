@@ -365,4 +365,20 @@ router.get('/', function (req, res, next) {
 });
 
 
+router.get('/:requestid', function (req, res) {
+
+  console.log("get request by id ", req.params.requestid);
+
+  Request.findById(req.params.requestid, function (err, request) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    res.json(request);
+  });
+});
+
+
 module.exports = router;
