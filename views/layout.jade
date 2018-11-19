@@ -1,7 +1,60 @@
 doctype html
 html
   head
-    title= title
+    style(type="text/css").
+      body{
+        background-color: #eeeeee;
+      }
+      .transcript-container {
+        padding: 25px 25px 5px;
+      }
+      img{
+        width: 200px;
+      }
+      .transcript-wrapper{
+        background-color: #ffffff;
+        padding: 15px 15px 25px;
+        border: 1px solid #e1eef4;
+        border-radius: 5px;
+      }
+      .transcript-title {
+        font: 28px "Lucida Grande", Helvetica, Arial, sans-serif;
+        font-weight: bold;
+        color: #ee7467;
+        text-align: center;
+      }
+      .transcript-p {
+        font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+        background-color: #ffffff;
+        padding: 10px;
+        border-bottom: 1px solid #e1eef4;
+        margin-top:0;
+        margin-bottom:0px;
+        
+      }
+      .transcript-chat-date{
+        color:#657786;
+        padding-right: 15px;
+        font-size:13px;
+        }
+      .transcript-chat-sender{
+        color:#7695a5;
+        font-weight: 600;
+      }
+      .transcript-chat-msg{
+        color:#7695a5;
+        font-weight: 400;
+      }
+      .transcript-powered-by{
+        font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;
+        color:#7695a5;
+        font-weight: 600;
+        text-align: right;
+      }
+      a{
+        color:#00B7FF
+      }
+    title= "tiledesk chat transcript"
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     block content
