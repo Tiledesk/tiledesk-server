@@ -70,7 +70,7 @@ getOperators(departmentid, projectid, nobot) {
         // console.log('OPERATORS - »»» DEPARTMENT - ID BOT ', department.id_bot)
 
         // start code FOR DEBUG
-        // NOTE: TO TEST '?nobot = true' see in the tiledesk dashboard: mongodb-department.service > testChat21AssignesFunction
+        // NOTE: TO TEST '?nobot = true' see in the tiledesk dashboard: mongodb-department.service > testAssignesFunction
         if (nobot) {
           // console.log('nobot IS == true ? ', nobot)
           // console.log('»»»» »»»» nobot is == TRUE - JUMP TO ASSIGNED / POOLED ')

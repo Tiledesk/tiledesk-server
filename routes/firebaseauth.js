@@ -10,7 +10,7 @@ var User = require("../models/user");
 var firebaseService = require("../services/firebaseService");
 
 
-
+//TODO NON DOVRESTI PASSARE NUOVAMENTE EMAIL E PASSWORD MA METTERE SOTTO JWT E BASIC, LASCI A QUESTI ULTIMI AUTENTICAZIONE
 router.post('/signin', function (req, res) {
     User.findOne({
       email: req.body.email

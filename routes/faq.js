@@ -176,7 +176,8 @@ function createRemoteFaq(faqkb_remotekey, savedFaq) {
 // END NEW
 
 // SEARCH REMOTE FAQ 
-router.post('/:askbot', function (req, res) {
+//TODO RIFATTORIZZA IN MODALITA' REST CHIEDI LEO
+router.post('/askbot', function (req, res) {
 
   console.log('ASK BOT ', req.body);
 
