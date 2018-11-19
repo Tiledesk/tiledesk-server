@@ -26,15 +26,15 @@ class LeadService {
  
 
 
-  createIfNotExists(fullname, email, id_project, createdBy) {
+  createIfNotExists(fullname, email, id_project, createdBy, attributes) {
     var that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
           if (err) {
-            return resolve(that.create(fullname, email, id_project, createdBy));
+            return resolve(that.create(fullname, email, id_project, createdBy, attributes));
           }
           if (!lead) {
-            return resolve(that.create(fullname, email, id_project, createdBy));
+            return resolve(that.create(fullname, email, id_project, createdBy, attributes));
           }
           return resolve(lead);
       
@@ -43,22 +43,22 @@ class LeadService {
   }
 
   
-  create(fullname, email, id_project, createdBy) {
-    return this.createWitId(null, fullname, email, id_project, createdBy);
+  create(fullname, email, id_project, createdBy, attributes) {
+    return this.createWitId(null, fullname, email, id_project, createdBy, attributes);
   }
 
 
 
-  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy) {
+  createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
     var that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({lead_id: lead_id, id_project: id_project}, function(err, lead)  {
           if (err) {
             console.error("Error createIfNotExistsWithLeadId", err);
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes));
           }
           if (!lead) {
-            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy));
+            return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes));
           }
           console.error("lead already exists createIfNotExistsWithLeadId");
           return resolve(lead);
@@ -68,7 +68,7 @@ class LeadService {
   }
 
   
-  createWitId(lead_id, fullname, email, id_project, createdBy) {
+  createWitId(lead_id, fullname, email, id_project, createdBy, attributes) {
 
     if (!createdBy) {
       createdBy = "system";
@@ -85,6 +85,7 @@ class LeadService {
         lead_id: lead_id,
         fullname: fullname,
         email: email,
+        attributes: attributes,
         id_project: id_project,
         createdBy: createdBy,
         updatedBy: createdBy

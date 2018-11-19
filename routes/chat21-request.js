@@ -13,116 +13,38 @@ var Schema = mongoose.Schema,
 
 var admin = require('../utils/firebaseConnector');
 
- const firestore = admin.firestore();
+const firestore = admin.firestore();
+
+// var jwt = require('jsonwebtoken');
+// var validtoken = require('../middleware/valid-token');
+// var config = require('../config/database'); 
+// var secret = process.env.SECRET || config.secret;
+
+
+// var Chat21 = require('@chat21/chat21-node-sdk');
+// var firebaseConfig = require('../config/firebase');
+// var chat21Config = require('../config/chat21');
+// var firebaseService = require("../services/firebaseService");
+
+// var chat21 = new Chat21({
+//   url: chat21Config.url,
+//   appid: chat21Config.appid,
+//   // url: process.env.CHAT21_URL,
+//   // appid: process.env.CHAT21_APPID,
+//   oauth: true,
+//   firebase_apikey:  'AIzaSyDWMsqHBKmWVT7mWiSqBfRpS5U8YwTl7H0',
+//   // firebase_apikey:  process.env.FIREBASE_APIKEY,
+//   firebase_database: firebaseConfig.databaseURL
+// });
 
 
 router.post('/', function(req, res) {
 
-  //console.log("chat21-request req.body", req.body);
-
-
-
-
-  // console.log("req.projectid", req.projectid);
-  // console.log("req.user.id", req.user.id);
-
-
-  // if (req.body.event_type == "first-message") {
-
-  //   console.log("event_type","first-message");
-
-
-  //   var message = req.body.data;
-
-    
-  //   console.log("chat21 message", message);
-
-  //   var departmentid = "default";
-
-  //   var language = message.language;
-  //   console.log("chat21 language", language);
-
-  //   var sourcePage;
-  //   var client;
-  //   var userEmail;
-  //   var userFullname;
-  //   var projectid;
-
-
-  //   if (message.attributes) {
-
-  //     projectid = message.attributes.projectId;
-  //     console.log("chat21 projectid", projectid);
-
-  //     departmentid = message.attributes.departmentId;
-  //     console.log("chat21 departmentid", departmentid);
-
-  //     sourcePage = message.attributes.sourcePage;
-  //     console.log("chat21 sourcePage", sourcePage);
-      
-  //     client = message.attributes.client;
-  //     console.log("chat21 client", client);
-  
-     
-
-  //     userEmail = message.attributes.userEmail;
-  //     console.log("chat21 userEmail", userEmail);
-
-  //     userFullname = message.attributes.userFullname;
-  //     console.log("chat21 userFullname", userFullname);
-  //   }
-    
-
-     
-
-  //   if (!projectid) {
-  //     console.log("projectid is null. Not a support message");
-  //     return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-  //   }
-  //   if (!message.recipient.startsWith("support-group")) {
-  //     console.log("recipient not starts wiht support-group. Not a support message");
-  //     return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
-  //   }
-
-   
-
-  //   if (userEmail) {
-
-  //     console.log("userEmail is defined");
-  //                       // ccreateIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-  //       return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid).then(function(createdLead) {
-  //           // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-  //             return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
-  //               return res.json(result);
-  //             }).catch(function (err) {
-  //               console.log( 'Error creating the request object.', err);
-  //               return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-  //             });
-  //       });
-          
-
-  //   }else {
-
-  //                       // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-  //         return requestService.createWithId(message.recipient, message.sender, projectid, message.text, departmentid, sourcePage, language, client).then(function (result) {
-  //           return res.json(result);
-  //         }).catch(function (err) {
-  //           console.log("err", err);
-
-  //           return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-  //         });
-
-  //   }
-
 
    
 
 
 
-
-
-  // } 
-  // else 
   if (req.body.event_type == "new-message") {
     //with projectid
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"987654321"}}' http://localhost:3000/chat21/requests
@@ -202,10 +124,13 @@ router.post('/', function(req, res) {
                 if (!userFullname) {
                   userFullname = message.sender_fullname;
                 }
+
+                var leadAttributes = message.attributes;
+                leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
               
                   // console.log("userEmail is defined");
                                     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-                  return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid)
+                  return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
                   .then(function(createdLead) {
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
                       return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
@@ -214,6 +139,42 @@ router.post('/', function(req, res) {
                           projectid).then(function(savedMessage){
                                       // console.log("savedMessageXXX ");
                                       //get projectid from savedMessage.id_project
+
+                                  //  if (message.attributes && message.attributes.jwt_token) {
+                                  //       try {
+                                           
+                                  //           console.log("message.attributes.jwt_token", message.attributes.jwt_token);
+                                  //           // verify a token symmetric - synchronous
+                                  //           var decoded = jwt.verify(message.attributes.jwt_token, secret);
+                                  //           console.log("decoded", decoded);
+                                                                                                              
+                                    
+                                  //       } catch(err) {
+                                  //           console.error("error decoding jwt token", err);
+
+                                  //           return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
+                                  //             console.log("customAuthToken", customAuthToken);
+                                  //                 // console.log("chat21", chat21);
+                                  //                 // console.log(" admin.auth()", JSON.stringify(admin.auth()));
+                                  //                 // console.log(" admin", admin.auth());
+                                                  
+                                  //               return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
+                                  //                   chat21.auth.setCurrentToken(idToken);
+                                  //                   console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+                                  //                   return chat21.messages.send('Sender Node SDK', '5aaa99024c3b110014b478f0', 'Andrea Leo', 'hello from Node SDK');
+                                  //                 });
+                                  //             }).catch(function(err) {
+                                  //               return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
+                                  //             });
+
+
+                                            
+                                  //       }  
+                              
+
+                                  
+                                  //  }
+
                             return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
                               return res.json(savedRequestWithIncrement);
                             });
@@ -376,6 +337,9 @@ router.post('/', function(req, res) {
                       // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
                       return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
+                        // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
+                        //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
+                        // }
                         console.log('updatedStatusRequest', updatedStatusRequest);
                         return res.json(updatedStatusRequest);
                       });

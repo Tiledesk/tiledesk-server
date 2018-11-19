@@ -72,6 +72,7 @@ describe('Chat21Requests', () => {
                         Lead.findById(res.body.requester_id, function (err, lead){
                             expect(lead.fullname).to.equal("sender_fullname");   
                             assert(lead.email == null)
+                            
                             done();
                         });
 
@@ -90,9 +91,35 @@ describe('Chat21Requests', () => {
             projectService.create("test-new-message", userid).then(function(savedProject) {
   
               var request_id = "support-group-"+savedProject._id;
-              let webhookContent = {"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
-              "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
-              "attributes": {"projectId":savedProject._id, "userEmail": "user@email.com", "userFullname": "userFullname"} }
+              let webhookContent = {"event_type": "new-message", 
+                "data":{
+                    "sender":"sender", "sender_fullname": "sender_fullname", 
+                    "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
+                    "attributes": {"projectId":savedProject._id, "userEmail": "user@email.com", "userFullname": "userFullname"},
+                    
+                    "senderAuthInfo":
+                            {
+                                "authType" : "USER",
+                                "authVar" : {
+                                "token" : {
+                                    "aud" : "chat-v2-dev",
+                                    "auth_time" : 1542282861,
+                                    "exp" : 1542389465,
+                                    "firebase" : {
+                                    "sign_in_provider" : "anonymous"
+                                    },
+                                    "iat" : 1542385865,
+                                    "iss" : "https://securetoken.google.com/chat-v2-dev",
+                                    "provider_id" : "anonymous",
+                                    "sub" : "yfSkr0RLgsRIVGNoHnJT8y4wIRj1",
+                                    "user_id" : "yfSkr0RLgsRIVGNoHnJT8y4wIRj1"
+                                },
+                                "uid" : "yfSkr0RLgsRIVGNoHnJT8y4wIRj1"
+                                }
+                            }
+                      
+
+                    }
                  };
   
               chai.request(server)
@@ -114,8 +141,13 @@ describe('Chat21Requests', () => {
                         expect(message.sender).to.equal("sender");    
                         expect(message.recipient).to.equal(request_id);     
                         Lead.findById(res.body.requester_id, function (err, lead){
+                            console.log("lead.attributes", JSON.stringify(lead.attributes));
                             expect(lead.fullname).to.equal("userFullname");   
                             expect(lead.email).to.equal("user@email.com");   
+                            expect(lead.attributes.projectId).to.equal(savedProject._id.toString());   
+                            expect(lead.attributes.userEmail).to.equal("user@email.com");   
+                            expect(lead.attributes.senderAuthInfo.authVar.token.provider_id).to.equal("anonymous");   
+                            
                             done();
                         });
                      });
@@ -177,6 +209,53 @@ describe('Chat21Requests', () => {
     
 
 
+
+
+          it('new-messageWithEmailAndFullnameAndRequestAlreadyExistsAndNOProjectID', (done) => {
+
+            projectService.create("test-new-message", userid).then(function(savedProject) {
+                var request_id = "support-group-"+savedProject._id;
+
+                leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+                        // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+                        requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                            
+                            let webhookContent = {"event_type": "new-message", 
+                                "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text"}
+                                };
+                
+                            chai.request(server)
+                                .post('/chat21/requests')
+                                .send(webhookContent)
+                                .end((err, res) => {
+                                    console.log("res.body",  res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    res.body.should.have.property('request_id').eql(request_id);
+                                    res.body.should.have.property('requester_id').eql(createdLead._id.toString());
+                                    expect(res.body.id_project).to.equal(savedProject._id.toString());
+                                    expect(res.body.participants).to.have.lengthOf(1);       
+                                    expect(res.body.messages_count).to.equal(1);     
+                                    // expect(request.waiting_time).to.not.equal(null);
+                                    // expect(request.waiting_time).to.gt(0);
+                                    Message.findOne({recipient : request_id, id_project: savedProject._id}, function(err, message){
+
+                                        expect(message.sender).to.equal("sender");    
+                                        expect(message.recipient).to.equal(request_id);     
+                                        Lead.findById(res.body.requester_id, function (err, lead){
+                                            expect(lead.fullname).to.equal("leadfullname");   
+                                            expect(lead.email).to.equal("email@email.com");   
+                                            done();
+                                        });
+                                    });
+                
+                                    
+                                });
+
+                                });
+                    });
+            });
+          });
 
 
 

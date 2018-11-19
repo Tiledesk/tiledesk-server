@@ -6,9 +6,9 @@ var emailService = require("../models/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
 var Message = require("../models/message");
-var mongoose = require('mongoose');
+// var mongoose = require('mongoose');
 var messageService = require('../services/messageService');
-var leadService = require('../services/leadService');
+// var leadService = require('../services/leadService');
 var Lead = require('../models/lead');
 
 
@@ -47,6 +47,69 @@ class RequestService {
   //       });
   //  });
 
+  // }
+  // upsertWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+  //   var that = this;
+
+  //   return Request.findOne({request_id: request_id}, function(err, request) {
+  //     // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
+
+  //     if (err) {
+  //       return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
+  //     }
+  //     if (!request) { //the request doen't exists create it
+
+  //               console.log("request not exists", request);
+                                                       
+  //                                   // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
+  //                 return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid)
+  //                 .then(function(createdLead) {
+  //                   // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
+  //                     return that.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
+  //                       // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+  //                       return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+  //                         projectid).then(function(savedMessage){
+                                    
+
+  //                           return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+  //                             return res.json(savedRequestWithIncrement);
+  //                           });
+                          
+                        
+  //                     }).catch(function (err) {
+  //                       console.log( 'Error creating the request object.', err);
+  //                       return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
+  //                     });
+  //                 });
+  //               });
+                  
+            
+              
+
+
+  //         }else {
+  //                        // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
+  //                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+  //                           request.id_project).then(function(savedMessage){
+  //                             return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
+  //                               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                                 
+  //                               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
+  //                                 console.log("updateWaitingTimeByRequestId");
+  //                                 return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
+  //                                   return res.json(upRequest);
+  //                                 });
+  //                               }else {
+  //                                 return res.json(savedRequest);
+  //                               }
+  //                             });
+  //                           }).catch(function(err){
+  //                             console.error("Error creating message", err);
+  //                             return res.status(500).send({success: false, msg: 'Error creating message', err:err });
+  //                           });
+  //         }
+
+  //   });
   // }
 
   create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
@@ -339,6 +402,16 @@ class RequestService {
 
   }
 
+  findByRequestId(request_id, id_project) {
+    return new Promise(function (resolve, reject) {
+      return Request.findOne({request_id: request_id, id_project: id_project},  function(err, request) {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(request);
+      });
+    });
+  }
 
   setParticipantsByRequestId(request_id, id_project, participants) {
     return new Promise(function (resolve, reject) {

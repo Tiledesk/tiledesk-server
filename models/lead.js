@@ -16,7 +16,9 @@ var LeadSchema = new Schema({
     type: String,
     required: false
   },
-
+  attributes: {
+    type: Object,
+  },
   id_project: {
     type: String,
     required: true
