@@ -2,12 +2,12 @@ var admin = require('../utils/firebaseConnector');
 
 class FirebaseService {
 
-    createCustomToken(uid) {
+    createCustomToken(uid, customAttributes) {
 
-        return new Promise(function (resolve, reject) {
-          
+        return new Promise(function (resolve, reject) {          
+            console.log("createCustomToken for uid", uid, " and customAttributes : ",customAttributes);
               // STEP 3: Generate Firebase Custom Auth Token
-              const tokenPromise = admin.auth().createCustomToken(uid);
+              const tokenPromise = admin.auth().createCustomToken(uid, customAttributes);
             //   const tokenPromise = admin.auth().createCustomToken(uid,otherParameters);
               return tokenPromise.then(token => {
                 // console.log('Created Custom token for UID "', uid, '" Token:', token);
