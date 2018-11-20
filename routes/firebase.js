@@ -61,7 +61,7 @@ router.post('/createtoken', validtoken, function (req, res) {
                 var firebaseuid = req.projectid + '_' + extuid;
                 console.log("firebaseuid", firebaseuid);
 
-                firebaseService.createCustomToken(firebaseuid, decoded).then(customAuthToken => {
+                firebaseService.createCustomToken(firebaseuid, {decoded: decoded}).then(customAuthToken => {
                 
 
                     return res.json({firebaseToken: customAuthToken});   
