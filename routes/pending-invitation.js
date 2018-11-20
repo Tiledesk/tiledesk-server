@@ -73,12 +73,19 @@ router.get('/:pendinginvitationid', [passport.authenticate(['basic', 'jwt'], { s
 
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
-  PendingInvitation.find(function (err, next, pendinginvitations) {
+  console.log("GET PENDING INVITATION - req projectid", req.projectid);
+ 
+  PendingInvitation.find({ "id_project": req.projectid }, function (err, pendinginvitation) {
     if (err) {
-      return next(err);
+      console.log('GET PENDING INVITATION ERROR ', err);
+      return (err);
     }
-
-    res.json(pendinginvitations);
+    if (!pendinginvitation) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    console.log('GET PENDING INVITATION ', pendinginvitation);
+    
+    res.json(pendinginvitation);
   });
 });
 
