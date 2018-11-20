@@ -193,11 +193,12 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     Project.findById(projectid, function(err, project){
       if (err) {
-        console.error(err);
+        console.warn("Problem getting project with id",projectid);
+        //console.warn("Error getting project with id",projectid, err);
       }
   
       if (!project) {
-        console.warn("Project not found", req.projectid);
+        console.warn("Project not found for id", req.projectid);
         next();
       } else {
         req.project = project;
