@@ -259,9 +259,15 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 // app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq_kb);
 
 
-app.use('/projects', project);
+//ATTENZIOne aggiungi auth check qui.i controlli stanno i project
+app.use('/projects',project);
 
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
+
+// non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
+app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], project_user);
+// app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
+
+
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], group);
