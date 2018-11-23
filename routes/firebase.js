@@ -61,7 +61,13 @@ router.post('/createtoken', validtoken, function (req, res) {
                 var firebaseuid = req.projectid + '_' + extuid;
                 console.log("firebaseuid", firebaseuid);
 
-                firebaseService.createCustomToken(firebaseuid, {decoded: decoded}).then(customAuthToken => {
+                //evict JWT conflict *******If a reserved OIDC claim name is used (sub, iat, iss, etc), an error is thrown.******
+                //https://firebase.google.com/docs/reference/admin/node/admin.auth.Auth#setCustomUserClaims
+                // Sets additional developer claims on an existing user identified by the provided uid, typically used to define user roles and levels of access. These claims should propagate to all devices where the user is already signed in (after token expiration or when token refresh is forced) and the next time the user signs in. 
+                // *******If a reserved OIDC claim name is used (sub, iat, iss, etc), an error is thrown.****** They are set on the authenticated user's ID token JWT.
+                var customAttr =  {decoded: decoded};
+                //
+                firebaseService.createCustomTokenWithAttribute(firebaseuid,customAttr).then(customAuthToken => {
                 
 
                     return res.json({firebaseToken: customAuthToken});   
