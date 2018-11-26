@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 
 class UserService {
 
-    signup (email, password, firstname, lastname, emailverified) {
+    signup(email, password, firstname, lastname, emailverified) {
         return new Promise(function (resolve, reject) {
             var newUser = new User({
                 _id: new mongoose.Types.ObjectId(),
@@ -12,17 +12,18 @@ class UserService {
                 firstname: firstname,
                 lastname: lastname,
                 emailverified: emailverified
-              });
-              // save the user
-              newUser.save(function (err, savedUser) {
+            });
+            // save the user
+            newUser.save(function (err, savedUser) {
                 if (err) {
+                    console.log('USER SERVICE SIGNUP ERROR ', err)
                     return reject(err);
                 }
 
                 console.log('User created', savedUser);
                 return resolve(savedUser);
             });
-          
+
         });
     }
 
