@@ -7,6 +7,8 @@ var multer = require('multer')
 var upload = multer()
 
 var parsecsv = require("fast-csv");
+csv = require('csv-express');
+csv.separator = ';';
 
 // POST CSV FILE UPLOAD FROM CLIENT
 router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next) {
@@ -419,6 +421,30 @@ router.delete('/:faqid', function (req, res) {
 //   });
 // }
 
+// EXPORT FAQ TO CSV
+router.get('/csv', function (req, res) {
+  var query = {};
+
+  console.log('req.query', req.query);
+
+  if (req.query.id_faq_kb) {
+    query.id_faq_kb = req.query.id_faq_kb;
+  }
+
+  console.log('EXPORT FAQS TO CSV QUERY', query);
+
+  Faq.find(query, '-__v').lean().exec(function (err, faq) {
+    if (err) {
+      console.log('EXPORT FAQS TO CSV ERR', err)
+      return (err)
+    };
+    console.log('EXPORT FAQ TO CSV FAQS', faq)
+    res.csv(faq, true)
+    // res.json(faq);
+  });
+
+});
+
 
 router.get('/:faqid', function (req, res) {
 
@@ -454,5 +480,8 @@ router.get('/', function (req, res) {
   });
 
 });
+
+
+
 
 module.exports = router;
