@@ -229,6 +229,8 @@ router.post('/signup', function (req, res) {
 
         return res.json({ success: true, msg: 'Successfully created new user.' });
         // savePerson(req, res, savedUser.id)
+      }).catch(function (err) {
+        return res.send(err);
       });
   }
 });
