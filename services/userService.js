@@ -2,11 +2,12 @@ var User = require("../models/user");
 var mongoose = require('mongoose');
 
 class UserService {
-
-    signup (email, password, firstname, lastname, emailverified) {
+//TODO providerId cambia tutte classi di test perche è stato aggiunto providerId,
+    signup ( email, password, firstname, lastname, emailverified) {
         return new Promise(function (resolve, reject) {
             var newUser = new User({
                 _id: new mongoose.Types.ObjectId(),
+               // providerId: providerId,
                 email: email,
                 password: password,
                 firstname: firstname,
