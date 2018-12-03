@@ -549,18 +549,22 @@ router.get('/', function (req, res) {
 
 
   if (req.query.sort) {
-      Department.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, departments) { 
-        if (err) return next(err);
+      return Department.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, departments) { 
+        if (err) {
+          console.error('Error getting the departments.', err);
+          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+        }
     
-    
-        res.json(departments);
+        return res.json(departments);
       });
   }else {
-      Department.find({ "id_project": req.projectid }, function (err, departments) {
-        if (err) return next(err);
+      return Department.find({ "id_project": req.projectid }, function (err, departments) {
+        if (err) {
+          console.error('Error getting the departments.', err);
+          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+        }
     
-    
-        res.json(departments);
+        return res.json(departments);
       });
   }
  
