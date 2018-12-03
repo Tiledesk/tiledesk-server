@@ -13,6 +13,9 @@ Step to run locally:
 
         Install nodemon with 'npm install -g nodemon'
 
+# Commit to GitHub with tags:
+Run the command : 'git push origin --tags'
+
 # Deploy on Heroku
 
 To see the log run : 'heroku logs  -n 2000 --tail -a chat21-api-nodejs'
