@@ -42,11 +42,42 @@ router.post('/createtoken', validtoken, function (req, res) {
 
             try {
                 var token = requestUtil.getToken(req.headers);
+
+              
+
+
                 console.log("token", token);
+
+                console.log("project.jwtSecret",  project.jwtSecret);
+               
                 // verify a token symmetric - synchronous
                 var decoded = jwt.verify(token, project.jwtSecret);
                 console.log("decoded", decoded);
         
+                if(!decoded.iat ) {                  
+                    console.log("token.iat is required");
+                    return res.status(401).send({ success: false, msg: 'Authentication failed. Token iat is required' });
+                }
+                if(!decoded.exp ) {                  
+                    console.log("token.exp is required");
+                    return res.status(401).send({ success: false, msg: 'Authentication failed. Token exp is required' });
+                }
+                if(decoded.exp - decoded.iat  > 600  ) {                  
+                    console.log("The value of exp is permitted to be up to a maximum of 10 minutes from the iat value");
+                    return res.status(401).send({ success: false, msg: 'Authentication failed. The value of exp is permitted to be up to a maximum of 10 minutes from the iat value'});
+                }
+
+
+               
+
+                // //iat is in second
+                // if(decoded.iat  && decoded.iat + 300 > new Date()) {                  
+                //     console.log("token.exp is null and token.iat +300 is expired");
+                //     return res.status(401).send({ success: false, msg: 'Authentication failed. Token expired', err: err });
+                // }
+
+                
+
                 // var email = decoded.email;
                 var extuid = decoded.external_id;
                 console.log("extuid", extuid);
@@ -90,35 +121,5 @@ router.post('/createtoken', validtoken, function (req, res) {
 
   });
 
-// router.post('/createtoken', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-//     console.log("req.user.id", req.user.id);
-//     User.findById(req.user.id, 'email firstname lastname  id', function (err, user) {
-//         console.log("err", err);
-//       if (err) throw err;
-  
-//       if (!user) {
-//         res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
-//       } else {
-
-
-                  
-//                 var uid = user.id;
-//                 console.log("uid",uid);
-
-//                 firebaseService.createCustomToken(uid).then(customAuthToken => {
-                
-       
-//                     return res.status(200).send(customAuthToken);   
-//                 })
-//                 .catch(err => {
-//                     const ret = {
-//                         error_message: 'Authentication error: Cannot verify access token.'
-//                     };
-//                         return res.status(403).send(ret);
-//                 });
-          
-//       }
-//     });
-//   });
   
   module.exports = router;

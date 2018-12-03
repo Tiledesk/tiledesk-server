@@ -38,30 +38,77 @@ router.post('/decode', validtoken, function (req, res) {
 
       if (!project.jwtSecret) {
         return res.status(404).send({ success: false, msg: 'Project hasnt  a jwtSecret' });
-    }
+      }
 
 
         try {
           console.log("requestUtil", requestUtil);
             var token = requestUtil.getToken(req.headers);
+
+
             console.log("token", token);
             // verify a token symmetric - synchronous
-            // var decoded = jwt.verify(token, secret);
             var decoded = jwt.verify(token, project.jwtSecret);
             
             console.log("decoded", decoded);
       
+
+            if(!decoded.iat ) {                  
+                console.log("token.iat is required");
+                return res.status(401).send({ success: false, msg: 'Authentication failed. Token iat is required'});
+            }
+            if(!decoded.exp ) {                  
+                console.log("token.exp is required");
+                return res.status(401).send({ success: false, msg: 'Authentication failed. Token exp is required'});
+            }
+            if(decoded.exp - decoded.iat  > 600  ) {                  
+                console.log("The value of exp is permitted to be up to a maximum of 10 minutes from the iat value");
+                return res.status(401).send({ success: false, msg: 'Authentication failed. The value of exp is permitted to be up to a maximum of 10 minutes from the iat value'});
+            }
+
+
             return res.json({decoded: decoded});
           
     
         } catch(err) {
-            console.error("myerror", err);
+            console.error("Authentication failed", err);
             return res.status(401).send({ success: false, msg: 'Authentication failed', err: err });
         }  
 
     });
     
+  
+  });
 
+  router.post('/generatetestjwt', validtoken, function (req, res) {
+    
+    console.log("req.body", req.body);
+
+    return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
+        if (err) {
+          console.error('Error finding project', err);
+          return res.status(500).send({ success: false, msg: 'Error finding project.' });
+       }
+      
+        console.log('project', project);
+  
+        if (!project) {
+            return res.status(404).send({ success: false, msg: 'Project not found' });
+        }
+  
+        if (!project.jwtSecret) {
+          return res.status(404).send({ success: false, msg: 'Project hasnt  a jwtSecret' });
+        }
+
+        var token = jwt.sign(req.body, project.jwtSecret,{ expiresIn: 300 });
+        // var token = jwt.sign(req.body, project.jwtSecret);
+
+
+     
+        res.json({ success: true, token: 'JWT ' + token });
+    });
 
   });
+
+
   module.exports = router;
