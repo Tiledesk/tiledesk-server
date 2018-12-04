@@ -18,6 +18,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     routing: req.body.routing,
     name: req.body.name,
     default: req.body.default,
+    status: req.body.status,
     id_group: req.body.id_group,
     id_project: req.projectid,
     createdBy: req.user.id,
@@ -502,6 +503,35 @@ router.get('/mydepartments', function (req, res) {
 
 // ======================== ./END - GET MY DEPTS ========================
 
+// GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
+router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+
+  console.log("req projectid", req.projectid);
+  console.log("req.query.sort", req.query.sort);
+
+
+  if (req.query.sort) {
+    return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+      if (err) {
+        console.error('Error getting the departments.', err);
+        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+      }
+
+      return res.json(departments);
+    });
+  } else {
+    return Department.find({ "id_project": req.projectid }, function (err, departments) {
+      if (err) {
+        console.error('Error getting the departments.', err);
+        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+      }
+
+      return res.json(departments);
+    });
+  }
+});
+
+
 router.get('/:departmentid', function (req, res) {
   console.log(req.body);
 
@@ -542,6 +572,9 @@ router.get('/:departmentid', function (req, res) {
 });
 
 // router.get('/', passport.authenticate(['anonymous'], { session: false }), function (req, res) {
+
+// GET DEPTS FILTERED FOR STATUS === 1 and WITHOUT AUTHENTICATION (USED BY THE WIDGET)
+// note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
   console.log("req projectid", req.projectid);
@@ -549,28 +582,26 @@ router.get('/', function (req, res) {
 
 
   if (req.query.sort) {
-      return Department.find({ "id_project": req.projectid }).sort({updatedAt: 'desc'}).exec(function(err, departments) { 
-        if (err) {
-          console.error('Error getting the departments.', err);
-          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
-        }
-    
-        return res.json(departments);
-      });
-  }else {
-      return Department.find({ "id_project": req.projectid }, function (err, departments) {
-        if (err) {
-          console.error('Error getting the departments.', err);
-          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
-        }
-    
-        return res.json(departments);
-      });
+    return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+      if (err) {
+        console.error('Error getting the departments.', err);
+        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+      }
+
+      return res.json(departments);
+    });
+  } else {
+    return Department.find({ "id_project": req.projectid, "status": 1 }, function (err, departments) {
+      if (err) {
+        console.error('Error getting the departments.', err);
+        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+      }
+
+      return res.json(departments);
+    });
   }
- 
-
-  
-
 });
+
+
 
 module.exports = router;
