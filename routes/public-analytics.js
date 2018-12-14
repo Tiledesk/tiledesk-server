@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 
 
 
-  router.get('/analytics/waiting/day/last', function(req, res) {
+  router.get('/waiting/day/last', function(req, res) {
   
     console.log(req.params);
     console.log("req.projectid",  req.projectid);    
