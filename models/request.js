@@ -58,7 +58,8 @@ var RequestSchema = new Schema({
     type: String
   },
 
-  // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served. Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
+  // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served.
+  // Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
   waiting_time: {
     type: Number
   },

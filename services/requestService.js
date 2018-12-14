@@ -293,14 +293,20 @@ class RequestService {
           console.error(err);
           return reject(err);
         }
-        var waitingTime = Date.now() - request.createdAt;
-        // console.log("waitingTime", waitingTime);
-
-       
-        request.waiting_time = waitingTime;
-          // console.log(" request",  request);
-        console.log("Request  waitingTime setted");
-        return resolve(request.save());
+        //update waiting_time only the first time
+        if (!request.waiting_time) {
+          var waitingTime = Date.now() - request.createdAt;
+          // console.log("waitingTime", waitingTime);
+  
+         
+          request.waiting_time = waitingTime;
+            // console.log(" request",  request);
+          console.log("Request  waitingTime setted");
+          return resolve(request.save());
+        }else {
+          return resolve(request);
+        }
+        
       });
 
     });

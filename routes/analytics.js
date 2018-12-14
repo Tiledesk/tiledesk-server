@@ -155,7 +155,8 @@ router.get('/requests/count', function(req, res) {
 
 
 
-  
+
+
   // db.requests.aggregate([
   //   { $match: {"id_project":"5ad5bd52c975820014ba900a"} },
   //     { $group: { _id: "$id_project", 
@@ -211,6 +212,36 @@ router.get('/requests/count', function(req, res) {
   //     { "$sort": {"_id":-1}},  
   //   ])
     
+
+  router.get('/requests/waiting/day/last', function(req, res) {
+  
+    console.log(req.params);
+    console.log("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        //{ "$match": {"id_project":req.projectid }},
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (1 * 24 * 60 * 60 * 1000))) }} },
+        { "$group": { 
+          "_id": "$id_project", 
+         "waiting_time_avg":{"$avg": "$waiting_time"}
+        }
+      },
+      
+    ])
+      .exec(function(err, result) {
+
+          if (err) {
+            console.log(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          console.log(result);
+
+          res.json(result);
+    });
+
+  });
+
 
   router.get('/requests/waiting/month', function(req, res) {
   
