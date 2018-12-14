@@ -188,9 +188,11 @@ describe('RequestService()', function () {
                 savedProject._id, messageSender)]).then(function(all) {
                   requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
                         console.log("resolve closedRequest", upRequest);
+                        var maxWaitingTime  = Date.now() - upRequest.createdAt;
                         expect(upRequest.status).to.equal(200);
                         expect(upRequest.waiting_time).to.not.equal(null);
                         expect(upRequest.waiting_time).to.gte(500);
+                        expect(upRequest.waiting_time).to.lte(maxWaitingTime);
                       
                         done();                         
                       }).catch(function(err){
