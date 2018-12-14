@@ -41,6 +41,11 @@ var DepartmentSchema = new Schema({
     default:false
     // required: true
   },
+  status: {
+    type: Number,
+    default: 1
+    // required: true
+  },
   createdBy: {
     type: String,
     required: true
