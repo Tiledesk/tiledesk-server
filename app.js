@@ -47,6 +47,7 @@ var group = require('./routes/group');
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
 var analytics = require('./routes/analytics');
+var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
 
 var chat21Request = require('./routes/chat21-request');
@@ -272,6 +273,8 @@ app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { sessi
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], group);
 app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], analytics);
+app.use('/:projectid/publicanalytics', publicAnalytics);
+
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
