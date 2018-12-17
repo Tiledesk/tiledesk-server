@@ -5,17 +5,16 @@ var mongoose = require('mongoose');
 
 
 
-  router.get('/waiting/day/last', function(req, res) {
+  router.get('/waiting/current', function(req, res) {
   
     console.log(req.params);
     console.log("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
-        //{ "$match": {"id_project":req.projectid }},
-        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (1 * 24 * 60 * 60 * 1000))) }} },
+        //last 4 hours
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
         { "$group": { 
-          "_id": "$id_project", 
          "waiting_time_avg":{"$avg": "$waiting_time"}
         }
       },
