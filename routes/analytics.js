@@ -122,13 +122,15 @@ router.get('/requests/count', function(req, res) {
     console.log(req.params);
     console.log("req.projectid",  req.projectid);    
    
-      
+    let timezone = req.query.timezone || "+00:00";
+    console.log("timezone", timezone);
+
     AnalyticResult.aggregate([
         // { "$match": {"id_project": req.projectid } },
         // { "$match": {} },
         { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
         { "$project":{
-          "hour":{"$hour":"$createdAt"}
+          "hour":{"$hour": {date: "$createdAt", timezone: timezone} } 
         }}, 
         // // Group by year, month and day and get the count
         { "$group":{
@@ -172,16 +174,18 @@ router.get('/requests/count', function(req, res) {
 // ])
   router.get('/requests/aggregate/dayoftheweek/hours', function(req, res) {  
     console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
-   
-      
+    console.log("req.projectid",  req.projectid);  
+
+    let timezone = req.query.timezone || "+00:00";
+    console.log("timezone", timezone);
+
     AnalyticResult.aggregate([
         // { "$match": {"id_project": req.projectid } },
         // { "$match": {} },
         { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
         { "$project":{
-            "hour":{"$hour":"$createdAt"},
-            "weekday":{"$dayoftheweek":"$createdAt"}
+            "hour":{"$hour":{date: "$createdAt", timezone: timezone} },
+            "weekday":{"$dayOfWeek":"$createdAt"}
           }}, 
           // // Group by year, month and day and get the count
           { "$group":{
