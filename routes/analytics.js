@@ -154,6 +154,58 @@ router.get('/requests/count', function(req, res) {
   });
 
 
+//test importante qui decommenta per vedere 
+//   AnalyticResult.aggregate([
+//     // { "$match": {"id_project": req.projectid } },
+//     // { "$match": {} },
+//     { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+//     { "$project":{
+//       "hour":{"$hour":"$createdAt"},
+//       "weekday":{"$dayoftheweek":"$createdAt"}
+//     }}, 
+//     // // Group by year, month and day and get the count
+//     { "$group":{
+//           "_id":{"hour":"$hour","weekday":"$weekday"},
+//           "count":{"$sum":1}
+//     }},
+//     { "$sort": {"_id":-1}}
+// ])
+  router.get('/requests/aggregate/dayoftheweek/hours', function(req, res) {  
+    console.log(req.params);
+    console.log("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        // { "$match": {"id_project": req.projectid } },
+        // { "$match": {} },
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { "$project":{
+            "hour":{"$hour":"$createdAt"},
+            "weekday":{"$dayoftheweek":"$createdAt"}
+          }}, 
+          // // Group by year, month and day and get the count
+          { "$group":{
+                "_id":{"hour":"$hour","weekday":"$weekday"},
+                "count":{"$sum":1}
+          }},
+        { "$sort": {"_id":-1}}
+    ])
+      .exec(function(err, result) {
+
+     
+        if (err) {
+            console.log(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          console.log(result);
+
+          res.json(result);
+    });
+
+  });
+
+
+
 
 
 
