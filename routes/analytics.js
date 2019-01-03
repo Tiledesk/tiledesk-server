@@ -231,7 +231,7 @@ router.get('/requests/count', function(req, res) {
    
       
     AnalyticResult.aggregate([
-        { "$match": {"id_project":req.projectid }},
+      { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
         { "$group": { 
           "_id": "$id_project", 
          "waiting_time_avg":{"$avg": "$waiting_time"}
