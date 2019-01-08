@@ -23,12 +23,6 @@ To see the log run : 'heroku logs  -n 2000 --tail -a chat21-api-nodejs'
 
 To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articles/route-53
 
- # Usage 
- 
- ## On localhost
-
-
-
 # Docker compose
 
 ## Installation
@@ -43,4 +37,5 @@ To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articl
 * docker-compose up
 
 # REST API
+
 See the Tiledesk REST API [here](./docs/api.md)
