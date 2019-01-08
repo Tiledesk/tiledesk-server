@@ -67,7 +67,9 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 });
 
 // START - GET OPERATORS OF A DEPT - 3 giu 2018 Nikola - Andrea L. - Andrea S.
-router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+//removed authentication for enabling the widget to use this endpoint
+//router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.get('/:departmentid/operators', function (req, res) {
   console.log("»»» »»» --> DEPT ID ", req.params.departmentid);
 
   let query;
@@ -157,6 +159,26 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
 
         console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
         value['department'] = department
+
+        //if sendEmail==true send email to assigned Operator. Only for assigned opearator. for a Pooled request the mail is sent by requestService.
+        // if (req.query.sendemail) {
+        //   if (value && value.operators && value.operators.length>0) {
+        //     var opearator = value.operators[0];
+        //     User.findById( opearator, function (err, user) {
+        //       if (err) {
+        //         console.error("Error sending email to " + opearator, err);
+        //       }
+        //       if (!user) {
+        //         console.warn("User not found",  opearator);
+        //       } else {
+        //         console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
+        //         emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+        //       }
+        //     });
+
+        //   }
+        // }
+
         return res.json(value)
 
       }).catch(function (error) {
