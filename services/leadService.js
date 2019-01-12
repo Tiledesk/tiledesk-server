@@ -1,7 +1,7 @@
 'use strict';
 
 var Lead = require("../models/lead");
-var mongoose = require('mongoose');
+//var mongoose = require('mongoose');
 const uuidv4 = require('uuid/v4');
 
 class LeadService {

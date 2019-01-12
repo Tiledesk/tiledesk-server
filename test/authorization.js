@@ -1,7 +1,7 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
+//var User = require('../models/user');
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
 var userService = require('../services/userService');

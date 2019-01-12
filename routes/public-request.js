@@ -81,7 +81,7 @@ var emailService = require("../models/emailService");
 
       return User.findById( user_id, function (err, user) {
         if (err) {
-          console.error("Error notify user " + user_id, err);
+          // console.error("Error notify user " + user_id, err);
           return res.status(500).send({err:err});
         }
         if (!user) {

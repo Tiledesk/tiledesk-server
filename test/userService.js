@@ -43,19 +43,22 @@ describe('UserService()', function () {
 
 
 
-  it('getUser', function (done) {
-    // admin.auth().getUser('5aaa99024c3b110014b478f0')
-    admin.auth().getUser('5ad0653c23c4150014695747')
+  // it('getUser', function (done) {
+  //   // admin.auth().getUser('5aaa99024c3b110014b478f0')
+  //   // admin.auth().getUser('5bf3cbbc20cb5d0015702910')
+  //   admin.auth().getUser('5b55e806c93dde00143163dd_12345678910')
     
-    .then(function(userRecord) {
-      // See the UserRecord reference doc for the contents of userRecord.
-      console.log("Successfully fetched user data:", userRecord.toJSON());
-      done();
-    })
-    .catch(function(error) {
-      console.log("Error fetching user data:", error);
-    });
-  });
+    
+    
+  //   .then(function(userRecord) {
+  //     // See the UserRecord reference doc for the contents of userRecord.
+  //     console.log("Successfully fetched user data:", userRecord.toJSON());
+  //     done();
+  //   })
+  //   .catch(function(error) {
+  //     console.log("Error fetching user data:", error);
+  //   });
+  // });
 
 });
 
