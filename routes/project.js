@@ -7,10 +7,18 @@ var mongoose = require('mongoose');
 var operatingHoursService = require("../models/operatingHoursService");
 var getTimezoneOffset = require("get-timezone-offset")
 
+
+
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
 require('../config/passport')(passport);
 var validtoken = require('../middleware/valid-token')
+
+
+
+
+
+
 
 // PROJECT POST
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
@@ -128,6 +136,22 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     });
 });
 
+// GET ALL PROJECTS BY CURRENT USER ID
+router.get('/:projectid/isopen', function (req, res) {
+   operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
+    console.log('project', req.params.projectid, 'isopen: ', isOpen);
+
+    if (err) {
+      console.error('Error getting projectIsOpenNow', err);
+      sendError(err, res);
+      // return res.status(500).send({ success: false, msg: err });
+    } 
+     res.json(isOpen);
+  });
+
+});
+
+//togli questo route da qui e mettilo in altra route
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
 router.get('/:projectid/users/availables', function (req, res) {
   console.log("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
