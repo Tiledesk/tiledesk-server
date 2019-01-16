@@ -146,7 +146,7 @@ router.get('/:projectid/isopen', function (req, res) {
       sendError(err, res);
       // return res.status(500).send({ success: false, msg: err });
     } 
-     res.json(isOpen);
+     res.json({"isopen":isOpen});
   });
 
 });
