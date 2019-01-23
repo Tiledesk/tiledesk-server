@@ -4,10 +4,13 @@ var Subscription = require('../models/subscription');
 var SubscriptionNotifier = {
 
   notify: function(event, item, next) {
-    console.log("Subscription.notify", event, item);
+    // console.log("Subscription.notify", event, item);
     
     Subscription.find({event:event, id_project: item.id_project}).exec(function (err, subscriptions) {
-      console.log("subscriptions.length", event,  subscriptions.length);
+      if (subscriptions && subscriptions.length>0) {
+        console.log("Subscription.notify", event, item , "length", subscriptions.length);
+      }
+
     
       //var json = {event: event, timestamp: Date.now(), payload: item};
       var json = {timestamp: Date.now(), payload: item};

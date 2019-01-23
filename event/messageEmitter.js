@@ -7,7 +7,7 @@ class MessageEmitter extends EventEmitter {}
 const messageEmitter = new MessageEmitter();
 
 messageEmitter.on('message.create', function(message) {
-    console.log('messageEmitter message.create', message);
+    // console.log('messageEmitter message.create', message);
     hooks.notify('message.create', message);
 });
 

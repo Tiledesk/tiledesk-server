@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
-var MessageSchema = require("../models/message").schema;
+// var MessageSchema = require("../models/message").schema;
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
@@ -53,6 +53,7 @@ var RequestSchema = new Schema({
 
 
   // first_message: MessageSchema,
+  // messages : [{ type: Schema.Types.ObjectId, ref: 'message' }],
 
   transcript: {
     type: String
@@ -136,9 +137,24 @@ var RequestSchema = new Schema({
   },
 
 },{
-  timestamps: true
+  timestamps: true,
+  // toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
+
+// // work but no multiple where on id-project
+// RequestSchema.virtual('messages', {
+//   ref: 'message', // The model to use
+//   localField: 'request_id', // Find people where `localField`
+//   foreignField: 'recipient', // is equal to `foreignField`
+//   // localField: ['request_id', 'id_project'], // Find people where `localField`
+//   // foreignField: ['recipient', 'id_project'], // is equal to `foreignField`
+//   // If `justOne` is true, 'messages' will be a single doc as opposed to
+//   // an array. `justOne` is false by default.
+//   justOne: false,
+//   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+// });
+
 
 RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
   var project_users_available = project_users.filter(function (projectUser) {
