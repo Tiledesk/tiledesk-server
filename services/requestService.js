@@ -10,7 +10,7 @@ var Message = require("../models/message");
 var messageService = require('../services/messageService');
 // var leadService = require('../services/leadService');
 var Lead = require('../models/lead');
-const requestEmitter = require('../event/requestEmitter');
+const requestEvent = require('../event/requestEvent');
 
 class RequestService {
 
@@ -211,7 +211,7 @@ class RequestService {
                   }
                   
                   
-                  requestEmitter.emit('request.create',savedRequest);
+                  requestEvent.emit('request.create',savedRequest);
                   return resolve(savedRequest);
                   
                 });
@@ -238,7 +238,7 @@ class RequestService {
               console.error(err);
               return reject(err);
             }
-            requestEmitter.emit('request.update',updatedRequest);
+            requestEvent.emit('request.update',updatedRequest);
            // console.log("updatedRequest", updatedRequest);
             return resolve(updatedRequest);
           });
@@ -347,7 +347,7 @@ class RequestService {
                       console.error("error sendTranscriptByEmail ", e);
                     }
 
-                    requestEmitter.emit('request.close', updatedRequest);
+                    requestEvent.emit('request.close', updatedRequest);
                   return resolve(updatedRequest);
                 });
               });
@@ -385,7 +385,7 @@ class RequestService {
 
           var updatedRequest = request.save(function(err, savedRequest) {
             if (!err) {
-              requestEmitter.emit('request.update', savedRequest);
+              requestEvent.emit('request.update', savedRequest);
             }            
           });
 
@@ -438,7 +438,7 @@ class RequestService {
           console.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }
-        requestEmitter.emit('request.update',updatedRequest);
+        requestEvent.emit('request.update',updatedRequest);
 
         return resolve(updatedRequest);
       });
@@ -485,7 +485,7 @@ class RequestService {
 
           var updatedRequest = request.save(function(err, savedRequest) {
             if (!err) {
-              requestEmitter.emit('request.update', savedRequest);
+              requestEvent.emit('request.update', savedRequest);
             }            
           });
       
@@ -529,7 +529,7 @@ class RequestService {
        
           var updatedRequest = request.save(function(err, savedRequest) {
             if (!err) {
-              requestEmitter.emit('request.update', savedRequest);
+              requestEvent.emit('request.update', savedRequest);
             }            
           });
 

@@ -59,6 +59,10 @@ var chat21Request = require('./routes/chat21-request');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
+
+var subscriptionNotifier = require('./services/SubscriptionNotifier');
+subscriptionNotifier.start();
+
 var app = express();
 
 
@@ -156,7 +160,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use(morgan('dev'));
+app.use(morgan('dev'));
 // uncomment app.use(morgan('combined', { stream: winston.stream }));
 
 
@@ -246,6 +250,7 @@ function HasRole(role) {
           }
         }else {
         
+          // if (req.user) equals super admin next()
           res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
         }
 

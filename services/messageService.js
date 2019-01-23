@@ -8,7 +8,7 @@ var Message = require("../models/message");
 // var leadService = require('../services/leadService');
 // console.log("requestService", requestService);
 
-const messageEmitter = require('../event/messageEmitter');
+const messageEvent = require('../event/messageEvent');
 
 
 class MessageService {
@@ -57,7 +57,7 @@ class MessageService {
                 }
                 console.log("Message created", savedMessage);
 
-                messageEmitter.emit('message.create', savedMessage);
+                messageEvent.emit('message.create', savedMessage);
 
                 return resolve(savedMessage);
             });

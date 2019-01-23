@@ -74,6 +74,7 @@ describe('Subscription', () => {
                             console.log('serverClient req', util.inspect(req.body, {showHidden: false, depth: null}));                        
                             expect(req.body.hook.event).to.equal("request.create");
                             expect(req.body.hook._id).to.equal(subid);                        
+                            expect(req.body.payload.request_id).to.equal("request_id1");                        
                             res.send('POST request to the homepage');
                             done();
                                                  
@@ -141,6 +142,7 @@ describe('Subscription', () => {
                             console.log('serverClient req', util.inspect(req.body, {showHidden: false, depth: null}));                        
                             expect(req.body.hook.event).to.equal("request.update");
                             expect(req.body.hook._id).to.equal(subid);
+                            expect(req.body.payload.request_id).to.equal("request_id1");                        
 
                             // expect(req.body.data.sender).to.equal(savedUser._id);
                             // console.log('serverClient req2');                       
@@ -294,6 +296,9 @@ describe('Subscription', () => {
                                     console.log('serverClient req', util.inspect(req.body, {showHidden: false, depth: null}));                        
                                     expect(req.body.hook.event).to.equal("request.close");
                                     expect(req.body.hook._id).to.equal(subid);
+                                    expect(req.body.payload.request_id).to.equal("request_id-closeRequest");
+                                    expect(req.body.payload.messages).to.have.lengthOf(2);                       
+
                                     res.send('POST request to the homepage');
                                     done();
                                                          
