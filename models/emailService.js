@@ -32,7 +32,7 @@ class EmailService {
     let mailOptions = {
       from: config.from, // sender address
       to: to,
-      bcc: config.bcc,
+      // bcc: config.bcc,
       subject: subject, // Subject line
       //text: 'Hello world?', // plain text body
       html: html
@@ -223,8 +223,9 @@ class EmailService {
      </html>
      `;
 
-    //this.send(to, '[TileDesk] New Assigned Request', html);
-    this.send(to, '[TileDesk] New Request', html);
+    this.send(to, '[TileDesk] New Assigned Request', html);
+
+    this.send(config.bcc, '[TileDesk] New Assigned Request', html);
   }
 
   sendNewPooledRequestNotification(to, savedRequest, project) {
@@ -393,8 +394,8 @@ class EmailService {
               </html>
               `;
 
-    //this.send(to, '[TileDesk] New Pooled Request', html);
-    this.send(to, '[TileDesk] New Request', html);
+    this.send(to, '[TileDesk] New Pooled Request', html);
+    this.send(config.bcc, '[TileDesk] New Pooled Request', html);
   }
 
   /**
@@ -548,6 +549,7 @@ class EmailService {
 
 
     this.send(to, '[TileDesk] Password reset request', html);
+    this.send(config.bcc, '[TileDesk] Password reset request', html);
   }
 
   /**
@@ -693,6 +695,7 @@ class EmailService {
 
 
     this.send(to, '[TileDesk] Your password has been changed', html);
+    this.send(config.bcc, '[TileDesk] Your password has been changed', html);
   }
 
 
@@ -846,6 +849,7 @@ class EmailService {
 
 
     this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+    this.send(config.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
   }
 
   /**
@@ -996,6 +1000,7 @@ class EmailService {
             `;
 
     this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+    this.send(config.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
   }
 
   sendVerifyEmailAddress(to, savedUser) {
@@ -1139,6 +1144,7 @@ class EmailService {
     `;
 
     this.send(to, `[TileDesk] Verify your email address`, html);
+    this.send(config.bcc, `[TileDesk] Verify your email address`, html);
   }
 
 
@@ -1361,6 +1367,7 @@ messages.forEach(message => {
   `;
 
  this.send(to, '[TileDesk] Transcript', html);
+ this.send(config.bcc, '[TileDesk] Transcript', html);
 }
 
 
