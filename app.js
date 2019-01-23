@@ -14,6 +14,7 @@ var Project = require("./models/project");
 var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
 
+// uncomment var winston = require('./config/winston');
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
@@ -25,7 +26,11 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 }
 console.info("autoIndex", autoIndex);
 
-mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
+if (process.env.NODE_ENV == 'test')  {
+  mongoose.connect(config.databasetest, { "autoIndex": autoIndex });
+}else {
+  mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
+}
 
 var auth = require('./routes/auth');
 var lead = require('./routes/lead');
@@ -49,12 +54,88 @@ var publicRequest = require('./routes/public-request');
 var analytics = require('./routes/analytics');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
-
+var subscription = require('./routes/subscription');
 var chat21Request = require('./routes/chat21-request');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var app = express();
+
+
+//traffic counter
+// // var TrafficCounter = require('traffic-counter');
+// var TrafficCounter = require('./utils/TrafficCounter');
+// TrafficCounter.on(TrafficCounter.Event.Error, function(Err) {
+//   //This is an error that occured during the initial object creation
+//   //Probably ok to exit here
+//   console.log(Err);
+// });
+
+// TrafficCounter.on(TrafficCounter.Event.RequestError, function(Err) {
+//   //This is an error that occured once the web server is up and running
+//   //Probably advisable to recover gracefull from this one
+//   console.log(Err);
+// });
+
+// TrafficCounter.on(TrafficCounter.Event.SetupFinished, function() {
+//   //We are now ready to use the traffic counter in app.VERB
+//   //Putting the app.VERB logic here is a viable alternative to
+//   //using a callback
+//   console.log('Setup of the TrafficCounter object complete!');
+// });
+
+// // var connection = mongoose.connection;
+// // console.log("connection", connection);
+// //var MongoClient = require('mongodb').MongoClient;
+// // Connect to the db
+// //MongoClient.connect("mongodb://localhost:27017/", function(err, connectionTC) {
+//   //TrafficCounter.Setup(connectionTC.db('tiledesk-test'), function () {
+//     TrafficCounter.Setup(mongoose.connection, function () {
+//     console.log("here1");
+//     // app.get('/aa', function (req, res, next) {
+//       // app.use( function (req, res, next) {
+//         app.use('/aa',TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app));
+
+//         app.get('/aa', function (req, res) {
+//           //console.log("ss")
+          
+//           res.send('Chat21 API index page. See the documentation.');
+//         });
+//         // app.all('/', [console.log("herereeeeee2222"), TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app)]);
+//       //   console.log("herereeeeee2222");
+//       //   TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app);
+//       // });
+//   });
+// // });
+
+// uncomment var messageWsService = require('./services/messageWsService');
+// messageWsService.init();
+//end uncomment
+
+// const WebSocket = require('ws');
+// const wss = new WebSocket.Server({ port: 40510 });
+
+// wss.on('connection', function connection(ws) {
+//   ws.on('message', function incoming(message) {
+//     console.log('received: %s', message);
+//   });
+
+//   setInterval(
+//     () => ws.send(`ciao il ${new Date()}`),
+//     1000
+//   )
+// });
+
+// var expressWs = require('express-ws')(app);
+// var expressWs = expressWs(express());
+// var app2 = expressWs.app;
+
+// app2.ws('/', function(ws, req) {
+//   ws.on('message', function(msg) {
+//     console.log(msg);
+//   });
+//   console.log('socket', req.testing);
+// });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -74,13 +155,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(morgan('dev'));
+
+// app.use(morgan('dev'));
+// uncomment app.use(morgan('combined', { stream: winston.stream }));
+
+
 app.use(passport.initialize());
 
 app.use(cors());
 
 
-app.get('/', function (req, res) {
+app.get('/', function (req, res) {  
   res.send('Chat21 API index page. See the documentation.');
 });
 
@@ -278,6 +363,8 @@ app.use('/:projectid/publicanalytics', publicAnalytics);
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
+app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], subscription);
+
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], pendinginvitation);
 //app.use('/apps', tenant);
