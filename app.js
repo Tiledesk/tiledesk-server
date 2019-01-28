@@ -1,7 +1,7 @@
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
+// var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
@@ -63,6 +63,8 @@ var key = require('./routes/key');
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
+var ReqLog = require("./models/reqlog");
+
 var app = express();
 
 
@@ -110,7 +112,7 @@ var app = express();
 //       //   TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app);
 //       // });
 //   });
-// // });
+// });
 
 // uncomment var messageWsService = require('./services/messageWsService');
 // messageWsService.init();
@@ -154,14 +156,14 @@ app.use(function (req, res, next) {
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(morgan('dev'));
-// uncomment app.use(morgan('combined', { stream: winston.stream }));
+//app.use(morgan('dev'));
+//uncomment app.use(morgan('combined', { stream: winston.stream }));
 
 
 app.use(passport.initialize());
@@ -169,10 +171,51 @@ app.use(passport.initialize());
 app.use(cors());
 
 
+var reqLogger = function (req, res, next) {
+
+// app.use(function (req, res, next) {
+  // try {
+
+  // }catch(e) {
+
+  // }
+  
+   var projectid = req.params.projectid;
+   console.log("projectIdSetter projectid", projectid);
+
+  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+  console.log("fullUrl", fullUrl);
+
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log("ip", ip);
+
+  var reqlog = new ReqLog({
+    path: req.originalUrl,
+    ip: ip,
+    id_project: projectid,
+  });
+
+  reqlog.save(function (err, reqlogSaved) {
+    if (err) {
+      console.log('Error saving reqlog ', err)
+    }
+    console.log('Reqlog saved ', reqlogSaved)
+  });
+
+  
+  
+  next()
+}
+
 app.get('/', function (req, res) {  
   res.send('Chat21 API index page. See the documentation.');
 });
 
+
+//app.use(reqLogger);
+
+// var reqLogger = function (req, res, next) {
+  
 
 
 var projectIdSetter = function (req, res, next) {
@@ -335,7 +378,7 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], lead);
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], message);
 
-app.use('/:projectid/departments', department);
+app.use('/:projectid/departments', reqLogger, department);
 app.use('/public/requests', publicRequest);
 
 app.use('/chat21/requests',  chat21Request);
