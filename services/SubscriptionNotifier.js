@@ -42,8 +42,8 @@ class SubscriptionNotifier {
             url: s.target,
             json: json
           }, function(err, result, json){
-            //console.log("SENT " + event + " TO " + s.target, "result", result, "with error " , err);
-            console.log("SENT " + s.event + " TO " + s.target,  "with error " , err);
+            //console.log("SENT " + event + " TO " + s.target, "result", result, "with eror " , err);
+            console.log("SENT " + s.event + " TO " + s.target,  "with eror " , err);
             if (next) next(err, json);
           });
       });

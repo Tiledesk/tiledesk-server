@@ -57,7 +57,7 @@ router.delete('/:subscriptionid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
-    res.json(subscriptionUpd);
+    res.json({ success: true});
   });
 });
 
