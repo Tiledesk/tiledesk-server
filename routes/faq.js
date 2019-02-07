@@ -434,7 +434,7 @@ router.get('/csv', function (req, res) {
   console.log('EXPORT FAQS TO CSV QUERY', query);
 
   //Faq.find(query, '-__v').lean().exec(function (err, faq) {
-  Faq.find(query, 'question answer').lean().exec(function (err, faq) {
+  Faq.find(query, 'question answer -_id').lean().exec(function (err, faq) {
     if (err) {
       console.log('EXPORT FAQS TO CSV ERR', err)
       return (err)
