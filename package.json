@@ -1,5 +1,5 @@
 {
-  "name": "@tiledesk/tiledesk-api-nodejs",
+  "name": "@tiledesk/tiledesk-server",
   "version": "1.0.0",
   "scripts": {
     "start": "node ./bin/www",
@@ -10,13 +10,17 @@
   "homepage": "https://www.tiledesk.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
+    "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "engines": {
-    "node": "6.11.3"
+    "node": "11.6.0"
+  },
+  "bin" : {
+    "tiledesk-server": "./bin/www"
   },
   "dependencies": {
     "@chat21/chat21-node-sdk": "^1.0.5",
+    "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
@@ -26,6 +30,7 @@
     "debug": "~2.6.0",
     "email-templates": "^3.6.0",
     "express": "~4.14.1",
+    "express-redis-cache": "^1.1.3",
     "express-session": "^1.15.2",
     "fast-csv": "^2.4.1",
     "firebase-admin": "^5.10.0",
@@ -34,7 +39,7 @@
     "jsonwebtoken": "^7.3.0",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.21",
-    "mongoose": "^4.9.3",
+    "mongoose": "^5.4.7",
     "morgan": "^1.7.0",
     "multer": "^1.3.0",
     "node-rsa": "^1.0.1",
@@ -46,7 +51,10 @@
     "request-promise": "^4.2.2",
     "serve-favicon": "~2.3.2",
     "uniqid": "^5.0.3",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0",
+    "winston-mongodb": "^4.0.3",
+    "ws": "^6.1.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",
