@@ -341,6 +341,7 @@ router.get('/', function (req, res, next) {
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
+      populate('lead').
       sort(sortQuery).
       exec(function (err, requests) {
         if (err) {
@@ -502,7 +503,7 @@ router.get('/:requestid', function (req, res) {
 
   console.log("get request by id ", req.params.requestid);
 
-  Request.findOne({"request_id":req.params.requestid}, function (err, request) {
+  Request.findOne({"request_id":req.params.requestid}).populate('lead').exec(function(err, request) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
