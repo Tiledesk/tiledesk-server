@@ -504,7 +504,9 @@ router.get('/:requestid', function (req, res) {
   console.log("get request by id ", req.params.requestid);
 
   Request.findOne({"request_id":req.params.requestid}).populate('lead').exec(function(err, request) {
+    //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
     if (err) {
+      console.error("error getting request by id ", err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!request) {
