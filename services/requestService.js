@@ -383,13 +383,16 @@ class RequestService {
             request.status = 100;
           }
 
-          var updatedRequest = request.save(function(err, savedRequest) {
+         request.save(function(err, savedRequest) {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-            }            
+            }          
+            
+            return resolve(savedRequest);
+            
           });
 
-          return resolve(updatedRequest);
+         
 
         }).catch(function(err)  {
               console.error(err);
@@ -483,13 +486,15 @@ class RequestService {
             request.status = 100;
           }
 
-          var updatedRequest = request.save(function(err, savedRequest) {
+          request.save(function(err, savedRequest) {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-            }            
+            }          
+            
+            return resolve(savedRequest);
           });
       
-          return resolve(updatedRequest);
+          
       });
    });
   }
@@ -519,21 +524,26 @@ class RequestService {
         if (index > -1) {
           request.participants.splice(index, 1);
           // console.log(" request.participants",  request.participants);
-        }      
+        }
         if (request.participants.length>0) {
+        //if (request.status!=1000 && request.participants.length>0) { //don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
             request.status = 200;
           } else {
             request.status = 100;
           }
           // console.log(" request",  request);
        
-          var updatedRequest = request.save(function(err, savedRequest) {
+          request.save(function(err, savedRequest) {
+
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-            }            
+            }
+
+            return resolve(savedRequest);
+
           });
 
-          return resolve(updatedRequest);
+        
           
       });
     });
