@@ -16,7 +16,6 @@
     "node": "11.6.0"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.8",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
