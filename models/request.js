@@ -138,7 +138,7 @@ var RequestSchema = new Schema({
 
 },{
   timestamps: true,
-  // toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
+  toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
 
@@ -146,7 +146,7 @@ RequestSchema.virtual('lead', {
   ref: 'lead', // The model to use
   localField: 'requester_id', // Find people where `localField`
   foreignField: '_id', // is equal to `foreignField`
-  justOne: false,
+  justOne: true,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
