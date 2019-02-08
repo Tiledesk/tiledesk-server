@@ -117,8 +117,8 @@ var app = express();
 //   });
 // });
 
-var messageWsService = require('./services/messageWsService');
-messageWsService.init();
+// var messageWsService = require('./services/messageWsService');
+// messageWsService.init(app);
 // end uncomment
 
 // const WebSocket = require('ws');

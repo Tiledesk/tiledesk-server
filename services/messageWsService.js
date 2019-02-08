@@ -20,11 +20,12 @@ class MessageWsService {
 
   // https://hackernoon.com/nodejs-web-socket-example-tutorial-send-message-connect-express-set-up-easy-step-30347a2c5535
   // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
-  init() {
+  init(server) {
     
     //var wss = new WebSocket.Server({ port: 40510 });
     //var wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
-    var wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
+    //var wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
+     var wss = new WebSocket.Server({  server: server,path: "/messages" });
     
     var that = this;
 

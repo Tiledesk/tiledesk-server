@@ -5,7 +5,8 @@
 
 
             <script>
-                    var tilebase = new Tilebase('ws://localhost:40510/messages?q={"recipient":"support-group123"}'
+                    var tilebase = new Tilebase('ws://localhost:3000/messages?q={"recipient":"support-group123"}'
+                   //  var tilebase = new Tilebase('ws://localhost:40510/messages?q={"recipient":"support-group123"}'
                     //var tilebase = new Tilebase('ws://localhost:3000/'
                     , function(message) {
                         $('#messages').append(`<div id="${message._id}">${message.text}</div>`);

@@ -21,6 +21,11 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+
+var messageWsService = require('../services/messageWsService');
+messageWsService.init(server);
+
+
 /**
  * Listen on provided port, on all network interfaces.
  */
