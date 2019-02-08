@@ -1,0 +1,39 @@
+{
+  "name": "Tiledesk Server",
+  "description": "Tildesk server",
+  "repository": "https://github.com/Tiledesk/tiledesk-server/new/master",
+  "logo": "https://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png",
+  "keywords": ["node", "express", "tiledesk", "live chat"],
+  "env": {
+    "FIREBASE_APIKEY": {
+      "description": "Firebase API key.",
+      "value": ""
+    },
+     "FIREBASE_CLIENT_EMAIL": {
+      "description": "Firebase Client email.",
+      "value": ""
+    },
+     "FIREBASE_PRIVATE_KEY": {
+      "description": "Firebase private key.",
+      "value": ""
+    },
+     "FIREBASE_PROJECT_ID": {
+      "description": "Firebase project id.",
+      "value": ""
+    },
+    "APP_ID": {
+      "description": "A unique identifier for your app.",
+      "value": "myAppId"
+    },
+    "SUPER_PASSWORD": {
+      "description": "Super admin password",
+      "value": "superpassword"
+    },
+    "MONGOOSE_AUTOINDEX": {
+      "description": "Autoindex",
+      "value": true
+    }
+  },
+  "image": "heroku/nodejs",
+  "addons": ["mongolab"]
+}
