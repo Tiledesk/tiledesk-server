@@ -525,12 +525,14 @@ class RequestService {
           request.participants.splice(index, 1);
           // console.log(" request.participants",  request.participants);
         }
-        //if (request.participants.length>0) {
-        if (request.status!=1000 && request.participants.length>0) { //don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+        if (request.status!=1000) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+          if (request.participants.length>0) { 
             request.status = 200;
           } else {
             request.status = 100;
           }
+        }
+         
           // console.log(" request",  request);
        
           request.save(function(err, savedRequest) {
