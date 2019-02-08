@@ -369,4 +369,37 @@ it('removeparticipant', function (done) {
 
 
 
+
+
+it('closeRequestAndRemoveParticipant', function (done) {
+
+  projectService.create("test1", userid).then(function(savedProject) {
+    requestService.createWithId("request_id-closeRequestAndRemoveParticipant", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+      Promise.all([
+        messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
+        savedProject._id, "5badfe5d553d1844ad654072"),
+        messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
+        savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
+          requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
+            expect(closedRequest.closed_at).to.not.equal(null);
+            expect(closedRequest.transcript).to.contains("hello1");
+            expect(closedRequest.transcript).to.contains("hello2");
+            
+            requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
+                console.log("resolve closeRequestAndRemoveParticipant", closedRequest);
+                expect(savedRequestParticipant.status).to.equal(1000);
+                
+                done();                         
+            });
+          }).catch(function(err){
+                console.error("test reject", err);
+                assert.isNotOk(err,'Promise error');
+                done();
+              });
+          });
+      });
+});
+});
+
+
 });
