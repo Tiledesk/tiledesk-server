@@ -19,7 +19,6 @@
     "tiledesk-server": "./bin/www"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.5",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
