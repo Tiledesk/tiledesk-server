@@ -60,10 +60,13 @@ var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 
+//var cache = require('express-redis-cache')();
+var ReqLog = require("./models/reqlog");
+
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
-var ReqLog = require("./models/reqlog");
+
 
 var app = express();
 
@@ -114,9 +117,9 @@ var app = express();
 //   });
 // });
 
-// uncomment var messageWsService = require('./services/messageWsService');
-// messageWsService.init();
-//end uncomment
+var messageWsService = require('./services/messageWsService');
+messageWsService.init();
+// end uncomment
 
 // const WebSocket = require('ws');
 // const wss = new WebSocket.Server({ port: 40510 });
@@ -132,16 +135,20 @@ var app = express();
 //   )
 // });
 
-// var expressWs = require('express-ws')(app);
-// var expressWs = expressWs(express());
-// var app2 = expressWs.app;
+// var expressWs = require('express-ws')(express());
+// var app = expressWs.app;
 
-// app2.ws('/', function(ws, req) {
+// //var expressWs = expressWs(express());
+// // var app2 = expressWs.app;
+
+// app.ws('/', function(ws, req) {
 //   ws.on('message', function(msg) {
-//     console.log(msg);
+//     console.log("messageXXXXX", msg);
 //   });
-//   console.log('socket', req.testing);
+//   console.log('socketXXXXX', req.testing);
 // });
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -208,6 +215,7 @@ var reqLogger = function (req, res, next) {
 }
 
 app.get('/', function (req, res) {  
+  // cache.route(), // cache entry name is `cache.prefix + "/"`
   res.send('Chat21 API index page. See the documentation.');
 });
 
