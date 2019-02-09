@@ -181,27 +181,27 @@ var reqLogger = function (req, res, next) {
   // }
   
    var projectid = req.params.projectid;
-   console.log("projectIdSetter projectid", projectid);
+   //console.log("projectIdSetter projectid", projectid);
 
   var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-  console.log("fullUrl", fullUrl);
+  //console.log("fullUrl", fullUrl);
 
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log("ip", ip);
+  //console.log("ip", ip);
 
   var reqlog = new ReqLog({
     path: req.originalUrl,
     host: req.host,
-    origin: req.origin,
+    origin: req.get('origin'),
     ip: ip,
     id_project: projectid,
   });
 
   reqlog.save(function (err, reqlogSaved) {
     if (err) {
-      console.log('Error saving reqlog ', err)
+      console.error('Error saving reqlog ', err)
     }
-    console.log('Reqlog saved ', reqlogSaved)
+    //console.log('Reqlog saved ', reqlogSaved)
   });
 
   
@@ -261,9 +261,9 @@ var ROLES =  {
 function HasRole(role) {
   // console.log("HasRole");
   return function(req, res, next) {
-    console.log("req.projectuser", req.projectuser);
-    console.log("req.user", req.user);
-    console.log("role", role);
+    //console.log("req.projectuser", req.projectuser);
+    //console.log("req.user", req.user);
+    //console.log("role", role);
 
     Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
       exec(function (err, project_user) {
