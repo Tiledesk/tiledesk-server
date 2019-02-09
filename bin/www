@@ -21,10 +21,10 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
-var testWsService = require('../services/testWsService');
-testWsService.init(server);
-// var messageWsService = require('../services/messageWsService');
-// messageWsService.init(server);
+// var testWsService = require('../services/testWsService');
+// testWsService.init(server);
+var messageWsService = require('../services/messageWsService');
+messageWsService.init(server);
 
 
 /**
