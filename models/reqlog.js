@@ -1,5 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var config = require('../config/database');
+
+var conn      = mongoose.createConnection(process.env.MONGODB_LOGS_URI || config.databaselogs, { "autoIndex": true });
 
 var ReqLogSchema = new Schema({
   path: {
@@ -20,4 +23,4 @@ var ReqLogSchema = new Schema({
   }
 );
 
-module.exports = mongoose.model('reqLog', ReqLogSchema);
+module.exports = conn.model('reqLog', ReqLogSchema);
