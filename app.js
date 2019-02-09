@@ -191,6 +191,8 @@ var reqLogger = function (req, res, next) {
 
   var reqlog = new ReqLog({
     path: req.originalUrl,
+    host: req.host,
+    origin: req.origin,
     ip: ip,
     id_project: projectid,
   });

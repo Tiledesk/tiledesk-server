@@ -13,6 +13,14 @@ var ReqLogSchema = new Schema({
     type: String,
     index: true 
   },
+  host: {
+    type: String,
+    index: true 
+  },
+  origin: {
+    type: String,
+    index: true 
+  },
   id_project: {
     type: String,
     index: true
