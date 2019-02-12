@@ -5,6 +5,7 @@ const messageEvent = require('../event/messageEvent');
 
 var Request = require("../models/request");
 var Message = require("../models/message");
+var Faq_kb = require("../models/faq_kb");
 
 
 class SubscriptionNotifier {
@@ -90,20 +91,43 @@ class SubscriptionNotifier {
             console.log("Subscription.notify", 'message.create', message , "length", subscriptions.length);
             
             Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
-            // populate('lead').
-            populate({ 
-              path:'department',
-              populate: {
-                path: 'bot',
-                model: 'faq_kb'
-              } 
-            }).
+            populate('lead').
+            populate('department').
+            // populate('department.bot').
+            // populate({ 
+            //   path:'department',
+            //   populate: {
+            //     path: 'bot66',
+            //     model: 'faq_kb'
+            //   } 
+            // }).
             exec(function (err, request) {
               // Request.findOne({request_id:  message.recipient, id_project: message.id_project}
             // , function(err, request) {
+              // console.log('1111');
+
               var messageJson = message.toJSON();
-              messageJson.request = request;
-              subscriptionNotifier.notify(subscriptions, messageJson);
+
+              if (request.department.id_bot) {
+                Faq_kb.findById(request.department.id_bot, function(err, bot) {
+                  console.log('bot', bot);
+                  var requestJson = request.toJSON();
+                  requestJson.department.bot = bot
+                  
+                  messageJson.request = requestJson;
+                  console.log('messageJson', messageJson);
+                  subscriptionNotifier.notify(subscriptions, messageJson);
+  
+                });
+
+                
+              }else {
+                messageJson.request = request;
+                subscriptionNotifier.notify(subscriptions, messageJson);
+              }
+
+              
+             
             });
           }
         });

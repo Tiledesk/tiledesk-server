@@ -5,6 +5,41 @@ var request = require('request');
 
 class FaqService {
 
+
+  create(name, url, projectid, user_id, external) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+
+        //console.log('FAQ-KB POST REQUEST BODY ', req.body);
+        var newFaq_kb = new Faq_kb({
+          name: name,
+          url: url,
+          id_project: projectid,
+          //kbkey_remote: req.body.kbkey_remote,
+          external: external,
+          trashed: false,
+          createdBy: user_id,
+          updatedBy: user_id
+        });
+      
+        newFaq_kb.save(function (err, savedFaq_kb) {
+          if (err) {
+            console.log('--- > ERROR ', err)
+            return reject('Error saving object.' );
+          }
+          console.log('-> -> SAVED FAQFAQ KB ', savedFaq_kb)              
+      
+          if (savedFaq_kb.external===false) {
+            createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+          } else {
+            console.log('external bot');
+          }
+
+          return resolve(savedFaq_kb);
+        });  
+    });
+  }
+
   createGreetingsAndOperationalsFaqs(faq_kb_id, created_by, projectid, remote_faqkb_key) {
     var that = this;
     return new Promise(function (resolve, reject) {
