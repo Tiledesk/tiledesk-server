@@ -95,7 +95,7 @@ class SubscriptionNotifier {
               path:'department',
               populate: {
                 path: 'bot',
-                // model: 'Component'
+                model: 'faq_kb'
               } 
             }).
             exec(function (err, request) {
