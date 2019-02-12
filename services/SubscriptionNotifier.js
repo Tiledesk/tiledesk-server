@@ -88,7 +88,13 @@ class SubscriptionNotifier {
         subscriptionNotifier.findSubscriber('message.create', message.id_project).then(function(subscriptions) { 
           if (subscriptions && subscriptions.length>0) {
             console.log("Subscription.notify", 'message.create', message , "length", subscriptions.length);
-            Request.findOne({request_id:  message.recipient, id_project: message.id_project}, function(err, request) {
+            
+            Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+            populate('department').
+            populate('lead').
+            exec(function (err, request) {
+              // Request.findOne({request_id:  message.recipient, id_project: message.id_project}
+            // , function(err, request) {
               var messageJson = message.toJSON();
               messageJson.request = request;
               subscriptionNotifier.notify(subscriptions, messageJson);
