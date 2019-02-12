@@ -222,7 +222,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  console.log("projectIdSetter projectid", projectid);
+  //console.log("projectIdSetter projectid", projectid);
 
   // if (projectid) {
     req.projectid = projectid;
@@ -338,7 +338,7 @@ var projectSetter = function (req, res, next) {
         next();
       } else {
         req.project = project;
-        console.log("req.project", req.project);
+        // console.log("req.project", req.project);
         next(); //call next one time for projectSetter function
       }
     
