@@ -90,8 +90,9 @@ class SubscriptionNotifier {
             console.log("Subscription.notify", 'message.create', message , "length", subscriptions.length);
             
             Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+            // populate('lead').
             populate('department').
-            populate('lead').
+            populate('bot').          
             exec(function (err, request) {
               // Request.findOne({request_id:  message.recipient, id_project: message.id_project}
             // , function(err, request) {

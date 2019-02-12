@@ -65,7 +65,8 @@ describe('Subscription', () => {
                         console.log('serverClient req', req.body);                        
                         expect(req.body.hook.event).to.equal("message.create");
                         expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-create");
-                       
+                        expect(req.body.payload.request.department).to.not.equal(null);
+                        // expect(req.body.payload.request.department).to.not.equal(null);
                         res.send('POST request to the homepage');
                       
                         done();
