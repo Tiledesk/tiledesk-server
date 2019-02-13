@@ -528,8 +528,8 @@ router.get('/mydepartments', function (req, res) {
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
 router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
+  //console.log("req projectid", req.projectid);
+  //console.log("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {
