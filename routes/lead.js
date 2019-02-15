@@ -180,13 +180,13 @@ router.get('/', function (req, res) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  console.log("direction", direction);
+  //console.log("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  console.log("sortField", sortField);
+  //console.log("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;

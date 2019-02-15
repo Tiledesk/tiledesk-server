@@ -32,4 +32,11 @@ var FaqSchema = new Schema({
 }
 );
 
+
+
+FaqSchema.index({question: 'text'},
+ {"name":"faq_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+
+
+
 module.exports = mongoose.model('faq', FaqSchema);
