@@ -164,18 +164,18 @@ RequestSchema.virtual('lead', {
 // });
 
 RequestSchema.post('find',  async function(requests) {
-  // console.log("requests", requests);
+  //  console.log("requestsyyyy", requests);
   for (let request of requests) {
-    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    // console.log("request find", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
       await request.populate('lead').execPopulate();
     }
   }
 });
 RequestSchema.post('findOne',  async function(request) {
-  // console.log("request", request);
+  //console.log("requestXXXXX", request);
  
-    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    console.log("request findOne", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
       await request.populate('lead').execPopulate();
     }
