@@ -163,24 +163,24 @@ RequestSchema.virtual('lead', {
 //   }
 // });
 
-RequestSchema.post('find',  async function(requests) {
-  //  console.log("requestsyyyy", requests);
-  for (let request of requests) {
-    // console.log("request find", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
-    if (mongoose.Types.ObjectId.isValid(request.requester_id)){
-      await request.populate('lead').execPopulate();
-    }
-  }
-});
-RequestSchema.post('findOne',  async function(request) {
-  //console.log("requestXXXXX", request);
+// RequestSchema.post('find',  async function(requests) {
+//   //  console.log("requestsyyyy", requests);
+//   for (let request of requests) {
+//     // console.log("request find", request,  "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+// RequestSchema.post('findOne',  async function(request) {
+//   //console.log("requestXXXXX", request);
  
-    console.log("request findOne", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
-    if (mongoose.Types.ObjectId.isValid(request.requester_id)){
-      await request.populate('lead').execPopulate();
-    }
+//     console.log("request findOne", request, "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
 
-});
+// });
 
 
 

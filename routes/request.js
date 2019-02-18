@@ -344,7 +344,7 @@ router.get('/', function (req, res, next) {
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
-      //populate('lead').
+      populate('lead').
       // populate('lead', function (err, lead44) {
       //   //assert(doc._id === user._id) // the document itself is passed
       //   console.error('lead44',lead44)
@@ -516,7 +516,7 @@ router.get('/:requestid', function (req, res) {
   console.log("get request by id ", req.params.requestid);
 
   Request.findOne({"request_id":req.params.requestid})
-  // .populate('lead')
+  .populate('lead')
   .exec(function(err, request) {
     //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
     if (err) {
