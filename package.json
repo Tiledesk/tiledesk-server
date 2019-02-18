@@ -13,7 +13,7 @@
     "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
   },
   "engines": {
-    "node": "6.11.3"
+    "node": "11.6.0"
   },
   "dependencies": {
     "@chat21/chat21-node-sdk": "^1.0.5",

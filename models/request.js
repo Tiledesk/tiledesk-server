@@ -153,15 +153,36 @@ RequestSchema.virtual('lead', {
 });
 
 
-RequestSchema.post('find', function(requests) {
+// RequestSchema.post('find', async function(requests) {
+//   // console.log("requests", requests);
+//   for (let request of requests) {
+//     //console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+
+RequestSchema.post('find',  async function(requests) {
   // console.log("requests", requests);
   for (let request of requests) {
-    //console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
-       request.populate('lead').execPopulate();
+      await request.populate('lead').execPopulate();
     }
   }
 });
+RequestSchema.post('findOne',  async function(request) {
+  // console.log("request", request);
+ 
+    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+      await request.populate('lead').execPopulate();
+    }
+
+});
+
+
 
 // // work but no multiple where on id-project
 // RequestSchema.virtual('messages', {
