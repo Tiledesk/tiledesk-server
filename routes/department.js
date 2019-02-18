@@ -449,7 +449,7 @@ function getRandomAvailableOperator(project_users_available) {
   // console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE ', project_users_available);
   console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
   if (project_users_available.length > 0) {
-    var operator = project_users_available[Math.round(Math.random() * project_users_available.length)];
+    var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
     console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
 
     // return operator.id_user
