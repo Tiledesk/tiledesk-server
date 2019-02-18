@@ -156,7 +156,7 @@ RequestSchema.virtual('lead', {
 RequestSchema.post('find', async function(requests) {
   // console.log("requests", requests);
   for (let request of requests) {
-    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    //console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
       await request.populate('lead').execPopulate();
     }
