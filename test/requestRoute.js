@@ -107,6 +107,47 @@ describe('RequestRoute', () => {
 });
 
 
+
+
+
+
+
+it('getallWithLoLead', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-signup-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.create("createWithId", savedUser._id).then(function(savedProject) {
+     requestService.createWithId("request_id1", "123456", savedProject._id, "first_text").then(function(savedRequest) {
+        console.log("resolve", savedRequest);
+       
+
+        chai.request(server)
+          .get('/'+ savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              expect(res.body.requests[0].department).to.not.equal(null);
+              expect(res.body.requests[0].lead).to.equal(null);
+        
+             done();
+          });
+          // .catch(function(err) {
+          //     console.log("test reject", err);
+          //     assert.isNotOk(err,'Promise error');
+          //     done();
+          // });
+  });
+});
+  });
+});
+
+
   describe('/assign', () => {
  
    

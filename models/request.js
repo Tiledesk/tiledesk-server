@@ -16,6 +16,7 @@ var RequestSchema = new Schema({
   requester_id: {
     type: String,
     required: true,
+    index: true
     // type: Schema.Types.ObjectId,
     // ref: 'lead'
   },
@@ -35,7 +36,8 @@ var RequestSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: 100
+    default: 100,
+    index: true
   }, 
 
 
@@ -148,6 +150,17 @@ RequestSchema.virtual('lead', {
   foreignField: '_id', // is equal to `foreignField`
   justOne: true,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+
+RequestSchema.post('find', async function(requests) {
+  // console.log("requests", requests);
+  for (let request of requests) {
+    console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+    if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+      await request.populate('lead').execPopulate();
+    }
+  }
 });
 
 // // work but no multiple where on id-project

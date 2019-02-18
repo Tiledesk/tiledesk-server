@@ -341,11 +341,20 @@ router.get('/', function (req, res, next) {
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
-      populate('lead').
+      //populate('lead').
+      // populate('lead', function (err, lead44) {
+      //   //assert(doc._id === user._id) // the document itself is passed
+      //   console.error('lead44',lead44)
+      // }).
+      // execPopulate(function (err, lead45) {
+      //   //assert(doc._id === user._id) // the document itself is passed
+      //   console.error('lead45',lead45)
+      // }).
       sort(sortQuery).
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+
           return next(err);
         }
         console.log('REQUEST ROUTE - REQUEST ', requests);
@@ -503,7 +512,9 @@ router.get('/:requestid', function (req, res) {
 
   console.log("get request by id ", req.params.requestid);
 
-  Request.findOne({"request_id":req.params.requestid}).populate('lead').exec(function(err, request) {
+  Request.findOne({"request_id":req.params.requestid})
+  // .populate('lead')
+  .exec(function(err, request) {
     //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
     if (err) {
       console.error("error getting request by id ", err);
