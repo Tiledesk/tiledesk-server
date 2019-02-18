@@ -223,9 +223,9 @@ class EmailService {
      </html>
      `;
 
-    this.send(to, '[TileDesk] New Assigned Request', html);
+    this.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
 
-    this.send(config.bcc, '[TileDesk] New Assigned Request '+to, html);
+    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
   }
 
   sendNewPooledRequestNotification(to, savedRequest, project) {
