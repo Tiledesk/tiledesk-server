@@ -394,8 +394,8 @@ class EmailService {
               </html>
               `;
 
-    this.send(to, '[TileDesk] New Pooled Request', html);
-    this.send(config.bcc, '[TileDesk] New Pooled Request', html);
+    this.send(to, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
   }
 
   /**
