@@ -337,7 +337,7 @@ class RequestService {
                         if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
 
                            //send email to admin
-                          Project_user.find({ id_project: id_project, role: "admin" }).populate('id_user')
+                          Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
                           .exec(function (err, project_users) {
                             project_users.forEach(project_user => {
                               if (project_user.id_user) {
