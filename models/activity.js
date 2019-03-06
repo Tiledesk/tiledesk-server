@@ -15,7 +15,7 @@ var ActivitySchema = new Schema({
   },
 
   actionObj: {
-    type: String,
+    type: Object,
     required: false
   },
   target: {
