@@ -27,7 +27,7 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 console.info("autoIndex", autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
-  mongoose.connect(config.databasetest, { "autoIndex": autoIndex });
+  mongoose.connect(config.databasetest, { "autoIndex": true });
 }else {
   mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
 }
@@ -380,7 +380,9 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], lead);
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], message);
 
-app.use('/:projectid/departments', reqLogger, department);
+app.use('/:projectid/departments', department);
+// app.use('/:projectid/departments', reqLogger, department);
+
 app.use('/public/requests', publicRequest);
 
 app.use('/chat21/requests',  chat21Request);
