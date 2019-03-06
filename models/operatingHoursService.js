@@ -267,7 +267,7 @@ function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
           // console.log('MOMENT ./END TIME ', moment_EndTime);
 
           var currentTimeIsBetween = moment_currentTime.isBetween(moment_StartTime, moment_EndTime);
-          console.log('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
+          // console.log('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
 
           if (currentTimeIsBetween == true) {
             // USE CASE: THE OPERATING HOURS ARE ACTIVE AND THE DAY OF THE REQUEST MATCH WITH THE OPERATING HOURS WEEK-DAY

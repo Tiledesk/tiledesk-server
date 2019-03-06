@@ -11,6 +11,7 @@ var messageService = require('../services/messageService');
 // var leadService = require('../services/leadService');
 var Lead = require('../models/lead');
 const requestEvent = require('../event/requestEvent');
+var Project_user = require("../models/project_user");
 
 class RequestService {
 
@@ -334,13 +335,29 @@ class RequestService {
                   try {                
                       Project.findById(id_project, function(err, project){                        
                         if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
+
+                           //send email to admin
+                          Project_user.find({ id_project: id_project, role: "admin" }).populate('id_user')
+                          .exec(function (err, project_users) {
+                            project_users.forEach(project_user => {
+                              if (project_user.id_user) {
+                                return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
+                              } else {
+                              }
+                            });                        
+                          });
+                          //end send email to admin
+
+                          //send email to lead
                           return Lead.findById(updatedRequest.requester_id, function(err, lead){
                              //if (lead && lead.email) {
                               if (lead) {
-                              return that.sendTranscriptByEmail(lead.email, request_id, id_project);
+                                return that.sendTranscriptByEmail(lead.email, request_id, id_project);
                              }
                               
                            });
+                          //end send email to lead
+
                         }
                       });
                     }catch(e) {

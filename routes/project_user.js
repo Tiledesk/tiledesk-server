@@ -7,6 +7,7 @@ var emailService = require("../models/emailService");
 var Project = require("../models/project");
 // var PendingInvitation = require("../models/pending-invitation");
 var pendinginvitation = require("../services/pendingInvitationService");
+var Activity = require("../models/activity");
 
 // var User = require("../models/user");
 
@@ -189,6 +190,10 @@ router.put('/:project_userid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.url, id_project: req.projectid });
+    activity.save();
+
     res.json(updatedProject_user);
   });
 });
