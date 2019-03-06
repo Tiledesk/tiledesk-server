@@ -191,7 +191,7 @@ router.put('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.url, id_project: req.projectid });
+    var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
     activity.save(function(err, savedActivity) {
         if (err) {
           console.error('Error saving activity ', err);
