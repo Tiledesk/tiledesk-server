@@ -192,7 +192,13 @@ router.put('/:project_userid', function (req, res) {
     }
 
     var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.url, id_project: req.projectid });
-    activity.save();
+    activity.save(function(err, savedActivity) {
+        if (err) {
+          console.error('Error saving activity ', err);
+        }else {
+          console.error('Activity saved', savedActivity)
+        }
+      });
 
     res.json(updatedProject_user);
   });
