@@ -484,10 +484,9 @@ router.get('/csv', function (req, res, next) {
 
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript  -agents -status -__v').
-    skip(skip).limit(limit)
-    .lean().
-      populate('department', 'name').
-      sort(sortQuery).
+    skip(skip).limit(limit).
+      populate('department.name').
+      sort(sortQuery).lean().
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
