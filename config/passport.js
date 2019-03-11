@@ -29,7 +29,7 @@ module.exports = function(passport) {
   var secret = config.secret;
 
    var secret23 = process.env.SECRET || config.secret;
-  console.log("123456", secret23);
+  console.log("secret23", secret23);
 
   opts.secretOrKey = secret;
   // console.log("here");
