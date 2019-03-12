@@ -487,7 +487,8 @@ router.get('/csv', function (req, res, next) {
     skip(skip).limit(limit).
       populate({
         path: 'department', 
-        select: { '_id': -1,'name':1}
+        //select: { '_id': -1,'name':1}
+        select: {'name':1}
       }).          
       exec(function (err, requests) {
         if (err) {
