@@ -501,7 +501,10 @@ router.get('/csv', function (req, res, next) {
         
 
          requests.forEach(function(element) {
-            var depName = element.department.name;
+            var depName = "";
+            if (element.department && element.department.name) {
+              depName = element.department.name;
+            }
             delete element.department;
             element.department = depName;
           });
