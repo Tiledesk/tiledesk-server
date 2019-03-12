@@ -21,6 +21,7 @@ var assert = chai.assert;
 var express = require('express');
 const bodyParser = require('body-parser');
 
+var leadService = require('../services/leadService');
 
 // var http = require('http');
 // const { parse } = require('querystring');
@@ -53,8 +54,8 @@ describe('Subscription', () => {
                             .set('content-type', 'application/json')
                             .send({"event":"message.create", "target":"http://localhost:3003/"})
                             .end((err, res) => {
-                                //  console.dir("res.body",  JSON.stringify(res.body));
-                                console.dir("res.body",  res.body);
+                                 console.log("res.body",  JSON.stringify(res.body));
+                                // console.dir("res.body 1",  res.body);
                                 console.log("res.headers",  res.headers);
                                 res.should.have.status(200);
                                 res.body.should.be.a('object');
@@ -69,11 +70,13 @@ describe('Subscription', () => {
                                 serverClient.use(bodyParser.json());
                                 serverClient.post('/', function (req, res) {
                                     console.log('serverClient req', JSON.stringify(req.body));                        
+                                    console.log("serverClient.headers",  JSON.stringify(req.headers));
                                     expect(req.body.hook.event).to.equal("message.create");
                                     expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-create");
                                     expect(req.body.payload.request.department).to.not.equal(null);
                                     expect(req.body.payload.request.department.bot).to.not.equal(null);
                                     expect(req.body.payload.request.department.bot.name).to.equal("testbot");
+                                    expect(req.headers["x-hook-secret"]).to.equal(secret); 
                                     res.send('POST request to the homepage');
                                 
                                     done();
@@ -81,10 +84,13 @@ describe('Subscription', () => {
                                 });
                                 var listener = serverClient.listen(3003, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
 
-                                requestService.createWithId("request_id-subscription-message-create", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
-                                    messageService.create(savedUser._id, "test sender", savedRequest.request_id, "hello",
-                                    savedProject._id, savedUser._id).then(function(savedMessage){
-                                        expect(savedMessage.text).to.equal("hello");      
+
+                                leadService.createIfNotExists("leadfullname-subscription-message-create", "andrea.leo@-subscription-message-create.it", savedProject._id).then(function(createdLead) {
+                                    requestService.createWithId("request_id-subscription-message-create", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                                        messageService.create(savedUser._id, "test sender", savedRequest.request_id, "hello",
+                                        savedProject._id, savedUser._id).then(function(savedMessage){
+                                            expect(savedMessage.text).to.equal("hello");     
+                                        });
                                     });
                                 });
                             });

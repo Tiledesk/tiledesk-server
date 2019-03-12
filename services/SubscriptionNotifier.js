@@ -14,7 +14,9 @@ class SubscriptionNotifier {
    
   findSubscriber(event, id_project) {
     return new Promise(function (resolve, reject) {
-      Subscription.find({event:event, id_project: id_project}).exec(function (err, subscriptions) {
+      Subscription.find({event:event, id_project: id_project})
+      .select("+secret")
+      .exec(function (err, subscriptions) {
         // if (subscriptions && subscriptions.length>0) {
         //   console.log("Subscription.notify", event, item , "length", subscriptions.length);
         // }
@@ -37,21 +39,26 @@ class SubscriptionNotifier {
       var json = {timestamp: Date.now(), payload: payload};
       subscriptions.forEach(function(s) {
           
+        // console.log("s",s);
+
           json["hook"] = s;
 
-          request.post({
+          request({
             url: s.target,
             headers: {
-              'content-type' : 'application/json',
-              //host' : 'https://api.tiledesk.com', 
-              //SENT request.close TO https://webhook.site/7deed213-06de-44d2-9bbf-bc2d4a45a721 with error  { Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match certificate's altnames: Host: https. is not in the cert's altnames: DNS:webhook.site, DNS:www.webhook.site
+             'Content-Type' : 'application/json',        
               'x-hook-secret': s.secret
             },
-            json: json
+            json: json,
+            method: 'POST'
+
           }, function(err, result, json){
             //console.log("SENT " + event + " TO " + s.target, "result", result, "with error " , err);
             console.log("SENT " + s.event + " TO " + s.target,  "with error " , err);
-            if (next) next(err, json);
+            if (err) {
+              console.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
+              next(err, json);
+            }
           });
       });
   // });
@@ -116,6 +123,7 @@ class SubscriptionNotifier {
                 var messageJson = message.toJSON();
 
                 if (request.department && request.department.id_bot) {
+                  // if (request.department) {
                   Faq_kb.findById(request.department.id_bot, function(err, bot) {
                     console.log('bot', bot);
                     var requestJson = request.toJSON();

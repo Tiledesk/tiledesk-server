@@ -16,7 +16,7 @@ var requestService = require('../services/requestService');
 // var Chat21 = require('@chat21/chat21-node-sdk');
 
 
-var firebaseService = require("../services/firebaseService");
+// var firebaseService = require("../services/firebaseService");
 
 // var admin = require('../utils/firebaseConnector');
 

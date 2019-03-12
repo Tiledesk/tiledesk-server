@@ -24,6 +24,7 @@ router.post('/', function (req, res) {
     // http://resthooks.org/docs/security/
 
     res.setHeader('x-hook-secret', subscriptionSaved.secret);
+   // console.log('--- > HEREEEEEEEEEEE ', subscriptionSaved);
     res.json(subscriptionSaved);
   });
 });
