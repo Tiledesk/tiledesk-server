@@ -120,7 +120,8 @@ it('getallWithLoLead', function (done) {
 
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
    projectService.create("createWithId", savedUser._id).then(function(savedProject) {
-     requestService.createWithId("request_id1", "123456", savedProject._id, "first_text").then(function(savedRequest) {
+    leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function(createdLead) {      
+     requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
         console.log("resolve", savedRequest);
        
 
@@ -128,12 +129,12 @@ it('getallWithLoLead', function (done) {
           .get('/'+ savedProject._id + '/requests/')
           .auth(email, pwd)
           .end(function(err, res) {
-              //console.log("res",  res);
+              console.log("res",  res);
               console.log("res.body",  res.body);
               res.should.have.status(200);
               res.body.should.be.a('object');
               expect(res.body.requests[0].department).to.not.equal(null);
-              expect(res.body.requests[0].lead).to.equal(null);
+              expect(res.body.requests[0].lead).to.not.equal(null);
         
              done();
           });
@@ -145,6 +146,7 @@ it('getallWithLoLead', function (done) {
   });
 });
   });
+});
 });
 
 
