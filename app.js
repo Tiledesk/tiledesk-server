@@ -45,6 +45,7 @@ var project = require('./routes/project');
 var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
+//var setting = require('./routes/setting');
 
 var group = require('./routes/group');
 
@@ -157,6 +158,7 @@ app.use(function (req, res, next) {
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(morgan('dev'));
+// app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -213,6 +215,36 @@ app.get('/', function (req, res) {
   res.send('Chat21 API index page. See the documentation.');
 });
 
+
+// app.use(function (req, res, next) {
+//  Setting.findOne({}, function (err, setting) {
+//     if (err) {
+//       console.error("Error getting setting", err);
+//       next();
+//     }
+//     if (!setting) {
+//       // console.log("setting doesnt exist. Creare it from serviceAccount", setting);
+//       //     var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
+//       //     setting.save(function(err, ssetting) {
+//       //       if (err) {
+//       //         console.error('Error saving ssetting ', err);
+//       //       }else {
+//       //         console.error('ssetting saved', ssetting)
+//       //       }
+//       //     });
+//       next();   
+//     } else {
+//       console.log("setting", setting);
+//       //req.appSetting = setting;
+
+//       // https://stackoverflow.com/questions/16452123/how-to-create-global-variables-accessible-in-all-views-using-express-node-js
+//       app.locals({appSetting: appSetting});
+//       next();   
+//     }
+    
+//   });
+  
+// });
 
 //app.use(reqLogger);
 
@@ -273,19 +305,19 @@ function HasRole(role) {
         }
         
         req.projectuser = project_user;
-        console.log("req.projectuser", req.projectuser);
+       // console.log("req.projectuser", req.projectuser);
 
         if (req.projectuser && req.projectuser.length>0) {
           
           var userRole = project_user[0].role;
-          console.log("userRole", userRole);
+          // console.log("userRole", userRole);
 
           if (!role) {
             next();
           }else {
 
             var hierarchicalRoles = ROLES[userRole];
-            console.log("hierarchicalRoles", hierarchicalRoles);
+            // console.log("hierarchicalRoles", hierarchicalRoles);
 
             if ( hierarchicalRoles.includes(role)) {
               next();
@@ -329,12 +361,12 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     Project.findById(projectid, function(err, project){
       if (err) {
-        console.warn("Problem getting project with id",projectid);
+         console.warn("Problem getting project with id",projectid);
         //console.warn("Error getting project with id",projectid, err);
       }
   
       if (!project) {
-        console.warn("Project not found for id", req.projectid);
+        //console.warn("Project not found for id", req.projectid);
         next();
       } else {
         req.project = project;
@@ -399,6 +431,7 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 
 //ATTENZIOne aggiungi auth check qui.i controlli stanno i project
 app.use('/projects',project);
+//app.use('/settings',setting);
 
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
