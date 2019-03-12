@@ -465,7 +465,7 @@ router.get('/csv', function (req, res, next) {
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  var direction = 1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   } 
