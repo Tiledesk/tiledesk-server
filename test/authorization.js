@@ -37,7 +37,7 @@ describe('Authorization', () => {
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             projectService.create("test-auth", savedUser._id).then(function(savedProject) {
                 leadService.createIfNotExists("request_id1-userBelongsToProject", "email@userBelongsToProject.com", savedProject._id).then(function(createdLead) {      
-                requestService.createWithId("test-auth", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                requestService.createWithId("test-userBelongsToProject", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
 
                     // var webhookContent =     { "assignee": 'assignee-member'}
                         
@@ -76,7 +76,8 @@ describe('Authorization', () => {
            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             userService.signup(  "test-signup" + Date.now() + "@email.com" ,pwd, "Test Firstname other", "Test lastname other").then(function(savedUserOther) {
                 projectService.create("test-auth", savedUserOther._id).then(function(savedProject) {
-                    requestService.createWithId("test-auth", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+                    leadService.createIfNotExists("request_id1-userNOTBelongsToProject", "email@userNOTBelongsToProject.com", savedProject._id).then(function(createdLead) {      
+                    requestService.createWithId("test-auth",createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
     
                         // var webhookContent =     { "assignee": 'assignee-member'}
                             
@@ -92,7 +93,7 @@ describe('Authorization', () => {
                                 done();
                             });
     
-                            
+                        });
                     });
                     });
                     });
