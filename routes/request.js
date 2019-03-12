@@ -485,7 +485,8 @@ router.get('/csv', function (req, res, next) {
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript  -agents -status -__v').
     skip(skip).limit(limit).
-        populate('department', {'_id':-1, 'name':1}).     
+        //populate('department', {'_id':-1, 'name':1}).     
+        populate('department').     
         lean().
       // populate({
       //   path: 'department', 
@@ -497,9 +498,16 @@ router.get('/csv', function (req, res, next) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
           return res.status(500).send({ success: false, msg: 'Error getting csv requests.',err:err });
         }
-        console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
+        
 
-   
+         requests.forEach(element => {
+            var dep = element.department;
+            delete element.department;
+            element.department = dep.name;
+          });
+
+          console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
+          
         // return Request.count(query, function(err, totalRowCount) {
 
           // var objectToReturn = {
