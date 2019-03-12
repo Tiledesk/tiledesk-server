@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
 var userService = require('../services/userService');
+var leadService = require('../services/leadService');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -35,7 +36,8 @@ describe('Authorization', () => {
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             projectService.create("test-auth", savedUser._id).then(function(savedProject) {
-                requestService.createWithId("test-auth", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+                leadService.createIfNotExists("request_id1-userBelongsToProject", "email@userBelongsToProject.com", savedProject._id).then(function(createdLead) {      
+                requestService.createWithId("test-auth", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
 
                     // var webhookContent =     { "assignee": 'assignee-member'}
                         
@@ -56,6 +58,7 @@ describe('Authorization', () => {
                         
                 });
                 });
+            });
                 });
     }).timeout(20000);
 
