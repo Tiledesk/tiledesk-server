@@ -41,6 +41,11 @@ class SubscriptionNotifier {
 
           request.post({
             url: s.target,
+            headers: {
+              'content-type' : 'application/json',
+              'host' : 'https://api.tiledesk.com',
+              'x-hook-secret': s.secret
+            },
             json: json
           }, function(err, result, json){
             //console.log("SENT " + event + " TO " + s.target, "result", result, "with error " , err);
@@ -106,27 +111,28 @@ class SubscriptionNotifier {
             // , function(err, request) {
               // console.log('1111');
 
-              var messageJson = message.toJSON();
+              if (request) {
+                var messageJson = message.toJSON();
 
-              if (request.department.id_bot) {
-                Faq_kb.findById(request.department.id_bot, function(err, bot) {
-                  console.log('bot', bot);
-                  var requestJson = request.toJSON();
-                  requestJson.department.bot = bot
+                if (request.department && request.department.id_bot) {
+                  Faq_kb.findById(request.department.id_bot, function(err, bot) {
+                    console.log('bot', bot);
+                    var requestJson = request.toJSON();
+                    requestJson.department.bot = bot
+                    
+                    messageJson.request = requestJson;
+                    console.log('messageJson', messageJson);
+                    subscriptionNotifier.notify(subscriptions, messageJson);
+    
+                  });
+
                   
-                  messageJson.request = requestJson;
-                  console.log('messageJson', messageJson);
+                }else {
+                  messageJson.request = request;
                   subscriptionNotifier.notify(subscriptions, messageJson);
-  
-                });
+                }
 
-                
-              }else {
-                messageJson.request = request;
-                subscriptionNotifier.notify(subscriptions, messageJson);
-              }
-
-              
+            }
              
             });
           }
