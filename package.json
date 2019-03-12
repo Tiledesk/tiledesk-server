@@ -17,6 +17,7 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
+    "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
@@ -46,7 +47,8 @@
     "request-promise": "^4.2.2",
     "serve-favicon": "~2.3.2",
     "uniqid": "^5.0.3",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
