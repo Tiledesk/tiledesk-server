@@ -501,13 +501,13 @@ router.get('/csv', function (req, res, next) {
         
 
          requests.forEach(element => {
-            var dep = element.department;
+            var depName = element.department.name;
             delete element.department;
-            element.department = dep.name;
+            element.department = depName;
           });
 
           console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
-          
+
         // return Request.count(query, function(err, totalRowCount) {
 
           // var objectToReturn = {
