@@ -17,7 +17,7 @@ var mongoose = require('mongoose');
 mongoose.connect(config.databasetest);
 
 var userService = require('../services/userService');
-var admin = require('../utils/firebaseConnector');
+// var admin = require('../utils/firebaseConnector');
 
 
 describe('UserService()', function () {

@@ -485,11 +485,12 @@ router.get('/csv', function (req, res, next) {
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript  -department -agents -status -__v').
     skip(skip).limit(limit).
-      populate({
-        path: 'department', 
-        //select: { '_id': -1,'name':1}
-        select: {'name':1}
-      }).          
+        populate('department', {'_id':-1, 'name':1}).     
+      // populate({
+      //   path: 'department', 
+      //   //select: { '_id': -1,'name':1}
+      //   select: {'name':1}
+      // }).          
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
