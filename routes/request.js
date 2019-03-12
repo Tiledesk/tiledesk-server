@@ -500,7 +500,7 @@ router.get('/csv', function (req, res, next) {
         }
         
 
-         requests.forEach(element => {
+         requests.forEach(function(element) {
             var depName = element.department.name;
             delete element.department;
             element.department = depName;
