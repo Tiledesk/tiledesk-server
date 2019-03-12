@@ -43,7 +43,8 @@ class SubscriptionNotifier {
             url: s.target,
             headers: {
               'content-type' : 'application/json',
-              'host' : 'https://api.tiledesk.com',
+              //host' : 'https://api.tiledesk.com', 
+              //SENT request.close TO https://webhook.site/7deed213-06de-44d2-9bbf-bc2d4a45a721 with error  { Error [ERR_TLS_CERT_ALTNAME_INVALID]: Hostname/IP does not match certificate's altnames: Host: https. is not in the cert's altnames: DNS:webhook.site, DNS:www.webhook.site
               'x-hook-secret': s.secret
             },
             json: json
