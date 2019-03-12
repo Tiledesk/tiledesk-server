@@ -358,7 +358,7 @@ router.get('/', function (req, res, next) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
 
-          return next(err);
+          return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
         }
         console.log('REQUEST ROUTE - REQUEST ', requests);
 
@@ -495,7 +495,7 @@ router.get('/csv', function (req, res, next) {
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return next(err);
+          return res.status(500).send({ success: false, msg: 'Error getting csv requests.',err:err });
         }
         console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
 
