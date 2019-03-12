@@ -34,6 +34,36 @@ To use RestHook you must create a Subscription. Each Subscription consists of th
 * target – address of your web server the webhook will be sent to.
 
 
+## Subscription
+
+### Create a subscription
+
+```
+curl -v -X POST -H 'Content-Type:application/json' -u <email>:<password> -d '{"event":"<event>", "target":"<target>"}' https://api.tiledesk.com/v1/<project_id>/subscriptions
+```
+
+Example:
+
+```
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"event":"request.create", "target":"https://webhook.site/c312005b-5042-49e9-a769-0f3ba4245b51"}' https://api.tiledesk.com/v1/5b55e806c93dde00143163dd/subscriptions
+```
+
+Response example:
+
+```
+{
+   "__v":0,
+   "updatedAt":"2019-03-12T12:01:56.462Z",
+   "createdAt":"2019-03-12T12:01:56.462Z",
+   "target":"https://webhook.site/c312005b-5042-49e9-a769-0f3ba4245b51",
+   "event":"request.create",
+   "id_project":"5b55e806c93dde00143163dd",
+   "createdBy":"5ab11c6b83dc240014d46095",
+   "_id":"5c879fb4f1ae6600173b8c75",
+   "secret":"56c189c8-33ae-4930-bd98-410a12aa45ce"
+}
+```
+
 # Webhook format
 
 Each webhook is a HTTP POST request made to the URL that you provide. The request’s POST body contains webhook information in JSON format.
@@ -79,7 +109,7 @@ Note: Tiledesk webhooks are sent with Content-Type: application/json header, so 
 
 
 # Webhook Models
-## Webhook topics
+## Webhook events
 
 The following Events are available and you can be notified when an action relating to that event occurs. 
 
@@ -96,9 +126,6 @@ A notification object contains the following fields:
 TODO
 
 
-
-## Handling webhook notifications
-When you setup a subscription you will receive notifications on your chosen topics. How you handle those notifications, i.e. the HTTP status code returned, will determine the subsequent state of that subscription. Please see below for a list of how a subscription will respond to these status codes
-
 ## Signed Notifications
 Each webhook notification is signed by Tiledesk via an x-hook-secret header. We do this so that you can verify the notification came from Tiledesk.
+
