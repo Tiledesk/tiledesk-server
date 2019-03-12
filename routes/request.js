@@ -492,7 +492,8 @@ router.get('/csv', function (req, res, next) {
       //   path: 'department', 
       //   //select: { '_id': -1,'name':1}
       //   select: {'name':1}
-      // }).          
+      // }).  
+      sort(sortQuery).        
       exec(function (err, requests) {
         if (err) {
           console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
