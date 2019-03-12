@@ -1,7 +1,7 @@
 # Introduction
 Webhooks are a powerful resource that you can use to automate your use cases and improve your productivity.
 
-Unlike the API resources, which represent static data that you can create, update and retrieve as needed, webhooks represent dynamic resources. You can configure them to automatically notify you when for example a new request occurXXX.
+Unlike the API resources, which represent static data that you can create, update and retrieve as needed, webhooks represent dynamic resources. You can configure them to automatically notify you when for example a new request occurs.
 
 
 # Use cases
@@ -22,20 +22,24 @@ This tutorial is will not be helpful for integration that pulls data on demand (
 ## Prerequisites
 You’ll need a Tiledesk Account. Sign up to your Dashboard.
 
+# RESTHooks
+Tiledek use RestHook patterns. REST Hooks itself is not a specification, it is a collection of patterns that treat webhooks like subscriptions. These subscriptions are manipulated via a REST API just like any other resource. 
+More info here: http://resthooks.org
 
-# Webhooks
 Tiledesk can send notifications when some particular action is performed. Such a notification is called a webhook – it’s just a simple HTTP request that Tiledesk sends to your server when a particular event occurs. 
 
-Each webhook consists of the following properties:
+To use RestHook you must create a Subscription. Each Subscription consists of the following properties:
 
-* Event – determines when the webhook is sent to your web server.
-* Target URL – address of your web server the webhook will be sent to.
+* event – determines when the webhook is sent to your web server.
+* target – address of your web server the webhook will be sent to.
 
 
 # Webhook format
 
 Each webhook is a HTTP POST request made to the URL that you provide. The request’s POST body contains webhook information in JSON format.
 
+
+```
 {
    "hook":{
       "_id":"5c4f1c2e081bde0016cd61d4",
@@ -59,15 +63,15 @@ Each webhook is a HTTP POST request made to the URL that you provide. The reques
        ...
    }
 }
+```
 
+Each webhook request contains the following properties:
 
-Each webhook contains the following properties:
+* hook – return the subscription object that triggered the webhook. 
 
-* hook – tells you the event that triggered the webhook. Possible values: chat_started, chat_ended, visitor_queued.
+* token – your authentication credentials that let you call Tiledesk’s REST API methods. You won’t need to use them unless you want to make a call to Tiledesk’s API right when you receive a webhook. In that case, you just need to pass these token credentials in your API call. 
 
-* token and license_id – your authentication credentials that let you call LiveChat’s REST API methods. You won’t need to use them unless you want to make a call to LiveChat’s API right when you receive a webhook. In that case, you just need to pass these token and license_id credentials in your API call. Here’s an example.
-
-* payload – please read the Webhook data types section.
+* payload – It contains the data of the webhook.
 
 When your server receives a webhook from Tiledesk, it should respond with HTTP 200 response. Otherwise, Tiledesk will retry sending the webhook to your service for a number of times unless it receives the correct HTTP 200 response.
 
@@ -77,28 +81,24 @@ Note: Tiledesk webhooks are sent with Content-Type: application/json header, so 
 # Webhook Models
 ## Webhook topics
 
-The following Events are available and you can be notified when an action relating to that event occurs. You just need to tell us where to send the notification.
+The following Events are available and you can be notified when an action relating to that event occurs. 
 
-
-| Event           | Description                                   |
-|-----------------|-----------------------------------------------|
-| request.created | Subscribe to user and lead initiated messages |
-|                 |                                               |
-|                 |                                               |
+| Event          | Description                        |
+|----------------|------------------------------------|
+| request.create | Subscribe to requests creations    |
+| request.update | Subscribe to request being updated |
+| request.close  | Subscribe to request being closed  |
+| message.create | Subscribe to messages creations    |
 
 
 ## Webhook Notification object
-A notification object contains the following fields
+A notification object contains the following fields:
+TODO
 
-A notification object contains the following fields
+
 
 ## Handling webhook notifications
 When you setup a subscription you will receive notifications on your chosen topics. How you handle those notifications, i.e. the HTTP status code returned, will determine the subsequent state of that subscription. Please see below for a list of how a subscription will respond to these status codes
 
 ## Signed Notifications
-Each webhook notification is signed by Intercom via an X-Hub-Signature header. We do this so that you can verify the notification came from Intercom by decoding the signature.
-
-The value of this X-Hub-Signature header is computed by creating a signature using the body of the JSON request and your app's client_secret value, which you can find on the Basic Info page of your app.
-
-The signature is the hexadecimal (40-byte) representation of a SHA-1 signature computed using the HMAC algorithm as defined in RFC2104.
-
+Each webhook notification is signed by Tiledesk via an x-hook-secret header. We do this so that you can verify the notification came from Tiledesk.
