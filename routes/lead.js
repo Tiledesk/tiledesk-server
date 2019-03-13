@@ -14,6 +14,7 @@ router.post('/', function (req, res) {
   var newLead = new Lead({
     fullname: req.body.fullname,
     lead_id: req.body.lead_id,
+    email: req.body.email,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
