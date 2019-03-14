@@ -89,6 +89,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 });
 
 // PROJECT PUT
+// should check HasRole otherwise another user can change this
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   console.log('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
