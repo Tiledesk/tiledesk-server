@@ -14,7 +14,7 @@ var serviceAccount;
 
 if (!private_key || !client_email) {
   serviceAccount = require('../.firebasekey.json');
-  console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.');
+  console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.', serviceAccount.toJSON());
 }else {
     serviceAccount = {
         "private_key": private_key.replace(/\\n/g, '\n'),
