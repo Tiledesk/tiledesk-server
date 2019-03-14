@@ -2,50 +2,32 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
 
-var UserSchema = new Schema({
-    _id: Schema.Types.ObjectId,
-    email: {
+var AuthSchema = new Schema({
+    // fullname: {
+    //     type: String,
+    //     required: false
+    //   },
+      providerId: {
         type: String,
-        unique: true,
-        required: true,
-        index: true
-    },
-    password: {
+        default: 'password',
+        required: true
+     },
+     password: {
         type: String,
         required: true,
         // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
         // select: false
     },
-    firstname: {
-        type: String,
-        // required: true
-    },
-    lastname: {
-        type: String,
-        // required: true
-    },
-    emailverified: {
-        type: Boolean,
-        // required: true
-    },
-    resetpswrequestid: {
-        type: String,
-    },
-    // auth: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'auth',
-    //     //required: true
-    //   },
-});
+    //   id_project: {
+    //     type: String,
+    //     required: true
+    //   }      
+    }, {
+        timestamps: true
+      }
+);
 
-// UserSchema.set('toJSON', {
-//     transform: function(doc, ret, opt) {
-//         delete ret['password']
-//         return ret
-//     }
-// });
-
-UserSchema.pre('save', function (next) {
+AuthSchema.pre('save', function (next) {
     var user = this;
     if (this.isModified('password') || this.isNew) {
         bcrypt.genSalt(10, function (err, salt) {
@@ -65,7 +47,7 @@ UserSchema.pre('save', function (next) {
     }
 });
 
-UserSchema.methods.comparePassword = function (passw, cb) {
+AuthSchema.methods.comparePassword = function (passw, cb) {
     bcrypt.compare(passw, this.password, function (err, isMatch) {
         if (err) {
             return cb(err);
@@ -73,5 +55,4 @@ UserSchema.methods.comparePassword = function (passw, cb) {
         cb(null, isMatch);
     });
 };
-
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('auth', AuthSchema);

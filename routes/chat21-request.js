@@ -11,9 +11,15 @@ var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
 
-var admin = require('../utils/firebaseConnector');
-
 const firestore = admin.firestore();
+
+// var admin = require('../utils/firebaseConnector');
+// let firestore;
+// // https://stackoverflow.com/questions/37652328/how-to-check-if-a-firebase-app-is-already-initialized-on-android
+// if (admin.apps.length>0) {
+//    firestore = admin.firestore();
+// }
+ 
 
 // var jwt = require('jsonwebtoken');
 // var validtoken = require('../middleware/valid-token');

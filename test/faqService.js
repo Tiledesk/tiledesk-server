@@ -48,12 +48,14 @@ describe('FaqService()', function () {
                 var query = { "id_project": savedProject._id };
 
                 query.$text = {"$search": "question"};
-
-                return Faq.find(query).                  
+                 
+                return Faq.find(query,  {score: { $meta: "textScore" } })  
+                .lean().               
                   exec(function (err, faqs) {
                     console.log("faqs", faqs);
                     expect(faqs.length).to.equal(1);
                     expect(faqs[0]._id.toString()).to.equal(savedFaq._id.toString());
+                    expect(faqs[0].score).to.not.equal(null);
                     done();   
                   });
 
