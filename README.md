@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=master)](https://travis-ci.org/Tiledesk/tiledesk-server)
+
 # Prerequisites
 
 * Nodejs and npm installed 
