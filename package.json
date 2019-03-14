@@ -5,6 +5,7 @@
     "start": "node ./bin/www",
     "test": "mocha"
   },
+  "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
   "license": "AGPL-3.0",
   "homepage": "https://www.tiledesk.com",
