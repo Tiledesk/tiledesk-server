@@ -13,7 +13,7 @@ var firebase_project_id = process.env.FIREBASE_PROJECT_ID;
 var serviceAccount;
 
 if (!private_key || !client_email) {
-  serviceAccount = require('../config/.firebase-key/key.json');
+  serviceAccount = require('../key.json');
   console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.');
 }else {
     serviceAccount = {
