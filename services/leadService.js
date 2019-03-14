@@ -3,6 +3,8 @@
 var Lead = require("../models/lead");
 //var mongoose = require('mongoose');
 const uuidv4 = require('uuid/v4');
+//var Auth = require("../models/auth");
+const leadEvent = require('../event/leadEvent');
 
 class LeadService {
 
@@ -80,33 +82,46 @@ class LeadService {
 
     return new Promise(function (resolve, reject) {
 
-    
-      var newLead = new Lead({
-        lead_id: lead_id,
-        fullname: fullname,
-        email: email,
-        attributes: attributes,
-        id_project: id_project,
-        createdBy: createdBy,
-        updatedBy: createdBy
-      });
-    
-      newLead.save(function(err, savedLead) {
-        if (err) {
-          console.error('Error saving the lead '+ JSON.stringify(newLead), err)
-          return reject(err);
-          // return res.status(500).send({success: false, msg: 'Error saving the lead '+ JSON.stringify(newLead)});
-        }
-        // if (!savedLead) {
-        //   console.log('lead not found', newLead);
-        //   // return res.status(404).send({success: false, msg: 'lead not found' + JSON.stringify(newLead)});
+      // var auth = new Auth({
+      //   password: password
+      // });
+      // auth.save(function (err, authSaved) {
+      //   if (err) {
+      //       return reject(err);
+      //   }
 
-        // }
-        console.info('Lead created ', newLead);
-        return resolve(savedLead);
-      });
-    });
+            var newLead = new Lead({
+              lead_id: lead_id,
+              fullname: fullname,
+              email: email,
+              attributes: attributes,
+              id_project: id_project,
+              createdBy: createdBy,
+              updatedBy: createdBy
+            });
+          
+            newLead.save(function(err, savedLead) {
+              if (err) {
+                console.error('Error saving the lead '+ JSON.stringify(newLead), err)
+                return reject(err);
+                // return res.status(500).send({success: false, msg: 'Error saving the lead '+ JSON.stringify(newLead)});
+              }
+              // if (!savedLead) {
+              //   console.log('lead not found', newLead);
+              //   // return res.status(404).send({success: false, msg: 'lead not found' + JSON.stringify(newLead)});
 
+              // }
+              console.info('Lead created ', newLead);
+
+              leadEvent.emit('lead.create', newLead);
+              return resolve(savedLead);
+            });
+        });
+
+
+
+
+        // });
   
 
   }

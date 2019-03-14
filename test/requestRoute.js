@@ -111,6 +111,46 @@ describe('RequestRoute', () => {
 
 
 
+it('getallcsv', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-signup-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.create("createWithId", savedUser._id).then(function(savedProject) {
+    leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+     requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        console.log("resolve", savedRequest);
+       
+
+        chai.request(server)
+          .get('/'+ savedProject._id + '/requests/csv/')
+          .auth(email, pwd)
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+             
+        
+             done();
+          });
+          // .catch(function(err) {
+          //     console.log("test reject", err);
+          //     assert.isNotOk(err,'Promise error');
+          //     done();
+          // });
+  });
+});
+});
+  });
+});
+
+
+
+
 
 it('getallWithLoLead', function (done) {
   // this.timeout(10000);

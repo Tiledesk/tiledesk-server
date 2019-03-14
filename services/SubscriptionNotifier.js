@@ -2,6 +2,7 @@ var request = require('request');
 var Subscription = require('../models/subscription');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
+const leadEvent = require('../event/leadEvent');
 
 var Request = require("../models/request");
 var Message = require("../models/message");
@@ -199,6 +200,21 @@ class SubscriptionNotifier {
           }
         });
       });
+
+
+
+      leadEvent.on('lead.create', function(lead) {
+        //console.log("Subscription.notify");
+        subscriptionNotifier.findSubscriber('lead.create', lead.id_project).then(function(subscriptions) { 
+          //console.log("Subscription.notify subscriptionNotifier", subscriptions.length);
+          if (subscriptions && subscriptions.length>0) {
+            console.log("Subscription.notify", 'lead.create', lead , "length", subscriptions.length);
+            subscriptionNotifier.notify(subscriptions, lead);           
+          }
+        });
+
+      });
+
   }
 };
 
