@@ -7,15 +7,7 @@ cache:
   directories:
   - node_modules
 env:
-# - MONGODB_VERSION=2.6.x MONGODB_TOPOLOGY=standalone
 - MONGODB_VERSION=4.0.x MONGODB_TOPOLOGY=standalone
-# - MONGODB_VERSION=unstable MONGODB_TOPOLOGY=standalone
-# - MONGODB_VERSION=2.6.x MONGODB_TOPOLOGY=replicaset
-# - MONGODB_VERSION=3.0.x MONGODB_TOPOLOGY=replicaset
-# - MONGODB_VERSION=unstable MONGODB_TOPOLOGY=replicaset
-# - MONGODB_VERSION=2.6.x MONGODB_TOPOLOGY=cluster
-# - MONGODB_VERSION=3.0.x MONGODB_TOPOLOGY=cluster
-# - MONGODB_VERSION=unstable MONGODB_TOPOLOGY=cluster
 before_install:
 - openssl aes-256-cbc -K $encrypted_f39920166870_key -iv $encrypted_f39920166870_iv
   -in .firebasekey.json.enc -out .firebasekey.json -d
