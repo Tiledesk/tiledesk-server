@@ -3,7 +3,9 @@
   "version": "1.0.2",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha"
+    "pretest": "mongodb-runner start",
+    "test": "mocha",
+    "posttest": "mongodb-runner stop"
   },
   "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
@@ -57,6 +59,7 @@
     "mocha": "^5.0.0",
     "nodemon": "^1.18.10",
     "sinon": "^4.2.2",
-    "sinon-mongoose": "^2.0.2"
+    "sinon-mongoose": "^2.0.2",
+    "mongodb-runner": "4.3.2"
   }
 }
