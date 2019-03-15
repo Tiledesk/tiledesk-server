@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 var operatingHoursService = require("../models/operatingHoursService");
 var getTimezoneOffset = require("get-timezone-offset")
 
-
+var winston = require('../config/winston');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
@@ -79,10 +79,10 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
     newDepartment.save(function (err, savedDepartment) {
       if (err) {
-        console.log('--- > ERROR ', err)
+        winston.error('--- > ERROR ', err)
         // return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
-      console.log('Default Department created')
+      winston.info('Default Department created')
       // res.json(savedDepartment);
     });
   });
@@ -91,7 +91,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 // PROJECT PUT
 // should check HasRole otherwise another project user can change this
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log('UPDATE PROJECT REQ BODY ', req.body);
+  winston.debug('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -143,7 +143,7 @@ router.get('/:projectid/isopen', function (req, res) {
     console.log('project', req.params.projectid, 'isopen: ', isOpen);
 
     if (err) {
-      console.error('Error getting projectIsOpenNow', err);
+      winston.error('Error getting projectIsOpenNow', err);
       sendError(err, res);
       // return res.status(500).send({ success: false, msg: err });
     } 

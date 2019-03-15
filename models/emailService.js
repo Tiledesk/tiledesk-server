@@ -2,6 +2,7 @@
 
 const nodemailer = require('nodemailer');
 var config = require('../config/email');
+var winston = require('../config/winston');
 
 class EmailService {
 
@@ -42,7 +43,7 @@ class EmailService {
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
       if (error) {
-        return console.error("Error sending email ", error);
+        return winston.error("Error sending email ", error);
       }
       console.log('Message sent: %s', info.messageId);
       // Preview only available when sending through an Ethereal account

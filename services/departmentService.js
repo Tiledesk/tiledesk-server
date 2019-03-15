@@ -4,6 +4,8 @@ var Project_user = require("../models/project_user");
 var Group = require("../models/group");
 var operatingHoursService = require("../models/operatingHoursService");
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
+
 
 class DepartmentService {
 
@@ -32,10 +34,10 @@ class DepartmentService {
     
         return newDepartment.save(function (err, savedDepartment) {
           if (err) {
-            console.log('--- > ERROR ', err);
+            winston.error('--- > ERROR ', err);
             reject(err);
           }
-          console.info('Default Department created', savedDepartment);
+          winston.info('Default Department created', savedDepartment);
           return resolve(savedDepartment);
         });
       });
@@ -58,12 +60,12 @@ getOperators(departmentid, projectid, nobot) {
         // return Department.findOne(query).exec().then(function (department) {
 
         if (err) {
-          console.error('-- > 1 DEPT FIND BY ID ERR ', err)
+          winston.error('-- > 1 DEPT FIND BY ID ERR ', err)
           return reject(err);
         }
         // console.log("department", department);
         if (!department) {
-          console.error("Department not found for query ", query);
+          winston.error("Department not found for query ", query);
           return reject({ success: false, msg: 'Object not found.' });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
@@ -97,7 +99,7 @@ getOperators(departmentid, projectid, nobot) {
 
           return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
             if (err) {
-              console.error('-- > 2 DEPT FIND BY ID ERR ', err)
+              winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
               return reject(err);
             }
             // console.log('OPERATORS - BOT IS DEFINED - MEMBERS ', project_users)
@@ -112,9 +114,9 @@ getOperators(departmentid, projectid, nobot) {
               return resolve ({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
             }).catch(function (error) {
 
-              // console.error("Write failed: ", error);
+              // winston.error("Write failed: ", error);
 
-              console.error("Error D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
+              winston.error("Error D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
 
               return reject(error);
             });
@@ -140,7 +142,7 @@ getOperators(departmentid, projectid, nobot) {
             return resolve(value);
 
           }).catch(function (error) {
-            console.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
+            winston.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
             return reject(error);
           });
         }
@@ -174,7 +176,7 @@ getOperators(departmentid, projectid, nobot) {
 
     return Group.find({ _id: department.id_group }).exec(function (err, group) {
       if (err) {
-        console.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
+        winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
       }
       if (group) {
@@ -205,8 +207,8 @@ getOperators(departmentid, projectid, nobot) {
 
             }).catch(function (error) {
 
-              // console.error("Write failed: ", error);
-              console.error('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_group ] - AVAILABLE AGENT - ERROR ', error);
+              // winston.error("Write failed: ", error);
+              winston.error('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_group ] - AVAILABLE AGENT - ERROR ', error);
 
               return reject(error);
               //sendError(error, res);
@@ -230,7 +232,7 @@ getOperators(departmentid, projectid, nobot) {
   return new Promise(function (resolve, reject) {
     return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
       if (err) {
-        console.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
+        winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
       }
       // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS LENGHT ', project_users.length)
@@ -251,8 +253,8 @@ getOperators(departmentid, projectid, nobot) {
 
         }).catch(function (error) {
 
-          // console.error("Write failed: ", error);
-          console.error('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_nogroup ] - AVAILABLE AGENT - ERROR ', error);
+          // winston.error("Write failed: ", error);
+          winston.error('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_nogroup ] - AVAILABLE AGENT - ERROR ', error);
           return reject(error);
 
         });
@@ -283,7 +285,7 @@ getOperators(departmentid, projectid, nobot) {
         // console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - ERROR: ', err)
 
         if (err) {
-          console.error(err); 
+          winston.error(err); 
           return reject(err);
           // sendError(err, res);
 

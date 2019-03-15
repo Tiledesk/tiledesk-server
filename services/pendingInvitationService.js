@@ -3,6 +3,7 @@ var PendingInvitation = require("../models/pending-invitation");
 var emailService = require("../models/emailService");
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 class Pending_Invitation {
 
@@ -16,7 +17,7 @@ class Pending_Invitation {
         console.log('** ** FIND IN PENDING INVITATION ** ** ');
 
         if (err) {
-          console.error('** ** FIND IN PENDING INVITATION - ERROR ** **', err)
+          winston.error('** ** FIND IN PENDING INVITATION - ERROR ** **', err)
           return reject({ success: false, msg: 'Error find object.', err: err });
         }
 
@@ -63,7 +64,7 @@ class Pending_Invitation {
 
       return PendingInvitation.find({ email: newUserEmail }, function (err, pendinginvitations) {
         if (err) {
-          console.error('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
+          winston.error('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
           return reject({ msg: 'Error getting pending invitation' });
         }
         if (!pendinginvitations.length) {
@@ -115,7 +116,7 @@ class Pending_Invitation {
     return new Promise(function (resolve, reject) {
         return PendingInvitation.remove({ _id: pendingInvitationId }, function (err, pendinginvitation) {
           if (err) {
-            console.error('DELETING PENDING INVITATION - ERROR ', err);
+            winston.error('DELETING PENDING INVITATION - ERROR ', err);
             return reject({ success: false, msg: 'Error deleting object.' });
           }
           // return resolve(pendinginvitation);

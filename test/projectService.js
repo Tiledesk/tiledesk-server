@@ -7,6 +7,7 @@ var expect = require('chai').expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
@@ -31,7 +32,7 @@ describe('ProjectService()', function () {
          expect(savedProject.name).to.equal("test1");
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });

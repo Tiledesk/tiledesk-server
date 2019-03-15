@@ -15,6 +15,7 @@ var projectService = require("../services/projectService");
 var userService = require('../services/userService');
 var faqService = require('../services/faqService');
 var Faq = require('../models/faq');
+var winston = require('../config/winston');
 
 
 describe('FaqService()', function () {
@@ -41,7 +42,7 @@ describe('FaqService()', function () {
               });
             
               newFaq.save(function (err, savedFaq) {
-                console.log("resolve", savedFaq);
+                winston.debug("resolve", savedFaq.toObject());
                 expect(savedBot.name).to.equal("testbot");
                 expect(savedFaq.question).to.equal("question");
                

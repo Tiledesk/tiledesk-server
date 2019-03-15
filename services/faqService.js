@@ -1,6 +1,8 @@
 var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var request = require('request');
+var winston = require('../config/winston');
+
 // var mongoose = require('mongoose');
 
 class FaqService {
@@ -24,15 +26,15 @@ class FaqService {
       
         newFaq_kb.save(function (err, savedFaq_kb) {
           if (err) {
-            console.log('--- > ERROR ', err)
+            winston.error('--- > ERROR ', err)
             return reject('Error saving object.' );
           }
-          console.log('-> -> SAVED FAQFAQ KB ', savedFaq_kb)              
+          winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
           if (savedFaq_kb.external===false) {
             createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
           } else {
-            console.log('external bot');
+            winston.debug('external bot');
           }
 
           return resolve(savedFaq_kb);
@@ -71,13 +73,13 @@ class FaqService {
 
         newFaq.save(function (err, savedFaq) {
           if (err) {
-            console.log('--- > ERROR ', err)
+            winston.error('--- > ERROR ', err)
             return reject({ success: false, msg: 'Error saving object.', err: err });
           }
-          console.log('FAQ SERVICE (save new faq) - ID OF THE NEW GREETINGS FAQ CREATED ', savedFaq._id)
-          console.log('FAQ SERVICE (save new faq) - QUESTION OF THE NEW GREETINGS FAQ CREATED ', savedFaq.question)
-          console.log('FAQ SERVICE (save new faq) - ANSWER OF THE NEW GREETINGS FAQ CREATED ', savedFaq.answer)
-          console.log('FAQ SERVICE (save new faq) - ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb)
+          winston.debug('FAQ SERVICE (save new faq) - ID OF THE NEW GREETINGS FAQ CREATED ', savedFaq._id)
+          winston.debug('FAQ SERVICE (save new faq) - QUESTION OF THE NEW GREETINGS FAQ CREATED ', savedFaq.question)
+          winston.debug('FAQ SERVICE (save new faq) - ANSWER OF THE NEW GREETINGS FAQ CREATED ', savedFaq.answer)
+          winston.debug('FAQ SERVICE (save new faq) - ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb)
           // res.json({ 'Greetings Faqs': savedFaq });
           // return resolve(savedFaq);
 
@@ -90,10 +92,10 @@ class FaqService {
 
   createRemoteFaq(faqkb_remotekey, savedFaq) {
 
-    console.log('FAQ SERVICE (create remote faq) - REMOTE KEY of the FAQKB PASSED BY faq_kb routes ', faqkb_remotekey)
-    console.log('FAQ SERVICE (create remote faq) - ID OF THE NEW FAQ CREATED ', savedFaq._id)
-    console.log('FAQ SERVICE (create remote faq) - QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
-    console.log('FAQ SERVICE (create remote faq) - ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
+    winston.debug('FAQ SERVICE (create remote faq) - REMOTE KEY of the FAQKB PASSED BY faq_kb routes ', faqkb_remotekey)
+    winston.debug('FAQ SERVICE (create remote faq) - ID OF THE NEW FAQ CREATED ', savedFaq._id)
+    winston.debug('FAQ SERVICE (create remote faq) - QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
+    winston.debug('FAQ SERVICE (create remote faq) - ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
 
     var json = {
       "id": savedFaq._id,

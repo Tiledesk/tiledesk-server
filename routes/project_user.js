@@ -8,6 +8,7 @@ var Project = require("../models/project");
 // var PendingInvitation = require("../models/pending-invitation");
 var pendinginvitation = require("../services/pendingInvitationService");
 var Activity = require("../models/activity");
+var winston = require('../config/winston');
 
 // var User = require("../models/user");
 
@@ -194,9 +195,9 @@ router.put('/:project_userid', function (req, res) {
     var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
     activity.save(function(err, savedActivity) {
         if (err) {
-          console.error('Error saving activity ', err);
+          winston.error('Error saving activity ', err);
         }else {
-          console.error('Activity saved', savedActivity)
+          winston.error('Activity saved', savedActivity)
         }
       });
 

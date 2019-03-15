@@ -7,6 +7,7 @@ const leadEvent = require('../event/leadEvent');
 var Request = require("../models/request");
 var Message = require("../models/message");
 var Faq_kb = require("../models/faq_kb");
+var winston = require('../config/winston');
 
 
 class SubscriptionNotifier {
@@ -19,7 +20,7 @@ class SubscriptionNotifier {
       .select("+secret")
       .exec(function (err, subscriptions) {
         // if (subscriptions && subscriptions.length>0) {
-        //   console.log("Subscription.notify", event, item , "length", subscriptions.length);
+        //   winston.debug("Subscription.notify", event, item , "length", subscriptions.length);
         // }
         resolve(subscriptions);
       });
@@ -27,16 +28,16 @@ class SubscriptionNotifier {
   } 
 
   notify(subscriptions, payload, next) {
-    // console.log("Subscription.notify", event, item);
+    // winston.debug("Subscription.notify", event, item);
     
     // Subscription.find({event:event, id_project: item.id_project}).exec(function (err, subscriptions) {
     //   if (subscriptions && subscriptions.length>0) {
-    //     console.log("Subscription.notify", event, item , "length", subscriptions.length);
+    //     winston.debug("Subscription.notify", event, item , "length", subscriptions.length);
     //   }
 
     
       //var json = {event: event, timestamp: Date.now(), payload: item};
-      console.log("subscriptions",subscriptions);
+      winston.debug("subscriptions",subscriptions);
       var json = {timestamp: Date.now(), payload: payload};
       subscriptions.forEach(function(s) {
           
@@ -57,7 +58,7 @@ class SubscriptionNotifier {
             //console.log("SENT " + event + " TO " + s.target, "result", result, "with error " , err);
             console.log("SENT " + s.event + " TO " + s.target,  "with error " , err);
             if (err) {
-              console.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
+              winston.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
               next(err, json);
             }
           });
@@ -70,7 +71,7 @@ class SubscriptionNotifier {
 
     model.pre('save', function(next) {
       isNew = this.isNew;
-      console.log("Subscription.notify.pre (isNew)", isNew);
+      winston.debug("Subscription.notify.pre (isNew)", isNew);
      
       return next();
     });
@@ -81,7 +82,7 @@ class SubscriptionNotifier {
      
        // If we have isNew flag then it's an update
        var event = (isNew) ? 'create' : 'update';
-       console.log("Subscription.notify."+event);
+       winston.debug("Subscription.notify."+event);
       next(null, doc);
       SubscriptionNotifier.notify(modelName+'.'+event, doc);
     });
@@ -102,7 +103,7 @@ class SubscriptionNotifier {
         // console.log('messageEmitter message.create', message);
         subscriptionNotifier.findSubscriber('message.create', message.id_project).then(function(subscriptions) { 
           if (subscriptions && subscriptions.length>0) {
-            console.log("Subscription.notify", 'message.create', message , "length", subscriptions.length);
+            winston.debug("Subscription.notify", 'message.create', message , "length", subscriptions.length);
             
             Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
             populate('lead').
@@ -126,12 +127,12 @@ class SubscriptionNotifier {
                 if (request.department && request.department.id_bot) {
                   // if (request.department) {
                   Faq_kb.findById(request.department.id_bot, function(err, bot) {
-                    console.log('bot', bot);
+                    winston.debug('bot', bot);
                     var requestJson = request.toJSON();
                     requestJson.department.bot = bot
                     
                     messageJson.request = requestJson;
-                    console.log('messageJson', messageJson);
+                    winston.debug('messageJson', messageJson);
                     subscriptionNotifier.notify(subscriptions, messageJson);
     
                   });
@@ -155,7 +156,7 @@ class SubscriptionNotifier {
 
         subscriptionNotifier.findSubscriber('request.create', request.id_project).then(function(subscriptions) { 
           if (subscriptions && subscriptions.length>0) {
-            console.log("Subscription.notify", 'request.create', request , "length", subscriptions.length);
+            winston.debug("Subscription.notify", 'request.create', request , "length", subscriptions.length);
             Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {          
               var requestJson = request.toJSON();
               requestJson.messages = messages;
@@ -171,7 +172,7 @@ class SubscriptionNotifier {
         // subscriptionNotifier.notify('request.update', request);
         subscriptionNotifier.findSubscriber('request.update', request.id_project).then(function(subscriptions) { 
           if (subscriptions && subscriptions.length>0) {
-            console.log("Subscription.notify", 'request.update', request , "length", subscriptions.length);
+            winston.debug("Subscription.notify", 'request.update', request , "length", subscriptions.length);
             Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
               var requestJson = request.toJSON();
               requestJson.messages = messages;
@@ -191,7 +192,7 @@ class SubscriptionNotifier {
         // subscriptionNotifier.notify('request.close', request);
         subscriptionNotifier.findSubscriber('request.close', request.id_project).then(function(subscriptions) { 
           if (subscriptions && subscriptions.length>0) {
-            console.log("Subscription.notify", 'request.close', request , "length", subscriptions.length);
+            winston.debug("Subscription.notify", 'request.close', request , "length", subscriptions.length);
             Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
               var requestJson = request.toJSON();
               requestJson.messages = messages;
@@ -204,11 +205,11 @@ class SubscriptionNotifier {
 
 
       leadEvent.on('lead.create', function(lead) {
-        //console.log("Subscription.notify");
+        //winston.debug("Subscription.notify");
         subscriptionNotifier.findSubscriber('lead.create', lead.id_project).then(function(subscriptions) { 
-          //console.log("Subscription.notify subscriptionNotifier", subscriptions.length);
+          //winston.debug("Subscription.notify subscriptionNotifier", subscriptions.length);
           if (subscriptions && subscriptions.length>0) {
-            console.log("Subscription.notify", 'lead.create', lead , "length", subscriptions.length);
+            winston.debug("Subscription.notify", 'lead.create', lead , "length", subscriptions.length);
             subscriptionNotifier.notify(subscriptions, lead);           
           }
         });

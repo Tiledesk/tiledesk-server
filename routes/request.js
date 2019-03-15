@@ -11,6 +11,7 @@ var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
 var requestService = require('../services/requestService');
+var winston = require('../config/winston');
 
 
 // var Chat21 = require('@chat21/chat21-node-sdk');
@@ -44,10 +45,10 @@ var messageService = require('../services/messageService');
 
 router.post('/', function (req, res) {
 
-  console.log("req.body", req.body);
+  winston.debug("req.body", req.body);
 
-  console.log("req.projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+  winston.debug("req.projectid", req.projectid);
+  winston.debug("req.user.id", req.user.id);
 
 
   var newRequest = new Request({
@@ -123,29 +124,29 @@ router.patch('/:requestid', function (req, res) {
 
 router.post('/:requestid/share/email', function (req, res) {
 
-  console.log("req.params.requestid", req.params.requestid);
-  console.log("req projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+  winston.debug("req.params.requestid", req.params.requestid);
+  winston.debug("req projectid", req.projectid);
+  winston.debug("req.user.id", req.user.id);
   
   const sendTo = req.query.to;
-  console.log("sendTo", sendTo);
+  winston.debug("sendTo", sendTo);
 
 
   return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function(result) {
     return res.json({'success':true});
   }).catch(function (err) {
-    console.error("err", err);
+    winston.error("err", err);
     return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
   });
   //  return Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
   //   .populate('department')
   //   .exec(function(err, request) { 
   //   if (err){
-  //     console.error(err);
+  //     winston.error(err);
   //     return res.status(500).send({ success: false, msg: 'Error getting request.',err:err });
   //   }
   //   if (!request) {
-  //     console.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
+  //     winston.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
   //     return res.status(404).send({"success":false, msg:"Request not found for request_id "+ req.params.requestid  + " and id_project " + req.projectid});
   //   }
     
@@ -347,16 +348,16 @@ router.get('/', function (req, res, next) {
       populate('lead').
       // populate('lead', function (err, lead44) {
       //   //assert(doc._id === user._id) // the document itself is passed
-      //   console.error('lead44',lead44)
+      //   winston.error('lead44',lead44)
       // }).
       // execPopulate(function (err, lead45) {
       //   //assert(doc._id === user._id) // the document itself is passed
-      //   console.error('lead45',lead45)
+      //   winston.error('lead45',lead45)
       // }).
       sort(sortQuery).
       exec(function (err, requests) {
         if (err) {
-          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
 
           return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
         }
@@ -496,7 +497,7 @@ router.get('/csv', function (req, res, next) {
       sort(sortQuery).        
       exec(function (err, requests) {
         if (err) {
-          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
           return res.status(500).send({ success: false, msg: 'Error getting csv requests.',err:err });
         }
         
@@ -537,7 +538,7 @@ router.get('/:requestid', function (req, res) {
   .exec(function(err, request) {
     //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
     if (err) {
-      console.error("error getting request by id ", err);
+      winston.error("error getting request by id ", err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!request) {

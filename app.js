@@ -18,13 +18,13 @@ var winston = require('./config/winston');
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
-  console.error('DATABASE_URI not specified, falling back to localhost.');
+  winston.error('DATABASE_URI not specified, falling back to localhost.');
 }
 var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-console.info("autoIndex", autoIndex);
+winston.info("autoIndex", autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
   mongoose.connect(config.databasetest, { "autoIndex": true });
@@ -189,13 +189,13 @@ var reqLogger = function (req, res, next) {
   // }
   
    var projectid = req.params.projectid;
-   //console.log("projectIdSetter projectid", projectid);
+   winston.debug("projectIdSetter projectid", projectid);
 
   var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-  //console.log("fullUrl", fullUrl);
+  winston.debug("fullUrl", fullUrl);
 
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  //console.log("ip", ip);
+  winston.debug("ip", ip);
 
   var reqlog = new ReqLog({
     path: req.originalUrl,
@@ -207,7 +207,7 @@ var reqLogger = function (req, res, next) {
 
   reqlog.save(function (err, reqlogSaved) {
     if (err) {
-      console.error('Error saving reqlog ', err)
+      winston.error('Error saving reqlog ', err)
     }
     //console.log('Reqlog saved ', reqlogSaved)
   });
@@ -225,7 +225,7 @@ app.get('/', function (req, res) {
 // app.use(function (req, res, next) {
 //  Setting.findOne({}, function (err, setting) {
 //     if (err) {
-//       console.error("Error getting setting", err);
+//       winston.error("Error getting setting", err);
 //       next();
 //     }
 //     if (!setting) {
@@ -233,9 +233,9 @@ app.get('/', function (req, res) {
 //       //     var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
 //       //     setting.save(function(err, ssetting) {
 //       //       if (err) {
-//       //         console.error('Error saving ssetting ', err);
+//       //         winston.error('Error saving ssetting ', err);
 //       //       }else {
-//       //         console.error('ssetting saved', ssetting)
+//       //         winston.error('ssetting saved', ssetting)
 //       //       }
 //       //     });
 //       next();   
@@ -306,7 +306,7 @@ function HasRole(role) {
     Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
       exec(function (err, project_user) {
         if (err) {
-          console.error(err);
+          winston.error(err);
           return next(err);
         }
         
@@ -348,7 +348,7 @@ function HasRole(role) {
 //   Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
 //     exec(function (err, project_user) {
 //       if (err) {
-//         console.error(err);
+//         winston.error(err);
 //         return next(err);
 //       }
       

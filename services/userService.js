@@ -1,6 +1,7 @@
 var User = require("../models/user");
 // var Auth = require("../models/auth");
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 class UserService {
 //TODO providerId cambia tutte classi di test perche è stato aggiunto providerId,
@@ -31,7 +32,7 @@ class UserService {
                         return reject(err);
                     }
 
-                    console.log('User created', savedUser);
+                    winston.info('User created', savedUser.toObject());
                     return resolve(savedUser);
                 });
         //   });

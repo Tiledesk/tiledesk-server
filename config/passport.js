@@ -5,7 +5,7 @@ var ExtractJwt = passportJWT.ExtractJwt;
 var passportHttp = require("passport-http");  
 var BasicStrategy = passportHttp.BasicStrategy;
 
-
+var winston = require('../config/winston');
 // var AnonymousStrategy = require('passport-anonymous').Strategy;
 
 // load up the user model
@@ -29,7 +29,7 @@ module.exports = function(passport) {
   var secret = config.secret;
 
    var secret23 = process.env.SECRET || config.secret;
-  console.log("secret23", secret23);
+   winston.debug("secret23", secret23);
 
   opts.secretOrKey = secret;
   // console.log("here");

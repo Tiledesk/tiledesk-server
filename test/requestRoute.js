@@ -12,6 +12,7 @@ let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
+var winston = require('../config/winston');
 
 // chai.config.includeStack = true;
 
@@ -35,7 +36,7 @@ describe('RequestRoute', () => {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
        requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          console.log("resolve", savedRequest);
+          winston.debug("resolve", savedRequest.toObject());
          
 
           chai.request(server)
@@ -78,7 +79,7 @@ describe('RequestRoute', () => {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
        requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          console.log("resolve", savedRequest);
+          winston.debug("resolve", savedRequest.toObject());
          
 
           chai.request(server)
@@ -122,7 +123,7 @@ it('getallcsv', function (done) {
     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
      requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-        console.log("resolve", savedRequest);
+        winston.debug("resolve", savedRequest.toObject());
        
 
         chai.request(server)
@@ -162,7 +163,7 @@ it('getallWithLoLead', function (done) {
    projectService.create("createWithId", savedUser._id).then(function(savedProject) {
     leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function(createdLead) {      
      requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-        console.log("resolve", savedRequest);
+        winston.debug("resolve", savedRequest.toObject());
        
 
         chai.request(server)

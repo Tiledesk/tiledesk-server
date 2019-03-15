@@ -8,16 +8,18 @@ var options = {
       level: 'info',
       filename: `${appRoot}/logs/app.log`,
       handleExceptions: true,
-      json: true,
+      json: false,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
       colorize: false,
+      format: winston.format.simple()
     },
     console: {
-      level: 'debug',
+      level: 'info',
       handleExceptions: true,
       json: false,
       colorize: true,
+      format: winston.format.simple()
     },
   };
 
@@ -44,7 +46,7 @@ var options = {
 
   let logger = winston.createLogger({
     transports: [
-      new (winston.transports.Console)(options.console),
+     new (winston.transports.Console)(options.console),
     //   new (winston.transports.File)(options.errorFile),
       new (winston.transports.File)(options.file),
      // new (winston.transports.MongoDB)( {db: logsDb, collection: "logs"}) 
@@ -58,7 +60,11 @@ var options = {
     },
   };
 
-
+  // if (process.env.NODE_ENV !== 'production') {
+  //   logger.add(new winston.transports.Console({
+  //     format: winston.format.simple()
+  //   }));
+  // }
 
     /**
    * Requiring `winston-mongodb` will expose

@@ -8,6 +8,7 @@ var firebaseConfig = require('../config/firebase');
 
 var Setting = require('../models/setting');
 const admin = require('firebase-admin');
+var winston = require('../config/winston');
 
 
 
@@ -21,7 +22,7 @@ try {
     console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.',serviceAccount);
   }
 } catch(e) {
-  console.error("firebaseConfigKey not found");
+  winston.error("firebaseConfigKey not found");
 }
 
 var private_key = process.env.FIREBASE_PRIVATE_KEY;
@@ -48,16 +49,16 @@ if (private_key && client_email && firebase_project_id) {
 //   return settingFromDb;
   // Setting.findOne({}, function (err, setting) {
     // if (err) {
-    //   console.error(err);
+    //   winston.error(err);
     // }
     // if (!setting) {
     //   console.log("setting doesnt exist. Creare it from serviceAccount", setting);
     //       var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
     //       setting.save(function(err, ssetting) {
     //         if (err) {
-    //           console.error('Error saving ssetting ', err);
+    //           winston.error('Error saving ssetting ', err);
     //         }else {
-    //           console.error('ssetting saved', ssetting)
+    //           winston.error('ssetting saved', ssetting)
     //         }
     //       });
     // } else {
@@ -90,7 +91,7 @@ if (serviceAccount) {
     databaseURL: firebaseConfig.databaseURL
   });
 }else {
-  console.error("firebase not inizialized");
+  winston.error("firebase not inizialized");
 }
 
 

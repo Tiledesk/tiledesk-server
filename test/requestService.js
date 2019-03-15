@@ -10,6 +10,7 @@ var expect = chai.expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
@@ -38,7 +39,7 @@ describe('RequestService()', function () {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
        requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          console.log("resolve", savedRequest);
+          winston.debug("resolve", savedRequest.toObject());
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester_id).to.equal(createdLead._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
@@ -79,7 +80,7 @@ describe('RequestService()', function () {
   //     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
   //      requestService.createWithId("request_id1", lead._id,  savedProject._id, "first_text").then(function(savedRequest) {
   //        leadService.findByEmail("email@email.com", savedProject._id).then(function(lead) {
-  //         console.log("resolve", savedRequest);
+  //         winston.debug("resolve", savedRequest);
   //         expect(savedRequest.request_id).to.equal("request_id1");
   //         expect(savedRequest.requester_id).to.equal(lead._id.toString());
   //         expect(savedRequest.first_text).to.equal("first_text");
@@ -155,7 +156,7 @@ describe('RequestService()', function () {
       departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
        requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
-          console.log("resolve savedRequest");
+          winston.debug("resolve savedRequest");
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester_id).to.equal("requester_id1");
           expect(savedRequest.first_text).to.equal("first_text");
@@ -187,7 +188,7 @@ describe('RequestService()', function () {
                 messageService.create(messageSender, "test sender", savedRequest.request_id, "hello2",
                 savedProject._id, messageSender)]).then(function(all) {
                   requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
-                        console.log("resolve closedRequest", upRequest);
+                        winston.debug("resolve closedRequest", upRequest.toObject());
                         var maxWaitingTime  = Date.now() - upRequest.createdAt;
                         expect(upRequest.status).to.equal(200);
                         expect(upRequest.waiting_time).to.not.equal(null);
@@ -196,7 +197,7 @@ describe('RequestService()', function () {
                       
                         done();                         
                       }).catch(function(err){
-                        console.error("test reject", err);
+                        winston.error("test reject", err);
                         assert.isNotOk(err,'Promise error');
                         done();
                       });
@@ -222,14 +223,14 @@ describe('RequestService()', function () {
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
             savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
               requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
-                    console.log("resolve closedRequest", closedRequest);
+                    winston.debug("resolve closedRequest", closedRequest.toObject());
                     expect(closedRequest.status).to.equal(1000);
                     expect(closedRequest.closed_at).to.not.equal(null);
                     expect(closedRequest.transcript).to.contains("hello1");
                     expect(closedRequest.transcript).to.contains("hello2");
                     done();                         
                   }).catch(function(err){
-                    console.error("test reject", err);
+                    winston.error("test reject", err);
                     assert.isNotOk(err,'Promise error');
                     done();
                   });
@@ -251,14 +252,14 @@ describe('RequestService()', function () {
           messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
           savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
             requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
-                  console.log("resolve closedRequest", closedRequest);
+                  winston.debug("resolve closedRequest", closedRequest.toObject());
                   expect(closedRequest.status).to.equal(1000);
                   expect(closedRequest.closed_at).to.not.equal(null);
                   expect(closedRequest.transcript).to.contains("hello1");
                   expect(closedRequest.transcript).to.contains("hello2");
                   done();                         
                 }).catch(function(err){
-                  console.error("test reject", err);
+                  winston.error("test reject", err);
                   assert.isNotOk(err,'Promise error');
                   done();
                 });
@@ -278,7 +279,7 @@ describe('RequestService()', function () {
             requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
               requestService.reopenRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(reopenedRequest) {
                 
-                  console.log("resolve reopenedRequest", reopenedRequest);
+                  winston.debug("resolve reopenedRequest", reopenedRequest.toObject());
 
                   //check closedRequest
                   expect(closedRequest.status).to.equal(1000);
@@ -293,7 +294,7 @@ describe('RequestService()', function () {
           
                   done();                         
                 }).catch(function(err){
-                  console.error("test reject", err);
+                  winston.error("test reject", err);
                   assert.isNotOk(err,'Promise error');
                   done();
                 });
@@ -311,7 +312,7 @@ describe('RequestService()', function () {
      requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
        var member = 'agent1';
        requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
-        console.log("resolve", savedRequestParticipant);
+        winston.debug("resolve", savedRequestParticipant.toObject());
         expect(savedRequestParticipant.request_id).to.equal("request_id1");
         expect(savedRequestParticipant.requester_id).to.equal("requester_id1");
         expect(savedRequestParticipant.first_text).to.equal("first_text");
@@ -343,7 +344,7 @@ it('removeparticipant', function (done) {
     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
      requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
        requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
-        console.log("resolve", savedRequestParticipant);
+        winston.debug("resolve", savedRequestParticipant.toObject());
         
         //savedRequest is assigned -> 200
         expect(savedRequest.status).to.equal(200);
@@ -386,13 +387,13 @@ it('closeRequestAndRemoveParticipant', function (done) {
             expect(closedRequest.transcript).to.contains("hello2");
             
             requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
-                console.log("resolve closeRequestAndRemoveParticipant", closedRequest);
+                winston.debug("resolve closeRequestAndRemoveParticipant", closedRequest.toObject());
                 expect(savedRequestParticipant.status).to.equal(1000);
                 
                 done();                         
             });
           }).catch(function(err){
-                console.error("test reject", err);
+                winston.error("test reject", err);
                 assert.isNotOk(err,'Promise error');
                 done();
               });
