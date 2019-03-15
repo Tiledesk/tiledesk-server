@@ -10,7 +10,8 @@ Step to run locally:
 
 * Clone this repo
 * Install dependencies with 'npm install'
-
+* Configure Firebase account in config/firebase.js file
+* Configure MongoDb account in config/database.js file
 * Run the app with the command 'npm start' or with 'nodemon' if you want monitoring and auto reload.
 Install nodemon with 'npm install -g nodemon'
 
