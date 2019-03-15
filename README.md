@@ -12,15 +12,16 @@ Step to run locally:
 * Install dependencies with 'npm install'
 
 * Run the app with the command 'npm start' or with 'nodemon' if you want monitoring and auto reload.
+Install nodemon with 'npm install -g nodemon'
 
-        Install nodemon with 'npm install -g nodemon'
-
-# Commit to GitHub with tags:
-Run the command : 'git push origin --tags'
 
 # Deploy on Heroku
 
-To see the log run : 'heroku logs  -n 2000 --tail -a chat21-api-nodejs'
+To see the log run : 
+
+```
+heroku logs  -n 2000 --tail -a chat21-api-nodejs
+```
 
 
 To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articles/route-53
@@ -28,15 +29,21 @@ To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articl
 # Docker compose
 
 ## Installation
-* sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 
-* sudo chmod +x /usr/local/bin/docker-compose
+```
+sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 
-* docker-compose up -d --force-recreate --build
+sudo chmod +x /usr/local/bin/docker-compose
+
+docker-compose up -d --force-recreate --build
+
+```
 
 ### Docker commands:
-* docker ps
-* docker-compose up
+```
+docker ps
+docker-compose up
+```
 
 # REST API
 
