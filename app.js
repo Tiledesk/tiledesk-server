@@ -218,7 +218,7 @@ var reqLogger = function (req, res, next) {
 }
 
 app.get('/', function (req, res) {  
-  res.send('Chat21 API index page. See the documentation.');
+  res.send('Tiledesk server. Index page. See the documentation.');
 });
 
 
