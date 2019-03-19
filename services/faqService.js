@@ -31,11 +31,11 @@ class FaqService {
           }
           winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
-          if (savedFaq_kb.external===false) {
-            createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
-          } else {
-            winston.debug('external bot');
-          }
+          // if (savedFaq_kb.external===false) {
+          //   createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+          // } else {
+          //   winston.debug('external bot');
+          // }
 
           return resolve(savedFaq_kb);
         });  
