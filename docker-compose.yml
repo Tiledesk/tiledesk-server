@@ -1,10 +1,23 @@
 version: "2"
 services:
+#  dashboard:
+#    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
+#    ports:
+#      - "4200:4200" # specify port forewarding
+  widget:
+    build: ../chat21-web-widget # specify the directory of the Dockerfile
+    ports:
+      - "4200:80" # specify port forewarding
+  webchat:
+    build: ../chat21-ionic # specify the directory of the Dockerfile
+    ports:
+      - "4200:80" # specify port forewarding
   app:
     container_name: tiledesk-api
     restart: always
     environment: 
       - FIREBASE_PRIVATE_KEY
+      - FIREBASE_CLIENT_EMAIL
       - MONGODB_URI=mongo
     build: .
     ports:
@@ -18,3 +31,4 @@ services:
       - ./data:/data/db
     ports:
       - "27017:27017"
+
