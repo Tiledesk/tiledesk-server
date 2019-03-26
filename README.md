@@ -13,7 +13,7 @@ Steps to run locally:
 ```
 npm install -g tiledesk-server mongodb-runner
 mongodb-runner start
-tiledesk-server --FIREBASE_CONFIG_FILE PATH --DATABASE_URI mongodb://localhost/tiledesk
+FIREBASE_CONFIG_FILE=<FIREBASE_CONFIG_PATH.json> DATABASE_URI=mongodb://localhost/test tiledesk-server  
 ```
 
 Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
