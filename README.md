@@ -5,7 +5,6 @@
 # Prerequisites
 
 * Nodejs and npm installed 
-* MongoDB installed and running on localhost
 
 # Installation
 
@@ -49,24 +48,6 @@ heroku logs  -n 2000 --tail -a chat21-api-nodejs
 
 To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articles/route-53
 
-# Docker compose
-
-## Installation
-
-```
-sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-
-sudo chmod +x /usr/local/bin/docker-compose
-
-docker-compose up -d --force-recreate --build
-
-```
-
-### Docker commands:
-```
-docker ps
-docker-compose up
-```
 
 # REST API
 
