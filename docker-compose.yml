@@ -6,6 +6,13 @@ version: "2"
 networks:
    backend:
 
+### Create a permanent, named data volume
+# This makes much easier to identify where the mongodb data is stored on host
+# See: https://docs.docker.com/engine/userguide/containers/dockervolumes/#mount-a-shared-storage-volume-as-a-data-volume
+volumes:
+   tiledesk-datadb:
+
+
 services:
 #  dashboard:
 #    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
@@ -35,6 +42,8 @@ services:
    #   - DATABASE_URI
       - MONGODB_URI=mongo
     build: .
+    depends_on:
+      - mongo
     ports:
       - "3000:3000"
     links:
@@ -42,8 +51,9 @@ services:
   mongo:
     container_name: mongo
     image: mongo
+    command: --bind_ip_all
     volumes:
-      - ./data:/data/db
+      - tiledesk-datadb:/data/db
     networks:
          - backend
       ### Uncoment below if you want to map mongodb port
