@@ -203,7 +203,7 @@ router.post('/', function(req, res) {
 
         
 
-            console.log("request  exists", request);
+            console.log("request  exists", request.toObject());
 
             // var projectid;
             // if (message.attributes) {

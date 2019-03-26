@@ -66,6 +66,10 @@ subscriptionNotifier.start();
 
 var ReqLog = require("./models/reqlog");
 
+if (process.env.QUEQUE_ENABLED) {
+  var queue = require('./queue/reconnect');
+}
+
 if (process.env.CACHE_ENABLED) {
   // https://github.com/rv-kip/express-redis-cache
   var cache = require('express-redis-cache')();
