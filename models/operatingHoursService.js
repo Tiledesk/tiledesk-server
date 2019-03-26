@@ -2,6 +2,8 @@
 
 var Project = require("../models/project");
 var moment_tz = require('moment-timezone');
+var winston = require('../config/winston');
+
 
 class OperatingHoursService {
 
@@ -11,13 +13,13 @@ class OperatingHoursService {
     Project.findById(projectId, function (err, project) {
       // console.log("XXXXXXXX project", project);
       if (err) {
-        console.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
+        winston.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
         // throw error
         callback(null, { errorCode: 1000, msg: 'Error getting object.' });
         return;
       }
       if (!project) {
-        console.error("O ---> [ OHS ] -> PROJECT NOT FOUND");
+        winston.error("O ---> [ OHS ] -> PROJECT NOT FOUND");
         // throw error
         callback(null, { errorCode: 1010, msg: 'project not found for id', projectId });
         return;
@@ -267,7 +269,7 @@ function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
           // console.log('MOMENT ./END TIME ', moment_EndTime);
 
           var currentTimeIsBetween = moment_currentTime.isBetween(moment_StartTime, moment_EndTime);
-          console.log('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
+          // console.log('O ---> [ OHS ] -> CURRENT TIME', moment_currentTime, ' (@THE PRJCT TZ) IS BETWEEN OH-Start:', moment_StartTime, ' OH-End ', moment_EndTime, '->', currentTimeIsBetween);
 
           if (currentTimeIsBetween == true) {
             // USE CASE: THE OPERATING HOURS ARE ACTIVE AND THE DAY OF THE REQUEST MATCH WITH THE OPERATING HOURS WEEK-DAY

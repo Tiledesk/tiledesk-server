@@ -7,6 +7,7 @@ var expect = require('chai').expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 mongoose.connect(config.databasetest);
 
@@ -23,7 +24,7 @@ describe('LeadService()', function () {
     // create(fullname, email, id_project, createdBy)
     var attr = {myprop:123};
      leadService.create("fullname", "email@email.com", savedProject._id, userid, attr).then(function(savedLead) {
-        console.log("resolve", savedLead);
+        winston.debug("resolve", savedLead.toObject());
          expect(savedLead.fullname).to.equal("fullname");
          expect(savedLead.email).to.equal("email@email.com");
          expect(savedLead.id_project).to.equal(savedProject._id.toString());
@@ -33,7 +34,7 @@ describe('LeadService()', function () {
 
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });
@@ -47,7 +48,7 @@ describe('LeadService()', function () {
     projectService.create("test1", userid).then(function(savedProject) {
     // create(fullname, email, id_project, createdBy)
      leadService.create("fullname", null, savedProject._id, userid).then(function(savedLead) {
-        console.log("resolve", savedLead);
+        winston.debug("resolve", savedLead.toObject());
          expect(savedLead.fullname).to.equal("fullname");
          expect(savedLead.email).to.equal(null);
          expect(savedLead.id_project).to.equal(savedProject._id.toString());
@@ -55,7 +56,7 @@ describe('LeadService()', function () {
          expect(savedLead.attributes).to.equal(undefined);
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });
@@ -80,7 +81,7 @@ describe('LeadService()', function () {
 
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });
@@ -105,7 +106,7 @@ describe('LeadService()', function () {
 
       done();
     }).catch(function(err) {
-      console.error("test reject", err);
+      winston.error("test reject", err);
       assert.isNotOk(err,'Promise error');
       done();
   });
@@ -135,7 +136,7 @@ describe('LeadService()', function () {
 
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });

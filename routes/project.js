@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 var operatingHoursService = require("../models/operatingHoursService");
 var getTimezoneOffset = require("get-timezone-offset")
 
-
+var winston = require('../config/winston');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
@@ -79,18 +79,19 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
     newDepartment.save(function (err, savedDepartment) {
       if (err) {
-        console.log('--- > ERROR ', err)
+        winston.error('--- > ERROR ', err)
         // return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
-      console.log('Default Department created')
+      winston.info('Default Department created')
       // res.json(savedDepartment);
     });
   });
 });
 
 // PROJECT PUT
+// should check HasRole otherwise another project user can change this
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log('UPDATE PROJECT REQ BODY ', req.body);
+  winston.debug('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -142,7 +143,7 @@ router.get('/:projectid/isopen', function (req, res) {
     console.log('project', req.params.projectid, 'isopen: ', isOpen);
 
     if (err) {
-      console.error('Error getting projectIsOpenNow', err);
+      winston.error('Error getting projectIsOpenNow', err);
       sendError(err, res);
       // return res.status(500).send({ success: false, msg: err });
     } 
@@ -154,24 +155,24 @@ router.get('/:projectid/isopen', function (req, res) {
 //togli questo route da qui e mettilo in altra route
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
 router.get('/:projectid/users/availables', function (req, res) {
-  console.log("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
+  //console.log("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
 
   // _findAvailableUsers(req.params.projectid, res);
 
   operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
-    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
-    console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
+    //console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
 
     if (err) {
+      console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
       sendError(err, res);
       // return res.status(500).send({ success: false, msg: err });
     } else if (isOpen) {
 
-      console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> FIND AVAILABLE');
+     // console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> FIND AVAILABLE');
       findAndSendAvailableUsers(req.params.projectid, res);
 
     } else {
-      console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
+     // console.log('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
       // closed
       user_available_array = [];
       res.json(user_available_array);
@@ -184,26 +185,26 @@ function findAndSendAvailableUsers(projectid, res) {
   Project_user.find({ id_project: projectid, user_available: true }).
     populate('id_user').
     exec(function (err, project_users) {
-      console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
+      //console.log('PROJECT ROUTES - FINDS AVAILABLES project_users: ', project_users);
       if (err) {
         console.log('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
       // && project_users.id_user
       if (project_users) {
-        console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
+        // console.log('PROJECT ROUTES - COUNT OF AVAILABLES project_users: ', project_users.length);
 
         user_available_array = [];
         project_users.forEach(project_user => {
           if (project_user.id_user) {
-            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+            // console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
             user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
           } else {
-            console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+            // console.log('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
           }
         });
 
-        console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
+        //console.log('ARRAY OF THE AVAILABLE USER ', user_available_array);
 
         res.json(user_available_array);
       }

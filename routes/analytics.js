@@ -81,7 +81,7 @@ router.get('/requests/count', function(req, res) {
               "count":{"$sum":1}
         }},
         { "$sort": {"_id":1}},  
-        { "$limit": 7 },
+        // { "$limit": 7 },
     ])
     // .exec((err, result) => {
       .exec(function(err, result) {

@@ -2,6 +2,7 @@
 
 const nodemailer = require('nodemailer');
 var config = require('../config/email');
+var winston = require('../config/winston');
 
 class EmailService {
 
@@ -42,7 +43,7 @@ class EmailService {
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
       if (error) {
-        return console.log(error);
+        return winston.error("Error sending email ", error);
       }
       console.log('Message sent: %s', info.messageId);
       // Preview only available when sending through an Ethereal account
@@ -167,14 +168,7 @@ class EmailService {
                        </td>
                      </tr>
 
-
-
-                 
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Request Id : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.requester_id}</strong>
-                     </td>
-                     </tr>
+                                     
 
 
                      <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
@@ -223,9 +217,9 @@ class EmailService {
      </html>
      `;
 
-    this.send(to, '[TileDesk] New Assigned Request', html);
+    this.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
 
-    this.send(config.bcc, '[TileDesk] New Assigned Request', html);
+    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
   }
 
   sendNewPooledRequestNotification(to, savedRequest, project) {
@@ -344,12 +338,6 @@ class EmailService {
 
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                Request Id: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.requester_id}</strong>
-                              </td>
-                              </tr>
-
-                              <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                              <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                 Project Name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${project ? project.name : '-'}</strong>
                               </td>
                               </tr>
@@ -394,8 +382,8 @@ class EmailService {
               </html>
               `;
 
-    this.send(to, '[TileDesk] New Pooled Request', html);
-    this.send(config.bcc, '[TileDesk] New Pooled Request', html);
+    this.send(to, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
   }
 
   /**
@@ -1144,7 +1132,7 @@ class EmailService {
     `;
 
     this.send(to, `[TileDesk] Verify your email address`, html);
-    this.send(config.bcc, `[TileDesk] Verify your email address`, html);
+    this.send(config.bcc, `[TileDesk] Verify your email address `+to, html);
   }
 
 

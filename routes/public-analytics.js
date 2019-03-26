@@ -7,8 +7,8 @@ var mongoose = require('mongoose');
 
   router.get('/waiting/current', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    //console.log(req.params);
+    //console.log("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -27,7 +27,7 @@ var mongoose = require('mongoose');
             console.log(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          //console.log(result);
 
           res.json(result);
     });

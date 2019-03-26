@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Lead = require("../models/lead");
+var winston = require('../config/winston');
 
 var ObjectId = require('mongoose').Types.ObjectId;
 csv = require('csv-express');
@@ -8,11 +9,13 @@ csv.separator = ';';
 
 router.post('/', function (req, res) {
 
-  console.log(req.body);
-  console.log("req.user", req.user);
+  winston.debug(req.body);
+  winston.debug("req.user", req.user);
 
   var newLead = new Lead({
     fullname: req.body.fullname,
+    lead_id: req.body.lead_id,
+    email: req.body.email,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
@@ -96,10 +99,10 @@ router.get('/csv', function (req, res, next) {
     sort(sortQuery).lean().
     exec(function (err, leads) {
       if (err) {
-        console.error('LEAD ROUTE - EXPORT CONTACT TO CSV ERR ', err)
+        winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV ERR ', err)
         return next(err);
       }
-      console.error('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)
+      winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)
       // return Lead.count(query, function (err, totalRowCount) {
 
       //   var objectToReturn = {
@@ -140,7 +143,7 @@ router.get('/:leadid', function (req, res) {
 //   // 6Hs47HiHpOajpK4rYf20CgNTIcs1
 //   Lead.findOne({ $or: [{ _id: objId }, { lead_id: req.params.id, id_project: req.projectid}] }, function (err, lead) {
 //     if (err) {
-//       console.error('Error getting lead.' , err);
+//       winston.error('Error getting lead.' , err);
 //       // return res.status(500).send({ success: false, msg: 'Error getting object.' });
 //     }
 //     if (!lead) {
@@ -180,13 +183,13 @@ router.get('/', function (req, res) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  console.log("direction", direction);
+  //console.log("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  console.log("sortField", sortField);
+  //console.log("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
@@ -199,7 +202,7 @@ router.get('/', function (req, res) {
     sort(sortQuery).
     exec(function (err, leads) {
       if (err) {
-        console.error('LEAD ROUTE - REQUEST FIND ERR ', err)
+        winston.error('LEAD ROUTE - REQUEST FIND ERR ', err)
         return (err);
       }
 

@@ -7,7 +7,8 @@ var UserSchema = new Schema({
     email: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        index: true
     },
     password: {
         type: String,
@@ -29,7 +30,12 @@ var UserSchema = new Schema({
     },
     resetpswrequestid: {
         type: String,
-    }
+    },
+    // auth: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'auth',
+    //     //required: true
+    //   },
 });
 
 // UserSchema.set('toJSON', {

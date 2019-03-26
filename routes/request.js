@@ -11,28 +11,32 @@ var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
 var requestService = require('../services/requestService');
+var winston = require('../config/winston');
 
-var Chat21 = require('@chat21/chat21-node-sdk');
-var firebaseService = require("../services/firebaseService");
+
+// var Chat21 = require('@chat21/chat21-node-sdk');
+
+
+// var firebaseService = require("../services/firebaseService");
 
 // var admin = require('../utils/firebaseConnector');
 
-var firebaseConfig = require('../config/firebase');
-var chat21Config = require('../config/chat21');
+// var firebaseConfig = require('../config/firebase');
+// var chat21Config = require('../config/chat21');
 
 csv = require('csv-express');
 csv.separator = ';';
 
-var chat21 = new Chat21({
-  url: chat21Config.url,
-  appid: chat21Config.appid,
-  // url: process.env.CHAT21_URL,
-  // appid: process.env.CHAT21_APPID,
-  oauth: true,
+// var chat21 = new Chat21({
+//   url: chat21Config.url,
+//   appid: chat21Config.appid,
+//   // url: process.env.CHAT21_URL,
+//   // appid: process.env.CHAT21_APPID,
+//   oauth: true,
 
-  firebase_apikey:  process.env.FIREBASE_APIKEY,
-  firebase_database: firebaseConfig.databaseURL
-});
+//   firebase_apikey:  process.env.FIREBASE_APIKEY,
+//   firebase_database: firebaseConfig.databaseURL
+// });
 
 var messageService = require('../services/messageService');
 
@@ -41,10 +45,10 @@ var messageService = require('../services/messageService');
 
 router.post('/', function (req, res) {
 
-  console.log("req.body", req.body);
+  winston.debug("req.body", req.body);
 
-  console.log("req.projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+  winston.debug("req.projectid", req.projectid);
+  winston.debug("req.user.id", req.user.id);
 
 
   var newRequest = new Request({
@@ -120,29 +124,29 @@ router.patch('/:requestid', function (req, res) {
 
 router.post('/:requestid/share/email', function (req, res) {
 
-  console.log("req.params.requestid", req.params.requestid);
-  console.log("req projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+  winston.debug("req.params.requestid", req.params.requestid);
+  winston.debug("req projectid", req.projectid);
+  winston.debug("req.user.id", req.user.id);
   
   const sendTo = req.query.to;
-  console.log("sendTo", sendTo);
+  winston.debug("sendTo", sendTo);
 
 
   return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function(result) {
     return res.json({'success':true});
   }).catch(function (err) {
-    console.error("err", err);
+    winston.error("err", err);
     return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
   });
   //  return Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
   //   .populate('department')
   //   .exec(function(err, request) { 
   //   if (err){
-  //     console.error(err);
+  //     winston.error(err);
   //     return res.status(500).send({ success: false, msg: 'Error getting request.',err:err });
   //   }
   //   if (!request) {
-  //     console.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
+  //     winston.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
   //     return res.status(404).send({"success":false, msg:"Request not found for request_id "+ req.params.requestid  + " and id_project " + req.projectid});
   //   }
     
@@ -183,48 +187,48 @@ router.post('/:requestid/share/email', function (req, res) {
 
 });
 
-router.post('/:requestid/assign', function (req, res) {
+// router.post('/:requestid/assign', function (req, res) {
 
-  console.log(req.params.requestid);
-  console.log("req projectid", req.projectid);
-  console.log("req.user.id", req.user.id);
+//   console.log(req.params.requestid);
+//   console.log("req projectid", req.projectid);
+//   console.log("req.user.id", req.user.id);
   
-  const assignee = req.body.assignee;
-  console.log("assignee", assignee);
+//   const assignee = req.body.assignee;
+//   console.log("assignee", assignee);
 
-  return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-        console.log("customAuthToken", customAuthToken);
-        // console.log("chat21", chat21);
-        // console.log(" admin.auth()", JSON.stringify(admin.auth()));
-        // console.log(" admin", admin.auth());
+//   return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
+//         console.log("customAuthToken", customAuthToken);
+//         // console.log("chat21", chat21);
+//         // console.log(" admin.auth()", JSON.stringify(admin.auth()));
+//         // console.log(" admin", admin.auth());
         
-       return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
-          chat21.auth.setCurrentToken(idToken);
-          console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
-          return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
-            return chat21.groups.join(assignee, req.params.requestid).then(function(data){
-                  // console.log("join resolve ", data);
-                  return res.json(data);
-              });
-          });
-        });
-    }).catch(function(err) {
-      return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
-    });
+//        return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
+//           chat21.auth.setCurrentToken(idToken);
+//           console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+//           return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
+//             return chat21.groups.join(assignee, req.params.requestid).then(function(data){
+//                   // console.log("join resolve ", data);
+//                   return res.json(data);
+//               });
+//           });
+//         });
+//     }).catch(function(err) {
+//       return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
+//     });
 
       
   
 
-  // return requestService.removeParticipantByRequestId(request_id, req.projectid, req.user.id).then(function(request) {
-  //   if (err) {
-  //     return res.status(500).send({ success: false, msg: 'Error updating object.' });
-  //   }
-  //   return requestService.addParticipantByRequestId(request_id, req.projectid, req.params.assignee).then(function(request) {
-  //     return res.json(request);
-  //   });
-  // });
+//   // return requestService.removeParticipantByRequestId(request_id, req.projectid, req.user.id).then(function(request) {
+//   //   if (err) {
+//   //     return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//   //   }
+//   //   return requestService.addParticipantByRequestId(request_id, req.projectid, req.params.assignee).then(function(request) {
+//   //     return res.json(request);
+//   //   });
+//   // });
 
-});
+// });
 
 
 
@@ -341,11 +345,21 @@ router.get('/', function (req, res, next) {
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
+      populate('lead').
+      // populate('lead', function (err, lead44) {
+      //   //assert(doc._id === user._id) // the document itself is passed
+      //   winston.error('lead44',lead44)
+      // }).
+      // execPopulate(function (err, lead45) {
+      //   //assert(doc._id === user._id) // the document itself is passed
+      //   winston.error('lead45',lead45)
+      // }).
       sort(sortQuery).
       exec(function (err, requests) {
         if (err) {
-          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return next(err);
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+
+          return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
         }
         console.log('REQUEST ROUTE - REQUEST ', requests);
 
@@ -452,7 +466,7 @@ router.get('/csv', function (req, res, next) {
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  var direction = 1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   } 
@@ -470,18 +484,35 @@ router.get('/csv', function (req, res, next) {
   console.log("sort query", sortQuery);
 
     console.log('REQUEST ROUTE - REQUEST FIND ', query)
-    return Request.find(query, '-transcript  -department -agents -status -__v').
+    return Request.find(query, '-transcript  -agents -status -__v').
     skip(skip).limit(limit).
-      populate('department').
-      sort(sortQuery).lean().
+        //populate('department', {'_id':-1, 'name':1}).     
+        populate('department').     
+        lean().
+      // populate({
+      //   path: 'department', 
+      //   //select: { '_id': -1,'name':1}
+      //   select: {'name':1}
+      // }).  
+      sort(sortQuery).        
       exec(function (err, requests) {
         if (err) {
-          console.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return next(err);
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+          return res.status(500).send({ success: false, msg: 'Error getting csv requests.',err:err });
         }
-        console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
+        
 
-   
+         requests.forEach(function(element) {
+            var depName = "";
+            if (element.department && element.department.name) {
+              depName = element.department.name;
+            }
+            delete element.department;
+            element.department = depName;
+          });
+
+          console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
+
         // return Request.count(query, function(err, totalRowCount) {
 
           // var objectToReturn = {
@@ -502,8 +533,12 @@ router.get('/:requestid', function (req, res) {
 
   console.log("get request by id ", req.params.requestid);
 
-  Request.findOne({"request_id":req.params.requestid}, function (err, request) {
+  Request.findOne({"request_id":req.params.requestid})
+  .populate('lead')
+  .exec(function(err, request) {
+    //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
     if (err) {
+      winston.error("error getting request by id ", err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!request) {

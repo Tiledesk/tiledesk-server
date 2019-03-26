@@ -11,6 +11,7 @@ var validtoken = require('../middleware/valid-token');
 // var secret = process.env.SECRET || config.secret;
 var requestUtil = require('../utils/requestUtil');
 var Project = require('../models/project');
+var winston = require('../config/winston');
 
 router.post('/createtoken', validtoken, function (req, res) {
 
@@ -19,13 +20,13 @@ router.post('/createtoken', validtoken, function (req, res) {
     // console.log("project_id", project_id);
 
     // if (!project_id) {
-    //     console.error("project_id parameter is required");
+    //     winston.error("project_id parameter is required");
     //     res.status(400).send({ success: false, msg: "project_id parameter is required" });
     // }
 
     return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
         if (err) {
-          console.error('Error finding project', err);
+          winston.error('Error finding project', err);
           return res.status(500).send({ success: false, msg: 'Error finding project.' });
        }
       
@@ -83,7 +84,7 @@ router.post('/createtoken', validtoken, function (req, res) {
                 console.log("extuid", extuid);
 
             } catch(err) {
-                console.error("myerror", err);
+                winston.error("myerror", err);
                 res.status(401).send({ success: false, msg: 'Authentication failed', err: err });
             }
 
@@ -104,7 +105,7 @@ router.post('/createtoken', validtoken, function (req, res) {
                     return res.json({firebaseToken: customAuthToken});   
                 })
                 .catch(err => {
-                    console.error("err", err);
+                    winston.error("err", err);
                     const ret = {
                         error_message: 'Authentication error: Cannot verify access token.'
                     };

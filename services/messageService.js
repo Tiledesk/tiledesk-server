@@ -8,6 +8,10 @@ var Message = require("../models/message");
 // var leadService = require('../services/leadService');
 // console.log("requestService", requestService);
 
+const messageEvent = require('../event/messageEvent');
+
+var winston = require('../config/winston');
+
 class MessageService {
 
 
@@ -49,10 +53,13 @@ class MessageService {
 
             return newMessage.save(function(err, savedMessage) {
                 if (err) {
-                    console.error(err);
+                    winston.error(err);
                     return reject(err);
                 }
-                console.log("Message created", savedMessage);
+                winston.log("Message created", savedMessage.toObject());
+
+                messageEvent.emit('message.create', savedMessage);
+
                 return resolve(savedMessage);
             });
 
@@ -60,7 +67,7 @@ class MessageService {
             //lookup from requests
             // return Request.findOne({request_id: recipient}, function(err, request) {
             //     if (err) {
-            //         console.error(err);
+            //         winston.error(err);
             //         return reject(err);
             //     }
             //     if (request) {
@@ -95,7 +102,7 @@ class MessageService {
     
             //     return newMessage.save(function(err, savedMessage) {
             //         if (err) {
-            //             console.error(err);
+            //             winston.error(err);
             //             return reject(err);
             //         }
             //         return resolve(savedMessage);
@@ -118,11 +125,11 @@ class MessageService {
     return new Promise(function (resolve, reject) {
         return Message.find({"recipient": requestid, id_project: id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
             if (err) {
-                console.error("Error getting the transcript", err);
+                winston.error("Error getting the transcript", err);
                 return reject(err);
             }
     
-            console.log("messages", messages);
+            winston.debug("messages", messages);
 
             if(!messages){
                 return resolve(messages); 

@@ -22,7 +22,8 @@ var DepartmentSchema = new Schema({
   },
   id_project: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   id_group: {
     type: String,
@@ -54,5 +55,13 @@ var DepartmentSchema = new Schema({
   timestamps: true
 }
 );
+
+DepartmentSchema.virtual('bot', {
+  ref: 'faq_kb', // The model to use
+  localField: 'id_bot', // Find people where `localField`
+  foreignField: '_id', // is equal to `foreignField`
+  justOne: true,
+  //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
 
 module.exports = mongoose.model('department', DepartmentSchema);

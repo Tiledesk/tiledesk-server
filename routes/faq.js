@@ -159,7 +159,7 @@ function createRemoteFaq(faqkb_remotekey, savedFaq) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='      
     },
     json: json
   };
@@ -196,7 +196,9 @@ router.post('/askbot', function (req, res) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+      // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+      
     },
     json: json
   };
@@ -261,7 +263,9 @@ function updateRemoteFaq(updatedFaq) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+          'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+          // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+          
         },
         json: json
       };
@@ -323,7 +327,8 @@ router.delete('/:faqid', function (req, res) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+            // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+            'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='            
           },
 
         };
@@ -433,7 +438,8 @@ router.get('/csv', function (req, res) {
 
   console.log('EXPORT FAQS TO CSV QUERY', query);
 
-  Faq.find(query, '-__v').lean().exec(function (err, faq) {
+  //Faq.find(query, '-__v').lean().exec(function (err, faq) {
+   Faq.find(query, 'question answer -_id').lean().exec(function (err, faq) {
     if (err) {
       console.log('EXPORT FAQS TO CSV ERR', err)
       return (err)

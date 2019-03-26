@@ -10,6 +10,8 @@ var validtoken = require('../middleware/valid-token')
 var operatingHoursService = require("../models/operatingHoursService");
 // var passport = require('passport');
 // var validtoken = require('.../middleware/valid-token')
+var winston = require('../config/winston');
+
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
@@ -133,7 +135,7 @@ router.get('/:departmentid/operators', function (req, res) {
           return res.json({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
         }).catch(function (error) {
 
-          console.error("Write failed: ", error);
+          winston.error("Write failed: ", error);
 
           sendError(error, res);
           console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", error);
@@ -166,7 +168,7 @@ router.get('/:departmentid/operators', function (req, res) {
         //     var opearator = value.operators[0];
         //     User.findById( opearator, function (err, user) {
         //       if (err) {
-        //         console.error("Error sending email to " + opearator, err);
+        //         winston.error("Error sending email to " + opearator, err);
         //       }
         //       if (!user) {
         //         console.warn("User not found",  opearator);
@@ -182,7 +184,7 @@ router.get('/:departmentid/operators', function (req, res) {
         return res.json(value)
 
       }).catch(function (error) {
-        console.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
+        winston.error('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ] -> ERROR: ', error);
       });
     }
   });
@@ -191,7 +193,7 @@ router.get('/:departmentid/operators', function (req, res) {
 function findProjectUsersAllAndAvailableWithOperatingHours(projectid, department) {
 
   return new Promise(function (resolve, reject) {
-    console.error('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
+    winston.error('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
 
     if (department.id_group != null) {
 
@@ -243,7 +245,7 @@ function findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, depa
 
             }).catch(function (error) {
 
-              // console.error("Write failed: ", error);
+              // winston.error("Write failed: ", error);
 
               sendError(error, res);
               console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_group ] - AVAILABLE AGENT - ERROR ', error);
@@ -295,7 +297,7 @@ function findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, de
 
         }).catch(function (error) {
 
-          // console.error("Write failed: ", error);
+          // winston.error("Write failed: ", error);
 
           sendError(error, res);
           console.log('D-3 -> [ findProjectUsersAllAndAvailableWithOperatingHours_nogroup ] - AVAILABLE AGENT - ERROR ', error);
@@ -528,14 +530,14 @@ router.get('/mydepartments', function (req, res) {
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
 router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
+  //console.log("req projectid", req.projectid);
+  //console.log("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {
     return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
       if (err) {
-        console.error('Error getting the departments.', err);
+        winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
 
@@ -544,7 +546,7 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
   } else {
     return Department.find({ "id_project": req.projectid }, function (err, departments) {
       if (err) {
-        console.error('Error getting the departments.', err);
+        winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
 
@@ -599,14 +601,14 @@ router.get('/:departmentid', function (req, res) {
 // note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
+  //console.log("req projectid", req.projectid);
+  //console.log("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {
     return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
       if (err) {
-        console.error('Error getting the departments.', err);
+        winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
 
@@ -615,7 +617,7 @@ router.get('/', function (req, res) {
   } else {
     return Department.find({ "id_project": req.projectid, "status": 1 }, function (err, departments) {
       if (err) {
-        console.error('Error getting the departments.', err);
+        winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
 

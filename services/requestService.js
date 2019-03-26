@@ -10,6 +10,9 @@ var Message = require("../models/message");
 var messageService = require('../services/messageService');
 // var leadService = require('../services/leadService');
 var Lead = require('../models/lead');
+const requestEvent = require('../event/requestEvent');
+var Project_user = require("../models/project_user");
+var winston = require('../config/winston');
 
 
 class RequestService {
@@ -41,7 +44,7 @@ class RequestService {
   //             });
   //           });
   //           // .catch(function(err){
-  //           //   console.error("Error creating message", err);
+  //           //   winston.error("Error creating message", err);
   //           //   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
   //           // });
   //       });
@@ -104,7 +107,7 @@ class RequestService {
   //                               }
   //                             });
   //                           }).catch(function(err){
-  //                             console.error("Error creating message", err);
+  //                             winston.error("Error creating message", err);
   //                             return res.status(500).send({success: false, msg: 'Error creating message', err:err });
   //                           });
   //         }
@@ -195,12 +198,12 @@ class RequestService {
 
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
-                    console.error('Error createWithId the request.',err);
+                    winston.error('Error createWithId the request.',err);
                     return reject(err);
                   }
               
               
-                  console.info("Request created",savedRequest);
+                  winston.info("Request created",savedRequest);
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
@@ -211,7 +214,7 @@ class RequestService {
                   }
                   
                   
-              
+                  requestEvent.emit('request.create',savedRequest);
                   return resolve(savedRequest);
                   
                 });
@@ -235,9 +238,10 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
+            requestEvent.emit('request.update',updatedRequest);
            // console.log("updatedRequest", updatedRequest);
             return resolve(updatedRequest);
           });
@@ -254,9 +258,10 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
+
            // console.log("updatedRequest", updatedRequest);
             return resolve(updatedRequest);
           });
@@ -272,10 +277,10 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
-           console.log("Message count +1");
+            winston.debug("Message count +1");
             return resolve(updatedRequest);
           });
     });
@@ -290,7 +295,7 @@ class RequestService {
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err) {
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
         //update waiting_time only the first time
@@ -301,7 +306,7 @@ class RequestService {
          
           request.waiting_time = waitingTime;
             // console.log(" request",  request);
-          console.log("Request  waitingTime setted");
+            winston.debug("Request  waitingTime setted");
           return resolve(request.save());
         }else {
           return resolve(request);
@@ -332,25 +337,42 @@ class RequestService {
                   try {                
                       Project.findById(id_project, function(err, project){                        
                         if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
+
+                           //send email to admin
+                          Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
+                          .exec(function (err, project_users) {
+                            project_users.forEach(project_user => {
+                              if (project_user.id_user) {
+                                return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
+                              } else {
+                              }
+                            });                        
+                          });
+                          //end send email to admin
+
+                          //send email to lead
                           return Lead.findById(updatedRequest.requester_id, function(err, lead){
                              //if (lead && lead.email) {
                               if (lead) {
-                              return that.sendTranscriptByEmail(lead.email, request_id, id_project);
+                                return that.sendTranscriptByEmail(lead.email, request_id, id_project);
                              }
                               
                            });
+                          //end send email to lead
+
                         }
                       });
                     }catch(e) {
-                      console.error("error sendTranscriptByEmail ", e);
+                      winston.error("error sendTranscriptByEmail ", e);
                     }
 
+                    requestEvent.emit('request.close', updatedRequest);
                   return resolve(updatedRequest);
                 });
               });
             });
           }).catch(function(err)  {
-              console.error(err);
+            winston.error(err);
               return reject(err);
           });
     });
@@ -366,11 +388,11 @@ class RequestService {
      
         return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
           if (err){
-            console.error(err);
+            winston.error(err);
             return reject(err);
           }
           if (!request) {
-            console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+            winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
             return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
           }
 
@@ -380,10 +402,19 @@ class RequestService {
             request.status = 100;
           }
 
-          return resolve(request.save());
+         request.save(function(err, savedRequest) {
+            if (!err) {
+              requestEvent.emit('request.update', savedRequest);
+            }          
+            
+            return resolve(savedRequest);
+            
+          });
+
+         
 
         }).catch(function(err)  {
-              console.error(err);
+          winston.error(err);
               return reject(err);
           });
     });
@@ -398,7 +429,7 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
            // console.log("updatedRequest", updatedRequest);
@@ -426,9 +457,11 @@ class RequestService {
 
       return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
         if (err) {
-          console.error("Error setParticipantsByRequestId", err);
+          winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }
+        requestEvent.emit('request.update',updatedRequest);
+
         return resolve(updatedRequest);
       });
 
@@ -453,7 +486,7 @@ class RequestService {
     return new Promise(function (resolve, reject) {
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err){
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
         if (!request) {
@@ -472,7 +505,15 @@ class RequestService {
             request.status = 100;
           }
 
-          return resolve(request.save());
+          request.save(function(err, savedRequest) {
+            if (!err) {
+              requestEvent.emit('request.update', savedRequest);
+            }          
+            
+            return resolve(savedRequest);
+          });
+      
+          
       });
    });
   }
@@ -488,7 +529,7 @@ class RequestService {
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         
         if (err){
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
 
@@ -502,14 +543,29 @@ class RequestService {
         if (index > -1) {
           request.participants.splice(index, 1);
           // console.log(" request.participants",  request.participants);
-        }      
-        if (request.participants.length>0) {
+        }
+        if (request.status!=1000) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+          if (request.participants.length>0) { 
             request.status = 200;
           } else {
             request.status = 100;
           }
+        }
+         
           // console.log(" request",  request);
-        return resolve(request.save());
+       
+          request.save(function(err, savedRequest) {
+
+            if (!err) {
+              requestEvent.emit('request.update', savedRequest);
+            }
+
+            return resolve(savedRequest);
+
+          });
+
+        
+          
       });
     });
   }
@@ -522,11 +578,11 @@ class RequestService {
       .populate('department')
       .exec(function(err, request) { 
       if (err){
-        console.error(err);
+        winston.error(err);
         return reject(err);
       }
       if (!request) {
-        console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+        winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
         return reject("Request not found for request_id "+ request_id  + " and id_project " + id_project);
       }
       
@@ -566,7 +622,7 @@ class RequestService {
    
      Project.findById(projectid, function(err, project){
        if (err) {
-         console.error(err);
+         winston.error(err);
        }
    
        if (!project) {
@@ -612,7 +668,7 @@ class RequestService {
    
                   //    User.findById( savedRequest.participants[0], function (err, user) {
                   //      if (err) {
-                  //        console.error("Error sending email to " + savedRequest.participants[0], err);
+                  //        winston.error("Error sending email to " + savedRequest.participants[0], err);
                   //      }
                   //      if (!user) {
                   //        console.warn("User not found",  savedRequest.participants[0]);

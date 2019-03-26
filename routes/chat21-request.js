@@ -10,10 +10,18 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
-
 var admin = require('../utils/firebaseConnector');
-
 const firestore = admin.firestore();
+var winston = require('../config/winston');
+
+
+// var admin = require('../utils/firebaseConnector');
+// let firestore;
+// // https://stackoverflow.com/questions/37652328/how-to-check-if-a-firebase-app-is-already-initialized-on-android
+// if (admin.apps.length>0) {
+//    firestore = admin.firestore();
+// }
+ 
 
 // var jwt = require('jsonwebtoken');
 // var validtoken = require('../middleware/valid-token');
@@ -150,7 +158,7 @@ router.post('/', function(req, res) {
                                                                                                               
                                     
                                   //       } catch(err) {
-                                  //           console.error("error decoding jwt token", err);
+                                  //           winston.error("error decoding jwt token", err);
 
                                   //           return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
                                   //             console.log("customAuthToken", customAuthToken);
@@ -195,7 +203,7 @@ router.post('/', function(req, res) {
 
         
 
-            console.log("request  exists", request);
+            console.log("request  exists", request.toObject());
 
             // var projectid;
             // if (message.attributes) {
@@ -230,7 +238,7 @@ router.post('/', function(req, res) {
                       }
                     });
                   }).catch(function(err){
-                    console.error("Error creating message", err);
+                    winston.error("Error creating message", err);
                     return res.status(500).send({success: false, msg: 'Error creating message', err:err });
                   });
 
@@ -307,7 +315,7 @@ router.post('/', function(req, res) {
               return Request.findOne(query, function(err, request) {
 
                 if (err) {
-                  console.error("Error finding request with query ", query);
+                  winston.error("Error finding request with query ", query);
                   return res.status(500).send({success: false, msg: "Error finding request with query " + query, err:err });
                 }
                 if (!request) {
@@ -344,7 +352,7 @@ router.post('/', function(req, res) {
                         return res.json(updatedStatusRequest);
                       });
                     }).catch(function(err){
-                      console.error("Error closing request", err);
+                      winston.error("Error closing request", err);
                       return res.status(500).send({success: false, msg: 'Error closing request', err:err });
                     });
 
@@ -394,14 +402,14 @@ router.post('/', function(req, res) {
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
       }else {
-        console.error("id_project "+ id_project+ "isn't a support joining");
+        winston.error("id_project "+ id_project+ "isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
       console.log("id_project", id_project);
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err){
-          console.error(err);
+          winston.error(err);
            return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
         }
         if (!request) {
@@ -416,10 +424,10 @@ router.post('/', function(req, res) {
             return res.status(400).send({success: false, msg: "don't  joining requester_id or a lead" });
           }else {
             return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-              console.error("Join memeber ok");
+              winston.error("Join memeber ok");
               return res.json(updatedRequest);
             }).catch(function(err){
-              console.error("Error joining memeber", err);
+              winston.error("Error joining memeber", err);
               return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
             });
           }
@@ -460,10 +468,10 @@ router.post('/', function(req, res) {
       console.log("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-      console.error("Leave memeber ok");
+      winston.error("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){
-      console.error("Error leaving memeber", err);
+      winston.error("Error leaving memeber", err);
       return res.status(500).send({success: false, msg: 'Error leaving memeber', err:err });
     });
   }
@@ -510,7 +518,7 @@ router.post('/', function(req, res) {
       return requestService.reopenRequestByRequestId(recipient_id, id_project).then(function(updatedRequest) {
         return res.json(updatedRequest);
       }).catch(function(err){
-        console.error("Error reopening request", err);
+        winston.error("Error reopening request", err);
         return res.status(500).send({success: false, msg: 'Error reopening request', err:err });
       });
 

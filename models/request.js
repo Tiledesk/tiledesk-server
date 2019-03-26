@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ProjectUserSchema = require("../models/project_user").schema;
-var MessageSchema = require("../models/message").schema;
+// var MessageSchema = require("../models/message").schema;
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
@@ -15,7 +15,8 @@ var RequestSchema = new Schema({
   },
   requester_id: {
     type: String,
-    required: true
+    required: true,
+    index: true
     // type: Schema.Types.ObjectId,
     // ref: 'lead'
   },
@@ -35,7 +36,8 @@ var RequestSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: 100
+    default: 100,
+    index: true
   }, 
 
 
@@ -53,6 +55,7 @@ var RequestSchema = new Schema({
 
 
   // first_message: MessageSchema,
+  // messages : [{ type: Schema.Types.ObjectId, ref: 'message' }],
 
   transcript: {
     type: String
@@ -136,9 +139,64 @@ var RequestSchema = new Schema({
   },
 
 },{
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
+
+RequestSchema.virtual('lead', {
+  ref: 'lead', // The model to use
+  localField: 'requester_id', // Find people where `localField`
+  foreignField: '_id', // is equal to `foreignField`
+  justOne: true,
+  //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+
+// RequestSchema.post('find', async function(requests) {
+//   // console.log("requests", requests);
+//   for (let request of requests) {
+//     //console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+
+// RequestSchema.post('find',  async function(requests) {
+//   //  console.log("requestsyyyy", requests);
+//   for (let request of requests) {
+//     // console.log("request find", request,  "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+// RequestSchema.post('findOne',  async function(request) {
+//   //console.log("requestXXXXX", request);
+ 
+//     console.log("request findOne", request, "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+
+// });
+
+
+
+// // work but no multiple where on id-project
+// RequestSchema.virtual('messages', {
+//   ref: 'message', // The model to use
+//   localField: 'request_id', // Find people where `localField`
+//   foreignField: 'recipient', // is equal to `foreignField`
+//   // localField: ['request_id', 'id_project'], // Find people where `localField`
+//   // foreignField: ['recipient', 'id_project'], // is equal to `foreignField`
+//   // If `justOne` is true, 'messages' will be a single doc as opposed to
+//   // an array. `justOne` is false by default.
+//   justOne: false,
+//   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+// });
+
 
 RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
   var project_users_available = project_users.filter(function (projectUser) {
