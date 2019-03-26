@@ -35,7 +35,7 @@ router.post('/signup', function (req, res) {
       .then(function (savedUser) {
 
 
-        console.log('-- >> -- >> savedUser ', savedUser);
+        console.log('-- >> -- >> savedUser ', savedUser.toObject());
 
         emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
 

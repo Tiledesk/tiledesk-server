@@ -16,6 +16,9 @@ var validtoken = require('./middleware/valid-token');
 
 var winston = require('./config/winston');
 
+//bin start
+// https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
+
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
   winston.error('DATABASE_URI not specified, falling back to localhost.');
@@ -222,7 +225,7 @@ var reqLogger = function (req, res, next) {
 }
 
 app.get('/', function (req, res) {  
-  res.send('Tiledesk server. Index page. See the documentation.');
+  res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com.');
 });
 
 
