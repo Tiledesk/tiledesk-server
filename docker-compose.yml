@@ -1,4 +1,11 @@
 version: "2"
+### Creates a named network with the default bridge driver
+# The network is shared between restheart and mongodb only
+# See: https://docs.docker.com/engine/userguide/networking/dockernetworks/
+# See: https://docs.docker.com/engine/reference/commandline/network_create/
+networks:
+   backend:
+
 services:
 #  dashboard:
 #    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
@@ -11,13 +18,21 @@ services:
   webchat:
     build: ../chat21-ionic # specify the directory of the Dockerfile
     ports:
-      - "4200:80" # specify port forewarding
-  app:
-    container_name: tiledesk-api
+      - "8100:80" # specify port forewarding
+  server:
+    image: tiledesk/tiledesk-server
+    container_name: tiledesk-server
     restart: always
+    networks:
+         - backend
+    env_file:
+    - .env
     environment: 
       - FIREBASE_PRIVATE_KEY
+      - FIREBASE_CONFIG_FILE
       - FIREBASE_CLIENT_EMAIL
+      - FIREBASE_PROJECT_ID
+   #   - DATABASE_URI
       - MONGODB_URI=mongo
     build: .
     ports:
@@ -29,6 +44,9 @@ services:
     image: mongo
     volumes:
       - ./data:/data/db
-    ports:
-      - "27017:27017"
+    networks:
+         - backend
+      ### Uncoment below if you want to map mongodb port
+      #ports:
+      #   - "27017:27017"
 
