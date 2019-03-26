@@ -19,6 +19,7 @@ FIREBASE_CONFIG_FILE=<FIREBASE_CONFIG_PATH.json> DATABASE_URI=mongodb://localhos
 Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 
 
+# Running Tiledesk Server elsewhere
 
 ## Install from source code
 
@@ -32,7 +33,12 @@ Note: If installation with -g fails due to permission problems (npm ERR! code 'E
 Install nodemon with 'npm install -g nodemon'
 
 
-# Deploy on Heroku
+## Deploy on Heroku
+
+Deploy with button:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 
 To see the log run : 
 
