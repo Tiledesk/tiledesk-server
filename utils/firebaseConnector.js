@@ -23,6 +23,7 @@ if (!private_key || !client_email) {
         "client_email": client_email,
         "project_id": firebase_project_id,
       };
+      console.log('serviceAccount from env', serviceAccount);
 }
 
 const admin = require('firebase-admin');
