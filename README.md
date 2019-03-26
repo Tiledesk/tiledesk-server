@@ -7,8 +7,20 @@
 * Nodejs and npm installed 
 * MongoDB installed and running on localhost
 
-# Installation and running
-Step to run locally:
+# Installation
+
+Steps to run locally:
+```
+npm install -g tiledesk-server mongodb-runner
+mongodb-runner start
+tiledesk-server --FIREBASE_CONFIG_FILE PATH --DATABASE_URI mongodb://localhost/tiledesk
+```
+
+Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
+
+
+
+## Install from source code
 
 * Clone this repo
 * Install dependencies with 'npm install'
