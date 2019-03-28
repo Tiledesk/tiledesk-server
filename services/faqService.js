@@ -2,6 +2,7 @@ var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var request = require('request');
 var winston = require('../config/winston');
+const faqBotEvent = require('../event/faqBotEvent');
 
 // var mongoose = require('mongoose');
 
@@ -31,6 +32,9 @@ class FaqService {
           }
           winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
+          faqBotEvent.emit('faqbot.create', savedFaq_kb);
+
+
           // if (savedFaq_kb.external===false) {
           //   createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
           // } else {

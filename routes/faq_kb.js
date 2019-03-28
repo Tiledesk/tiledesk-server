@@ -3,6 +3,7 @@ var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
 var Department = require("../models/department");
 var faqService = require("../services/faqService");
+const faqBotEvent = require('../event/faqBotEvent');
 
 // START - CREATE FAQ KB KEY 
 var request = require('request');
@@ -120,6 +121,8 @@ router.put('/:faq_kbid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    faqBotEvent.emit('faqbot.update', updatedFaq_kb);
     res.json(updatedFaq_kb);
   });
 });
@@ -133,6 +136,7 @@ router.delete('/:faq_kbid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+    faqBotEvent.emit('faqbot.delete', faq_kb);
     res.json(faq_kb);
   });
 });

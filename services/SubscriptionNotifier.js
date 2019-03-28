@@ -3,6 +3,7 @@ var Subscription = require('../models/subscription');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const leadEvent = require('../event/leadEvent');
+const faqBotEvent = require('../event/faqBotEvent');
 
 var Request = require("../models/request");
 var Message = require("../models/message");
@@ -205,18 +206,62 @@ class SubscriptionNotifier {
 
 
       leadEvent.on('lead.create', function(lead) {
+        subscriptionNotifier.subscribe('lead.create', lead);
         //winston.debug("Subscription.notify");
-        subscriptionNotifier.findSubscriber('lead.create', lead.id_project).then(function(subscriptions) { 
-          //winston.debug("Subscription.notify subscriptionNotifier", subscriptions.length);
-          if (subscriptions && subscriptions.length>0) {
-            winston.debug("Subscription.notify", 'lead.create', lead , "length", subscriptions.length);
-            subscriptionNotifier.notify(subscriptions, lead);           
-          }
-        });
+        // subscriptionNotifier.findSubscriber('lead.create', lead.id_project).then(function(subscriptions) { 
+        //   //winston.debug("Subscription.notify subscriptionNotifier", subscriptions.length);
+        //   if (subscriptions && subscriptions.length>0) {
+        //     winston.debug("Subscription.notify", 'lead.create', lead , "length", subscriptions.length);
+        //     subscriptionNotifier.notify(subscriptions, lead);           
+        //   }
+        // });
 
       });
 
+
+      faqBotEvent.on('faqBot.create', function(faqBot) {
+        subscriptionNotifier.subscribe('faqBot.create', faqBot);
+      });
+
+      faqBotEvent.on('faqBot.update', function(faqBot) {
+        subscriptionNotifier.subscribe('faqBot.update', faqBot);
+      });
+      faqBotEvent.on('faqBot.delete', function(faqBot) {
+        subscriptionNotifier.subscribe('faqBot.delete', faqBot);
+      });
+
+
+
+      faqBotEvent.on('faq.create', function(faq) {
+        subscriptionNotifier.subscribe('faq.create', faq);
+      });
+
+      faqBotEvent.on('faq.update', function(faq) {
+        subscriptionNotifier.subscribe('faq.update', faq);
+      });
+      faqBotEvent.on('faq.delete', function(faq) {
+        subscriptionNotifier.subscribe('faq.delete', faq);
+      });
+
+    
+
   }
+
+
+  subscribe(eventName, payload ) {
+    //winston.debug("Subscription.notify");
+    subscriptionNotifier.findSubscriber(eventName, payload.id_project).then(function(subscriptions) { 
+      //winston.debug("Subscription.notify subscriptionNotifier", subscriptions.length);
+      if (subscriptions && subscriptions.length>0) {
+        winston.debug("Subscription.notify", eventName, payload , "length", subscriptions.length);
+        subscriptionNotifier.notify(subscriptions, payload);           
+      }
+    });
+
+  }
+
+
+
 };
 
 var subscriptionNotifier = new SubscriptionNotifier();
