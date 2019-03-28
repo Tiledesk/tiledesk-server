@@ -39,7 +39,6 @@ if (process.env.NODE_ENV == 'test')  {
 
 var auth = require('./routes/auth');
 var lead = require('./routes/lead');
-//var tenant = require('./routes/tenant');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
@@ -469,7 +468,6 @@ app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { ses
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], pendinginvitation);
-//app.use('/apps', tenant);
 // app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
 
 
