@@ -65,6 +65,7 @@ var chat21Request = require('./routes/chat21-request');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
+var activities = require('./routes/activity');
 
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
@@ -464,6 +465,7 @@ app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], subscription);
+app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], activities);
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], pendinginvitation);

@@ -3,7 +3,6 @@ var router = express.Router();
 var Lead = require("../models/lead");
 var winston = require('../config/winston');
 
-var ObjectId = require('mongoose').Types.ObjectId;
 csv = require('csv-express');
 csv.separator = ';';
 
