@@ -9,6 +9,7 @@ var Project = require("../models/project");
 var pendinginvitation = require("../services/pendingInvitationService");
 var Activity = require("../models/activity");
 var winston = require('../config/winston');
+const activityEvent = require('../event/activityEvent');
 
 // var User = require("../models/user");
 
@@ -193,13 +194,10 @@ router.put('/:project_userid', function (req, res) {
     }
 
     var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    activity.save(function(err, savedActivity) {
-        if (err) {
-          winston.error('Error saving activity ', err);
-        }else {
-          winston.error('Activity saved', savedActivity)
-        }
-      });
+
+    activityEvent.emit('project_user.update', activity);
+
+    
 
     res.json(updatedProject_user);
   });
