@@ -73,8 +73,8 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
 
 
-var faqBotHandler = require('./services/faqBotHandler');
-faqBotHandler.listen();
+// var faqBotHandler = require('./services/faqBotHandler');
+// faqBotHandler.listen();
 
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
