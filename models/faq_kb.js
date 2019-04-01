@@ -6,7 +6,7 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: true
   },
-  url: { //unused
+  url: { 
     type: String,
     // required: true
   },

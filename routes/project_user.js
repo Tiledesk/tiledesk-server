@@ -194,7 +194,6 @@ router.put('/:project_userid', function (req, res) {
     }
 
     var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-
     activityEvent.emit('project_user.update', activity);
 
     

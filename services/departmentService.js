@@ -37,7 +37,7 @@ class DepartmentService {
             winston.error('--- > ERROR ', err);
             reject(err);
           }
-          winston.info('Default Department created', savedDepartment);
+          winston.info('Default Department created', savedDepartment.toObject());
           return resolve(savedDepartment);
         });
       });

@@ -203,7 +203,7 @@ class RequestService {
                   }
               
               
-                  winston.info("Request created",savedRequest);
+                  winston.info("Request created",savedRequest.toObject());
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
