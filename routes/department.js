@@ -217,19 +217,21 @@ function findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, depa
         reject(err);
       }
       if (group) {
-        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> GROUP FOUND:: ', group);
-        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS LENGHT: ', group[0].members.length);
-        console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS ID: ', group[0].members);
+
+        // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> GROUP FOUND:: ', group);
+        // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS LENGHT: ', group[0].members.length);
+        // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS ID: ', group[0].members);
+
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
         Project_user.find({ id_project: projectid, id_user: group[0].members }, function (err, project_users) {
-          console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
+          // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
           if (err) {
-            console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
+            // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
             reject(err);
           }
           if (project_users && project_users.length > 0) {
-            console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
+            // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
 
             // var _available_agents = getAvailableOperatorsWithOperatingHours(project_users, projectid);
             // NK NEW
@@ -278,8 +280,8 @@ function findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, de
         console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         reject(err);
       }
-      console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS LENGHT ', project_users.length)
-      console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS ', project_users)
+      // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS LENGHT ', project_users.length)
+      // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] ->  MEMBERS ', project_users)
 
 
       if (project_users && project_users.length > 0) {
@@ -449,10 +451,10 @@ function getRandomAvailableOperator(project_users_available) {
   // var project_users_available = getAvailableOperator(project_users);
 
   // console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE ', project_users_available);
-  console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
+  // console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
   if (project_users_available.length > 0) {
     var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
-    console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
+    // console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
 
     // return operator.id_user
     return [{ id_user: operator.id_user }]
