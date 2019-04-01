@@ -2,6 +2,7 @@
 
 // var Request = require("../models/request");
 var Message = require("../models/message");
+var MessageConstants = require("../models/messageConstants");
 
 // var mongoose = require('mongoose');
 // var requestService = require('../services/requestService');
@@ -26,8 +27,9 @@ class MessageService {
 
 
 
-  create(sender, senderFullname, recipient, text, id_project, createdBy) {
+  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
 
+    var that = this;
     return new Promise(function (resolve, reject) {
 
         if (!createdBy) {
@@ -46,7 +48,9 @@ class MessageService {
                 text: text,
                 id_project: id_project,
                 createdBy: createdBy,
-                updatedBy: createdBy
+                updatedBy: createdBy,
+                status : status,
+                attributes: attributes
             });
             
             // console.log("create new message", newMessage);
@@ -56,66 +60,72 @@ class MessageService {
                     winston.error(err);
                     return reject(err);
                 }
-                winston.log("Message created", savedMessage.toObject());
+                winston.info("Message created", savedMessage.toObject());
 
-                messageEvent.emit('message.create', savedMessage);
+                messageEvent.emit('message.create.simple', savedMessage);
+
+                that.emitMessage(savedMessage);
+                // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
+                //     messageEvent.emit('message.received.simple', savedMessage);
+                // }
+
+                // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+                //     messageEvent.emit('message.sending.simple', savedMessage);
+                // }
+                
 
                 return resolve(savedMessage);
             });
 
-        // } else {
-            //lookup from requests
-            // return Request.findOne({request_id: recipient}, function(err, request) {
-            //     if (err) {
-            //         winston.error(err);
-            //         return reject(err);
-            //     }
-            //     if (request) {
-                    
-            //         var newMessage = new Message({
-            //             sender: sender,
-            //             senderFullname: senderFullname,
-            //             recipient: recipient,
-            //             recipientFullname: recipientFullname,
-            //             text: text,
-            //             id_project: request.id_project,
-            //             createdBy: createdBy,
-            //             updatedBy: createdBy
-            //         });
-
-            //     }else {
-            //         var newMessage = new Message({
-            //             sender: sender,
-            //             senderFullname: senderFullname,
-            //             recipient: recipient,
-            //             recipientFullname: recipientFullname,
-            //             text: text,
-            //             id_project: "undefined",
-            //             createdBy: createdBy,
-            //             updatedBy: createdBy
-            //         });
-            //     }
-              
-                
-
-            //     // console.log("create new message with id_project from request lookup", newMessage);
-    
-            //     return newMessage.save(function(err, savedMessage) {
-            //         if (err) {
-            //             winston.error(err);
-            //             return reject(err);
-            //         }
-            //         return resolve(savedMessage);
-            //     });
-
-            //   });
-        // }
     
        
 
     });
 
   };  
+
+
+
+  emitMessage(message) {
+    if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
+        messageEvent.emit('message.received.simple', message);
+    }
+
+    if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+        messageEvent.emit('message.sending.simple', message);
+    }
+
+    if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENT) {
+        messageEvent.emit('message.sent.simple', message);
+    }
+
+    if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) {
+        messageEvent.emit('message.delivered.simple', message);
+    }
+  }
+
+  changeStatus(message_id, newstatus) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+        return Message.findByIdAndUpdate(message_id, {status: newstatus}, {new: true, upsert:false}, function(err, updatedMessage) {
+            if (err) {
+              winston.error(err);
+              return reject(err);
+            }
+            messageEvent.emit('message.update',updatedMessage);
+           // console.log("updatedMessage", updatedMessage);
+
+           that.emitMessage(updatedMessage);
+
+            return resolve(updatedMessage);
+          });
+    });
+
+  }
+
 
 
   getTranscriptByRequestId(requestid, id_project) {

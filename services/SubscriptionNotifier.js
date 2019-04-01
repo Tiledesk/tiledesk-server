@@ -3,6 +3,8 @@ var Subscription = require('../models/subscription');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const leadEvent = require('../event/leadEvent');
+const botEvent = require('../event/botEvent');
+
 const faqBotEvent = require('../event/faqBotEvent');
 
 var Request = require("../models/request");
@@ -56,8 +58,7 @@ class SubscriptionNotifier {
             method: 'POST'
 
           }, function(err, result, json){
-            //console.log("SENT " + event + " TO " + s.target, "result", result, "with error " , err);
-            console.log("SENT " + s.event + " TO " + s.target,  "with error " , err);
+            winston.debug("SENT " + s.event + " TO " + s.target,  "with error " , err);
             if (err) {
               winston.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
               next(err, json);
@@ -100,56 +101,73 @@ class SubscriptionNotifier {
   }
 
   start() {
-      messageEvent.on('message.create', function(message) {
-        // console.log('messageEmitter message.create', message);
-        subscriptionNotifier.findSubscriber('message.create', message.id_project).then(function(subscriptions) { 
-          if (subscriptions && subscriptions.length>0) {
-            winston.debug("Subscription.notify", 'message.create', message , "length", subscriptions.length);
+
+    messageEvent.on('message.create', function(message) {
+      subscriptionNotifier.subscribe('message.create', message);
+    });
+
+    messageEvent.on('message.received.for.bot', function(message) {
+      subscriptionNotifier.subscribe('message.received.for.bot', message);
+    });
+
+    messageEvent.on('message.received', function(message) {
+      subscriptionNotifier.subscribe('message.received', message);
+    });
+    messageEvent.on('message.sending', function(message) {
+      subscriptionNotifier.subscribe('message.sending', message);
+    });
+
+
+      // messageEvent.on('message.create', function(message) {
+      //   // console.log('messageEmitter message.create', message);
+      //   subscriptionNotifier.findSubscriber('message.create', message.id_project).then(function(subscriptions) { 
+      //     if (subscriptions && subscriptions.length>0) {
+      //       winston.debug("Subscription.notify", 'message.create', message , "length", subscriptions.length);
             
-            Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
-            populate('lead').
-            populate('department').
-            // populate('department.bot').
-            // populate({ 
-            //   path:'department',
-            //   populate: {
-            //     path: 'bot66',
-            //     model: 'faq_kb'
-            //   } 
-            // }).
-            exec(function (err, request) {
-              // Request.findOne({request_id:  message.recipient, id_project: message.id_project}
-            // , function(err, request) {
-              // console.log('1111');
+      //       Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+      //       populate('lead').
+      //       populate('department').
+      //       // populate('department.bot').
+      //       // populate({ 
+      //       //   path:'department',
+      //       //   populate: {
+      //       //     path: 'bot66',
+      //       //     model: 'faq_kb'
+      //       //   } 
+      //       // }).
+      //       exec(function (err, request) {
+      //         // Request.findOne({request_id:  message.recipient, id_project: message.id_project}
+      //       // , function(err, request) {
+      //         // console.log('1111');
 
-              if (request) {
-                var messageJson = message.toJSON();
+      //         if (request) {
+      //           var messageJson = message.toJSON();
 
-                if (request.department && request.department.id_bot) {
-                  // if (request.department) {
-                  Faq_kb.findById(request.department.id_bot, function(err, bot) {
-                    winston.debug('bot', bot);
-                    var requestJson = request.toJSON();
-                    requestJson.department.bot = bot
+      //           if (request.department && request.department.id_bot) {
+      //             // if (request.department) {
+      //             Faq_kb.findById(request.department.id_bot, function(err, bot) {
+      //               winston.debug('bot', bot);
+      //               var requestJson = request.toJSON();
+      //               requestJson.department.bot = bot
                     
-                    messageJson.request = requestJson;
-                    winston.debug('messageJson', messageJson);
-                    subscriptionNotifier.notify(subscriptions, messageJson);
+      //               messageJson.request = requestJson;
+      //               winston.debug('messageJson', messageJson);
+      //               subscriptionNotifier.notify(subscriptions, messageJson);
     
-                  });
+      //             });
 
                   
-                }else {
-                  messageJson.request = request;
-                  subscriptionNotifier.notify(subscriptions, messageJson);
-                }
+      //           }else {
+      //             messageJson.request = request;
+      //             subscriptionNotifier.notify(subscriptions, messageJson);
+      //           }
 
-            }
+      //       }
              
-            });
-          }
-        });
-      });
+      //       });
+      //     }
+      //   });
+      // });
 
       requestEvent.on('request.create', function(request) {
         // console.log('requestEmitter request.create', request);
@@ -219,14 +237,14 @@ class SubscriptionNotifier {
       });
 
 
-      faqBotEvent.on('faqBot.create', function(faqBot) {
+      botEvent.on('faqBot.create', function(faqBot) {
         subscriptionNotifier.subscribe('faqBot.create', faqBot);
       });
 
-      faqBotEvent.on('faqBot.update', function(faqBot) {
+      botEvent.on('faqBot.update', function(faqBot) {
         subscriptionNotifier.subscribe('faqBot.update', faqBot);
       });
-      faqBotEvent.on('faqBot.delete', function(faqBot) {
+      botEvent.on('faqBot.delete', function(faqBot) {
         subscriptionNotifier.subscribe('faqBot.delete', faqBot);
       });
 

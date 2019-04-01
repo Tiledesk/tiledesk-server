@@ -13,6 +13,7 @@ var Schema = mongoose.Schema,
 var admin = require('../utils/firebaseConnector');
 const firestore = admin.firestore();
 var winston = require('../config/winston');
+var MessageConstants = require("../models/messageConstants");
 
 
 // var admin = require('../utils/firebaseConnector');
@@ -142,9 +143,9 @@ router.post('/', function(req, res) {
                   .then(function(createdLead) {
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
                       return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
-                        // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+                        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid).then(function(savedMessage){
+                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
                                       // console.log("savedMessageXXX ");
                                       //get projectid from savedMessage.id_project
 
@@ -222,9 +223,11 @@ router.post('/', function(req, res) {
               return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
             }
         
-                            // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+                            
                 return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                  request.id_project).then(function(savedMessage){
+                  request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        

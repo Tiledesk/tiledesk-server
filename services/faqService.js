@@ -2,7 +2,7 @@ var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var request = require('request');
 var winston = require('../config/winston');
-const faqBotEvent = require('../event/faqBotEvent');
+const botEvent = require('../event/botEvent');
 
 // var mongoose = require('mongoose');
 
@@ -32,7 +32,7 @@ class FaqService {
           }
           winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
-          faqBotEvent.emit('faqbot.create', savedFaq_kb);
+          botEvent.emit('faqbot.create', savedFaq_kb);
 
 
           // if (savedFaq_kb.external===false) {

@@ -69,6 +69,20 @@ var activities = require('./routes/activity');
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
+var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
+botSubscriptionNotifier.start();
+
+
+var faqBotHandler = require('./services/faqBotHandler');
+faqBotHandler.listen();
+
+var activityArchiver = require('./services/activityArchiver');
+activityArchiver.listen();
+
+// var chat21Sender = require('./services/chat21Sender');
+// chat21Sender.listen();
+
+
 var ReqLog = require("./models/reqlog");
 
 if (process.env.QUEQUE_ENABLED) {
