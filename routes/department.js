@@ -147,8 +147,8 @@ router.get('/:departmentid/operators', function (req, res) {
     }
 
     else { // if (department.routing === 'assigned' || department.routing === 'pooled') {
-      console.log('OPERATORS - routing ', department.routing, ' - PRJCT-ID ', req.projectid)
-      console.log('OPERATORS - routing ', department.routing, ' - DEPT GROUP-ID ', department.id_group)
+      // console.log('OPERATORS - routing ', department.routing, ' - PRJCT-ID ', req.projectid)
+      // console.log('OPERATORS - routing ', department.routing, ' - DEPT GROUP-ID ', department.id_group)
 
 
       /* ---------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ router.get('/:departmentid/operators', function (req, res) {
        * --------------------------------------------------------------------------------*/
       findProjectUsersAllAndAvailableWithOperatingHours(req.projectid, department).then(function (value) {
 
-        console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
+        // console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
         value['department'] = department
 
         //if sendEmail==true send email to assigned Operator. Only for assigned opearator. for a Pooled request the mail is sent by requestService.
@@ -193,7 +193,7 @@ router.get('/:departmentid/operators', function (req, res) {
 function findProjectUsersAllAndAvailableWithOperatingHours(projectid, department) {
 
   return new Promise(function (resolve, reject) {
-    winston.error('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
+    winston.debug('D-1 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, ' ], - ID GROUP', department.id_group);
 
     if (department.id_group != null) {
 
@@ -356,9 +356,9 @@ function getAvailableOperatorsWithOperatingHours(project_users, projectid) {
     if (project_users && project_users.length > 0) {
 
       operatingHoursService.projectIsOpenNow(projectid, function (isOpen, err) {
-        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> PROJECT ID: ', projectid);
-        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT: ', isOpen);
-        console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - EROR: ', err)
+        // console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> PROJECT ID: ', projectid);
+        // console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT: ', isOpen);
+        // console.log('D -> [ OHS ] -> [ GET AVAILABLE PROJECT-USER WITH OPERATING H ] -> IS OPEN THE PROJECT - EROR: ', err)
 
         if (err) {
           reject(err);

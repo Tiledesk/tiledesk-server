@@ -231,7 +231,7 @@ function checkDay(operatingHoursPars, dayNowAtPrjctTz) {
   for (var operatingHoursweekDay in operatingHoursPars) {
     if (operatingHoursweekDay != 'tzname') {
       if (dayNowAtPrjctTz == operatingHoursweekDay) {
-        console.log('O ---> [ OHS ] -> CURRENT DAY "', days[dayNowAtPrjctTz], '" (CALCUCATE @THE PRJCT TZ) MATCHES TO THE PRJCT OPENING DAY "', days[operatingHoursweekDay], '"');
+        winston.debug('O ---> [ OHS ] -> CURRENT DAY "', days[dayNowAtPrjctTz], '" (CALCUCATE @THE PRJCT TZ) MATCHES TO THE PRJCT OPENING DAY "', days[operatingHoursweekDay], '"');
 
         return true
       }
