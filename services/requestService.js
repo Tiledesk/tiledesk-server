@@ -14,6 +14,9 @@ const requestEvent = require('../event/requestEvent');
 var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
 
+//var Activity = require("../models/activity");
+//const activityEvent = require('../event/activityEvent');
+
 
 class RequestService {
 
@@ -215,6 +218,12 @@ class RequestService {
                   
                   
                   requestEvent.emit('request.create',savedRequest);
+
+
+                  //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
+                  //activityEvent.emit('request.create', activity);
+
+                  
                   return resolve(savedRequest);
                   
                 });

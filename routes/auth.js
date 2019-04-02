@@ -1,18 +1,20 @@
-var mongoose = require('mongoose');
 var config = require('../config/database');
 var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
-var Person = require("../models/person");
 var uniqid = require('uniqid');
 var emailService = require("../models/emailService");
-const nodemailer = require('nodemailer');
 var pendinginvitation = require("../services/pendingInvitationService");
 var userService = require("../services/userService");
 //var emailTemplates = require('../config/email_templates');
 
-// console.log("hereeeeeee");
+//var Activity = require("../models/activity");
+//const activityEvent = require('../event/activityEvent');
+
+var winston = require('../config/winston');
+
+
 
 router.post('/signup', function (req, res) {
   if (!req.body.email || !req.body.password) {
@@ -35,7 +37,7 @@ router.post('/signup', function (req, res) {
       .then(function (savedUser) {
 
 
-        console.log('-- >> -- >> savedUser ', savedUser.toObject());
+        winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
         emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
 
@@ -54,17 +56,22 @@ router.post('/signup', function (req, res) {
           // });
 
 
+         // var activity = new Activity({actor: savedUser._id, verb: "USER_SIGNUP", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+         // activityEvent.emit('user.signup', activity);
+      
 
          res.json({ success: true, msg: 'Successfully created new user.' });
         // savePerson(req, res, savedUser.id)
       }).catch(function (err) {
+
+        winston.error('Error registering new user', err);
          res.send(err);
       });
   }
 });
 
 // function savePerson(req, res, userid) {
-//   console.log('userid ', userid)
+//   winston.debug('userid ', userid)
 //   var newPerson = new Person({
 //     firstname: req.body.firstname,
 //     lastname: req.body.lastname,
@@ -77,7 +84,7 @@ router.post('/signup', function (req, res) {
 
 //   newPerson.save(function (err, savedPerson) {
 //     if (err) {
-//       console.log('--- > ERROR ', err)
+//       winston.debug('--- > ERROR ', err)
 //       return res.status(500).send({ success: false, msg: 'Error saving object.' });
 //     } else {
 //       res.json({ success: true, msg: 'Successfully created new user.' });
@@ -87,14 +94,18 @@ router.post('/signup', function (req, res) {
 // }
 
 router.post('/signin', function (req, res) {
-  console.log("req.body.email", req.body.email);
+  winston.debug("req.body.email", req.body.email);
 
   User.findOne({
     email: req.body.email
   }, 'email firstname lastname password emailverified id', function (err, user) {
-    if (err) throw err;
+    if (err) {
+      winston.error("Error signin", err);
+      throw err;
+    } 
 
     if (!user) {
+      winston.warn('Authentication failed. User not found.');
       res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
     } else {
       // check if password matches
@@ -111,16 +122,23 @@ router.post('/signin', function (req, res) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
               var token = jwt.sign(user, config.secret);
+
+
+              //var activity = new Activity({actor: user._id, verb: "USER_SIGNIN", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+              //activityEvent.emit('user.signin', activity);
+
+
               // return the information including token as JSON
               res.json({ success: true, token: 'JWT ' + token, user: user });
             } else {
-              // console.log("my 401");
+              winston.warn('Authentication failed. Wrong password.' );
               res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
             }
           });
 
         }
       } else {
+        winston.warn('Authentication failed.  Password is required.');
         res.status(401).send({ success: false, msg: 'Authentication failed.  Password is required.' });
       }
 
@@ -132,18 +150,24 @@ router.post('/signin', function (req, res) {
 // VERIFY EMAIL
 router.put('/verifyemail/:userid', function (req, res) {
 
-  console.log('VERIFY EMAIL - REQ BODY ', req.body);
+  winston.debug('VERIFY EMAIL - REQ BODY ', req.body);
 
   User.findByIdAndUpdate(req.params.userid, req.body, { new: true, upsert: true }, function (err, findUser) {
     if (err) {
-      console.log(err);
+      winston.error(err);
       return res.status(500).send({ success: false, msg: err });
     }
-    console.log(findUser);
+    winston.debug(findUser);
     if (!findUser) {
+      winston.warn('User not found for verifyemail' );
       return res.status(404).send({ success: false, msg: 'User not found' });
     }
-    console.log('VERIFY EMAIL - RETURNED USER ', findUser);
+    winston.debug('VERIFY EMAIL - RETURNED USER ', findUser);
+
+    //var activity = new Activity({actor: findUser._id, verb: "USER_VERIFY_EMAIL", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+    //activityEvent.emit('user.verify.email', activity);
+
+
     res.json(findUser);
   });
 });
@@ -156,36 +180,38 @@ router.put('/verifyemail/:userid', function (req, res) {
  */
 router.put('/requestresetpsw', function (req, res) {
 
-  console.log('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
+  winston.debug('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
 
   User.findOne({ email: req.body.email }, function (err, user) {
     if (err) {
-      console.log('REQUEST RESET PSW - ERROR ', err);
+      winston.error('REQUEST RESET PSW - ERROR ', err);
       return res.status(500).send({ success: false, msg: err });
     }
 
     if (!user) {
+      winston.warn('User not found.');
       res.json({ success: false, msg: 'User not found.' });
     } else if (user) {
 
-      console.log('REQUEST RESET PSW - USER FOUND ', user);
-      console.log('REQUEST RESET PSW - USER FOUND - ID ', user._id);
+      winston.debug('REQUEST RESET PSW - USER FOUND ', user);
+      winston.debug('REQUEST RESET PSW - USER FOUND - ID ', user._id);
       var reset_psw_request_id = uniqid()
 
-      console.log('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
+      winston.debug('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 
       User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }, function (err, updatedUser) {
 
         if (err) {
-          console.log(err);
+          winston.error(err);
           return res.status(500).send({ success: false, msg: err });
         }
 
         if (!updatedUser) {
+          winston.warn('User not found.');
           return res.status(404).send({ success: false, msg: 'User not found' });
         }
 
-        console.log('REQUEST RESET PSW - UPDATED USER ', updatedUser);
+        winston.debug('REQUEST RESET PSW - UPDATED USER ', updatedUser);
 
         if (updatedUser) {
 
@@ -194,10 +220,16 @@ router.put('/requestresetpsw', function (req, res) {
            */
           emailService.sendPasswordResetRequestEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
+
+          //var activity = new Activity({actor: updatedUser._id, verb: "USER_REQUEST_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+          //activityEvent.emit('user.requestresetpassword', activity);
+
+          
+
           return res.json({ success: true, user: updatedUser });
           // }
           // catch (err) {
-          //   console.log('PSW RESET REQUEST - SEND EMAIL ERR ', err)
+          //   winston.debug('PSW RESET REQUEST - SEND EMAIL ERR ', err)
           // }
 
         }
@@ -212,24 +244,24 @@ router.put('/requestresetpsw', function (req, res) {
  * *** RESET PSW ***
  */
 router.put('/resetpsw/:resetpswrequestid', function (req, res) {
-  console.log("--> RESET PSW - REQUEST ID", req.params.resetpswrequestid);
-  console.log("--> RESET PSW - NEW PSW ", req.body.password);
+  winston.debug("--> RESET PSW - REQUEST ID", req.params.resetpswrequestid);
+  winston.debug("--> RESET PSW - NEW PSW ", req.body.password);
 
   User.findOne({ resetpswrequestid: req.params.resetpswrequestid }, function (err, user) {
 
     if (err) {
-      console.log('--> RESET PSW - Error getting user ', err)
+      winston.error('--> RESET PSW - Error getting user ', err)
       return (err);
     }
 
     if (!user) {
-      console.log('--> RESET PSW - INVALID PSW RESET KEY', err)
+      winston.warn('--> RESET PSW - INVALID PSW RESET KEY');
       return res.status(404).send({ success: false, msg: 'Invalid password reset key' });
     }
 
     if (user && req.body.password) {
-      console.log('--> RESET PSW - User Found ', user);
-      console.log('--> RESET PSW - User ID Found ', user._id);
+      winston.debug('--> RESET PSW - User Found ', user);
+      winston.debug('--> RESET PSW - User ID Found ', user._id);
 
       user.password = req.body.password;
       user.resetpswrequestid = '';
@@ -237,12 +269,17 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
       user.save(function (err, saveUser) {
 
         if (err) {
-          console.log('--- > USER SAVE -ERROR ', err)
+          winston.error('--- > USER SAVE -ERROR ', err)
           return res.status(500).send({ success: false, msg: 'Error saving object.' });
         }
-        console.log('--- > USER SAVED  ', saveUser)
+        winston.debug('--- > USER SAVED  ', saveUser)
 
         emailService.sendYourPswHasBeenChangedEmail(saveUser.email, saveUser.firstname, saveUser.lastname);
+
+
+        //var activity = new Activity({actor: saveUser._id, verb: "USER_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+        //activityEvent.emit('user.resetpassword', activity);
+
 
         res.status(200).json({ message: 'Password change successful', user: saveUser });
 
@@ -256,17 +293,17 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
  * if no
  */
 router.get('/checkpswresetkey/:resetpswrequestid', function (req, res) {
-  console.log("--> CHECK RESET PSW REQUEST ID", req.params.resetpswrequestid);
+  winston.debug("--> CHECK RESET PSW REQUEST ID", req.params.resetpswrequestid);
 
   User.findOne({ resetpswrequestid: req.params.resetpswrequestid }, function (err, user) {
 
     if (err) {
-      console.log('--> CHECK RESET PSW REQUEST ID - Error getting user ', err)
+      winston.error('--> CHECK RESET PSW REQUEST ID - Error getting user ', err)
       return (err);
     }
 
     if (!user) {
-      console.log('--> CHECK RESET PSW REQUEST ID - PSW RESET KEY is', err)
+      winston.warn('Invalid password reset key' );
       return res.status(404).send({ success: false, msg: 'Invalid password reset key' });
     }
 

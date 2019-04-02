@@ -6,6 +6,9 @@ var winston = require('../config/winston');
 csv = require('csv-express');
 csv.separator = ';';
 
+//var Activity = require("../models/activity");
+//const activityEvent = require('../event/activityEvent');
+
 router.post('/', function (req, res) {
 
   winston.debug(req.body);
@@ -22,7 +25,7 @@ router.post('/', function (req, res) {
 
   newLead.save(function (err, savedLead) {
     if (err) {
-      console.log('--- > ERROR ', err)
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
     res.json(savedLead);
@@ -30,24 +33,36 @@ router.post('/', function (req, res) {
 });
 
 router.put('/:leadid', function (req, res) {
-  console.log(req.body);
+  winston.debug(req.body);
 
   Lead.findByIdAndUpdate(req.params.leadid, req.body, { new: true, upsert: true }, function (err, updatedLead) {
     if (err) {
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    //var activity = new Activity({actor: req.user.id, verb: "LEAD_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
+    //activityEvent.emit('lead.update', activity);
+
+
     res.json(updatedLead);
   });
 });
 
 
 router.delete('/:leadid', function (req, res) {
-  console.log(req.body);
+  winston.debug(req.body);
 
   Lead.remove({ _id: req.params.leadid }, function (err, lead) {
     if (err) {
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+
+    //var activity = new Activity({actor: req.user.id, verb: "LEAD_DELETE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
+    //activityEvent.emit('lead.delete', activity);
+
+
     res.json(lead);
   });
 });
@@ -61,17 +76,17 @@ router.get('/csv', function (req, res, next) {
     page = req.query.page;
   }
   var skip = page * limit;
-  console.log('LEAD ROUTE - SKIP PAGE ', skip);
+  winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
   var query = { "id_project": req.projectid };
 
   if (req.query.full_text) {
-    console.log('LEAD ROUTE req.query.fulltext', req.query.full_text);
+    winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
 
   if (req.query.email) {
-    console.log('LEAD ROUTE req.query.email', req.query.email);
+    winston.debug('LEAD ROUTE req.query.email', req.query.email);
     query.email = req.query.email;
   }
 
@@ -79,18 +94,18 @@ router.get('/csv', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  console.log("direction", direction);
+  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  console.log("sortField", sortField);
+  winston.debug("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
 
-  console.log("sort query", sortQuery);
+  winston.debug("sort query", sortQuery);
 
   // Lead.find({ "id_project": req.projectid }, function (err, leads, next) {
   return Lead.find(query, '-attributes -__v').
@@ -110,13 +125,18 @@ router.get('/csv', function (req, res, next) {
       //     leads: leads
       //   };
 
+
+      //var activity = new Activity({actor: req.user.id, verb: "LEAD_DOWNLOAD_CSV", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
+      //activityEvent.emit('lead.download.csv', activity);
+
+      
       return res.csv(leads, true);
       // });
     });
 });
 
 router.get('/:leadid', function (req, res) {
-  console.log(req.body);
+  winston.debug(req.body);
 
   Lead.findById(req.params.leadid, function (err, lead) {
     if (err) {
@@ -163,18 +183,18 @@ router.get('/', function (req, res) {
   }
 
   var skip = page * limit;
-  console.log('LEAD ROUTE - SKIP PAGE ', skip);
+  winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
   var query = { "id_project": req.projectid };
 
   if (req.query.full_text) {
-    console.log('LEAD ROUTE req.query.fulltext', req.query.full_text);
+    winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
 
   if (req.query.email) {
-    console.log('LEAD ROUTE req.query.email', req.query.email);
+    winston.debug('LEAD ROUTE req.query.email', req.query.email);
     query.email = req.query.email;
   }
 
@@ -193,7 +213,7 @@ router.get('/', function (req, res) {
   var sortQuery = {};
   sortQuery[sortField] = direction;
 
-  console.log("sort query", sortQuery);
+  winston.debug("sort query", sortQuery);
 
   // Lead.find({ "id_project": req.projectid }, function (err, leads, next) {
   return Lead.find(query).
