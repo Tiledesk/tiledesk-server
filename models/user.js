@@ -74,4 +74,14 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('User', UserSchema);
+UserSchema.virtual('fullName').get(function () {
+    return (this.firstname || ' ') + (this.lastname || '');
+  });
+  
+var UserModel = mongoose.model('User', UserSchema);
+
+// UserModel.getFullname = function () {
+//     return 
+// };
+
+module.exports = UserModel;

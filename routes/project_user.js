@@ -7,8 +7,8 @@ var emailService = require("../models/emailService");
 var Project = require("../models/project");
 // var PendingInvitation = require("../models/pending-invitation");
 var pendinginvitation = require("../services/pendingInvitationService");
-//var Activity = require("../models/activity");
-//const activityEvent = require('../event/activityEvent');
+var Activity = require("../models/activity");
+const activityEvent = require('../event/activityEvent');
 var winston = require('../config/winston');
 
 // var User = require("../models/user");
@@ -56,9 +56,13 @@ router.post('/invite', function (req, res) {
         .then(function (savedPendingInvitation) {
 
 
-         // var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_INVITE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-         // activityEvent.emit('project_user.invite', activity);
-      
+         var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+            verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+            target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
+            id_project: req.projectid });
+         activityEvent.emit('project_user.delete', activity);
+
+     
 
 
           return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
@@ -163,9 +167,11 @@ router.post('/invite', function (req, res) {
             emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
             
 
-            //var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_INVITE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-            //activityEvent.emit('project_user.invite', activity);
-      
+            var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+               verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+               target: {type:"user", id:savedProject_user._id.toString(), object: savedProject_user }, 
+               id_project: req.projectid });
+            activityEvent.emit('project_user.delete', activity);
             
             return res.json(savedProject_user);
 
@@ -205,7 +211,10 @@ router.put('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
+    var activity = new Activity({actor: {type:"User", id: req.user.id, name: req.user.fullName }, 
+        verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
+        target: {type:"Project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
+        id_project: req.projectid });
     activityEvent.emit('project_user.update', activity);
 
     
@@ -225,9 +234,11 @@ router.delete('/:project_userid', function (req, res) {
     }
 
 
-    //var activity = new Activity({actor: req.user.id, verb: "PROJECT_USER_DELETE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('project_user.delete', activity);
-
+    var activity = new Activity({actor: {type:"User", id: req.user.id, name: req.user.fullName }, 
+        verb: "PROJECT_USER_DELETE", actionObj: req.body, 
+        target: {type:"Project_user", id:project_user._id.toString(), object: project_user }, 
+        id_project: req.projectid });
+    activityEvent.emit('project_user.delete', activity);
 
     res.json(project_user);
   });
