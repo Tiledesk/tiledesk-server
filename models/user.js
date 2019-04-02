@@ -75,7 +75,7 @@ UserSchema.methods.comparePassword = function (passw, cb) {
 };
 
 UserSchema.virtual('fullName').get(function () {
-    return (this.firstname || ' ') + (this.lastname || '');
+    return (this.firstname || '') + ' ' + (this.lastname || '');
   });
   
 var UserModel = mongoose.model('User', UserSchema);
