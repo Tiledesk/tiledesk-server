@@ -27,7 +27,7 @@ class ActivityArchiver {
         activityEvent.on('project_user.update', this.save);
         activityEvent.on('project_user.delete', this.save);
 
-        activityEvent.on('request.creat', this.save);
+        activityEvent.on('request.create', this.save);
 
         
 
@@ -38,7 +38,7 @@ class ActivityArchiver {
             if (err) {
                 winston.error('Error saving activity ', err);
             }else {
-                winston.info('Activity saved', savedActivity);
+                winston.info('Activity saved', savedActivity.toObject());
             }
         });
     }
