@@ -293,7 +293,7 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
         //var activity = new Activity({actor: saveUser._id, verb: "USER_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
          //activityEvent.emit('user.resetpassword', activity);
         var activity = new Activity({actor: {type:"user", id: saveUser._id, name: saveUser.fullName }, 
-          verb: "USER_RESETPASSWORD", actionObj: req.body, 
+          verb: "USER_RESETPASSWORD", actionObj: null, //req.body otherwise print password  
           target: {type:"user", id:saveUser._id.toString(), object: null }, 
           id_project: '*' });
         activityEvent.emit('user.resetpassword', activity);
