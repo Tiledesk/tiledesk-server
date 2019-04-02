@@ -11,8 +11,9 @@ require('./config/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
-var Project_user = require("./models/project_user");
+// var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
+var roleChecker = require('./middleware/has-role');
 
 var winston = require('./config/winston');
 
@@ -73,8 +74,8 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
 
 
-// var faqBotHandler = require('./services/faqBotHandler');
-// faqBotHandler.listen();
+//var faqBotHandler = require('./services/faqBotHandler');
+//faqBotHandler.listen();
 
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
@@ -235,8 +236,6 @@ var reqLogger = function (req, res, next) {
     //console.log('Reqlog saved ', reqlogSaved)
   });
 
-  
-  
   next()
 }
 
@@ -292,95 +291,8 @@ var projectIdSetter = function (req, res, next) {
   next()
 }
 
-// function HasRole(role) {
-//   return function(req, res, next) {
-
-//     Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-//     exec(function (err, project_user) {
-//       // if (err) return next(err);
-//       console.log("project_user",project_user);
-//       if (project_user &&  project_user.role== role) {
-//         next(); 
-//       }
-//       else {
-//         var err = new Error('You dont have required role');
-//         err.status = 403;
-//         next(err);
-//       }
-//     });
-
-   
-//   }
-// }
-var ROLES =  {
-  "agent": ["agent"],
-  "admin": ["agent", "admin"],
-  "owner": ["agent", "admin", "owner"],
-};
 
 
-function HasRole(role) {
-  // console.log("HasRole");
-  return function(req, res, next) {
-    //console.log("req.projectuser", req.projectuser);
-    //console.log("req.user", req.user);
-    //console.log("role", role);
-
-    Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-      exec(function (err, project_user) {
-        if (err) {
-          winston.error(err);
-          return next(err);
-        }
-        
-        req.projectuser = project_user;
-       // console.log("req.projectuser", req.projectuser);
-
-        if (req.projectuser && req.projectuser.length>0) {
-          
-          var userRole = project_user[0].role;
-          // console.log("userRole", userRole);
-
-          if (!role) {
-            next();
-          }else {
-
-            var hierarchicalRoles = ROLES[userRole];
-            // console.log("hierarchicalRoles", hierarchicalRoles);
-
-            if ( hierarchicalRoles.includes(role)) {
-              next();
-            }else {
-              res.status(403).send({success: false, msg: 'you dont have the required role.'});
-            }
-          }
-        }else {
-        
-          // if (req.user) equals super admin next()
-          res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
-        }
-
-    });
-
-  }
-  
-}
-
-// var getProjectUser = function (req, res, next) {
-//   console.log("getProjectUser");
-//   Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-//     exec(function (err, project_user) {
-//       if (err) {
-//         winston.error(err);
-//         return next(err);
-//       }
-      
-//       req.projectuser = project_user;
-//       console.log("req.projectuser", req.projectuser);
-//       next();
-
-//   });
-// }
 
 
 var projectSetter = function (req, res, next) {
@@ -438,8 +350,8 @@ app.use('/:projectid', [projectIdSetter, projectSetter]);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 // app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], lead);
-app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], message);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
+app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
 app.use('/:projectid/departments', department);
 // app.use('/:projectid/departments', reqLogger, department);
@@ -450,8 +362,8 @@ app.use('/chat21/requests',  chat21Request);
 
 
 
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq);
-app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], bot);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], faq);
+app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], bot);
 
 //attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
@@ -464,25 +376,24 @@ app.use('/projects',project);
 
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], project_user);
+app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
 
-app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], request);
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], request);
 
-app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], analytics);
+app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
+app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], analytics);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
-app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], key);
+app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
-app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], subscription);
-app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], activities);
+app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], subscription);
+app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], activities);
 
 
-app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], pendinginvitation);
-// app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
+app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], pendinginvitation);
 
 
 
@@ -505,32 +416,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-// function keepalive() {
-//   console.log('keepalive2 ');
-
-//   var options = {
-//     url: 'https://us-central1-chat-v2-dev.cloudfunctions.net/supportapi/tilechat/requests?token=chat21-secret-orgAa,',
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//     json: {"sender_fullname": "Bash", "text":"ping from API","projectid":"5b45e1c75313c50014b3abc6"}
-//   };
-
-//   setInterval(function() {
-//     request(options, function (err, res, body) {
-    
-//       console.log('keepalive  ok');
-
-//       if (err) {
-//         console.log('keepalive ERROR ', err);
-//       }
-//     });
-//   }, 3000);
-// }
-// app.use(keepalive());
 
 
 
