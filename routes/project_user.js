@@ -60,7 +60,7 @@ router.post('/invite', function (req, res) {
             verb: "PROJECT_USER_INVITE", actionObj: req.body, 
             target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
             id_project: req.projectid });
-         activityEvent.emit('project_user.delete', activity);
+         activityEvent.emit('project_user.invite', activity);
 
      
 
@@ -171,7 +171,7 @@ router.post('/invite', function (req, res) {
                verb: "PROJECT_USER_INVITE", actionObj: req.body, 
                target: {type:"user", id:savedProject_user._id.toString(), object: savedProject_user }, 
                id_project: req.projectid });
-            activityEvent.emit('project_user.delete', activity);
+            activityEvent.emit('project_user.invite', activity);
             
             return res.json(savedProject_user);
 
