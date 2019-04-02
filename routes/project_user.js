@@ -56,12 +56,13 @@ router.post('/invite', function (req, res) {
         .then(function (savedPendingInvitation) {
 
 
-         var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-            verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-            target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
-            id_project: req.projectid });
-         activityEvent.emit('project_user.invite', activity);
-
+        // try {
+          var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+              verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+              target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
+              id_project: req.projectid });
+          activityEvent.emit('project_user.invite', activity);
+        // } catch(e) {winston.error('Error emitting activity');}
      
 
 
@@ -166,12 +167,13 @@ router.post('/invite', function (req, res) {
 
             emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
             
-
-            var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-               verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-               target: {type:"user", id:savedProject_user._id.toString(), object: savedProject_user }, 
-               id_project: req.projectid });
-            activityEvent.emit('project_user.invite', activity);
+            // try {
+              var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+                verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+                target: {type:"project_user", id:savedProject_user._id.toString(), object: savedProject_user }, 
+                id_project: req.projectid });
+              activityEvent.emit('project_user.invite', activity);
+            // } catch(e) {winston.error('Error emitting activity');}
             
             return res.json(savedProject_user);
 
@@ -211,12 +213,13 @@ router.put('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-        verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
-        target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
-        id_project: req.projectid });
-    activityEvent.emit('project_user.update', activity);
-
+    // try {
+      var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+          verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
+          target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
+          id_project: req.projectid });
+      activityEvent.emit('project_user.update', activity);
+    // } catch(e) {winston.error('Error emitting activity');}
     
 
     res.json(updatedProject_user);
@@ -233,12 +236,13 @@ router.delete('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
-
+  // try {
     var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
         verb: "PROJECT_USER_DELETE", actionObj: req.body, 
-        target: {type:"project_user", id:project_user._id.toString(), object: project_user }, 
+        target: {type:"project_user", id:req.params.project_userid, object: project_user }, 
         id_project: req.projectid });
     activityEvent.emit('project_user.delete', activity);
+  // } catch(e) {winston.error('Error emitting activity');}
 
     res.json(project_user);
   });
