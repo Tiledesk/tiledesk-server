@@ -9,8 +9,8 @@ var pendinginvitation = require("../services/pendingInvitationService");
 var userService = require("../services/userService");
 //var emailTemplates = require('../config/email_templates');
 
-//var Activity = require("../models/activity");
-//const activityEvent = require('../event/activityEvent');
+var Activity = require("../models/activity");
+const activityEvent = require('../event/activityEvent');
 
 var winston = require('../config/winston');
 
@@ -56,9 +56,12 @@ router.post('/signup', function (req, res) {
           // });
 
 
-         // var activity = new Activity({actor: savedUser._id, verb: "USER_SIGNUP", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-         // activityEvent.emit('user.signup', activity);
-      
+         var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
+            verb: "USER_SIGNUP", actionObj: req.body, 
+            target: {type:"user", id:savedUser._id.toString(), object: null }, 
+            id_project: '*' });
+            activityEvent.emit('user.signup', activity);
+
 
          res.json({ success: true, msg: 'Successfully created new user.' });
         // savePerson(req, res, savedUser.id)
@@ -125,7 +128,12 @@ router.post('/signin', function (req, res) {
 
 
               //var activity = new Activity({actor: user._id, verb: "USER_SIGNIN", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-              //activityEvent.emit('user.signin', activity);
+              var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
+                verb: "USER_SIGNIN", actionObj: req.body, 
+                target: {type:"user", id:user._id.toString(), object: null }, 
+                id_project: '*' });
+              activityEvent.emit('user.signin', activity);
+
 
 
               // return the information including token as JSON
@@ -223,6 +231,11 @@ router.put('/requestresetpsw', function (req, res) {
 
           //var activity = new Activity({actor: updatedUser._id, verb: "USER_REQUEST_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
           //activityEvent.emit('user.requestresetpassword', activity);
+          var activity = new Activity({actor: {type:"user", id: updatedUser._id, name: updatedUser.fullName }, 
+            verb: "USER_REQUEST_RESETPASSWORD", actionObj: req.body, 
+            target: {type:"user", id:updatedUser._id.toString(), object: null }, 
+            id_project: '*' });
+          activityEvent.emit('user.requestresetpassword', activity);
 
           
 
@@ -278,7 +291,12 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
 
 
         //var activity = new Activity({actor: saveUser._id, verb: "USER_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-        //activityEvent.emit('user.resetpassword', activity);
+         //activityEvent.emit('user.resetpassword', activity);
+        var activity = new Activity({actor: {type:"user", id: saveUser._id, name: saveUser.fullName }, 
+          verb: "USER_RESETPASSWORD", actionObj: req.body, 
+          target: {type:"user", id:saveUser._id.toString(), object: null }, 
+          id_project: '*' });
+        activityEvent.emit('user.resetpassword', activity);
 
 
         res.status(200).json({ message: 'Password change successful', user: saveUser });
