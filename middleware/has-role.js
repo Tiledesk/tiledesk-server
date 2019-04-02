@@ -1,4 +1,5 @@
 var Project_user = require("../models/project_user");
+var winston = require('../config/winston');
 
 
 class RoleChecker {
@@ -21,7 +22,13 @@ class RoleChecker {
 
         // console.log("HasRole");
         return function(req, res, next) {
-          //console.log("req.projectuser", req.projectuser);
+          
+          // winston.debug("req.originalUrl" + req.originalUrl);
+          // winston.debug("req.params" + JSON.stringify(req.params));
+         // winston.info("req.params.projectid: " + req.params.projectid);
+        //  winston.info("req.user.id: " + req.user.id);
+
+          // winston.info("req.projectuser: " + req.projectuser);
           //console.log("req.user", req.user);
           //console.log("role", role);
       
@@ -31,6 +38,7 @@ class RoleChecker {
                 winston.error(err);
                 return next(err);
               }
+              //winston.info("project_user: ", JSON.stringify(project_user));
               
               req.projectuser = project_user;
              // console.log("req.projectuser", req.projectuser);
