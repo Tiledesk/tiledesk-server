@@ -211,7 +211,7 @@ router.put('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    var activity = new Activity({actor: {type:"User", id: req.user.id, name: req.user.fullName }, 
+    var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
         verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
         target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
         id_project: req.projectid });
