@@ -8,6 +8,7 @@ var operatingHoursService = require("../models/operatingHoursService");
 var getTimezoneOffset = require("get-timezone-offset")
 
 var winston = require('../config/winston');
+var roleChecker = require('../middleware/has-role');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
@@ -39,7 +40,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
   newProject.save(function (err, savedProject) {
     if (err) {
-      console.log('--- > ERROR ', err)
+      winston.error('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
     // console.log('--- SAVE PROJECT ', savedProject)
@@ -58,7 +59,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
     newProject_user.save(function (err, savedProject_user) {
       if (err) {
-        console.log('--- > ERROR ', err)
+        winston.error('--- > ERROR ', err)
         return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
       res.json(savedProject);
@@ -79,7 +80,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
     newDepartment.save(function (err, savedDepartment) {
       if (err) {
-        winston.error('--- > ERROR ', err)
+        winston.error('Error creating department for project ', err);
         // return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
       winston.info('Default Department created')
@@ -90,10 +91,11 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
 // PROJECT PUT
 // should check HasRole otherwise another project user can change this
-router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
+      winston.error('Error putting project ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
     res.json(updatedProject);
@@ -101,10 +103,11 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 });
 
 // PROJECT DELETE
-router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log(req.body);
+router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
+  winston.debug(req.body);
   Project.remove({ _id: req.params.projectid }, function (err, project) {
     if (err) {
+      winston.error('Error deleting project ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
     res.json(project);
@@ -112,13 +115,15 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
 });
 
 // PROJECT GET DETAIL
-router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log(req.body);
+router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
+  winston.debug(req.body);
   Project.findById(req.params.projectid, function (err, project) {
     if (err) {
+      winston.error('Error getting project ', err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!project) {
+      winston.warn('Project not found ');
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
     res.json(project);
@@ -127,20 +132,22 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
 // GET ALL PROJECTS BY CURRENT USER ID
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  console.log('REQ USER ID ', req.user.id)
+  winston.debug('REQ USER ID ', req.user.id)
   Project_user.find({ id_user: req.user.id }).
     populate('id_project').
     exec(function (err, projects) {
-      console.log('ERR: ', err, ' - PROJ: ', projects)
-      // if (err) return next(err);
+      if (err) {
+        winston.error('Error getting projects: ', err);
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }            
       res.json(projects);
     });
 });
 
-// GET ALL PROJECTS BY CURRENT USER ID
+// GET ALL PROJECTS BY CURRENT USER ID. usaed by unisalento to know if a project is open 
 router.get('/:projectid/isopen', function (req, res) {
    operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
-    console.log('project', req.params.projectid, 'isopen: ', isOpen);
+    winston.debug('project', req.params.projectid, 'isopen: ', isOpen);
 
     if (err) {
       winston.error('Error getting projectIsOpenNow', err);
