@@ -213,7 +213,7 @@ router.put('/:project_userid', function (req, res) {
 
     var activity = new Activity({actor: {type:"User", id: req.user.id, name: req.user.fullName }, 
         verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
-        target: {type:"Project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
+        target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
         id_project: req.projectid });
     activityEvent.emit('project_user.update', activity);
 
@@ -234,9 +234,9 @@ router.delete('/:project_userid', function (req, res) {
     }
 
 
-    var activity = new Activity({actor: {type:"User", id: req.user.id, name: req.user.fullName }, 
+    var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
         verb: "PROJECT_USER_DELETE", actionObj: req.body, 
-        target: {type:"Project_user", id:project_user._id.toString(), object: project_user }, 
+        target: {type:"project_user", id:project_user._id.toString(), object: project_user }, 
         id_project: req.projectid });
     activityEvent.emit('project_user.delete', activity);
 
