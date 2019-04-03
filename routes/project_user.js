@@ -221,7 +221,7 @@ router.put('/:project_userid', function (req, res) {
           // var u = delete updatedProject_userPopulated.id_user.password;
           var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
               verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
-              target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_userPopulated }, 
+              target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_userPopulated.toObject() }, 
               id_project: req.projectid });
           activityEvent.emit('project_user.update', activity);
       });
