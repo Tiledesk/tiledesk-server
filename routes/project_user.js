@@ -214,11 +214,17 @@ router.put('/:project_userid', function (req, res) {
     }
 
     // try {
-      var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-          verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
-          target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_user }, 
-          id_project: req.projectid });
-      activityEvent.emit('project_user.update', activity);
+      // let updatedProject_userPopulated = await updatedProject_user.populate('id_user');
+      // updatedProject_user.populate('id_user','firstname, lastname').execPopulate().exec(function (err, updatedProject_userPopulated) {
+        updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){
+        // console.log("updatedProject_userPopulated", updatedProject_userPopulated.toJSON());
+          // var u = delete updatedProject_userPopulated.id_user.password;
+          var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+              verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
+              target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_userPopulated }, 
+              id_project: req.projectid });
+          activityEvent.emit('project_user.update', activity);
+      });
     // } catch(e) {winston.error('Error emitting activity');}
     
 
