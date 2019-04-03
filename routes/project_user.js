@@ -237,7 +237,7 @@ router.delete('/:project_userid', function (req, res) {
 
   winston.debug(req.body);
 
-  Project_user.remove({ _id: req.params.project_userid }, function (err, project_user) {
+  Project_user.findByIdAndRemove(req.params.project_userid, { new: false}, function (err, project_user) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
@@ -245,11 +245,13 @@ router.delete('/:project_userid', function (req, res) {
     winston.info("Removed project_user", project_user);
 
   // try {
+    project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){
     var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
         verb: "PROJECT_USER_DELETE", actionObj: req.body, 
-        target: {type:"project_user", id:req.params.project_userid, object: null }, //Error saving activity Maximum call stack size exceeded
+        target: {type:"project_user", id:req.params.project_userid, object: project_userPopulated.toObject() }, //Error saving activity Maximum call stack size exceeded
         id_project: req.projectid });
     activityEvent.emit('project_user.delete', activity);
+    });
   // } catch(e) {winston.error('Error emitting activity');}
 
     res.json(project_user);
