@@ -172,7 +172,7 @@ router.post('/invite', function (req, res) {
               savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
                 var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
                   verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-                  target: {type:"project_user", id:savedProject_userPopulated._id.toString(), object: savedProject_userPopulated }, 
+                  target: {type:"project_user", id:savedProject_userPopulated._id.toString(), object: savedProject_userPopulated.toObject() }, 
                   id_project: req.projectid });
                 activityEvent.emit('project_user.invite', activity);
               });
