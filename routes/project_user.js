@@ -57,11 +57,11 @@ router.post('/invite', function (req, res) {
 
 
         // try {
-          var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-              verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-              target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
-              id_project: req.projectid });
-          activityEvent.emit('project_user.invite', activity);
+            var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+                verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+                target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
+                id_project: req.projectid });
+            activityEvent.emit('project_user.invite', activity);
         // } catch(e) {winston.error('Error emitting activity');}
      
 
@@ -168,11 +168,14 @@ router.post('/invite', function (req, res) {
             emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
             
             // try {
-              var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-                verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-                target: {type:"project_user", id:savedProject_user._id.toString(), object: savedProject_user }, 
-                id_project: req.projectid });
-              activityEvent.emit('project_user.invite', activity);
+              //test it
+              savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
+                var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
+                  verb: "PROJECT_USER_INVITE", actionObj: req.body, 
+                  target: {type:"project_user", id:savedProject_userPopulated._id.toString(), object: savedProject_userPopulated }, 
+                  id_project: req.projectid });
+                activityEvent.emit('project_user.invite', activity);
+              });
             // } catch(e) {winston.error('Error emitting activity');}
             
             return res.json(savedProject_user);
