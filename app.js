@@ -351,7 +351,7 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 // app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
-app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
 app.use('/:projectid/departments', department);
 // app.use('/:projectid/departments', reqLogger, department);

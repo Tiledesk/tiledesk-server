@@ -45,61 +45,54 @@ var messageService = require('../services/messageService');
 
 router.post('/', function (req, res) {
 
-  winston.debug("req.body", req.body);
+  winston.info("req.body", req.body);
 
-  winston.debug("req.projectid", req.projectid);
-  winston.debug("req.user.id", req.user.id);
-
-
-  var newRequest = new Request({
-    requester_id: req.body.requester_id,
-    first_text: req.body.first_text,
-    //    status: req.body.status,
-    status: req.body.status,
-
-    participants: req.body.participants,
-    department: req.body.department,
-
-    // recipient: req.body.recipient,
-    // recipientFullname: req.body.recipient_fullname,
-    // sender: req.body.sender,
-    // senderFullname: req.body.sender_fullname,
-    // first_message: first_message,
-
-    rating: req.body.rating,
-    rating_message: req.body.rating_message,
-
-    agents: req.body.agents,
-    // availableAgents: req.body.availableAgents,
-    // assigned_operator_id: req.body.assigned_operator_id,
-
-    //others
-    sourcePage: req.body.sourcePage,
-    language: req.body.language,
-    userAgent: req.body.userAgent,
-
-    //standard
-    id_project: req.projectid,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
-
-  return newRequest.save(function (err, savedRequest) {
-    if (err) {
-      console.log('Error saving object.', err);
-      return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
-    }
+  winston.info("req.projectid: " + req.projectid);
+  winston.info("req.user.id: " + req.user.id);
 
 
+  // var newRequest = new Request({
+  //   request_id: req.body.request_id,
+  //   requester_id: req.body.requester_id,
+  //   first_text: req.body.first_text,
+  //   status: req.body.status,
+  //   participants: req.body.participants, //??
+  //   department: req.body.department,
+  //   tags: req.body.tags,
+  //   rating: req.body.rating,
+  //   rating_message: req.body.rating_message,
+  //   sourcePage: req.body.sourcePage,
+  //   language: req.body.language,
+  //   userAgent: req.body.userAgent,
+  //   id_project: req.projectid,
+  //   createdBy: req.user.id,
+  //   updatedBy: req.user.id
+  // });
+
+  // return newRequest.save(function (err, savedRequest) {
+    return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
+      req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
+      req.body.status, req.user.id).then(function(savedRequest) {
+
+       
+        // return messageService.create(req.body.requester_id, req.body.sender_fullname, req.params.request_id, req.body.text,
+        //   req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    
+        //     return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+        //       return res.json(savedRequestWithIncrement);
+        //     });
+        //   });     
+           
+      
     console.log("savedRequest", savedRequest);
 
     // console.log("XXXXXXXXXXXXXXXX");
     // this.sendEmail(req.projectid, savedRequest);
-
-
-
     return res.json(savedRequest);
 
+  }).catch(function(err) {
+    console.log('Error saving request.', err);
+    return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
+  
   });
 });
 

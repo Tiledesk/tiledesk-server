@@ -227,6 +227,8 @@ class RequestService {
                   return resolve(savedRequest);
                   
                 });
+            }).catch(function(err){
+              return reject(err);
             });
 
 

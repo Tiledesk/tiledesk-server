@@ -113,7 +113,7 @@ class LeadService {
               //   // return res.status(404).send({success: false, msg: 'lead not found' + JSON.stringify(newLead)});
 
               // }
-              winston.info('Lead created ', newLead);
+              winston.info('Lead created ', newLead.toJSON());
 
               leadEvent.emit('lead.create', newLead);
               return resolve(savedLead);
