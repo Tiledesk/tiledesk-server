@@ -55,9 +55,10 @@ router.post('/signup', function (req, res) {
           //   return res.send(err);
           // });
 
-
+          var activityBody = req.body; //testare
+          delete activityBody.password;
          var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
-            verb: "USER_SIGNUP", actionObj: req.body, 
+            verb: "USER_SIGNUP", actionObj: activityBody, 
             target: {type:"user", id:savedUser._id.toString(), object: null }, 
             id_project: '*' });
             activityEvent.emit('user.signup', activity);
@@ -127,17 +128,22 @@ router.post('/signin', function (req, res) {
               var token = jwt.sign(user, config.secret);
 
 
-              //var activity = new Activity({actor: user._id, verb: "USER_SIGNIN", actionObj: req.body, target: req.originalUrl, id_project: '*' });
+              var activityBody = req.body; //testare
+              delete activityBody.password;
               var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
-                verb: "USER_SIGNIN", actionObj: req.body, 
+                verb: "USER_SIGNIN", actionObj: activityBody, 
                 target: {type:"user", id:user._id.toString(), object: null }, 
                 id_project: '*' });
               activityEvent.emit('user.signin', activity);
 
 
 
+              //remove password //test it              
+              let userJson = user.toObject();
+              delete userJson.password;
+
               // return the information including token as JSON
-              res.json({ success: true, token: 'JWT ' + token, user: user });
+              res.json({ success: true, token: 'JWT ' + token, user: userJson });
             } else {
               winston.warn('Authentication failed. Wrong password.' );
               res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
