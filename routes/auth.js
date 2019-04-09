@@ -55,8 +55,8 @@ router.post('/signup', function (req, res) {
           //   return res.send(err);
           // });
 
-          var activityBody = req.body; //testare
-          delete activityBody.password;
+         var activityBody = req.body; 
+         delete activityBody.password;
          var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
             verb: "USER_SIGNUP", actionObj: activityBody, 
             target: {type:"user", id:savedUser._id.toString(), object: null }, 
@@ -68,7 +68,18 @@ router.post('/signup', function (req, res) {
         // savePerson(req, res, savedUser.id)
       }).catch(function (err) {
 
-        winston.error('Error registering new user', err);
+
+
+        var activityBody = req.body; 
+        delete activityBody.password;
+        var activity = new Activity({actor: {type:"user"}, 
+           verb: "USER_SIGNUP_ERROR", actionObj: activityBody, 
+           target: {type:"user", id:null, object: null }, 
+           id_project: '*' });
+           activityEvent.emit('user.signup.error', activity);
+
+
+         winston.error('Error registering new user', err);
          res.send(err);
       });
   }
@@ -109,6 +120,18 @@ router.post('/signin', function (req, res) {
     } 
 
     if (!user) {
+
+
+      var activityBody = req.body; 
+      delete activityBody.password;
+      var activity = new Activity({actor: {type:"user"}, 
+         verb: "USER_SIGNIN_ERROR", actionObj: activityBody, 
+         target: {type:"user", id:null, object: null }, 
+         id_project: '*' });
+         activityEvent.emit('user.signin.error', activity);
+
+
+
       winston.warn('Authentication failed. User not found.');
       res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
     } else {
@@ -128,7 +151,7 @@ router.post('/signin', function (req, res) {
               var token = jwt.sign(user, config.secret);
 
 
-              var activityBody = req.body; //testare
+              var activityBody = req.body; 
               delete activityBody.password;
               var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
                 verb: "USER_SIGNIN", actionObj: activityBody, 
