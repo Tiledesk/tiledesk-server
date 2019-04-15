@@ -107,10 +107,6 @@ describe('DepartmentService()', function () {
 
 
 
-
-
-
-
   it('createRoundRobinWithAssignedDepartment', function (done) {
     // this.timeout(10000);
 
@@ -195,5 +191,47 @@ describe('DepartmentService()', function () {
   });
 
 
+  }).timeout(20000);
+
+
+
+
+
+  it('createRoundRobinWithAssignedDepartmentNoBeforeRequestOneAgent', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-department-create" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    userService.signup( email+'2' ,pwd, "Test Firstname2", "Test lastname2").then(function(savedUser2) {
+    userService.signup( email+'3' ,pwd, "Test Firstname3", "Test lastname3").then(function(savedUser3) {
+    projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
+
+          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+
+            // getOperators(departmentid, projectid, nobot) {
+            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult0) {
+              winston.debug("resolve operatorsResult0", operatorsResult0); //time invariant?
+                expect(operatorsResult0.operators[0].id_user.toString()).to.equal(savedUser._id.toString());
+                done();
+            });
+          });
+      
+        });
+
+});
+
+    });
   });
+
+
+  }).timeout(20000);
+
+
+
+
+
+
+
 });

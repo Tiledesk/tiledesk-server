@@ -2,28 +2,58 @@ const Request = require('../models/request');
 
 const departmentEvent = require('../event/departmentEvent');
 var winston = require('../config/winston');
+var sleep = require('thread-sleep');
 
+// let getLastRequest=async function(query){
+//     try {
+//     let lastRequests = await Request.find(query).sort({_id:-1}).limit(1);
+//         console.log('lastRequests',lastRequests); // contains user object
+//         return lastRequests;
+//     }catch(e) {
+//         console.log(e);
+//     }
+// }
+
+
+
+
+
+
+// unused
 class RoundRobinOperator {
 
+    
     start() {
 
         var that = this;
-        departmentEvent.on('operator.select', function(operatorSelectedEvent) {
+        departmentEvent.on('operator.select',  function(operatorSelectedEvent) {
             winston.debug('operatorSelectedEvent', operatorSelectedEvent); 
             // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
             let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
             
-            winston.debug('query', query); 
+            winston.info('query', query);            
+
+            // let lastRequests = await 
             Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {
                 if (err) {
                     winston.error('Error getting request for RoundRobinOperator', err); 
                 }
                
+                let lastRequests =  getLastRequest(query);
+
                 if (lastRequests.length==0) {
-                    winston.debug('lastRequest not found'); 
+                    winston.info('lastRequest not found'); 
                     //first request use default random algoritm
                     return 0;
                 }
+
+                var start = Date.now();
+                var res = sleep(5000);
+                var end = Date.now();
+                // res is the actual time that we slept for
+                console.log(res + ' ~= ' + (end - start) + ' ~= 1000');
+
+
                 let lastRequest = lastRequests[0];
                 winston.info('lastRequest:'+ JSON.stringify(lastRequest)); 
 
