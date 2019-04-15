@@ -46,7 +46,6 @@ var faq = require('./routes/faq');
 var bot = require('./routes/bot');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-// var person = require('./routes/person.old');
 var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
@@ -66,6 +65,10 @@ var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var activities = require('./routes/activity');
+
+// var appRules = require('./rules/appRules');
+// appRules.start();
+
 
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
