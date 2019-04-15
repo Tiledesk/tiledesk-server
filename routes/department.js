@@ -537,7 +537,9 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
 
 
   if (req.query.sort) {
-    return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+    // return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+      return Department.find({ "id_project": req.projectid }).sort({ name: 'asc' }).exec(function (err, departments) {
+      
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
@@ -608,7 +610,9 @@ router.get('/', function (req, res) {
 
 
   if (req.query.sort) {
-    return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+    return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ name: 'asc' }).exec(function (err, departments) {
+      // return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
+      
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
