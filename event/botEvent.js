@@ -63,6 +63,7 @@ function getBotId(message) {
  
 }
 
+//modify to async
 messageEvent.on('message.received', function(message) {
 
     winston.debug("message", message);

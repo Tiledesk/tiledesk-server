@@ -37,7 +37,7 @@ class ProjectService {
         
             // PROJECT-USER POST
             var newProject_user = new Project_user({
-              _id: new mongoose.Types.ObjectId(),
+              // _id: new mongoose.Types.ObjectId(),
               id_project: savedProject._id,
               id_user: createdBy,
               role: 'owner',

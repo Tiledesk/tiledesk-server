@@ -80,7 +80,7 @@ class Pending_Invitation {
           winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION PRJCT ID', invite.id_project);
 
           var newProject_user = new Project_user({
-            _id: new mongoose.Types.ObjectId(),
+            // _id: new mongoose.Types.ObjectId(),
             id_project: invite.id_project,
             id_user: newUserId,
             role: invite.role,

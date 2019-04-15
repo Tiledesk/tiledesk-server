@@ -5,6 +5,7 @@ var Group = require("../models/group");
 var operatingHoursService = require("../models/operatingHoursService");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
+const departmentEvent = require('../event/departmentEvent');
 
 
 class DepartmentService {
@@ -200,10 +201,14 @@ getOperators(departmentid, projectid, nobot) {
               // console.log('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> AVAILABLE AGENT ', _available_agents);
 
               var selectedoperator = []
-              if (department.routing === 'assigned') {
+              if (department.routing === 'assigned') {                
                 selectedoperator = that.getRandomAvailableOperator(_available_agents);
               }
-              return resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+
+              let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid };
+              departmentEvent.emit('operator.select', objectToReturn);
+
+              return resolve(objectToReturn);
 
             }).catch(function (error) {
 
@@ -249,7 +254,11 @@ getOperators(departmentid, projectid, nobot) {
           if (department.routing === 'assigned') {
             selectedoperator = that.getRandomAvailableOperator(_available_agents);
           }
-          return resolve({ available_agents: _available_agents, agents: project_users, operators: selectedoperator })
+
+          let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid };
+          departmentEvent.emit('operator.select', objectToReturn);
+
+          return resolve(objectToReturn);
 
         }).catch(function (error) {
 
@@ -331,7 +340,8 @@ getOperators(departmentid, projectid, nobot) {
     var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
     // console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
 
-    return [{ id_user: operator.id_user }]
+    return [{ id_user: operator.id_user }];
+    // return [operator];
 
   }
   else {

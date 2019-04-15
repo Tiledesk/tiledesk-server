@@ -13,7 +13,7 @@ var Schema = mongoose.Schema;
     //   type: String,
     //   // required: true
     // },
-    _id: Schema.Types.ObjectId,
+    // _id: Schema.Types.ObjectId,
     id_project: {
       type: Schema.Types.ObjectId,
       ref: 'project'

@@ -10,6 +10,7 @@ class FaqBotHandler {
  
     listen() {
 
+        //modify to async
         botEvent.on('bot.message.received.notify.internal', function(message) {
                            
 
@@ -27,7 +28,7 @@ class FaqBotHandler {
            query.$text = {"$search": message.text};
             
             Faq.find(query,  {score: { $meta: "textScore" } })  
-           .lean().               
+            .lean().               
              exec(function (err, faqs) {
                 winston.debug("faqs", faqs);              
 
