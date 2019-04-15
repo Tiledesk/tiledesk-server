@@ -65,7 +65,16 @@ class DepartmentService {
 roundRobin(operatorSelectedEvent) {
 
   var that = this;
+ 
+
   return new Promise(function (resolve, reject) {
+
+    if (operatorSelectedEvent.department.routing !== 'assigned') {       
+      winston.debug('It isnt an assigned request');  
+      return resolve(operatorSelectedEvent);
+    }
+
+    
       // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
       let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
       
