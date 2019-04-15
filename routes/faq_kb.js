@@ -71,11 +71,11 @@ function updateFaqKbKey(faqkb_id, remotefaqkb_key) {
 
 router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, external)
-  faqService.create(req.body.name, req.body.name, req.projectid, req.user.id, req.body.external).then(function(savedFaq_kb) {
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.external).then(function(savedFaq_kb) {
     if (savedFaq_kb.external===false) {
       createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
     } else {
-      console.log('external bot');
+      console.log('external bot: ', savedFaq_kb);
     } 
     res.json(savedFaq_kb);
   });
