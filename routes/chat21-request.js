@@ -80,7 +80,7 @@ router.post('/', function(req, res) {
 
           if (!request) { //the request doen't exists create it
 
-                winston.info("request not exists", request.toObject());
+                winston.info("request not exists");
                 
                 var departmentid = "default";
 
