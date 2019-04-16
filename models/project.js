@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
+var Profile = require('../models/profile');
 
 var ProjectSchema = new Schema({
   _id: Schema.Types.ObjectId,
@@ -34,11 +35,21 @@ var ProjectSchema = new Schema({
     select: false
   },
   profile: {
-    type: String,
-    default: 'free',
-    required: true
+    type: Profile.schema,
+    default: function() {
+      return new Profile();
+    }
   },
-  trialDays: {
+  // profile: {
+  //   type: String,
+  //   default: 'free',
+  //   required: true
+  // },
+  // trialDays: {
+  //   type: Number,
+  //   default: 30
+  // },
+  versions: {
     type: Number,
     default: 30
   },
@@ -57,11 +68,12 @@ ProjectSchema.virtual('trialExpired').get(function () {
   let now = new Date();
   winston.debug("now.getTime() " + now.getTime());
   winston.debug("this.createdAt.getTime() " + this.createdAt.getTime());
-  winston.debug("trial " + this.trialDays *  86400000 );
-  if (this.createdAt.getTime() + this.trialDays *  86400000 > now.getTime()){
+  winston.debug("this " , this.toObject());
+  winston.debug("trial " + this.profile.trialDays *  86400000 );
+  if (this.createdAt.getTime() + this.profile.trialDays *  86400000 > now.getTime()) {
     winston.debug("not expired");
     return false;
-  }else {
+  } else {
     winston.debug("expired");
     return true;
   }
