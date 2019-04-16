@@ -69,7 +69,7 @@ class Pending_Invitation {
         }
         if (!pendinginvitations.length) {
           winston.debug('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
-          return reject({ msg: 'New user email not found in pending invitation' });
+          return resolve({ msg: 'New user email not found in pending invitation' });
         }
 
         winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVE A NEW PROJECT USER', pendinginvitations);
