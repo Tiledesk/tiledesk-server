@@ -11,6 +11,10 @@ var ProfileSchema = new Schema({
     type: Number,
     default: 30
   },
+  agents: {
+    type: Number,
+    default: 100 //??
+  },
 }
 ,{ _id : false });
 
