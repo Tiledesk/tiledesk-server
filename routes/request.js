@@ -83,14 +83,14 @@ router.post('/', function (req, res) {
         //   });     
            
       
-    console.log("savedRequest", savedRequest);
+        winston.debug("savedRequest", savedRequest);
 
     // console.log("XXXXXXXXXXXXXXXX");
     // this.sendEmail(req.projectid, savedRequest);
     return res.json(savedRequest);
 
   }).catch(function(err) {
-    console.log('Error saving request.', err);
+    winston.error('Error saving request.', err);
     return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
   
   });
@@ -99,15 +99,16 @@ router.post('/', function (req, res) {
 
 
 router.patch('/:requestid', function (req, res) {
-  console.log(req.body);
+  winston.debug(req.body);
   // const update = _.assign({ "updatedAt": new Date() }, req.body);
   const update = req.body;
-  console.log(update);
+  winston.debug(update);
 
   // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
 
   return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
+      winston.error('Error patching request.', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
     return res.json(updatedMessage);
@@ -228,9 +229,9 @@ router.post('/:requestid/share/email', function (req, res) {
 
 router.get('/', function (req, res, next) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
-  console.log('REQUEST ROUTE - QUERY ', req.query)
+  winston.debug("req projectid", req.projectid);
+  winston.debug("req.query.sort", req.query.sort);
+  winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   var limit = 40; // Number of request per page
   var page = 0;
@@ -240,33 +241,33 @@ router.get('/', function (req, res, next) {
   }
 
   var skip = page * limit;
-  console.log('REQUEST ROUTE - SKIP PAGE ', skip);
+  winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
-    console.log('REQUEST ROUTE - QUERY DEPT ID', query.department);
+    winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
   if (req.query.full_text) {
-    console.log('req.query.fulltext', req.query.full_text);
+    winston.debug('req.query.fulltext', req.query.full_text);
     query.$text = {"$search": req.query.full_text};
   }
 
   if (req.query.status) {
-    console.log('req.query.status', req.query.status);
+    winston.debug('req.query.status', req.query.status);
     query.status = req.query.status;
   }
 
   if (req.query.requester_id) {
-    console.log('req.query.requester_id', req.query.requester_id);
+    winston.debug('req.query.requester_id', req.query.requester_id);
     query.requester_id = req.query.requester_id;
   }
 
   // USERS & BOTS
   if (req.query.participant) {
-    console.log('req.query.participant', req.query.participant);
+    winston.debug('req.query.participant', req.query.participant);
     query.participants = req.query.participant;
   }
 
@@ -278,8 +279,8 @@ router.get('/', function (req, res, next) {
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
+    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
+    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
 
     /**
      * USING TIMESTAMP  in MS    */
@@ -293,27 +294,27 @@ router.get('/', function (req, res, next) {
     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
     var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
     var date = new Date(endDate);
     var newdate = new Date(date);
     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
     // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
     // var endDate_plusOneDay =   endDate.add(1).day();
     // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
+    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
 
@@ -321,20 +322,20 @@ router.get('/', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   } 
-  console.log("direction",direction);
+  winston.debug("direction",direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   } 
-  console.log("sortField",sortField);
+  winston.debug("sortField",sortField);
 
   var sortQuery={};
   sortQuery[sortField] = direction;
 
-  console.log("sort query", sortQuery);
+  winston.debug("sort query", sortQuery);
 
-    console.log('REQUEST ROUTE - REQUEST FIND ', query)
+  winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
@@ -354,7 +355,7 @@ router.get('/', function (req, res, next) {
 
           return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
         }
-        console.log('REQUEST ROUTE - REQUEST ', requests);
+        winston.debug('REQUEST ROUTE - REQUEST ', requests);
 
         return Request.count(query, function(err, totalRowCount) {
 
@@ -363,7 +364,7 @@ router.get('/', function (req, res, next) {
             count: totalRowCount,
             requests : requests
           };
-          console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
+          winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
           return res.json(objectToReturn);
         });
        
@@ -375,9 +376,9 @@ router.get('/', function (req, res, next) {
 // DOWNLOAD HISTORY REQUESTS AS CSV
 router.get('/csv', function (req, res, next) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
-  console.log('REQUEST ROUTE - QUERY ', req.query)
+  winston.debug("req projectid", req.projectid);
+  winston.debug("req.query.sort", req.query.sort);
+  winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   var limit = 100000; // Number of request per page
   var page = 0;
@@ -387,41 +388,41 @@ router.get('/csv', function (req, res, next) {
   }
 
   var skip = page * limit;
-  console.log('REQUEST ROUTE - SKIP PAGE ', skip);
+  winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
-    console.log('REQUEST ROUTE - QUERY DEPT ID', query.department);
+    winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
   if (req.query.full_text) {
-    console.log('req.query.fulltext', req.query.full_text);
+    winston.debug('req.query.fulltext', req.query.full_text);
     query.$text = {"$search": req.query.full_text};
   }
 
   if (req.query.status) {
-    console.log('req.query.status', req.query.status);
+    winston.debug('req.query.status', req.query.status);
     query.status = req.query.status;
   }
 
   if (req.query.requester_id) {
-    console.log('req.query.requester_id', req.query.requester_id);
+    winston.debug('req.query.requester_id', req.query.requester_id);
     query.requester_id = req.query.requester_id;
   }
 
   // USERS & BOTS
   if (req.query.participant) {
-    console.log('req.query.participant', req.query.participant);
+    winston.debug('req.query.participant', req.query.participant);
     query.participants = req.query.participant;
   }
 
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
-    console.log('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
+    winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
+    winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
 
     /**
      * USING TIMESTAMP  in MS    */
@@ -435,27 +436,27 @@ router.get('/csv', function (req, res, next) {
     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
     var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
     var date = new Date(endDate);
     var newdate = new Date(date);
     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
-    console.log('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
+    winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
     // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
     // var endDate_plusOneDay =   endDate.add(1).day();
     // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
-    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
-    console.log('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
+    winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
-    console.log('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
 
 
@@ -463,20 +464,20 @@ router.get('/csv', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   } 
-  console.log("direction",direction);
+  winston.debug("direction",direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   } 
-  console.log("sortField",sortField);
+  winston.debug("sortField",sortField);
 
   var sortQuery={};
   sortQuery[sortField] = direction;
 
-  console.log("sort query", sortQuery);
+  winston.debug("sort query", sortQuery);
 
-    console.log('REQUEST ROUTE - REQUEST FIND ', query)
+  winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript  -agents -status -__v').
     skip(skip).limit(limit).
         //populate('department', {'_id':-1, 'name':1}).     
@@ -504,7 +505,7 @@ router.get('/csv', function (req, res, next) {
             element.department = depName;
           });
 
-          console.log('REQUEST ROUTE - REQUEST AS CSV', requests);
+          winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
 
         // return Request.count(query, function(err, totalRowCount) {
 
@@ -524,7 +525,7 @@ router.get('/csv', function (req, res, next) {
 
 router.get('/:requestid', function (req, res) {
 
-  console.log("get request by id ", req.params.requestid);
+  winston.debug("get request by id ", req.params.requestid);
 
   Request.findOne({"request_id":req.params.requestid})
   .populate('lead')
