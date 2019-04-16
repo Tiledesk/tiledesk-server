@@ -24,13 +24,13 @@ var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
   winston.error('DATABASE_URI not specified, falling back to localhost.');
 }
-winston.info("databaseUri", databaseUri);
+winston.info("databaseUri: " + databaseUri);
 
 var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-winston.info("autoIndex", autoIndex);
+winston.info("autoIndex: " + autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
   mongoose.connect(config.databasetest, { "autoIndex": true });
