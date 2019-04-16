@@ -1,5 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var winston = require('../config/winston');
+
 var ProjectUserSchema = require("../models/project_user").schema;
 // var MessageSchema = require("../models/message").schema;
 
@@ -154,9 +156,9 @@ RequestSchema.virtual('lead', {
 
 
 // RequestSchema.post('find', async function(requests) {
-//   // console.log("requests", requests);
+//   // winston.debug("requests", requests);
 //   for (let request of requests) {
-//     //console.log("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     //winston.debug("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
 //     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
 //       await request.populate('lead').execPopulate();
 //     }
@@ -164,18 +166,18 @@ RequestSchema.virtual('lead', {
 // });
 
 // RequestSchema.post('find',  async function(requests) {
-//   //  console.log("requestsyyyy", requests);
+//   //  winston.debug("requestsyyyy", requests);
 //   for (let request of requests) {
-//     // console.log("request find", request,  "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     // winston.debug("request find", request,  "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
 //     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
 //       await request.populate('lead').execPopulate();
 //     }
 //   }
 // });
 // RequestSchema.post('findOne',  async function(request) {
-//   //console.log("requestXXXXX", request);
+//   //winston.debug("requestXXXXX", request);
  
-//     console.log("request findOne", request, "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     winston.debug("request findOne", request, "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
 //     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
 //       await request.populate('lead').execPopulate();
 //     }
@@ -206,7 +208,7 @@ RequestSchema.statics.filterAvailableOperators = function filterAvailableOperato
     }
 
   });
-  console.log('++ AVAILABLE PROJECT USERS ', project_users_available)
+  winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
 
   return project_users_available;
 }

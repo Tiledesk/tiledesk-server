@@ -1,5 +1,6 @@
 'use strict';
 
+var winston = require('../config/winston');
 
 
 //firestore
@@ -16,14 +17,14 @@ var serviceAccount;
 
 if (!private_key || !client_email) {
   serviceAccount = require(firebaseConfigFilePath);
-  console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey from path',firebaseConfigFilePath, serviceAccount);
+  winston.debug('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey from path',firebaseConfigFilePath, serviceAccount);
 }else {
     serviceAccount = {
         "private_key": private_key.replace(/\\n/g, '\n'),
         "client_email": client_email,
         "project_id": firebase_project_id,
       };
-      console.log('serviceAccount from env', serviceAccount);
+      winston.debug('serviceAccount from env', serviceAccount);
 }
 
 const admin = require('firebase-admin');
