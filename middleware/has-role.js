@@ -20,7 +20,7 @@ class RoleChecker {
            
         var that = this;
 
-        // console.log("HasRole");
+        // winston.debug("HasRole");
         return function(req, res, next) {
           
           // winston.debug("req.originalUrl" + req.originalUrl);
@@ -29,8 +29,8 @@ class RoleChecker {
         //  winston.info("req.user.id: " + req.user.id);
 
           // winston.info("req.projectuser: " + req.projectuser);
-          //console.log("req.user", req.user);
-          //console.log("role", role);
+          //winston.debug("req.user", req.user);
+          //winston.debug("role", role);
       
           Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
             exec(function (err, project_user) {
@@ -41,19 +41,19 @@ class RoleChecker {
               //winston.info("project_user: ", JSON.stringify(project_user));
               
               req.projectuser = project_user;
-             // console.log("req.projectuser", req.projectuser);
+             // winston.debug("req.projectuser", req.projectuser);
       
               if (req.projectuser && req.projectuser.length>0) {
                 
                 var userRole = project_user[0].role;
-                // console.log("userRole", userRole);
+                // winston.debug("userRole", userRole);
       
                 if (!role) {
                   next();
                 }else {
       
                   var hierarchicalRoles = that.ROLES[userRole];
-                  // console.log("hierarchicalRoles", hierarchicalRoles);
+                  // winston.debug("hierarchicalRoles", hierarchicalRoles);
       
                   if ( hierarchicalRoles.includes(role)) {
                     next();

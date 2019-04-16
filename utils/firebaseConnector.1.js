@@ -19,7 +19,7 @@ try {
   var firebaseConfigKey = require('../config/.firebase-key/key.json');
   if (firebaseConfigKey) {
     serviceAccount = firebaseConfigKey;
-    console.log('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.',serviceAccount);
+    winston.debug('FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL not specified, falling back to serviceAccountFromKey.',serviceAccount);
   }
 } catch(e) {
   winston.error("firebaseConfigKey not found");
@@ -45,14 +45,14 @@ if (private_key && client_email && firebase_project_id) {
 
 // let getSettingFromDb = async function() {
 //   let settingFromDb = await Setting.findOne({});
-//   console.log("settingFromDb", settingFromDb);
+//   winston.debug("settingFromDb", settingFromDb);
 //   return settingFromDb;
   // Setting.findOne({}, function (err, setting) {
     // if (err) {
     //   winston.error(err);
     // }
     // if (!setting) {
-    //   console.log("setting doesnt exist. Creare it from serviceAccount", setting);
+    //   winston.debug("setting doesnt exist. Creare it from serviceAccount", setting);
     //       var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
     //       setting.save(function(err, ssetting) {
     //         if (err) {
@@ -62,7 +62,7 @@ if (private_key && client_email && firebase_project_id) {
     //         }
     //       });
     // } else {
-    //   console.log("setting", setting);
+    //   winston.debug("setting", setting);
     //   serviceAccount = setting.firebase;
   
   
@@ -77,7 +77,7 @@ if (private_key && client_email && firebase_project_id) {
 
 
 // let sdb = getSettingFromDb();
-// console.log("sdb", sdb);
+// winston.debug("sdb", sdb);
 
 
 

@@ -22,7 +22,7 @@ var winston = require('../config/winston');
 
 //   newLead.save(function (err, savedLead) {
 //     if (err) {
-//       console.log('--- > ERROR ', err)
+//       winston.debug('--- > ERROR ', err)
 //       return res.status(500).send({ success: false, msg: 'Error saving object.' });
 //     }
 //     res.json(savedLead);
@@ -30,7 +30,7 @@ var winston = require('../config/winston');
 // });
 
 // router.get('/:leadid', function (req, res) {
-//   console.log(req.body);
+//   winston.debug(req.body);
 
 //   Lead.findById(req.params.leadid, function (err, lead) {
 //     if (err) {

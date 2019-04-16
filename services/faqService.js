@@ -13,7 +13,7 @@ class FaqService {
     var that = this;
     return new Promise(function (resolve, reject) {
 
-        //console.log('FAQ-KB POST REQUEST BODY ', req.body);
+        //winston.debug('FAQ-KB POST REQUEST BODY ', req.body);
         var newFaq_kb = new Faq_kb({
           name: name,
           url: url,
@@ -129,33 +129,33 @@ class FaqService {
 
     request(options, function (err, res, body) {
       if (res && (res.statusCode === 200 || res.statusCode === 201)) {
-        // console.log('FAQ KB KEY POST REQUEST BODY ', body);
-        console.log('FAQ REMOTE POST BODY ', body);
+        // winston.debug('FAQ KB KEY POST REQUEST BODY ', body);
+        winston.debug('FAQ REMOTE POST BODY ', body);
 
 
       }
       if (err) {
-        console.log('FAQ REMOTE POST ERROR ', err);
+        winston.debug('FAQ REMOTE POST ERROR ', err);
       }
     });
   }
 
   // getFaqKbKeyById(faqKb_id, callback) {
-  //   console.log('FAQ SERVICE - FAQ-KB ID ', faqKb_id)
+  //   winston.debug('FAQ SERVICE - FAQ-KB ID ', faqKb_id)
   //   Faq_kb.findById(faqKb_id, function (err, faq_kb) {
   //     if (err) {
-  //       console.log('FAQ SERVICE - FAQKB GET BY ID ERROR ', err)
+  //       winston.debug('FAQ SERVICE - FAQKB GET BY ID ERROR ', err)
   //       callback(null)
   //       return
   //       // res.status(500).send({ success: false, msg: 'Error getting object.' });
   //     }
   //     if (!faq_kb) {
-  //       console.log('FAQ SERVICE - FAQKB GET BY ID - OBJECT NOT FOUND')
+  //       winston.debug('FAQ SERVICE - FAQKB GET BY ID - OBJECT NOT FOUND')
   //       callback(null)
   //       return
   //       // res.status(404).send({ success: false, msg: 'Object not found.' });
   //     }
-  //     console.log('FAQ SERVICE - FAQ-KB', faq_kb)
+  //     winston.debug('FAQ SERVICE - FAQ-KB', faq_kb)
   //     callback(faq_kb.kbkey_remote);
 
   //     // res.json(faq_kb);

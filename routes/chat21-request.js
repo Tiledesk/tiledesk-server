@@ -137,7 +137,7 @@ router.post('/', function(req, res) {
                 var leadAttributes = message.attributes;
                 leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
               
-                  // console.log("userEmail is defined");
+                  // winston.debug("userEmail is defined");
                                     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
                   return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
                   .then(function(createdLead) {
@@ -146,30 +146,30 @@ router.post('/', function(req, res) {
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
-                                      // console.log("savedMessageXXX ");
+                                      // winston.debug("savedMessageXXX ");
                                       //get projectid from savedMessage.id_project
 
                                   //  if (message.attributes && message.attributes.jwt_token) {
                                   //       try {
                                            
-                                  //           console.log("message.attributes.jwt_token", message.attributes.jwt_token);
+                                  //           winston.debug("message.attributes.jwt_token", message.attributes.jwt_token);
                                   //           // verify a token symmetric - synchronous
                                   //           var decoded = jwt.verify(message.attributes.jwt_token, secret);
-                                  //           console.log("decoded", decoded);
+                                  //           winston.debug("decoded", decoded);
                                                                                                               
                                     
                                   //       } catch(err) {
                                   //           winston.error("error decoding jwt token", err);
 
                                   //           return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-                                  //             console.log("customAuthToken", customAuthToken);
-                                  //                 // console.log("chat21", chat21);
-                                  //                 // console.log(" admin.auth()", JSON.stringify(admin.auth()));
-                                  //                 // console.log(" admin", admin.auth());
+                                  //             winston.debug("customAuthToken", customAuthToken);
+                                  //                 // winston.debug("chat21", chat21);
+                                  //                 // winston.debug(" admin.auth()", JSON.stringify(admin.auth()));
+                                  //                 // winston.debug(" admin", admin.auth());
                                                   
                                   //               return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
                                   //                   chat21.auth.setCurrentToken(idToken);
-                                  //                   console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+                                  //                   winston.debug("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
                                   //                   return chat21.messages.send('Sender Node SDK', '5aaa99024c3b110014b478f0', 'Andrea Leo', 'hello from Node SDK');
                                   //                 });
                                   //             }).catch(function(err) {
@@ -210,11 +210,11 @@ router.post('/', function(req, res) {
             // if (message.attributes) {
         
             //   projectid = message.attributes.projectId;
-            //   console.log("chat21 projectid", projectid);
+            //   winston.debug("chat21 projectid", projectid);
             // }
         
             // if (!projectid) {
-            //   console.log("projectid is null. Not a support message");
+            //   winston.debug("projectid is null. Not a support message");
             //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
             // }
             
@@ -229,7 +229,7 @@ router.post('/', function(req, res) {
                   request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
 
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-                      // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                      // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        
                       if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId");
@@ -345,7 +345,7 @@ router.post('/', function(req, res) {
 
               
                     return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
-                      // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
+                      // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
                       return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
                         // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
@@ -385,10 +385,10 @@ router.post('/', function(req, res) {
       winston.info("req.body", JSON.stringify(req.body));
 
       var data = req.body.data;
-      //console.log("data",data);
+      //winston.debug("data",data);
 
       var group = data.group;
-      // console.log("group",group);
+      // winston.debug("group",group);
 
       var new_member = req.body.member_id;
       winston.info("new_member",new_member);
@@ -450,7 +450,7 @@ router.post('/', function(req, res) {
 
 
     var data = req.body.data;
-    // console.log("data",data);
+    // winston.debug("data",data);
 
     var group = data.group;
     winston.info("group",group);
@@ -487,7 +487,7 @@ router.post('/', function(req, res) {
 
 
       var conversation = req.body.data;
-      // console.log("conversation",conversation);
+      // winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
       winston.info("user_id",user_id);
