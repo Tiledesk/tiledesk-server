@@ -35,7 +35,7 @@ var ActivitySchema = new Schema({
     // type: String,
     type: Object,
     required: true,
-    index: true
+    //index: true    //error saving activity Btree::insert: key too large to index, failing heroku_hwhg3xtx.activities.$target_1 2359 { : { object: { __v: 0, updatedAt: new Date(1555407053615), createdAt: new Date(1555407053615), request_id: "support-group-Lc_Tz_hoCZ9REHC9FbY", requester_id: "5c8a38012d8e6d0017bce22a", first_text: "test 81", department: ObjectId('5b8eb48b5ca4d300141fb2cb'), sourcePage: "https://www.tiledesk.com/", language: "it", 
   },
   verb: {
     type: String,
@@ -51,7 +51,7 @@ var ActivitySchema = new Schema({
     // type: String,
     type: Object,
     required: true,
-    index: true
+    // index: true
   },
   // summary  A natural language summarization of the object encoded as HTML. Multiple language tagged summaries may be provided.
   // summaryMap https://www.w3.org/TR/activitystreams-vocabulary/#dfn-summary
