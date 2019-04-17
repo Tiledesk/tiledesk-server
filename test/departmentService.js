@@ -234,4 +234,155 @@ describe('DepartmentService()', function () {
 
 
 
+  it('createRoundRobinWithAssignedALLOFFLINEDepartment', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-department-create" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    userService.signup( email+'2' ,pwd, "Test Firstname2", "Test lastname2").then(function(savedUser2) {
+    projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
+
+      Project_user.findOneAndUpdate({id_project: savedProject._id,  id_user: savedUser._id,}, {user_available: false}, {new: true, upsert:false}, function(err, updatedProject_user) {
+        winston.debug("updatedProject_user",updatedProject_user);
+
+     var pu1 = new Project_user({
+        id_project: savedProject._id,
+        id_user: savedUser2._id,
+        role: roleConstants.AGENT,
+        user_available: false,
+        createdBy: savedUser2._id,
+        updatedBy: savedUser2._id,
+      });
+      pu1.save(function (err, savedProject_user2) {
+        winston.debug("err",err);
+        winston.debug("savedProject_user2", savedProject_user2.toObject());
+
+
+          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
+
+            // getOperators(departmentid, projectid, nobot) {
+            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult0) {
+              winston.debug("resolve operatorsResult0", operatorsResult0); //time invariant?
+
+              requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
+
+            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
+              winston.info("resolve operatorsResult", operatorsResult);
+
+              expect(operatorsResult.department._id.toString()).to.equal(createdDepartment._id.toString());
+              expect(operatorsResult.available_agents.length).to.equal(0);
+
+       
+
+              expect(operatorsResult.agents.length).to.equal(2);
+              expect(operatorsResult.group).to.equal(undefined);
+
+          
+              done();
+            });
+        });
+      });
+      });
+    });
+      });
+  
+});
+  });
+
+});
+
+    });
+  // });
+
+
+  }).timeout(20000);
+
+
+
+
+
+
+
+//   (node:74274) UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'id_user' of undefined
+//   at /Users/andrealeo/dev/chat21/tiledesk-server/services/requestService.js:55:56
+//   at processTicksAndRejections (internal/process/next_tick.js:81:5)
+// (node:74274) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)
+
+  it('createRoundRobinWithAssignedLastOperatorNotAvailableAndOtherNotAvailableDepartment', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-department-create" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    userService.signup( email+'2' ,pwd, "Test Firstname2", "Test lastname2").then(function(savedUser2) {
+    projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
+
+      
+
+     var pu1 = new Project_user({
+        id_project: savedProject._id,
+        id_user: savedUser2._id,
+        role: roleConstants.AGENT,
+        user_available: false,
+        createdBy: savedUser2._id,
+        updatedBy: savedUser2._id,
+      });
+      pu1.save(function (err, savedProject_user2) {
+        winston.debug("err",err);
+        winston.debug("savedProject_user2", savedProject_user2.toObject());
+
+
+          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
+
+            // getOperators(departmentid, projectid, nobot) {
+            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult0) {
+              winston.debug("resolve operatorsResult0", operatorsResult0); //time invariant?
+
+
+              Project_user.findOneAndUpdate({id_project: savedProject._id,  id_user: savedUser._id,}, {user_available: false}, {new: true, upsert:false}, function(err, updatedProject_user) {
+                winston.debug("updatedProject_user",updatedProject_user);
+
+
+              requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
+
+            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
+              winston.info("resolve operatorsResult", operatorsResult);
+
+              expect(operatorsResult.department._id.toString()).to.equal(createdDepartment._id.toString());
+              expect(operatorsResult.available_agents.length).to.equal(0);
+
+       
+
+              expect(operatorsResult.agents.length).to.equal(2);
+              expect(operatorsResult.group).to.equal(undefined);
+
+          
+              done();
+            });
+        });
+      });
+      });
+    });
+      });
+  
+});
+  });
+
+});
+
+    });
+  // });
+
+
+  }).timeout(20000);
+
+
+
+
+
 });

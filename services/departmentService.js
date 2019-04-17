@@ -46,6 +46,9 @@ class DepartmentService {
   }
 
   nextOperator (array, index) {
+    winston.debug('array: ', array);
+    winston.debug('index: ' + index);
+
     index = index || 0;
   
     if (array === undefined || array === null)
@@ -110,27 +113,31 @@ roundRobin(operatorSelectedEvent) {
           let lastOperatorId = lastRequest.participants[0];
           winston.debug('lastOperatorId: ' + lastOperatorId);
 
-          // var picked = lodash.filter(operatorSelectedEvent.available_agents, projectUser => projectUser.id_user === lastOperatorId);
+
+          // BUGFIX (node:74274) UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'id_user' of undefined
+          //   at /Users/andrealeo/dev/chat21/tiledesk-server/services/requestService.js:55:56
+          //   at processTicksAndRejections (internal/process/next_tick.js:81:5)
+          // (node:74274) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)          
+          if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0){
+            winston.info('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
+            return resolve(operatorSelectedEvent);
+          }
 
           // https://stackoverflow.com/questions/15997879/get-the-index-of-the-object-inside-an-array-matching-a-condition
           let lastOperatorIndex = operatorSelectedEvent.available_agents.findIndex(projectUser => projectUser.id_user.toString() === lastOperatorId);
 
-          // console.log(projectUser.toObject()
+          // if lastOperatorIndex is -1(last operator is not available)->  that.nextOperator increment index +1 so it's work
 
 
-          // var lastOperatorIndex = operatorSelectedEvent.available_agents.filter(function(projectUser, index) {
-          //     if (projectUser.id_user ===lastOperatorId) {
-          //         return index;
-          //     }                      
-          // });
+  
 
           winston.debug('lastOperatorIndex: ' + lastOperatorIndex);
 
           let nextOperator = that.nextOperator(operatorSelectedEvent.available_agents, lastOperatorIndex);
 
-          if (nextOperator) {
-            winston.info('roundRobin nextOperator: ' ,nextOperator.toJSON());
-          }
+          
+          winston.info('roundRobin nextOperator: ' ,nextOperator.toJSON());
+          
           
 
 
