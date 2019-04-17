@@ -87,7 +87,11 @@ router.get('/', function (req, res) {
       }
 
       return Activity.count(query, function (err, totalRowCount) {
-
+        if (err) {
+          winston.error('Activity ROUTE - REQUEST FIND ERR ', err)
+          return (err);
+        }
+        
         var objectToReturn = {
           perPage: limit,
           count: totalRowCount,
