@@ -38,6 +38,7 @@ class BotSubscriptionNotifier {
 
   start() {
 
+    //modify to async
     botEvent.on('bot.message.received.notify.external', function(botNotification) {
       botSubscriptionNotifier.notify(botNotification.url, botNotification.message);
     });

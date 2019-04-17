@@ -2,11 +2,12 @@ var express = require('express');
 var router = express.Router();
 var Bot = require("../models/bot");
 
+var winston = require('../config/winston');
 
 
 router.post('/', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
   var newBot = new Bot({
     id_faq_kb: req.body.id_faq_kb,
     fullname: req.body.fullname,
@@ -17,7 +18,7 @@ router.post('/', function (req, res) {
 
   newBot.save(function (err, savedBot) {
     if (err) {
-      console.log('--- > ERROR ', err)
+      winston.debug('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
     res.json(savedBot);
@@ -26,7 +27,7 @@ router.post('/', function (req, res) {
 
 router.put('/:botid', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
 
   Bot.findByIdAndUpdate(req.params.botid, req.body, { new: true, upsert: true }, function (err, updatedBot) {
     if (err) {
@@ -39,7 +40,7 @@ router.put('/:botid', function (req, res) {
 
 router.delete('/:botid', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
 
   Bot.remove({ _id: req.params.botid }, function (err, bot) {
     if (err) {
@@ -52,7 +53,7 @@ router.delete('/:botid', function (req, res) {
 
 router.get('/:botid', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
 
   Bot.findById(req.params.botid, function (err, bot) {
     if (err) {

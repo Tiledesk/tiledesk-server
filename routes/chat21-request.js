@@ -64,11 +64,11 @@ router.post('/', function(req, res) {
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"1234567891234567891", "recipient_fullname":"Andrea Leo","text":"text"}}' http://localhost:3000/chat21/requests
 
 
-    console.log("event_type", "new-message");
+    winston.info("event_type", "new-message");
 
     var message = req.body.data;
  
-    console.log("chat21 message", message);
+    winston.info("chat21 message", message);
 
 
         return Request.findOne({request_id: message.recipient}, function(err, request) {
@@ -80,12 +80,12 @@ router.post('/', function(req, res) {
 
           if (!request) { //the request doen't exists create it
 
-                console.log("request not exists", request);
+                winston.info("request not exists");
                 
                 var departmentid = "default";
 
                 var language = message.language;
-                console.log("chat21 language", language);
+                winston.debug("chat21 language", language);
             
                 var sourcePage;
                 var client;
@@ -97,35 +97,35 @@ router.post('/', function(req, res) {
                 if (message.attributes) {
             
                   projectid = message.attributes.projectId;
-                  console.log("chat21 projectid", projectid);
+                  winston.debug("chat21 projectid", projectid);
             
                   departmentid = message.attributes.departmentId;
-                  console.log("chat21 departmentid", departmentid);
+                  winston.debug("chat21 departmentid", departmentid);
             
                   sourcePage = message.attributes.sourcePage;
-                  console.log("chat21 sourcePage", sourcePage);
+                  winston.debug("chat21 sourcePage", sourcePage);
                   
                   client = message.attributes.client;
-                  console.log("chat21 client", client);
+                  winston.debug("chat21 client", client);
               
                 
             
                   userEmail = message.attributes.userEmail;
-                  console.log("chat21 userEmail", userEmail);
+                  winston.debug("chat21 userEmail", userEmail);
             
                   userFullname = message.attributes.userFullname;
-                  console.log("chat21 userFullname", userFullname);
+                  winston.debug("chat21 userFullname", userFullname);
                 }
                 
             
                 
             
                 if (!projectid) {
-                  console.log("projectid is null. Not a support message");
+                  winston.info("projectid is null. Not a support message");
                   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
                 }
                 if (!message.recipient.startsWith("support-group")) {
-                  console.log("recipient not starts wiht support-group. Not a support message");
+                  winston.info("recipient not starts wiht support-group. Not a support message");
                   return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
                 }
             
@@ -137,7 +137,7 @@ router.post('/', function(req, res) {
                 var leadAttributes = message.attributes;
                 leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
               
-                  // console.log("userEmail is defined");
+                  // winston.debug("userEmail is defined");
                                     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
                   return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
                   .then(function(createdLead) {
@@ -146,30 +146,30 @@ router.post('/', function(req, res) {
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
-                                      // console.log("savedMessageXXX ");
+                                      // winston.debug("savedMessageXXX ");
                                       //get projectid from savedMessage.id_project
 
                                   //  if (message.attributes && message.attributes.jwt_token) {
                                   //       try {
                                            
-                                  //           console.log("message.attributes.jwt_token", message.attributes.jwt_token);
+                                  //           winston.debug("message.attributes.jwt_token", message.attributes.jwt_token);
                                   //           // verify a token symmetric - synchronous
                                   //           var decoded = jwt.verify(message.attributes.jwt_token, secret);
-                                  //           console.log("decoded", decoded);
+                                  //           winston.debug("decoded", decoded);
                                                                                                               
                                     
                                   //       } catch(err) {
                                   //           winston.error("error decoding jwt token", err);
 
                                   //           return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-                                  //             console.log("customAuthToken", customAuthToken);
-                                  //                 // console.log("chat21", chat21);
-                                  //                 // console.log(" admin.auth()", JSON.stringify(admin.auth()));
-                                  //                 // console.log(" admin", admin.auth());
+                                  //             winston.debug("customAuthToken", customAuthToken);
+                                  //                 // winston.debug("chat21", chat21);
+                                  //                 // winston.debug(" admin.auth()", JSON.stringify(admin.auth()));
+                                  //                 // winston.debug(" admin", admin.auth());
                                                   
                                   //               return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
                                   //                   chat21.auth.setCurrentToken(idToken);
-                                  //                   console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
+                                  //                   winston.debug("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
                                   //                   return chat21.messages.send('Sender Node SDK', '5aaa99024c3b110014b478f0', 'Andrea Leo', 'hello from Node SDK');
                                   //                 });
                                   //             }).catch(function(err) {
@@ -190,7 +190,7 @@ router.post('/', function(req, res) {
                           
                         
                       }).catch(function (err) {
-                        console.log( 'Error creating the request object.', err);
+                        winston.error( 'Error creating the request object.', err);
                         return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
                       });
                   });
@@ -204,23 +204,23 @@ router.post('/', function(req, res) {
 
         
 
-            console.log("request  exists", request.toObject());
+            winston.info("request  exists", request.toObject());
 
             // var projectid;
             // if (message.attributes) {
         
             //   projectid = message.attributes.projectId;
-            //   console.log("chat21 projectid", projectid);
+            //   winston.debug("chat21 projectid", projectid);
             // }
         
             // if (!projectid) {
-            //   console.log("projectid is null. Not a support message");
+            //   winston.debug("projectid is null. Not a support message");
             //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
             // }
             
             if (!message.recipient.startsWith("support-group")) {
-              console.log("recipient not starts wiht support-group. Not a support message");
-              return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
+              winston.info("recipient not starts with support-group. Not a support message");
+              return res.status(400).send({success: false, msg: "recipient not starts with support-group. Not a support message"});
             }
         
             // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
@@ -229,10 +229,10 @@ router.post('/', function(req, res) {
                   request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
 
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-                      // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
+                      // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        
                       if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
-                        console.log("updateWaitingTimeByRequestId");
+                        winston.debug("updateWaitingTimeByRequestId");
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
                           return res.json(upRequest);
                         });
@@ -259,25 +259,25 @@ router.post('/', function(req, res) {
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
 
     } else if (req.body.event_type == "deleted-conversation") {
-      console.log("event_type","deleted-conversation");
+      winston.info("event_type","deleted-conversation");
 
       var conversation = req.body.data;
-      console.log("conversation",conversation);
+      winston.info("conversation",conversation);
 
       var user_id = req.body.user_id;
-      console.log("user_id",user_id);
+      winston.info("user_id",user_id);
 
       var recipient_id = req.body.recipient_id;
-      console.log("recipient_id",recipient_id);
+      winston.info("recipient_id",recipient_id);
 
  
       if (!recipient_id.startsWith("support-group")){
-        console.log("not a support conversation");
+        winston.info("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
       if (user_id!="system"){
-        console.log("not a system conversation");
+        winston.info("not a system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
@@ -286,16 +286,16 @@ router.post('/', function(req, res) {
       return conversationRef.get()
           .then(doc => {
             if (!doc.exists) {
-              console.log('No such document!');
+              winston.info('No such document!');
             } else {
               var firestoreConversation =  doc.data();
-              console.log('firestoreConversation',firestoreConversation);
+              winston.info('firestoreConversation',firestoreConversation);
 
               var firestoreSupportStatus = firestoreConversation.support_status;
-              console.log('firestoreSupportStatus', firestoreSupportStatus);
+              winston.info('firestoreSupportStatus', firestoreSupportStatus);
 
               var firestoreMembers = firestoreConversation.members;
-              console.log('firestoreMembers', firestoreMembers);
+              winston.info('firestoreMembers', firestoreMembers);
 
               var firestoreMembersAsArray = Object.keys(firestoreMembers);
 
@@ -310,7 +310,7 @@ router.post('/', function(req, res) {
               // SSDS firestoreProjectid is NOT unique
               //TODO READ PROJECTID FROM CONVESATION
               var firestoreProjectid = firestoreConversation.projectid;
-              console.log('firestoreProjectid', firestoreProjectid);
+              winston.info('firestoreProjectid', firestoreProjectid);
               
 
 
@@ -331,8 +331,8 @@ router.post('/', function(req, res) {
                   //TODO remove requester id from participants                 
                   
                   return Lead.findById(request.requester_id, function(err, lead){
-                    console.log("lead",lead);
-                    console.log("request",request);
+                    winston.info("lead",lead.toObject());
+                    winston.info("request",request.toObject());
                     if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
                       var requesterLeadIdIndex = firestoreMembersAsArray.indexOf(lead.lead_id);      
                       if (requesterLeadIdIndex > -1) {
@@ -341,17 +341,17 @@ router.post('/', function(req, res) {
                     }
 
 
-                    console.log('firestoreMembersAsArray', firestoreMembersAsArray);
+                    winston.info('firestoreMembersAsArray', firestoreMembersAsArray);
 
               
                     return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
-                      // console.log('updatedParticipantsRequest', updatedParticipantsRequest);
+                      // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
                       return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
                         // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
                         //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
                         // }
-                        console.log('updatedStatusRequest', updatedStatusRequest);
+                        winston.info('updatedStatusRequest', updatedStatusRequest);
                         return res.json(updatedStatusRequest);
                       });
                     }).catch(function(err){
@@ -370,7 +370,7 @@ router.post('/', function(req, res) {
             }
           })
           .catch(err => {
-            console.log('Error getting document', err);
+            winston.error('Error getting document', err);
           });
 
 
@@ -380,26 +380,26 @@ router.post('/', function(req, res) {
       
 
     }else if (req.body.event_type == "join-member") {
-      console.log("event_type","join-member");
+      winston.info("event_type","join-member");
 
-      console.log("req.body", JSON.stringify(req.body));
+      winston.info("req.body", JSON.stringify(req.body));
 
       var data = req.body.data;
-      //console.log("data",data);
+      //winston.debug("data",data);
 
       var group = data.group;
-      // console.log("group",group);
+      // winston.debug("group",group);
 
       var new_member = req.body.member_id;
-      console.log("new_member",new_member);
+      winston.info("new_member",new_member);
 
       if (new_member=="system") {
-        console.warn("new_member "+ new_member+ " not added to participants");
+        winston.warn("new_member "+ new_member+ " not added to participants");
         return res.status(400).send({success: false, msg: "new_member "+ new_member+ " not added to participants" });
       }
 
       var request_id = req.body.group_id;
-      console.log("request_id", request_id);
+      winston.info("request_id", request_id);
 
       var id_project;
       if (group && group.attributes) {
@@ -408,7 +408,7 @@ router.post('/', function(req, res) {
         winston.error("id_project "+ id_project+ "isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
-      console.log("id_project", id_project);
+      winston.info("id_project", id_project);
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err){
@@ -420,14 +420,14 @@ router.post('/', function(req, res) {
         }
 
         return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead){
-          console.log("lead",lead);
-          console.log("request",request);
+          
+          winston.info("request",request.toObject());
           if (lead && lead._id.toString() == request.requester_id.toString()) {
-            console.log("don't  joining requester_id or a lead");
+            winston.info("don't  joining requester_id or a lead");
             return res.status(400).send({success: false, msg: "don't  joining requester_id or a lead" });
           }else {
             return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-              winston.error("Join memeber ok");
+              winston.info("Join memeber ok");
               return res.json(updatedRequest);
             }).catch(function(err){
               winston.error("Error joining memeber", err);
@@ -444,22 +444,22 @@ router.post('/', function(req, res) {
 
 
   }else if (req.body.event_type == "leave-member") {
-    console.log("event_type","leave-member");
+    winston.info("event_type","leave-member");
     
-    console.log("req.body", JSON.stringify(req.body));
+    winston.info("req.body", JSON.stringify(req.body));
 
 
     var data = req.body.data;
-    // console.log("data",data);
+    // winston.debug("data",data);
 
     var group = data.group;
-    console.log("group",group);
+    winston.info("group",group);
 
     var new_member = req.body.member_id;
-    console.log("new_member",new_member);
+    winston.info("new_member",new_member);
 
     var request_id = req.body.group_id;
-    console.log("request_id", request_id);
+    winston.info("request_id", request_id);
 
 
     var id_project;
@@ -468,7 +468,7 @@ router.post('/', function(req, res) {
       }else {
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
-      console.log("id_project", id_project);
+      winston.info("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
       winston.error("Leave memeber ok");
@@ -481,30 +481,30 @@ router.post('/', function(req, res) {
   
   else if (req.body.event_type == "deleted-archivedconversation") {
 
-      console.log("event_type","deleted-archivedconversation");
+    winston.info("event_type","deleted-archivedconversation");
 
-      console.log("req.body",req.body);
+    winston.info("req.body",req.body);
 
 
       var conversation = req.body.data;
-      // console.log("conversation",conversation);
+      // winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
-      console.log("user_id",user_id);
+      winston.info("user_id",user_id);
 
       var recipient_id = req.body.recipient_id;
-      console.log("recipient_id",recipient_id);
+      winston.info("recipient_id",recipient_id);
 
      
 
 
       if (!recipient_id.startsWith("support-group")){
-        console.log("not a support conversation");
+        winston.info("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
       if (user_id!="system"){
-        console.log("not a system conversation");
+        winston.info("not a system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
@@ -515,7 +515,7 @@ router.post('/', function(req, res) {
       }else {
         return res.status(400).send({success: false, msg: "not a support deleting archived conversation" });
       }
-      console.log("id_project", id_project);
+      winston.info("id_project", id_project);
 
 
       return requestService.reopenRequestByRequestId(recipient_id, id_project).then(function(updatedRequest) {

@@ -136,7 +136,7 @@ router.post('/invite', function (req, res) {
           winston.debug('NO ERROR, SO CREATE AND SAVE A NEW PROJECT USER ')
 
           var newProject_user = new Project_user({
-            _id: new mongoose.Types.ObjectId(),
+            // _id: new mongoose.Types.ObjectId(),
             id_project: req.body.id_project,
             id_user: user._id,
             role: req.body.role,

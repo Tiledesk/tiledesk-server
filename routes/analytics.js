@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var AnalyticResult = require("../models/analyticResult");
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 
 
@@ -12,8 +13,8 @@ var mongoose = require('mongoose');
 
 router.get('/requests/count', function(req, res) {
   
-  console.log(req.params);
-  console.log("req.projectid",  req.projectid);    
+  winston.debug(req.params);
+  winston.debug("req.projectid",  req.projectid);    
  
     
   AnalyticResult.aggregate([
@@ -29,10 +30,10 @@ router.get('/requests/count', function(req, res) {
    
 //, function (err, result) {
       if (err) {
-          console.log(err);
+          winston.debug(err);
           return res.status(500).send({success: false, msg: 'Error getting analytics.'});
         }
-        console.log(result);
+        winston.debug(result);
 
         res.json(result);
   });
@@ -62,8 +63,8 @@ router.get('/requests/count', function(req, res) {
 
   router.get('/requests/aggregate/day', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -89,10 +90,10 @@ router.get('/requests/count', function(req, res) {
      
   //, function (err, result) {
         if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -119,11 +120,11 @@ router.get('/requests/count', function(req, res) {
   // ])
 
   router.get('/requests/aggregate/hours', function(req, res) {  
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
     let timezone = req.query.timezone || "+00:00";
-    console.log("timezone", timezone);
+    winston.debug("timezone", timezone);
 
     AnalyticResult.aggregate([
         // { "$match": {"id_project": req.projectid } },
@@ -145,10 +146,10 @@ router.get('/requests/count', function(req, res) {
      
   //, function (err, result) {
         if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -173,11 +174,11 @@ router.get('/requests/count', function(req, res) {
 //     { "$sort": {"_id":-1}}
 // ])
   router.get('/requests/aggregate/dayoftheweek/hours', function(req, res) {  
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);  
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);  
 
     let timezone = req.query.timezone || "+00:00";
-    console.log("timezone", timezone);
+    winston.debug("timezone", timezone);
 
     AnalyticResult.aggregate([
         // { "$match": {"id_project": req.projectid } },
@@ -198,10 +199,10 @@ router.get('/requests/count', function(req, res) {
 
      
         if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -226,8 +227,8 @@ router.get('/requests/count', function(req, res) {
     
   router.get('/requests/waiting', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -242,10 +243,10 @@ router.get('/requests/count', function(req, res) {
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -271,8 +272,8 @@ router.get('/requests/count', function(req, res) {
 
   router.get('/requests/waiting/day/last', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -288,10 +289,10 @@ router.get('/requests/count', function(req, res) {
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -301,8 +302,8 @@ router.get('/requests/count', function(req, res) {
 
   router.get('/requests/waiting/month', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -322,10 +323,10 @@ router.get('/requests/count', function(req, res) {
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -349,8 +350,8 @@ router.get('/requests/count', function(req, res) {
     
   router.get('/requests/satisfaction', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -365,10 +366,10 @@ router.get('/requests/count', function(req, res) {
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });
@@ -378,8 +379,8 @@ router.get('/requests/count', function(req, res) {
 
   router.get('/requests/satisfaction/month', function(req, res) {
   
-    console.log(req.params);
-    console.log("req.projectid",  req.projectid);    
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -399,10 +400,10 @@ router.get('/requests/count', function(req, res) {
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          console.log(result);
+          winston.debug(result);
 
           res.json(result);
     });

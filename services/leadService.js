@@ -64,7 +64,7 @@ class LeadService {
           if (!lead) {
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes));
           }
-          winston.error("lead already exists createIfNotExistsWithLeadId");
+          winston.info("lead already exists createIfNotExistsWithLeadId");
           return resolve(lead);
       
       });

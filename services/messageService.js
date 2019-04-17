@@ -7,7 +7,7 @@ var MessageConstants = require("../models/messageConstants");
 // var mongoose = require('mongoose');
 // var requestService = require('../services/requestService');
 // var leadService = require('../services/leadService');
-// console.log("requestService", requestService);
+// winston.debug("requestService", requestService);
 
 const messageEvent = require('../event/messageEvent');
 
@@ -53,7 +53,7 @@ class MessageService {
                 attributes: attributes
             });
             
-            // console.log("create new message", newMessage);
+            // winston.debug("create new message", newMessage);
 
             return newMessage.save(function(err, savedMessage) {
                 if (err) {
@@ -107,8 +107,8 @@ class MessageService {
   changeStatus(message_id, newstatus) {
     var that = this;
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
         return Message.findByIdAndUpdate(message_id, {status: newstatus}, {new: true, upsert:false}, function(err, updatedMessage) {
             if (err) {
@@ -116,7 +116,7 @@ class MessageService {
               return reject(err);
             }
             messageEvent.emit('message.update',updatedMessage);
-           // console.log("updatedMessage", updatedMessage);
+           // winston.debug("updatedMessage", updatedMessage);
 
            that.emitMessage(updatedMessage);
 
@@ -129,8 +129,8 @@ class MessageService {
 
 
   getTranscriptByRequestId(requestid, id_project) {
-    console.log("requestid", requestid);
-    console.log("id_project", id_project);
+    winston.debug("requestid", requestid);
+    winston.debug("id_project", id_project);
     var that = this;
     return new Promise(function (resolve, reject) {
         return Message.find({"recipient": requestid, id_project: id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
@@ -151,8 +151,8 @@ class MessageService {
             // messages.forEach(message => {
                 for (var i = 0; i < messages.length; i++) {
                     var message = messages[i];
-                    // console.log("message", message);
-                    // console.log("message.createdAt", message.createdAt);
+                    // winston.debug("message", message);
+                    // winston.debug("message.createdAt", message.createdAt);
                     
 
                     transcript = transcript  +
@@ -165,11 +165,11 @@ class MessageService {
                             transcript = transcript  + '\r\n';
                         }
 
-                        // console.log("transcript", transcript);
+                        // winston.debug("transcript", transcript);
                 }
             // });
 
-            // console.log("final transcript", transcript);
+            // winston.debug("final transcript", transcript);
 
             // each message in messages
             // p [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] #{message.senderFullname}: #{message.text}

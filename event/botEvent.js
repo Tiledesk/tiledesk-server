@@ -13,10 +13,10 @@ function getBotFromParticipants(participants) {
   
     if (participants) {
       participants.forEach(function(participant) { 
-        //console.log("participant", participant);
+        //winston.debug("participant", participant);
         if (participant.indexOf("bot_")> -1) {
           botIdTmp = participant.replace("bot_","");
-          //console.log("botIdTmp", botIdTmp);
+          //winston.debug("botIdTmp", botIdTmp);
           //break;        
         }
       });
@@ -43,7 +43,7 @@ function getBotId(message) {
         return recipient.replace('bot_','');
     }
     // var text = message.text;
-    // console.log("text", text);
+    // winston.debug("text", text);
     
     if ( message.request== null || message.request.participants == null) {
         return null;
@@ -63,6 +63,7 @@ function getBotId(message) {
  
 }
 
+//modify to async
 messageEvent.on('message.received', function(message) {
 
     winston.debug("message", message);

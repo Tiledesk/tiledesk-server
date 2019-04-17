@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var routingConstants = require('../models/routingConstants');
 
 var DepartmentSchema = new Schema({
   // _id: Schema.Types.ObjectId,
@@ -13,12 +14,13 @@ var DepartmentSchema = new Schema({
   },
   routing: {
     type: String,
-    default:"pooled"
+    default:routingConstants.POOLED,
     // required: true
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    index:true
   },
   id_project: {
     type: String,

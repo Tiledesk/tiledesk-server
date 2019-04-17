@@ -38,7 +38,7 @@ class FaqBotSupport {
     //             url = url + '?nobot=true';
     //         }
 
-    //         console.log(`url`, url);
+    //         winston.debug(`url`, url);
 
 
     //             return request({
@@ -56,35 +56,35 @@ class FaqBotSupport {
                     
     //                     if (!response) {
     //                         // throw new Error(`HTTP Error: ${response.statusCode}`);
-    //                         console.log(`Error getting department.`);
+    //                         winston.debug(`Error getting department.`);
     //                         return reject(response);
 
     //                     }else {
-    //                         console.log('SUCCESS! response', response);
+    //                         winston.debug('SUCCESS! response', response);
             
     //                         if (response) {
 
     //                             if (response.operators  && response.operators.length>0) {
     //                                 // var id_bot = "bot_"+response.id_bot;
     //                                 assigned_operator_id = response.operators[0].id_user;
-    //                                 console.log('assigned_operator_id', assigned_operator_id);
+    //                                 winston.debug('assigned_operator_id', assigned_operator_id);
 
     //                                 //group_members[assigned_operator_id] = 1; //bot
     //                             }
     //                             idBot = response.department.id_bot;
-    //                             console.log('idBot', idBot);
+    //                             winston.debug('idBot', idBot);
 
     //                             if (response.agents) {
     //                                 agents = response.agents;
-    //                                 console.log('agents', agents);
+    //                                 winston.debug('agents', agents);
 
     //                             }
     //                             if (response.available_agents) {
     //                                 availableAgents = response.available_agents;
-    //                                 console.log('availableAgents', availableAgents);
+    //                                 winston.debug('availableAgents', availableAgents);
 
     //                                 availableAgentsCount = availableAgents.length;
-    //                                 console.log('availableAgentsCount', availableAgentsCount);
+    //                                 winston.debug('availableAgentsCount', availableAgentsCount);
     //                             }
 
     //                             objectyToReturn["assigned_operator_id"] = assigned_operator_id;
@@ -94,7 +94,7 @@ class FaqBotSupport {
     //                             objectyToReturn["availableAgentsCount"] = availableAgentsCount;
     //                             objectyToReturn["departmentid"] = response.department._id;
     //                              objectyToReturn["department"] = response.department;
-    //                             console.log('objectyToReturn', objectyToReturn);
+    //                             winston.debug('objectyToReturn', objectyToReturn);
 
 
     //                             return resolve(objectyToReturn);
@@ -103,7 +103,7 @@ class FaqBotSupport {
                     
             
     //                 }) .catch(function(error) { 
-    //                     console.log("Error getting department.", error); 
+    //                     winston.debug("Error getting department.", error); 
     //                     return reject(error);
     //                 });
             
@@ -128,11 +128,11 @@ class FaqBotSupport {
         var label = "";
 
         try {
-            // console.log("1");
+            // winston.debug("1");
          label = labelsObject[lang][key];
-        //  console.log("2");
+        //  winston.debug("2");
         } catch(e) {
-            // console.log("Error", e);
+            // winston.debug("Error", e);
          label = labelsObject["EN"][key];
         }
         winston.debug('label: ' + label );
