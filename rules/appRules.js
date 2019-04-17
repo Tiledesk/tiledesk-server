@@ -6,6 +6,7 @@ class AppRules {
 
     start() {
     
+        //DEPRECATED
         // roundRobinOperator.start();
 
     }

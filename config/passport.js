@@ -59,7 +59,7 @@ module.exports = function(passport) {
   passport.use(new BasicStrategy(function(userid, password, done) {
         // console.log("BasicStrategy");
 
-      User.findOne({ email: userid }, function (err, user) {
+      User.findOne({ email: userid }, 'email firstname lastname password emailverified id', function (err, user) {
         // console.log("BasicStrategy user",user);
         // console.log("BasicStrategy err",err);
 

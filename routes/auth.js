@@ -19,27 +19,17 @@ var winston = require('../config/winston');
 router.post('/signup', function (req, res) {
   if (!req.body.email || !req.body.password) {
     return res.json({ success: false, msg: 'Please pass email and password.' });
-  } else {
-    // var newUser = new User({
-    //   _id: new mongoose.Types.ObjectId(),
-    //   email: req.body.email,
-    //   password: req.body.password,
-    //   firstname: req.body.firstname,
-    //   lastname: req.body.lastname,
-    //   emailverified: false
-    // });
-    // // save the user
-    // newUser.save(function (err, savedUser) {
-    //   if (err) {
-    //     return res.json({ success: false, msg: 'Email already exists.', err: err });
-    //   }
+  } else {    
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
       .then(function (savedUser) {
 
 
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
-        emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+        if (!req.body.disableEmail){
+          emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+        }
+        
 
 
         /*
@@ -55,25 +45,33 @@ router.post('/signup', function (req, res) {
           //   return res.send(err);
           // });
 
-         var activityBody = req.body; 
-         delete activityBody.password;
+
+
+        //  var activityBody = req.body; 
+        //  delete activityBody.password;
          var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
-            verb: "USER_SIGNUP", actionObj: activityBody, 
+            verb: "USER_SIGNUP", actionObj: req.body, 
             target: {type:"user", id:savedUser._id.toString(), object: null }, 
             id_project: '*' });
             activityEvent.emit('user.signup', activity);
 
 
-         res.json({ success: true, msg: 'Successfully created new user.' });
+
+          //remove password 
+          let userJson = savedUser.toObject();
+          delete userJson.password;
+          
+
+         res.json({ success: true, msg: 'Successfully created new user.', user: userJson });
         // savePerson(req, res, savedUser.id)
       }).catch(function (err) {
 
 
 
-        var activityBody = req.body; 
-        delete activityBody.password;
+        // var activityBody = req.body; 
+        // delete activityBody.password;
         var activity = new Activity({actor: {type:"user"}, 
-           verb: "USER_SIGNUP_ERROR", actionObj: activityBody, 
+           verb: "USER_SIGNUP_ERROR", actionObj: req.body, 
            target: {type:"user", id:null, object: null }, 
            id_project: '*' });
            activityEvent.emit('user.signup.error', activity);
@@ -85,28 +83,6 @@ router.post('/signup', function (req, res) {
   }
 });
 
-// function savePerson(req, res, userid) {
-//   winston.debug('userid ', userid)
-//   var newPerson = new Person({
-//     firstname: req.body.firstname,
-//     lastname: req.body.lastname,
-//     userid: userid,
-//     createdBy: 'Nicola',
-//     updatedBy: 'Nicola'
-//     // createdBy: req.user.username,
-//     // updatedBy: req.user.username
-//   });
-
-//   newPerson.save(function (err, savedPerson) {
-//     if (err) {
-//       winston.debug('--- > ERROR ', err)
-//       return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//     } else {
-//       res.json({ success: true, msg: 'Successfully created new user.' });
-//     }
-//     // res.json(savedPerson);
-//   });
-// }
 
 router.post('/signin', function (req, res) {
   winston.debug("req.body.email", req.body.email);
@@ -122,10 +98,10 @@ router.post('/signin', function (req, res) {
     if (!user) {
 
 
-      var activityBody = req.body; 
-      delete activityBody.password;
+      // var activityBody = req.body; 
+      // delete activityBody.password;
       var activity = new Activity({actor: {type:"user"}, 
-         verb: "USER_SIGNIN_ERROR", actionObj: activityBody, 
+         verb: "USER_SIGNIN_ERROR", actionObj: req.body, 
          target: {type:"user", id:null, object: null }, 
          id_project: '*' });
          activityEvent.emit('user.signin.error', activity);
@@ -151,10 +127,10 @@ router.post('/signin', function (req, res) {
               var token = jwt.sign(user, config.secret);
 
 
-              var activityBody = req.body; 
-              delete activityBody.password;
+              // var activityBody = req.body; 
+              // delete activityBody.password;
               var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
-                verb: "USER_SIGNIN", actionObj: activityBody, 
+                verb: "USER_SIGNIN", actionObj: req.body, 
                 target: {type:"user", id:user._id.toString(), object: null }, 
                 id_project: '*' });
               activityEvent.emit('user.signin', activity);
