@@ -127,7 +127,11 @@ roundRobin(operatorSelectedEvent) {
           winston.debug('lastOperatorIndex: ' + lastOperatorIndex);
 
           let nextOperator = that.nextOperator(operatorSelectedEvent.available_agents, lastOperatorIndex);
-          winston.info('roundRobin nextOperator: ' ,nextOperator.toJSON());
+
+          if (nextOperator) {
+            winston.info('roundRobin nextOperator: ' ,nextOperator.toJSON());
+          }
+          
 
 
           // operatorSelectedEvent.operators = [{id_user: nextOperator.id_user}];
