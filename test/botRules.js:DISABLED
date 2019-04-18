@@ -74,7 +74,7 @@ describe('BotRules', () => {
                         leadService.createIfNotExists("leadfullname-botrules", "andrea.leo@-botrules.it", savedProject._id).then(function(createdLead) {
                             requestService.createWithId("request_id-botrules", createdLead._id, savedProject._id, "first message").then(function(savedRequest) {                            
                                     expect(savedRequest.request_id).to.equal("request_id-botrules");   
-                                    // done(); 
+                                    done(); 
                                 });
                             });
 

@@ -35,10 +35,10 @@ router.post('/', function(req, res) {
             
               return leadService.createIfNotExistsWithLeadId(req.body.sender, req.body.senderFullname, req.body.email, req.projectid, null, req.body.attributes)
               .then(function(createdLead) {
-                // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+                // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                   return requestService.createWithId(req.params.request_id, req.body.sender, req.projectid, 
                       req.body.text, req.body.departmentid, req.body.sourcePage, 
-                      req.body.language, req.body.userAgent, null, req.user._id).then(function (savedRequest) {
+                      req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
                     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                     return messageService.create(req.body.sender, req.body.senderFullname, req.params.request_id, req.body.text,
                       req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    

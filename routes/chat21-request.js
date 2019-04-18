@@ -141,8 +141,14 @@ router.post('/', function(req, res) {
                                     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
                   return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
                   .then(function(createdLead) {
-                    // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-                      return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
+
+                    var rAttributes = message.attributes;
+                    rAttributes["senderAuthInfo"] = message.senderAuthInfo;   
+                    winston.info("rAttributes", rAttributes);
+
+                    
+                    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+                      return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
@@ -351,7 +357,7 @@ router.post('/', function(req, res) {
                         // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
                         //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
                         // }
-                        winston.info('updatedStatusRequest', updatedStatusRequest);
+                        winston.info('updatedStatusRequest', updatedStatusRequest.toObject());
                         return res.json(updatedStatusRequest);
                       });
                     }).catch(function(err){
@@ -405,7 +411,7 @@ router.post('/', function(req, res) {
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
       }else {
-        winston.error("id_project "+ id_project+ "isn't a support joining");
+        winston.error("id_project "+ id_project+ " isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
       winston.info("id_project", id_project);

@@ -29,6 +29,7 @@ var messageService = require('../services/messageService');
 const chat21Event = require('../channels/chat21/chat21Event');
 const messageEvent = require('../event/messageEvent');
 
+var chat21Config = require('../config/chat21');
 var adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
 winston.info('Chat21Handler adminToken: '+ adminToken);
 
@@ -80,7 +81,7 @@ describe('Chat21Handler()', function () {
 
        
         chat21Event.on('group.create', function(data){
-          winston.debug("group created", data);
+          winston.info("group created", data);
           done();
         });
 
