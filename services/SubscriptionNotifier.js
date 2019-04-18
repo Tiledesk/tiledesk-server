@@ -179,7 +179,7 @@ class SubscriptionNotifier {
         // subscriptionNotifier.notify('request.create', request);
 
         subscriptionNotifier.findSubscriber('request.create', request.id_project).then(function(subscriptions) { 
-          winston.info("Subscription.notify before request.create: "+ subscriptions);          
+          winston.debug("Subscription.notify before request.create: "+ subscriptions);          
           if (subscriptions && subscriptions.length>0) {
             winston.info("Subscription.notify", 'request.create', request , "length", subscriptions.length);          
               subscriptionNotifier.notify(subscriptions, request.toJSON());   

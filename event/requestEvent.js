@@ -27,7 +27,7 @@ requestEvent.on('request.create.simple', function(request) {
                 winston.error('error getting request', err);
             }
 
-            winston.info('emitting request.create', requestComplete.toObject());
+            winston.debug('emitting request.create', requestComplete.toObject());
 
             requestEvent.emit('request.create', requestComplete);
 
