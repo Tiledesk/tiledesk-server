@@ -71,14 +71,10 @@ appRules.start();
 
 
 //var cache = require('express-redis-cache')();
-var ReqLog = require("./models/reqlog");
 
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
-<<<<<<< HEAD
-
-=======
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
 
@@ -94,7 +90,6 @@ activityArchiver.listen();
 
 
 var ReqLog = require("./models/reqlog");
->>>>>>> master
 
 if (process.env.QUEQUE_ENABLED) {
   var queue = require('./queue/reconnect');
@@ -254,12 +249,7 @@ var reqLogger = function (req, res, next) {
 }
 
 app.get('/', function (req, res) {  
-<<<<<<< HEAD
-  // cache.route(), // cache entry name is `cache.prefix + "/"`
-  res.send('Chat21 API index page. See the documentation.');
-=======
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com.');
->>>>>>> master
 });
 
 

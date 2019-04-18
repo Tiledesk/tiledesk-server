@@ -23,8 +23,10 @@ var server = http.createServer(app);
 
 // var testWsService = require('../services/testWsService');
 // testWsService.init(server);
-var messageWsService = require('../services/messageWsService');
-messageWsService.init(server);
+
+//RE-ENABLE IT
+//var messageWsService = require('../services/messageWsService');
+//messageWsService.init(server);
 
 
 /**
@@ -32,14 +34,9 @@ messageWsService.init(server);
  */
 
 var listener = server.listen(port,function(){
-<<<<<<< HEAD
-  console.log('Listening on port ' + listener.address().port); //Listening on port 8888
-});
-=======
     console.log('Listening on port ' + listener.address().port); //Listening on port 8888
 });
 
->>>>>>> master
 server.on('error', onError);
 server.on('listening', onListening);
 

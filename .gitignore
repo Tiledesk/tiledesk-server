@@ -1,5 +1,6 @@
 node_modules
 config/.firebase-key
-.firebasekey.json
 .env.list
 data
+.firebasekey-pre.json
+.firebasekey.json

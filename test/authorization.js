@@ -48,9 +48,8 @@ describe('Authorization', () => {
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
-                            //todo Uncaught AssertionError: expected { Object (_events, _eventsCount, ...) } to have status code 200 but got 500
-                            // res.should.have.status(200);
-                            // res.body.should.be.a('object');
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
                            
                         
                             done();

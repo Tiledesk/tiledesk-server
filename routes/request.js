@@ -13,14 +13,6 @@ var moment = require('moment');
 var requestService = require('../services/requestService');
 var winston = require('../config/winston');
 
-<<<<<<< HEAD
-// var Chat21 = require('@chat21/chat21-node-sdk');
-var firebaseService = require("../services/firebaseService");
-
-// var admin = require('../utils/firebaseConnector');
-
-var firebaseConfig = require('../config/firebase');
-=======
 
 // var Chat21 = require('@chat21/chat21-node-sdk');
 
@@ -30,7 +22,6 @@ var firebaseConfig = require('../config/firebase');
 // var admin = require('../utils/firebaseConnector');
 
 // var firebaseConfig = require('../config/firebase');
->>>>>>> master
 // var chat21Config = require('../config/chat21');
 
 csv = require('csv-express');

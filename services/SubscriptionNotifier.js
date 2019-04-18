@@ -58,17 +58,11 @@ class SubscriptionNotifier {
             method: 'POST'
 
           }, function(err, result, json){
-<<<<<<< HEAD
-            //console.log("SENT " + event + " TO " + s.target, "result", result, "with eror " , err);
-            console.log("SENT " + s.event + " TO " + s.target,  "with eror " , err);
-            if (next) next(err, json);
-=======
             winston.debug("SENT " + s.event + " TO " + s.target,  "with error " , err);
             if (err) {
               winston.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
               next(err, json);
             }
->>>>>>> master
           });
       });
   // });
