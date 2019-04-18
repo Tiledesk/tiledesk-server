@@ -1,2 +1,4 @@
 node_modules
 config/.firebase-key
+.firebasekey-pre.json
+.firebasekey.json
