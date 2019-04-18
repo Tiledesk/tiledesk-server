@@ -57,9 +57,9 @@ sudo docker run --env-file ./.env.list --link my-mongo:mongo tiledesk-server
 Example .env.list file
 
 FIREBASE_APIKEY=123
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-a0r16@chat21-pre-01.iam.gserviceaccount.com
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-a0r162123@chat21-pre23-01.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMXYX
-FIREBASE_PROJECT_ID=chat21-pre-01
+FIREBASE_PROJECT_ID=tiledesk321-pre-01
 DATABASE_URI=mongodb://mongo/test
 
 
