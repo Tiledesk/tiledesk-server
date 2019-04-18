@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Profile = require('../models/profile');
+var Channel = require('../models/channel');
 
 var ProjectSchema = new Schema({
   _id: Schema.Types.ObjectId,
@@ -52,6 +53,12 @@ var ProjectSchema = new Schema({
   versions: {
     type: Number,
     default: 30
+  },
+  channels: {
+    type: [Channel.schema],
+    default: function() {
+      return [new Channel({name: 'chat21'})];
+    }
   },
   createdBy: {
     type: String,
