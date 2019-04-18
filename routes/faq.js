@@ -5,6 +5,7 @@ var Faq_kb = require("../models/faq_kb");
 var request = require('request');
 var multer = require('multer')
 var upload = multer()
+const faqBotEvent = require('../event/faqBotEvent');
 
 var parsecsv = require("fast-csv");
 csv = require('csv-express');
@@ -88,7 +89,10 @@ router.post('/', function (req, res) {
     console.log('1. ID OF THE NEW FAQ CREATED ', savedFaq._id)
     console.log('1. QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
     console.log('1. ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
-    console.log('1. ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb)
+    console.log('1. ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb);
+
+    faqBotEvent.emit('faq.create', savedFaq);
+
     res.json(savedFaq);
 
     // WF: from the saved FAQ take the id of th faq-kb
@@ -159,7 +163,7 @@ function createRemoteFaq(faqkb_remotekey, savedFaq) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='      
     },
     json: json
   };
@@ -196,7 +200,9 @@ router.post('/askbot', function (req, res) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+      // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+      
     },
     json: json
   };
@@ -224,6 +230,8 @@ router.put('/:faqid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    faqBotEvent.emit('faq.update', updatedFaq);
 
     res.json(updatedFaq);
 
@@ -261,7 +269,9 @@ function updateRemoteFaq(updatedFaq) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+          'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
+          // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+          
         },
         json: json
       };
@@ -323,7 +333,8 @@ router.delete('/:faqid', function (req, res) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+            // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
+            'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='            
           },
 
         };
@@ -346,6 +357,8 @@ router.delete('/:faqid', function (req, res) {
           if (err) {
             return res.status(500).send({ success: false, msg: 'Error deleting object.' });
           }
+
+          faqBotEvent.emit('faq.delete', faq);
           res.json(faq);
 
         });

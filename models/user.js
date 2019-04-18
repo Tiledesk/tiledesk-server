@@ -7,13 +7,14 @@ var UserSchema = new Schema({
     email: {
         type: String,
         unique: true,
-        required: true
+        required: true,
+        index: true
     },
     password: {
         type: String,
         required: true,
         // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
-        // select: false
+        select: false //ATTENZIONE TESTA BENE QUESTA COSA
     },
     firstname: {
         type: String,
@@ -29,7 +30,12 @@ var UserSchema = new Schema({
     },
     resetpswrequestid: {
         type: String,
-    }
+    },
+    // auth: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'auth',
+    //     //required: true
+    //   },
 });
 
 // UserSchema.set('toJSON', {
@@ -68,4 +74,14 @@ UserSchema.methods.comparePassword = function (passw, cb) {
     });
 };
 
-module.exports = mongoose.model('User', UserSchema);
+UserSchema.virtual('fullName').get(function () {
+    return (this.firstname || '') + ' ' + (this.lastname || '');
+  });
+  
+var UserModel = mongoose.model('User', UserSchema);
+
+// UserModel.getFullname = function () {
+//     return 
+// };
+
+module.exports = UserModel;

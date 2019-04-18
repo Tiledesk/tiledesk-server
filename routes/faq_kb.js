@@ -3,6 +3,8 @@ var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
 var Department = require("../models/department");
 var faqService = require("../services/faqService");
+const botEvent = require('../event/botEvent');
+var winston = require('../config/winston');
 
 // START - CREATE FAQ KB KEY 
 var request = require('request');
@@ -68,43 +70,60 @@ function updateFaqKbKey(faqkb_id, remotefaqkb_key) {
 // END NEW 
 
 router.post('/', function (req, res) {
-
-  console.log('FAQ-KB POST REQUEST BODY ', req.body);
-  var newFaq_kb = new Faq_kb({
-    name: req.body.name,
-    url: req.body.url,
-    id_project: req.projectid,
-    kbkey_remote: req.body.kbkey_remote,
-    trashed: false,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
-
-  newFaq_kb.save(function (err, savedFaq_kb) {
-    if (err) {
-      console.log('--- > ERROR ', err)
-      return res.status(500).send({ success: false, msg: 'Error saving object.' });
-    }
-    console.log('-> -> SAVED FAQFAQ KB ', savedFaq_kb)
+  // create(name, url, projectid, user_id, external)
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.external).then(function(savedFaq_kb) {
+    if (savedFaq_kb.external===false) {
+      createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+    } else {
+      console.log('external bot: ', savedFaq_kb);
+    } 
     res.json(savedFaq_kb);
-
-
-
-    createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
-
-
   });
+
+  // console.log('FAQ-KB POST REQUEST BODY ', req.body);
+  // var newFaq_kb = new Faq_kb({
+  //   name: req.body.name,
+  //   url: req.body.url,
+  //   id_project: req.projectid,
+  //   kbkey_remote: req.body.kbkey_remote,
+  //   external: req.body.external,
+  //   trashed: false,
+  //   createdBy: req.user.id,
+  //   updatedBy: req.user.id
+  // });
+
+  // newFaq_kb.save(function (err, savedFaq_kb) {
+  //   if (err) {
+  //     console.log('--- > ERROR ', err)
+  //     return res.status(500).send({ success: false, msg: 'Error saving object.' });
+  //   }
+  //   console.log('-> -> SAVED FAQFAQ KB ', savedFaq_kb)
+  //   res.json(savedFaq_kb);
+
+
+  //   if (savedFaq_kb.external===false) {
+  //     createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+  //   } else {
+  //     console.log('external bot');
+  //   } 
+
+  // });
+
+
+
 });
 
 
 router.put('/:faq_kbid', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, req.body, { new: true, upsert: true }, function (err, updatedFaq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    botEvent.emit('faqbot.update', updatedFaq_kb);
     res.json(updatedFaq_kb);
   });
 });
@@ -112,12 +131,13 @@ router.put('/:faq_kbid', function (req, res) {
 
 router.delete('/:faq_kbid', function (req, res) {
 
-  console.log(req.body);
+  winston.debug(req.body);
 
   Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+    botEvent.emit('faqbot.delete', faq_kb);
     res.json(faq_kb);
   });
 });
@@ -125,7 +145,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
 router.get('/:faq_kbid', function (req, res) {
 
-  console.log(req.query);
+  winston.debug(req.query);
 
   Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {
     if (err) {
@@ -137,31 +157,31 @@ router.get('/:faq_kbid', function (req, res) {
 
     if (req.query.departmentid) {
 
-      console.log("»»» »»» req.query.departmentid", req.query.departmentid);
+      winston.debug("»»» »»» req.query.departmentid", req.query.departmentid);
 
       Department.findById(req.query.departmentid, function (err, department) {
         if (err) {
-          console.log(err);
+          winston.error(err);
           // return res.status(500).send({ success: false, msg: 'Error getting department.' });
           res.json(faq_kb);
         }
         if (!department) {
-          console.log("Department not found", req.query.departmentid);
+          winston.debug("Department not found", req.query.departmentid);
           // return res.status(404).send({ success: false, msg: 'Department not found.' });
           res.json(faq_kb);
         } else {
-          console.log("department", department);
+          winston.debug("department", department);
 
           // https://github.com/Automattic/mongoose/issues/4614
           faq_kb._doc.department = department;
-          console.log("faq_kb", faq_kb);
+          winston.debug("faq_kb", faq_kb);
 
           res.json(faq_kb);
         }
       });
 
     } else {
-      console.log('¿¿ MY USECASE ?? ')
+      winston.debug('¿¿ MY USECASE ?? ')
       res.json(faq_kb);
     }
 
@@ -179,14 +199,14 @@ router.get('/', function (req, res) {
   //   query.id_project = req.query.id_project;
   // }
 
-  console.log("GET FAQ-KB req projectid", req.projectid);
+  winston.debug("GET FAQ-KB req projectid", req.projectid);
   /**
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
   Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, faq_kb) {
     if (err) {
-      console.log('GET FAQ-KB ERROR ', err)
+      winston.error('GET FAQ-KB ERROR ', err)
       return (err);
     }
 

@@ -7,6 +7,7 @@ var expect = require('chai').expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
@@ -34,7 +35,7 @@ describe('messageService()', function () {
         // create(sender, senderFullname, recipient, text, id_project, createdBy) {
       messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
           savedProject._id, userid).then(function(savedMessage){
-            console.log("resolve savedMessage", savedMessage);
+            winston.debug("resolve savedMessage", savedMessage.toObject());
      
           expect(savedMessage.text).to.equal("hello");
           expect(savedMessage.sender).to.equal(userid);
@@ -68,7 +69,7 @@ describe('messageService()', function () {
                     expect(req.messages_count).to.equal(2);
                     done();                         
                   }).catch(function(err){
-                    console.error("test reject", err);
+                    winston.error("test reject", err);
                     assert.isNotOk(err,'Promise error');
                     done();
                   });

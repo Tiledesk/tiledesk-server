@@ -11,40 +11,45 @@ require('./config/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
-var Project_user = require("./models/project_user");
+// var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
+var roleChecker = require('./middleware/has-role');
 
-// uncomment var winston = require('./config/winston');
+var winston = require('./config/winston');
+
+//bin start
+// https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 if (!databaseUri) {
-  console.error('DATABASE_URI not specified, falling back to localhost.');
+  winston.error('DATABASE_URI not specified, falling back to localhost.');
 }
+winston.info("databaseUri: " + databaseUri);
+
 var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
-console.info("autoIndex", autoIndex);
+winston.info("autoIndex: " + autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
-  mongoose.connect(config.databasetest, { "autoIndex": autoIndex });
+  mongoose.connect(config.databasetest, { "autoIndex": true });
 }else {
   mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
 }
 
 var auth = require('./routes/auth');
 var lead = require('./routes/lead');
-//var tenant = require('./routes/tenant');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
 var bot = require('./routes/bot');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-// var person = require('./routes/person.old');
 var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
+//var setting = require('./routes/setting');
 
 var group = require('./routes/group');
 
@@ -59,6 +64,11 @@ var chat21Request = require('./routes/chat21-request');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
+var activities = require('./routes/activity');
+
+var appRules = require('./rules/appRules');
+appRules.start();
+
 
 //var cache = require('express-redis-cache')();
 var ReqLog = require("./models/reqlog");
@@ -66,6 +76,34 @@ var ReqLog = require("./models/reqlog");
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
+<<<<<<< HEAD
+
+=======
+var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
+botSubscriptionNotifier.start();
+
+
+//var faqBotHandler = require('./services/faqBotHandler');
+//faqBotHandler.listen();
+
+var activityArchiver = require('./services/activityArchiver');
+activityArchiver.listen();
+
+//var chat21Handler = require('./channels/chat21/chat21Handler');
+//chat21Handler.listen();
+
+
+var ReqLog = require("./models/reqlog");
+>>>>>>> master
+
+if (process.env.QUEQUE_ENABLED) {
+  var queue = require('./queue/reconnect');
+}
+
+if (process.env.CACHE_ENABLED) {
+  // https://github.com/rv-kip/express-redis-cache
+  var cache = require('express-redis-cache')();
+}
 
 
 var app = express();
@@ -163,14 +201,15 @@ app.use(function (req, res, next) {
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
+// app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use(morgan('dev'));
-//uncomment app.use(morgan('combined', { stream: winston.stream }));
+app.use(morgan('combined', { stream: winston.stream }));
 
 
 app.use(passport.initialize());
@@ -188,37 +227,71 @@ var reqLogger = function (req, res, next) {
   // }
   
    var projectid = req.params.projectid;
-   console.log("projectIdSetter projectid", projectid);
+   winston.debug("projectIdSetter projectid", projectid);
 
   var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-  console.log("fullUrl", fullUrl);
+  winston.debug("fullUrl", fullUrl);
 
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log("ip", ip);
+  winston.debug("ip", ip);
 
   var reqlog = new ReqLog({
     path: req.originalUrl,
+    host: req.host,
+    origin: req.get('origin'),
     ip: ip,
     id_project: projectid,
   });
 
   reqlog.save(function (err, reqlogSaved) {
     if (err) {
-      console.log('Error saving reqlog ', err)
+      winston.error('Error saving reqlog ', err)
     }
-    console.log('Reqlog saved ', reqlogSaved)
+    //console.log('Reqlog saved ', reqlogSaved)
   });
 
-  
-  
   next()
 }
 
 app.get('/', function (req, res) {  
+<<<<<<< HEAD
   // cache.route(), // cache entry name is `cache.prefix + "/"`
   res.send('Chat21 API index page. See the documentation.');
+=======
+  res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com.');
+>>>>>>> master
 });
 
+
+// app.use(function (req, res, next) {
+//  Setting.findOne({}, function (err, setting) {
+//     if (err) {
+//       winston.error("Error getting setting", err);
+//       next();
+//     }
+//     if (!setting) {
+//       // console.log("setting doesnt exist. Creare it from serviceAccount", setting);
+//       //     var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
+//       //     setting.save(function(err, ssetting) {
+//       //       if (err) {
+//       //         winston.error('Error saving ssetting ', err);
+//       //       }else {
+//       //         winston.error('ssetting saved', ssetting)
+//       //       }
+//       //     });
+//       next();   
+//     } else {
+//       console.log("setting", setting);
+//       //req.appSetting = setting;
+
+//       // https://stackoverflow.com/questions/16452123/how-to-create-global-variables-accessible-in-all-views-using-express-node-js
+//       app.locals({appSetting: appSetting});
+//       next();   
+//     }
+    
+//   });
+  
+// });
 
 //app.use(reqLogger);
 
@@ -228,7 +301,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  console.log("projectIdSetter projectid", projectid);
+  //console.log("projectIdSetter projectid", projectid);
 
   // if (projectid) {
     req.projectid = projectid;
@@ -237,95 +310,8 @@ var projectIdSetter = function (req, res, next) {
   next()
 }
 
-// function HasRole(role) {
-//   return function(req, res, next) {
-
-//     Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-//     exec(function (err, project_user) {
-//       // if (err) return next(err);
-//       console.log("project_user",project_user);
-//       if (project_user &&  project_user.role== role) {
-//         next(); 
-//       }
-//       else {
-//         var err = new Error('You dont have required role');
-//         err.status = 403;
-//         next(err);
-//       }
-//     });
-
-   
-//   }
-// }
-var ROLES =  {
-  "agent": ["agent"],
-  "admin": ["agent", "admin"],
-  "owner": ["agent", "admin", "owner"],
-};
 
 
-function HasRole(role) {
-  // console.log("HasRole");
-  return function(req, res, next) {
-    console.log("req.projectuser", req.projectuser);
-    console.log("req.user", req.user);
-    console.log("role", role);
-
-    Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-      exec(function (err, project_user) {
-        if (err) {
-          console.error(err);
-          return next(err);
-        }
-        
-        req.projectuser = project_user;
-        console.log("req.projectuser", req.projectuser);
-
-        if (req.projectuser && req.projectuser.length>0) {
-          
-          var userRole = project_user[0].role;
-          console.log("userRole", userRole);
-
-          if (!role) {
-            next();
-          }else {
-
-            var hierarchicalRoles = ROLES[userRole];
-            console.log("hierarchicalRoles", hierarchicalRoles);
-
-            if ( hierarchicalRoles.includes(role)) {
-              next();
-            }else {
-              res.status(403).send({success: false, msg: 'you dont have the required role.'});
-            }
-          }
-        }else {
-        
-          // if (req.user) equals super admin next()
-          res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
-        }
-
-    });
-
-  }
-  
-}
-
-// var getProjectUser = function (req, res, next) {
-//   console.log("getProjectUser");
-//   Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
-//     exec(function (err, project_user) {
-//       if (err) {
-//         console.error(err);
-//         return next(err);
-//       }
-      
-//       req.projectuser = project_user;
-//       console.log("req.projectuser", req.projectuser);
-//       next();
-
-//   });
-// }
 
 
 var projectSetter = function (req, res, next) {
@@ -335,16 +321,16 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     Project.findById(projectid, function(err, project){
       if (err) {
-        console.warn("Problem getting project with id",projectid);
+         console.warn("Problem getting project with id",projectid);
         //console.warn("Error getting project with id",projectid, err);
       }
   
       if (!project) {
-        console.warn("Project not found for id", req.projectid);
+        //console.warn("Project not found for id", req.projectid);
         next();
       } else {
         req.project = project;
-        console.log("req.project", req.project);
+        // console.log("req.project", req.project);
         next(); //call next one time for projectSetter function
       }
     
@@ -383,18 +369,20 @@ app.use('/:projectid', [projectIdSetter, projectSetter]);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 // app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
 
-app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], lead);
-app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], message);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
-app.use('/:projectid/departments', reqLogger, department);
+app.use('/:projectid/departments', department);
+// app.use('/:projectid/departments', reqLogger, department);
+
 app.use('/public/requests', publicRequest);
 
 app.use('/chat21/requests',  chat21Request);
 
 
 
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq);
-app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], bot);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], faq);
+app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], bot);
 
 //attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
@@ -403,28 +391,28 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 
 //ATTENZIOne aggiungi auth check qui.i controlli stanno i project
 app.use('/projects',project);
+//app.use('/settings',setting);
 
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], project_user);
+app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
 
-app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], request);
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], request);
 
-app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], analytics);
+app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
+app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], analytics);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
-app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], key);
+app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase);
-app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], subscription);
+app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], subscription);
+app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], activities);
 
 
-app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], pendinginvitation);
-//app.use('/apps', tenant);
-// app.use('/:projectid/people', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], person);
+app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], pendinginvitation);
 
 
 
@@ -447,32 +435,6 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-// function keepalive() {
-//   console.log('keepalive2 ');
-
-//   var options = {
-//     url: 'https://us-central1-chat-v2-dev.cloudfunctions.net/supportapi/tilechat/requests?token=chat21-secret-orgAa,',
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//     json: {"sender_fullname": "Bash", "text":"ping from API","projectid":"5b45e1c75313c50014b3abc6"}
-//   };
-
-//   setInterval(function() {
-//     request(options, function (err, res, body) {
-    
-//       console.log('keepalive  ok');
-
-//       if (err) {
-//         console.log('keepalive ERROR ', err);
-//       }
-//     });
-//   }, 3000);
-// }
-// app.use(keepalive());
 
 
 

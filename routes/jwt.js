@@ -10,6 +10,7 @@ var validtoken = require('../middleware/valid-token');
 // var secret = process.env.SECRET || config.secret;
 var requestUtil = require('../utils/requestUtil');
 var Project = require('../models/project');
+var winston = require('../config/winston');
 
 
 router.post('/decode', validtoken, function (req, res) {
@@ -19,14 +20,14 @@ router.post('/decode', validtoken, function (req, res) {
     // console.log("project_id", project_id);
 
     // if (!project_id) {
-    //     console.error("project_id parameter is required");
+    //     winston.error("project_id parameter is required");
     //     res.status(400).send({ success: false, msg: "project_id parameter is required" });
     // }
 
 
     return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
       if (err) {
-        console.error('Error finding project', err);
+        winston.error('Error finding project', err);
         return res.status(500).send({ success: false, msg: 'Error finding project.' });
      }
     
@@ -71,7 +72,7 @@ router.post('/decode', validtoken, function (req, res) {
           
     
         } catch(err) {
-            console.error("Authentication failed", err);
+            winston.error("Authentication failed", err);
             return res.status(401).send({ success: false, msg: 'Authentication failed', err: err });
         }  
 
@@ -86,7 +87,7 @@ router.post('/decode', validtoken, function (req, res) {
 
     return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
         if (err) {
-          console.error('Error finding project', err);
+          winston.error('Error finding project', err);
           return res.status(500).send({ success: false, msg: 'Error finding project.' });
        }
       

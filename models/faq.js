@@ -23,6 +23,18 @@ var FaqSchema = new Schema({
     default: "default"
     // required: true
   },
+  status: {
+    type: String,
+    default: "live"
+    // required: true
+  },
+
+//   "stats":{  
+//     "conversation_count":2,
+//     "all_done_count":0,
+//     "wait_for_team_count":2
+//  }
+
   createdBy: {
     type: String,
     required: true
@@ -31,5 +43,12 @@ var FaqSchema = new Schema({
   timestamps: true
 }
 );
+
+
+
+FaqSchema.index({question: 'text'},
+ {"name":"faq_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+
+
 
 module.exports = mongoose.model('faq', FaqSchema);

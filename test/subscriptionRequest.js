@@ -12,6 +12,7 @@ let should = chai.should();
 var messageService = require('../services/messageService');
 var leadService = require('../services/leadService');
 var requestService = require('../services/requestService');
+var winston = require('../config/winston');
 
 var expect = chai.expect;
 var assert = chai.assert;
@@ -75,6 +76,8 @@ describe('Subscription', () => {
                             expect(req.body.hook.event).to.equal("request.create");
                             expect(req.body.hook._id).to.equal(subid);                        
                             expect(req.body.payload.request_id).to.equal("request_id1");                        
+                            // expect(req.body.payload.lead).to.not.equal(null);                        
+                            expect(req.body.payload.department).to.not.equal(null);                        
                             res.send('POST request to the homepage');
                             done();
                                                  
@@ -85,7 +88,7 @@ describe('Subscription', () => {
                           leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
                             // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
                              requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-                                console.log("resolve", savedRequest);
+                                winston.debug("resolve", savedRequest.toObject());
                                 expect(savedRequest.request_id).to.equal("request_id1");                                                                                     
                                 expect(savedRequest.id_project).to.equal(savedProject._id.toString());                                                    
                               }).catch(function(err) {
@@ -160,7 +163,7 @@ describe('Subscription', () => {
                           requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
                             var member = 'agent1';
                             requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
-                             console.log("resolve", savedRequestParticipant);
+                             winston.debug("resolve", savedRequestParticipant.toObject());
                              expect(savedRequestParticipant.request_id).to.equal("request_id1");                            
                              expect(savedRequestParticipant.participants).to.have.lengthOf(2);
                              expect(savedRequestParticipant.participants).to.contains(savedUser._id);
@@ -230,7 +233,7 @@ describe('Subscription', () => {
                               requestService.createWithId("request_id-remove", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
                                
                                 requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, savedUser._id).then(function(savedRequestParticipant) {
-                                    console.log("resolve", savedRequestParticipant);
+                                    winston.debug("resolve", savedRequestParticipant.toObject());
                                     
                                     //savedRequest is assigned -> 200
                                     expect(savedRequest.status).to.equal(200);
@@ -313,13 +316,13 @@ describe('Subscription', () => {
                                       messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
                                       savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
                                         requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
-                                              console.log("resolve closedRequest", closedRequest);
+                                              winston.debug("resolve closedRequest", closedRequest.toObject());
                                               expect(closedRequest.status).to.equal(1000);
                                               expect(closedRequest.closed_at).to.not.equal(null);
                                               expect(closedRequest.transcript).to.contains("hello1");
                                               expect(closedRequest.transcript).to.contains("hello2");
                                             }).catch(function(err){
-                                              console.error("test reject", err);
+                                              winston.error("test reject", err);
                                               assert.isNotOk(err,'Promise error');
                                               done();
                                             });

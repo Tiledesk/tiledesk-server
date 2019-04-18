@@ -4,6 +4,7 @@ var Project = require("../models/project");
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var departmentService = require('../services/departmentService');
+var winston = require('../config/winston');
 
 class ProjectService {
 
@@ -28,7 +29,7 @@ class ProjectService {
         
           return newProject.save(function (err, savedProject) {
             if (err) {
-              console.error('--- > ERROR ', err)
+              winston.error('--- > ERROR ', err)
               return reject({ success: false, msg: 'Error saving object.' });
             }
             // console.log('--- SAVE PROJECT ', savedProject)
@@ -36,7 +37,7 @@ class ProjectService {
         
             // PROJECT-USER POST
             var newProject_user = new Project_user({
-              _id: new mongoose.Types.ObjectId(),
+              // _id: new mongoose.Types.ObjectId(),
               id_project: savedProject._id,
               id_user: createdBy,
               role: 'owner',
@@ -47,13 +48,13 @@ class ProjectService {
         
            return  newProject_user.save(function (err, savedProject_user) {
               if (err) {
-                console.error('--- > ERROR ', err)
+                winston.error('--- > ERROR ', err)
                 return reject(err);
               }
 
 
               return departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
-                console.info("Project created", savedProject );
+                winston.info("Project created", savedProject.toObject() );
                 // console.info("Project user created", savedProject_user );
                 // console.info("Department created", createdDepartment );
                 return resolve(savedProject);

@@ -1,37 +1,50 @@
 {
-  "name": "@tiledesk/tiledesk-api-nodejs",
-  "version": "1.0.0",
+  "name": "@tiledesk/tiledesk-server",
+  "description": "The Tiledesk server module",
+  "version": "1.0.5",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha"
+    "pretest": "mongodb-runner start",
+    "test": "mocha --exit",
+    "posttest": "mongodb-runner stop"
   },
+  "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
   "license": "AGPL-3.0",
   "homepage": "https://www.tiledesk.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tiledesk/tiledesk-api-nodejs"
+    "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "engines": {
-    "node": "11.6.0"
+    "node": ">=10.0.0",
+    "npm": ">=6.0.0"
+  },
+  "bin": {
+    "tiledesk-server": "./bin/www"
   },
 
   "dependencies": {
+    "@chat21/chat21-node-sdk": "^1.0.16",
+    "amqplib": "^0.5.3",
+    "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "chai-http": "^4.2.0",
     "cookie-parser": "~1.4.3",
     "cors": "^2.8.4",
     "csv-express": "^1.2.2",
-    "debug": "~4.1.1",
-    "email-templates": "^5.0.3",
-    "express": "~4.16.4",
+    "debug": "~2.6.0",
+    "email-templates": "^3.6.0",
+    "express": "~4.14.1",
+    "express-redis-cache": "^1.1.3",
     "express-session": "^1.15.2",
     "fast-csv": "^2.4.1",
-    "firebase-admin": "^7.0.0",
+    "firebase-admin": "^7.1.1",
     "get-timezone-offset": "^1.0.3",
     "jade": "~1.11.0",
-    "jsonwebtoken": "^8.4.0",
+    "json-rules-engine": "^2.3.3",
+    "jsonwebtoken": "^7.3.0",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.21",
     "mongoose": "^5.4.10",
@@ -47,13 +60,14 @@
     "serve-favicon": "~2.5.0",
     "uniqid": "^5.0.3",
     "uuid": "^3.3.2",
-    "ws": "^6.1.3"
+    "winston": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^5.0.0",
-    "nodemon": "^1.18.9",
-    "sinon": "^7.2.3",
-    "sinon-mongoose": "^2.0.2"
+    "nodemon": "^1.18.10",
+    "sinon": "^4.2.2",
+    "sinon-mongoose": "^2.0.2",
+    "mongodb-runner": "4.3.2"
   }
 }

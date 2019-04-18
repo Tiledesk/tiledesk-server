@@ -3,6 +3,7 @@ var PendingInvitation = require("../models/pending-invitation");
 var emailService = require("../models/emailService");
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 class Pending_Invitation {
 
@@ -16,7 +17,7 @@ class Pending_Invitation {
         console.log('** ** FIND IN PENDING INVITATION ** ** ');
 
         if (err) {
-          console.error('** ** FIND IN PENDING INVITATION - ERROR ** **', err)
+          winston.error('** ** FIND IN PENDING INVITATION - ERROR ** **', err)
           return reject({ success: false, msg: 'Error find object.', err: err });
         }
 
@@ -57,29 +58,29 @@ class Pending_Invitation {
   };
 
   checkNewUserInPendingInvitationAndSavePrcjUser(newUserEmail, newUserId) {
-    console.log('** ** CHECK NEW USER EMAIL ** **');
+    winston.debug('** ** CHECK NEW USER EMAIL ** **');
     var that = this;
     return new Promise(function (resolve, reject) {
 
       return PendingInvitation.find({ email: newUserEmail }, function (err, pendinginvitations) {
         if (err) {
-          console.error('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
+          winston.error('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
           return reject({ msg: 'Error getting pending invitation' });
         }
         if (!pendinginvitations.length) {
-          console.log('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
-          return reject({ msg: 'New user email not found in pending invitation' });
+          winston.debug('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
+          return resolve({ msg: 'New user email not found in pending invitation' });
         }
 
-        console.log('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVE A NEW PROJECT USER', pendinginvitations);
+        winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVE A NEW PROJECT USER', pendinginvitations);
 
         pendinginvitations.forEach(invite => {
 
-          console.log('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION ROLE', invite.role);
-          console.log('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION PRJCT ID', invite.id_project);
+          winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION ROLE', invite.role);
+          winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** PENDING INVITATION PRJCT ID', invite.id_project);
 
           var newProject_user = new Project_user({
-            _id: new mongoose.Types.ObjectId(),
+            // _id: new mongoose.Types.ObjectId(),
             id_project: invite.id_project,
             id_user: newUserId,
             role: invite.role,
@@ -90,14 +91,14 @@ class Pending_Invitation {
 
           return newProject_user.save(function (err, savedProject_user) {
             if (err) {
-              console.log('--- > ERROR ', err)
+              winston.debug('--- > ERROR ', err)
               return reject({ msg: 'Error saving project user.' });
 
             }
              that.removePendingInvitation(invite._id)
             
             //cancella inviti pending
-            console.log('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVED PROJECT USER', savedProject_user);
+            winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVED PROJECT USER', savedProject_user);
             return resolve(savedProject_user);
           });
 
@@ -111,11 +112,11 @@ class Pending_Invitation {
   }
 
   removePendingInvitation(pendingInvitationId) {
-    console.log('DELETING PENDING INVITATION');
+    winston.debug('DELETING PENDING INVITATION');
     return new Promise(function (resolve, reject) {
         return PendingInvitation.remove({ _id: pendingInvitationId }, function (err, pendinginvitation) {
           if (err) {
-            console.error('DELETING PENDING INVITATION - ERROR ', err);
+            winston.error('DELETING PENDING INVITATION - ERROR ', err);
             return reject({ success: false, msg: 'Error deleting object.' });
           }
           // return resolve(pendinginvitation);

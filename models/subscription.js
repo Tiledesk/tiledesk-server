@@ -10,7 +10,8 @@ var SubscriptionSchema = new Schema({
   },
   target: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   secret: {
     type: String,
@@ -20,7 +21,8 @@ var SubscriptionSchema = new Schema({
   },
   id_project: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   createdBy: {
     type: String,

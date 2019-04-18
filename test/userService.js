@@ -6,7 +6,10 @@ var expect = require('chai').expect;
 
 var assert = require('chai').assert;
 var config = require('../config/database');
+var Request = require('../models/request');
+
 var mongoose = require('mongoose');
+var winston = require('../config/winston');
 
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
@@ -17,7 +20,7 @@ var mongoose = require('mongoose');
 mongoose.connect(config.databasetest);
 
 var userService = require('../services/userService');
-var admin = require('../utils/firebaseConnector');
+// var admin = require('../utils/firebaseConnector');
 
 
 describe('UserService()', function () {
@@ -35,11 +38,38 @@ describe('UserService()', function () {
          expect(savedUser.lastname).to.equal("Test lastname");
         done();
     }).catch(function(err) {
-        console.error("test reject", err);
+        winston.error("test reject", err);
         assert.isNotOk(err,'Promise error');
         done();
     });
   });
+
+
+  // it('discriminator', function (done) {
+
+  //   var options = {discriminatorKey: 'kind'};
+
+  //   var eventSchema = new mongoose.Schema({time: Date}, options);
+  //   var Event = mongoose.model('Event', eventSchema);
+    
+  //   // ClickedLinkEvent is a special type of Event that has
+  //   // a URL.
+  //   var ClickedLinkEvent = Event.discriminator('ClickedLink',
+  //     new mongoose.Schema({url: String}, options));
+    
+  //   // When you create a generic event, it can't have a URL field...
+  //   var genericEvent = new Event({time: Date.now(), url: 'google.com'});
+  //   assert.ok(!genericEvent.url);
+    
+  //   // But a ClickedLinkEvent can
+  //   var clickedEvent =
+  //     new ClickedLinkEvent({time: Date.now(), url: 'google.com'});
+  //   assert.ok(clickedEvent.url);
+  //   done();
+
+  // });
+
+
 
 
 

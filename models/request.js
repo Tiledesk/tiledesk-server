@@ -1,5 +1,9 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var winston = require('../config/winston');
+var Channel = require('../models/channel');
+var ObjectId = require('mongoose').Types.ObjectId;
+
 var ProjectUserSchema = require("../models/project_user").schema;
 // var MessageSchema = require("../models/message").schema;
 
@@ -16,6 +20,19 @@ var RequestSchema = new Schema({
   requester_id: {
     type: String,
     required: true,
+    index: true,
+    // get: v => {
+    //   if (ObjectId.isValid(v)){
+    //     console.log("ciaoooo ok");
+    //     return v;
+    //   }else {
+    //     console.log("ciaoooo ko");
+    //     return null;
+    //   }
+       
+    // }
+
+
     // type: Schema.Types.ObjectId,
     // ref: 'lead'
   },
@@ -35,7 +52,8 @@ var RequestSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: 100
+    default: 100,
+    index: true
   }, 
 
 
@@ -124,7 +142,18 @@ var RequestSchema = new Schema({
   },
 
 
+  
+  channel: {
+    type: Channel.schema,
+    default: function() {
+      return new Channel({name: 'chat21'});
+    }
+  },
 
+  attributes: {
+    type: Object,
+    required: false
+  },
 
   id_project: {
     type: String,
@@ -142,13 +171,56 @@ var RequestSchema = new Schema({
 }
 );
 
+// https://mongoosejs.com/docs/api.html#query_Query-populate
 RequestSchema.virtual('lead', {
   ref: 'lead', // The model to use
   localField: 'requester_id', // Find people where `localField`
   foreignField: '_id', // is equal to `foreignField`
   justOne: true,
+  // options: { getters: true }
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
+
+
+RequestSchema.virtual('participantsObj', {
+  ref: 'User', // The model to use
+  localField: 'participants', // Find people where `localField`
+  foreignField: '_id', // is equal to `foreignField`
+  justOne: false,
+  //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+
+// RequestSchema.post('find', async function(requests) {
+//   // winston.debug("requests", requests);
+//   for (let request of requests) {
+//     //winston.debug("request", request, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+
+// RequestSchema.post('find',  async function(requests) {
+//   //  winston.debug("requestsyyyy", requests);
+//   for (let request of requests) {
+//     // winston.debug("request find", request,  "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+//   }
+// });
+// RequestSchema.post('findOne',  async function(request) {
+//   //winston.debug("requestXXXXX", request);
+ 
+//     winston.debug("request findOne", request, "request.requester_id", request.requester_id, "is valid", mongoose.Types.ObjectId.isValid(request.requester_id));
+//     if (mongoose.Types.ObjectId.isValid(request.requester_id)){
+//       await request.populate('lead').execPopulate();
+//     }
+
+// });
+
+
 
 // // work but no multiple where on id-project
 // RequestSchema.virtual('messages', {
@@ -163,19 +235,29 @@ RequestSchema.virtual('lead', {
 //   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 // });
 
-
-RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
-  var project_users_available = project_users.filter(function (projectUser) {
+RequestSchema.virtual('assignedOperatorId').get(function () {
+  if (this.participants && this.participants.lenght>0) {
+    return this.participants[0];
+  }else {
+    return null;
+  }
+});
+// RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
+RequestSchema.virtual('availableAgents').get(function () {
+  var project_users_available = this.agents.filter(function (projectUser) {
     if (projectUser.user_available == true) {
-
       return true;
     }
-
   });
-  console.log('++ AVAILABLE PROJECT USERS ', project_users_available)
+  winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
 
-  return project_users_available;
-}
+  if (project_users_available && project_users_available.length>0){
+    return project_users_available;
+  }else {
+    return [];
+  }
+  
+});
 
 RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
 RequestSchema.index({ id_project: 1, type: -1 }); // schema level

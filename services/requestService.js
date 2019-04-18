@@ -11,123 +11,23 @@ var messageService = require('../services/messageService');
 // var leadService = require('../services/leadService');
 var Lead = require('../models/lead');
 const requestEvent = require('../event/requestEvent');
+var Project_user = require("../models/project_user");
+var winston = require('../config/winston');
+
+//var Activity = require("../models/activity");
+//const activityEvent = require('../event/activityEvent');
+
 
 class RequestService {
 
 
-  // createWithIdAndSaveMessage(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-  //   return new Promise(function (resolve, reject) {
-
-  //       return that.createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function (newRequest) {
-
-  //         return messageService.create(requester_id, message.sender_fullname, request_id, first_text,
-  //           id_project, createdBy).then(function(savedMessage){
-  //             // console.log("savedMessageXXX ");
-  //             //get projectid from savedMessage.id_project
-  //             return that.incrementMessagesCountByRequestId(newRequest.request_id, newRequest.id_project).then(function(savedRequest) {
-              
-  //               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-  //               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
-  //                 console.log("updateWaitingTimeByRequestId");
-  //                 return that.updateWaitingTimeByRequestId(newRequest.request_id, newRequest.id_project).then(function(upRequest) {
-  //                   console.log("new-message response ok updateWaitingTimeByRequestId");
-  //                   return resolve(upRequest);
-  //                 });
-  //               }else {
-  //                 console.log("new-message response ok");
-  //                 return resolve(savedRequest);
-  //               }
-  //             });
-  //           });
-  //           // .catch(function(err){
-  //           //   console.error("Error creating message", err);
-  //           //   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-  //           // });
-  //       });
-  //  });
-
-  // }
-  // upsertWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-
-  //   return Request.findOne({request_id: request_id}, function(err, request) {
-  //     // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
-
-  //     if (err) {
-  //       return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
-  //     }
-  //     if (!request) { //the request doen't exists create it
-
-  //               console.log("request not exists", request);
-                                                       
-  //                                   // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-  //                 return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid)
-  //                 .then(function(createdLead) {
-  //                   // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-  //                     return that.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
-  //                       // create(sender, senderFullname, recipient, text, id_project, createdBy) {
-  //                       return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-  //                         projectid).then(function(savedMessage){
-                                    
-
-  //                           return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-  //                             return res.json(savedRequestWithIncrement);
-  //                           });
-                          
-                        
-  //                     }).catch(function (err) {
-  //                       console.log( 'Error creating the request object.', err);
-  //                       return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-  //                     });
-  //                 });
-  //               });
-                  
-            
-              
-
-
-  //         }else {
-  //                        // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
-  //                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-  //                           request.id_project).then(function(savedMessage){
-  //                             return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-  //                               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-                                 
-  //                               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
-  //                                 console.log("updateWaitingTimeByRequestId");
-  //                                 return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
-  //                                   return res.json(upRequest);
-  //                                 });
-  //                               }else {
-  //                                 return res.json(savedRequest);
-  //                               }
-  //                             });
-  //                           }).catch(function(err){
-  //                             console.error("Error creating message", err);
-  //                             return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-  //                           });
-  //         }
-
-  //   });
-  // }
-
-  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy);
+  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
   };
 
-  // createWithIdAndLead(request_id, requester_fullname, requester_email, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-  //   return new Promise(function (resolve, reject) {
-  //       return leadService.createIfNotExists(requester_fullname, requester_email, id_project, createdBy).then(function(createdLead) {
-  //         return that.createWithId(request_id, createdLead._id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function(savedRequest) {
-  //           return resolve(savedRequest);
-  //         });
-  //       });
-  //   });
-  // }
 
-  createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+
+  createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
     // console.log("request_id", request_id);
 
@@ -181,6 +81,7 @@ class RequestService {
                 language: language,
                 userAgent: userAgent,
             
+                attributes: attributes,
                 //standard
                 id_project: id_project,
                 createdBy: createdBy,
@@ -195,12 +96,12 @@ class RequestService {
 
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
-                    console.error('Error createWithId the request.',err);
+                    winston.error('Error createWithId the request.',err);
                     return reject(err);
                   }
               
               
-                  console.info("Request created",savedRequest);
+                  winston.info("Request created",savedRequest.toObject());
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
@@ -211,10 +112,18 @@ class RequestService {
                   }
                   
                   
-                  requestEvent.emit('request.create',savedRequest);
+                  requestEvent.emit('request.create.simple',savedRequest);
+
+
+                  //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
+                  //activityEvent.emit('request.create', activity);
+
+                  
                   return resolve(savedRequest);
                   
                 });
+            }).catch(function(err){
+              return reject(err);
             });
 
 
@@ -235,7 +144,7 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
@@ -255,7 +164,7 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
 
@@ -274,10 +183,10 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
-           console.log("Message count +1");
+            winston.debug("Message count +1");
             return resolve(updatedRequest);
           });
     });
@@ -292,7 +201,7 @@ class RequestService {
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err) {
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
         //update waiting_time only the first time
@@ -303,7 +212,7 @@ class RequestService {
          
           request.waiting_time = waitingTime;
             // console.log(" request",  request);
-          console.log("Request  waitingTime setted");
+            winston.debug("Request  waitingTime setted");
           return resolve(request.save());
         }else {
           return resolve(request);
@@ -334,17 +243,33 @@ class RequestService {
                   try {                
                       Project.findById(id_project, function(err, project){                        
                         if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
+
+                           //send email to admin
+                          Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
+                          .exec(function (err, project_users) {
+                            project_users.forEach(project_user => {
+                              if (project_user.id_user) {
+                                return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
+                              } else {
+                              }
+                            });                        
+                          });
+                          //end send email to admin
+
+                          //send email to lead
                           return Lead.findById(updatedRequest.requester_id, function(err, lead){
                              //if (lead && lead.email) {
                               if (lead) {
-                              return that.sendTranscriptByEmail(lead.email, request_id, id_project);
+                                return that.sendTranscriptByEmail(lead.email, request_id, id_project);
                              }
                               
                            });
+                          //end send email to lead
+
                         }
                       });
                     }catch(e) {
-                      console.error("error sendTranscriptByEmail ", e);
+                      winston.error("error sendTranscriptByEmail ", e);
                     }
 
                     requestEvent.emit('request.close', updatedRequest);
@@ -353,7 +278,7 @@ class RequestService {
               });
             });
           }).catch(function(err)  {
-              console.error(err);
+            winston.error(err);
               return reject(err);
           });
     });
@@ -369,11 +294,11 @@ class RequestService {
      
         return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
           if (err){
-            console.error(err);
+            winston.error(err);
             return reject(err);
           }
           if (!request) {
-            console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+            winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
             return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
           }
 
@@ -395,7 +320,7 @@ class RequestService {
          
 
         }).catch(function(err)  {
-              console.error(err);
+          winston.error(err);
               return reject(err);
           });
     });
@@ -410,7 +335,7 @@ class RequestService {
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
-              console.error(err);
+              winston.error(err);
               return reject(err);
             }
            // console.log("updatedRequest", updatedRequest);
@@ -438,7 +363,7 @@ class RequestService {
 
       return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
         if (err) {
-          console.error("Error setParticipantsByRequestId", err);
+          winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }
         requestEvent.emit('request.update',updatedRequest);
@@ -467,7 +392,7 @@ class RequestService {
     return new Promise(function (resolve, reject) {
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err){
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
         if (!request) {
@@ -510,7 +435,7 @@ class RequestService {
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         
         if (err){
-          console.error(err);
+          winston.error(err);
           return reject(err);
         }
 
@@ -559,11 +484,11 @@ class RequestService {
       .populate('department')
       .exec(function(err, request) { 
       if (err){
-        console.error(err);
+        winston.error(err);
         return reject(err);
       }
       if (!request) {
-        console.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+        winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
         return reject("Request not found for request_id "+ request_id  + " and id_project " + id_project);
       }
       
@@ -603,7 +528,7 @@ class RequestService {
    
      Project.findById(projectid, function(err, project){
        if (err) {
-         console.error(err);
+         winston.error(err);
        }
    
        if (!project) {
@@ -649,7 +574,7 @@ class RequestService {
    
                   //    User.findById( savedRequest.participants[0], function (err, user) {
                   //      if (err) {
-                  //        console.error("Error sending email to " + savedRequest.participants[0], err);
+                  //        winston.error("Error sending email to " + savedRequest.participants[0], err);
                   //      }
                   //      if (!user) {
                   //        console.warn("User not found",  savedRequest.participants[0]);

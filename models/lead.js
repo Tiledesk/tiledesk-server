@@ -11,7 +11,6 @@ var LeadSchema = new Schema({
     type: String,
     required: false
   },
-
   email: {
     type: String,
     required: false,
@@ -22,8 +21,14 @@ var LeadSchema = new Schema({
   },
   id_project: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
+  // auth: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'auth',
+  //   //required: true
+  // },
   createdBy: {
     type: String,
     required: true

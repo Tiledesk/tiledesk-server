@@ -6,7 +6,7 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: true
   },
-  url: { //unused
+  url: { 
     type: String,
     // required: true
   },
@@ -16,6 +16,10 @@ var Faq_kbSchema = new Schema({
   },
   kbkey_remote: {
     type: String,
+  },
+  external: {
+    type: Boolean,
+    default: false
   },
   trashed: {
     type: Boolean,

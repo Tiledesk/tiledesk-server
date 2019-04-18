@@ -5,6 +5,7 @@ var Request = require("../models/request");
 var User = require("../models/user");
 var Project = require("../models/project");
 var emailService = require("../models/emailService");
+var winston = require('../config/winston');
 
 
 
@@ -12,8 +13,8 @@ var emailService = require("../models/emailService");
 
   router.get('/:requestid/messages', function(req, res) {
   
-    console.log(req.params);
-    console.log("here");    
+    winston.debug(req.params);
+    winston.debug("here");    
     return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
@@ -31,8 +32,8 @@ var emailService = require("../models/emailService");
 
   router.get('/:requestid/messages.html', function(req, res) {
   
-    console.log(req.params);
-    console.log("here");    
+    winston.debug(req.params);
+    winston.debug("here");    
     return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
@@ -49,8 +50,8 @@ var emailService = require("../models/emailService");
 
   router.post('/:requestid/notify/email', function(req, res) {
   
-    console.log("req.params", req.params);
-    console.log("req.query", req.query);
+    winston.debug("req.params", req.params);
+    winston.debug("req.query", req.query);
 
     var user_id = req.query.user_id;
 
@@ -63,7 +64,7 @@ var emailService = require("../models/emailService");
     // return Request.findOne({request_id: req.params.requestid, id_project:  req.projectid}, function(err, request) {
       return Request.findOne({request_id: req.params.requestid}, function(err, request) {
       if (err) {
-        console.error(err);
+        winston.error(err);
         return res.status(500).send({err:err});
       }
       if (!request) {
@@ -77,18 +78,18 @@ var emailService = require("../models/emailService");
         
       }
 
-      console.log("request", request);
+      winston.debug("request", request);
 
       return User.findById( user_id, function (err, user) {
         if (err) {
-          // console.error("Error notify user " + user_id, err);
+          // winston.error("Error notify user " + user_id, err);
           return res.status(500).send({err:err});
         }
         if (!user) {
-          console.warn("User not found",  user_id);
+          winston.warn("User not found",  user_id);
           return res.status(404).send({ success: false, msg: 'User not found' });
         } else {
-          console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
+          winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
 
           return Project.findById(request.id_project, function(err, project) {
             emailService.sendNewAssignedRequestNotification(user.email, request, project);

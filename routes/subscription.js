@@ -1,13 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var Subscription = require("../models/subscription");
+var winston = require('../config/winston');
 
 
 
 router.post('/', function (req, res) {
 
-  console.log(req.body);
-  console.log("req.user", req.user);
+  winston.debug(req.body);
+  winston.debug("req.user", req.user);
 
   var subscription = new Subscription({
     target: req.body.target,
@@ -18,12 +19,13 @@ router.post('/', function (req, res) {
 
   subscription.save(function (err, subscriptionSaved) {
     if (err) {
-      console.log('--- > ERROR ', err)
+      winston.error('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
     // http://resthooks.org/docs/security/
 
     res.setHeader('x-hook-secret', subscriptionSaved.secret);
+   // console.log('--- > HEREEEEEEEEEEE ', subscriptionSaved);
     res.json(subscriptionSaved);
   });
 });
@@ -87,7 +89,7 @@ router.get('/', function (req, res) {
   return Subscription.find().
     exec(function (err, subscriptions, next) {
       if (err) {
-        console.error('LEAD ROUTE - REQUEST FIND ERR ', err)
+        winston.error('LEAD ROUTE - REQUEST FIND ERR ', err)
         return next(err);
       }
 

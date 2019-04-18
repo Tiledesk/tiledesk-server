@@ -69,6 +69,7 @@ describe('Chat21Requests', () => {
 
                         expect(message.sender).to.equal("sender");    
                         expect(message.recipient).to.equal(request_id);     
+                        expect(message.attributes.projectId).to.equal(savedProject._id.toString());     
                         Lead.findById(res.body.requester_id, function (err, lead){
                             expect(lead.fullname).to.equal("sender_fullname");   
                             assert(lead.email == null)

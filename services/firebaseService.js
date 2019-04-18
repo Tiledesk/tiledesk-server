@@ -1,15 +1,16 @@
 var admin = require('../utils/firebaseConnector');
+var winston = require('../config/winston');
 
 class FirebaseService {
 
     createCustomToken(uid) {
 
         return new Promise(function (resolve, reject) {          
-            console.log("createCustomToken for uid", uid);
+            winston.debug("createCustomToken for uid", uid);
               // STEP 3: Generate Firebase Custom Auth Token
               const tokenPromise = admin.auth().createCustomToken(uid);
               return tokenPromise.then(token => {
-                // console.log('Created Custom token for UID "', uid, '" Token:', token);
+                // winston.debug('Created Custom token for UID "', uid, '" Token:', token);
                 return resolve(token);
               });
               
@@ -19,12 +20,12 @@ class FirebaseService {
     createCustomTokenWithAttribute(uid, customAttributes) {
 
       return new Promise(function (resolve, reject) {          
-          console.log("createCustomToken for uid", uid, " and customAttributes : ",customAttributes);
+          winston.debug("createCustomToken for uid", uid, " and customAttributes : ",customAttributes);
             // STEP 3: Generate Firebase Custom Auth Token
             const tokenPromise = admin.auth().createCustomToken(uid, customAttributes);
           //   const tokenPromise = admin.auth().createCustomToken(uid,otherParameters);
             return tokenPromise.then(token => {
-              // console.log('Created Custom token for UID "', uid, '" Token:', token);
+              // winston.debug('Created Custom token for UID "', uid, '" Token:', token);
               return resolve(token);
             });
             
