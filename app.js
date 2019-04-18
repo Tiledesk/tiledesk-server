@@ -83,8 +83,8 @@ botSubscriptionNotifier.start();
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
-// var chat21Sender = require('./services/chat21Sender');
-// chat21Sender.listen();
+//var chat21Handler = require('./channels/chat21/chat21Handler');
+//chat21Handler.listen();
 
 
 var ReqLog = require("./models/reqlog");
