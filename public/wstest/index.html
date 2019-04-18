@@ -1,0 +1,41 @@
+<html>
+    <head>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+            <script src="./tilebase.js"></script>
+
+
+            <script>
+                //var tilebase = new Tilebase('ws://tiledesk-server-pre.herokuapp.com/testws?q={"recipient":"support-group123"}'
+                var tilebase = new Tilebase('ws://tiledesk-server-pre.herokuapp.com/messages?q={}'
+                // var tilebase = new Tilebase('ws://tiledesk-server-pre.herokuapp.com/messages?q={"recipient":"support-group123"}'
+                    //var tilebase = new Tilebase('ws://localhost:3000/messages?q={"recipient":"support-group123"}'
+                //var tilebase = new Tilebase('ws://localhost:3000/testws?q={"recipient":"support-group123"}'
+                   //  var tilebase = new Tilebase('ws://localhost:40510/messages?q={"recipient":"support-group123"}'
+                    
+                    , function(message) {
+                        $('#messages').append(`<div id="${message._id}">${message.text}</div>`);
+                    }
+                    , function(message) {
+                        $('#'+message._id).html(`<div id="${message._id}">${message.text}</div>`);
+                    }
+                    );
+                    tilebase.start();
+                    // tilebase.start().then(function(message) {
+                    //     console.log("message promise then", message);
+                    //     $('#messages').after(message.text + '<br>');
+                    // });
+                    
+
+            </script>
+    </head>
+    <bdoy>
+            <h1>
+                    Web Socket Example
+                </h1>
+                <p>
+                    open console to see connection.
+                </p>
+                <div id="messages"></div>
+                
+    </bdoy>
+</html>

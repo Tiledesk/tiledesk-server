@@ -42,7 +42,7 @@ curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -
 ### Create 
 
 ```
-curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"sender":"io", "sender_fullname":"Andrea Leo", "text":"firstText"}' http://localhost:3000/5bedbbd18b9ed53a6a3f3dd3/requests/req123456/messages
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"sender":"io", "sender_fullname":"Andrea Leo", "text":"firstText"}' http://localhost:3000/5ca366fdee19dbc72e98e96f/requests/req123456/messages
 ```
 ### Get
 ```
@@ -57,7 +57,7 @@ smessages/5beeb3835d34344cd4962a8c
 ### Create 
 
 ```
-curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"requester_id":"io", "requester_fullname":"Andrea Leo", "first_text":"firstText"}' http://localhost:3000/5ab0f32757066e0014bfd718/requests
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"request_id":"request_id", "requester_id":"requester_id", "text":"text"}' http://localhost:3000/5ca366fdee19dbc72e98e96f/requests
 ```
 
 
