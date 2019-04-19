@@ -1,5 +1,5 @@
 module.exports = {
-  'url': 'https://us-central1-chat-v2-dev.cloudfunctions.net',
-  'appid': 'tilechat',
+  'url': 'https://us-central1-tiledesk-test.cloudfunctions.net',
+  'appid': 'YOUR_APP_ID',
   'adminToken' : 'adminTokenHere'
 };
