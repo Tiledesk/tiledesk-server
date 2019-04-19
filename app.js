@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -85,8 +87,8 @@ botSubscriptionNotifier.start();
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
-//var chat21Handler = require('./channels/chat21/chat21Handler');
-//chat21Handler.listen();
+var chat21Handler = require('./channels/chat21/chat21Handler');
+chat21Handler.listen();
 
 
 var ReqLog = require("./models/reqlog");

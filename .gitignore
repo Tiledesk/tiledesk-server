@@ -4,3 +4,4 @@ config/.firebase-key
 data
 .firebasekey-pre.json
 .firebasekey.json
+.env
