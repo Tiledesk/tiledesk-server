@@ -89,7 +89,7 @@ class Chat21Handler {
                         gAttributes["requester_id"] = request.requester_id;
                     
                         chat21.groups.create('Guest', members, gAttributes).then(function(data) {
-                                winston.info("group created", data);      
+                                winston.info("group created" + data);      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
