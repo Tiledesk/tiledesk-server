@@ -82,6 +82,7 @@ class Chat21Handler {
                         let members = requestObj.participants;
                         // var members = reqParticipantArray;
                         members.push(request.requester_id);
+                        
                         // let membersArray = JSON.parse(JSON.stringify(members));
                         // winston.info("membersArray", membersArray);
 
@@ -89,7 +90,7 @@ class Chat21Handler {
                         gAttributes["requester_id"] = request.requester_id;
                     
                         chat21.groups.create('Guest', members, gAttributes).then(function(data) {
-                                winston.info("group created" + data);      
+                                winston.info("group created: " + data);      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
@@ -156,6 +157,8 @@ class Chat21Handler {
             newRequest.first_text = request.first_text;
             newRequest.departmentid = request.department._id.toString(); 
     
+            group_members.push("system");
+            
             newRequest.members = group_members;
             newRequest.membersCount = Object.keys(group_members).length;
             newRequest.agents = request.agents;
@@ -182,7 +185,7 @@ class Chat21Handler {
             // }
             
             
-            winston.info('newRequest', newRequest);
+            winston.info('firestore newRequest', newRequest);
     
     
            
