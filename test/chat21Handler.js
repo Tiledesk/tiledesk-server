@@ -1,6 +1,8 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
+require('dotenv').config();
+
 // require('./controllers/todo.controller.test.js');
 var expect = require('chai').expect;
 
@@ -30,15 +32,20 @@ const chat21Event = require('../channels/chat21/chat21Event');
 const messageEvent = require('../event/messageEvent');
 
 var chat21Config = require('../config/chat21');
+
 var adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
-winston.info('Chat21Handler adminToken: '+ adminToken);
+winston.info('Test Chat21Handler adminToken: ' + adminToken);
+
+var chat21 = require('../channels/chat21/chat21Client');
+
+var chat21Handler = require('../channels/chat21/chat21Handler');
+chat21Handler.listen();
+
+describe('Chat21Handler', function () {
 
 
-describe('Chat21Handler()', function () {
 
-
-
-  it('create group', function (done) {
+  it('creategroup', function (done) {
 
 
     // var chat21Config = require('../config/chat21');
@@ -48,7 +55,6 @@ describe('Chat21Handler()', function () {
     //   appid: chat21Config.appid,
     // });
 
-    var chat21 = require('../channels/chat21/chat21Client');
 
 
 
@@ -68,9 +74,7 @@ describe('Chat21Handler()', function () {
 
 
   it('createRequest', function (done) {
-
-    var chat21Handler = require('../channels/chat21/chat21Handler');
-    chat21Handler.listen();
+  
 
     var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
     var pwd = "pwd";
@@ -111,8 +115,7 @@ describe('Chat21Handler()', function () {
 
   it('firstMessage', function (done) {
 
-    var chat21Handler = require('../channels/chat21/chat21Handler');
-    chat21Handler.listen();
+
 
     var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
     var pwd = "pwd";
@@ -133,7 +136,7 @@ describe('Chat21Handler()', function () {
           // });
           chat21Event.on('firestore.first_message', function(firestoreUpdate){
                     winston.debug("firestore.first_message created", firestoreUpdate);
-                    expect(firestoreUpdate.first_message.attributes.attr1).to.equal("attr1");                                               
+                    expect(firestoreUpdate.first_message.attributes).to.not.equal(null);                                               
                     done();
                   });
 

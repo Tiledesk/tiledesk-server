@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 
 var express = require('express');
 var path = require('path');
@@ -22,10 +22,12 @@ var winston = require('./config/winston');
 //bin start
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
 
-var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
+var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+
 if (!databaseUri) {
-  winston.error('DATABASE_URI not specified, falling back to localhost.');
+  winston.warn('DATABASE_URI not specified, falling back to localhost.');
 }
+
 winston.info("databaseUri: " + databaseUri);
 
 var autoIndex = true;
@@ -37,7 +39,7 @@ winston.info("autoIndex: " + autoIndex);
 if (process.env.NODE_ENV == 'test')  {
   mongoose.connect(config.databasetest, { "autoIndex": true });
 }else {
-  mongoose.connect(databaseUri || config.database, { "autoIndex": autoIndex });
+  mongoose.connect(databaseUri, { "autoIndex": autoIndex });
 }
 
 var auth = require('./routes/auth');

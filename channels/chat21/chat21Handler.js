@@ -10,7 +10,7 @@ var chat21Config = require('../../config/chat21');
 var chat21 = require('../../channels/chat21/chat21Client');
 
 
-var adminToken =  chat21Config.adminToken || process.env.CHAT21_ADMIN_TOKEN;
+var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
 
 
@@ -87,7 +87,7 @@ class Chat21Handler {
 
                         var gAttributes = request.attributes || {};
                         gAttributes["requester_id"] = request.requester_id;
-
+                    
                         chat21.groups.create('Guest', members, gAttributes).then(function(data) {
                                 winston.info("group created", data);      
                                 chat21Event.emit('group.create', data);                                          
