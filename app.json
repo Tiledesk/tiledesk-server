@@ -21,9 +21,17 @@
       "description": "Firebase project id.",
       "value": ""
     },
-    "APP_ID": {
-      "description": "A unique identifier for your app.",
+    "CHAT21_URL": {
+      "description": "The Chat21 server endpoint.",
+      "value": "https://us-central1-tiledesk-test.cloudfunctions.net"
+    },
+    "CHAT21_APPID": {
+      "description": "A unique identifier for your chat21 app.",
       "value": "myAppId"
+    },
+    "CHAT21_ADMIN_TOKEN": {
+      "description": "The Chat21 admin token.",
+      "value": "youradmintoken"
     },
     "SUPER_PASSWORD": {
       "description": "Super admin password",
