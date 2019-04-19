@@ -16,37 +16,6 @@ var winston = require('../config/winston');
 var MessageConstants = require("../models/messageConstants");
 
 
-// var admin = require('../utils/firebaseConnector');
-// let firestore;
-// // https://stackoverflow.com/questions/37652328/how-to-check-if-a-firebase-app-is-already-initialized-on-android
-// if (admin.apps.length>0) {
-//    firestore = admin.firestore();
-// }
- 
-
-// var jwt = require('jsonwebtoken');
-// var validtoken = require('../middleware/valid-token');
-// var config = require('../config/database'); 
-// var secret = process.env.SECRET || config.secret;
-
-
-// var Chat21 = require('@chat21/chat21-node-sdk');
-// var firebaseConfig = require('../config/firebase');
-// var chat21Config = require('../config/chat21');
-// var firebaseService = require("../services/firebaseService");
-
-// var chat21 = new Chat21({
-//   url: chat21Config.url,
-//   appid: chat21Config.appid,
-//   // url: process.env.CHAT21_URL,
-//   // appid: process.env.CHAT21_APPID,
-//   oauth: true,
-//   firebase_apikey:  'AIzaSyDWMsqHBKmWVT7mWiSqBfRpS5U8YwTl7H0',
-//   // firebase_apikey:  process.env.FIREBASE_APIKEY,
-//   firebase_database: firebaseConfig.databaseURL
-// });
-
-
 router.post('/', function(req, res) {
 
 

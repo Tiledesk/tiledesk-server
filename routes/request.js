@@ -13,30 +13,9 @@ var moment = require('moment');
 var requestService = require('../services/requestService');
 var winston = require('../config/winston');
 
-
-// var Chat21 = require('@chat21/chat21-node-sdk');
-
-
-// var firebaseService = require("../services/firebaseService");
-
-// var admin = require('../utils/firebaseConnector');
-
-// var firebaseConfig = require('../config/firebase');
-// var chat21Config = require('../config/chat21');
-
 csv = require('csv-express');
 csv.separator = ';';
 
-// var chat21 = new Chat21({
-//   url: chat21Config.url,
-//   appid: chat21Config.appid,
-//   // url: process.env.CHAT21_URL,
-//   // appid: process.env.CHAT21_APPID,
-//   oauth: true,
-
-//   firebase_apikey:  process.env.FIREBASE_APIKEY,
-//   firebase_database: firebaseConfig.databaseURL
-// });
 
 var messageService = require('../services/messageService');
 

@@ -7,19 +7,10 @@ var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
 
 var chat21Config = require('../../config/chat21');
-// var Chat21 = require('@chat21/chat21-node-sdk');
-
-
-// var chat21 = new Chat21({
-//  url: chat21Config.url,
-//  appid: chat21Config.appid,
-//  //authurl: process.env.CHAT21_AUTH_URL
-// });
-
 var chat21 = require('../../channels/chat21/chat21Client');
 
 
-var adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
+var adminToken =  chat21Config.adminToken || process.env.CHAT21_ADMIN_TOKEN;
 winston.info('Chat21Handler adminToken: '+ adminToken);
 
 
