@@ -70,9 +70,12 @@ router.post('/', function (req, res) {
   // });
 
   // return newRequest.save(function (err, savedRequest) {
+
+
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
     return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
       req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
-      req.body.status, req.user.id).then(function(savedRequest) {
+      req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
 
        
         // return messageService.create(req.body.requester_id, req.body.sender_fullname, req.params.request_id, req.body.text,
@@ -335,7 +338,7 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
+  winston.info('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query).
     skip(skip).limit(limit).
       populate('department').
@@ -352,13 +355,15 @@ router.get('/', function (req, res, next) {
       exec(function (err, requests) {
         if (err) {
           winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-
           return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
         }
         winston.debug('REQUEST ROUTE - REQUEST ', requests);
 
         return Request.count(query, function(err, totalRowCount) {
-
+          if (err) {
+            winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+            return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
+          }
           var objectToReturn = {
             perPage: limit,
             count: totalRowCount,

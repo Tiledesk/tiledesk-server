@@ -76,6 +76,8 @@ describe('Subscription', () => {
                             expect(req.body.hook.event).to.equal("request.create");
                             expect(req.body.hook._id).to.equal(subid);                        
                             expect(req.body.payload.request_id).to.equal("request_id1");                        
+                            // expect(req.body.payload.lead).to.not.equal(null);                        
+                            expect(req.body.payload.department).to.not.equal(null);                        
                             res.send('POST request to the homepage');
                             done();
                                                  

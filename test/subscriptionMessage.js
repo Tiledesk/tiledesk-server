@@ -65,29 +65,30 @@ describe('Subscription', () => {
                                 expect(res.headers["x-hook-secret"]).to.equal(secret); 
                                 
                             
-                                let messageReceived = 0;
+                                // let messageReceived = 0;
                                 var serverClient = express();
                                 serverClient.use(bodyParser.json());
                                 serverClient.post('/', function (req, res) {
                                     console.log('serverClient req', JSON.stringify(req.body));                        
                                     console.log("serverClient.headers",  JSON.stringify(req.headers));
-                                     messageReceived = messageReceived+1;
+                                    //  messageReceived = messageReceived+1;
                                     expect(req.body.hook.event).to.equal("message.create");
                                     expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-create");
                                     expect(req.body.payload.request.department).to.not.equal(null);
                                     expect(req.body.payload.request.department.bot).to.not.equal(null);
                                     expect(req.body.payload.request.department.bot.name).to.equal("testbot");
+                                    expect(req.body.payload.request.messages[0].text).to.equal("hello");
                                     expect(req.headers["x-hook-secret"]).to.equal(secret); 
                                     res.send('POST request to the homepage');
                                 
-                                    if (messageReceived==1) {
+                                    // if (messageReceived==1) {
                                         expect(req.body.payload.text).to.equal("hello");
-                                    }
-                                    if (messageReceived==2) {
+                                    // }
+                                    // if (messageReceived==2) {
                                         
                                         // expect(req.body.payload.text).to.equal(faqBotSupport.LABELS.EN.DEFAULT_CLOSING_SENTENCE_REPLY_MESSAGE);
                                         done();
-                                    }
+                                    // }
                                                         
                                 });
                                 var listener = serverClient.listen(3003, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});

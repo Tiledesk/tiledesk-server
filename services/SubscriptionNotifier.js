@@ -170,22 +170,45 @@ class SubscriptionNotifier {
       //   });
       // });
 
+
+
+
+
       requestEvent.on('request.create', function(request) {
         // console.log('requestEmitter request.create', request);
         // subscriptionNotifier.notify('request.create', request);
 
         subscriptionNotifier.findSubscriber('request.create', request.id_project).then(function(subscriptions) { 
+          winston.debug("Subscription.notify before request.create: "+ subscriptions);          
           if (subscriptions && subscriptions.length>0) {
-            winston.debug("Subscription.notify", 'request.create', request , "length", subscriptions.length);
-            Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {          
-              var requestJson = request.toJSON();
-              requestJson.messages = messages;
-              subscriptionNotifier.notify(subscriptions, requestJson);
-            });
+            winston.info("Subscription.notify", 'request.create', request , "length", subscriptions.length);          
+              subscriptionNotifier.notify(subscriptions, request.toJSON());   
           }
         });
 
       });
+
+      // requestEvent.on('request.create', function(request) {
+      //   // console.log('requestEmitter request.create', request);
+      //   // subscriptionNotifier.notify('request.create', request);
+
+      //   subscriptionNotifier.findSubscriber('request.create', request.id_project).then(function(subscriptions) { 
+      //     if (subscriptions && subscriptions.length>0) {
+      //       winston.debug("Subscription.notify", 'request.create', request , "length", subscriptions.length);
+      //       Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {          
+      //         var requestJson = request.toJSON();
+      //         requestJson.messages = messages;
+      //         subscriptionNotifier.notify(subscriptions, requestJson);
+      //       });
+      //     }
+      //   });
+
+      // });
+
+
+
+
+
 
       requestEvent.on('request.update', function(request) {
         // console.log('requestEmitter request.update', request);

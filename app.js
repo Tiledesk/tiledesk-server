@@ -70,6 +70,8 @@ var appRules = require('./rules/appRules');
 appRules.start();
 
 
+//var cache = require('express-redis-cache')();
+
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
 
@@ -83,8 +85,8 @@ botSubscriptionNotifier.start();
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
-// var chat21Sender = require('./services/chat21Sender');
-// chat21Sender.listen();
+//var chat21Handler = require('./channels/chat21/chat21Handler');
+//chat21Handler.listen();
 
 
 var ReqLog = require("./models/reqlog");
@@ -148,9 +150,9 @@ var app = express();
 //   });
 // });
 
-// uncomment var messageWsService = require('./services/messageWsService');
-// messageWsService.init();
-//end uncomment
+// var messageWsService = require('./services/messageWsService');
+// messageWsService.init(app);
+// end uncomment
 
 // const WebSocket = require('ws');
 // const wss = new WebSocket.Server({ port: 40510 });
@@ -166,16 +168,20 @@ var app = express();
 //   )
 // });
 
-// var expressWs = require('express-ws')(app);
-// var expressWs = expressWs(express());
-// var app2 = expressWs.app;
+// var expressWs = require('express-ws')(express());
+// var app = expressWs.app;
 
-// app2.ws('/', function(ws, req) {
+// //var expressWs = expressWs(express());
+// // var app2 = expressWs.app;
+
+// app.ws('/', function(ws, req) {
 //   ws.on('message', function(msg) {
-//     console.log(msg);
+//     console.log("messageXXXXX", msg);
 //   });
-//   console.log('socket', req.testing);
+//   console.log('socketXXXXX', req.testing);
 // });
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

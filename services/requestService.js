@@ -21,119 +21,13 @@ var winston = require('../config/winston');
 class RequestService {
 
 
-  // createWithIdAndSaveMessage(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-  //   return new Promise(function (resolve, reject) {
-
-  //       return that.createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function (newRequest) {
-
-  //         return messageService.create(requester_id, message.sender_fullname, request_id, first_text,
-  //           id_project, createdBy).then(function(savedMessage){
-  //             // console.log("savedMessageXXX ");
-  //             //get projectid from savedMessage.id_project
-  //             return that.incrementMessagesCountByRequestId(newRequest.request_id, newRequest.id_project).then(function(savedRequest) {
-              
-  //               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-  //               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent
-  //                 console.log("updateWaitingTimeByRequestId");
-  //                 return that.updateWaitingTimeByRequestId(newRequest.request_id, newRequest.id_project).then(function(upRequest) {
-  //                   console.log("new-message response ok updateWaitingTimeByRequestId");
-  //                   return resolve(upRequest);
-  //                 });
-  //               }else {
-  //                 console.log("new-message response ok");
-  //                 return resolve(savedRequest);
-  //               }
-  //             });
-  //           });
-  //           // .catch(function(err){
-  //           //   winston.error("Error creating message", err);
-  //           //   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-  //           // });
-  //       });
-  //  });
-
-  // }
-  // upsertWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-
-  //   return Request.findOne({request_id: request_id}, function(err, request) {
-  //     // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
-
-  //     if (err) {
-  //       return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
-  //     }
-  //     if (!request) { //the request doen't exists create it
-
-  //               console.log("request not exists", request);
-                                                       
-  //                                   // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-  //                 return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid)
-  //                 .then(function(createdLead) {
-  //                   // createWithId(request_id, requester_id, id_project, first_text, departmentid='default', sourcePage, language, userAgent, status) {
-  //                     return that.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client).then(function (savedRequest) {
-  //                       // create(sender, senderFullname, recipient, text, id_project, createdBy) {
-  //                       return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-  //                         projectid).then(function(savedMessage){
-                                    
-
-  //                           return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-  //                             return res.json(savedRequestWithIncrement);
-  //                           });
-                          
-                        
-  //                     }).catch(function (err) {
-  //                       console.log( 'Error creating the request object.', err);
-  //                       return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-  //                     });
-  //                 });
-  //               });
-                  
-            
-              
-
-
-  //         }else {
-  //                        // create(sender, senderFullname, recipient, recipientFullname, text, id_project, createdBy) {
-  //                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-  //                           request.id_project).then(function(savedMessage){
-  //                             return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
-  //                               // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-                                 
-  //                               if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
-  //                                 console.log("updateWaitingTimeByRequestId");
-  //                                 return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
-  //                                   return res.json(upRequest);
-  //                                 });
-  //                               }else {
-  //                                 return res.json(savedRequest);
-  //                               }
-  //                             });
-  //                           }).catch(function(err){
-  //                             winston.error("Error creating message", err);
-  //                             return res.status(500).send({success: false, msg: 'Error creating message', err:err });
-  //                           });
-  //         }
-
-  //   });
-  // }
-
-  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy);
+  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
   };
 
-  // createWithIdAndLead(request_id, requester_fullname, requester_email, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-  //   var that = this;
-  //   return new Promise(function (resolve, reject) {
-  //       return leadService.createIfNotExists(requester_fullname, requester_email, id_project, createdBy).then(function(createdLead) {
-  //         return that.createWithId(request_id, createdLead._id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy).then(function(savedRequest) {
-  //           return resolve(savedRequest);
-  //         });
-  //       });
-  //   });
-  // }
 
-  createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
+
+  createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
     // console.log("request_id", request_id);
 
@@ -187,6 +81,7 @@ class RequestService {
                 language: language,
                 userAgent: userAgent,
             
+                attributes: attributes,
                 //standard
                 id_project: id_project,
                 createdBy: createdBy,
@@ -217,7 +112,7 @@ class RequestService {
                   }
                   
                   
-                  requestEvent.emit('request.create',savedRequest);
+                  requestEvent.emit('request.create.simple',savedRequest);
 
 
                   //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
