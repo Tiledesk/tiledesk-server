@@ -24,7 +24,7 @@
     "tiledesk-server": "./bin/www"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.18",
+    "@chat21/chat21-node-sdk": "^1.0.19",
     "amqplib": "^0.5.3",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
