@@ -212,7 +212,10 @@ class Chat21Handler {
             group_members.push("system");
             
             newRequest.members = group_members;
-            newRequest.membersCount = Object.keys(group_members).length;
+            
+            var membersCount = Object.keys(group_members).length;
+            // newRequest.membersCount = membersCount;
+
             newRequest.agents = request.agents;
             newRequest.availableAgents = request.availableAgents;
     
@@ -220,7 +223,7 @@ class Chat21Handler {
                 newRequest.assigned_operator_id = request.assignedOperatorId;
             }
     
-            if (newRequest.membersCount==2){
+            if (membersCount==2){
                 newRequest.support_status = 100;
             }else {
                 newRequest.support_status = 200;
