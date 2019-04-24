@@ -91,7 +91,7 @@ class Chat21Handler {
                         gAttributes["requester_id"] = request.requester_id;
                     
                         chat21.groups.create('Guest', members, gAttributes).then(function(data) {
-                                winston.info("group created: " + data);      
+                                winston.info("Chat21 group created: " + data);      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
@@ -102,33 +102,57 @@ class Chat21Handler {
                             // return Promise.all([
 
                         if (!request.department.id_bot) {
+                            winston.info("Chat21 Send welcome bot message");     
+                            
                             if (request.availableAgents.length==0) {
-
-                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
-                                chat21.messages.sendToGroup(
-                                    'Bot', 
-                                    request.request_id, 
-                                    'Recipient Fullname', 
+                               
+                                // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes);
+                                messageService.send(
+                                    'system', 
+                                    'Bot',                                     
+                                    request.request_id,
                                     i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                    request.id_project,
                                     'system', 
                                     {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                                ).then(function(data){
+                                );
 
-                                        });
+                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
+                                // chat21.messages.sendToGroup(
+                                //     'Bot', 
+                                //     request.request_id, 
+                                //     'Recipient Fullname', 
+                                //     i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                //     'system', 
+                                //     {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                                // ).then(function(data){
+                                        // });
                                 
                             }else {
-                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
-                                
-                                chat21.messages.sendToGroup(
-                                    'Bot', 
-                                    request.request_id, 
-                                    'Recipient Fullname', 
+
+                                messageService.send(
+                                    'system', 
+                                    'Bot',                                     
+                                    request.request_id,
                                     i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                    request.id_project,
                                     'system', 
                                     {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                                ).then(function(data){
+                                );
 
-                                        });
+
+                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
+                                
+                                // chat21.messages.sendToGroup(
+                                //     'Bot', 
+                                //     request.request_id, 
+                                //     'Recipient Fullname', 
+                                //     i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                //     'system', 
+                                //     {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                                // ).then(function(data){
+
+                                //         });
                             }
                         }
 

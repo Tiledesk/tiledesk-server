@@ -65,7 +65,7 @@ describe('Chat21Requests', () => {
                     expect(res.body.messages_count).to.equal(1);     
                     // expect(request.waiting_time).to.not.equal(null);
                     // expect(request.waiting_time).to.gt(0);
-                    Message.findOne({recipient : request_id, id_project: savedProject._id}, function(err, message){
+                    Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
                         expect(message.sender).to.equal("sender");    
                         expect(message.recipient).to.equal(request_id);     
@@ -137,7 +137,7 @@ describe('Chat21Requests', () => {
                       expect(res.body.messages_count).to.equal(1);     
                       // expect(request.waiting_time).to.not.equal(null);
                       // expect(request.waiting_time).to.gt(0);
-                      Message.findOne({recipient : request_id, id_project: savedProject._id}, function(err, message){
+                      Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
                         expect(message.sender).to.equal("sender");    
                         expect(message.recipient).to.equal(request_id);     
@@ -188,7 +188,7 @@ describe('Chat21Requests', () => {
                                     expect(res.body.messages_count).to.equal(1);     
                                     // expect(request.waiting_time).to.not.equal(null);
                                     // expect(request.waiting_time).to.gt(0);
-                                    Message.findOne({recipient : request_id, id_project: savedProject._id}, function(err, message){
+                                    Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
                                         expect(message.sender).to.equal("sender");    
                                         expect(message.recipient).to.equal(request_id);     
@@ -239,7 +239,7 @@ describe('Chat21Requests', () => {
                                     expect(res.body.messages_count).to.equal(1);     
                                     // expect(request.waiting_time).to.not.equal(null);
                                     // expect(request.waiting_time).to.gt(0);
-                                    Message.findOne({recipient : request_id, id_project: savedProject._id}, function(err, message){
+                                    Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
                                         expect(message.sender).to.equal("sender");    
                                         expect(message.recipient).to.equal(request_id);     

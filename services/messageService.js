@@ -27,6 +27,10 @@ class MessageService {
 
 
 
+   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
+       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes);
+   }
+
   create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
 
     var that = this;

@@ -28,7 +28,7 @@ var leadService = require('../services/leadService');
 
 var Request = require("../models/request");
 
-describe('RequestService()', function () {
+describe('RequestService', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 

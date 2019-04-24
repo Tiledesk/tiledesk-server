@@ -40,9 +40,10 @@ class FaqBotHandler {
                 if (faqs && faqs.length>0 && faqs[0].answer) {
                     answerObj = faqs[0];                
 
+                    // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
+                    messageService.send(sender, botName, message.recipient, answerObj.answer, 
+                        message.id_project, sender).then(function(savedMessage){
 
-                    messageService.create(sender, botName, message.recipient, answerObj.answer, 
-                        message.id_project, sender, MessageConstants.CHAT_MESSAGE_STATUS.SENDING).then(function(savedMessage){
                             winston.info("faqbot message sending ", savedMessage.toObject());  
                     });
     
@@ -54,8 +55,8 @@ class FaqBotHandler {
                     winston.info("faqbot message botAns ", botAns);  
 
                     let attributes = {bot_reponse_template: botAns.template};
-                    messageService.create(sender, botName, message.recipient, botAns.text, 
-                        message.id_project, sender, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes).then(function(savedMessage){
+                    messageService.send(sender, botName, message.recipient, botAns.text, 
+                        message.id_project, sender, attributes).then(function(savedMessage){
                             winston.info("faqbot message botAns " ,savedMessage.toObject());  
                     });
 
