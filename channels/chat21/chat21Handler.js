@@ -45,7 +45,7 @@ class Chat21Handler {
                         chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                             'Recipient Fullname', message.text, message.sender, attributes)
                                     .then(function(data){
-                                        winston.debug("send resolve ", data);
+                                        winston.debug("Chat21 sendToGroup sent ", data);
                                 
                                         chat21Event.emit('message.sent', data);
 
@@ -54,7 +54,7 @@ class Chat21Handler {
                                     });
 
                             }).catch(function(err) {
-                                winston.error("err", err);
+                                winston.error("Chat21 sendToGroup err", err);
                                 chat21Event.emit('message.sent.error', err);
                             });
                     }
@@ -75,7 +75,7 @@ class Chat21Handler {
                         // let requestObj = request.toObject();
                         let requestObj = request.toJSON();
                         
-                        winston.info("creating chat21 group for request", requestObj);
+                        winston.info("creating chat21 group for request with id: " + requestObj._id);
 
                         // winston.info("requestObj.participants: "+ Object.prototype.toString.call(requestObj.participants));
                         winston.debug("requestObj.participants: "+ JSON.stringify(requestObj.participants));
@@ -102,7 +102,7 @@ class Chat21Handler {
                             // return Promise.all([
 
                         if (!request.department.id_bot) {
-                            winston.info("Chat21 Send welcome bot message");     
+                            winston.debug("Chat21 Send welcome bot message");     
                             
                             if (request.availableAgents.length==0) {
                                

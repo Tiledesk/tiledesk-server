@@ -49,7 +49,7 @@ router.post('/', function(req, res) {
 
           if (!request) { //the request doen't exists create it
 
-                winston.info("request not exists");
+                winston.info("request not exists with request_id: " + message.recipient);
                 
                 var departmentid = "default";
 
@@ -113,7 +113,7 @@ router.post('/', function(req, res) {
 
                     var rAttributes = message.attributes;
                     rAttributes["senderAuthInfo"] = message.senderAuthInfo;   
-                    winston.info("rAttributes", rAttributes);
+                    winston.debug("rAttributes", rAttributes);
 
                     
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
@@ -366,7 +366,7 @@ router.post('/', function(req, res) {
       // winston.debug("group",group);
 
       var new_member = req.body.member_id;
-      winston.info("new_member",new_member);
+      winston.info("new_member: " + new_member);
 
       if (new_member=="system") {
         winston.warn("new_member "+ new_member+ " not added to participants");
@@ -374,7 +374,7 @@ router.post('/', function(req, res) {
       }
 
       var request_id = req.body.group_id;
-      winston.info("request_id", request_id);
+      winston.info("request_id: " + request_id);
 
       var id_project;
       if (group && group.attributes) {
@@ -383,7 +383,7 @@ router.post('/', function(req, res) {
         winston.error("id_project "+ id_project+ " isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
-      winston.info("id_project", id_project);
+      winston.info("id_project: " + id_project);
 
       return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err){
