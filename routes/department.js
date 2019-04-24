@@ -72,6 +72,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
   });
 });
 
+// questo viene chiamato dal widget perche?
 
 router.get('/:departmentid/operators', function (req, res) {
   winston.info("Getting department operators");

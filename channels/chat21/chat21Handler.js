@@ -2,6 +2,7 @@
 const messageEvent = require('../../event/messageEvent');
 const requestEvent = require('../../event/requestEvent');
 var messageService = require('../../services/messageService');
+var chatUtil = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
@@ -9,7 +10,7 @@ var winston = require('../../config/winston');
 var chat21Config = require('../../config/chat21');
 var chat21 = require('../../channels/chat21/chat21Client');
 
-
+var i8nUtil = require("../../utils/i8nUtil");
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
 
@@ -100,13 +101,36 @@ class Chat21Handler {
 
                             // return Promise.all([
 
-                        // if (!idBot) {
-                        //     if (availableAgentsCount==0) {
-                        //         chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
-                        //     }else {
-                        //         chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
-                        //     }
-                        // }
+                        if (!request.department.id_bot) {
+                            if (request.availableAgents.length==0) {
+
+                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
+                                chat21.messages.sendToGroup(
+                                    'Bot', 
+                                    request.request_id, 
+                                    'Recipient Fullname', 
+                                    i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                    'system', 
+                                    {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                                ).then(function(data){
+
+                                        });
+                                
+                            }else {
+                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
+                                
+                                chat21.messages.sendToGroup(
+                                    'Bot', 
+                                    request.request_id, 
+                                    'Recipient Fullname', 
+                                    i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                                    'system', 
+                                    {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                                ).then(function(data){
+
+                                        });
+                            }
+                        }
 
 
 
