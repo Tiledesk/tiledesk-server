@@ -32,7 +32,7 @@ class Chat21Handler {
         messageEvent.on('message.sending', function(message) {
 
             setImmediate(() => {
-                    winston.debug("Chat21Sender listen " + message);
+                    winston.debug("Chat21Sender on message.sending ",  message);
 
 
                     if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request.channel.name === ChannelConstants.CHAT21) {
@@ -42,16 +42,18 @@ class Chat21Handler {
 
                         let attributes = {tiledesk_message_id: message._id };
 
+                        winston.info("Chat21Sender sending message.sending ",  message);
+
                         chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                             'Recipient Fullname', message.text, message.sender, attributes)
                                     .then(function(data){
-                                        winston.debug("Chat21 sendToGroup sent ", data);
+                                        winston.info("Chat21 sendToGroup sent ", data);
                                 
                                         chat21Event.emit('message.sent', data);
 
-                                    messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
-                                        winston.debug("upMessage ", upMessage.toObject());                                        
-                                    });
+                                            messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
+                                                winston.info("Chat21 message sent ", upMessage.toObject());                                        
+                                            });
 
                             }).catch(function(err) {
                                 winston.error("Chat21 sendToGroup err", err);
@@ -247,5 +249,6 @@ class Chat21Handler {
 
     
 }
+
 var chat21Handler = new Chat21Handler();
 module.exports = chat21Handler;

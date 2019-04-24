@@ -11,10 +11,12 @@ const messageEvent = new MessageEvent();
 
 messageEvent.on('message.create', function(message) {
   if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
+    winston.debug("messageEvent.emit message.received", message);
     messageEvent.emit('message.received', message);
   }
 
   if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+    winston.debug("messageEvent.emit message.sending", message);
     messageEvent.emit('message.sending', message);
   }
 });
