@@ -84,7 +84,7 @@ class Chat21Handler {
                         
                         let members = requestObj.participants;
                         // var members = reqParticipantArray;
-                        members.push(request.requester_id);
+                        members.push(request.lead.lead_id);
                         
                         // let membersArray = JSON.parse(JSON.stringify(members));
                         // winston.info("membersArray", membersArray);

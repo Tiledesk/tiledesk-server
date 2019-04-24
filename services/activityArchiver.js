@@ -50,7 +50,7 @@ class ActivityArchiver {
             if (err) {
                 winston.error('Error saving activity ', err);
             }else {
-                winston.info('Activity saved', savedActivity.toObject());
+                winston.debug('Activity saved', savedActivity.toObject());
             }
         });
     }
