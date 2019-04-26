@@ -1,5 +1,5 @@
 
-var chat21Config = require('../../config/chat21');
+var chat21Config = require('../../channels/chat21/chat21Config');
 var Chat21 = require('@chat21/chat21-node-sdk');
 
 

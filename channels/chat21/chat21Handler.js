@@ -7,7 +7,7 @@ var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
 
-var chat21Config = require('../../config/chat21');
+var chat21Config = require('../../channels/chat21/chat21Config');
 var chat21 = require('../../channels/chat21/chat21Client');
 
 var i8nUtil = require("../../utils/i8nUtil");
@@ -16,6 +16,7 @@ winston.info('Chat21Handler adminToken: '+ adminToken);
 
 
 const chat21Event = require('../../channels/chat21/chat21Event');
+const chat21WebHook = require('../../channels/chat21/chat21WebHook');
 
 
 var admin = require('../../utils/firebaseConnector');
@@ -24,10 +25,15 @@ const firestore = admin.firestore();
 
 class Chat21Handler {
 
+    use(app) {
+        winston.info("Chat21Handler using controller chat21WebHook ");
+        app.use('/chat21/requests',  chat21WebHook);
+    }
 
     listen() {
 
         var that = this;
+        winston.info("Chat21Handler listener start ");
         
         messageEvent.on('message.sending', function(message) {
 

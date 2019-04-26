@@ -1,19 +1,19 @@
 var express = require('express');
 var router = express.Router();
-var Request = require("../models/request");
-var Message = require("../models/message");
-var Lead = require("../models/lead");
-var requestService = require('../services/requestService');
-var messageService = require('../services/messageService');
-var leadService = require('../services/leadService');
+var Request = require("../../models/request");
+var Message = require("../../models/message");
+var Lead = require("../../models/lead");
+var requestService = require('../../services/requestService');
+var messageService = require('../../services/messageService');
+var leadService = require('../../services/leadService');
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
-var admin = require('../utils/firebaseConnector');
+var admin = require('../../utils/firebaseConnector');
 const firestore = admin.firestore();
-var winston = require('../config/winston');
-var MessageConstants = require("../models/messageConstants");
+var winston = require('../../config/winston');
+var MessageConstants = require("../../models/messageConstants");
 
 
 router.post('/', function(req, res) {

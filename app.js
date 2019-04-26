@@ -64,7 +64,6 @@ var analytics = require('./routes/analytics');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
 var subscription = require('./routes/subscription');
-var chat21Request = require('./routes/chat21-request');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
@@ -89,8 +88,9 @@ botSubscriptionNotifier.start();
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
-var chat21Handler = require('./channels/chat21/chat21Handler');
-chat21Handler.listen();
+var channelManager = require('./channels/channelManager');
+
+channelManager.listen();
 
 
 var ReqLog = require("./models/reqlog");
@@ -371,8 +371,7 @@ app.use('/:projectid/departments', department);
 
 app.use('/public/requests', publicRequest);
 
-app.use('/chat21/requests',  chat21Request);
-
+channelManager.use(app);
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], faq);

@@ -31,7 +31,7 @@ var messageService = require('../services/messageService');
 const chat21Event = require('../channels/chat21/chat21Event');
 const messageEvent = require('../event/messageEvent');
 
-var chat21Config = require('../config/chat21');
+var chat21Config = require('../channels/chat21/chat21Config');
 
 var adminToken = process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken 
 winston.info('Test Chat21Handler adminToken: ' + adminToken);
@@ -42,18 +42,19 @@ var chat21Handler = require('../channels/chat21/chat21Handler');
 chat21Handler.listen();
 
 describe('Chat21Handler', function () {
+  
+  before(function() {
+    // runs before all tests in this block
 
+  
 
+  });
+
+ 
 
   it('creategroup', function (done) {
 
 
-    // var chat21Config = require('../config/chat21');
-    // var Chat21 = require('@chat21/chat21-node-sdk');
-    // var chat21 = new Chat21({
-    //   url: chat21Config.url,
-    //   appid: chat21Config.appid,
-    // });
 
 
 
