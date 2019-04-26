@@ -23,8 +23,8 @@ var projectService = require('../services/projectService');
 
 
 
-var appRules = require('../rules/appRules');
-appRules.start();
+// var appRules = require('../rules/appRules');
+// appRules.start();
 
 
 
