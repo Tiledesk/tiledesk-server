@@ -5,6 +5,10 @@ var Message = require("../models/message");
 var Faq_kb = require("../models/faq_kb");
 var MessageConstants = require("../models/messageConstants");
 
+
+
+
+
 class MessageEvent extends EventEmitter {}
 
 const messageEvent = new MessageEvent();
