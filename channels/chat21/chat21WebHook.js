@@ -10,8 +10,9 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
-var admin = require('../../utils/firebaseConnector');
+var admin = require('../../channels/chat21/firebaseConnector');
 const firestore = admin.firestore();
+
 var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
 

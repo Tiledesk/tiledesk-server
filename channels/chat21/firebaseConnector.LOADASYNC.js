@@ -3,12 +3,12 @@
 
 
 //firestore
-var firebaseConfig = require('../config/firebase');
+var firebaseConfig = require('../../config/firebase');
 
 
-var Setting = require('../models/setting');
+var Setting = require('../../models/setting');
 const admin = require('firebase-admin');
-var winston = require('../config/winston');
+var winston = require('../../config/winston');
 
 
 

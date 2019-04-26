@@ -2,6 +2,7 @@
 var winston = require('../config/winston');
 
 var chat21Handler = require('../channels/chat21/chat21Handler');
+// var chat21Handler = require('@tiledesk/tiledesk-chat21-app').chat21Handler;
 
 
 class ChannelManager {

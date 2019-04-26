@@ -89,7 +89,6 @@ var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
 var channelManager = require('./channels/channelManager');
-
 channelManager.listen();
 
 

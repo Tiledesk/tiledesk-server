@@ -19,7 +19,7 @@ const chat21Event = require('../../channels/chat21/chat21Event');
 const chat21WebHook = require('../../channels/chat21/chat21WebHook');
 
 
-var admin = require('../../utils/firebaseConnector');
+var admin = require('../../channels/chat21/firebaseConnector');
 const firestore = admin.firestore();
 
 

@@ -1,12 +1,12 @@
 'use strict';
 
-var winston = require('../config/winston');
+var winston = require('../../config/winston');
 
 
 //firestore
-var firebaseConfig = require('../config/firebase');
+var firebaseConfig = require('./firebaseConfig');
 
-var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../.firebasekey.json';
+var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
 
 var private_key = process.env.FIREBASE_PRIVATE_KEY;
 var client_email = process.env.FIREBASE_CLIENT_EMAIL;
