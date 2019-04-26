@@ -579,7 +579,9 @@ class RequestService {
                          console.warn("User not found",  savedRequest.participants[0]);
                        } else {
                          console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                         emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                        //  if (user.emailverified) {    enable it?                    
+                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                        //  }
                        }
                      });
                    }
