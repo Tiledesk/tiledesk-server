@@ -568,22 +568,21 @@ class RequestService {
    
                    }
 
-                   //at the momend department/operators send the email  for assigned request
-                  //  else if (savedRequest.status==200) { //ASSIGNED
-                  //    console.log("participants", savedRequest.participants[0]);
+                   else if (savedRequest.status==200) { //ASSIGNED
+                     console.log("participants", savedRequest.participants[0]);
    
-                  //    User.findById( savedRequest.participants[0], function (err, user) {
-                  //      if (err) {
-                  //        winston.error("Error sending email to " + savedRequest.participants[0], err);
-                  //      }
-                  //      if (!user) {
-                  //        console.warn("User not found",  savedRequest.participants[0]);
-                  //      } else {
-                  //        console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                  //        emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
-                  //      }
-                  //    });
-                  //  }
+                     User.findById( savedRequest.participants[0], function (err, user) {
+                       if (err) {
+                         winston.error("Error sending email to " + savedRequest.participants[0], err);
+                       }
+                       if (!user) {
+                         console.warn("User not found",  savedRequest.participants[0]);
+                       } else {
+                         console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                         emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                       }
+                     });
+                   }
 
 
 
