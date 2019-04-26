@@ -108,7 +108,12 @@ class Chat21Handler {
                     
                         var groupId = request.request_id;
 
-                        chat21.groups.create('Guest', members, gAttributes, groupId).then(function(data) {
+                        var group_name = "Guest"; 
+                        if (request.lead) {
+                            group_name = request.lead.fullname;
+                        }
+
+                        chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.info("Chat21 group created: " + data);      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
