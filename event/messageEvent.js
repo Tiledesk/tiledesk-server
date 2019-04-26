@@ -32,6 +32,12 @@ messageEvent.on('message.create.simple', function(message) {
         exec(function (err, request) {
     
           if (request) {
+
+            // if (request.messages_count==0){
+            //   messageEvent.emit('message.create.first', messageJson );
+            // }
+
+
             var messageJson = message.toJSON();
             
             var requestJson = request.toJSON();
@@ -57,7 +63,8 @@ messageEvent.on('message.create.simple', function(message) {
                       winston.debug("Subscription.emit",messageJson );
                       messageEvent.emit('message.create',messageJson );
 
-                      if (messages && messages.length==1){
+                      // if (messages && messages.length==1){
+                      if (message.text === request.first_text){
                         messageEvent.emit('message.create.first', messageJson );
                       }
 
@@ -69,7 +76,8 @@ messageEvent.on('message.create.simple', function(message) {
                     winston.debug("Subscription.emit",messageJson );
                     messageEvent.emit('message.create', messageJson );   
                     
-                    if (messages && messages.length==1){
+                    // if (messages && messages.length==1){
+                    if (message.text === request.first_text){
                       messageEvent.emit('message.create.first', messageJson );
                     }
 

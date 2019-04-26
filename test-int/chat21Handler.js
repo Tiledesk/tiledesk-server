@@ -87,13 +87,17 @@ describe('Chat21Handler', function () {
        
         chat21Event.on('group.create', function(data){
           winston.info("group created", data);
-          done();
+
+          // if (data){
+            done();
+          // }
+         
         });
 
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-       requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+       requestService.createWithId("request_id-chat21-createRequest", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
           winston.debug("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");                       
+          expect(savedRequest.request_id).to.equal("request_id-chat21-createRequest");                       
 
              messageService.create(savedUser._id, "test sender", savedRequest.request_id, "hello",
                                         savedProject._id, savedUser._id).then(function(savedMessage){
@@ -137,14 +141,17 @@ describe('Chat21Handler', function () {
           // });
           chat21Event.on('firestore.first_message', function(firestoreUpdate){
                     winston.debug("firestore.first_message created", firestoreUpdate);
+                  if (firestoreUpdate.first_message.sender ===savedUser._id) {
                     expect(firestoreUpdate.first_message.attributes).to.not.equal(null);                                               
                     done();
+                  }
+                   
                   });
 
 
 
             //  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
-             messageService.create(savedUser._id, "test sender", savedRequest.request_id, "hello",
+             messageService.create(savedUser._id, "test sender", savedRequest.request_id, "first_text",
                                         savedProject._id, savedUser._id,MessageConstants.CHAT_MESSAGE_STATUS.SENDING, {attr1:'attr1'}).then(function(savedMessage){
                                             expect(savedMessage.text).to.equal("hello");                                               
 

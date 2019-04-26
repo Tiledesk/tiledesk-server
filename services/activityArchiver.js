@@ -7,6 +7,8 @@ class ActivityArchiver {
 
     listen() {
 
+        winston.debug('ActivityArchiver listen');
+
         var that = this;
         
         //modify all to async
@@ -42,6 +44,8 @@ class ActivityArchiver {
                id_project: request.id_project });
                that.save(activity);                                    
         });
+
+        winston.info('ActivityArchiver listening');
 
     }
 

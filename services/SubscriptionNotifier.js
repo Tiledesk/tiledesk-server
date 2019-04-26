@@ -101,6 +101,7 @@ class SubscriptionNotifier {
   }
 
   start() {
+    winston.debug('SubscriptionNotifier start');
 
     //modify all to async
     messageEvent.on('message.create', function(message) {
@@ -286,7 +287,7 @@ class SubscriptionNotifier {
       });
 
     
-
+      winston.info('SubscriptionNotifier started');
   }
 
 

@@ -53,7 +53,7 @@ class Chat21Handler {
                         attributes['tiledesk_message_id'] = message._id;
 
 
-                        winston.info("Chat21Sender sending message.sending ",  message);
+                        winston.debug("Chat21Sender sending message.sending ",  message);
 
                         chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                             'Recipient Fullname', message.text, message.sender, attributes)
@@ -95,7 +95,11 @@ class Chat21Handler {
                         
                         let members = requestObj.participants;
                         // var members = reqParticipantArray;
-                        members.push(request.lead.lead_id);
+
+                        if (request.lead) {
+                            members.push(request.lead.lead_id);
+                        }
+                        
                         
                         // let membersArray = JSON.parse(JSON.stringify(members));
                         // winston.info("membersArray", membersArray);
@@ -182,6 +186,8 @@ class Chat21Handler {
 
 
             messageEvent.on('message.create.first',  function(message) {          
+
+                winston.info("chat21Handler.message.create.first", message); 
 
                 setImmediate(() => {
                     if (message.request.channel.name === ChannelConstants.CHAT21) {

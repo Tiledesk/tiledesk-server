@@ -6,6 +6,7 @@
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
     "test": "mocha --exit",
+    "test:int": "mocha ./test-int --exit",
     "posttest": "mongodb-runner stop"
   },
   "private": false,

@@ -15,8 +15,12 @@ class ChannelManager {
 
     listen() {
         var that = this;
-        winston.info("ChannelManager listener start ");
-        chat21Handler.listen();
+        if (process.env.NODE_ENV != 'test')  {
+            winston.info("ChannelManager listener start ");
+            chat21Handler.listen();
+        }else {
+            winston.info("ChannelManager listener NOT started ");
+        }
     }
 
 
