@@ -69,7 +69,7 @@ var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var activities = require('./routes/activity');
 
-var appRules = require('./rules/appRules');
+var appRules = require('./rules/global/appRules');
 appRules.start();
 
 

@@ -1,7 +1,7 @@
-const Request = require('../models/request');
+const Request = require('../../models/request');
 
-const departmentEvent = require('../event/departmentEvent');
-var winston = require('../config/winston');
+const departmentEvent = require('../../event/departmentEvent');
+var winston = require('../../config/winston');
 // var sleep = require('thread-sleep');
 
 // let getLastRequest=async function(query){
