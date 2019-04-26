@@ -40,7 +40,12 @@ class Chat21Handler {
                     
                         chat21.auth.setAdminToken(adminToken);
 
-                        let attributes = {tiledesk_message_id: message._id };
+                        let attributes = message.attributes;
+
+                        if (!attributes) attributes = {};
+                        
+                        attributes['tiledesk_message_id'] = message._id;
+
 
                         winston.info("Chat21Sender sending message.sending ",  message);
 
