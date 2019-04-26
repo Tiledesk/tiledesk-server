@@ -20,6 +20,7 @@ class ConciergeBot {
                   
 
                         if (!request.department.id_bot) {
+                            
                             winston.debug("ConciergeBot send welcome bot message");     
                             
                             if (request.availableAgents.length==0) {
