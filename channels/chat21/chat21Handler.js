@@ -37,7 +37,7 @@ class Chat21Handler {
         messageEvent.on('message.sending', function(message) {
 
             setImmediate(() => {
-                    winston.debug("Chat21Sender on message.sending ",  message);
+                    winston.info("Chat21Sender on message.sending ",  message);
 
 
                     if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request.channel.name === ChannelConstants.CHAT21) {
