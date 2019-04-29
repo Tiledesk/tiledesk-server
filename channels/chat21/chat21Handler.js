@@ -226,6 +226,9 @@ class Chat21Handler {
                 newRequest.requester_fullname = request.lead.fullname;
             }
             
+            // set projectid. widget send projectid field. ohh noooo
+            // "channel_type":"group","language":"it","metadata":"", ...... , :( "projectid":"5cc2d1554ce7ee00175e07f2",......, "recipient":"support-group-Lde6vlnfK8k8SCgtbUd","recipient_fullname":"aleo1",
+            newRequest.projectid = request.id_project;
 
             newRequest.first_text = request.first_text;
             newRequest.departmentid = request.department._id.toString(); 
