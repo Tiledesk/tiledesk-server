@@ -9,7 +9,7 @@ var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
 var passport = require('passport');
-require('./config/passport')(passport);
+require('./middleware/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
@@ -68,6 +68,7 @@ var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var activities = require('./routes/activity');
+var widgets = require('./routes/widget');
 
 var appRules = require('./rules/global/appRules');
 appRules.start();
@@ -82,8 +83,8 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
 
 
-//var faqBotHandler = require('./services/faqBotHandler');
-//faqBotHandler.listen();
+var faqBotHandler = require('./services/faqBotHandler');
+faqBotHandler.listen();
 
 var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
@@ -386,6 +387,7 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/projects',project);
 //app.use('/settings',setting);
 
+app.use('/:projectid/widgets',widgets);
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);

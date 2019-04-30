@@ -12,7 +12,7 @@ var roleChecker = require('../middleware/has-role');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
-require('../config/passport')(passport);
+require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 
 

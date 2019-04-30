@@ -11,6 +11,7 @@ var winston = require('../config/winston');
 // load up the user model
 var User = require('../models/user');
 var config = require('../config/database'); // get db config file
+var Faq_kb = require("../models/faq_kb");
 
 module.exports = function(passport) {
     
@@ -39,7 +40,27 @@ module.exports = function(passport) {
     // console.log("jwt_payload",jwt_payload);
 
     // console.log("jwt_payload._doc._id",jwt_payload._doc._id);
-    User.findOne({_id: jwt_payload._doc._id}, function(err, user) {
+
+
+    if (jwt_payload.sub.endsWith('/bot')) {
+      Faq_kb.findOne({_id: jwt_payload._doc._id}, function(err, faq_kb) {
+        // console.log("here3");
+          if (err) {
+            // console.log("here3 err");
+              return done(err, false);
+          }
+          if (faq_kb) {
+            // console.log("here3 done user",user);
+              return done(null, faq_kb);
+          } else {
+            // console.log("here3 false");
+              return done(null, false);
+          }
+      });
+    } else if (jwt_payload.sub.endsWith('/visitor')) {
+    } else if (jwt_payload.sub.endsWith('/lead')) {
+    } else {
+      User.findOne({_id: jwt_payload._doc._id}, function(err, user) {
         // console.log("here3");
           if (err) {
             // console.log("here3 err");
@@ -53,6 +74,11 @@ module.exports = function(passport) {
               return done(null, false);
           }
       });
+
+    }
+   
+
+
   }));
 
 

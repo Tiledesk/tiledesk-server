@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 
 var passport = require('passport');
-require('../config/passport')(passport);
+require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 // var pendingInvitationService = require("../services/pendingInvitationService");
 var emailService = require("../models/emailService");
@@ -23,6 +23,7 @@ router.get('/resendinvite/:pendinginvitationid', [passport.authenticate(['basic'
     console.log('RESEND INVITE - CURRENT PROJECT: ', req.project);
     console.log('RESEND INVITE - CURRENT USER: ', req.user);
 
+    // TODO req.user.firstname is null for bot visitor
     emailService.sendInvitationEmail_UserNotRegistered(pendinginvitation.email, req.user.firstname, req.user.lastname, req.project.name, req.project._id, pendinginvitation.role)
     //                                                         // invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role
     // return pendingInvitationService.saveInPendingInvitation(pendinginvitation.email, req.user.firstname, req.user.lastname, req.project.name, req.project._id,  pendinginvitation.role)

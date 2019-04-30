@@ -7,7 +7,7 @@ var Project_user = require("../models/project_user");
 var Group = require("../models/group");
 
 var passport = require('passport');
-require('../config/passport')(passport);
+require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var operatingHoursService = require("../models/operatingHoursService");
 // var passport = require('passport');
