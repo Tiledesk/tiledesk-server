@@ -108,51 +108,6 @@ if (process.env.CACHE_ENABLED) {
 var app = express();
 
 
-//traffic counter
-// // var TrafficCounter = require('traffic-counter');
-// var TrafficCounter = require('./utils/TrafficCounter');
-// TrafficCounter.on(TrafficCounter.Event.Error, function(Err) {
-//   //This is an error that occured during the initial object creation
-//   //Probably ok to exit here
-//   console.log(Err);
-// });
-
-// TrafficCounter.on(TrafficCounter.Event.RequestError, function(Err) {
-//   //This is an error that occured once the web server is up and running
-//   //Probably advisable to recover gracefull from this one
-//   console.log(Err);
-// });
-
-// TrafficCounter.on(TrafficCounter.Event.SetupFinished, function() {
-//   //We are now ready to use the traffic counter in app.VERB
-//   //Putting the app.VERB logic here is a viable alternative to
-//   //using a callback
-//   console.log('Setup of the TrafficCounter object complete!');
-// });
-
-// // var connection = mongoose.connection;
-// // console.log("connection", connection);
-// //var MongoClient = require('mongodb').MongoClient;
-// // Connect to the db
-// //MongoClient.connect("mongodb://localhost:27017/", function(err, connectionTC) {
-//   //TrafficCounter.Setup(connectionTC.db('tiledesk-test'), function () {
-//     TrafficCounter.Setup(mongoose.connection, function () {
-//     console.log("here1");
-//     // app.get('/aa', function (req, res, next) {
-//       // app.use( function (req, res, next) {
-//         app.use('/aa',TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app));
-
-//         app.get('/aa', function (req, res) {
-//           //console.log("ss")
-          
-//           res.send('Chat21 API index page. See the documentation.');
-//         });
-//         // app.all('/', [console.log("herereeeeee2222"), TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app)]);
-//       //   console.log("herereeeeee2222");
-//       //   TrafficCounter.CountTraffic(TrafficCounter.TimeUnit.Hour, 30, app);
-//       // });
-//   });
-// });
 
 // var messageWsService = require('./services/messageWsService');
 // messageWsService.init(app);
@@ -216,16 +171,8 @@ app.use(passport.initialize());
 
 app.use(cors());
 
-
+// unused
 var reqLogger = function (req, res, next) {
-
-// app.use(function (req, res, next) {
-  // try {
-
-  // }catch(e) {
-
-  // }
-  
    var projectid = req.params.projectid;
    winston.debug("projectIdSetter projectid", projectid);
 
@@ -257,40 +204,6 @@ app.get('/', function (req, res) {
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com.');
 });
 
-
-// app.use(function (req, res, next) {
-//  Setting.findOne({}, function (err, setting) {
-//     if (err) {
-//       winston.error("Error getting setting", err);
-//       next();
-//     }
-//     if (!setting) {
-//       // console.log("setting doesnt exist. Creare it from serviceAccount", setting);
-//       //     var setting = new Setting({firebase: {private_key: serviceAccount.private_key, client_email: serviceAccount.client_email, project_id: serviceAccount.project_id}})
-//       //     setting.save(function(err, ssetting) {
-//       //       if (err) {
-//       //         winston.error('Error saving ssetting ', err);
-//       //       }else {
-//       //         winston.error('ssetting saved', ssetting)
-//       //       }
-//       //     });
-//       next();   
-//     } else {
-//       console.log("setting", setting);
-//       //req.appSetting = setting;
-
-//       // https://stackoverflow.com/questions/16452123/how-to-create-global-variables-accessible-in-all-views-using-express-node-js
-//       app.locals({appSetting: appSetting});
-//       next();   
-//     }
-    
-//   });
-  
-// });
-
-//app.use(reqLogger);
-
-// var reqLogger = function (req, res, next) {
   
 
 
@@ -352,21 +265,16 @@ app.use('/firebase/auth', firebaseAuth);
 //  app.use('/:projectid', [projectIdSetter]);
 app.use('/:projectid', [projectIdSetter, projectSetter]);
 
-
-//app.use('/:projectid', [passport.authenticate('jwt', { session: false}), passport.authenticate('basic', { session: false }), validtoken]);
-// app.use('/:projectid', [passport.authenticate('jwt', { session: false}), validtoken]);
-//  app.use('/:projectid', [passport.authenticate('basic', { session: false }), validtoken]);
-// app.use('/:projectid', [passport.authenticate('basic', { session: false })]);
-
 // http://aleksandrov.ws/2013/09/12/restful-api-with-nodejs-plus-mongodb/
 // app.use('/:projectid', [passport.authenticate(['basic','jwt'], { session: false }), validtoken]);
 
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
-// app.use('/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], request);
-
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
+
+//TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
+// department internal auth check
 app.use('/:projectid/departments', department);
 // app.use('/:projectid/departments', reqLogger, department);
 
@@ -383,17 +291,18 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 // app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq_kb);
 
 
-//ATTENZIOne aggiungi auth check qui.i controlli stanno i project
+// project internal auth check
 app.use('/projects',project);
+
 //app.use('/settings',setting);
 
-app.use('/:projectid/widgets',widgets);
+app.use('/:projectid/widgets', widgets);
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
-
+//TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
