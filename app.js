@@ -204,22 +204,25 @@ var reqLogger = function (req, res, next) {
 }
 
 var visitorCounter = function (req, res, next) {
-  var projectid = req.projectid;
-  winston.info("visitorCounter projectIdSetter projectid:" + projectid);
+  try {
+    var projectid = req.projectid;
+    winston.debug("visitorCounter projectIdSetter projectid:" + projectid);
 
- var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
- winston.info("fullUrl:"+ fullUrl);
- winston.info("req.get('origin'):" + req.get('origin'));
+  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+  winston.debug("fullUrl:"+ fullUrl);
+  winston.debug("req.get('origin'):" + req.get('origin'));
 
- VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
- { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
-   if (err) {
-     winston.error('Error saving reqlog ', err)
-   }
-   winston.info("visitorCounter saved "+ VisitorCounterSaved);
- });
+  VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
+  { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
+    if (err) {
+      winston.error('Error saving reqlog ', err)
+    }
+    winston.debug("visitorCounter saved "+ VisitorCounterSaved);
+  });
 
- next()
+  next()
+  }
+  catch(e){}
 }
 
 
