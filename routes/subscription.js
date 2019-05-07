@@ -83,10 +83,7 @@ router.get('/:subscriptionid', function (req, res) {
 
 router.get('/', function (req, res) {
 
-  
-
-  // Lead.find({ "id_project": req.projectid }, function (err, leads, next) {
-  return Subscription.find().
+    return Subscription.find({ "id_project": req.projectid }).
     exec(function (err, subscriptions, next) {
       if (err) {
         winston.error('LEAD ROUTE - REQUEST FIND ERR ', err)
