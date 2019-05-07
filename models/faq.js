@@ -5,6 +5,8 @@ var FaqSchema = new Schema({
   id_faq_kb: {
     type: String,
     // required: true
+    // type: Schema.Types.ObjectId,
+    // ref: 'faq_kb'
   },
   question: {
     type: String,
@@ -40,15 +42,25 @@ var FaqSchema = new Schema({
     required: true
   }
 },{
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
 
+FaqSchema.virtual('faq_kb', {
+  ref: 'faq_kb', // The model to use
+  localField: 'id_faq_kb', // Find people where `localField`
+  foreignField: '_id', // is equal to `foreignField`
+  justOne: false,
+  //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
 
 
 FaqSchema.index({question: 'text'},
  {"name":"faq_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
+ FaqSchema.index({answer: 'text'},
+ {"name":"faq_fulltext_answer","default_language": "italian","language_override": "dummy"}); // schema level
 
 
 module.exports = mongoose.model('faq', FaqSchema);
