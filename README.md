@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=master)](https://travis-ci.org/Tiledesk/tiledesk-server)
 
+# Introduction
+
+Tiledesk is an Open Source Live Chat platform written in NodeJs, Firebase and Angular.
+
 # Prerequisites
 
 * Nodejs and npm installed 
@@ -42,7 +46,7 @@ Deploy with button:
 To see the log run : 
 
 ```
-heroku logs  -n 2000 --tail -a chat21-api-nodejs
+heroku logs  -n 2000 --tail -a tiledesk-server
 ```
 
 
