@@ -59,8 +59,8 @@ FaqSchema.virtual('faq_kb', {
 FaqSchema.index({question: 'text'},
  {"name":"faq_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
- FaqSchema.index({answer: 'text'},
- {"name":"faq_fulltext_answer","default_language": "italian","language_override": "dummy"}); // schema level
+//  FaqSchema.index({answer: 'text'},
+//  {"name":"faq_fulltext_answer","default_language": "italian","language_override": "dummy"}); // schema level
 
 
 module.exports = mongoose.model('faq', FaqSchema);
