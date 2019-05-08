@@ -90,6 +90,7 @@ activityArchiver.listen();
 
 
 var ReqLog = require("./models/reqlog");
+var VisitorCounter = require("./models/visitorCounter");
 
 if (process.env.QUEQUE_ENABLED) {
   var queue = require('./queue/reconnect');
@@ -248,6 +249,29 @@ var reqLogger = function (req, res, next) {
   next()
 }
 
+
+var visitorCounter = function (req, res, next) {
+  try {
+    var projectid = req.projectid;
+    winston.debug("visitorCounter projectIdSetter projectid:" + projectid);
+
+  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+  winston.debug("fullUrl:"+ fullUrl);
+  winston.debug("req.get('origin'):" + req.get('origin'));
+
+  VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
+  { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
+    if (err) {
+      winston.error('Error saving reqlog ', err)
+    }
+    winston.debug("visitorCounter saved "+ VisitorCounterSaved);
+  });
+
+  next()
+  }
+  catch(e){}
+}
+
 app.get('/', function (req, res) {  
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com.');
 });
@@ -362,7 +386,8 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
-app.use('/:projectid/departments', department);
+app.use('/:projectid/departments', visitorCounter, department);
+// app.use('/:projectid/departments', department);
 // app.use('/:projectid/departments', reqLogger, department);
 
 app.use('/public/requests', publicRequest);
