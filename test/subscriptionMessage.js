@@ -73,6 +73,7 @@ describe('Subscription', () => {
                                     console.log("serverClient.headers",  JSON.stringify(req.headers));
                                     //  messageReceived = messageReceived+1;
                                     expect(req.body.hook.event).to.equal("message.create");
+                                    expect(req.body.hook.secret).to.equal(undefined);
                                     expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-create");
                                     expect(req.body.payload.request.department).to.not.equal(null);
                                     expect(req.body.payload.request.department.bot).to.not.equal(null);
@@ -149,6 +150,7 @@ describe('Subscription', () => {
                                         console.log('serverClient req', JSON.stringify(req.body));                        
                                         console.log("serverClient.headers",  JSON.stringify(req.headers));
                                         expect(req.body.hook.event).to.equal("message.received");
+                                        expect(req.body.hook.secret).to.equal(undefined);
                                         expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-received");
                                         expect(req.body.payload.request.department).to.not.equal(null);
                                         expect(req.body.payload.request.department.bot).to.not.equal(null);

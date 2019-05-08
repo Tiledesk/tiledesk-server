@@ -46,16 +46,20 @@ class SubscriptionNotifier {
           
         // console.log("s",s);
 
-          json["hook"] = s;
+        var secret = s.secret;
 
-          request({
-            url: s.target,
-            headers: {
-             'Content-Type' : 'application/json',        
-              'x-hook-secret': s.secret
-            },
-            json: json,
-            method: 'POST'
+        let sJson = s.toObject();
+        delete sJson.secret;
+        json["hook"] = sJson;
+
+        request({
+          url: s.target,
+          headers: {
+           'Content-Type' : 'application/json',        
+            'x-hook-secret': secret
+          },
+          json: json,
+          method: 'POST'
 
           }, function(err, result, json){
             winston.debug("SENT " + s.event + " TO " + s.target,  "with error " , err);

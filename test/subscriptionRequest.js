@@ -296,12 +296,13 @@ describe('Subscription', () => {
                                 serverClient.use(bodyParser.json());
                                 //serverClient.use(express.bodyParser());
                                 serverClient.post('/', function (req, res) {
-                                    console.log('serverClient req', util.inspect(req.body, {showHidden: false, depth: null}));                        
+                                    console.log('serverClient req11', util.inspect(req.body, {showHidden: false, depth: null}));                        
                                     expect(req.body.hook.event).to.equal("request.close");
+                                    expect(req.body.hook.secret).to.equal(undefined);
                                     expect(req.body.hook._id).to.equal(subid);
                                     expect(req.body.payload.request_id).to.equal("request_id-closeRequest");
                                     expect(req.body.payload.messages).to.have.lengthOf(2);                       
-
+                                    //console.log('quiiii');
                                     res.send('POST request to the homepage');
                                     done();
                                                          

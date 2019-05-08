@@ -4,7 +4,7 @@
 
 # Introduction
 
-Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs.
+Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs. Build your own customer support with a multi-channel platform for Web, Android and iOS
 
 # Prerequisites
 
