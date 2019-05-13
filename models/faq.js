@@ -30,6 +30,10 @@ var FaqSchema = new Schema({
     default: "live"
     // required: true
   },
+  language: {
+    type: String,
+    required: false
+  },
 
 //   "stats":{  
 //     "conversation_count":2,
@@ -56,11 +60,14 @@ FaqSchema.virtual('faq_kb', {
 });
 
 
-FaqSchema.index({question: 'text'},
- {"name":"faq_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+FaqSchema.index({question: 'text', answer: 'text'},
+ {"name":"faq_fulltext","default_language": "italian","language_override": "language", weights: {question: 10,answer: 1}}); // schema level
 
-//  FaqSchema.index({answer: 'text'},
-//  {"name":"faq_fulltext_answer","default_language": "italian","language_override": "dummy"}); // schema level
+ var Faq = mongoose.model('faq', FaqSchema);
 
+ Faq.on('index', function(error) {
+  // "_id index cannot be sparse"
+  console.log('index', error);
+});
 
-module.exports = mongoose.model('faq', FaqSchema);
+module.exports = Faq;
