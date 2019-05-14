@@ -52,6 +52,7 @@ router.post('/invite', function (req, res) {
     if (!user) {
       /*
        * *** USER NOT FOUND > SAVE EMAIL AND PROJECT ID IN PENDING INVITATION *** */
+      // TODO req.user.firstname is null for bot visitor
       return pendinginvitation.saveInPendingInvitation(req.body.id_project, req.body.project_name, req.body.email, req.body.role, req.user.id, req.user.firstname, req.user.lastname)
         .then(function (savedPendingInvitation) {
 

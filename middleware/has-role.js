@@ -61,7 +61,7 @@ class RoleChecker {
                     res.status(403).send({success: false, msg: 'you dont have the required role.'});
                   }
                 }
-              }else {
+              } else {
               
                 // if (req.user) equals super admin next()
                 res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
