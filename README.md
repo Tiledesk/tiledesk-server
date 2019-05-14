@@ -40,7 +40,7 @@ Install nodemon with 'npm install -g nodemon'
 
 Deploy with button:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://raw.githubusercontent.com/Tiledesk/tiledesk-server/master/app.json)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Tiledesk/tiledesk-server)
 
 
 To see the log run : 
