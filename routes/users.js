@@ -77,6 +77,7 @@ router.put('/changepsw', function (req, res) {
 router.get('/resendverifyemail', function (req, res) {
   console.log('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
   try {
+    // TODO req.user.email is null for bot visitor
     emailService.sendVerifyEmailAddress(req.user.email, req.user);
     res.status(200).json({ success: true, message: 'Verify email successfully sent' });
   } catch (e) {
