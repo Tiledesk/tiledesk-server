@@ -13,7 +13,11 @@ var VisitorCounterSchema = new Schema({
     type: String,
     index: true 
   },
-  totalViews:{type:Number,default:0},
+  totalViews:{
+    type:Number,
+    default:0,
+    index: true 
+  },
 
   // ip: {
   //   type: String,
