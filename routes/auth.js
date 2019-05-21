@@ -116,15 +116,37 @@ router.post('/signin', function (req, res) {
       if (req.body.password) {
         var superPassword = process.env.SUPER_PASSWORD;
 
+
+        // "aud": "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+        // "iat": 1539784440,
+        // "exp": 1539788040,
+        // "iss": "firebase-adminsdk-z2x9h@chat-v2-dev.iam.gserviceaccount.com",
+        // "sub": "firebase-adminsdk-z2x9h@chat-v2-dev.iam.gserviceaccount.com",
+        // "uid": "123456_123456"
+      
+
+        // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
+        var signOptions = {
+          issuer:  'https://tiledesk.com',
+          subject:  user._id+'@tiledesk.com/user',
+          audience:  'https://tiledesk.com',
+          // uid: user._id  Uncaught ValidationError: "uid" is not allowed
+          // expiresIn:  "12h",
+          // algorithm:  "RS256"
+        };
+
         if (superPassword && superPassword == req.body.password) {
-          var token = jwt.sign(user, config.secret);
+          // TODO add subject
+          var token = jwt.sign(user, config.secret, signOptions);
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              var token = jwt.sign(user, config.secret);
+              // TODO use userJSON 
+              // TODO add subject
+              var token = jwt.sign(user, config.secret, signOptions);
 
 
               // var activityBody = req.body; 
