@@ -12,6 +12,7 @@ var winston = require('../config/winston');
 var User = require('../models/user');
 var config = require('../config/database'); // get db config file
 var Faq_kb = require("../models/faq_kb");
+var jwt = require('jsonwebtoken');
 
 module.exports = function(passport) {
     
@@ -25,16 +26,36 @@ module.exports = function(passport) {
     //     done(null, user);
     //   });
 
-  var opts = {};
-  opts.jwtFromRequest = ExtractJwt.fromAuthHeader();
-  // ExtractJwt.fromAuthHeaderWithScheme("jwt")
-  var secret = config.secret;
+  var opts = {
+            // jwtFromRequest: ExtractJwt.fromAuthHeader(),
+            jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt"),
+            // secretOrKey: config.secret,
+            secretOrKeyProvider: function(request, rawJwtToken, done) {
+              // winston.info("secretOrKeyProvider ", request );
+              if (request.project) {
+                winston.info("secretOrKeyProvider.request.project.jwtSecret: "+request.project.jwtSecret );
+              }
+              
+              // winston.info("secretOrKeyProvider: "+request.project.name );
+              // winston.info("secretOrKeyProvider: "+rawJwtToken );
+              
+              var decoded = jwt.decode(rawJwtToken);
+              winston.info("decoded: ", decoded );
+
+              if (request.url=="uni" && request.project && request.project.jwtSecret) {
+                winston.info("uni config.jwtSecret: "+ config.jwtSecret );
+                done(null, request.project.jwtSecret);
+              } else {
+                winston.info("config.jwtSecret: "+ config.secret );
+                done(null, config.secret);
+              }             
+            }
+       }
 
    var secret23 = process.env.SECRET || config.secret;
    winston.debug("secret23", secret23);
 
-  opts.secretOrKey = secret;
-  // console.log("here");
+  winston.info("passport opts: ", opts);
 
   passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
     // console.log("jwt_payload",jwt_payload);
@@ -43,10 +64,11 @@ module.exports = function(passport) {
 
 
     if (jwt_payload.sub.endsWith('/bot')) {
-      Faq_kb.findOne({_id: jwt_payload._doc._id}, function(err, faq_kb) {
+      winston.info("Passport JWT bot");
+      Faq_kb.findOne({_id: jwt_payload._id}, function(err, faq_kb) {
         // console.log("here3");
           if (err) {
-            // console.log("here3 err");
+            winston.info("here3 err");
               return done(err, false);
           }
           if (faq_kb) {
@@ -60,17 +82,18 @@ module.exports = function(passport) {
     } else if (jwt_payload.sub.endsWith('/visitor')) {
     } else if (jwt_payload.sub.endsWith('/lead')) {
     } else {
+      winston.info("Passport JWT generic");
       User.findOne({_id: jwt_payload._doc._id}, function(err, user) {
         // console.log("here3");
           if (err) {
-            // console.log("here3 err");
+              winston.info("Passport JWT generic err", err);
               return done(err, false);
           }
           if (user) {
-            // console.log("here3 done user",user);
+            winston.info("Passport JWT generic user", user);
               return done(null, user);
           } else {
-            // console.log("here3 false");
+            winston.info("Passport JWT generic not user");
               return done(null, false);
           }
       });
