@@ -45,14 +45,17 @@ class SubscriptionNotifier {
       subscriptions.forEach(function(s) {
           
         // console.log("s",s);
+          var secret = s.secret;
 
-          json["hook"] = s;
+          let sJson = s.toObject();
+          delete sJson.secret;
+          json["hook"] = sJson;
 
           request({
             url: s.target,
             headers: {
              'Content-Type' : 'application/json',        
-              'x-hook-secret': s.secret
+              'x-hook-secret': secret
             },
             json: json,
             method: 'POST'
