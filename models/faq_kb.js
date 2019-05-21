@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+const uuidv4 = require('uuid/v4');
 
 var Faq_kbSchema = new Schema({
   name: {
@@ -23,6 +24,12 @@ var Faq_kbSchema = new Schema({
   },
   trashed: {
     type: Boolean,
+  },
+  secret: {
+    type: String,
+    required: true,
+    default: uuidv4(),
+    select: false
   },
   createdBy: {
     type: String,
