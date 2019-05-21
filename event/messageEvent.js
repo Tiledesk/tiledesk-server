@@ -28,12 +28,16 @@ messageEvent.on('message.create', function(message) {
 messageEvent.on('message.create.simple', function(message) {
 
 
-        winston.debug("Subscription.notify", 'message.create', message);
+        winston.debug("Subscription.notify message.create", message.toObject());
         
         Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
         populate('lead').
         populate('department').        
         exec(function (err, request) {
+
+          if (err) {
+            winston.error("Error getting request on messageEvent.message.create.simple",err );
+          }
     
           if (request) {
 

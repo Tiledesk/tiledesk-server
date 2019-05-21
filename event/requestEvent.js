@@ -20,13 +20,14 @@ requestEvent.on('request.create.simple', function(request) {
         .populate(
             [           
             {path:'department'},
-            // {path:'lead'}                        
+            {path:'lead'}                        
 
             ]
         ,function (err, requestComplete){
 
             if (err){
                 winston.error('error getting request', err);
+                return requestEvent.emit('request.create', request);
             }
 
             winston.debug('emitting request.create', requestComplete.toObject());
