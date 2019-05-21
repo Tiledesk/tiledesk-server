@@ -409,6 +409,8 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/projects',project);
 //app.use('/settings',setting);
 
+app.use('/:projectid/widgets', widgets);
+
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);
