@@ -1,20 +1,35 @@
 var request = require('request');
 const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
+var jwt = require('jsonwebtoken');
+const Faq_kb = require('../models/faq_kb');
 
 
 class BotSubscriptionNotifier {
    
   
-  notify(url, payload) {
+  notify(bot,botWithSecret, payload) {
   
-   
+      winston.info("BotSubscriptionNotifier bot", bot.toObject(), 'payload', payload );
+
+      var url = bot.url;
+
       var json = {timestamp: Date.now(), payload: payload};
-     
-      winston.info("BotSubscriptionNotifier notify url " +url + " payload " + payload );
+    
+
+      json["hook"] = bot;
 
 
-          //json["hook"] = s;
+      var signOptions = {
+        issuer:  'https://tiledesk.com',
+        subject:  bot._id+'@tiledesk.com/bot',
+        audience:  'https://tiledesk.com',        
+      };
+
+      var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
+      json["token"] = token;
+
+      winston.info("BotSubscriptionNotifier notify json ", json );
 
           request({
             url: url,
@@ -40,7 +55,14 @@ class BotSubscriptionNotifier {
     winston.debug('BotSubscriptionNotifier start');
     //modify to async
     botEvent.on('bot.message.received.notify.external', function(botNotification) {
-      botSubscriptionNotifier.notify(botNotification.url, botNotification.message);
+      var bot = botNotification.bot;
+      Faq_kb.findById(bot._id).select('+secret').exec(function (err, botWithSecret){
+        if (err) {
+          winston.debug('Error getting botWithSecret', err);
+        }
+        botSubscriptionNotifier.notify(bot, botWithSecret, botNotification.message);
+      });
+      
     });
 
     winston.info('BotSubscriptionNotifier started');
