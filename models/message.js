@@ -32,6 +32,10 @@ var MessageSchema = new Schema({
     required: true,
     index: true
   },
+  // first: { //used by bot training feature. use request first_text insteed?
+  //   type: Boolean,
+  //   default: false
+  // },
   attributes: {
     type: Object,
   },
@@ -54,5 +58,9 @@ var MessageSchema = new Schema({
 //   SEEN : 300 //seen
 
 // }
+
+MessageSchema.index({ recipient: 1, updatedAt:1 }); // schema level
+MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 }); // schema level
+
 
 module.exports = mongoose.model('message', MessageSchema);
