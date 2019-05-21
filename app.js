@@ -65,6 +65,7 @@ var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var activities = require('./routes/activity');
+var widgets = require('./routes/widget');
 
 var appRules = require('./rules/appRules');
 appRules.start();
