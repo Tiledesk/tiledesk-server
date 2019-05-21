@@ -247,12 +247,16 @@ class RequestService {
                            //send email to admin
                           Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
                           .exec(function (err, project_users) {
-                            project_users.forEach(project_user => {
-                              if (project_user.id_user) {
-                                return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
-                              } else {
-                              }
-                            });                        
+
+                            if (project_users && project_users.length>0) {
+                              project_users.forEach(project_user => {
+                                if (project_user.id_user) {
+                                  return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
+                                } else {
+                                }
+                              });  
+                            }                      
+
                           });
                           //end send email to admin
 
