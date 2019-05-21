@@ -80,7 +80,13 @@ messageEvent.on('message.received', function(message) {
    if (!botId) {
         return null;
     }else {
-        messageEvent.emit('message.received.for.bot', message);
+        if (message.sender === botId) {
+            winston.debug("it s a message sent from bot, exit");
+            return null;        
+        }else {
+            messageEvent.emit('message.received.for.bot', message);
+        }
+        
     }
 
 
