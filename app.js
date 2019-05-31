@@ -301,7 +301,9 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
 
 //TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
-app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
+//TODOOOOOOOOOOOOO RE_ENABLE roleChecker.hasRole()
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
+// app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
 // department internal auth check
 app.use('/:projectid/departments', visitorCounter, department);
