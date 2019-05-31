@@ -119,46 +119,21 @@ router.post('/', function(req, res) {
                     
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                       return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
-                        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
-                        return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+
+
+                        var messageId = undefined;
+                        if (message.attributes && message.attributes.tiledesk_message_id) {
+                          messageId = message.attributes.tiledesk_message_id;
+                        }
+
+                       // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
+                        return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
-                                      // winston.debug("savedMessageXXX ");
-                                      //get projectid from savedMessage.id_project
 
-                                  //  if (message.attributes && message.attributes.jwt_token) {
-                                  //       try {
-                                           
-                                  //           winston.debug("message.attributes.jwt_token", message.attributes.jwt_token);
-                                  //           // verify a token symmetric - synchronous
-                                  //           var decoded = jwt.verify(message.attributes.jwt_token, secret);
-                                  //           winston.debug("decoded", decoded);
-                                                                                                              
-                                    
-                                  //       } catch(err) {
-                                  //           winston.error("error decoding jwt token", err);
-
-                                  //           return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-                                  //             winston.debug("customAuthToken", customAuthToken);
-                                  //                 // winston.debug("chat21", chat21);
-                                  //                 // winston.debug(" admin.auth()", JSON.stringify(admin.auth()));
-                                  //                 // winston.debug(" admin", admin.auth());
-                                                  
-                                  //               return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
-                                  //                   chat21.auth.setCurrentToken(idToken);
-                                  //                   winston.debug("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
-                                  //                   return chat21.messages.send('Sender Node SDK', '5aaa99024c3b110014b478f0', 'Andrea Leo', 'hello from Node SDK');
-                                  //                 });
-                                  //             }).catch(function(err) {
-                                  //               return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
-                                  //             });
-
-
-                                            
-                                  //       }  
-                              
-
-                                  
-                                  //  }
+                             // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+                        // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+                        //   projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+                                       
 
                             return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
                               return res.json(savedRequestWithIncrement);
@@ -199,10 +174,17 @@ router.post('/', function(req, res) {
               return res.status(400).send({success: false, msg: "recipient not starts with support-group. Not a support message"});
             }
         
-            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
-                            
-                return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                  request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+            var messageId = undefined;
+            if (message.attributes && message.attributes.tiledesk_message_id) {
+              messageId = message.attributes.tiledesk_message_id;
+            }
+            // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+            return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
+              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {                          
+                // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
+                //   request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
 
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
