@@ -36,7 +36,7 @@ class MessageService {
            return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes);
        } else {
             winston.info("Message changeStatus", status);
-            this.changeStatus(id, status);
+            return this.changeStatus(id, status);
        }
    }
   create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
