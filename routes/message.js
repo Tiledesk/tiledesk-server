@@ -15,9 +15,9 @@ var MessageConstants = require("../models/messageConstants");
 
 router.post('/', function(req, res) {
 
-  winston.debug('req.body', req.body);
-  winston.debug('req.params: ', req.params);
-  winston.debug('req.params.request_id: ' + req.params.request_id);
+  winston.info('req.body', req.body);
+  winston.info('req.params: ', req.params);
+  winston.info('req.params.request_id: ' + req.params.request_id);
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
@@ -31,7 +31,7 @@ router.post('/', function(req, res) {
 
         if (!request) { //the request doen't exists create it
 
-              winston.debug("request not exists", request);                                     
+              winston.info("request not exists", request);                                     
             
               return leadService.createIfNotExistsWithLeadId(req.body.sender, req.body.senderFullname, req.body.email, req.projectid, null, req.body.attributes)
               .then(function(createdLead) {

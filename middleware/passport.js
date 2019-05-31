@@ -80,14 +80,14 @@ module.exports = function(passport) {
       Faq_kb.findOne({_id: jwt_payload._id}, function(err, faq_kb) {
         // console.log("here3");
           if (err) {
-            winston.info("here3 err");
-              return done(err, false);
+             winston.info("Passport JWT bot err", err);
+             return done(err, false);
           }
           if (faq_kb) {
-            // console.log("here3 done user",user);
+              winston.info("Passport JWT bot user", faq_kb);
               return done(null, faq_kb);
           } else {
-            // console.log("here3 false");
+             winston.info("Passport JWT bot not user");
               return done(null, false);
           }
       });
@@ -105,7 +105,7 @@ module.exports = function(passport) {
             winston.info("Passport JWT generic user", user);
               return done(null, user);
           } else {
-            winston.info("Passport JWT generic not user");
+             winston.info("Passport JWT generic not user");
               return done(null, false);
           }
       });
