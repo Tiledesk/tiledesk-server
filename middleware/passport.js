@@ -47,7 +47,7 @@ module.exports = function(passport) {
 
               if (decoded && decoded.sub && decoded.sub.endsWith('/bot')) {
                 winston.info("bot: ", decoded.sub );
-                Faq_kb.findOne({_id: decoded._id}, function(err, faq_kb) {
+                Faq_kb.findById(decoded._id).select('+secret').exec(function (err, faq_kb){
                   winston.info("faq_kb: ", faq_kb );
                   winston.info("faq_kb.secret: ", faq_kb.secret );
                   done(null, faq_kb.secret);
