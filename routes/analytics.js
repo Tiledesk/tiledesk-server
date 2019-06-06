@@ -307,7 +307,7 @@ router.get('/requests/waiting/day', function(req, res) {
    
       
     AnalyticResult.aggregate([
-        { "$match": {"id_project":req.projectid }},
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"},
