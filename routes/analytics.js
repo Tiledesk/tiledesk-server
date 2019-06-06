@@ -311,7 +311,7 @@ router.get('/requests/waiting/day', function(req, res) {
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"},
-          "day":{"$day":"$createdAt"},
+          "day":{"$dayOfMonth":"$createdAt"},
           "waiting_time_project" : "$waiting_time"
         }}, 
         { "$group": { 
