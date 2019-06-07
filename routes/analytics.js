@@ -319,7 +319,7 @@ router.get('/requests/waiting/day', function(req, res) {
          "waiting_time_avg":{"$avg": "$waiting_time_project"}
         }
       },
-      
+       { "$sort": {"_id":1}}
     ])
       .exec(function(err, result) {
 
