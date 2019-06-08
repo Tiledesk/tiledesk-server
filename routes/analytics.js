@@ -300,6 +300,44 @@ router.get('/requests/count', function(req, res) {
   });
 
 
+
+  router.get('/requests/waiting/day', function(req, res) {
+  
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"},
+          "day":{"$dayOfMonth":"$createdAt"},
+          "waiting_time_project" : "$waiting_time"
+        }}, 
+        { "$group": { 
+          "_id": {"day":"$day","month":"$month", "year": "$year"}, 
+         "waiting_time_avg":{"$avg": "$waiting_time_project"}
+        }
+      },
+      { "$sort": {"_id":-1}}
+      
+    ])
+      .exec(function(err, result) {
+
+          if (err) {
+            winston.debug(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+
+          res.json(result);
+    });
+
+  });
+
+
+
   router.get('/requests/waiting/month', function(req, res) {
   
     winston.debug(req.params);
@@ -318,7 +356,7 @@ router.get('/requests/count', function(req, res) {
          "waiting_time_avg":{"$avg": "$waiting_time_project"}
         }
       },
-      
+      { "$sort": {"_id":-1}}
     ])
       .exec(function(err, result) {
 
