@@ -42,9 +42,11 @@ router.get('/requests/count', function(req, res) {
 
 
 
+
 // https://stackoverflow.com/questions/22516514/mongodb-return-the-count-of-documents-for-each-day-for-the-last-one-month
 // https://stackoverflow.com/questions/15938859/mongodb-aggregate-within-daily-grouping
-// db.requests.aggregate([
+// db.requests.aggregate(
+//   [
 //   // Get only records created in the last 30 days
 //   { $match: {"id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new Date(ISODate().getTime() - 1000*60*60*24*30) }} },
 //   // Get the year, month and day from the createdTimeStamp
@@ -59,7 +61,8 @@ router.get('/requests/count', function(req, res) {
 //         "count":{$sum:1}
 //   }},
 //   {$sort:{_id:1}},
-// ])
+// ]
+// )
 
   router.get('/requests/aggregate/day', function(req, res) {
   
@@ -300,7 +303,8 @@ router.get('/requests/count', function(req, res) {
   });
 
 
-router.get('/requests/waiting/day', function(req, res) {
+
+  router.get('/requests/waiting/day', function(req, res) {
   
     winston.debug(req.params);
     winston.debug("req.projectid",  req.projectid);    
@@ -319,7 +323,8 @@ router.get('/requests/waiting/day', function(req, res) {
          "waiting_time_avg":{"$avg": "$waiting_time_project"}
         }
       },
-       { "$sort": {"_id":-1}}
+      { "$sort": {"_id":-1}}
+      
     ])
       .exec(function(err, result) {
 
@@ -333,6 +338,7 @@ router.get('/requests/waiting/day', function(req, res) {
     });
 
   });
+
 
 
   router.get('/requests/waiting/month', function(req, res) {
@@ -353,7 +359,7 @@ router.get('/requests/waiting/day', function(req, res) {
          "waiting_time_avg":{"$avg": "$waiting_time_project"}
         }
       },
-      
+      { "$sort": {"_id":-1}}
     ])
       .exec(function(err, result) {
 
@@ -370,14 +376,144 @@ router.get('/requests/waiting/day', function(req, res) {
 
 
 
+//duration
 
 
 
+  // db.getCollection('requests').aggregate( [ 
+  //   { $match: {"closed_at":{$exists:true}, "id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new Date(ISODate().getTime() - 1000*60*60*24*1) }} },
+  //   {$project:{       
+  //         "duration": {$subtract: ["$closed_at","$createdAt"]},
+  //         "id_project":1
+  //   }},
+  //   { "$group": { 
+  //     "_id": "$id_project", 
+  //    "duration_avg":{"$avg": "$duration"}
+  //   }   
+  //   }
+  // ] )
 
 
+  router.get('/requests/duration', function(req, res) {
+  
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+      { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+      {$project:{       
+        "duration": {$subtract: ["$closed_at","$createdAt"]},
+        "id_project":1
+      }},  
+      { "$group": { 
+          "_id": "$id_project", 
+         "duration_avg":{"$avg": "$duration"}
+        }
+      },
+      
+    ])
+      .exec(function(err, result) {
+
+          if (err) {
+            winston.debug(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+
+          res.json(result);
+    });
+
+  });
+
+/*
+  db.getCollection('requests').aggregate( [ 
+    { $match: {"closed_at":{$exists:true}, "id_project":"5ad5bd52c975820014ba900a","createdAt" : { $gte : new Date(ISODate().getTime() - 1000*60*60*24*30) }} },
+    { "$project":{
+      "year":{"$year":"$createdAt"}, 
+      "month":{"$month":"$createdAt"},
+      "day":{"$dayOfMonth":"$createdAt"},
+      "duration": {$subtract: ["$closed_at","$createdAt"]},
+    }}, 
+    { "$group": { 
+      "_id": {"day":"$day","month":"$month", "year": "$year"}, 
+     "duration_avg":{"$avg": "$duration"}
+    }
+    },
+    { "$sort": {"_id":-1}}
+  ] )
+  */
 
 
+  router.get('/requests/duration/day', function(req, res) {
+  
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"},
+          "day":{"$dayOfMonth":"$createdAt"},
+          "duration": {"$subtract": ["$closed_at","$createdAt"]},
+        }}, 
+        { "$group": { 
+          "_id": {"day":"$day","month":"$month", "year": "$year"}, 
+          "duration_avg":{"$avg": "$duration"}
+        }
+      },
+      { "$sort": {"_id":-1}}
+      
+    ])
+      .exec(function(err, result) {
 
+          if (err) {
+            winston.debug(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+
+          res.json(result);
+    });
+
+  });
+
+
+  router.get('/requests/duration/month', function(req, res) {
+  
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"},
+          "duration": {"$subtract": ["$closed_at","$createdAt"]},
+        }}, 
+        { "$group": { 
+          "_id": {"month":"$month", "year": "$year"}, 
+          "duration_avg":{"$avg": "$duration"}
+        }
+      },
+      { "$sort": {"_id":-1}}
+      
+    ])
+      .exec(function(err, result) {
+
+          if (err) {
+            winston.debug(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+
+          res.json(result);
+    });
+
+  });
 
 
 
