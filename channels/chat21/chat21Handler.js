@@ -15,18 +15,25 @@ winston.info('Chat21Handler adminToken: '+ adminToken);
 
 
 const chat21Event = require('../../channels/chat21/chat21Event');
-const chat21WebHook = require('../../channels/chat21/chat21WebHook');
+
 
 
 var admin = require('../../channels/chat21/firebaseConnector');
-const firestore = admin.firestore();
-
+if (admin){
+    const firestore = admin.firestore();
+    const chat21WebHook = require('../../channels/chat21/chat21WebHook');
+}
 
 class Chat21Handler {
 
     use(app) {
         winston.info("Chat21Handler using controller chat21WebHook ");
-        app.use('/chat21/requests',  chat21WebHook);
+        if (admin){
+            app.use('/chat21/requests',  chat21WebHook);
+        }else {
+            winston.info("chat21WebHook not initialized ");
+        }
+        
     }
 
     listen() {

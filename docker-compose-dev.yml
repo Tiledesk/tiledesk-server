@@ -18,6 +18,14 @@ services:
 #    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
 #    ports:
 #      - "4200:4200" # specify port forewarding
+  widget:
+    build: ../chat21-web-widget # specify the directory of the Dockerfile
+    ports:
+      - "4200:80" # specify port forewarding
+  webchat:
+    build: ../chat21-ionic # specify the directory of the Dockerfile
+    ports:
+      - "8100:80" # specify port forewarding
   server:
     image: tiledesk/tiledesk-server
     container_name: tiledesk-server
