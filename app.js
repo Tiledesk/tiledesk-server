@@ -67,9 +67,9 @@ var subscription = require('./routes/subscription');
 var chat21Enabled = process.env.CHAT21_ENABLED;
 
 var chat21Request;
-if (chat21Enabled && chat21Enabled===true){ 
+// if (chat21Enabled && chat21Enabled===true){ 
    chat21Request = require('./routes/chat21-request');
-}
+// }
 
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');

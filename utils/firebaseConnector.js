@@ -2,10 +2,10 @@
 
 var winston = require('../config/winston');
 
-var chat21Enabled = process.env.CHAT21_ENABLED;
-winston.info("chat21Enabled: "+chat21Enabled);
+// var chat21Enabled = process.env.CHAT21_ENABLED;
+// winston.info("chat21Enabled: "+chat21Enabled);
 
-      if (chat21Enabled && chat21Enabled ==true){
+//       if (chat21Enabled && chat21Enabled ==true){
 
       //firestore
       var firebaseConfig = require('../config/firebase');
@@ -47,7 +47,7 @@ winston.info("chat21Enabled: "+chat21Enabled);
       module.exports = admin;
 
           
-}else { 
-  winston.info("chat21 channel disabled"); 
-  module.exports = {};
-}
+// }else { 
+//   winston.info("chat21 channel disabled"); 
+//   module.exports = {};
+// }
