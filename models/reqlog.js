@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var config = require('../config/database');
 
-var conn      = mongoose.createConnection(process.env.MONGODB_LOGS_URI || config.databaselogs, { "autoIndex": true });
+var conn      = mongoose.createConnection(process.env.MONGODB_LOGS_URI || config.databaselogs || process.env.MONGODB_URI, { "autoIndex": true });
 
 
 // db.getCollection('reqlogs').aggregate([ {$group:{_id:{id_project:"$id_project"},  "count":{$sum:1}}},{$sort:{"count":-1}}])
