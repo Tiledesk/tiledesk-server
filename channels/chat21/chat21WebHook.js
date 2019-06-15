@@ -377,9 +377,10 @@ router.post('/', function(req, res) {
           return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
         }
 
-        return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead){
+        return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
           
           winston.info("request",request.toObject());
+          winston.info("lead",lead.toObject());
           if (lead && lead._id.toString() == request.requester_id.toString()) {
             winston.info("don't  joining requester_id or a lead");
             return res.status(400).send({success: false, msg: "don't  joining requester_id or a lead" });
