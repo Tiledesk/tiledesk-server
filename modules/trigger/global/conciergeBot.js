@@ -1,9 +1,9 @@
 
-const requestEvent = require('../../event/requestEvent');
-var messageService = require('../../services/messageService');
-var MessageConstants = require("../../models/messageConstants");
-var winston = require('../../config/winston');
-var i8nUtil = require("../../utils/i8nUtil");
+const requestEvent = require('../../../event/requestEvent');
+var messageService = require('../../../services/messageService');
+var MessageConstants = require("../../../models/messageConstants");
+var winston = require('../../../config/winston');
+var i8nUtil = require("../../../utils/i8nUtil");
 
 class ConciergeBot {
 
