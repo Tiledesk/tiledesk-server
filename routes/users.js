@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var User = require("../models/user");
-var emailService = require("../models/emailService");
+var emailService = require("../services/emailService");
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {

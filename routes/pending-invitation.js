@@ -6,7 +6,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 // var pendingInvitationService = require("../services/pendingInvitationService");
-var emailService = require("../models/emailService");
+var emailService = require("../services/emailService");
 
 
 router.get('/resendinvite/:pendinginvitationid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {

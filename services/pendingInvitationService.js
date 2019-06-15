@@ -1,6 +1,6 @@
 var express = require('express');
 var PendingInvitation = require("../models/pending-invitation");
-var emailService = require("../models/emailService");
+var emailService = require("../services/emailService");
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');

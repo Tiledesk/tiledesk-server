@@ -2,7 +2,7 @@
 
 var departmentService = require('../services/departmentService');
 var Request = require("../models/request");
-var emailService = require("../models/emailService");
+var emailService = require("../services/emailService");
 var Project = require("../models/project");
 var User = require("../models/user");
 var Message = require("../models/message");

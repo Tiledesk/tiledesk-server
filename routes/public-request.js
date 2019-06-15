@@ -4,7 +4,7 @@ var Message = require("../models/message");
 var Request = require("../models/request");
 var User = require("../models/user");
 var Project = require("../models/project");
-var emailService = require("../models/emailService");
+var emailService = require("../services/emailService");
 var winston = require('../config/winston');
 
 
