@@ -25,9 +25,11 @@ var server = http.createServer(app);
 // testWsService.init(server);
 
 //RE-ENABLE IT
-//var messageWsService = require('../services/messageWsService');
-//messageWsService.init(server);
+var webSocketServer = require('../routes/webSocketServer');
+webSocketServer.init(server);
 
+// var requestWebSocketServer = require('../routes/requestWebSocketServer');
+// requestWebSocketServer.init(server);
 
 /**
  * Listen on provided port, on all network interfaces.
