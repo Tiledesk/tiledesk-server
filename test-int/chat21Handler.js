@@ -85,11 +85,16 @@ describe('Chat21Handler', function () {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
 
        
+        var counter = 0;
         chat21Event.on('group.create', function(data){
+          counter++;
           winston.info("group created", data);
 
           // if (data){
-            done();
+            if (counter==1) {
+              done();
+            }
+            
           // }
          
         });
@@ -140,8 +145,9 @@ describe('Chat21Handler', function () {
           //     done();
           // });
           chat21Event.on('firestore.first_message', function(firestoreUpdate){
-                    winston.debug("firestore.first_message created", firestoreUpdate);
-                  if (firestoreUpdate.first_message.sender ===savedUser._id) {
+                    winston.info("firestore.first_message created", firestoreUpdate);
+                    winston.info("savedUser._id", savedUser._id);
+                  if (firestoreUpdate.first_message.sender === savedUser._id.toString()) {
                     expect(firestoreUpdate.first_message.attributes).to.not.equal(null);                                               
                     done();
                   }

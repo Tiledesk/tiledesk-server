@@ -47,6 +47,7 @@ describe('bot', () => {
 
          userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
              projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
+                // create(name, url, projectid, user_id, external) 
                 faqService.create("testbot", null, savedProject._id, savedUser._id, false).then(function(savedBot) {  
                     
                     var newFaq = new Faq({

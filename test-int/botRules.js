@@ -17,7 +17,7 @@ var Bot = require('../models/bot');
 var Trigger = require('../models/trigger');
 var Condition = require('../models/condition');
 
-var rulesTrigger = require('../rules/rulesTrigger');
+var rulesTrigger = require('../modules/trigger/rulesTrigger');
 
 
 var expect = chai.expect;

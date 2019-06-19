@@ -26,7 +26,7 @@ chai.use(chaiHttp);
 // npm test -- ./test/chat21RequestRoute.js
 
 //Our parent block
-describe('Chat21Requests', () => {
+describe('Chat21WebHook', () => {
     // beforeEach((done) => { //Before each test we empty the database
     //     Book.remove({}, (err) => { 
     //        done();           
@@ -36,7 +36,7 @@ describe('Chat21Requests', () => {
   * Test the /GET route
   */
 
-  describe('/POST', () => {
+  describe('post', () => {
  
     var userid = "5badfe5d553d1844ad654072";
 
@@ -260,10 +260,12 @@ describe('Chat21Requests', () => {
 
 
 
-        it('join-member', (done) => {
+        it('joinmember', (done) => {
 
             projectService.create("test-join-member", userid).then(function(savedProject) {
-                requestService.createWithId("join-member", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+
+                // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+                requestService.createWithId("join-member", "join-member-requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
     
                     var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
                             "app_id": 'tilechat', "member_id": 'agentid1', "data": { "member_id": 'agentid1', "group":  { "createdOn": 1538156223311,
