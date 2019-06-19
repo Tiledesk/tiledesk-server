@@ -46,6 +46,7 @@ if (process.env.NODE_ENV == 'test')  {
 
 var auth = require('./routes/auth');
 var lead = require('./routes/lead');
+var visitor = require('./routes/visitor');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
@@ -59,7 +60,6 @@ var request = require('./routes/request');
 
 var group = require('./routes/group');
 
-// new 
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
 var analytics = require('./routes/analytics');
@@ -72,7 +72,7 @@ var key = require('./routes/key');
 var activities = require('./routes/activity');
 var widgets = require('./routes/widget');
 
-var appRules = require('./rules/global/appRules');
+var appRules = require('./modules/trigger/global/appRules');
 appRules.start();
 
 
@@ -99,7 +99,7 @@ var ReqLog = require("./models/reqlog");
 var VisitorCounter = require("./models/visitorCounter");
 
 if (process.env.QUEQUE_ENABLED) {
-  var queue = require('./queue/reconnect');
+  var queue = require('./modules/queue/reconnect');
 }
 
 if (process.env.CACHE_ENABLED) {
@@ -110,25 +110,6 @@ if (process.env.CACHE_ENABLED) {
 
 var app = express();
 
-
-
-// var messageWsService = require('./services/messageWsService');
-// messageWsService.init(app);
-// end uncomment
-
-// const WebSocket = require('ws');
-// const wss = new WebSocket.Server({ port: 40510 });
-
-// wss.on('connection', function connection(ws) {
-//   ws.on('message', function incoming(message) {
-//     console.log('received: %s', message);
-//   });
-
-//   setInterval(
-//     () => ws.send(`ciao il ${new Date()}`),
-//     1000
-//   )
-// });
 
 // var expressWs = require('express-ws')(express());
 // var app = expressWs.app;
@@ -290,20 +271,15 @@ app.use('/firebase/auth', firebaseAuth);
 
 
 
-
-//  app.use('/:projectid', [projectIdSetter]);
 app.use('/:projectid', [projectIdSetter, projectSetter]);
-
-// http://aleksandrov.ws/2013/09/12/restful-api-with-nodejs-plus-mongodb/
-// app.use('/:projectid', [passport.authenticate(['basic','jwt'], { session: false }), validtoken]);
-
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
+app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], visitor);
 
 //TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
 //TODOOOOOOOOOOOOO RE_ENABLE roleChecker.hasRole()
-app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
-// app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
+//app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
 
 // department internal auth check
 app.use('/:projectid/departments', visitorCounter, department);
