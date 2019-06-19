@@ -14,7 +14,7 @@ var UserSchema = new Schema({
         type: String,
         required: true,
         // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
-        select: false //ATTENZIONE TESTA BENE QUESTA COSA
+        select: false 
     },
     firstname: {
         type: String,
@@ -35,8 +35,11 @@ var UserSchema = new Schema({
     //     type: Schema.Types.ObjectId,
     //     ref: 'auth',
     //     //required: true
-    //   },
-});
+    //   },       
+    },{
+      timestamps: true
+    }
+);
 
 // UserSchema.set('toJSON', {
 //     transform: function(doc, ret, opt) {
@@ -78,7 +81,7 @@ UserSchema.virtual('fullName').get(function () {
     return (this.firstname || '') + ' ' + (this.lastname || '');
   });
   
-var UserModel = mongoose.model('User', UserSchema);
+var UserModel = mongoose.model('user', UserSchema);
 
 // UserModel.getFullname = function () {
 //     return 
