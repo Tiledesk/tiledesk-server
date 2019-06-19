@@ -37,6 +37,7 @@ messageEvent.on('message.create.simple', function(message) {
 
           if (err) {
             winston.error("Error getting request on messageEvent.message.create.simple",err );
+            return messageEvent.emit('message.create', message);
           }
     
           if (request) {

@@ -23,7 +23,7 @@ winston.info("message2Event init");
 //TODO CHANGEIT
 messageEvent.on('message.create.simple', function(message) {
 
-  winston.info("message2Event message.create", message);
+  winston.debug("message2Event message.create", message);
 
   message2Event.emit(message.id_project+'.message.create', message);
 

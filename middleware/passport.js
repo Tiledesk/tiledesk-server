@@ -53,6 +53,9 @@ module.exports = function(passport) {
                   done(null, faq_kb.secret);
                 });
               }
+              else if (decoded && decoded.sub && decoded.sub.endsWith('/visitor')) {
+                winston.info("visitor: ", decoded.sub );               
+              }
               // if (request.url=="uni" && request.project && request.project.jwtSecret) {
               //   winston.info("uni config.jwtSecret: "+ config.jwtSecret );
               //   done(null, request.project.jwtSecret);
@@ -78,17 +81,16 @@ module.exports = function(passport) {
     if (jwt_payload.sub.endsWith('/bot')) {
       winston.info("Passport JWT bot");
       Faq_kb.findOne({_id: jwt_payload._id}, function(err, faq_kb) {
-        // console.log("here3");
           if (err) {
-             winston.info("Passport JWT bot err", err);
-             return done(err, false);
+            winston.info("Passport JWT bot err", err);
+            return done(err, false);
           }
           if (faq_kb) {
-              winston.info("Passport JWT bot user", faq_kb);
-              return done(null, faq_kb);
+            winston.info("Passport JWT bot user", faq_kb);
+            return done(null, faq_kb);
           } else {
-             winston.info("Passport JWT bot not user");
-              return done(null, false);
+            winston.info("Passport JWT bot not user");
+            return done(null, false);
           }
       });
     } else if (jwt_payload.sub.endsWith('/visitor')) {
@@ -96,17 +98,16 @@ module.exports = function(passport) {
     } else {
       winston.info("Passport JWT generic");
       User.findOne({_id: jwt_payload._doc._id}, function(err, user) {
-        // console.log("here3");
           if (err) {
-              winston.info("Passport JWT generic err", err);
-              return done(err, false);
+            winston.info("Passport JWT generic err", err);
+            return done(err, false);
           }
           if (user) {
             winston.info("Passport JWT generic user", user);
-              return done(null, user);
+            return done(null, user);
           } else {
-             winston.info("Passport JWT generic not user");
-              return done(null, false);
+            winston.info("Passport JWT generic not user");
+            return done(null, false);
           }
       });
 

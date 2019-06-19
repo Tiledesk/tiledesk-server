@@ -1,7 +1,7 @@
-const activityEvent = require('../event/activityEvent');
-const requestEvent = require('../event/requestEvent');
-var Bot = require('../models/bot');
-var winston = require('../config/winston');
+const activityEvent = require('../../event/activityEvent');
+const requestEvent = require('../../event/requestEvent');
+var Bot = require('../../models/bot');
+var winston = require('../../config/winston');
 
 // import { Engine } from 'json-rules-engine'
 var Engine = require('json-rules-engine').Engine;

@@ -47,7 +47,7 @@ class Chat21Handler {
                     winston.info("Chat21Sender on message.sending ",  message);
 
 
-                    if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request.channel.name === ChannelConstants.CHAT21) {
+                    if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
 
                     
                         chat21.auth.setAdminToken(adminToken);

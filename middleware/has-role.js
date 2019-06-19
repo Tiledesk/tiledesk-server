@@ -73,6 +73,53 @@ class RoleChecker {
         
       }
 
+
+      hasRoleAsPromise(role, user_id, projectid) {
+           
+        var that = this;
+
+        return new Promise(function (resolve, reject) {              
+      
+          Project_user.find({ id_user: user_id, id_project: projectid }).
+            exec(function (err, project_users) {
+              if (err) {
+                winston.error(err);
+                return reject(err);
+              }
+
+      
+              if (project_users && project_users.length>0) {
+                
+                var project_user= project_users[0];
+
+                var userRole = project_user.role;
+                // winston.debug("userRole", userRole);
+      
+                if (!role) {
+                  resolve(project_user);
+                }else {
+      
+                  var hierarchicalRoles = that.ROLES[userRole];
+                  // winston.debug("hierarchicalRoles", hierarchicalRoles);
+      
+                  if ( hierarchicalRoles.includes(role)) {
+                    resolve(project_user);
+                  }else {
+                    reject({success: false, msg: 'you dont have the required role.'});
+                  }
+                }
+              } else {
+              
+                // if (req.user) equals super admin next()
+                reject({success: false, msg: 'you dont belongs to the project.'});
+              }
+      
+          });
+      
+        });
+      
+    }
+
 }
 
 

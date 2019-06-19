@@ -1,6 +1,11 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+/*
+As soon as a visitor starts a conversation with you, or replies to a visitor auto message, they become a lead. 
+You can follow up with leads via email if they share their email address with you.
+*/
+
 var LeadSchema = new Schema({
   
   lead_id: { 
