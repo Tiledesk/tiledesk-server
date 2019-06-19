@@ -27,14 +27,24 @@ class Tilebase {
 
     }
     start() {
+        // start(token) {
         var that = this;
         return new Promise(function (resolve, reject) {
+
+            // var options = {
+            //     // headers: {
+            //     //     "Authorization" : "JWT " + token
+            //     // }
+            // };
+            // console.log('options', options);
+
         // var ws = new WebSocket('ws://localhost:3000');
                     // var ws = new WebSocket('ws://localhost:3000/public/requests');
                     // var ws = new WebSocket('ws://localhost:3000/5bae41325f03b900401e39e8/messages');
                     
                     // 'ws://localhost:40510'
                     var ws = new WebSocket(that.url);
+                    // var ws = new WebSocket(that.url, options);
                     ws.onopen = function () {
                         console.log('websocket is connected ...')
                         ws.send('connected')
@@ -62,30 +72,36 @@ class Tilebase {
                                 //         message.data);
                             }
                             
-                            if (that.isArray(json)) {
-                                json.forEach(element => {
+                            if (json && json.data && that.isArray(json.data)) {
+                                json.data.forEach(element => {
+                                   // console.log("element", element);
                                     let insUp = that.insertOrUpdate(element);
 
+                                    var object = {event: json.event, data: element};
+
                                     if (insUp==-1 && that.onCreate) {
-                                        that.onCreate(element);
+                                        that.onCreate(element, object);
                                     }
                                     if (insUp>-1 && that.onUpdate) {
-                                        that.onUpdate(element);
+                                        that.onUpdate(element, object);
                                     }
                                     //this.data.push(element);
                                     
-                                     resolve(element);
+                                     resolve(element, object);
                                     // $('#messages').after(element.text + '<br>');
                                 });
                             }else {
                                 let insUp = that.insertOrUpdate(json);
+
+                                var object = {event: json.event, data: json};
+
                                 if (insUp==-1 && that.onCreate) {
-                                    that.onCreate(json);
+                                    that.onCreate(json, object);
                                 }
                                 if (insUp>-1 && that.onUpdate) {
-                                    that.onUpdate(json);
+                                    that.onUpdate(json, object);
                                 }
-                                 resolve(json);
+                                 resolve(json, object);
                                 // resolve
                                 // $('#messages').after(json.text + '<br>');
                             }
