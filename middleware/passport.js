@@ -70,7 +70,7 @@ module.exports = function(passport) {
   //  var secret23 = process.env.SECRET || config.secret;
   //  winston.debug("secret23", secret23);
 
-  winston.info("passport opts: ", opts);
+  winston.debug("passport opts: ", opts);
 
   passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
     // console.log("jwt_payload",jwt_payload);
