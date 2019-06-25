@@ -86,4 +86,26 @@ ProjectSchema.virtual('trialExpired').get(function () {
   }
 });
 
+ProjectSchema.virtual('trialDaysLeft').get(function () {
+  // https://stackoverflow.com/questions/6963311/add-days-to-a-date-object
+  let now = new Date();
+  winston.debug("trialDaysLeft now.getTime() " + now.getTime());
+  winston.debug("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
+  winston.debug("trialDaysLeft this ", this.toObject());
+  winston.debug("trialDaysLeft trial " + this.profile.trialDays * 86400000);
+
+  const millisTrialDaysLeft = now.getTime() - (this.createdAt.getTime() + this.profile.trialDays *  86400000);
+  const trialDaysLeft = Math.floor(millisTrialDaysLeft / (60*60*24*1000));
+
+  console.log("trialDaysLeft now.getTime() " + now.getTime());
+  console.log("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
+  console.log("trialDaysLeft " , millisTrialDaysLeft);
+  console.log("trialDaysLeft - PROJECT NAME " + this.name + '; CREATED at ' + this.createdAt + ' -- trialDaysLeft: ', trialDaysLeft);
+  return trialDaysLeft
+  // return -8
+
+});
+
+
+
 module.exports = mongoose.model('project', ProjectSchema);
