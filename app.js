@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -60,7 +62,15 @@ var analytics = require('./routes/analytics');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
 var subscription = require('./routes/subscription');
-var chat21Request = require('./routes/chat21-request');
+
+
+var chat21Enabled = process.env.CHAT21_ENABLED;
+
+var chat21Request;
+// if (chat21Enabled && chat21Enabled===true){ 
+   chat21Request = require('./routes/chat21-request');
+// }
+
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
@@ -393,8 +403,9 @@ app.use('/:projectid/departments', visitorCounter, department);
 
 app.use('/public/requests', publicRequest);
 
-app.use('/chat21/requests',  chat21Request);
-
+if (chat21Request) {
+  app.use('/chat21/requests',  chat21Request);
+}
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], faq);
