@@ -17,19 +17,31 @@ winston.info('Chat21Handler adminToken: '+ adminToken);
 const chat21Event = require('../../channels/chat21/chat21Event');
 
 
+var validtoken = require('../../middleware/valid-token');
+var roleChecker = require('../../middleware/has-role');
+var passport = require('passport');
+require('../../middleware/passport')(passport);
+
 
 var admin = require('../../channels/chat21/firebaseConnector');
-if (admin){
-    const firestore = admin.firestore();
-    const chat21WebHook = require('../../channels/chat21/chat21WebHook');
+var firestore;
+var chat21WebHook;
+var firebaseAuth;
+
+if (admin) {
+    firestore = admin.firestore();
+    chat21WebHook = require('../../channels/chat21/chat21WebHook');
+    firebaseAuth = require('../../routes/firebaseauth');
 }
 
 class Chat21Handler {
 
     use(app) {
-        winston.info("Chat21Handler using controller chat21WebHook ");
+        
         if (admin){
             app.use('/chat21/requests',  chat21WebHook);
+            app.use('/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
+            winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth ");
         }else {
             winston.info("chat21WebHook not initialized ");
         }
