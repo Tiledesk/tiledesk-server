@@ -28,28 +28,6 @@ router.post('/', function (req, res) {
   winston.info("req.projectid: " + req.projectid);
   winston.info("req.user.id: " + req.user.id);
 
-
-  // var newRequest = new Request({
-  //   request_id: req.body.request_id,
-  //   requester_id: req.body.requester_id,
-  //   first_text: req.body.first_text,
-  //   status: req.body.status,
-  //   participants: req.body.participants, //??
-  //   department: req.body.department,
-  //   tags: req.body.tags,
-  //   rating: req.body.rating,
-  //   rating_message: req.body.rating_message,
-  //   sourcePage: req.body.sourcePage,
-  //   language: req.body.language,
-  //   userAgent: req.body.userAgent,
-  //   id_project: req.projectid,
-  //   createdBy: req.user.id,
-  //   updatedBy: req.user.id
-  // });
-
-  // return newRequest.save(function (err, savedRequest) {
-
-
     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
     return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
       req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
@@ -85,8 +63,6 @@ router.patch('/:requestid', function (req, res) {
   const update = req.body;
   winston.debug(update);
 
-  // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
-
   return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
       winston.error('Error patching request.', err);
@@ -113,51 +89,6 @@ router.post('/:requestid/share/email', function (req, res) {
     winston.error("err", err);
     return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
   });
-  //  return Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
-  //   .populate('department')
-  //   .exec(function(err, request) { 
-  //   if (err){
-  //     winston.error(err);
-  //     return res.status(500).send({ success: false, msg: 'Error getting request.',err:err });
-  //   }
-  //   if (!request) {
-  //     winston.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
-  //     return res.status(404).send({"success":false, msg:"Request not found for request_id "+ req.params.requestid  + " and id_project " + req.projectid});
-  //   }
-    
-
-
-  //   return Message.find({"recipient": req.params.requestid,id_project : req.projectid})
-  //     .sort({updatedAt: 'asc'})
-  //     .exec(function(err, messages) { 
-  //     if (err) {
-  //       return res.status(500).send({success: false, msg: 'Error getting messages.'});
-  //     }
-
-  //     if(!messages){
-  //       return res.status(404).send({success: false, msg: 'Object not found.'});
-  //     }
-
-  //     console.log("request", request);
-
-  //     emailService.sendRequestTranscript(sendTo, messages, request);
-  //     return res.json({'success':true});
-
-    
-  //   });
-
-  //   });
-
-  // return messageService.getTranscriptByRequestId(req.params.requestid, req.projectid).then(function(transcript) {
-  //   console.log("transcript", transcript);
-  //   emailService.sendRequestTranscript(sendTo, transcript);
-  //   return res.json({'success':true});
-  // }).catch(function (err) {
-  //   return res.status(500).send({ success: false, msg: 'Error getting the request transcript.',err:err });
-  // });
-
- 
-
 
 
 });
