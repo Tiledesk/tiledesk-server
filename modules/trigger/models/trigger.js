@@ -1,8 +1,13 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var TriggerSchema = require('../models/trigger').schema;
+// var TriggerEventSchema = require('./triggerEvent').schema;
 
-var ConditionSchema = require('../models/condition').schema;
+// var ConditionSchema = require('./triggerCondition').schema;
+// var ActionSchema = require('./triggerAction').schema;
+
+
+
+
 
 // https://api-v2.tidio.co/bots/491188?api_token=d4x6li5jziku9fgs7e13q8f5vhygjoy3&project_public_key=rrjhuda3bosuvqthrledugqlwsvbej9m
 // {
@@ -207,14 +212,64 @@ var ConditionSchema = require('../models/condition').schema;
 
 
 
+var TriggerConditionSchema = new Schema({
+  fact: { //ex: request.firsttext
+    type: String,
+    required: true
+  },
+  operator: { //use ref to OperatorSchema
+    type: String,
+    required: true
+  },
+  value: {
+    type: Object,
+    required: true
+  },
+},{ _id : false });
+
+
 var ConditionsSchema = new Schema({
-  all: [ConditionSchema],
-  any: [ConditionSchema]
+  all: [TriggerConditionSchema],
+  any: [TriggerConditionSchema]
 });
 
 
 
+
 var ActionSchema = new Schema({
+  key: { //ex: message.send
+      type: String,
+      required: true,
+      index:true
+    },
+  parameters: {
+      type: Object,
+      required: false
+  },
+  // name: {
+  //   type: String,
+  //   required: true
+  // },
+  // description: {
+  //   type: String,
+  //   required: false
+  // },
+
+  script: {  //use ref
+    type: String,
+    required: false
+  },
+});
+
+
+
+
+var TriggerEventSchema = new Schema({
+  key: { //ex: request.create
+    type: String,
+    required: true,
+    index:true
+  },
   name: {
     type: String,
     required: true
@@ -223,13 +278,11 @@ var ActionSchema = new Schema({
     type: String,
     required: false
   },
-  script: {  //use ref
-    type: String,
-    required: false
-  },
 });
 
-var BotSchema = new Schema({
+
+
+var TriggerSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -239,8 +292,8 @@ var BotSchema = new Schema({
     required: false
   },
   // triggers: [TriggerSchema],
-  trigger: TriggerSchema,
-  contitions: ConditionsSchema,
+  trigger: TriggerEventSchema,
+  conditions: ConditionsSchema,
   actions: [ActionSchema],
   enabled: {
     type:Boolean,
@@ -262,4 +315,4 @@ var BotSchema = new Schema({
   }
 );
 
-module.exports = mongoose.model('bot', BotSchema);
+module.exports = mongoose.model('trigger', TriggerSchema);
