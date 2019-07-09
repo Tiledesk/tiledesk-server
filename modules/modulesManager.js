@@ -35,9 +35,10 @@ class ModulesManager {
 
 
         try {
-            this.trigger = require('../modules/trigger/start');
-            this.triggerRoute = require('../modules/trigger/triggerRoute');
-            // this.stripe = require('@tiledesk/tiledesk-payments-stripe');
+            this.trigger = require('@tiledesk/tiledesk-triggers').start;
+            this.triggerRoute = require('@tiledesk/tiledesk-triggers').triggerRoute;
+            // this.trigger = require('../modules/trigger/start');
+            // this.triggerRoute = require('../modules/trigger/triggerRoute');
             winston.info("ModulesManager init trigger loaded");
         } catch(err) {
             winston.info("ModulesManager init trigger module not found", err);
@@ -45,8 +46,8 @@ class ModulesManager {
 
 
         try {
-            this.stripe = require('../modules/payments/stripe/index');
-            // this.stripe = require('@tiledesk/tiledesk-payments-stripe');
+            // this.stripe = require('../modules/payments/stripe/index');
+            this.stripe = require('@tiledesk/tiledesk-payments/stripe');
             winston.info("ModulesManager init stripe loaded");
         } catch(err) {
             winston.info("ModulesManager init stripe module not found", err);

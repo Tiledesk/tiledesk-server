@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "1.0.5",
+  "version": "1.1.6",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "file:channels/chat21",
+    "@tiledesk/tiledesk-payments": "file:modules/payments",
+    "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "amqplib": "^0.5.3",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
@@ -46,7 +48,6 @@
     "get-timezone-offset": "^1.0.3",
     "http": "0.0.0",
     "jade": "~1.11.0",
-    "json-rules-engine": "^2.3.3",
     "jsonwebtoken": "^7.3.0",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.21",
