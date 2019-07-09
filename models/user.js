@@ -31,6 +31,9 @@ var UserSchema = new Schema({
     resetpswrequestid: {
         type: String,
     },
+    attributes: {
+        type: Object,
+    },
     // auth: {
     //     type: Schema.Types.ObjectId,
     //     ref: 'auth',

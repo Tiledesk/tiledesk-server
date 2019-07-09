@@ -3,5 +3,6 @@ module.exports = {
         OWNER : 'owner',
         ADMIN : 'admin',
         AGENT : 'agent',       
-        // USER : 'user',            
+        USER : 'user',            
+        GUEST : 'guest',            
 }

@@ -24,7 +24,7 @@ var winston = require('../config/winston');
       // type: String,
       // required: true
       type: Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'user'
     },
     role: {
       type: String,
@@ -33,6 +33,12 @@ var winston = require('../config/winston');
     user_available: {
       type: Boolean,
       // required: true
+    },
+    attributes: {
+      type: Object,
+    },
+    last_ip: {
+        type: String,
     },
     createdBy: {
       type: String,

@@ -9,9 +9,11 @@ class RoleChecker {
     constructor() {
 
         this.ROLES =  {
-            "agent": ["agent"],
-            "admin": ["agent", "admin"],
-            "owner": ["agent", "admin", "owner"],
+            "guest": ["guest"],
+            "user":  ["guest","user"],
+            "agent": ["guest","user","agent"],
+            "admin": ["guest","user","agent", "admin",],
+            "owner": ["guest","user","agent", "admin", "owner"],
         }
     }
       

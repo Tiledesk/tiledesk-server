@@ -10,6 +10,9 @@ var pendinginvitation = require("../services/pendingInvitationService");
 var Activity = require("../models/activity");
 const activityEvent = require('../event/activityEvent');
 var winston = require('../config/winston');
+var RoleConstants = require("../models/roleConstants");
+
+
 
 // var User = require("../models/user");
 
@@ -318,8 +321,15 @@ router.get('/:user_id/:project_id', function (req, res, next) {
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */
 router.get('/', function (req, res) {
+
+  var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
+  if (req.query.role) {
+    role = req.query.role;
+  }
+  winston.debug("role", role);
+
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  Project_user.find({ id_project: req.projectid }).
+  Project_user.find({ id_project: req.projectid, role: { $in : role } }).
     populate('id_user').
     exec(function (err, project_users) {
       // console.log('PROJECT USER ROUTES - project_users: ', project_users)
