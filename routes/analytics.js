@@ -68,19 +68,22 @@ router.get('/requests/count', function(req, res) {
     
     //set default value for lastdays&department_id 
     let lastdays=7
-    let department_id='';
 
-    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
     
     //check for lastdays&dep_id parameters
     if(req.query.lastdays){
       lastdays=req.query.lastdays
     }
-    if(req.query.department_id){
-      department_id=req.query.department_id;
+
+    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+
+
+    if(req.query.department_id){      
       //add field departmentid to query if req.query.department_id exist
-      query.department=department_id
+      query.department=eq.query.department_id;
     }
+
+    
     
     console.log("QueryParams:", lastdays,department_id)
     console.log("Query", query)
