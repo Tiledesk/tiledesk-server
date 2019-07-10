@@ -50,10 +50,10 @@ var visitor = require('./routes/visitor');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
-var bot = require('./routes/bot');
+// var bot = require('./routes/trigger');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-var firebaseAuth = require('./routes/firebaseauth');
+// var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
 //var setting = require('./routes/setting');
@@ -94,9 +94,16 @@ activityArchiver.listen();
 var channelManager = require('./channels/channelManager');
 channelManager.listen();
 
+var modulesManager = require('./modules/modulesManager');
+modulesManager.init();
 
-var ReqLog = require("./models/reqlog");
-var VisitorCounter = require("./models/visitorCounter");
+if (process.env.ReqLog_ENABLED) {
+  var ReqLog = require("./models/reqlog");
+}
+
+if (process.env.VisitorCounter_ENABLED) {
+  var VisitorCounter = require("./models/visitorCounter");
+}
 
 if (process.env.QUEQUE_ENABLED) {
   var queue = require('./modules/queue/reconnect');
@@ -142,8 +149,25 @@ app.use(function (req, res, next) {
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // app.use(morgan('dev'));
 // app.use(morgan('combined'));
-app.use(bodyParser.json());
+
+
+
+// app.use(bodyParser.json());
+
+// https://stackoverflow.com/questions/18710225/node-js-get-raw-request-body-using-express
+
+app.use(bodyParser.json({
+  verify: function (req, res, buf) {
+    var url = req.originalUrl;
+    if (url.indexOf('/stripe/')) {
+      req.rawBody = buf.toString();
+      winston.info("bodyParser verify stripe", req.rawBody);
+    } 
+  }
+}));
+
 app.use(bodyParser.urlencoded({ extended: false }));
+
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -157,53 +181,57 @@ app.use(cors());
 
 // unused
 var reqLogger = function (req, res, next) {
-   var projectid = req.params.projectid;
-   winston.debug("projectIdSetter projectid", projectid);
+  if (process.env.ReqLog_ENABLED) {
+      var projectid = req.params.projectid;
+      winston.debug("projectIdSetter projectid", projectid);
 
-  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-  winston.debug("fullUrl", fullUrl);
+      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      winston.debug("fullUrl", fullUrl);
 
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  winston.debug("ip", ip);
+      var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      winston.debug("ip", ip);
 
-  var reqlog = new ReqLog({
-    path: req.originalUrl,
-    host: req.host,
-    origin: req.get('origin'),
-    ip: ip,
-    id_project: projectid,
-  });
+      var reqlog = new ReqLog({
+        path: req.originalUrl,
+        host: req.host,
+        origin: req.get('origin'),
+        ip: ip,
+        id_project: projectid,
+      });
 
-  reqlog.save(function (err, reqlogSaved) {
-    if (err) {
-      winston.error('Error saving reqlog ', err)
-    }
-    //console.log('Reqlog saved ', reqlogSaved)
-  });
+      reqlog.save(function (err, reqlogSaved) {
+        if (err) {
+          winston.error('Error saving reqlog ', err)
+        }
+        //console.log('Reqlog saved ', reqlogSaved)
+      });
 
-  next()
+      next()
+  }
 }
 
 var visitorCounter = function (req, res, next) {
-  try {
-    var projectid = req.projectid;
-    winston.debug("visitorCounter projectIdSetter projectid:" + projectid);
+  if (process.env.VisitorCounter_ENABLED) {
+      try {
+        var projectid = req.projectid;
+        winston.debug("visitorCounter projectIdSetter projectid:" + projectid);
 
-  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-  winston.debug("fullUrl:"+ fullUrl);
-  winston.debug("req.get('origin'):" + req.get('origin'));
+      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      winston.debug("fullUrl:"+ fullUrl);
+      winston.debug("req.get('origin'):" + req.get('origin'));
 
-  VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
-  { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
-    if (err) {
-      winston.error('Error saving reqlog ', err)
-    }
-    winston.debug("visitorCounter saved "+ VisitorCounterSaved);
-  });
+      VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
+      { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
+        if (err) {
+          winston.error('Error saving reqlog ', err)
+        }
+        winston.debug("visitorCounter saved "+ VisitorCounterSaved);
+      });
 
-  next()
+      next()
+      }
+      catch(e){}
   }
-  catch(e){}
 }
 
 
@@ -267,14 +295,14 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 });
 
 // deprecated
-app.use('/firebase/auth', firebaseAuth);
+// app.use('/firebase/auth', firebaseAuth);
 
 
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
-app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], lead);
-app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], visitor);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], lead);
+app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
 //TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
 //TODOOOOOOOOOOOOO RE_ENABLE roleChecker.hasRole()
@@ -290,8 +318,8 @@ app.use('/public/requests', publicRequest);
 channelManager.use(app);
 
 
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], faq);
-app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], bot);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
+// app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], bot);
 
 //attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
@@ -306,28 +334,26 @@ app.use('/projects',project);
 app.use('/:projectid/widgets', widgets);
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], project_user);
+app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
 //TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
-app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], request);
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], analytics);
+app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], analytics);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
-app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], key);
+app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
 app.use('/:projectid/jwt', jwtroute);
-app.use('/:projectid/firebase', firebase);
+app.use('/:projectid/firebase', firebase); //MOVE TO CHANNELS PACKAGE
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], subscription);
 app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], activities);
 
 
-app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], pendinginvitation);
+app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 
-
-
-
+modulesManager.use(app);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
