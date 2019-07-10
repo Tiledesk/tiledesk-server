@@ -548,28 +548,29 @@ router.get('/mydepartments', function (req, res) {
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
 router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
-  //console.log("req projectid", req.projectid);
-  //console.log("req.query.sort", req.query.sort);
+  winston.info("req projectid", req.projectid);
+  winston.info("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {
+    winston.info("req.query.sort");
     // return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
-      return Department.find({ "id_project": req.projectid }).sort({ name: 'asc' }).exec(function (err, departments) {
-      
-      if (err) {
-        winston.error('Error getting the departments.', err);
-        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
-      }
-
-      return res.json(departments);
+      return Department.find({ "id_project": req.projectid }).sort({ name: 'asc' }).exec(function (err, departments) {      
+        if (err) {
+          winston.error('Error getting the departments.', err);
+          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+        }
+        winston.info("departments", departments);
+        return res.json(departments);
     });
   } else {
+    winston.info("no req.query.sort");
     return Department.find({ "id_project": req.projectid }, function (err, departments) {
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
-
+      winston.info("departments", departments);
       return res.json(departments);
     });
   }
