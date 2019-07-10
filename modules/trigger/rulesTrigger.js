@@ -1,5 +1,6 @@
 const activityEvent = require('../../event/activityEvent');
 const requestEvent = require('../../event/requestEvent');
+const messageEvent = require('../../event/messageEvent');
 const triggerEventEmitter = require('./event/triggerEventEmitter');
 
 var Trigger = require('./models/trigger');
@@ -38,11 +39,11 @@ class RulesTrigger {
           that.exec(request, 'request.create');
         });
 
-        requestEvent.on('message.create', function(request) {
+        messageEvent.on('message.create', function(request) {
           that.exec(request, 'message.create');
         });
 
-        requestEvent.on('message.received', function(request) {
+        messageEvent.on('message.received', function(request) {
           that.exec(request, 'message.received');
         });
         
@@ -68,6 +69,8 @@ class RulesTrigger {
     runAction() {
 
       triggerEventEmitter.on('message.send', function(eventTrigger) {
+
+        try {
 
         eventTrigger.triggers.forEach(function(trigger) { 
           winston.debug('runAction trigger', trigger.toObject());
@@ -107,13 +110,14 @@ class RulesTrigger {
 
 
           });
-          
-           
-
+                           
               
           });
 
-          
+        } catch(e) {
+          winston.error("Error runAction", e);
+        }
+
         });
       
       
@@ -132,7 +136,8 @@ class RulesTrigger {
             setImmediate(() => {
 
                 
-                 winston.debug('event', event.toObject());
+                 winston.debug('event', event);
+                //  winston.debug('event', event.toObject());
                 
                 let query = {id_project: event.id_project, enabled:true, 'trigger.key':eventKey};
                 
@@ -177,7 +182,7 @@ class RulesTrigger {
                       }
   
                      
-                      winston.debug('rule', rule);
+                      winston.info('rule', rule);
 
                        // define a rule for detecting the player has exceeded foul limits.  Foul out any player who:
                     // (has committed 5 fouls AND game is 40 minutes) OR (has committed 6 fouls AND game is 48 minutes)
@@ -203,14 +208,22 @@ class RulesTrigger {
                      */
                     
 
-                    let facts = event.toObject();
+                    // let facts = event.toObject();
+                    let facts;
+                    if  (event.toObject) {  //request is mongoose object
+                       facts = event.toObject();
+                    }else {                 //message is plain object because messageEvent replace it
+                       facts = event;
+                    }
+
+                    
                     
                     // that.engine.on('message.send', (params) => {
                     //   winston.info('send message');
                     // });
 
                     that.engine.on('success', function(eventSuccess, almanac, ruleResult) {
-                      winston.debug("success eventSuccess", eventSuccess); 
+                      winston.info("success eventSuccess", eventSuccess); 
                       winston.debug("success ruleResult", ruleResult); 
 
                       var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent };
@@ -220,7 +233,7 @@ class RulesTrigger {
                     });
 
                     that.engine.on('failure', function(eventFailure, almanac, ruleResult) {
-                      winston.debug("failure eventFailure", eventFailure); 
+                      winston.info("failure eventFailure", eventFailure); 
 
                       var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent };
                       winston.debug("failure triggerEvent", triggerEvent); 
