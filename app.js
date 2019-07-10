@@ -53,7 +53,7 @@ var faq = require('./routes/faq');
 // var bot = require('./routes/trigger');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-// var firebaseAuth = require('./routes/firebaseauth');
+var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
 //var setting = require('./routes/setting');
@@ -295,7 +295,7 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 });
 
 // deprecated
-// app.use('/firebase/auth', firebaseAuth);
+app.use('/firebase/auth', firebaseAuth);
 
 
 
