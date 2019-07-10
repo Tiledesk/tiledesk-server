@@ -21,10 +21,12 @@ class ModulesManager {
 
         if (this.stripe) {
             app.use('/modules/payments/stripe', this.stripe);
+            winston.info("ModulesManager stripe controller loaded");       
         }
 
         if (this.triggerRoute) {
             app.use('/:projectid/modules/triggers', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.triggerRoute);
+            winston.info("ModulesManager trigger controller loaded");       
         }
         
     }
@@ -36,7 +38,9 @@ class ModulesManager {
 
         try {
             this.trigger = require('@tiledesk/tiledesk-triggers').start;
+            winston.debug("this.trigger:"+ this.trigger);
             this.triggerRoute = require('@tiledesk/tiledesk-triggers').triggerRoute;
+            winston.debug("this.triggerRoute:"+ this.triggerRoute);
             // this.trigger = require('../modules/trigger/start');
             // this.triggerRoute = require('../modules/trigger/triggerRoute');
             winston.info("ModulesManager init trigger loaded");
