@@ -77,7 +77,14 @@ class RulesTrigger {
             winston.debug('runAction action text: ' + text);
 
 
-            var recipient = eventTrigger.event.request_id;
+            var recipient;
+            if (eventTrigger.eventKey=="request.create") {
+              recipient = eventTrigger.event.request_id;
+            }
+            if (eventTrigger.eventKey=="message.create") {
+              recipient = eventTrigger.event.recipient;
+            }
+            
             winston.debug('runAction action recipient: ' + recipient);
 
             var id_project = eventTrigger.event.id_project;
