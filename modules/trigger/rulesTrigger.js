@@ -39,8 +39,13 @@ class RulesTrigger {
         });
 
         requestEvent.on('message.create', function(request) {
-          that.exec(request, 'request.create');
+          that.exec(request, 'message.create');
         });
+
+        requestEvent.on('message.received', function(request) {
+          that.exec(request, 'message.received');
+        });
+        
 
         // action zendesk
         // send message senderFullname + message
@@ -81,7 +86,7 @@ class RulesTrigger {
             if (eventTrigger.eventKey=="request.create") {
               recipient = eventTrigger.event.request_id;
             }
-            if (eventTrigger.eventKey=="message.create") {
+            if (eventTrigger.eventKey=="message.create" || eventTrigger.eventKey=="message.received") {
               recipient = eventTrigger.event.recipient;
             }
             
