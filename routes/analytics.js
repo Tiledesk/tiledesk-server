@@ -147,7 +147,7 @@ router.get('/requests/count', function(req, res) {
       
     }
     
-    console.log("QueryParams_LastDayCHART:", lastdays,department_id)
+    console.log("QueryParams_LastDayCHART:", lastdays,req.query.department_id)
     console.log("Query_LastDayCHART", query)
 
     winston.debug(req.params);
@@ -406,7 +406,7 @@ router.get('/requests/count', function(req, res) {
       
     }
     
-    console.log("QueryParams_AvgTime:", lastdays,department_id)
+    console.log("QueryParams_AvgTime:", lastdays,req.query.department_id)
     console.log("Query_AvgTIME", query)
 
     winston.debug(req.params);
@@ -559,7 +559,7 @@ router.get('/requests/count', function(req, res) {
     if(req.query.lastdays){
       lastdays=req.query.lastdays
     }
-
+    
     let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
     
     if(req.query.department_id){
@@ -569,7 +569,7 @@ router.get('/requests/count', function(req, res) {
       
     }
     
-    console.log("QueryParams_DurationTIME:", lastdays,department_id)
+    console.log("QueryParams_DurationTIME:", lastdays,req.query.department_id)
     console.log("Query_DurationTIME", query)
 
     winston.debug(req.params);
