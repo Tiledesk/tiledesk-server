@@ -3,6 +3,8 @@ var router = express.Router();
 var AnalyticResult = require("../models/analyticResult");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
+var ObjectId = require('mongodb').ObjectId;
+var ObjectId2 = require('mongoose').Types.ObjectId;
 
 
 
@@ -80,6 +82,7 @@ router.get('/requests/count', function(req, res) {
     if(req.query.department_id){      
       //add field departmentid to query if req.query.department_id exist
       query.department=req.query.department_id;
+
     }
 
     
@@ -138,13 +141,14 @@ router.get('/requests/count', function(req, res) {
     let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
     
     if(req.query.department_id){
-      department_id=req.query.department_id;
+      //department_id=req.query.department_id;
       //add field departmentid to query if req.query.department_id exist
-      query.department=req.query.department_id
+      query.department= new ObjectId(req.query.department_id);
+      
     }
     
-    console.log("QueryParams:", lastdays,department_id)
-    console.log("Queryuuuuuuuuuuuuuuuuu", query)
+    console.log("QueryParams_LastDayCHART:", lastdays,department_id)
+    console.log("Query_LastDayCHART", query)
 
     winston.debug(req.params);
     winston.debug("req.projectid",  req.projectid);    
@@ -177,7 +181,7 @@ router.get('/requests/count', function(req, res) {
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
           winston.debug(result);
-console.log("RESI+UT+",result)
+          console.log("RESULT",result)
           res.json(result);
     });
 
@@ -384,12 +388,33 @@ console.log("RESI+UT+",result)
 
   router.get('/requests/waiting/day', function(req, res) {
   
+    //set default value for lastdays&department_id 
+    let lastdays=7
+    //let department_id='';
+    
+    
+    //check for lastdays&dep_id parameters
+    if(req.query.lastdays){
+      lastdays=req.query.lastdays
+    }
+    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+    
+    if(req.query.department_id){
+      //department_id=req.query.department_id;
+      //add field departmentid to query if req.query.department_id exist
+      query.department= new ObjectId(req.query.department_id);
+      
+    }
+    
+    console.log("QueryParams_AvgTime:", lastdays,department_id)
+    console.log("Query_AvgTIME", query)
+
     winston.debug(req.params);
     winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
-        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { $match: query },
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"},
@@ -525,12 +550,34 @@ console.log("RESI+UT+",result)
 
   router.get('/requests/duration/day', function(req, res) {
   
+    //set default value for lastdays&department_id 
+    let lastdays=7
+    //let department_id='';
+    
+    
+    //check for lastdays&dep_id parameters
+    if(req.query.lastdays){
+      lastdays=req.query.lastdays
+    }
+
+    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+    
+    if(req.query.department_id){
+      //department_id=req.query.department_id;
+      //add field departmentid to query if req.query.department_id exist
+      query.department= new ObjectId(req.query.department_id);
+      
+    }
+    
+    console.log("QueryParams_DurationTIME:", lastdays,department_id)
+    console.log("Query_DurationTIME", query)
+
     winston.debug(req.params);
     winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
-        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000))) }} },
+        { $match: query },
         { "$project":{
           "year":{"$year":"$createdAt"}, 
           "month":{"$month":"$createdAt"},
