@@ -84,7 +84,7 @@ router.get('/requests/count', function(req, res) {
 
     
     
-    console.log("QueryParams:", lastdays,department_id)
+    console.log("QueryParams:", lastdays,req.query.department_id)
     console.log("Query", query)
 
     winston.debug(req.params);
