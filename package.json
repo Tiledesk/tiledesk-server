@@ -27,6 +27,7 @@
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "file:channels/chat21",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
+    "@tiledesk/tiledesk-graphql": "file:modules/graphql",
     "amqplib": "^0.5.3",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
