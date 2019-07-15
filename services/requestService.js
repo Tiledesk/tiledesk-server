@@ -21,10 +21,113 @@ var winston = require('../config/winston');
 class RequestService {
 
 
-  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-      return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
-  };
+ 
 
+  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+
+    if (!departmentid) {
+      departmentid ='default';
+    }
+
+    if (!createdBy) {
+      createdBy = project_user_id;
+    }
+    
+    var that = this;
+
+    return new Promise(function (resolve, reject) {
+
+        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+
+          // console.log("getOperators", result);
+
+          var status = 100;
+          var assigned_operator_id;
+          var participants = [];
+          if (result.operators && result.operators.length>0) {
+            assigned_operator_id = result.operators[0].id_user;
+            status = 200;
+            participants.push(assigned_operator_id.toString());
+          }
+          // console.log("assigned_operator_id", assigned_operator_id);
+          // console.log("status", status);
+
+              var newRequest = new Request({
+                request_id: request_id,
+                requester: project_user_id,
+                lead: lead_id,
+                first_text: first_text,
+                status: status,
+                participants: participants,
+                department: result.department._id,
+
+            
+                // rating: req.body.rating,
+                // rating_message: req.body.rating_message,
+            
+                agents: result.agents,
+                //availableAgents: result.available_agents,
+
+                // assigned_operator_id:  result.assigned_operator_id,
+            
+                //others
+                sourcePage: sourcePage,
+                language: language,
+                userAgent: userAgent,
+            
+                attributes: attributes,
+                //standard
+                id_project: id_project,
+                createdBy: createdBy,
+                updatedBy: createdBy
+              });
+                    
+
+              // console.log('newRequest.',newRequest);
+
+
+          
+
+              return newRequest.save(function(err, savedRequest) {
+                  if (err) {
+                    winston.error('Error createWithId the request.',err);
+                    return reject(err);
+                  }
+              
+              
+                  winston.info("Request created",savedRequest.toObject());
+                  
+                  // console.log("XXXXXXXXXXXXXXXX");
+
+                  if (id_project!="5b45e1c75313c50014b3abc6") {
+                    if (process.env.NODE_ENV!= 'test') {
+                      that.sendEmail(id_project, savedRequest);
+                    }
+                  }
+                  
+                  
+                  requestEvent.emit('request.create.simple',savedRequest);
+
+
+                  //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
+                  //activityEvent.emit('request.create', activity);
+
+                  
+                  return resolve(savedRequest);
+                  
+                });
+            }).catch(function(err){
+              return reject(err);
+            });
+
+
+    });
+  }
+
+
+  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+    return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
+};
 
 
   createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
@@ -148,7 +251,8 @@ class RequestService {
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
-           // console.log("updatedRequest", updatedRequest);
+            //TODO emit request.clone or reopen also 
+
             return resolve(updatedRequest);
           });
     });
@@ -276,6 +380,8 @@ class RequestService {
                       winston.error("error sendTranscriptByEmail ", e);
                     }
 
+                    winston.info("Request closed", updatedRequest);
+                    //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
                   return resolve(updatedRequest);
                 });
@@ -315,8 +421,10 @@ class RequestService {
          request.save(function(err, savedRequest) {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit('request.reopen', savedRequest);
             }          
             
+            winston.info("Request reopened", savedRequest);
             return resolve(savedRequest);
             
           });
@@ -371,6 +479,7 @@ class RequestService {
           return reject(err);
         }
         requestEvent.emit('request.update',updatedRequest);
+        requestEvent.emit('request.participants.update', savedRequest);
 
         return resolve(updatedRequest);
       });
@@ -418,6 +527,7 @@ class RequestService {
           request.save(function(err, savedRequest) {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit('request.participants.join', savedRequest);
             }          
             
             return resolve(savedRequest);
@@ -468,6 +578,7 @@ class RequestService {
 
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit('request.participants.leave', savedRequest);
             }
 
             return resolve(savedRequest);
