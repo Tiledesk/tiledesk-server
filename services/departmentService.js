@@ -174,7 +174,7 @@ getOperators(departmentid, projectid, nobot) {
         // console.log("department", department);
         if (!department) {
           winston.error("Department not found for query ", query);
-          return reject({ success: false, msg: 'Object not found.' });
+          return reject({ success: false, msg: 'Department not found.' });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
         // console.log('OPERATORS - »»» DEPARTMENT - ID BOT ', department.id_bot)
