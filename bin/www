@@ -25,7 +25,10 @@ app.set('port', port);
 const  ApolloServer  = require('apollo-server-express').ApolloServer;
 const typeDefs = require('../modules/graphql/schema');
 const resolvers = require('../modules/graphql/resolvers');
-var apolloServer = new ApolloServer({ typeDefs, resolvers});
+var apolloServer = new ApolloServer({ typeDefs, resolvers, 
+  // https://www.apollographql.com/docs/apollo-server/features/graphql-playground/#Enabling-GraphQL-Playground-in-production
+  introspection: true,
+  playground: true});
 apolloServer.applyMiddleware({ app });
 
 
