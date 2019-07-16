@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "file:channels/chat21",
-    "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "@tiledesk/tiledesk-graphql": "file:modules/graphql",
+    "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "amqplib": "^0.5.3",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
@@ -66,7 +66,10 @@
     "uniqid": "^5.0.3",
     "uuid": "^3.3.2",
     "winston": "^3.1.0",
-    "ws": "^6.2.1"
+    "ws": "^6.2.1",
+    "apollo-server": "^2.6.7",
+    "apollo-server-express": "^2.6.9",
+    "graphql": "^14.4.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",

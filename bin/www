@@ -8,6 +8,7 @@ var app = require('../app');
 var debug = require('debug')('tiledesk-server:server');
 var http = require('http');
 
+
 /**
  * Get port from environment and store in Express.
  */
@@ -19,28 +20,43 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+// var modulesManager = require('../modules/modulesManager');
+// app=modulesManager.injectBefore(app);
+const  ApolloServer  = require('apollo-server-express').ApolloServer;
+const typeDefs = require('../modules/graphql/schema');
+const resolvers = require('../modules/graphql/resolvers');
+var apolloServer = new ApolloServer({ typeDefs, resolvers});
+apolloServer.applyMiddleware({ app });
 
-// var testWsService = require('../services/testWsService');
-// testWsService.init(server);
 
-//RE-ENABLE IT
-var webSocketServer = require('../routes/webSocketServer');
-webSocketServer.init(server);
+var httpServer = http.createServer(app);
+apolloServer.installSubscriptionHandlers(httpServer);
+// httpServer=modulesManager.injectAfter(httpServer,app,port);
 
-// var requestWebSocketServer = require('../routes/requestWebSocketServer');
-// requestWebSocketServer.init(server);
+
+//RE-ENABLE STANDART WEBSCOKET IT
+// var webSocketServer = require('../routes/webSocketServer');
+// webSocketServer.init(server);
+
+
+
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-var listener = server.listen(port,function(){
+var listener = httpServer.listen(port,function(){
     console.log('Listening on port ' + listener.address().port); //Listening on port 8888
+
+ 
+    console.log(`🚀 Server ready at http://localhost:${port}${httpServer.graphqlPath}`)
+    console.log(`🚀 Subscriptions ready at ws://localhost:${port}${httpServer.subscriptionsPath}`)
+ 
+
 });
 
-server.on('error', onError);
-server.on('listening', onListening);
+httpServer.on('error', onError);
+httpServer.on('listening', onListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -95,7 +111,7 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
+  var addr = httpServer.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
