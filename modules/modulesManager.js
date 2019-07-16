@@ -15,6 +15,32 @@ class ModulesManager {
         this.graphql = undefined;
     }
 
+    injectBefore(app) {
+        winston.info("ModulesManager injectBefore");
+        var res;
+        try {
+            // this.graphql = require('../../../modules/graphql/apollo-express');   
+            this.graphql = require('@tiledesk/tiledesk-graphql').apolloExpress;
+           
+             res = this.graphql.injectBefore(app);     
+            winston.info("ModulesManager injectBefore graphql loaded",res);
+          
+        } catch(err) {
+            winston.info("ModulesManager injectBefore graphql module not found", err);
+        }
+        return res;
+    }
+
+    injectAfter(httpServer,app,port) {
+        winston.info("ModulesManager inject");
+        try {          
+            return this.graphql.injectAfter(httpServer,app,port);    
+            winston.info("ModulesManager injectAfter graphql loaded");
+        } catch(err) {
+            winston.info("ModulesManager injectAfter graphql module not found", err);
+        }
+    }
+
     use(app) {
         var that = this;
         winston.info("ModulesManager using controllers");       
@@ -58,12 +84,12 @@ class ModulesManager {
         }
 
 
-        try {
-            this.graphql = require('../modules/graphql/apollo');        
-            winston.info("ModulesManager init graphql loaded");
-        } catch(err) {
-            winston.info("ModulesManager init graphql module not found", err);
-        }
+        // try {
+        //     this.graphql = require('../modules/graphql/apollo');        
+        //     winston.info("ModulesManager init graphql loaded");
+        // } catch(err) {
+        //     winston.info("ModulesManager init graphql module not found", err);
+        // }
 
 
         
