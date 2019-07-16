@@ -42,11 +42,13 @@ class RoleChecker {
               }
               //winston.info("project_user: ", JSON.stringify(project_user));
               
-              req.projectuser = project_user;
-             // winston.debug("req.projectuser", req.projectuser);
+              
       
-              if (req.projectuser && req.projectuser.length>0) {
+              if (project_user && project_user.length>0) {
                 
+                req.projectuser = project_user[0];
+              // winston.debug("req.projectuser", req.projectuser);
+
                 var userRole = project_user[0].role;
                 // winston.debug("userRole", userRole);
       
