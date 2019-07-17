@@ -27,8 +27,8 @@ class ProjectService {
       
         return newProject.save(function (err, savedProject) {
           if (err) {
-            winston.error('--- > ERROR ', err)
-            return reject({ success: false, msg: 'Error saving object.' });
+            winston.error('Error saving the project ', err)
+            return reject({ success: false, msg: 'Error saving project.' });
           }
           // console.log('--- SAVE PROJECT ', savedProject)
           //res.json(savedProject);
@@ -46,7 +46,7 @@ class ProjectService {
       
          return  newProject_user.save(function (err, savedProject_user) {
             if (err) {
-              winston.error('--- > ERROR ', err)
+              winston.error('Error saving the projet_user ', err)
               return reject(err);
             }
 
