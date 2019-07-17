@@ -12,7 +12,10 @@ var winston = require('../config/winston');
 var User = require('../models/user');
 var config = require('../config/database'); // get db config file
 var Faq_kb = require("../models/faq_kb");
+var Project = require('../models/project');
+var Subscription = require('../models/subscription');
 var jwt = require('jsonwebtoken');
+const url = require('url');
 
 module.exports = function(passport) {
     
@@ -32,34 +35,113 @@ module.exports = function(passport) {
             // secretOrKey: config.secret,
             secretOrKeyProvider: function(request, rawJwtToken, done) {
               // winston.info("secretOrKeyProvider ", request );
-              if (request.project) {
-                winston.info("secretOrKeyProvider.request.project.jwtSecret: "+request.project.jwtSecret );
-              }
+
+              // if (request.project) {
+              //   winston.info("secretOrKeyProvider.request.project.jwtSecret: "+request.project.jwtSecret );
+              // }
               
               // winston.info("secretOrKeyProvider: "+request.project.name );
               // winston.info("secretOrKeyProvider: "+rawJwtToken );
               
               var decoded = jwt.decode(rawJwtToken);
-              winston.info("decoded: ", decoded );
+              winston.debug("decoded: ", decoded );
 
               // qui arriva questo 
               // decoded:  {"_id":"5ce3ee855c520200176c189e","updatedAt":"2019-05-31T09:50:22.949Z","createdAt":"2019-05-21T12:26:45.192Z","name":"botext","url":"https://tiledesk-v2-simple--andrealeo83.repl.co","id_project":"5ce3d1ceb25ad30017274bc5","trashed":false,"createdBy":"5ce3d1c7b25ad30017274bc2","__v":0,"external":true,"iat":1559297130,"aud":"https://tiledesk.com","iss":"https://tiledesk.com","sub":"5ce3ee855c520200176c189e@tiledesk.com/bot"}
 
-              if (decoded && decoded.sub && decoded.sub.endsWith('/bot')) {
-                winston.info("bot: ", decoded.sub );
-                Faq_kb.findById(decoded._id).select('+secret').exec(function (err, faq_kb){
-                  winston.info("faq_kb: ", faq_kb );
-                  winston.info("faq_kb.secret: ", faq_kb.secret );
-                  done(null, faq_kb.secret);
-                });
+              winston.info("decoded.aud: "+ decoded.aud );
+
+              if (decoded && decoded.aud) {
+                const audUrl  = new URL(decoded.aud);
+                winston.debug("audUrl: "+ audUrl );
+                const path = audUrl.pathname;
+                winston.debug("audUrl path: " + path );
+                
+                const AudienceType = path.split("/")[1];
+                winston.info("audUrl AudienceType: " + AudienceType );
+
+                const AudienceId = path.split("/")[2];
+                winston.info("audUrl AudienceId: " + AudienceId );
+
+                    if (AudienceType == "bots") {
+
+                      if (!AudienceId) {
+                        winston.error("AudienceId for bots is required: ");
+                        return done(null, null);
+                      }
+
+                      winston.debug("bot id: "+ AudienceId );
+                      Faq_kb.findById(AudienceId).select('+secret').exec(function (err, faq_kb){
+                        if (err) {
+                          winston.error("auth Faq_kb err: ", err );
+                          return done(null, null);
+                        }
+                        if (!faq_kb) {
+                          winston.error("faq_kb not found with id: " +  AudienceId);
+                          return done(null, null);
+                        }
+
+                        winston.info("faq_kb: ", faq_kb );
+                        winston.info("faq_kb.secret: "+ faq_kb.secret );
+                        done(null, faq_kb.secret);
+                      });
+                    }
+
+                    else if (AudienceType == "projects") {
+                      if (!AudienceId) {
+                        winston.error("AudienceId for projects is required: ");
+                        return done(null, null);
+                      }
+
+                      winston.debug("project id: "+ AudienceId );
+                      Project.findById(AudienceId).select('+jwtSecret').exec(function (err, project){
+                        if (err) {
+                          winston.error("auth Project err: ", err );
+                          return done(null, null);
+                        }
+                        if (!project) {
+                          winston.error("Project not found with id: " +  AudienceId);
+                          return done(null, null);
+                        }
+                        winston.info("project: ", project );
+                        winston.info("project.jwtSecret: "+ project.jwtSecret );
+                        done(null, project.jwtSecret);
+                      });
+
+                    }
+                    else if (AudienceType == "subscriptions") {
+                      
+                      if (!AudienceId) {
+                        winston.error("AudienceId for subscriptions is required: ");
+                        return done(null, null);
+                      }
+
+                      winston.debug("Subscription id: "+ AudienceId );
+                      Subscription.findById(AudienceId).select('+secret').exec(function (err, subscription){
+                        if (err) {
+                          winston.error("auth Subscription err: ", err );
+                          return done(null, null);
+                        }
+                        if (!subscription) {
+                          winston.error("subscription not found with id: " +  AudienceId);
+                          return done(null, null);
+                        }
+                        winston.info("subscription: ", subscription );
+                        winston.info("subscription.secret: "+ subscription.secret );
+                        done(null, subscription.secret);
+                      });
+                    }             
+
+                    else if (decoded.aud == "https://tiledesk.com") {                
+                      winston.info("config.jwtSecret: "+ config.secret );
+                      done(null, config.secret);
+                    }
+
+                    else {                
+                      winston.info("config.jwtSecret: "+ config.secret );
+                      done(null, config.secret);
+                    }
               }
-              else if (decoded && decoded.sub && decoded.sub.endsWith('/visitor')) {
-                winston.info("visitor: ", decoded.sub );               
-              }
-              // if (request.url=="uni" && request.project && request.project.jwtSecret) {
-              //   winston.info("uni config.jwtSecret: "+ config.jwtSecret );
-              //   done(null, request.project.jwtSecret);
-              // } 
               else {
                 winston.info("config.jwtSecret: "+ config.secret );
                 done(null, config.secret);
@@ -67,8 +149,6 @@ module.exports = function(passport) {
             }
        }
 
-  //  var secret23 = process.env.SECRET || config.secret;
-  //  winston.debug("secret23", secret23);
 
   winston.debug("passport opts: ", opts);
 
@@ -78,9 +158,17 @@ module.exports = function(passport) {
     // console.log("jwt_payload._doc._id",jwt_payload._doc._id);
 
 
-    if (jwt_payload.sub.endsWith('/bot')) {
+                                                            //JWT OLD format
+     const identifier = jwt_payload._id || jwt_payload._doc._id;
+    // const subject = jwt_payload.sub || jwt_payload._id || jwt_payload._doc._id;
+    winston.info("passport identifier: " + identifier);
+
+    const subject = jwt_payload.sub;
+    winston.info("passport subject: " + subject);
+
+    if (subject == "bot") {
       winston.info("Passport JWT bot");
-      Faq_kb.findOne({_id: jwt_payload._id}, function(err, faq_kb) {
+      Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
           if (err) {
             winston.info("Passport JWT bot err", err);
             return done(err, false);
@@ -93,11 +181,27 @@ module.exports = function(passport) {
             return done(null, false);
           }
       });
-    } else if (jwt_payload.sub.endsWith('/visitor')) {
-    } else if (jwt_payload.sub.endsWith('/lead')) {
+    // } else if (subject=="projects") {      
+
+    } else if (subject=="subscription") {
+    
+      Subscription.findOne({_id: identifier}, function(err, subscription) {
+        if (err) {
+          winston.info("Passport JWT subscription err", err);
+          return done(err, false);
+        }
+        if (subscription) {
+          winston.info("Passport JWT subscription user", subscription);
+          return done(null, subscription);
+        } else {
+          winston.info("Passport JWT subscription not user");
+          return done(null, false);
+        }
+      });              
+
     } else {
-      winston.info("Passport JWT generic");
-      User.findOne({_id: jwt_payload._doc._id}, function(err, user) {
+      winston.debug("Passport JWT generic user");
+      User.findOne({_id: identifier}, function(err, user) {
           if (err) {
             winston.info("Passport JWT generic err", err);
             return done(err, false);
