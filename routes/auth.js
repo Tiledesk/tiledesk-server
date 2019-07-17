@@ -80,69 +80,68 @@ router.post('/signup', function (req, res) {
 });
 
 
-
-
-router.post('/signinAnonymously', function (req, res) {
+// router.post('/signinAnonymously', function (req, res) {
  
-    var email = uuidv4() + '@tiledesk.com';
-    winston.info('signinAnonymously email: ' + email);
+//   var email = uuidv4() + '@tiledesk.com';
+//   winston.info('signinAnonymously email: ' + email);
 
-    var password = uuidv4();
-    winston.info('signinAnonymously password: ' + password);
+//   var password = uuidv4();
+//   winston.info('signinAnonymously password: ' + password);
 
-    // signup ( email, password, firstname, lastname, emailverified)
-    return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
-      .then(function (savedUser) {
-
-
-        winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+//   // signup ( email, password, firstname, lastname, emailverified)
+//   return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
+//     .then(function (savedUser) {
 
 
-        var newProject_user = new Project_user({
-          // _id: new mongoose.Types.ObjectId(),
-          id_project: req.body.id_project, //attentoqui
-          id_user: savedUser._id,
-          role: RoleConstants.GUEST,
-          user_available: true,
-          createdBy: savedUser.id,
-          updatedBy: savedUser.id
-        });
+//       winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
-        return newProject_user.save(function (err, savedProject_user) {
-          if (err) {
-            winston.error('--- > ERROR ', err)
-            return res.status(500).send({ success: false, msg: 'Error saving object.' });
-          }
 
-      
-          authEvent.emit("guest.signin", savedProject_user);         
+//       var newProject_user = new Project_user({
+//         // _id: new mongoose.Types.ObjectId(),
+//         id_project: req.body.id_project, //attentoqui
+//         id_user: savedUser._id,
+//         role: RoleConstants.GUEST,
+//         user_available: true,
+//         createdBy: savedUser.id,
+//         updatedBy: savedUser.id
+//       });
 
-            winston.info('project user created ', savedProject_user.toObject());
+//       return newProject_user.save(function (err, savedProject_user) {
+//         if (err) {
+//           winston.error('Error saving object.', err)
+//           return res.status(500).send({ success: false, msg: 'Error saving object.' });
+//         }
 
-            
-          //remove password 
-          let userJson = savedUser.toObject();
-          delete userJson.password;
+    
+//         authEvent.emit("guest.signin", savedProject_user);         
+
+//           winston.info('project user created ', savedProject_user.toObject());
+
           
+//         //remove password 
+//         let userJson = savedUser.toObject();
+//         delete userJson.password;
+        
 
-          var signOptions = {
-            issuer:  'https://tiledesk.com',
-            subject:  savedUser._id+'@tiledesk.com/user',
-            audience:  'https://tiledesk.com',           
-          };
+//         var signOptions = {
+//           issuer:  'https://tiledesk.com',
+//           subject:  'user',
+//           audience:  'https://tiledesk.com',           
+//         };
 
-          var token = jwt.sign(savedUser, config.secret, signOptions);
+//         var token = jwt.sign(savedUser, config.secret, signOptions);
 
-          res.json({ success: true, token: 'JWT ' + token, user: userJson });
-      }).catch(function (err) {
+//         res.json({ success: true, token: 'JWT ' + token, user: userJson });
+//     }).catch(function (err) {
 
-        authEvent.emit("guest.signin.error", {body: req.body, err:err});             
+//       authEvent.emit("guest.signin.error", {body: req.body, err:err});             
 
-         winston.error('Error registering new user', err);
-         res.send(err);
-      });
-    });
-});
+//        winston.error('Error registering new user', err);
+//        res.send(err);
+//     });
+//   });
+// });
+
 
 
 
@@ -186,9 +185,38 @@ router.post('/signin', function (req, res) {
 
         // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
         var signOptions = {
-          issuer:  'https://tiledesk.com',
-          subject:  user._id+'@tiledesk.com/user',
+          //         The "iss" (issuer) claim identifies the principal that issued the
+          //  JWT.  The processing of this claim is generally application specific.
+          //  The "iss" value is a case-sensitive string containing a StringOrURI
+          //  value.  Use of this claim is OPTIONAL.
+          issuer:  'https://tiledesk.com',   
+
+  //         The "sub" (subject) claim identifies the principal that is the
+  //  subject of the JWT.  The claims in a JWT are normally statements
+  //  about the subject.  The subject value MUST either be scoped to be
+  //  locally unique in the context of the issuer or be globally unique.
+  //  The processing of this claim is generally application specific.  The
+  //  "sub" value is a case-sensitive string containing a StringOrURI
+  //  value.  Use of this claim is OPTIONAL.
+
+          // subject:  user._id.toString(),
+          // subject:  user._id+'@tiledesk.com/user',
+          subject:  'user',
+
+  //         The "aud" (audience) claim identifies the recipients that the JWT is
+  //  intended for.  Each principal intended to process the JWT MUST
+  //  identify itself with a value in the audience claim.  If the principal
+  //  processing the claim does not identify itself with a value in the
+  //  "aud" claim when this claim is present, then the JWT MUST be
+  //  rejected.  In the general case, the "aud" value is an array of case-
+  //  sensitive strings, each containing a StringOrURI value.  In the
+  //  special case when the JWT has one audience, the "aud" value MAY be a
+  //  single case-sensitive string containing a StringOrURI value.  The
+  //  interpretation of audience values is generally application specific.
+  //  Use of this claim is OPTIONAL.
+
           audience:  'https://tiledesk.com',
+
           // uid: user._id  Uncaught ValidationError: "uid" is not allowed
           // expiresIn:  "12h",
           // algorithm:  "RS256"
