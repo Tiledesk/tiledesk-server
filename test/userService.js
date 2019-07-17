@@ -7,6 +7,7 @@ var expect = require('chai').expect;
 var assert = require('chai').assert;
 var config = require('../config/database');
 var Request = require('../models/request');
+var Requester = require('../models/requester');
 
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
@@ -25,6 +26,12 @@ var userService = require('../services/userService');
 describe('UserService()', function () {
 
 
+  // it('signup', function (done) {
+  // const myURL =
+  // new URL('https://user:pass@sub.example.com:8080/p/a?query=string#hash');
+  // console.log(myURL.pathname);
+  // console.log(myURL.pathname.split("/")[1]);
+  // });
 
   it('signup', function (done) {
 
@@ -43,10 +50,32 @@ describe('UserService()', function () {
     });
   });
 
+  // it('discriminator', function (done) {
+
+  //       var email = "test-signup-" + Date.now() + "@email.com";
+  //       userService.signup( email ,"pwd", "Test Firstname", "Test lastname").then(function(savedUser) {
+        
+  //       // var r = new Request({requester_id: 'test',first_text:'ft',id_project:'123', createdBy: '123', requester: new Requester({ref: savedUser, type:'user'})});
+  //       // var r = new Request({requester_id: 'test',first_text:'ft',id_project:'123', createdBy: '123', requester:savedUser._id});
+  //       var r = new Request({requester_id: 'test',first_text:'ft',id_project:'123', createdBy: '123', requester:savedUser._id, requesterModel:'user'});
+  //       r.save(function(err, request) {
+  //         winston.error("test reject", err);
+  //         winston.info("request", request.toObject());
+  //         Request.findById(request._id).populate('requester').exec(function(err, req1){
+  //           winston.info("err", err);
+  //           winston.info("req1", req1.toObject());
+  //           done();
+  //         });
+         
+  //       });
+  //   });
+  // });
+
 
   // it('discriminator', function (done) {
 
-  //   var options = {discriminatorKey: 'kind'};
+  //   // var options = {discriminatorKey: 'kind'};
+  //   var options = {};
 
   //   var eventSchema = new mongoose.Schema({time: Date}, options);
   //   var Event = mongoose.model('Event', eventSchema);
@@ -64,7 +93,26 @@ describe('UserService()', function () {
   //   var clickedEvent =
   //     new ClickedLinkEvent({time: Date.now(), url: 'google.com'});
   //   assert.ok(clickedEvent.url);
-  //   done();
+
+  //   clickedEvent.save(function(err, saved) {
+  //     console.log("saved", err);
+     
+  //   });
+
+
+  //   Event.findById('5cc80986176f565ffc210ea6', function(err, getted){
+  //     console.log("getted", getted.toObject());
+  //     console.log("instanceof", getted.toObject() instanceof ClickedLinkEvent);
+  //     console.log("instanceof", getted.toObject() instanceof Event);
+  //     if (getted.toObject() instanceof ClickedLinkEvent) {
+  //       done();
+  //     } else {
+  //       assert.ok(false);
+  //     }
+      
+  //   });
+
+   
 
   // });
 
