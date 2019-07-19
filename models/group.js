@@ -14,6 +14,7 @@ var GroupSchema = new Schema({
   },
   id_project: {
     type: String,
+    index: true
     // required: true
   },
   trashed: {

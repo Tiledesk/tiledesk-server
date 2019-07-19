@@ -13,7 +13,8 @@ var Faq_kbSchema = new Schema({
   },
   id_project: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   kbkey_remote: {
     type: String,

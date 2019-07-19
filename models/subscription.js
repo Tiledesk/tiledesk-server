@@ -6,7 +6,8 @@ const uuidv4 = require('uuid/v4');
 var SubscriptionSchema = new Schema({
   event: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   target: {
     type: String,

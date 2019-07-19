@@ -17,17 +17,20 @@ var winston = require('../config/winston');
     // _id: Schema.Types.ObjectId,
     id_project: {
       type: Schema.Types.ObjectId,
-      ref: 'project'
+      ref: 'project',
+      index: true
       // required: true
     },
     id_user: {
       // type: String,
       // required: true
       type: Schema.Types.ObjectId,
-      ref: 'user'
+      ref: 'user',
+      index: true
     },
     role: {
       type: String,
+      index: true
       // required: true
     },
     user_available: {

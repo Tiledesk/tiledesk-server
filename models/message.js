@@ -24,7 +24,8 @@ var MessageSchema = new Schema({
   },
   id_project: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   status: {
     type: Number,
