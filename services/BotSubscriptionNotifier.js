@@ -22,8 +22,8 @@ class BotSubscriptionNotifier {
 
       var signOptions = {
         issuer:  'https://tiledesk.com',
-        subject:  bot._id+'@tiledesk.com/bot',
-        audience:  'https://tiledesk.com',        
+        subject:  'bot',
+        audience:  'https://tiledesk.com/bots/'+bot._id,        
       };
 
       var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
