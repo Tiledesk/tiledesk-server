@@ -216,6 +216,8 @@ var visitorCounter = function (req, res, next) {
       next()
       }
       catch(e){}
+  }else {
+    next();
   }
 }
 
