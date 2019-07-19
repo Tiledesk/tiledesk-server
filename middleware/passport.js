@@ -32,6 +32,8 @@ module.exports = function(passport) {
   var opts = {
             // jwtFromRequest: ExtractJwt.fromAuthHeader(),
             jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt"),
+            //this will help you to pass request body to passport
+            passReqToCallback: true, //https://stackoverflow.com/questions/55163015/how-to-bind-or-pass-req-parameter-to-passport-js-jwt-strategy
             // secretOrKey: config.secret,
             secretOrKeyProvider: function(request, rawJwtToken, done) {
               // winston.info("secretOrKeyProvider ", request );
@@ -49,7 +51,7 @@ module.exports = function(passport) {
               // qui arriva questo 
               // decoded:  {"_id":"5ce3ee855c520200176c189e","updatedAt":"2019-05-31T09:50:22.949Z","createdAt":"2019-05-21T12:26:45.192Z","name":"botext","url":"https://tiledesk-v2-simple--andrealeo83.repl.co","id_project":"5ce3d1ceb25ad30017274bc5","trashed":false,"createdBy":"5ce3d1c7b25ad30017274bc2","__v":0,"external":true,"iat":1559297130,"aud":"https://tiledesk.com","iss":"https://tiledesk.com","sub":"5ce3ee855c520200176c189e@tiledesk.com/bot"}
 
-              winston.info("decoded.aud: "+ decoded.aud );
+              winston.debug("decoded.aud: "+ decoded.aud );
 
               if (decoded && decoded.aud) {
                 const audUrl  = new URL(decoded.aud);
@@ -58,10 +60,10 @@ module.exports = function(passport) {
                 winston.debug("audUrl path: " + path );
                 
                 const AudienceType = path.split("/")[1];
-                winston.info("audUrl AudienceType: " + AudienceType );
+                winston.debug("audUrl AudienceType: " + AudienceType );
 
                 const AudienceId = path.split("/")[2];
-                winston.info("audUrl AudienceId: " + AudienceId );
+                winston.debug("audUrl AudienceId: " + AudienceId );
 
                     if (AudienceType == "bots") {
 
@@ -81,7 +83,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
 
-                        winston.info("faq_kb: ", faq_kb );
+                        winston.debug("faq_kb: ", faq_kb );
                         winston.info("faq_kb.secret: "+ faq_kb.secret );
                         done(null, faq_kb.secret);
                       });
@@ -103,7 +105,7 @@ module.exports = function(passport) {
                           winston.error("Project not found with id: " +  AudienceId);
                           return done(null, null);
                         }
-                        winston.info("project: ", project );
+                        winston.debug("project: ", project );
                         winston.info("project.jwtSecret: "+ project.jwtSecret );
                         done(null, project.jwtSecret);
                       });
@@ -126,7 +128,7 @@ module.exports = function(passport) {
                           winston.error("subscription not found with id: " +  AudienceId);
                           return done(null, null);
                         }
-                        winston.info("subscription: ", subscription );
+                        winston.debug("subscription: ", subscription );
                         winston.info("subscription.secret: "+ subscription.secret );
                         done(null, subscription.secret);
                       });
@@ -152,22 +154,40 @@ module.exports = function(passport) {
 
   winston.debug("passport opts: ", opts);
 
-  passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
-    // console.log("jwt_payload",jwt_payload);
+  passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
+    winston.info("jwt_payload",jwt_payload);
+    // console.log("req",req);
+    
 
     // console.log("jwt_payload._doc._id",jwt_payload._doc._id);
 
 
+    if (jwt_payload._id == undefined  && (jwt_payload._doc == undefined || (jwt_payload._doc && jwt_payload._doc._id==undefined))) {
+      var err = "jwt_payload._id or jwt_payload._doc._id can t be undefined" ;
+      winston.error(err);
+      return done(null, false);
+    }
                                                             //JWT OLD format
      const identifier = jwt_payload._id || jwt_payload._doc._id;
+    
     // const subject = jwt_payload.sub || jwt_payload._id || jwt_payload._doc._id;
     winston.info("passport identifier: " + identifier);
 
     const subject = jwt_payload.sub;
     winston.info("passport subject: " + subject);
 
+    var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+    winston.info("fullUrl:"+ fullUrl);
+
+    winston.info("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
+
+    if (req && req.disablePassportEntityCheck) { //req can be null
+      return done(null, jwt_payload);
+    }
+
+
     if (subject == "bot") {
-      winston.info("Passport JWT bot");
+      winston.debug("Passport JWT bot");
       Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
           if (err) {
             winston.info("Passport JWT bot err", err);

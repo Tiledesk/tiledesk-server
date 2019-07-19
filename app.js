@@ -17,6 +17,7 @@ var cors = require('cors');
 var Project = require("./models/project");
 // var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
+var noentitycheck = require('./middleware/noentitycheck');
 var roleChecker = require('./middleware/has-role');
 
 var winston = require('./config/winston');
@@ -45,6 +46,7 @@ if (process.env.NODE_ENV == 'test')  {
 }
 
 var auth = require('./routes/auth');
+var authtest = require('./routes/authtest');
 var lead = require('./routes/lead');
 var visitor = require('./routes/visitor');
 var message = require('./routes/message');
@@ -75,8 +77,6 @@ var widgets = require('./routes/widget');
 var appRules = require('./modules/trigger/global/appRules');
 appRules.start();
 
-
-//var cache = require('express-redis-cache')();
 
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
 subscriptionNotifier.start();
@@ -116,21 +116,6 @@ if (process.env.CACHE_ENABLED) {
 
 
 var app = express();
-
-
-// var expressWs = require('express-ws')(express());
-// var app = expressWs.app;
-// var expressWs = require('express-ws')(app);
-
-// //var expressWs = expressWs(express());
-// // var app2 = expressWs.app;
-
-// app.ws('/', function(ws, req) {
-//   ws.on('message', function(msg) {
-//     console.log("messageXXXXX", msg);
-//   });
-//   console.log('socketXXXXX', req.testing);
-// });
 
 
 
@@ -290,9 +275,30 @@ var projectSetter = function (req, res, next) {
 
 
 app.use('/auth', auth);
-app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  res.send('{"success":true}');
-});
+app.use('/testauth', authtest);
+// app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+//   console.warn("QUI1");
+//   res.send('{"success":true}');
+// });
+
+// app.use('/testauth/bot', [
+//   passport.authenticate(['jwt'], { session: false }), 
+//   validtoken, 
+//   roleChecker.hasRoleOrType(null,'bot')],
+//   // roleChecker.isType('bot')],
+//    function (req, res) {
+//     console.warn("QUI2");
+//   res.send('{"success":true}');
+// });
+
+// app.use('/testauth/noentitycheck', 
+//   [noentitycheck,
+//   passport.authenticate('jwt', { session: false }), 
+//   validtoken], function (req, res) {
+//     console.warn("QUI3");
+//   res.send('{"success":true}');
+// });
+
 
 // deprecated
 app.use('/firebase/auth', firebaseAuth);
@@ -307,7 +313,7 @@ app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { sessi
 //TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
 //TODOOOOOOOOOOOOO RE_ENABLE roleChecker.hasRole()
 //app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
-app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], message);
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
 
 // department internal auth check
 app.use('/:projectid/departments', visitorCounter, department);
@@ -355,6 +361,7 @@ app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'
 
 modulesManager.use(app);
 
+// REENABLEIT
 // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
 //   var err = new Error('Not Found');

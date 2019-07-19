@@ -1,4 +1,5 @@
 var Project_user = require("../models/project_user");
+var Faq_kb = require("../models/faq_kb");
 var winston = require('../config/winston');
 
 
@@ -17,8 +18,32 @@ class RoleChecker {
         }
     }
       
+    isType(type) {           
+      // winston.info("isType",isType);
+        return function(req, res, next) {
+          winston.info("isType:"+type);
+          winston.info(" req.user", req.user);
+          // winston.info(" req.user instanceof"+ req.user instanceof Faq_kb);
+         
+          if (type=='subscription' && req.user instanceof Faq_kb){
+
+          } else if (type=='bot' && req.user instanceof Faq_kb){
+            winston.info("is bot");
+            return next();
+          }else {
+            // res.status(403).send({success: false, msg: 'type not supported.'});
+            return next({success: false, msg: 'type not supported.'});
+          }
+        }
+      }
+
       
-       hasRole(role) {
+
+      hasRole(role) {
+        return this.hasRoleOrType(role);
+      }
+
+       hasRoleOrType(role,type) {
            
         var that = this;
 
@@ -34,6 +59,14 @@ class RoleChecker {
           //winston.debug("req.user", req.user);
           //winston.debug("role", role);
       
+
+          // console.log("QUIIIIIIIIIIIIIIIIIIIIIII",type);
+          if (type) {
+            // console.log("QUIIIIIIIIIIIIIIIIIIIIIII");
+            return that.isType(type)(req,res,next);
+            // console.log("typers",typers);
+          }
+
           Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
             exec(function (err, project_user) {
               if (err) {

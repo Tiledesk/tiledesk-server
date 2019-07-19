@@ -193,7 +193,7 @@ router.get('/:faq_kbid', function (req, res) {
 router.get('/', function (req, res) {
   // var query = {};
 
-  // console.log("req.query", req.query);
+  winston.debug("req.query", req.query);
 
   // if (req.query.id_project) {
   //   query.id_project = req.query.id_project;
