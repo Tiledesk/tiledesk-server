@@ -224,8 +224,8 @@ router.get('/:departmentid', function (req, res) {
 // note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
-  console.log("req projectid", req.projectid);
-  console.log("req.query.sort", req.query.sort);
+  // console.log("req projectid", req.projectid);
+  // console.log("req.query.sort", req.query.sort);
 
 
   if (req.query.sort) {

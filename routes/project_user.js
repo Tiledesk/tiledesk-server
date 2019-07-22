@@ -14,30 +14,132 @@ var RoleConstants = require("../models/roleConstants");
 
 
 
-// var User = require("../models/user");
-
-
-// MOVED IN ROUTES > PROJECT.JS
-// router.post('/', function (req, res) {
-
-//   console.log(req.body);
-//   var newProject_user = new Project_user({
-//     id_project: req.body.id_project,
-//     id_user: req.body.id_user,
-//     role: req.body.role,
-//     appId: req.appid,
-//     createdBy: req.user.id,
-//     updatedBy: req.user.id
+// router.post('/joinAnonymously', function (req, res) {
+ 
+//     var email = uuidv4() + '@tiledesk.com';
+//     winston.info('signinAnonymously email: ' + email);
+  
+//     var password = uuidv4();
+//     winston.info('signinAnonymously password: ' + password);
+  
+//     // signup ( email, password, firstname, lastname, emailverified)
+//     return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
+//       .then(function (savedUser) {
+  
+  
+//         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+  
+  
+//         var newProject_user = new Project_user({
+//           // _id: new mongoose.Types.ObjectId(),
+//           id_project: req.projectid, //attentoqui
+//           id_user: savedUser._id,
+//           role: RoleConstants.GUEST,
+//           user_available: true,
+//           createdBy: savedUser.id,
+//           updatedBy: savedUser.id
+//         });
+  
+//         return newProject_user.save(function (err, savedProject_user) {
+//           if (err) {
+//             winston.error('Error saving object.', err)
+//             return res.status(500).send({ success: false, msg: 'Error saving object.' });
+//           }
+  
+      
+//           authEvent.emit("guest.signin", savedProject_user);         
+  
+//             winston.info('project user created ', savedProject_user.toObject());
+  
+            
+//           //remove password 
+//           let userJson = savedUser.toObject();
+//           delete userJson.password;
+          
+  
+//           var signOptions = {
+//             issuer:  'https://tiledesk.com',
+//             subject:  'user',
+//             audience:  'https://tiledesk.com',           
+//           };
+  
+//           var token = jwt.sign(savedUser, config.secret, signOptions);
+  
+//           res.json({ success: true, token: 'JWT ' + token, user: userJson });
+//       }).catch(function (err) {
+  
+//         authEvent.emit("guest.signin.error", {body: req.body, err:err});             
+  
+//          winston.error('Error registering new user', err);
+//          res.send(err);
+//       });
+//     });
 //   });
 
-//   newProject_user.save(function (err, savedProject_user) {
-//     if (err) {
-//       console.log('--- > ERROR ', err)
-//       return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//     }
-//     res.json(savedProject_user);
+
+
+// router.post('/joinWithCustomToken', function (req, res) {
+
+// var email = uuidv4() + '@tiledesk.com';
+// winston.info('signinWithCustomToken email: ' + email);
+
+// var password = uuidv4();
+// winston.info('signinWithCustomToken password: ' + password);
+
+// // signup ( email, password, firstname, lastname, emailverified)
+// return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
+//   .then(function (savedUser) {
+
+
+//     winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+
+
+//     var newProject_user = new Project_user({
+//       // _id: new mongoose.Types.ObjectId(),
+//       id_project: req.body.id_project, //attentoqui
+//       id_user: savedUser._id,
+//       role: RoleConstants.USER,
+//       user_available: true,
+//       createdBy: savedUser.id,
+//       updatedBy: savedUser.id
+//     });
+
+//     return newProject_user.save(function (err, savedProject_user) {
+//       if (err) {
+//         winston.error('Error saving object.', err)
+//         return res.status(500).send({ success: false, msg: 'Error saving object.' });
+//       }
+
+  
+//       authEvent.emit("guest.signin", savedProject_user);         
+
+//         winston.info('project user created ', savedProject_user.toObject());
+
+        
+//       //remove password 
+//       let userJson = savedUser.toObject();
+//       delete userJson.password;
+      
+
+//       var signOptions = {
+//         issuer:  'https://tiledesk.com',
+//         subject:  'user',
+//         audience:  'https://tiledesk.com',           
+//       };
+
+//       var token = jwt.sign(savedUser, config.secret, signOptions);
+
+//       res.json({ success: true, token: 'JWT ' + token, user: userJson });
+//   }).catch(function (err) {
+
+//     authEvent.emit("guest.signin.error", {body: req.body, err:err});             
+
+//      winston.error('Error registering new user', err);
+//      res.send(err);
 //   });
 // });
+// });
+
 
 // NEW: INVITE A USER
 router.post('/invite', function (req, res) {
