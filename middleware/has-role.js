@@ -18,25 +18,55 @@ class RoleChecker {
         }
     }
       
-    isType(type) {           
+    isType(type) {        
+      var that = this;   
       // winston.info("isType",isType);
         return function(req, res, next) {
-          winston.info("isType:"+type);
-          winston.info(" req.user", req.user);
-          // winston.info(" req.user instanceof"+ req.user instanceof Faq_kb);
-         
-          if (type=='subscription' && req.user instanceof Faq_kb){
-
-          } else if (type=='bot' && req.user instanceof Faq_kb){
-            winston.info("is bot");
+          if (that.isTypeAsFunction(type)) {
             return next();
-          }else {
-            // res.status(403).send({success: false, msg: 'type not supported.'});
+          } else {
+            winston.error('isType type not supported.');
             return next({success: false, msg: 'type not supported.'});
           }
         }
       }
 
+    // isType(type) {           
+    //   // winston.info("isType",isType);
+    //     return function(req, res, next) {
+    //       winston.info("isType:"+type);
+    //       winston.info("req.user", req.user);
+    //       // winston.info(" req.user instanceof"+ req.user instanceof Faq_kb);
+         
+    //       if (type=='subscription' && req.user instanceof Faq_kb){
+
+    //       } else if (type=='bot' && req.user instanceof Faq_kb){
+    //         winston.info("is bot");
+    //         return next();
+    //       } else {
+    //         // res.status(403).send({success: false, msg: 'type not supported.'});
+    //         winston.error('isType type not supported.');
+    //         return next({success: false, msg: 'type not supported.'});
+    //       }
+    //     }
+    //   }
+
+
+      isTypeAsFunction(type, user) {                 
+            winston.info("isType:"+type);
+            winston.info("user", user);
+           
+            if (type=='subscription' && user instanceof Faq_kb){
+  
+            } else if (type=='bot' && user instanceof Faq_kb){
+              winston.info("is bot");
+              return true
+            } else {
+              return false;
+            }
+          }
+        
+  
       
 
       hasRole(role) {
@@ -63,7 +93,11 @@ class RoleChecker {
           // console.log("QUIIIIIIIIIIIIIIIIIIIIIII",type);
           if (type) {
             // console.log("QUIIIIIIIIIIIIIIIIIIIIIII");
-            return that.isType(type)(req,res,next);
+            var checkRes = that.isTypeAsFunction(type, req.user);
+            if (checkRes) {
+             return next();
+            }            
+            // return that.isType(type)(req,res,next);
             // console.log("typers",typers);
           }
 
