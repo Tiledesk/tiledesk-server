@@ -66,68 +66,68 @@ router.get('/requests/count', function(req, res) {
 // ]
 // )
 
-  router.get('/requests/aggregate/day', function(req, res) {
+  // router.get('/requests/aggregate/day', function(req, res) {
     
-    //set default value for lastdays&department_id 
-    let lastdays=7
+  //   //set default value for lastdays&department_id 
+  //   let lastdays=7
     
     
-    //check for lastdays&dep_id parameters
-    if(req.query.lastdays){
-      lastdays=req.query.lastdays
-    }
+  //   //check for lastdays&dep_id parameters
+  //   if(req.query.lastdays){
+  //     lastdays=req.query.lastdays
+  //   }
   
-    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+  //   let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
 
-    if(req.query.department_id){      
-      //add field departmentid to query if req.query.department_id exist
-      query.department=req.query.department_id;
+  //   if(req.query.department_id){      
+  //     //add field departmentid to query if req.query.department_id exist
+  //     query.department=req.query.department_id;
 
-    }
+  //   }
 
     
     
-    console.log("QueryParams:", lastdays,req.query.department_id)
-    console.log("Query", query)
+  //   console.log("QueryParams:", lastdays,req.query.department_id)
+  //   console.log("Query", query)
 
-    winston.debug(req.params);
-    winston.debug("req.projectid",  req.projectid);    
+  //   winston.debug(req.params);
+  //   winston.debug("req.projectid",  req.projectid);    
    
-    AnalyticResult.aggregate([
-        // { "$match": {"id_project": req.projectid } },
-        // { "$match": {} },
-        { $match: query },
-        { "$project":{
-          "year":{"$year":"$createdAt"}, 
-          "month":{"$month":"$createdAt"}, 
-          "day": {"$dayOfMonth":"$createdAt"}
-        }}, 
-        // // Group by year, month and day and get the count
-        { "$group":{
-              "_id":{"year":"$year", "month":"$month", "day":"$day"}, 
-              "count":{"$sum":1}
-        }},
-        { "$sort": {"_id":1}},  
-        // { "$limit": 7 },
-    ])
-    // .exec((err, result) => {
-      .exec(function(err, result) {
+  //   AnalyticResult.aggregate([
+  //       // { "$match": {"id_project": req.projectid } },
+  //       // { "$match": {} },
+  //       { $match: query },
+  //       { "$project":{
+  //         "year":{"$year":"$createdAt"}, 
+  //         "month":{"$month":"$createdAt"}, 
+  //         "day": {"$dayOfMonth":"$createdAt"}
+  //       }}, 
+  //       // // Group by year, month and day and get the count
+  //       { "$group":{
+  //             "_id":{"year":"$year", "month":"$month", "day":"$day"}, 
+  //             "count":{"$sum":1}
+  //       }},
+  //       { "$sort": {"_id":1}},  
+  //       // { "$limit": 7 },
+  //   ])
+  //   // .exec((err, result) => {
+  //     .exec(function(err, result) {
 
      
-  //, function (err, result) {
-        if (err) {
-            winston.debug(err);
-            console.log("ERR",err)
-            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
-          }
-          winston.debug(result);
-          console.log("RES",result)
-          res.json(result);
-    });
+  // //, function (err, result) {
+  //       if (err) {
+  //           winston.debug(err);
+  //           console.log("ERR",err)
+  //           return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+  //         }
+  //         winston.debug(result);
+  //         console.log("RES",result)
+  //         res.json(result);
+  //   });
 
-  });
+  // });
 
-  router.get('/requests/aggregate/day/2', function(req, res) {
+  router.get('/requests/aggregate/day', function(req, res) {
     
     //set default value for lastdays&department_id 
     let lastdays=7
@@ -436,7 +436,7 @@ router.get('/requests/count', function(req, res) {
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
           winston.debug(result);
-
+          console.log("RES",result)
           res.json(result);
     });
 
