@@ -33,6 +33,7 @@ messageEvent.on('message.create.simple', function(message) {
         Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
         populate('lead').
         populate('department').        
+        populate({path:'requester',populate:{path:'id_user'}}).
         exec(function (err, request) {
 
           if (err) {

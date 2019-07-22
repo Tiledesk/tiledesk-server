@@ -28,24 +28,21 @@ router.post('/', function (req, res) {
   winston.info("req.projectid: " + req.projectid);
   winston.info("req.user.id: " + req.user.id);
 
-    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-    return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
+  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+
+    return requestService.createWithIdAndRequester(req.body.request_id, req.user.id, req.body.requester_id, req.projectid, 
       req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
       req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
 
-       
-        // return messageService.create(req.body.requester_id, req.body.sender_fullname, req.params.request_id, req.body.text,
-        //   req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    
-        //     return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-        //       return res.json(savedRequestWithIncrement);
-        //     });
-        //   });     
+
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+    // return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
+    //   req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
+    //   req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
            
       
         winston.debug("savedRequest", savedRequest);
 
-    // console.log("XXXXXXXXXXXXXXXX");
-    // this.sendEmail(req.projectid, savedRequest);
     return res.json(savedRequest);
 
   }).catch(function(err) {
@@ -72,6 +69,99 @@ router.patch('/:requestid', function (req, res) {
   });
 
 });
+
+router.put('/:requestid/lead', function (req, res) {
+  winston.debug(req.body);
+  //TODO change lead
+});
+
+router.put('/:requestid/close', function (req, res) {
+  winston.debug(req.body);
+  
+  // closeRequestByRequestId(request_id, id_project)
+  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid).then(function(closedRequest) {
+
+      winston.info("request closed", closedRequest);
+
+      return res.json(closedRequest);
+  });
+
+
+});
+
+router.put('/:requestid/reopen', function (req, res) {
+  winston.debug(req.body);
+  // reopenRequestByRequestId(request_id, id_project) {
+  return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function(reopenRequest) {
+
+    winston.info("request reopen", reopenRequest);
+
+    return res.json(reopenRequest);
+});
+
+
+});
+
+router.put('/:requestid/status', function (req, res) {
+  winston.debug(req.body);
+  //TODO change lead
+});
+
+router.put('/:requestid/status', function (req, res) {
+  winston.debug(req.body);
+  //TODO change lead
+});
+
+router.put('/:requestid/assignee', function (req, res) {
+  winston.debug(req.body);
+  //TODO change assignee
+});
+
+router.post('/:requestid/participants', function (req, res) {
+  winston.debug(req.body);
+  //TODO change participants
+});
+
+router.put('/:requestid/participants', function (req, res) {
+  winston.debug(req.body);
+  //TODO change participants
+});
+
+router.delete('/:requestid/participants', function (req, res) {
+  winston.debug(req.body);
+  //TODO change participants
+});
+
+router.put('/:requestid/department', function (req, res) {
+  winston.debug(req.body);
+  //TODO change department
+});
+
+router.put('/:requestid/tags', function (req, res) {
+  winston.debug(req.body);
+  //TODO change department
+});
+
+router.put('/:requestid/rating', function (req, res) {
+  winston.debug(req.body);
+  //TODO change rating and rating message
+});
+
+router.post('/:requestid/attributes', function (req, res) {
+  winston.debug(req.body);
+  //TODO change attributes
+});
+
+router.put('/:requestid/attributes', function (req, res) {
+  winston.debug(req.body);
+  //TODO change attributes
+});
+
+router.delete('/:requestid/attributes', function (req, res) {
+  winston.debug(req.body);
+  //TODO change attributes
+});
+
 
 router.post('/:requestid/share/email', function (req, res) {
 
@@ -141,7 +231,7 @@ router.post('/:requestid/share/email', function (req, res) {
 
 router.get('/', function (req, res, next) {
 
-  winston.debug("req projectid", req.projectid);
+  winston.info("req projectid", req.projectid);
   winston.debug("req.query.sort", req.query.sort);
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
@@ -252,6 +342,7 @@ router.get('/', function (req, res, next) {
     skip(skip).limit(limit).
       populate('department').
       populate('lead').
+      populate({path:'requester',populate:{path:'id_user'}}).
       // populate('lead', function (err, lead44) {
       //   //assert(doc._id === user._id) // the document itself is passed
       //   winston.error('lead44',lead44)
@@ -395,7 +486,7 @@ router.get('/csv', function (req, res, next) {
     return Request.find(query, '-transcript  -agents -status -__v').
     skip(skip).limit(limit).
         //populate('department', {'_id':-1, 'name':1}).     
-        populate('department').     
+        populate('department').
         lean().
       // populate({
       //   path: 'department', 
@@ -443,8 +534,11 @@ router.get('/:requestid', function (req, res) {
 
   Request.findOne({"request_id":req.params.requestid})
   .populate('lead')
-  .exec(function(err, request) {
-    //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
+  .populate('department')
+  .populate({path:'requester',populate:{path:'id_user'}})
+  //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
+  // .populate({path:'requester'})
+  .exec(function(err, request) {  
     if (err) {
       winston.error("error getting request by id ", err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

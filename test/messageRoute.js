@@ -33,22 +33,24 @@ describe('MessageRoute', () => {
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-     projectService.create("message-create", savedUser._id).then(function(savedProject) {
+     projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
      
+      var savedProject = savedProjectAndPU.project;
 
           chai.request(server)
             .post('/'+ savedProject._id + '/requests/req123/messages')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"sender":"sender", "senderFullname":"senderFullname", "text":"text"})
+            .send({"text":"text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');                          
 
-                expect(res.body.sender).to.equal("sender");
-                expect(res.body.senderFullname).to.equal("senderFullname");
+                expect(res.body.sender).to.equal(savedUser._id.toString());
+                // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
+                // expect(res.body.senderFullname).to.equal("senderFullname");
                 expect(res.body.recipient).to.equal("req123");
                 expect(res.body.text).to.equal("text");
                 expect(res.body.id_project).to.equal(savedProject._id.toString());
@@ -56,7 +58,7 @@ describe('MessageRoute', () => {
                 expect(res.body.status).to.equal(0);
 
                 expect(res.body.request.request_id).to.equal("req123");
-                expect(res.body.request.requester_id).to.equal("sender");
+                // expect(res.body.request.requester_id).to.equal("sender");
                 expect(res.body.request.first_text).to.equal("text");
                 expect(res.body.request.id_project).to.equal(savedProject._id.toString());
                 expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
@@ -65,7 +67,7 @@ describe('MessageRoute', () => {
                 expect(res.body.request.agents.length).to.equal(1);
                 expect(res.body.request.participants.length).to.equal(1);
                 expect(res.body.request.department).to.not.equal(null);
-                expect(res.body.request.lead).to.equal(null);               
+                expect(res.body.request.lead).to.not.equal(null);               
                             
           
                done();

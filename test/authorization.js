@@ -35,9 +35,11 @@ describe('Authorization', () => {
        var pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-            projectService.create("test-auth", savedUser._id).then(function(savedProject) {
+            projectService.createAndReturnProjectAndProjectUser("test-auth", savedUser._id).then(function(savedProjectAndPU) {
+                var savedProject = savedProjectAndPU.project;
                 leadService.createIfNotExists("request_id1-userBelongsToProject", "email@userBelongsToProject.com", savedProject._id).then(function(createdLead) {      
-                requestService.createWithId("test-userBelongsToProject", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                    // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+                requestService.createWithIdAndRequester("test-userBelongsToProject", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
 
                     // var webhookContent =     { "assignee": 'assignee-member'}
                         
@@ -75,9 +77,10 @@ describe('Authorization', () => {
 
            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             userService.signup(  "test-signup" + Date.now() + "@email.com" ,pwd, "Test Firstname other", "Test lastname other").then(function(savedUserOther) {
-                projectService.create("test-auth", savedUserOther._id).then(function(savedProject) {
+                projectService.createAndReturnProjectAndProjectUser("test-auth", savedUserOther._id).then(function(savedProjectAndPU) {
+                    var savedProject = savedProjectAndPU.project;
                     leadService.createIfNotExists("request_id1-userNOTBelongsToProject", "email@userNOTBelongsToProject.com", savedProject._id).then(function(createdLead) {      
-                    requestService.createWithId("test-auth",createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                    requestService.createWithIdAndRequester("test-auth",savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
     
                         // var webhookContent =     { "assignee": 'assignee-member'}
                             
