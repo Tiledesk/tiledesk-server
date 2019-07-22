@@ -29,6 +29,7 @@
     "@tiledesk/tiledesk-graphql": "file:modules/graphql",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "amqplib": "^0.5.3",
+    "apollo-server-express": "^2.6.9",
     "app-root-path": "^2.1.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
@@ -46,6 +47,7 @@
     "fast-csv": "^2.4.1",
     "firebase-admin": "^7.1.1",
     "get-timezone-offset": "^1.0.3",
+    "graphql": "^14.4.2",
     "http": "0.0.0",
     "jade": "~1.11.0",
     "jsonwebtoken": "^7.3.0",
@@ -66,10 +68,7 @@
     "uniqid": "^5.0.3",
     "uuid": "^3.3.2",
     "winston": "^3.1.0",
-    "ws": "^6.2.1",
-    "apollo-server": "^2.6.7",
-    "apollo-server-express": "^2.6.9",
-    "graphql": "^14.4.2"
+    "ws": "^6.2.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",
