@@ -217,6 +217,10 @@ var TriggerConditionSchema = new Schema({
     type: String,
     required: true
   },
+  path: { 
+    type: String,
+    required: false
+  },
   operator: { //use ref to OperatorSchema
     type: String,
     required: true

@@ -17,14 +17,15 @@ class RulesTrigger {
 
     constructor() {
       // this.engine = new Engine();;
-      this.engine = undefined;
+      // this.engine = undefined;
+      this.engines = {};
     }
 
     // getEngine() {
     //   return this.engine;
     // }
 
-    listen() {
+    listen(success, error) {
         var that = this;
      //modify all to async
 
@@ -36,15 +37,15 @@ class RulesTrigger {
       //  trigger zendesk
       // TODO aggiungere quanto caricato widget
         requestEvent.on('request.create', function(request) {
-          that.exec(request, 'request.create');
+          that.exec(request, 'request.create',success,error);
         });
 
         messageEvent.on('message.create', function(request) {
-          that.exec(request, 'message.create');
+          that.exec(request, 'message.create',success,error);
         });
 
         messageEvent.on('message.received', function(request) {
-          that.exec(request, 'message.received');
+          that.exec(request, 'message.received',success,error);
         });
         
 
@@ -124,7 +125,11 @@ class RulesTrigger {
 
     }
 
-        exec(event, eventKey) {
+    createEngine() {
+
+    }
+
+        exec(event, eventKey,successCall,errorCall) {
           var that = this;
            // winston.info('this', this);
 
@@ -137,6 +142,7 @@ class RulesTrigger {
 
                 
                  winston.debug('event', event);
+                 winston.debug('successCall', successCall);
                 //  winston.debug('event', event.toObject());
                 
                 let query = {id_project: event.id_project, enabled:true, 'trigger.key':eventKey};
@@ -156,8 +162,30 @@ class RulesTrigger {
 
                     winston.debug('active triggers found', triggers);
 
-                    that.engine = new Engine();
 
+                    // var engineExists = that.engines.hasOwnProperty(event.id_project);
+                    // // var engineExists = that.engines.hasOwnProperty(event.id_project+"-"+eventKey);
+                    // winston.info("engineExists:"+engineExists);
+
+                    // var engine;
+                    // if (!engineExists) {
+                    //   engine = new Engine();
+                    //   that.engines[event.id_project] = engine;
+                    //   // that.engines[event.id_project+"-"+eventKey] = engine;
+                    //   winston.info("create engine");
+                    // }else {
+                    //   engine = that.engines[event.id_project];
+                    //   // engine = that.engines[event.id_project+"-"+eventKey];
+                    //   winston.info("engine already exists");
+                    //   return 0;
+                    // }
+
+                    var engine = new Engine();     
+                    // winston.info("create engine");              
+                    // that.engine = new Engine();
+
+
+                   
 
                     triggers.forEach(function(trigger) { 
                       winston.debug('trigger', trigger.toObject());
@@ -167,9 +195,10 @@ class RulesTrigger {
                         },
                         event: {  // define the event to fire when the conditions evaluate truthy
                           type: trigger.actions[0].key,
-                          params: {
-                            message: 'Player has fouled out!'
-                          }
+                          params: trigger.actions[0].parameters
+                          // params: {
+                          //   message: 'Player has fouled out!'
+                          // }
                         }
                       };
   
@@ -182,11 +211,13 @@ class RulesTrigger {
                       }
   
                      
-                      winston.info('rule', rule);
+                      winston.debug('rule', rule);
 
                        // define a rule for detecting the player has exceeded foul limits.  Foul out any player who:
                     // (has committed 5 fouls AND game is 40 minutes) OR (has committed 6 fouls AND game is 48 minutes)
-                      that.engine.addRule(rule);
+                      
+                      engine.addRule(rule);
+                    // that.engine.addRule(rule);
 
                     });
                    
@@ -215,38 +246,49 @@ class RulesTrigger {
                     }else {                 //message is plain object because messageEvent replace it
                        facts = event;
                     }
+                    winston.debug("facts", facts);
 
-                    
+                    engine.addFact("json", facts)
                     
                     // that.engine.on('message.send', (params) => {
                     //   winston.info('send message');
                     // });
 
-                    that.engine.on('success', function(eventSuccess, almanac, ruleResult) {
+
+
+
+                    engine.on('success', function(eventSuccess, almanac, ruleResult) {
                       winston.info("success eventSuccess", eventSuccess); 
                       winston.debug("success ruleResult", ruleResult); 
 
-                      var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent };
+                      var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
                       winston.debug("success triggerEvent", triggerEvent); 
 
                       triggerEventEmitter.emit(eventSuccess.type,triggerEvent );
+                      // successCall(eventSuccess.type,triggerEvent);
                     });
 
-                    that.engine.on('failure', function(eventFailure, almanac, ruleResult) {
-                      winston.info("failure eventFailure", eventFailure); 
+                    engine.on('failure', function(eventFailure, almanac, ruleResult) {
+                      winston.debug("failure eventFailure", eventFailure); 
 
-                      var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent };
+                      var triggerEvent = {event: event, eventKey:eventKey , triggers: triggers, ruleResult:requestEvent,engine:engine };
                       winston.debug("failure triggerEvent", triggerEvent); 
 
                       triggerEventEmitter.emit(eventFailure.type+".failure", triggerEvent);
+                      // errorCall(eventSuccess.type,triggerEvent);
                     });
 
 
+
+
+
                     // Run the engine to evaluate
-                    that.engine
-                      .run(facts)
+                    engine
+                      // .run(facts)
+                      .run()
                       .then(events => { // run() returns events with truthy conditions
-                        winston.info('all rules executed; the following events were triggered: ', events)
+                        winston.info('all rules executed; the following events were triggered: ', events);
+                        engine.stop();
                         // events.map(event => console.log(event.params.message));
                       })
                                   
