@@ -192,6 +192,8 @@ var reqLogger = function (req, res, next) {
       });
 
       next()
+  }else {
+    next();
   }
 }
 
@@ -278,29 +280,6 @@ var projectSetter = function (req, res, next) {
 
 app.use('/auth', auth);
 app.use('/testauth', authtest);
-// app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-//   console.warn("QUI1");
-//   res.send('{"success":true}');
-// });
-
-// app.use('/testauth/bot', [
-//   passport.authenticate(['jwt'], { session: false }), 
-//   validtoken, 
-//   roleChecker.hasRoleOrType(null,'bot')],
-//   // roleChecker.isType('bot')],
-//    function (req, res) {
-//     console.warn("QUI2");
-//   res.send('{"success":true}');
-// });
-
-// app.use('/testauth/noentitycheck', 
-//   [noentitycheck,
-//   passport.authenticate('jwt', { session: false }), 
-//   validtoken], function (req, res) {
-//     console.warn("QUI3");
-//   res.send('{"success":true}');
-// });
-
 
 // deprecated
 app.use('/firebase/auth', firebaseAuth);
@@ -312,9 +291,6 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], lead);
 app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
-//TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
-//TODOOOOOOOOOOOOO RE_ENABLE roleChecker.hasRole()
-//app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], message);
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
 
 // department internal auth check
