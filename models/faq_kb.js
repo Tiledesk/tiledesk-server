@@ -41,4 +41,8 @@ var Faq_kbSchema = new Schema({
 }
 );
 
+Faq_kbSchema.virtual('fullName').get(function () {
+  return (this.name);
+});
+
 module.exports = mongoose.model('faq_kb', Faq_kbSchema);
