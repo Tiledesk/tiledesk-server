@@ -334,7 +334,7 @@ it('signinJWt-userYESAudYesSubject', (done) => {
                         expect(res.body.jwtSecret).to.not.equal(null);                                                                              
                     
 
-                        var externalUserObj = {name:"andrea", surname:"leo"};
+                        var externalUserObj = {_id:"123",name:"andrea", surname:"leo"};
                         
                         console.log("externalUserObj", externalUserObj);
 
@@ -350,8 +350,9 @@ it('signinJWt-userYESAudYesSubject', (done) => {
                             
                                 
                                 console.log("jwtToken", jwtToken);
+                                
                                 chai.request(server)
-                                .get('/'+ savedProject._id + '/requests')
+                                .get('/testauth/noentitycheck')
                                 .set('Authorization', 'JWT '+jwtToken)
                                 .send()
                                 .end((err, res) => {
@@ -406,7 +407,9 @@ it('signinJWt-userYESAudYesSubject', (done) => {
                                         
                                         console.log("jwtToken", jwtToken);
                                         chai.request(server)
-                                        .get('/'+ savedProject._id + '/requests')
+                                        // .get('/'+ savedProject._id + '/faq_kb')
+                                        .get('/testauth/bot')
+                                       
                                         .set('Authorization', 'JWT '+jwtToken)
                                         .send()
                                         .end((err, res) => {
