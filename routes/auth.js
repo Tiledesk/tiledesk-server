@@ -11,11 +11,17 @@ var pendinginvitation = require("../services/pendingInvitationService");
 var userService = require("../services/userService");
 var Activity = require("../models/activity");
 const activityEvent = require('../event/activityEvent');
+var noentitycheck = require('../middleware/noentitycheck');
 
 var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 
 var authEvent = require("../event/authEvent");
+
+var passport = require('passport');
+require('../middleware/passport')(passport);
+var validtoken = require('../middleware/valid-token');
+
 
 router.post('/signup', function (req, res) {
   if (!req.body.email || !req.body.password) {
@@ -47,7 +53,8 @@ router.post('/signup', function (req, res) {
           // });
 
 
-
+          authEvent.emit("user.signup", savedUser);       
+          
          var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
             verb: "USER_SIGNUP", actionObj: req.body, 
             target: {type:"user", id:savedUser._id.toString(), object: null }, 
@@ -66,6 +73,8 @@ router.post('/signup', function (req, res) {
 
 
       
+        authEvent.emit("user.signup.error",  {body: req.body, err:err});       
+
         var activity = new Activity({actor: {type:"user"}, 
            verb: "USER_SIGNUP_ERROR", actionObj: req.body, 
            target: {type:"user", id:null, object: null }, 
@@ -80,67 +89,137 @@ router.post('/signup', function (req, res) {
 });
 
 
-// router.post('/signinAnonymously', function (req, res) {
+router.post('/signinAnonymously', function (req, res) {
  
-//   var email = uuidv4() + '@tiledesk.com';
-//   winston.info('signinAnonymously email: ' + email);
+  var email = uuidv4() + '@tiledesk.com';
+  winston.info('signinAnonymously email: ' + email);
 
-//   var password = uuidv4();
-//   winston.info('signinAnonymously password: ' + password);
+  var password = uuidv4();
+  winston.info('signinAnonymously password: ' + password);
 
-//   // signup ( email, password, firstname, lastname, emailverified)
-//   return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
-//     .then(function (savedUser) {
-
-
-//       winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+  // signup ( email, password, firstname, lastname, emailverified)
+  return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
+    .then(function (savedUser) {
 
 
-//       var newProject_user = new Project_user({
-//         // _id: new mongoose.Types.ObjectId(),
-//         id_project: req.body.id_project, //attentoqui
-//         id_user: savedUser._id,
-//         role: RoleConstants.GUEST,
-//         user_available: true,
-//         createdBy: savedUser.id,
-//         updatedBy: savedUser.id
-//       });
+      winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
-//       return newProject_user.save(function (err, savedProject_user) {
-//         if (err) {
-//           winston.error('Error saving object.', err)
-//           return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//         }
+
+      var newProject_user = new Project_user({
+        // _id: new mongoose.Types.ObjectId(),
+        id_project: req.body.id_project, //attentoqui
+        id_user: savedUser._id,
+        role: RoleConstants.GUEST,
+        user_available: true,
+        createdBy: savedUser.id,
+        updatedBy: savedUser.id
+      });
+
+      return newProject_user.save(function (err, savedProject_user) {
+        if (err) {
+          winston.error('Error saving object.', err)
+          return res.status(500).send({ success: false, msg: 'Error saving object.' });
+        }
 
     
-//         authEvent.emit("guest.signin", savedProject_user);         
+        authEvent.emit("user.signin", savedUser);       
+        authEvent.emit("projectuser.create", savedProject_user);         
 
-//           winston.info('project user created ', savedProject_user.toObject());
+          winston.info('project user created ', savedProject_user.toObject());
 
           
-//         //remove password 
-//         let userJson = savedUser.toObject();
-//         delete userJson.password;
+        //remove password 
+        let userJson = savedUser.toObject();
+        delete userJson.password;
         
 
-//         var signOptions = {
-//           issuer:  'https://tiledesk.com',
-//           subject:  'user',
-//           audience:  'https://tiledesk.com',           
-//         };
+        var signOptions = {
+          issuer:  'https://tiledesk.com',
+          subject:  'user',
+          audience:  'https://tiledesk.com',           
+        };
 
-//         var token = jwt.sign(savedUser, config.secret, signOptions);
+        var token = jwt.sign(savedUser, config.secret, signOptions);
 
-//         res.json({ success: true, token: 'JWT ' + token, user: userJson });
-//     }).catch(function (err) {
+        res.json({ success: true, token: 'JWT ' + token, user: userJson });
+    }).catch(function (err) {
 
-//       authEvent.emit("guest.signin.error", {body: req.body, err:err});             
+      authEvent.emit("user.signin.error", {body: req.body, err:err});             
 
-//        winston.error('Error registering new user', err);
-//        res.send(err);
-//     });
-//   });
-// });
+       winston.error('Error registering new user', err);
+       res.send(err);
+    });
+  });
+});
+
+//caso UNI. pass jwt token with project secret sign. so aud=project/id subject=user
+router.post('/signinWithCustomToken', [
+  // function(req,res,next) {req.disablePassportEntityCheck = true;winston.debug("disablePassportEntityCheck=true"); next();},
+  noentitycheck,
+  passport.authenticate(['jwt'], { session: false }), 
+  validtoken], function (req, res) {
+
+
+  var email = uuidv4() + '@tiledesk.com';
+  winston.info('signinAnonymously email: ' + email);
+
+  var password = uuidv4();
+  winston.info('signinAnonymously password: ' + password);
+
+  // signup ( email, password, firstname, lastname, emailverified)
+  return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
+    .then(function (savedUser) {
+
+
+      winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+
+
+      var newProject_user = new Project_user({
+        // _id: new mongoose.Types.ObjectId(),
+        id_project: req.body.id_project, //attentoqui
+        id_user: savedUser._id,
+        role: RoleConstants.USER,
+        user_available: true,
+        createdBy: savedUser.id,
+        updatedBy: savedUser.id
+      });
+
+      return newProject_user.save(function (err, savedProject_user) {
+        if (err) {
+          winston.error('Error saving object.', err)
+          return res.status(500).send({ success: false, msg: 'Error saving object.' });
+        }
+
+    
+        authEvent.emit("user.signin", savedUser);         
+        authEvent.emit("projectuser.create", savedProject_user);         
+
+          winston.info('project user created ', savedProject_user.toObject());
+
+          
+        //remove password 
+        let userJson = savedUser.toObject();
+        delete userJson.password;
+        
+
+        var signOptions = {
+          issuer:  'https://tiledesk.com',
+          subject:  'user',
+          audience:  'https://tiledesk.com',           
+        };
+
+        var token = jwt.sign(savedUser, config.secret, signOptions);
+
+        res.json({ success: true, token: 'JWT ' + token, user: userJson });
+    }).catch(function (err) {
+
+      authEvent.emit("user.signin.error", {body: req.body, err:err});             
+
+       winston.error('Error registering new user', err);
+       res.send(err);
+    });
+  });
+});
 
 
 
@@ -158,6 +237,7 @@ router.post('/signin', function (req, res) {
 
     if (!user) {
      
+      
       var activity = new Activity({actor: {type:"user"}, 
          verb: "USER_SIGNIN_ERROR", actionObj: req.body, 
          target: {type:"user", id:null, object: null }, 
@@ -235,6 +315,9 @@ router.post('/signin', function (req, res) {
               // TODO add subject
               var token = jwt.sign(user, config.secret, signOptions);
              
+              authEvent.emit("user.signin", user);         
+
+              
               var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
                 verb: "USER_SIGNIN", actionObj: req.body, 
                 target: {type:"user", id:user._id.toString(), object: null }, 
