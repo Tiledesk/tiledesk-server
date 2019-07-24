@@ -86,6 +86,9 @@ class RulesTrigger {
             winston.debug('runAction action text: ' + text);
 
 
+            var attributes = action.parameters.attributes;
+            winston.debug('runAction action attributes: ' + attributes);
+
             var recipient;
             if (eventTrigger.eventKey=="request.create") {
               recipient = eventTrigger.event.request_id;
@@ -106,7 +109,9 @@ class RulesTrigger {
                 fullname,                                     
                 recipient,
                 text,
-                id_project
+                id_project,
+                null,
+                attributes
               );
 
 
