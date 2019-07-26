@@ -187,6 +187,113 @@ router.get('/requests/count', function(req, res) {
 
   });
 
+  router.get('/requests/aggregate/month', function(req, res) {
+    
+    
+    let query={"id_project": req.projectid }
+    
+    if(req.query.department_id){
+      //department_id=req.query.department_id;
+      //add field departmentid to query if req.query.department_id exist
+      query.department= new ObjectId(req.query.department_id);
+      
+    }
+    
+    console.log("QueryParams_MonthCHART:", req.query.department_id)
+    console.log("Query_LastDayCHART", query)
+
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+    AnalyticResult.aggregate([
+         { "$match":  query},
+        // { "$match": {} },
+        //{ $match: query },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"}, 
+          
+        }}, 
+        // // Group by year and month and get the count
+        { "$group":{
+              "_id":{"year":"$year", "month":"$month"}, 
+              "count":{"$sum":1}
+        }},
+        { "$sort": {"_id":1}},  
+        // { "$limit": 7 },
+    ])
+    // .exec((err, result) => {
+      .exec(function(err, result) {
+
+     
+  //, function (err, result) {
+        if (err) {
+            winston.debug(err);
+            console.log("ERR",err)
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+          console.log("RESULT",result)
+          res.json(result);
+    });
+
+  });
+
+  router.get('/requests/aggregate/week', function(req, res) {
+    
+    
+    //let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+    
+    if(req.query.department_id){
+      //department_id=req.query.department_id;
+      //add field departmentid to query if req.query.department_id exist
+      //query.department= new ObjectId(req.query.department_id);
+      
+    }
+    
+    //console.log("QueryParams_WeekCHART:", lastdays,req.query.department_id)
+    //console.log("Query_LastDayCHART", query)
+
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+    AnalyticResult.aggregate([
+         { "$match": {"id_project": req.projectid } },
+        // { "$match": {} },
+        //{ $match: query },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"},
+          "day": {"$dayOfMonth":"$createdAt"},
+          "week":{"$week":"$createdAt"},
+          
+          
+        }}, 
+        // // Group by year and month and get the count
+        { "$group":{
+              "_id":{"year":"$year", "month":"$month","week":"$week", }, 
+              "count":{"$sum":1}
+        }},
+        { "$sort": {"_id":1}},  
+        // { "$limit": 7 },
+    ])
+    // .exec((err, result) => {
+      .exec(function(err, result) {
+
+     
+  //, function (err, result) {
+        if (err) {
+            winston.debug(err);
+            console.log("ERR",err)
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+          console.log("RESULT",result)
+          res.json(result);
+    });
+
+  });
+
   
 
 // db.requests.aggregate([
@@ -672,6 +779,62 @@ router.get('/requests/count', function(req, res) {
 
   });
   
+  router.get('/requests/satisfaction/day', function(req, res) {
+  
+    //set default value for lastdays&department_id 
+    let lastdays=7
+    //let department_id='';
+
+    //check for lastdays&dep_id parameters
+    if(req.query.lastdays){
+      lastdays=req.query.lastdays
+    }
+    
+    let query={"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (lastdays * 24 * 60 * 60 * 1000))) }}
+    
+    if(req.query.department_id){
+      //department_id=req.query.department_id;
+      //add field departmentid to query if req.query.department_id exist
+      query.department= new ObjectId(req.query.department_id);
+      
+    }
+    
+    console.log("QueryParams_SatisfactionTIME:", lastdays,req.query.department_id)
+    console.log("Query_SatisfactionTIME", query)
+
+    winston.debug(req.params);
+    winston.debug("req.projectid",  req.projectid);    
+   
+      
+    AnalyticResult.aggregate([
+        { $match: query },
+        { "$project":{
+          "year":{"$year":"$createdAt"}, 
+          "month":{"$month":"$createdAt"},
+          "day":{"$dayOfMonth":"$createdAt"},
+          "satisfaction_project" : "$rating"
+        }}, 
+        { "$group": { 
+          "_id": {"day":"$day","month":"$month", "year": "$year"}, 
+          "satisfaction_avg":{"$avg": "$satisfaction_project"}
+        }
+      },
+      { "$sort": {"_id":-1}}
+      
+    ])
+      .exec(function(err, result) {
+
+          if (err) {
+            winston.debug(err);
+            return res.status(500).send({success: false, msg: 'Error getting analytics.'});
+          }
+          winston.debug(result);
+
+          res.json(result);
+    });
+
+  });
+
 
   router.get('/requests/satisfaction/month', function(req, res) {
   
