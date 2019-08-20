@@ -18,7 +18,7 @@ services:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
 #    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
-    ports:
+   ports:
       - "4200:4200" # specify port forewarding
   server:
     image: tiledesk/tiledesk-server:beta
