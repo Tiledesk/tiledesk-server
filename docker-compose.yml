@@ -14,18 +14,20 @@ volumes:
 
 
 services:
-#  dashboard:
+  dashboard:
+   image: tiledesk/tiledesk-dashboard
+   container_name: tiledesk-dashboard
 #    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
-#    ports:
-#      - "4200:4200" # specify port forewarding
+    ports:
+      - "4200:4200" # specify port forewarding
   server:
-    image: tiledesk/tiledesk-server
+    image: tiledesk/tiledesk-server:beta
     container_name: tiledesk-server
     restart: always
     networks:
          - backend
-    env_file:
-    - .env
+#    env_file:
+#    - .env
     environment: 
       - FIREBASE_PRIVATE_KEY
       - FIREBASE_CONFIG_FILE
@@ -33,7 +35,7 @@ services:
       - FIREBASE_PROJECT_ID
    #   - DATABASE_URI
       - MONGODB_URI=mongo
-    build: .
+#    build: .
     depends_on:
       - mongo
     ports:
