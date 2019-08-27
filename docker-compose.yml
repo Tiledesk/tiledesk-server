@@ -17,9 +17,16 @@ services:
   dashboard:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
-#    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
    ports:
       - "4200:80" # specify port forewarding
+  widget:
+   image: chat21/chat21-web-widget
+   container_name: chat21-web-widget
+   ports:
+      - "4200:80" # specify port forewarding
+  cloud-functions:
+   image: chat21/chat21-cloud-functions
+   container_name: chat21-cloud-functions
   server:
     image: tiledesk/tiledesk-server:beta
     container_name: tiledesk-server
