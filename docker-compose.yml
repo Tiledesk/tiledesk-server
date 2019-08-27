@@ -65,4 +65,14 @@ services:
       ### Uncoment below if you want to map mongodb port
       #ports:
       #   - "27017:27017"
-
+  ngrok:
+    container_name: ngrok
+    image: wernight/ngrok
+    command: ngrok http backend:3000
+    networks:
+     - backend
+    ports:
+     -  '4040:4040'
+    #links:
+    #  - "server"
+    #command: ngrok http server:3000
