@@ -18,12 +18,17 @@ services:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
    ports:
-      - "4200:80" # specify port forewarding
-  widget:
+      - "4500:80" # specify port forewarding
+  web-widget:
    image: chat21/chat21-web-widget
    container_name: chat21-web-widget
    ports:
       - "4200:80" # specify port forewarding
+  ionic:
+   image: chat21/chat21-ionic
+   container_name: chat21-ionic
+   ports:
+      - "8080:80" # specify port forewarding
   cloud-functions:
    image: chat21/chat21-cloud-functions
    container_name: chat21-cloud-functions
