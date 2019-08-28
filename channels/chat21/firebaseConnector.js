@@ -13,9 +13,14 @@ if (chat21Enabled && chat21Enabled == "true"){
 
       var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
 
+      winston.info('firebaseConnector firebaseConfig.databaseURL:'+ firebaseConfig.databaseURL);
+
       var private_key = process.env.FIREBASE_PRIVATE_KEY;
+      winston.info('firebaseConnector private_key:'+ private_key);
       var client_email = process.env.FIREBASE_CLIENT_EMAIL;
+      winston.info('firebaseConnector client_email:'+ client_email);
       var firebase_project_id = process.env.FIREBASE_PROJECT_ID;
+      winston.info('firebaseConnector firebase_project_id:'+ firebase_project_id);
 
       // https://stackoverflow.com/questions/41287108/deploying-firebase-app-with-service-account-to-heroku-environment-variables-wit
       var serviceAccount;
