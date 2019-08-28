@@ -15,7 +15,7 @@
     "npm": ">=6.0.0"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.19",
+    "@chat21/chat21-node-sdk": "^1.0.24",
     "winston": "^3.1.0"
   },
   "devDependencies": {    
