@@ -5,6 +5,7 @@ version: "2"
 # See: https://docs.docker.com/engine/reference/commandline/network_create/
 networks:
    backend:
+   frontend:
 
 ### Create a permanent, named data volume
 # This makes much easier to identify where the mongodb data is stored on host
@@ -19,16 +20,35 @@ services:
    container_name: tiledesk-dashboard
    ports:
       - "4500:80" # specify port forewarding
+   networks:
+         - frontend
   web-widget:
    image: chat21/chat21-web-widget
    container_name: chat21-web-widget
    ports:
       - "4200:80" # specify port forewarding
+   networks:
+      - frontend
   ionic:
    image: chat21/chat21-ionic
    container_name: chat21-ionic
    ports:
       - "8080:80" # specify port forewarding
+   networks:
+      - frontend
+  web:
+    image: nginx
+    container_name: proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80" # specify port forewarding
+    networks:
+      - frontend
+    links:
+      - ionic
+      - dashboard
+    command: [nginx-debug, '-g', 'daemon off;']
   cloud-functions:
    image: chat21/chat21-cloud-functions
    container_name: chat21-cloud-functions
@@ -38,13 +58,17 @@ services:
     restart: always
     networks:
          - backend
-#    env_file:
-#    - .env
+    env_file:
+         - .env
     environment: 
       - FIREBASE_PRIVATE_KEY
       - FIREBASE_CONFIG_FILE
       - FIREBASE_CLIENT_EMAIL
       - FIREBASE_PROJECT_ID
+      - CHAT21_ENABLED
+      - CHAT21_URL
+      - CHAT21_APPID
+      - CHAT21_ADMIN_TOKEN
    #   - DATABASE_URI
       - MONGODB_URI=mongo
 #    build: .
