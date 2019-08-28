@@ -25,7 +25,7 @@ router.post('/', function (req, res) {
 
     trigger.save(function (err, savedTrigger) {
     if (err) {
-      winston.debug('--- > ERROR ', err)
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
     res.json(savedTrigger);
@@ -38,6 +38,7 @@ router.put('/:triggerid', function (req, res) {
 
   Trigger.findByIdAndUpdate(req.params.triggerid, req.body, { new: true, upsert: true }, function (err, updatedTrigger) {
     if (err) {
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
     res.json(updatedTrigger);
@@ -51,6 +52,7 @@ router.delete('/:triggerid', function (req, res) {
 
   Trigger.remove({ _id: req.params.triggerid }, function (err, trigger) {
     if (err) {
+      winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
     res.json(trigger);
@@ -64,6 +66,7 @@ router.get('/:triggerid', function (req, res) {
 
   Trigger.findById(req.params.triggerid, function (err, trigger) {
     if (err) {
+      winston.error('--- > ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!trigger) {
