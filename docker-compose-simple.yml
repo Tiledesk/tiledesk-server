@@ -17,21 +17,9 @@ services:
   dashboard:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
-   ports:
-      - "4500:80" # specify port forewarding
-  web-widget:
-   image: chat21/chat21-web-widget
-   container_name: chat21-web-widget
+#    build: ../tiledesk-dashboard # specify the directory of the Dockerfile
    ports:
       - "4200:80" # specify port forewarding
-  ionic:
-   image: chat21/chat21-ionic
-   container_name: chat21-ionic
-   ports:
-      - "8080:80" # specify port forewarding
-  cloud-functions:
-   image: chat21/chat21-cloud-functions
-   container_name: chat21-cloud-functions
   server:
     image: tiledesk/tiledesk-server:beta
     container_name: tiledesk-server
@@ -65,14 +53,3 @@ services:
       ### Uncoment below if you want to map mongodb port
       #ports:
       #   - "27017:27017"
-  ngrok:
-    container_name: ngrok
-    image: wernight/ngrok
-    command: ngrok http backend:3000
-    networks:
-     - backend
-    ports:
-     -  '4040:4040'
-    #links:
-    #  - "server"
-    #command: ngrok http server:3000
