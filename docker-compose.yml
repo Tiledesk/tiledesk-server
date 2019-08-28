@@ -40,7 +40,7 @@ services:
     image: nginx
     container_name: proxy
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80" # specify port forewarding
     networks:
