@@ -23,7 +23,7 @@ services:
    networks:
          - frontend
   web-widget:
-   image: chat21/chat21-web-widget
+   image: chat21/chat21-web-widget:latest-remoteconfig
    container_name: chat21-web-widget
    ports:
       - "4200:80" # specify port forewarding
@@ -45,9 +45,11 @@ services:
       - "80:80" # specify port forewarding
     networks:
       - frontend
+      - backend
     links:
       - ionic
       - dashboard
+      - server
     command: [nginx-debug, '-g', 'daemon off;']
   cloud-functions:
    image: chat21/chat21-cloud-functions
