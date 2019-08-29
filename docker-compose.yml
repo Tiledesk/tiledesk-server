@@ -36,11 +36,13 @@ services:
       - "8080:80" # specify port forewarding
    networks:
       - frontend
-  web:
-    image: nginx
-    container_name: proxy
-    volumes:
-      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+  proxy:
+    #image: nginx
+    #container_name: proxy
+    image: tiledesk/tiledesk-docker-proxy
+    container_name: tiledesk-docker-proxy
+    #volumes:
+     # - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80" # specify port forewarding
     networks:
