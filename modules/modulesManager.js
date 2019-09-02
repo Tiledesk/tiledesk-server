@@ -95,7 +95,7 @@ class ModulesManager {
             winston.info("ModulesManager init stripe loaded");
         } catch(err) {
             winston.info("ModulesManager init stripe module not found", err);
-        }
+        } 
       
         try {
             this.subscriptionRoute = require('@tiledesk/tiledesk-resthook').subscriptionRoute;
