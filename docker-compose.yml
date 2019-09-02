@@ -59,8 +59,8 @@ services:
    image: chat21/chat21-cloud-functions
    container_name: chat21-cloud-functions
    ports:
-     - "0.0.0.0:9005:9005/tcp" # specify port forewarding
-     - "0.0.0.0:5000:5000/tcp"
+     - "9005:9005" # specify port forewarding
+     - "5000:5000"
   server:
     image: tiledesk/tiledesk-server:beta
     container_name: tiledesk-server
