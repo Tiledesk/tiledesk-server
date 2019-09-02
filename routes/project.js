@@ -91,7 +91,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
 // PROJECT PUT
 // should check HasRole otherwise another project user can change this
-router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
+router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
@@ -103,7 +103,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 });
 
 // PROJECT DELETE
-router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
+router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
   winston.debug(req.body);
   Project.remove({ _id: req.params.projectid }, function (err, project) {
     if (err) {
