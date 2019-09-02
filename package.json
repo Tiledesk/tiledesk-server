@@ -28,6 +28,8 @@
     "@tiledesk/tiledesk-chat21-app": "file:channels/chat21",
     "@tiledesk/tiledesk-graphql": "file:modules/graphql",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
+    "@tiledesk/tiledesk-analytics": "file:modules/analytics",
+    "@tiledesk/tiledesk-restHook": "file:modules/restHook",
     "amqplib": "^0.5.3",
     "apollo-server-express": "^2.6.9",
     "app-root-path": "^2.1.0",

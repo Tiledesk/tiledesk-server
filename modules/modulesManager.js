@@ -14,6 +14,7 @@ class ModulesManager {
         this.stripe = undefined;
         this.graphql = undefined;
         this.analyticsRoute = undefined;
+      
     }
 
     injectBefore(app) {
@@ -60,6 +61,13 @@ class ModulesManager {
            app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.analyticsRoute);
             winston.info("ModulesManager trigger controller loaded");       
         }
+      
+      if (this.subscriptionRoute) {
+           app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.subscriptionRoute);
+           winston.info("ModulesManager subscriptions controller loaded");       
+        }
+      
+
         
     }
 
@@ -90,13 +98,21 @@ class ModulesManager {
         }
       
         try {
+            this.subscriptionRoute = require('@tiledesk/tiledesk-resthook').subscriptionRoute;
+            winston.debug("this.subscriptionRoute:"+ this.subscriptionRoute);        
+            winston.info("ModulesManager init subscriptionRoute loaded");
+        } catch(err) {
+            winston.info("ModulesManager init subscriptionRoute module not found", err);
+        }
+
+      
+       try {
             this.analyticsRoute = require('@tiledesk/tiledesk-analytics').analyticsRoute;
             winston.debug("this.analyticsRoute:"+ this.analyticsRoute);        
             winston.info("ModulesManager init analyticsRoute loaded");
         } catch(err) {
             winston.info("ModulesManager init analyticsRoute module not found", err);
         }
-
 
         // try {
         //     this.graphql = require('../modules/graphql/apollo');        
