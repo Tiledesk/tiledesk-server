@@ -1,4 +1,6 @@
+console.log("10")
 const resthookRoute = require("./route/subscription");
+console.log("101")
 const subscriptionNotifier = require("./subscriptionNotifier");
-
+console.log("102")
 module.exports = {subscriptionNotifier:subscriptionNotifier, resthookRoute:resthookRoute};
