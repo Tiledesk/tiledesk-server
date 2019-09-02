@@ -64,7 +64,6 @@ var group = require('./routes/group');
 
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
-var analytics = require('./routes/analytics');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
 var subscription = require('./routes/subscription');
@@ -332,7 +331,6 @@ app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], analytics);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);

@@ -13,7 +13,7 @@ class ModulesManager {
         this.triggerRoute = undefined;
         this.stripe = undefined;
         this.graphql = undefined;
-        this.analytics = undefined;
+        this.analyticsRoute = undefined;
     }
 
     injectBefore(app) {
@@ -55,6 +55,11 @@ class ModulesManager {
             app.use('/:projectid/modules/triggers', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.triggerRoute);
             winston.info("ModulesManager trigger controller loaded");       
         }
+      
+        if (this.analyticsRoute) {
+           app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.analyticsRoute);
+            winston.info("ModulesManager trigger controller loaded");       
+        }
         
     }
 
@@ -82,6 +87,14 @@ class ModulesManager {
             winston.info("ModulesManager init stripe loaded");
         } catch(err) {
             winston.info("ModulesManager init stripe module not found", err);
+        }
+      
+        try {
+            this.analyticsRoute = require('@tiledesk/tiledesk-analytics').analyticsRoute;
+            winston.debug("this.analyticsRoute:"+ this.analyticsRoute);        
+            winston.info("ModulesManager init analyticsRoute loaded");
+        } catch(err) {
+            winston.info("ModulesManager init analyticsRoute module not found", err);
         }
 
 

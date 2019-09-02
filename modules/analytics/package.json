@@ -1,0 +1,21 @@
+{
+  "name": "@tiledesk/tiledesk-analytics",
+  "description": "The Tiledesk Analytics module",
+  "version": "1.0.0",
+  "private": false,
+  "author": "Andrea Leo - Frontiere21 SRL",
+  "license": "AGPL-3.0",
+  "homepage": "https://www.tiledesk.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tiledesk/tiledesk-server"
+  },
+  "engines": {
+    "node": "11.14.0",
+    "npm": ">=6.0.0"
+  },
+  "dependencies": {
+    "winston": "^3.1.0"
+  },
+  "devDependencies": {}
+}
