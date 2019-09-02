@@ -52,8 +52,8 @@ var listener = httpServer.listen(port,function(){
     console.log('Listening on port ' + listener.address().port); //Listening on port 8888
 
  
-    console.log(`🚀 Server ready at http://localhost:${port}${httpServer.graphqlPath}`)
-    console.log(`🚀 Subscriptions ready at ws://localhost:${port}${httpServer.subscriptionsPath}`)
+    console.log(`🚀 GraphQl Server ready at http://localhost:${port}${httpServer.graphqlPath}`)
+    console.log(`🚀 GraphQl Subscriptions ready at ws://localhost:${port}${httpServer.subscriptionsPath}`)
  
 
 });
