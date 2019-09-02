@@ -14,6 +14,7 @@ class ModulesManager {
         this.stripe = undefined;
         this.graphql = undefined;
         this.analyticsRoute = undefined;
+        this.resthookRoute = undefined;
       
     }
 
@@ -62,8 +63,8 @@ class ModulesManager {
             winston.info("ModulesManager trigger controller loaded");       
         }
       
-      if (this.subscriptionRoute) {
-           app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.subscriptionRoute);
+      if (this.resthookRoute) {
+           app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.resthookRoute);
            winston.info("ModulesManager subscriptions controller loaded");       
         }
       
@@ -98,13 +99,13 @@ class ModulesManager {
         } 
       
         try {
-            this.subscriptionRoute = require('@tiledesk/tiledesk-resthook').subscriptionRoute;
-            winston.debug("this.subscriptionRoute:"+ this.subscriptionRoute);        
+            this.resthookRoute = require('@tiledesk/tiledesk-resthook').resthookRoute;
+            winston.debug("this.resthookRoute:"+ this.resthookRoute);        
              this.subscriptionNotifier = require('@tiledesk/tiledesk-resthook').subscriptionNotifier;
             this.subscriptionNotifier.start();
-            winston.info("ModulesManager init subscriptionRoute loaded");
+            winston.info("ModulesManager init resthookRoute loaded");
         } catch(err) {
-            winston.info("ModulesManager init subscriptionRoute module not found", err);
+            winston.info("ModulesManager init resthookRoute module not found", err);
         }
 
       
