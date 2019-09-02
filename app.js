@@ -58,7 +58,7 @@ var project = require('./routes/project');
 var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
-//var setting = require('./routes/setting');
+// var setting = require('./routes/setting');
 
 var group = require('./routes/group');
 
@@ -143,11 +143,11 @@ app.use(function (req, res, next) {
 
 app.use(bodyParser.json({
   verify: function (req, res, buf) {
-    var url = req.originalUrl;
-    if (url.indexOf('/stripe/')) {
+    // var url = req.originalUrl;
+    // if (url.indexOf('/stripe/')) {
       req.rawBody = buf.toString();
-      winston.info("bodyParser verify stripe", req.rawBody);
-    } 
+      winston.debug("bodyParser verify stripe", req.rawBody);
+    // } 
   }
 }));
 
@@ -313,7 +313,8 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 // project internal auth check
 app.use('/projects',project);
 
-//app.use('/settings',setting);
+// app.use('/settings',setting);
+
 
 app.use('/:projectid/widgets', widgets);
 
