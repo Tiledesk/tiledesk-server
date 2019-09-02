@@ -99,6 +99,7 @@ class ModulesManager {
         } 
       
         try {
+          console.log("heloooo0")
             this.resthookRoute = require('@tiledesk/tiledesk-resthook').resthookRoute;
             winston.debug("this.resthookRoute:"+ this.resthookRoute);        
              this.subscriptionNotifier = require('@tiledesk/tiledesk-resthook').subscriptionNotifier;
