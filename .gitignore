@@ -5,3 +5,4 @@ data
 .firebasekey-pre.json
 .firebasekey.json
 .env
+modules/
