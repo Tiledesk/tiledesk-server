@@ -76,8 +76,8 @@ var widgets = require('./routes/widget');
 // appRules.start();
 
 
-var subscriptionNotifier = require('./services/SubscriptionNotifier');
-subscriptionNotifier.start();
+//var subscriptionNotifier = require('./services/SubscriptionNotifier');
+//subscriptionNotifier.start();
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();

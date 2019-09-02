@@ -100,6 +100,8 @@ class ModulesManager {
         try {
             this.subscriptionRoute = require('@tiledesk/tiledesk-resthook').subscriptionRoute;
             winston.debug("this.subscriptionRoute:"+ this.subscriptionRoute);        
+             this.subscriptionNotifier = require('@tiledesk/tiledesk-resthook').subscriptionNotifier;
+            this.subscriptionNotifier.start();
             winston.info("ModulesManager init subscriptionRoute loaded");
         } catch(err) {
             winston.info("ModulesManager init subscriptionRoute module not found", err);

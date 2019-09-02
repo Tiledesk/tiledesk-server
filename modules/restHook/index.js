@@ -1,3 +1,4 @@
-const resthookRoute = require("./analytics");
+const resthookRoute = require("./route/subscription");
+const subscriptionNotifier = require("./subscriptionNotifier");
 
-module.exports = {analyticsRoute:analyticsRoute};
+module.exports = {subscriptionNotifier:subscriptionNotifier, resthookRoute:resthookRoute};
