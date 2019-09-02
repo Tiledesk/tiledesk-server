@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var AnalyticResult = require("../models/analyticResult");
+var AnalyticResult = require("../../models/analyticResult");
 var mongoose = require('mongoose');
-var winston = require('../config/winston');
+var winston = require('../../config/winston');
 
 
 
