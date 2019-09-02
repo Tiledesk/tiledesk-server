@@ -74,8 +74,8 @@ var key = require('./routes/key');
 var activities = require('./routes/activity');
 var widgets = require('./routes/widget');
 
-var appRules = require('./modules/trigger/global/appRules');
-appRules.start();
+// var appRules = require('./modules/trigger/global/appRules');
+// appRules.start();
 
 
 var subscriptionNotifier = require('./services/SubscriptionNotifier');
@@ -94,8 +94,14 @@ activityArchiver.listen();
 var channelManager = require('./channels/channelManager');
 channelManager.listen();
 
-var modulesManager = require('./modules/modulesManager');
-modulesManager.init();
+var modulesManager = undefined;
+try {
+  modulesManager = require('./modules/modulesManager');
+  modulesManager.init();
+} catch(err) {
+  winston.info("ModulesManager not present");
+}
+
 
 if (process.env.ReqLog_ENABLED) {
   var ReqLog = require("./models/reqlog");
@@ -338,7 +344,10 @@ app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { ses
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 
-modulesManager.use(app);
+if (modulesManager) {
+  modulesManager.use(app);
+}
+
 
 // REENABLEIT
 // catch 404 and forward to error handler
