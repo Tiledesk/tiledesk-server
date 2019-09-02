@@ -10,10 +10,6 @@
     "type": "git",
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
-  "engines": {
-    "node": "11.14.0",
-    "npm": ">=6.0.0"
-  },
   "dependencies": {
     "apollo-server": "^2.6.7",
     "apollo-server-express": "^2.6.9",
