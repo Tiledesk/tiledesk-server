@@ -6,8 +6,8 @@ var expect = require('chai').expect;
 
 var assert = require('chai').assert;
 var config = require('../config/database');
-var Request = require('../models/request');
-var Requester = require('../models/requester');
+// var Request = require('../models/request');
+// var Requester = require('../models/requester');
 
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
