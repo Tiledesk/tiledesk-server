@@ -29,7 +29,7 @@
     "@tiledesk/tiledesk-graphql": "file:modules/graphql",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "@tiledesk/tiledesk-analytics": "file:modules/analytics",
-    "@tiledesk/tiledesk-restHook": "file:modules/restHook",
+    "@tiledesk/tiledesk-resthook": "file:modules/restHook",
     "amqplib": "^0.5.3",
     "apollo-server-express": "^2.6.9",
     "app-root-path": "^2.1.0",
