@@ -13,6 +13,7 @@ class ModulesManager {
         this.triggerRoute = undefined;
         this.stripe = undefined;
         this.graphql = undefined;
+        this.analytics = undefined;
     }
 
     injectBefore(app) {
