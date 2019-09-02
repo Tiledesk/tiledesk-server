@@ -81,7 +81,7 @@ var widgets = require('./routes/widget');
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
-
+ 
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
@@ -90,7 +90,7 @@ var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
 var channelManager = require('./channels/channelManager');
-channelManager.listen();
+channelManager.listen(); 
 
 var modulesManager = undefined;
 try {
