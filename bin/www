@@ -23,8 +23,8 @@ app.set('port', port);
 // var modulesManager = require('../modules/modulesManager');
 // app=modulesManager.injectBefore(app);
 const  ApolloServer  = require('apollo-server-express').ApolloServer;
-const typeDefs = require('../modules/graphql/schema');
-const resolvers = require('../modules/graphql/resolvers');
+const typeDefs = require('../graphql/schema');
+const resolvers = require('../graphql/resolvers');
 var apolloServer = new ApolloServer({ typeDefs, resolvers, 
   // https://www.apollographql.com/docs/apollo-server/features/graphql-playground/#Enabling-GraphQL-Playground-in-production
   introspection: true,
