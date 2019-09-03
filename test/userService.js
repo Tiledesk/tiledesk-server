@@ -35,7 +35,7 @@ describe('UserService()', function () {
 
   it('signup', function (done) {
 
-    var email = "test-signup-" + Date.now() + "@email.com";
+    var email = "test-UserService-signup-" + Date.now() + "@email.com";
 
     userService.signup( email ,"pwd", "Test Firstname", "Test lastname").then(function(savedUser) {
         console.log("savedUser resolve");
