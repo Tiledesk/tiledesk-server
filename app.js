@@ -343,7 +343,7 @@ app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'
 if (modulesManager) {
   modulesManager.use(app);
 }
-
+ 
   
 // REENABLEIT
 // catch 404 and forward to error handler
