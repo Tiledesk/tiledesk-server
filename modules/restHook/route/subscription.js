@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var Subscription = require("../models/subscription");
-var winston = require('../config/winston');
+console.log("heloooo1")
+var Subscription = require("../../../models/subscription");
+var winston = require('../../../config/winston');
 
 
 

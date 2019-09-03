@@ -10,10 +10,6 @@
     "type": "git",
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
-  "engines": {
-    "node": "11.14.0",
-    "npm": ">=6.0.0"
-  },
   "dependencies": {
     "json-rules-engine": "^3.0.2",
     "winston": "^3.1.0"

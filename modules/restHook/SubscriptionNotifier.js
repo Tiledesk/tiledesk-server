@@ -1,16 +1,17 @@
 var request = require('request');
-var Subscription = require('../models/subscription');
-const requestEvent = require('../event/requestEvent');
-const messageEvent = require('../event/messageEvent');
-const leadEvent = require('../event/leadEvent');
-const botEvent = require('../event/botEvent');
+console.log("12")
+var Subscription = require('../../models/subscription');
+const requestEvent = require('../../event/requestEvent');
+const messageEvent = require('../../event/messageEvent');
+const leadEvent = require('../../event/leadEvent');
+const botEvent = require('../../event/botEvent');
 
-const faqBotEvent = require('../event/faqBotEvent');
-
-var Request = require("../models/request");
-var Message = require("../models/message");
-var Faq_kb = require("../models/faq_kb");
-var winston = require('../config/winston');
+const faqBotEvent = require('../../event/faqBotEvent');
+console.log("13")
+var Request = require("../../models/request");
+var Message = require("../../models/message");
+var Faq_kb = require("../../models/faq_kb");
+var winston = require('../../config/winston');
 
 
 class SubscriptionNotifier {

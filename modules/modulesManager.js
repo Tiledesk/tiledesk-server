@@ -13,6 +13,9 @@ class ModulesManager {
         this.triggerRoute = undefined;
         this.stripe = undefined;
         this.graphql = undefined;
+        this.analyticsRoute = undefined;
+        this.resthookRoute = undefined;
+      
     }
 
     injectBefore(app) {
@@ -54,6 +57,18 @@ class ModulesManager {
             app.use('/:projectid/modules/triggers', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.triggerRoute);
             winston.info("ModulesManager trigger controller loaded");       
         }
+      
+        if (this.analyticsRoute) {
+           app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.analyticsRoute);
+            winston.info("ModulesManager trigger controller loaded");       
+        }
+      
+      if (this.resthookRoute) {
+           app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.resthookRoute);
+           winston.info("ModulesManager subscriptions controller loaded");       
+        }
+      
+
         
     }
 
@@ -81,8 +96,27 @@ class ModulesManager {
             winston.info("ModulesManager init stripe loaded");
         } catch(err) {
             winston.info("ModulesManager init stripe module not found", err);
+        } 
+      
+        try {
+          console.log("heloooo0")
+            this.resthookRoute = require('@tiledesk/tiledesk-resthook').resthookRoute;
+            winston.debug("this.resthookRoute:"+ this.resthookRoute);        
+             this.subscriptionNotifier = require('@tiledesk/tiledesk-resthook').subscriptionNotifier;
+            this.subscriptionNotifier.start();
+            winston.info("ModulesManager init resthookRoute loaded");
+        } catch(err) {
+            winston.info("ModulesManager init resthookRoute module not found", err);
         }
 
+      
+       try {
+            this.analyticsRoute = require('@tiledesk/tiledesk-analytics').analyticsRoute;
+            winston.debug("this.analyticsRoute:"+ this.analyticsRoute);        
+            winston.info("ModulesManager init analyticsRoute loaded");
+        } catch(err) {
+            winston.info("ModulesManager init analyticsRoute module not found", err);
+        }
 
         // try {
         //     this.graphql = require('../modules/graphql/apollo');        

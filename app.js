@@ -64,10 +64,8 @@ var group = require('./routes/group');
 
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
-var analytics = require('./routes/analytics');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
-var subscription = require('./routes/subscription');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
@@ -78,12 +76,12 @@ var widgets = require('./routes/widget');
 // appRules.start();
 
 
-var subscriptionNotifier = require('./services/SubscriptionNotifier');
-subscriptionNotifier.start();
+//var subscriptionNotifier = require('./services/SubscriptionNotifier');
+//subscriptionNotifier.start();
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
-
+ 
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
@@ -92,7 +90,7 @@ var activityArchiver = require('./services/activityArchiver');
 activityArchiver.listen();
 
 var channelManager = require('./channels/channelManager');
-channelManager.listen();
+channelManager.listen(); 
 
 var modulesManager = undefined;
 try {
@@ -332,13 +330,11 @@ app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
-app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], analytics);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase); //MOVE TO CHANNELS PACKAGE
-app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], subscription);
 app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], activities);
 
 
