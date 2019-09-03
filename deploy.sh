@@ -8,3 +8,10 @@ if [ "$version" != "" ]; then
     git push --tags
     npm publish --access public
 fi
+
+
+#git push heroku dev:master
+
+heroku container:login
+heroku container:push server
+heroku container:release server
