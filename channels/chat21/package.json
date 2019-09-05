@@ -11,9 +11,8 @@
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.19",
+    "@chat21/chat21-node-sdk": "^1.0.25",
     "winston": "^3.1.0"
   },
-  "devDependencies": {    
-  }
+  "devDependencies": {}
 }
