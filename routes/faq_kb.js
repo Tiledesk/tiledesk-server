@@ -37,6 +37,7 @@ router.post('/askbot', function (req, res) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
     winston.info('faq_kb ', faq_kb.toJSON());
+    winston.info('faq_kb.type :'+ faq_kb.type);
     if (faq_kb.type =="internal") {
 
 
