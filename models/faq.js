@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-
+//al
 var FaqSchema = new Schema({
   id_faq_kb: {
     type: String,
