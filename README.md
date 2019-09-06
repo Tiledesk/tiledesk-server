@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=master)](https://travis-ci.org/Tiledesk/tiledesk-server)
 
+# Introduction
+
+Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs and Express. Build your own customer support with a multi-channel platform for Web, Android and iOS. More info here https://www.tiledesk.com.
+
 # Prerequisites
 
 * Nodejs and npm installed 
@@ -36,13 +40,13 @@ Install nodemon with 'npm install -g nodemon'
 
 Deploy with button:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Tiledesk/tiledesk-server)
 
 
 To see the log run : 
 
 ```
-heroku logs  -n 2000 --tail -a chat21-api-nodejs
+heroku logs  -n 2000 --tail -a tiledesk-server
 ```
 
 
@@ -51,4 +55,4 @@ To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articl
 
 # REST API
 
-See the Tiledesk REST API [here](./docs/api.md)
+See the Tiledesk REST API [here](https://docs.tiledesk.com/apis/api)

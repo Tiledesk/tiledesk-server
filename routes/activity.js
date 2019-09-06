@@ -158,7 +158,7 @@ router.get('/', function (req, res) {
           winston.error('Activity ROUTE - REQUEST FIND ERR ', err)
           return (err);
         }
-        
+
         var objectToReturn = {
           perPage: limit,
           count: totalRowCount,
@@ -403,27 +403,31 @@ router.get('/csv', function (req, res) {
       }
     }
 
-    
 
-    
+
+
 
 
 
     return translatedString
   }
 
+  function buildMsg_REQUEST_CREATE(lang, activity) {
+    console.log('buildMsg_REQUEST_CREATE - lang: ', lang, ' activity: ', activity)
+  }
+
   function buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity) {
     var action = '';
 
 
-    action = translateString('HasInvited', lang) +  ' ' + target_fullname
+    action = translateString('HasInvited', lang) + ' ' + target_fullname
 
-    
+
     // email with round brackets if it not is a pendinginvitation
     if (activity.target && activity.target.type !== 'pendinginvitation') {
 
-      if ( activity.actionObj && activity.actionObj.email ) {
-        
+      if (activity.actionObj && activity.actionObj.email) {
+
         action = action + '(' + activity.actionObj.email + ')'
 
       } else {
@@ -445,7 +449,7 @@ router.get('/csv', function (req, res) {
 
   function buildMsg_PROJECT_USER_DELETE(actor_name, target_fullname, lang) {
     var action = '';
-    action = translateString('HasRemoved', lang) +  ' ' + target_fullname + translateString('FromTheProject', lang)
+    action = translateString('HasRemoved', lang) + ' ' + target_fullname + translateString('FromTheProject', lang)
 
     return message = actor_name + action
 
@@ -601,6 +605,10 @@ router.get('/csv', function (req, res) {
 
       if (activity.verb === "PROJECT_USER_INVITE") {
         var message = buildMsg_PROJECT_USER_INVITE(actor_name, target_fullname, lang, activity)
+      }
+
+      if (activity.verb === "REQUEST_CREATE") {
+        var message = buildMsg_REQUEST_CREATE(lang, activity)
       }
 
 

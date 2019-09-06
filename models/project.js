@@ -37,7 +37,7 @@ var ProjectSchema = new Schema({
   },
   profile: {
     type: Profile.schema,
-    default: function() {
+    default: function () {
       return new Profile();
     }
   },
@@ -56,18 +56,18 @@ var ProjectSchema = new Schema({
   },
   channels: {
     type: [Channel.schema],
-    default: function() {
-      return [new Channel({name: 'chat21'})];
+    default: function () {
+      return [new Channel({ name: 'chat21' })];
     }
   },
   createdBy: {
     type: String,
     required: true
   }
-},{
-  timestamps: true,
-  toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
-}
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
+  }
 );
 
 ProjectSchema.virtual('trialExpired').get(function () {
@@ -75,9 +75,9 @@ ProjectSchema.virtual('trialExpired').get(function () {
   let now = new Date();
   winston.debug("now.getTime() " + now.getTime());
   winston.debug("this.createdAt.getTime() " + this.createdAt.getTime());
-  winston.debug("this " , this.toObject());
-  winston.debug("trial " + this.profile.trialDays *  86400000 );
-  if (this.createdAt.getTime() + this.profile.trialDays *  86400000 > now.getTime()) {
+  winston.debug("this ", this.toObject());
+  winston.debug("trial " + this.profile.trialDays * 86400000);
+  if (this.createdAt.getTime() + this.profile.trialDays * 86400000 > now.getTime()) {
     winston.debug("not expired");
     return false;
   } else {
@@ -85,5 +85,66 @@ ProjectSchema.virtual('trialExpired').get(function () {
     return true;
   }
 });
+
+ProjectSchema.virtual('trialDaysLeft').get(function () {
+  // https://stackoverflow.com/questions/6963311/add-days-to-a-date-object
+  let now = new Date();
+  winston.debug("trialDaysLeft now.getTime() " + now.getTime());
+  winston.debug("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
+  winston.debug("trialDaysLeft this ", this.toObject());
+  winston.debug("trialDaysLeft trial " + this.profile.trialDays * 86400000);
+
+  const millisTrialDaysLeft = now.getTime() - (this.createdAt.getTime() + this.profile.trialDays * 86400000);
+  const trialDaysLeft = Math.floor(millisTrialDaysLeft / (60 * 60 * 24 * 1000));
+
+  console.log("trialDaysLeft now.getTime() " + now.getTime());
+  console.log("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
+  console.log("trialDaysLeft ", millisTrialDaysLeft);
+  console.log("trialDaysLeft - PROJECT NAME " + this.name + '; CREATED at ' + this.createdAt + ' -- trialDaysLeft: ', trialDaysLeft);
+  return trialDaysLeft
+  // return -8
+
+});
+
+ProjectSchema.virtual('isActiveSubscription').get(function () {
+
+  let now = new Date();
+  console.log("isActiveSubscription - now.getTime() " + now.getTime());
+
+  console.log("isActiveSubscription  - PROJECT NAME: " + this.name);
+  console.log("isActiveSubscription  - PROJECT profile " + this.profile);
+  console.log("isActiveSubscription  - PROJECT profile trialDays: " + this.profile.trialDays);
+  console.log("isActiveSubscription  - PROJECT profile name: " + this.profile.name);
+  console.log("isActiveSubscription  - PROJECT profile type: " + this.profile.type);
+  console.log("isActiveSubscription  - PROJECT profile subscription end date: " + this.profile.subEnd);
+
+  var isActiveSubscription = '';
+  if (this.profile && this.profile.type === 'payment') {
+
+    if (this.profile.subEnd) {
+      console.log("isActiveSubscription  - PROJECT profile subscription end date getTime(): " + this.profile.subEnd.getTime());
+
+      if (now.getTime() > this.profile.subEnd.getTime()) {
+
+        isActiveSubscription = false;
+      } else {
+
+        isActiveSubscription = true;
+      }
+
+
+    }
+  } else {
+
+    isActiveSubscription = false;
+  }
+
+  console.log("isActiveSubscription  - isActiveSubscription " + isActiveSubscription);
+
+  return isActiveSubscription
+
+});
+
+
 
 module.exports = mongoose.model('project', ProjectSchema);

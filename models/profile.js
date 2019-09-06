@@ -15,6 +15,17 @@ var ProfileSchema = new Schema({
     type: Number,
     default: 0 //??
   },
+  type: {
+    type: String,
+    default: 'free',
+  },
+  subStart: {
+    type: Date,
+  },
+  subEnd: {
+    type: Date,
+  },
+
 }
 ,{ _id : false });
 
