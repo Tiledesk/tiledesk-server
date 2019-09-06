@@ -1,82 +1,17 @@
 var express = require('express');
 var router = express.Router();
 var Faq_kb = require("../models/faq_kb");
+var Faq= require("../models/faq");
 var Department = require("../models/department");
 var faqService = require("../services/faqService");
 const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
 
-// START - CREATE FAQ KB KEY 
-// var request = require('request');
-
-// THIS CALLBACK IS PERFORMED WHEN IS CREATED A NEW FAQKB (router.post)
-// function createFaqKbRemote(faqkb_id, faq_kb) {
-//   var json = {
-//     "username": "frontiere21",
-//     "password": "password",
-//     "language": "italian"
-//   };
-
-//   var options = {
-//     url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qna_kbmanagement/create',
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
-//     },
-//     json: json
-//   };
-
-//   request(options, function (err, res, body) {
-//     if (res && (res.statusCode === 200 || res.statusCode === 201)) {
-//       // console.log('FAQ KB KEY POST REQUEST BODY ', body);
-//       console.log('FAQ-KB REMOTE POST: FAQKB KEY RETURNED ', body.kbkey);
-
-//       updateFaqKbKey(faqkb_id, body.kbkey)
-
-
-//      /**
-//       * ONCE THAT THE BOT HAS BEEN CREATED AND THAT THIS HAS BEEN UPDATED WITH THE REMOTE ID
-//       * IT IS PERFORMED THE AUTOMATIC CREATION OF THE 'GREETINGS AND OPERATIONAL FAQS'
-//       * THE CREATION IS PERFORMED AT POINT IN WICH IS OBTAINED THE REMOTE ID OF THE BOT BECAUSE  IT
-//       * IS NECESSARY FOR THE CREATION OF THE 'REMOTE FAQS'
-//       */
-//       faqService.createGreetingsAndOperationalsFaqs(faqkb_id, faq_kb.createdBy, faq_kb.id_project, body.kbkey);
-
-//     }
-//     if (err) {
-//       console.log('FAQ-KB REMOTE POST ERROR ', err);
-//     }
-//   });
-// }
-
-// function updateFaqKbKey(faqkb_id, remotefaqkb_key) {
-//   console.log('UPDATING FAQKB WITH THE REMOTE FAQKB KEY')
-//   Faq_kb.findByIdAndUpdate(
-//     faqkb_id,
-//     { kbkey_remote: remotefaqkb_key },
-//     { new: true, upsert: true },
-//     function (err, updatedFaq_kb) {
-//       if (err) {
-//         return res.status(500).send({ success: false, msg: 'Error updating updateFaqKbKey object.' });
-//       }
-//       // res.json(updatedFaq_kb);
-
-
-
-//     });
-// }
-
-// END NEW 
-
 router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, external)
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.external).then(function(savedFaq_kb) {
     botEvent.emit('faqbot.create', savedFaq_kb);
-    if (savedFaq_kb.external===false) {
-
-      // gian bot uncomment for it
-      // createFaqKbRemote(savedFaq_kb._id, savedFaq_kb);
+    if (savedFaq_kb.external===false) {     
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
     } else {
@@ -87,6 +22,45 @@ router.post('/', function (req, res) {
 
 
 });
+
+
+
+router.post('/askbot', function (req, res) {
+
+  winston.debug('ASK BOT ', req.body);
+
+  Faq_kb.findById(req.body.id_faq_kb).populate('lead').exec(function(err, faq_kb) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    winston.info('faq_kb ', faq_kb.toJSON());
+    if (faq_kb.type ==="internal") {
+
+
+      var query = { "id_project": req.projectid };
+
+      query.$text = {"$search": req.body.question};
+       
+       Faq.find(query,  {score: { $meta: "textScore" } })  
+       .lean().               
+        exec(function (err, faqs) {
+           winston.debug("faqs", faqs);              
+
+           res.json(faqs);
+        });
+
+    }else {
+// TODO
+    }
+   
+    
+  });
+
+});
+
 
 
 router.put('/:faq_kbid', function (req, res) {
