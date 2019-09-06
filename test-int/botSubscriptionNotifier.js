@@ -45,8 +45,8 @@ describe('botSubscriptionNotifier', () => {
 
          userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
              projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
-                // create(name, url, projectid, user_id, external) 
-                faqService.create("testbot", 'http://localhost:3036/', savedProject._id, savedUser._id, true).then(function(savedBot) {  
+                // create(name, url, projectid, user_id, type) 
+                faqService.create("testbot", 'http://localhost:3036/', savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
                     
                  
 

@@ -8,10 +8,10 @@ const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
 
 router.post('/', function (req, res) {
-  // create(name, url, projectid, user_id, external)
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.external).then(function(savedFaq_kb) {
+  // create(name, url, projectid, user_id, type)
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type).then(function(savedFaq_kb) {
     botEvent.emit('faqbot.create', savedFaq_kb);
-    if (savedFaq_kb.external===false) {     
+    if (savedFaq_kb.type==="internal") {     
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
     } else {

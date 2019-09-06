@@ -18,11 +18,15 @@ var Faq_kbSchema = new Schema({
   },
   kbkey_remote: {
     type: String,
+  },  
+  type: {
+    type: String,
+    default: 'internal'
   },
-  external: {
-    type: Boolean,
-    default: false
-  },
+  // external: {
+  //   type: Boolean,
+  //   default: false
+  // },
   trashed: {
     type: Boolean,
   },

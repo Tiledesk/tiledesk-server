@@ -37,7 +37,7 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/'+ savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({"name":"testbot", external: true})
+                        .send({"name":"testbot", type: "external"})
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
