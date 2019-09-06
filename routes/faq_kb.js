@@ -58,7 +58,7 @@ router.post('/askbot', function (req, res) {
 
            winston.debug("faqs", faqs);              
 
-           var result = {hits:[faqs]};
+           var result = {hits:faqs};
            res.json(result);
         });
 
