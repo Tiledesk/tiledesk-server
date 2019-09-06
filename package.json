@@ -30,7 +30,6 @@
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "@tiledesk/tiledesk-analytics": "file:modules/analytics",
     "@tiledesk/tiledesk-resthook": "file:modules/restHook",
-    "@tiledesk/tiledesk-elasticsearch": "file:modules/elasticsearch",
     "amqplib": "^0.5.3",
     "apollo-server": "^2.6.7",
     "apollo-server-express": "^2.6.9",
