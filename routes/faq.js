@@ -163,7 +163,7 @@ function createRemoteFaq(faqkb_remotekey, savedFaq) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='      
+      'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
     },
     json: json
   };
@@ -202,7 +202,7 @@ router.post('/askbot', function (req, res) {
       'Content-Type': 'application/json',
       'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
       // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
-      
+
     },
     json: json
   };
@@ -271,7 +271,7 @@ function updateRemoteFaq(updatedFaq) {
           'Content-Type': 'application/json',
           'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
           // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
-          
+
         },
         json: json
       };
@@ -334,7 +334,7 @@ router.delete('/:faqid', function (req, res) {
           headers: {
             'Content-Type': 'application/json',
             // 'Authorization': 'Basic ZnJvbnRpZXJlMjE6cGFzc3dvcmQ='
-            'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='            
+            'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
           },
 
         };
@@ -447,7 +447,7 @@ router.get('/csv', function (req, res) {
   console.log('EXPORT FAQS TO CSV QUERY', query);
 
   //Faq.find(query, '-__v').lean().exec(function (err, faq) {
-   Faq.find(query, 'question answer -_id').lean().exec(function (err, faq) {
+  Faq.find(query, 'question answer -_id').lean().exec(function (err, faq) {
     if (err) {
       console.log('EXPORT FAQS TO CSV ERR', err)
       return (err)
@@ -476,22 +476,94 @@ router.get('/:faqid', function (req, res) {
 });
 
 
+// GET ALL FAQS OF A BOT (BY BOT ID) OR BY TEXT
+// router.get('/', function (req, res, next) {
+//   var query = {};
 
-router.get('/', function (req, res) {
+//   console.log("GET ALL FAQ OF THE BOT ID (req.query): ", req.query);
+
+//   if (req.query.id_faq_kb) {
+//     query.id_faq_kb = req.query.id_faq_kb;
+//   }
+
+//   if (req.query.text) {
+//     console.log("GET FAQ req.projectid", req.projectid);
+
+//     // query.$text = req.query.text;
+//     query.$text = {"$search": req.query.text};
+//     query.id_project = req.projectid
+//   }
+
+//   console.log("GET FAQ query", query);
+
+//   // query.$text = {"$search": "question"};
+
+//   // return Faq.find(query,  {score: { $meta: "textScore" } })  
+//   // .lean().               
+//   //   exec(function (err, faqs) {
+//   //     console.log("faqs", faqs);
+//   //     expect(faqs.length).to.equal(1);
+//   //     expect(faqs[0]._id.toString()).to.equal(savedFaq._id.toString());
+//   //     expect(faqs[0].score).to.not.equal(null);
+//   //     done();   
+//   //   });
+
+//   Faq.find(query, function (err, faq) {
+//     if (err) {
+//       console.log('GET FAQ err ', err)
+//       return next(err)
+//     };
+//     console.log('GET FAQ  ', faq)
+//     res.json(faq);
+//   });
+
+// });
+
+
+
+router.get('/', function (req, res, next) {
   var query = {};
 
-  console.log("req.query", req.query);
+  console.log("GET ALL FAQ OF THE BOT ID (req.query): ", req.query);
 
   if (req.query.id_faq_kb) {
     query.id_faq_kb = req.query.id_faq_kb;
   }
 
-  console.log("query", query);
+  if (req.query.text) {
+    console.log("GET FAQ req.projectid", req.projectid);
 
-  Faq.find(query, function (err, faq) {
-    if (err) return next(err);
-    res.json(faq);
-  });
+    // query.$text = req.query.text;
+    query.$text = { "$search": req.query.text };
+    query.id_project = req.projectid
+  }
+
+  console.log("GET FAQ query", query);
+
+  // query.$text = {"$search": "question"};
+
+  return Faq.find(query).
+    populate('faq_kb').
+    exec(function (err, faq) {
+      console.log("GET FAQ ", faq);
+
+      if (err) {
+        console.log('GET FAQ err ', err)
+        return next(err)
+      };
+      console.log('GET FAQ  ', faq)
+      res.json(faq);
+
+    });
+
+  // Faq.find(query, function (err, faq) {
+  //   if (err) {
+  //     console.log('GET FAQ err ', err)
+  //     return next(err)
+  //   };
+  //   console.log('GET FAQ  ', faq)
+  //   res.json(faq);
+  // });
 
 });
 
