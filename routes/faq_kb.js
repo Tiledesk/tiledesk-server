@@ -40,13 +40,21 @@ router.post('/askbot', function (req, res) {
     if (faq_kb.type ==="internal") {
 
 
+      
+
       var query = { "id_project": req.projectid };
 
       query.$text = {"$search": req.body.question};
        
+      winston.info('internal query: '+ query);
+
        Faq.find(query,  {score: { $meta: "textScore" } })  
        .lean().               
         exec(function (err, faqs) {
+          if (err) {
+            return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          }
+
            winston.debug("faqs", faqs);              
 
            res.json(faqs);
