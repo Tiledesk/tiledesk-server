@@ -165,7 +165,7 @@ class RulesTrigger {
                       return 0;
                     }
 
-                    winston.debug('active triggers found', triggers);
+                    winston.info('active triggers found', triggers);
 
 
                     // var engineExists = that.engines.hasOwnProperty(event.id_project);
@@ -216,7 +216,7 @@ class RulesTrigger {
                       }
   
                      
-                      winston.debug('rule', rule);
+                      winston.info('rule', rule);
 
                        // define a rule for detecting the player has exceeded foul limits.  Foul out any player who:
                     // (has committed 5 fouls AND game is 40 minutes) OR (has committed 6 fouls AND game is 48 minutes)
@@ -251,7 +251,7 @@ class RulesTrigger {
                     }else {                 //message is plain object because messageEvent replace it
                        facts = event;
                     }
-                    winston.debug("facts", facts);
+                    winston.info("facts", facts);
 
                     engine.addFact("json", facts)
                     
