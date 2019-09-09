@@ -6,7 +6,7 @@ const triggerEventEmitter = require('./event/triggerEventEmitter');
 var Trigger = require('./models/trigger');
 var winston = require('../../config/winston');
 
-var Engine = require('json-rules-engine').Engine;
+var Engine = require('@tiledesk/tiledesk-json-rules-engine').Engine;
 
 
 
