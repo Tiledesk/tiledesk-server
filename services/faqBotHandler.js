@@ -28,6 +28,7 @@ class FaqBotHandler {
            query.$text = {"$search": message.text};
             
             Faq.find(query,  {score: { $meta: "textScore" } })  
+            .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
             .lean().               
              exec(function (err, faqs) {
                 winston.debug("faqs", faqs);              

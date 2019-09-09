@@ -50,6 +50,7 @@ router.post('/askbot', function (req, res) {
       winston.info('internal query: '+ query);
 
        Faq.find(query,  {score: { $meta: "textScore" } })  
+       .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
        .lean().               
         exec(function (err, faqs) {
           if (err) {
