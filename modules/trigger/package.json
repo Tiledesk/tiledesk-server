@@ -11,7 +11,7 @@
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "dependencies": {
-    "json-rules-engine": "^3.0.2",
+    "@tiledesk/tiledesk-json-rules-engine": "^4.0.0",
     "winston": "^3.1.0"
   },
   "devDependencies": {}
