@@ -43,7 +43,7 @@ router.post('/askbot', function (req, res) {
 
       
 
-      var query = { "id_project": req.projectid };
+      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
 
       query.$text = {"$search": req.body.question};
        
