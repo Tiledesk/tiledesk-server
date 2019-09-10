@@ -209,7 +209,7 @@ router.get('/', function (req, res, next) {
   // query.$text = {"$search": "question"};
 
   return Faq.find(query).
-    populate({path:'faq_kb', match: { trashed: { $in: [null, false] } }}).
+    populate({path:'faq_kb'}).//, match: { trashed: { $in: [null, false] } }}).
     exec(function (err, faq) {
       console.log("GET FAQ ", faq);
 
