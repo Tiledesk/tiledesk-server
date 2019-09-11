@@ -9,8 +9,7 @@ var uniqid = require('uniqid');
 var emailService = require("../services/emailService");
 var pendinginvitation = require("../services/pendingInvitationService");
 var userService = require("../services/userService");
-var Activity = require("../models/activity");
-const activityEvent = require('../event/activityEvent');
+
 var noentitycheck = require('../middleware/noentitycheck');
 
 var winston = require('../config/winston');
@@ -53,14 +52,7 @@ router.post('/signup', function (req, res) {
           // });
 
 
-          authEvent.emit("user.signup", savedUser);       
-          
-         var activity = new Activity({actor: {type:"user", id: savedUser._id, name: savedUser.fullName }, 
-            verb: "USER_SIGNUP", actionObj: req.body, 
-            target: {type:"user", id:savedUser._id.toString(), object: null }, 
-            id_project: '*' });
-            activityEvent.emit('user.signup', activity);
-
+          authEvent.emit("user.signup", {savedUser: savedUser, req: req});                         
 
 
           //remove password 
@@ -73,13 +65,9 @@ router.post('/signup', function (req, res) {
 
 
       
-        authEvent.emit("user.signup.error",  {body: req.body, err:err});       
+        authEvent.emit("user.signup.error",  {req: req, err:err});       
 
-        var activity = new Activity({actor: {type:"user"}, 
-           verb: "USER_SIGNUP_ERROR", actionObj: req.body, 
-           target: {type:"user", id:null, object: null }, 
-           id_project: '*' });
-           activityEvent.emit('user.signup.error', activity);
+       
 
 
          winston.error('Error registering new user', err);
@@ -238,12 +226,8 @@ router.post('/signin', function (req, res) {
     if (!user) {
      
       
-      var activity = new Activity({actor: {type:"user"}, 
-         verb: "USER_SIGNIN_ERROR", actionObj: req.body, 
-         target: {type:"user", id:null, object: null }, 
-         id_project: '*' });
-         activityEvent.emit('user.signin.error', activity);
-
+    
+      authEvent.emit("user.signin.error", {req: req});        
 
 
       winston.warn('Authentication failed. User not found.');
@@ -315,18 +299,9 @@ router.post('/signin', function (req, res) {
               // TODO add subject
               var token = jwt.sign(user, config.secret, signOptions);
              
-              authEvent.emit("user.signin", user);         
-
+              authEvent.emit("user.signin", {user:user, req:req});         
               
-              var activity = new Activity({actor: {type:"user", id: user._id, name: user.fullName }, 
-                verb: "USER_SIGNIN", actionObj: req.body, 
-                target: {type:"user", id:user._id.toString(), object: null }, 
-                id_project: '*' });
-              activityEvent.emit('user.signin', activity);
-
-
-
-              //remove password //test it              
+                //remove password //test it              
               let userJson = user.toObject();
               delete userJson.password;
 
@@ -366,8 +341,6 @@ router.put('/verifyemail/:userid', function (req, res) {
     }
     winston.debug('VERIFY EMAIL - RETURNED USER ', findUser);
 
-    //var activity = new Activity({actor: findUser._id, verb: "USER_VERIFY_EMAIL", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-    //activityEvent.emit('user.verify.email', activity);
 
 
     res.json(findUser);
@@ -423,13 +396,8 @@ router.put('/requestresetpsw', function (req, res) {
           emailService.sendPasswordResetRequestEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
 
-          //var activity = new Activity({actor: updatedUser._id, verb: "USER_REQUEST_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-          //activityEvent.emit('user.requestresetpassword', activity);
-          var activity = new Activity({actor: {type:"user", id: updatedUser._id, name: updatedUser.fullName }, 
-            verb: "USER_REQUEST_RESETPASSWORD", actionObj: req.body, 
-            target: {type:"user", id:updatedUser._id.toString(), object: null }, 
-            id_project: '*' });
-          activityEvent.emit('user.requestresetpassword', activity);
+         
+          authEvent.emit('user.requestresetpassword', {updatedUser:updatedUser, req:req});
 
           
 
@@ -483,15 +451,9 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
 
         emailService.sendYourPswHasBeenChangedEmail(saveUser.email, saveUser.firstname, saveUser.lastname);
 
-
-        //var activity = new Activity({actor: saveUser._id, verb: "USER_RESETPASSWORD", actionObj: req.body, target: req.originalUrl, id_project: '*' });
-         //activityEvent.emit('user.resetpassword', activity);
-        var activity = new Activity({actor: {type:"user", id: saveUser._id, name: saveUser.fullName }, 
-          verb: "USER_RESETPASSWORD", actionObj: null, //req.body otherwise print password  
-          target: {type:"user", id:saveUser._id.toString(), object: null }, 
-          id_project: '*' });
-        activityEvent.emit('user.resetpassword', activity);
-
+            
+        authEvent.emit('user.resetpassword', {saveUser:saveUser, req:req});
+ 
 
         res.status(200).json({ message: 'Password change successful', user: saveUser });
 

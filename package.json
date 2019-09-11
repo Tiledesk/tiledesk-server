@@ -18,8 +18,8 @@
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "engines": {
-    "node": "10.16.3",
-    "npm": ">=6.0.0"
+    "node": "11.10.0",
+    "npm": "6.8.0"
   },
   "bin": {
     "tiledesk-server": "./bin/www"

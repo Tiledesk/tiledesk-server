@@ -29,7 +29,7 @@ router.post('/askbot', function (req, res) {
 
   winston.debug('ASK BOT ', req.body);
 
-  Faq_kb.findById(req.body.id_faq_kb).populate('lead').exec(function(err, faq_kb) {
+  Faq_kb.findById(req.body.id_faq_kb).exec(function(err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -43,13 +43,14 @@ router.post('/askbot', function (req, res) {
 
       
 
-      var query = { "id_project": req.projectid };
-
+      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
+      
       query.$text = {"$search": req.body.question};
        
       winston.info('internal query: '+ query);
 
        Faq.find(query,  {score: { $meta: "textScore" } })  
+       .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
        .lean().               
         exec(function (err, faqs) {
           if (err) {
