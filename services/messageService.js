@@ -27,7 +27,7 @@ class MessageService {
 
 
 
-  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -50,7 +50,8 @@ class MessageService {
                 createdBy: createdBy,
                 updatedBy: createdBy,
                 status : status,
-                attributes: attributes
+                attributes: attributes,
+                metadata: metadata
             });
             
             // winston.debug("create new message", newMessage);

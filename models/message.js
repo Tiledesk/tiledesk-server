@@ -35,6 +35,9 @@ var MessageSchema = new Schema({
   attributes: {
     type: Object,
   },
+  metadata: {
+    type: Object,
+  },
   createdBy: {
     type: String,
     required: true
