@@ -25,7 +25,11 @@
     "tiledesk-server": "./bin/www"
   },
   "dependencies": {
+    "@tiledesk/tiledesk-analytics": "file:modules/analytics",
     "@tiledesk/tiledesk-chat21-app": "file:channels/chat21",
+    "@tiledesk/tiledesk-graphql": "file:modules/graphql",
+    "@tiledesk/tiledesk-resthook": "file:modules/restHook",
+    "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "amqplib": "^0.5.3",
     "apollo-server": "^2.6.7",
     "apollo-server-express": "^2.6.9",
