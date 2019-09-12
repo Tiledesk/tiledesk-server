@@ -30,7 +30,12 @@ class RequestService {
     }
 
     if (!createdBy) {
-      createdBy = project_user_id;
+      if (project_user_id) {
+        createdBy = project_user_id;
+      }else {
+        createdBy = "system";
+      }
+      
     }
     
     var that = this;
