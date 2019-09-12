@@ -30,7 +30,7 @@
     "@tiledesk/tiledesk-graphql": "file:modules/graphql",
     "@tiledesk/tiledesk-resthook": "file:modules/restHook",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
-    "@tiledesk/tiledesk-activities": "file:modules/activity",
+    "@tiledesk/tiledesk-activities": "file:modules/activities",
     "amqplib": "^0.5.3",
     "apollo-server": "^2.6.7",
     "apollo-server-express": "^2.6.9",
