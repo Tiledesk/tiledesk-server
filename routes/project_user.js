@@ -7,8 +7,7 @@ var emailService = require("../services/emailService");
 var Project = require("../models/project");
 // var PendingInvitation = require("../models/pending-invitation");
 var pendinginvitation = require("../services/pendingInvitationService");
-var Activity = require("../models/activity");
-const activityEvent = require('../event/activityEvent');
+const authEvent = require('../event/authEvent');
 var winston = require('../config/winston');
 var RoleConstants = require("../models/roleConstants");
 
@@ -163,11 +162,8 @@ router.post('/invite', function (req, res) {
 
 
         // try {
-            var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-                verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-                target: {type:"pendinginvitation", id:savedPendingInvitation._id.toString(), object: savedPendingInvitation }, 
-                id_project: req.projectid });
-            activityEvent.emit('project_user.invite', activity);
+           
+            authEvent.emit('project_user.invite.pending', {req: req, savedPendingInvitation: savedPendingInvitation});
         // } catch(e) {winston.error('Error emitting activity');}
      
 
@@ -276,11 +272,7 @@ router.post('/invite', function (req, res) {
             // try {
               //test it
               savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
-                var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-                  verb: "PROJECT_USER_INVITE", actionObj: req.body, 
-                  target: {type:"project_user", id:savedProject_userPopulated._id.toString(), object: savedProject_userPopulated.toObject() }, 
-                  id_project: req.projectid });
-                activityEvent.emit('project_user.invite', activity);
+                   authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: savedProject_userPopulated});
               });
             // } catch(e) {winston.error('Error emitting activity');}
             
@@ -322,19 +314,10 @@ router.put('/:project_userid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    // try {
-      // let updatedProject_userPopulated = await updatedProject_user.populate('id_user');
-      // updatedProject_user.populate('id_user','firstname, lastname').execPopulate().exec(function (err, updatedProject_userPopulated) {
-        updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){
-        // console.log("updatedProject_userPopulated", updatedProject_userPopulated.toJSON());
-          // var u = delete updatedProject_userPopulated.id_user.password;
-          var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-              verb: "PROJECT_USER_UPDATE", actionObj: req.body, 
-              target: {type:"project_user", id:updatedProject_user._id.toString(), object: updatedProject_userPopulated.toObject() }, 
-              id_project: req.projectid });
-          activityEvent.emit('project_user.update', activity);
+  
+        updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
       });
-    // } catch(e) {winston.error('Error emitting activity');}
     
 
     res.json(updatedProject_user);
@@ -353,17 +336,12 @@ router.delete('/:project_userid', function (req, res) {
 
     winston.info("Removed project_user", project_user);
 
-  // try {
-    project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){
-    var activity = new Activity({actor: {type:"user", id: req.user.id, name: req.user.fullName }, 
-        verb: "PROJECT_USER_DELETE", actionObj: req.body, 
-        target: {type:"project_user", id:req.params.project_userid, object: project_userPopulated.toObject() }, //Error saving activity Maximum call stack size exceeded
-        id_project: req.projectid });
-    activityEvent.emit('project_user.delete', activity);
+  
+    project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){   
+      authEvent.emit('project_user.delete', {req: req, project_userPopulated: project_userPopulated});
     });
-  // } catch(e) {winston.error('Error emitting activity');}
-
-    res.json(project_user);
+    
+      res.json(project_user);
   });
 });
 

@@ -69,7 +69,7 @@ var pendinginvitation = require('./routes/pending-invitation');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
-var activities = require('./routes/activity');
+var activities = require('./activity/routes/activity');
 var widgets = require('./routes/widget');
 
 // var appRules = require('./modules/trigger/global/appRules');
@@ -86,7 +86,7 @@ botSubscriptionNotifier.start();
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
-var activityArchiver = require('./services/activityArchiver');
+var activityArchiver = require('./activity/activityArchiver');
 activityArchiver.listen();
 
 var channelManager = require('./channels/channelManager');
