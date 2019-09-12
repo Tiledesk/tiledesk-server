@@ -69,7 +69,6 @@ var pendinginvitation = require('./routes/pending-invitation');
 var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
-var activities = require('./activity/routes/activity');
 var widgets = require('./routes/widget');
 
 // var appRules = require('./modules/trigger/global/appRules');
@@ -86,8 +85,6 @@ botSubscriptionNotifier.start();
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
-var activityArchiver = require('./activity/activityArchiver');
-activityArchiver.listen();
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -335,7 +332,6 @@ app.use('/:projectid/publicanalytics', publicAnalytics);
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
 app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/firebase', firebase); //MOVE TO CHANNELS PACKAGE
-app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], activities);
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
