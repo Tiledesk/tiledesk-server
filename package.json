@@ -31,6 +31,7 @@
     "@tiledesk/tiledesk-resthook": "file:modules/restHook",
     "@tiledesk/tiledesk-triggers": "file:modules/trigger",
     "@tiledesk/tiledesk-activities": "file:modules/activities",
+    "@tiledesk/tiledesk-facebook-app": "file:modules/facebook",
     "amqplib": "^0.5.3",
     "apollo-server": "^2.6.7",
     "apollo-server-express": "^2.6.9",
