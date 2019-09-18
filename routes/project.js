@@ -16,11 +16,6 @@ require('../config/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 
 
-
-
-
-
-
 // PROJECT POST
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   // console.log(req.body, 'USER ID ',req.user.id );
@@ -93,6 +88,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 // should check HasRole otherwise another project user can change this
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
+  console.log('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
       winston.error('Error putting project ', err);
@@ -101,6 +97,19 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     res.json(updatedProject);
   });
 });
+
+// DOWNGRADE PLAN. UNUSED
+router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
+  console.log('downgradeplan - UPDATE PROJECT REQ BODY ', req.body);
+   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
+     if (err) {
+       winston.error('Error putting project ', err);
+       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+     }
+     res.json(updatedProject);
+   });
+ });
+
 
 // PROJECT DELETE
 router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {

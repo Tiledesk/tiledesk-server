@@ -25,9 +25,21 @@ class OperatingHoursService {
         return;
       }
 
+
+
       // evaluate if is open...
 
       if (project) {
+
+        // IF THE TRIAL IS EXPIRED OR IF THE SUBSCIPTION IS NOT ACTIVE THE PROJECT IS ALWAYS OPEN EVEN IF activeOperatingHours IS SETTED TO true AND, FOR EXAMPLE,
+        // THE USER HAS SETTED ALL DAYS TO CLOSED
+        if ((project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
+          console.log('O ---> [ OHS ] -> trial Expired OR Subscription NOT Active - PROJECT ALWAYS OPEN') 
+          callback(true, null) ;
+          return;
+        }
+
+
         // winston.debug("[ O ] [ H ] [ S ] -> PROJECT FOUND: ", project);
         // winston.debug("O ---> [ OHS ] -> PRJCT: IS ACTIVE OPERATING HOURS: ", project.activeOperatingHours);
         // winston.debug("O ---> [ OHS ] -> PRJCT: OBJECT OPERATING HOURS: ", project.operatingHours);

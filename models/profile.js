@@ -25,6 +25,12 @@ var ProfileSchema = new Schema({
   subEnd: {
     type: Date,
   },
+  subscriptionId:  {
+    type: String,
+  },
+  last_stripe_event:  {
+    type: String,
+  },
 
 }
 ,{ _id : false });

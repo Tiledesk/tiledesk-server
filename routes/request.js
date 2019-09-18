@@ -72,31 +72,31 @@ router.post('/', function (req, res) {
   // return newRequest.save(function (err, savedRequest) {
 
 
-    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-    return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
-      req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
-      req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
+  // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+  return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid,
+    req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent,
+    req.body.status, req.user.id, req.body.attributes).then(function (savedRequest) {
 
-       
-        // return messageService.create(req.body.requester_id, req.body.sender_fullname, req.params.request_id, req.body.text,
-        //   req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    
-        //     return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-        //       return res.json(savedRequestWithIncrement);
-        //     });
-        //   });     
-           
-      
-        winston.debug("savedRequest", savedRequest);
 
-    // console.log("XXXXXXXXXXXXXXXX");
-    // this.sendEmail(req.projectid, savedRequest);
-    return res.json(savedRequest);
+      // return messageService.create(req.body.requester_id, req.body.sender_fullname, req.params.request_id, req.body.text,
+      //   req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    
+      //     return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+      //       return res.json(savedRequestWithIncrement);
+      //     });
+      //   });     
 
-  }).catch(function(err) {
-    winston.error('Error saving request.', err);
-    return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
-  
-  });
+
+      winston.debug("savedRequest", savedRequest);
+
+      // console.log("XXXXXXXXXXXXXXXX");
+      // this.sendEmail(req.projectid, savedRequest);
+      return res.json(savedRequest);
+
+    }).catch(function (err) {
+      winston.error('Error saving request.', err);
+      return res.status(500).send({ success: false, msg: 'Error saving object.', err: err });
+
+    });
 });
 
 
@@ -109,7 +109,7 @@ router.patch('/:requestid', function (req, res) {
 
   // Request.update({_id  : ObjectId(req.params.requestid)}, {$set: update}, {new: true, upsert:false}, function(err, updatedMessage) {
 
-  return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
+  return Request.findOneAndUpdate({ "request_id": req.params.requestid }, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
       winston.error('Error patching request.', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -124,16 +124,16 @@ router.post('/:requestid/share/email', function (req, res) {
   winston.debug("req.params.requestid", req.params.requestid);
   winston.debug("req projectid", req.projectid);
   winston.debug("req.user.id", req.user.id);
-  
+
   const sendTo = req.query.to;
   winston.debug("sendTo", sendTo);
 
 
-  return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function(result) {
-    return res.json({'success':true});
+  return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function (result) {
+    return res.json({ 'success': true });
   }).catch(function (err) {
     winston.error("err", err);
-    return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
+    return res.status(500).send({ success: false, msg: 'Error sharing the request.', err: err });
   });
   //  return Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
   //   .populate('department')
@@ -146,7 +146,7 @@ router.post('/:requestid/share/email', function (req, res) {
   //     winston.error("Request not found for request_id "+ req.params.requestid + " and id_project " + req.projectid);
   //     return res.status(404).send({"success":false, msg:"Request not found for request_id "+ req.params.requestid  + " and id_project " + req.projectid});
   //   }
-    
+
 
 
   //   return Message.find({"recipient": req.params.requestid,id_project : req.projectid})
@@ -165,7 +165,7 @@ router.post('/:requestid/share/email', function (req, res) {
   //     emailService.sendRequestTranscript(sendTo, messages, request);
   //     return res.json({'success':true});
 
-    
+
   //   });
 
   //   });
@@ -178,7 +178,7 @@ router.post('/:requestid/share/email', function (req, res) {
   //   return res.status(500).send({ success: false, msg: 'Error getting the request transcript.',err:err });
   // });
 
- 
+
 
 
 
@@ -189,7 +189,7 @@ router.post('/:requestid/share/email', function (req, res) {
 //   console.log(req.params.requestid);
 //   console.log("req projectid", req.projectid);
 //   console.log("req.user.id", req.user.id);
-  
+
 //   const assignee = req.body.assignee;
 //   console.log("assignee", assignee);
 
@@ -198,7 +198,7 @@ router.post('/:requestid/share/email', function (req, res) {
 //         // console.log("chat21", chat21);
 //         // console.log(" admin.auth()", JSON.stringify(admin.auth()));
 //         // console.log(" admin", admin.auth());
-        
+
 //        return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
 //           chat21.auth.setCurrentToken(idToken);
 //           console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
@@ -213,8 +213,8 @@ router.post('/:requestid/share/email', function (req, res) {
 //       return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
 //     });
 
-      
-  
+
+
 
 //   // return requestService.removeParticipantByRequestId(request_id, req.projectid, req.user.id).then(function(request) {
 //   //   if (err) {
@@ -248,6 +248,10 @@ router.get('/', function (req, res, next) {
 
   var query = { "id_project": req.projectid };
 
+  // console.log('REQUEST ROUTE - req ', req); 
+  // console.log('REQUEST ROUTE - req.project ', req.project); 
+
+
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
@@ -255,7 +259,7 @@ router.get('/', function (req, res, next) {
 
   if (req.query.full_text) {
     winston.debug('req.query.fulltext', req.query.full_text);
-    query.$text = {"$search": req.query.full_text};
+    query.$text = { "$search": req.query.full_text };
   }
 
   if (req.query.status) {
@@ -280,7 +284,37 @@ router.get('/', function (req, res, next) {
   // }
 
   /**
-   * DATE RANGE  */
+   **! *** DATE RANGE  USECASE 1 ***
+   *  in the tiledesk dashboard's HISTORY PAGE
+   *  WHEN THE TRIAL IS EXIPIRED OR THE SUBSCIPTION IS NOT ACTIVE
+   *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
+   *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
+   */
+  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+
+
+    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+
+    var enddate = moment().format("YYYY-MM-DD");
+
+    console.log('»»» REQUEST ROUTE - startdate ', startdate);
+    console.log('»»» REQUEST ROUTE - enddate ', enddate);
+
+    var enddatePlusOneDay=  moment(new Date()).add(1, 'days').toDate()
+    console.log('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
+
+    // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
+
+    query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
+    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+
+  }
+ 
+ /**
+   **! *** DATE RANGE  USECASE 2 ***
+   *  in the tiledesk dashboard's HISTORY PAGE 
+   *  WHEN THE USER SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS
+   */
   if (req.query.start_date && req.query.end_date) {
     winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
     winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
@@ -290,7 +324,6 @@ router.get('/', function (req, res, next) {
     // var formattedStartDate = new Date(+req.query.start_date);
     // var formattedEndDate = new Date(+req.query.end_date);
     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
-
 
     /**
      * USING MOMENT      */
@@ -319,62 +352,68 @@ router.get('/', function (req, res, next) {
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
+  // }
+
+
 
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
-  } 
-  winston.debug("direction",direction);
+  }
+  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
-  } 
-  winston.debug("sortField",sortField);
+  }
+  winston.debug("sortField", sortField);
 
-  var sortQuery={};
+  var sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
 
   winston.info('REQUEST ROUTE - REQUEST FIND ', query)
-    return Request.find(query).
+  return Request.find(query).
     skip(skip).limit(limit).
-      populate('department').
-      populate('lead').
-      // populate('lead', function (err, lead44) {
-      //   //assert(doc._id === user._id) // the document itself is passed
-      //   winston.error('lead44',lead44)
-      // }).
-      // execPopulate(function (err, lead45) {
-      //   //assert(doc._id === user._id) // the document itself is passed
-      //   winston.error('lead45',lead45)
-      // }).
-      sort(sortQuery).
-      exec(function (err, requests) {
-        if (err) {
-          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
-        }
-        winston.debug('REQUEST ROUTE - REQUEST ', requests);
+    populate('department').
+    populate('lead').
+    // populate('lead', function (err, lead44) {
+    //   //assert(doc._id === user._id) // the document itself is passed
+    //   winston.error('lead44',lead44)
+    // }).
+    // execPopulate(function (err, lead45) {
+    //   //assert(doc._id === user._id) // the document itself is passed
+    //   winston.error('lead45',lead45)
+    // }).
+    sort(sortQuery).
+    exec(function (err, requests) {
+      if (err) {
+        winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+        console.log('REQUEST ROUTE - REQUEST FIND ERR 1', err)
 
-        return Request.count(query, function(err, totalRowCount) {
-          if (err) {
-            winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-            return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
-          }
-          var objectToReturn = {
-            perPage: limit,
-            count: totalRowCount,
-            requests : requests
-          };
-          winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
-          return res.json(objectToReturn);
-        });
-       
+        return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+      }
+      winston.debug('REQUEST ROUTE - REQUEST ', requests);
+
+      return Request.count(query, function (err, totalRowCount) {
+        if (err) {
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+          console.log('REQUEST ROUTE - REQUEST FIND ERR 2', err)
+          return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+        }
+        var objectToReturn = {
+          perPage: limit,
+          count: totalRowCount,
+          requests: requests
+        };
+        winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
+        return res.json(objectToReturn);
       });
-  
+
+    });
+
 });
 
 
@@ -404,7 +443,7 @@ router.get('/csv', function (req, res, next) {
 
   if (req.query.full_text) {
     winston.debug('req.query.fulltext', req.query.full_text);
-    query.$text = {"$search": req.query.full_text};
+    query.$text = { "$search": req.query.full_text };
   }
 
   if (req.query.status) {
@@ -468,83 +507,83 @@ router.get('/csv', function (req, res, next) {
   var direction = 1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
-  } 
-  winston.debug("direction",direction);
+  }
+  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
-  } 
-  winston.debug("sortField",sortField);
+  }
+  winston.debug("sortField", sortField);
 
-  var sortQuery={};
+  var sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
-    return Request.find(query, '-transcript  -agents -status -__v').
+  return Request.find(query, '-transcript  -agents -status -__v').
     skip(skip).limit(limit).
-        //populate('department', {'_id':-1, 'name':1}).     
-        populate('department').     
-        lean().
-      // populate({
-      //   path: 'department', 
-      //   //select: { '_id': -1,'name':1}
-      //   select: {'name':1}
-      // }).  
-      sort(sortQuery).        
-      exec(function (err, requests) {
-        if (err) {
-          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return res.status(500).send({ success: false, msg: 'Error getting csv requests.',err:err });
+    //populate('department', {'_id':-1, 'name':1}).     
+    populate('department').
+    lean().
+    // populate({
+    //   path: 'department', 
+    //   //select: { '_id': -1,'name':1}
+    //   select: {'name':1}
+    // }).  
+    sort(sortQuery).
+    exec(function (err, requests) {
+      if (err) {
+        winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
+        return res.status(500).send({ success: false, msg: 'Error getting csv requests.', err: err });
+      }
+
+
+      requests.forEach(function (element) {
+        var depName = "";
+        if (element.department && element.department.name) {
+          depName = element.department.name;
         }
-        
+        delete element.department;
+        element.department = depName;
+      });
 
-         requests.forEach(function(element) {
-            var depName = "";
-            if (element.department && element.department.name) {
-              depName = element.department.name;
-            }
-            delete element.department;
-            element.department = depName;
-          });
+      winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
 
-          winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
+      // return Request.count(query, function(err, totalRowCount) {
 
-        // return Request.count(query, function(err, totalRowCount) {
+      // var objectToReturn = {
+      //   perPage: limit,
+      //   count: totalRowCount,
+      //   requests : requests
+      // };
+      // console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
+      return res.csv(requests, true);
+      // return res.csv([ { name: "joe", id: 1 }])
+    });
 
-          // var objectToReturn = {
-          //   perPage: limit,
-          //   count: totalRowCount,
-          //   requests : requests
-          // };
-          // console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
-          return res.csv(requests, true);
-          // return res.csv([ { name: "joe", id: 1 }])
-        });
-       
-      // });
-  
+  // });
+
 });
 
 router.get('/:requestid', function (req, res) {
 
   winston.debug("get request by id ", req.params.requestid);
 
-  Request.findOne({"request_id":req.params.requestid})
-  .populate('lead')
-  .exec(function(err, request) {
-    //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
-    if (err) {
-      winston.error("error getting request by id ", err);
-      return res.status(500).send({ success: false, msg: 'Error getting object.' });
-    }
-    if (!request) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
-    }
-    res.json(request);
-  });
+  Request.findOne({ "request_id": req.params.requestid })
+    .populate('lead')
+    .exec(function (err, request) {
+      //Request.findOne({"request_id":req.params.requestid}).exec(function(err, request) {
+      if (err) {
+        winston.error("error getting request by id ", err);
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
+      if (!request) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      res.json(request);
+    });
 });
 
 
