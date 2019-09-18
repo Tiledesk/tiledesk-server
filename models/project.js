@@ -97,10 +97,10 @@ ProjectSchema.virtual('trialDaysLeft').get(function () {
   const millisTrialDaysLeft = now.getTime() - (this.createdAt.getTime() + this.profile.trialDays * 86400000);
   const trialDaysLeft = Math.floor(millisTrialDaysLeft / (60 * 60 * 24 * 1000));
 
-  console.log("trialDaysLeft now.getTime() " + now.getTime());
-  console.log("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
-  console.log("trialDaysLeft ", millisTrialDaysLeft);
-  console.log("trialDaysLeft - PROJECT NAME " + this.name + '; CREATED at ' + this.createdAt + ' -- trialDaysLeft: ', trialDaysLeft);
+  winston.debug("trialDaysLeft now.getTime() " + now.getTime());
+  winston.debug("trialDaysLeft this.createdAt.getTime() " + this.createdAt.getTime());
+  winston.debug("trialDaysLeft ", millisTrialDaysLeft);
+  winston.debug("trialDaysLeft - PROJECT NAME " + this.name + '; CREATED at ' + this.createdAt + ' -- trialDaysLeft: ', trialDaysLeft);
   return trialDaysLeft
   // return -8
 
@@ -109,27 +109,27 @@ ProjectSchema.virtual('trialDaysLeft').get(function () {
 ProjectSchema.virtual('isActiveSubscription').get(function () {
 
   let now = new Date();
-  console.log("isActiveSubscription - now.getTime() " + now.getTime());
+  winston.debug("isActiveSubscription - now.getTime() " + now.getTime());
 
-  console.log("isActiveSubscription  - PROJECT NAME: " + this.name);
-  console.log("isActiveSubscription  - PROJECT profile " + this.profile);
-  console.log("isActiveSubscription  - PROJECT profile trialDays: " + this.profile.trialDays);
-  console.log("isActiveSubscription  - PROJECT profile name: " + this.profile.name);
-  console.log("isActiveSubscription  - PROJECT profile type: " + this.profile.type);
-  console.log("isActiveSubscription  - PROJECT profile subscription end date: " + this.profile.subEnd);
-  console.log("isActiveSubscription  -  this.activeOperatingHours: " + this.activeOperatingHours);
+  winston.debug("isActiveSubscription  - PROJECT NAME: " + this.name);
+  winston.debug("isActiveSubscription  - PROJECT profile " + this.profile);
+  winston.debug("isActiveSubscription  - PROJECT profile trialDays: " + this.profile.trialDays);
+  winston.debug("isActiveSubscription  - PROJECT profile name: " + this.profile.name);
+  winston.debug("isActiveSubscription  - PROJECT profile type: " + this.profile.type);
+  winston.debug("isActiveSubscription  - PROJECT profile subscription end date: " + this.profile.subEnd);
+  winston.debug("isActiveSubscription  -  this.activeOperatingHours: " + this.activeOperatingHours);
   var isActiveSubscription = '';
   if (this.profile && this.profile.type === 'payment') {
 
     if (this.profile.subEnd) {
-      console.log("isActiveSubscription  - PROJECT profile subscription end date getTime(): " + this.profile.subEnd.getTime());
+      winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime(): " + this.profile.subEnd.getTime());
 
       var subEndPlus3gg = this.profile.subEnd.getTime() + 259200000
-      console.log("isActiveSubscription  - PROJECT profile subscription end date getTime() + 3gg: " + subEndPlus3gg);
+      winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime() + 3gg: " + subEndPlus3gg);
 
       // FOR DEBUG 
       var subEndMinus3gg = this.profile.subEnd.getTime() - 259200000
-      console.log("isActiveSubscription  - PROJECT profile subscription end date getTime() - 3gg: " + subEndMinus3gg);
+      winston.debug("isActiveSubscription  - PROJECT profile subscription end date getTime() - 3gg: " + subEndMinus3gg);
 
       // + 259200000 
       if (now.getTime() > (this.profile.subEnd.getTime() + 259200000)) {
@@ -142,7 +142,7 @@ ProjectSchema.virtual('isActiveSubscription').get(function () {
     isActiveSubscription = false;
   }
 
-  console.log("isActiveSubscription  - isActiveSubscription " + isActiveSubscription);
+  winston.debug("isActiveSubscription  - isActiveSubscription " + isActiveSubscription);
 
   return isActiveSubscription
 
