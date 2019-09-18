@@ -149,9 +149,9 @@ router.post('/', function(req, res) {
                     
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                       return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
-                        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+                        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata) {
                         return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
                                       // winston.debug("savedMessageXXX ");
                                       //get projectid from savedMessage.id_project
 
@@ -229,10 +229,10 @@ router.post('/', function(req, res) {
               return res.status(400).send({success: false, msg: "recipient not starts with support-group. Not a support message"});
             }
         
-            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata) {
                             
                 return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                  request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+                  request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
 
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
