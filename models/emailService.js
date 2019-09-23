@@ -383,7 +383,7 @@ class EmailService {
               `;
 
     this.send(to, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
-    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+    //this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
   }
 
   /**

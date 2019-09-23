@@ -13,6 +13,8 @@ var Lead = require('../models/lead');
 const requestEvent = require('../event/requestEvent');
 var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
+var config = require('../config/email');
+
 
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
@@ -565,6 +567,9 @@ class RequestService {
    
                      
                    });
+
+                   //send to bcc
+                   emailService.sendNewPooledRequestNotification(config.bcc, savedRequest, project);
    
                    }
 
