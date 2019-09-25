@@ -32,6 +32,12 @@ router.get('/', function (req, res) {
     if (process.env.FIREBASE_MESSAGINGSENDERID) {
       config.messagingSenderId = process.env.FIREBASE_MESSAGINGSENDERID;
     }
+  
+    if (process.env.CHAT21_URL) {
+      config.chat21ApiUrl = process.env.CHAT21_URL;
+    }
+  
+  
      
     res.json(config);
   
