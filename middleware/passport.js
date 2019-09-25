@@ -15,7 +15,7 @@ var Faq_kb = require("../models/faq_kb");
 var Project = require('../models/project');
 var Subscription = require('../models/subscription');
 var jwt = require('jsonwebtoken');
-const URL = require('url');
+const url = require('url');
 
 module.exports = function(passport) {
     
