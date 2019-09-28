@@ -2,9 +2,6 @@ FROM node:10
 
 RUN npm install -g nodemon
 
-RUN mkdir /usr/src/app/confenv
-RUN touch /usr/src/app/confenv/.env
-
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -20,6 +17,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+RUN mkdir /usr/src/app/confenv
+RUN touch /usr/src/app/confenv/.env
 
 EXPOSE 3000
 CMD [ "npm", "run", "watchenv" ]
