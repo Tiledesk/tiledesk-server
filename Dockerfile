@@ -17,5 +17,7 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+RUN touch .env
+
 EXPOSE 3000
 CMD [ "npm", "watchenv" ]
