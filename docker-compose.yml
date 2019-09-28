@@ -72,7 +72,7 @@ services:
     networks:
          - backend
     volumes:
-      - tiledesk-server-config:/usr/src/app/.env
+      - tiledesk-server-config:/usr/src/app/
     #env_file:
     #     - .env
     environment: 
