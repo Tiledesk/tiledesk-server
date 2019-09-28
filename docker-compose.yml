@@ -13,6 +13,7 @@ networks:
 volumes:
    tiledesk-datadb:
    chat21-cf:
+   tiledesk-server-config:
 
 
 services:
@@ -70,8 +71,10 @@ services:
     restart: always
     networks:
          - backend
-    env_file:
-         - .env
+    volumes:
+      - tiledesk-server-config:/usr/src/app/.env
+    #env_file:
+    #     - .env
     environment: 
       - FIREBASE_PRIVATE_KEY
       - FIREBASE_CONFIG_FILE
