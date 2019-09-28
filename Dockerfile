@@ -20,4 +20,4 @@ COPY . .
 RUN touch .env
 
 EXPOSE 3000
-CMD [ "npm", "watchenv" ]
+CMD [ "npm", "run", "watchenv" ]
