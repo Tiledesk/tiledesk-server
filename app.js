@@ -1,4 +1,11 @@
-require('dotenv').config();
+if (process.env.LOAD_DOTENV_SUBFOLDER ) {
+  require('dotenv').config({ path: __dirname+'/confenv/.env' });
+
+}else {
+  require('dotenv').config();
+
+}
+
 
 var express = require('express');
 var path = require('path');
