@@ -1,5 +1,7 @@
 FROM node:10
 
+RUN npm install -g nodemon
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -16,4 +18,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD [ "npm", "watchenv" ]
