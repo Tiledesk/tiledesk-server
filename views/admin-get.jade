@@ -1,0 +1,41 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  form(name="add-estimation", method="post")
+        div.input
+            span.label FIREBASE_PRIVATE_KEY
+            input(type="text", name="FIREBASE_PRIVATE_KEY")
+        div.input
+            span.label FIREBASE_CLIENT_EMAIL
+            input(type="text", name="FIREBASE_CLIENT_EMAIL")
+        div.input
+            span.label FIREBASE_PROJECT_ID
+            input(type="text", name="FIREBASE_PROJECT_ID")
+        div.input
+            span.label FIREBASE_APIKEY
+            input(type="text", name="FIREBASE_APIKEY")
+        div.input
+            span.label FIREBASE_AUTHDOMAIN
+            input(type="text", name="FIREBASE_AUTHDOMAIN")
+        div.input
+          span.label FIREBASE_DATABASEURL
+          input(type="text", name="FIREBASE_DATABASEURL")
+        div.input
+          span.label FIREBASE_MESSAGINGSENDERID
+          input(type="text", name="FIREBASE_MESSAGINGSENDERID")
+        div.input
+          span.label CHAT21_ENABLED
+          input(type="text", name="CHAT21_ENABLED")
+        div.input
+          span.label CHAT21_URL
+          input(type="text", name="CHAT21_URL")
+        div.input
+          span.label CHAT21_APPID
+          input(type="text", name="CHAT21_APPID")
+        div.input
+          span.label CHAT21_ADMIN_TOKEN
+          input(type="text", name="CHAT21_ADMIN_TOKEN")          
+        div.actions
+            input(type="submit", value="add")
