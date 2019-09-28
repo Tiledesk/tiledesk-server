@@ -10,7 +10,22 @@ var roleChecker = require('../middleware/has-role');
 
 
 router.get('/', function (req, res) {
-    res.render('admin-get', { title: 'Hey', message: 'Hello there!'})
+
+    
+    res.render('admin-get', { title: 'Hey', message: 'Hello there!', 
+        FIREBASE_PRIVATE_KEY:process.env.FIREBASE_PRIVATE_KEY,
+        FIREBASE_CLIENT_EMAIL:process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PROJECT_ID:process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_APIKEY:process.env.FIREBASE_APIKEY,        
+        FIREBASE_AUTHDOMAIN:process.env.FIREBASE_AUTHDOMAIN,
+        FIREBASE_DATABASEURL:process.env.FIREBASE_DATABASEURL,
+        FIREBASE_MESSAGINGSENDERID:process.env.FIREBASE_MESSAGINGSENDERID,
+        CHAT21_ENABLED:process.env.CHAT21_ENABLED,
+        CHAT21_URL:process.env.CHAT21_URL,
+        CHAT21_APPID:process.env.CHAT21_APPID,
+        CHAT21_ADMIN_TOKEN:process.env.CHAT21_ADMIN_TOKEN,
+
+    })
 });
 
 router.post('/', function (req, res) {
