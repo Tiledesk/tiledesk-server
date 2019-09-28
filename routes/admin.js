@@ -29,7 +29,7 @@ router.post('/', function (req, res) {
     CHAT21_APPID=${req.body.CHAT21_APPID}
     CHAT21_ADMIN_TOKEN=${req.body.CHAT21_ADMIN_TOKEN}
     `;
-    fs.writeFile(__dirname+"/..confenv/.env",env, function(err) {
+    fs.writeFile(__dirname+"/../confenv/.env",env, function(err) {
 
         if(err) {
             return console.log(err);
