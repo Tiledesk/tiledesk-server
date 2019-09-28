@@ -70,6 +70,7 @@ var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
+var admin = require('./routes/admin');
 
 // var appRules = require('./modules/trigger/global/appRules');
 // appRules.start();
@@ -278,6 +279,7 @@ var projectSetter = function (req, res, next) {
 
 }
 
+app.use('/admin', admin);
 
 app.use('/auth', auth);
 app.use('/testauth', authtest);
