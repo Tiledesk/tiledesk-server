@@ -391,7 +391,10 @@ router.post('/', function(req, res) {
         return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
 
           winston.info("request",request.toObject());
-          winston.info("lead",lead.toObject());
+          if (lead) {
+            winston.info("lead",lead.toObject());
+          }
+          
           //if (lead && lead._id.toString() == request.requester_id.toString()) {
             if (lead && lead._id == request.lead) {
             winston.info("don't  joining request.lead or a lead");
