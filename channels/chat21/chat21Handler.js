@@ -241,7 +241,7 @@ class Chat21Handler {
 
             newRequest.created_on = admin.firestore.FieldValue.serverTimestamp(); 
 
-            if (request.requester_id) {
+            if (request.request.lead._id) {
                 //newRequest.requester_id = request.requester_id;
                 newRequest.requester_id = request.lead._id;
             }
