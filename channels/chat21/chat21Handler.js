@@ -32,7 +32,7 @@ if (admin) {
     firestore = admin.firestore();
     chat21WebHook = require('../../channels/chat21/chat21WebHook');
     chat21ConfigRoute = require('../../channels/chat21/configRoute');
-    firebaseAuth = require('../../routes/firebaseauth');
+    firebaseAuth = require('./firebaseauth');
 }
 
 class Chat21Handler {
@@ -41,7 +41,7 @@ class Chat21Handler {
         
         if (admin){
             app.use('/chat21/requests',  chat21WebHook);
-            app.use('/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
+            app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
             app.use('/chat21/config',  chat21ConfigRoute);
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
@@ -242,7 +242,8 @@ class Chat21Handler {
             newRequest.created_on = admin.firestore.FieldValue.serverTimestamp(); 
 
             if (request.requester_id) {
-                newRequest.requester_id = request.requester_id;
+                //newRequest.requester_id = request.requester_id;
+                newRequest.requester_id = request.lead._id;
             }
             
 
