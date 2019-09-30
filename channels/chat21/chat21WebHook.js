@@ -119,14 +119,14 @@ router.post('/', function(req, res) {
 
                     // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                       // message.sender is the project_user id created with firebase custom auth
-                      // vedi su
-
-
+                     // vedi su
+                    //  ATTENTO QUI
                       return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
                         // return requestService.createWithIdAndRequester(message.recipient, message.sender, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
                     
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                    //  return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
+                      winston.info("here requestService.createWithId");
+                       //return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
 
 
                         var messageId = undefined;
@@ -248,6 +248,8 @@ router.post('/', function(req, res) {
       }
 
 
+      // prendi projectid da attributes della conversation ora è sempre presente
+
       var conversationRef = firestore.collection('conversations').doc(recipient_id);
       return conversationRef.get()
           .then(doc => {
@@ -296,7 +298,8 @@ router.post('/', function(req, res) {
 
                   //TODO remove requester id from participants                 
                   
-                  return Lead.findById(request.requester_id, function(err, lead){
+                  return Lead.findById(request.lead, function(err, lead){
+                    // return Lead.findById(request.requester_id, function(err, lead){
                     winston.info("lead",lead.toObject());
                     winston.info("request",request.toObject());
                     if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
@@ -309,7 +312,7 @@ router.post('/', function(req, res) {
 
                     winston.info('firestoreMembersAsArray', firestoreMembersAsArray);
 
-              
+                    // se agente archivia conversazione allora chiude anche richiesta
                     return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
                       // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
@@ -386,12 +389,13 @@ router.post('/', function(req, res) {
         }
 
         return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
-          
+
           winston.info("request",request.toObject());
           winston.info("lead",lead.toObject());
-          if (lead && lead._id.toString() == request.requester_id.toString()) {
-            winston.info("don't  joining requester_id or a lead");
-            return res.status(400).send({success: false, msg: "don't  joining requester_id or a lead" });
+          //if (lead && lead._id.toString() == request.requester_id.toString()) {
+            if (lead && lead._id == request.lead) {
+            winston.info("don't  joining request.lead or a lead");
+            return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
           }else {
             return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
               winston.info("Join memeber ok");
