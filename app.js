@@ -62,7 +62,6 @@ var faq = require('./routes/faq');
 // var bot = require('./routes/trigger');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
-var firebaseAuth = require('./routes/firebaseauth');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
 // var setting = require('./routes/setting');
@@ -292,8 +291,6 @@ app.use('/auth', auth);
 app.use('/testauth', authtest);
 
 // deprecated
-app.use('/firebase/auth', firebaseAuth);
-
 
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
