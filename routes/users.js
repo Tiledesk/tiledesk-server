@@ -31,7 +31,11 @@ router.put('/updateuser/:userid', function (req, res) {
 router.put('/changepsw', function (req, res) {
   console.log('CHANGE PSW - USER ID: ', req.body.userid);
 
-  User.findOne({ _id: req.body.userid }, function (err, user) {
+  
+  User.findOne({ _id: req.body.userid })
+  .select("+password")
+  .exec(function (err, user) {
+
     if (err) throw err;
     console.log('CHANGE PSW - FINDONE ERROR ', err)
     if (!user) {
