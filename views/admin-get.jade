@@ -6,13 +6,13 @@ block content
   form(name="add-estimation", method="post")
         div.input
             span.label FIREBASE_PRIVATE_KEY
-            input(type="text", name="FIREBASE_PRIVATE_KEY", value="#{FIREBASE_PRIVATE_KEY}")
+            input(type="text", name="FIREBASE_PRIVATE_KEY", value="#{FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY : ''}")
         div.input
             span.label FIREBASE_CLIENT_EMAIL
-            input(type="text", name="FIREBASE_CLIENT_EMAIL", value="#{FIREBASE_CLIENT_EMAIL}")
+            input(type="text", name="FIREBASE_CLIENT_EMAIL", value="#{FIREBASE_CLIENT_EMAIL ? FIREBASE_CLIENT_EMAIL : ''}")
         div.input
             span.label FIREBASE_PROJECT_ID
-            input(type="text", name="FIREBASE_PROJECT_ID", value="#{FIREBASE_PROJECT_ID}")
+            input(type="text", name="FIREBASE_PROJECT_ID", value="#{FIREBASE_PROJECT_ID ? FIREBASE_PROJECT_ID : ''}")
         div.input
             span.label FIREBASE_APIKEY
             input(type="text", name="FIREBASE_APIKEY", value="#{FIREBASE_APIKEY}")
