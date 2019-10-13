@@ -47,11 +47,13 @@ router.post('/', function (req, res) {
     fs.writeFile(__dirname+"/../confenv/.env",env, function(err) {
 
         if(err) {
-            return console.log(err);
+            console.log(err);
+            return res.redirect(303, '/admin/') // Notice the 303 parameter
         }
     
         console.log("The env file was saved!");
-        res.end()
+        // res.end()
+        res.redirect(303, '/admin/') // Notice the 303 parameter
     }); 
 
     
