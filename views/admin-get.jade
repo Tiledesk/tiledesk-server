@@ -1,8 +1,8 @@
-extends layout
+extends layout-admin
 
 block content
   h1= title
-  p Welcome to #{title}
+  p Welcome to #{message}
   form(name="add-estimation", method="post")
         div.input
             span.label FIREBASE_PRIVATE_KEY
@@ -38,4 +38,4 @@ block content
           span.label CHAT21_ADMIN_TOKEN
           input(type="text", name="CHAT21_ADMIN_TOKEN", value="#{CHAT21_ADMIN_TOKEN}")         
         div.actions
-            input(type="submit", value="add")
+            input(type="submit", value="Save")
