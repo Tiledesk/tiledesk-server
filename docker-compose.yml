@@ -86,6 +86,7 @@ services:
       - CHAT21_ADMIN_TOKEN
    #   - DATABASE_URI
       - MONGODB_URI=mongo
+      - LOAD_DOTENV_SUBFOLDER=true
 #    build: .
     depends_on:
       - mongo
