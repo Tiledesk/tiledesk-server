@@ -1,4 +1,4 @@
-version: "2"
+version: "3.7"
 ### Creates a named network with the default bridge driver
 # The network is shared between restheart and mongodb only
 # See: https://docs.docker.com/engine/userguide/networking/dockernetworks/
@@ -13,7 +13,7 @@ networks:
 volumes:
    tiledesk-datadb:
    chat21-cf:
-   tiledesk-server-config:
+   tiledesk-server-config2:
 
 
 services:
@@ -71,8 +71,13 @@ services:
     restart: always
     networks:
          - backend
-    volumes:
-      - tiledesk-server-config:/usr/src/app/
+    volumes:    
+        #  - type: bind
+        #    source: ./
+        #    target: /usr/src/app/
+        - tiledesk-server-config2:/usr/src/app/confenv
+      # - ./:/usr/src/app/
+
     #env_file:
     #     - .env
     environment: 
