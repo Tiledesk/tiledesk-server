@@ -34,7 +34,7 @@ if (admin) {
     chat21WebHook = require('../../channels/chat21/chat21WebHook');
     chat21ConfigRoute = require('../../channels/chat21/configRoute');
     firebaseAuth = require('./firebaseauth');
-    firebaseAuthDep = require('./firebaseAuthDEP');
+    firebaseAuthDep = require('./firebaseauthDEP');
 }
 
 class Chat21Handler {
