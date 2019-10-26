@@ -1,10 +1,8 @@
 extends layout-admin
 
-script.
-setTimeout(function () {
-     window.location = "/admin/";
-  }, 2000)
 
 block content
   h1= title
   p Welcome to #{message}
+  a(href="/admin/")
+   button(type="button") Return to admin Home
