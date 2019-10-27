@@ -28,6 +28,14 @@ router.get('/', function (req, res) {
     })
 });
 
+
+router.get('/saved', function (req, res) {
+
+
+    res.render('admin-saved-get', { title: 'Environment config saved.',
+    })
+});
+
 router.post('/', function (req, res) {
        
     console.log(req.body.FIREBASE_PRIVATE_KEY);
@@ -53,7 +61,7 @@ router.post('/', function (req, res) {
     
         console.log("The env file was saved!");
         // res.end()
-        res.redirect(303, '/admin/') // Notice the 303 parameter
+        res.redirect(303, '/admin/saved') // Notice the 303 parameter
     }); 
 
     
