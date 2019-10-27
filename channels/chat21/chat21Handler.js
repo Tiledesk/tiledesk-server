@@ -263,7 +263,12 @@ class Chat21Handler {
     
             group_members.push("system");
             
-            newRequest.members = group_members;
+            var group_membersAsObj = {};
+            group_members.forEach(function(prop,index) {
+                group_membersAsObj.prop = 1;
+            });
+            winston.info('group_membersAsObj', group_membersAsObj);
+            newRequest.members = group_membersAsObj;
             
             var membersCount = Object.keys(group_members).length;
             // newRequest.membersCount = membersCount;
