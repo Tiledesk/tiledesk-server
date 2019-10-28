@@ -246,7 +246,7 @@ class Chat21Handler {
 
             if (request.lead._id) {
                 //newRequest.requester_id = request.requester_id;
-                newRequest.requester_id = request.lead._id;
+                newRequest.requester_id = request.lead.lead_id;
             }
             
 
@@ -262,13 +262,14 @@ class Chat21Handler {
             newRequest.departmentid = request.department._id.toString(); 
     
             group_members.push("system");
-            
+
             var group_membersAsObj = {};
             group_members.forEach(function(prop,index) {
-                group_membersAsObj.prop = 1;
+                group_membersAsObj[prop] = 1;
             });
             winston.info('group_membersAsObj', group_membersAsObj);
             newRequest.members = group_membersAsObj;
+            
             
             var membersCount = Object.keys(group_members).length;
             // newRequest.membersCount = membersCount;
