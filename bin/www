@@ -22,24 +22,28 @@ app.set('port', port);
 
 // var modulesManager = require('../modules/modulesManager');
 // app=modulesManager.injectBefore(app);
-const  ApolloServer  = require('apollo-server-express').ApolloServer;
-const typeDefs = require('../graphql/schema');
-const resolvers = require('../graphql/resolvers');
-var apolloServer = new ApolloServer({ typeDefs, resolvers, 
-  // https://www.apollographql.com/docs/apollo-server/features/graphql-playground/#Enabling-GraphQL-Playground-in-production
-  introspection: true,
-  playground: true});
-apolloServer.applyMiddleware({ app });
+
+// const  ApolloServer  = require('apollo-server-express').ApolloServer;
+// const typeDefs = require('../graphql/schema');
+// const resolvers = require('../graphql/resolvers');
+// var apolloServer = new ApolloServer({ typeDefs, resolvers, 
+//   // https://www.apollographql.com/docs/apollo-server/features/graphql-playground/#Enabling-GraphQL-Playground-in-production
+//   introspection: true,
+//   playground: true});
+// apolloServer.applyMiddleware({ app });
 
 
 var httpServer = http.createServer(app);
-apolloServer.installSubscriptionHandlers(httpServer);
+
+//RE-ENABLE STANDART WEBSCOKET IT
+var webSocketServer = require('../websocket/webSocketServer');
+webSocketServer.init(httpServer);
+
+// apolloServer.installSubscriptionHandlers(httpServer);
 // httpServer=modulesManager.injectAfter(httpServer,app,port);
 
 
-//RE-ENABLE STANDART WEBSCOKET IT
-// var webSocketServer = require('../routes/webSocketServer');
-// webSocketServer.init(server);
+
 
 
 
@@ -52,8 +56,8 @@ var listener = httpServer.listen(port,function(){
     console.log('Listening on port ' + listener.address().port); //Listening on port 8888
 
  
-    console.log(`🚀 GraphQl Server ready at http://localhost:${port}${apolloServer.graphqlPath}`)
-    console.log(`🚀 GraphQl Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`)
+    // console.log(`🚀 GraphQl Server ready at http://localhost:${port}${apolloServer.graphqlPath}`)
+    // console.log(`🚀 GraphQl Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`)
  
 
 });

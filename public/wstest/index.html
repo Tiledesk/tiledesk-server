@@ -3,10 +3,13 @@
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
             <script src="./tilebase.js"></script>
 
+            <!-- <script type="text/javascript" src="./main.js"></script> -->
 
             <script>
                 
-                var tilebase = new Tilebase('ws://localhost:3000?id_project=5ca366fdee19dbc72e98e96f&events=["request", "message"]&q={}&token=JWT ...'
+                
+                var tilebase = new Tilebase('ws://localhost:3000?token=JWT 123'
+                // var tilebase = new Tilebase('ws://localhost:3000?id_project=5ca366fdee19dbc72e98e96f&events=["request", "message"]&q={}&token=JWT ...'
              
                     , function(data, notification) {
                         $('#messages').append(`<div id="${data._id}">${data.text} ${notification.event}</div>`);
@@ -15,7 +18,7 @@
                         $('#'+data._id).html(`<div id="${data._id}">${data.text}  ${notification.event}</div>`);
                     }
                     );
-                    tilebase.start();
+                    tilebase.start('{ "action": "subscribe", "payload": { "topic": "topic1"}}');
                   
             </script>
     </head>

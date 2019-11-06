@@ -26,7 +26,7 @@ class Tilebase {
         return objIndex;
 
     }
-    start() {
+    start(initialMessage) {
         // start(token) {
         var that = this;
         return new Promise(function (resolve, reject) {
@@ -46,8 +46,11 @@ class Tilebase {
                     var ws = new WebSocket(that.url);
                     // var ws = new WebSocket(that.url, options);
                     ws.onopen = function () {
-                        console.log('websocket is connected ...')
-                        ws.send('connected')
+                        console.log('websocket is connected2 ...');
+                        if (initialMessage) {
+                            ws.send(initialMessage);
+                        }
+                       // ws.send('connected')
                     }
                     ws.onclose = function () {
                         console.log('websocket is closed ... Try to reconnect in 5 seconds');

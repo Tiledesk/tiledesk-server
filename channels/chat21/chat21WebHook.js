@@ -391,6 +391,7 @@ router.post('/', function(req, res) {
         return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
 
           winston.info("request",request.toObject());
+          
           if (lead) {
             winston.info("lead",lead.toObject());
           }

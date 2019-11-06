@@ -80,7 +80,7 @@ roundRobin(operatorSelectedEvent) {
     
       // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
       let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
-      
+      // indice qui ATTEWNTOOOOOOOOO
       winston.debug('query', query);            
 
       // let lastRequests = await 
@@ -204,8 +204,9 @@ getOperators(departmentid, projectid, nobot) {
           // console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
           // console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           // console.log('OPERATORS - »»»» nobot ', nobot)
+          var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
 
-          return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
+          return Project_user.find({ id_project: projectid, role: { $in : role } }).exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
               return reject(err);
