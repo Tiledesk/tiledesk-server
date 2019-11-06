@@ -1,4 +1,5 @@
 if (process.env.LOAD_DOTENV_SUBFOLDER ) {
+  console.log("load dotenv form LOAD_DOTENV_SUBFOLDER");
   require('dotenv').config({ path: __dirname+'/confenv/.env' });
 
 }else {
