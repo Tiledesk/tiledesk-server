@@ -484,7 +484,7 @@ class RequestService {
           return reject(err);
         }
         requestEvent.emit('request.update',updatedRequest);
-        requestEvent.emit('request.participants.update', savedRequest);
+        requestEvent.emit('request.participants.update', updatedRequest);
 
         return resolve(updatedRequest);
       });
