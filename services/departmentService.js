@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var winston = require('../config/winston');
 const departmentEvent = require('../event/departmentEvent');
 const Request = require('../models/request');
+var RoleConstants = require("../models/roleConstants");
 
 
 class DepartmentService {
@@ -80,7 +81,7 @@ roundRobin(operatorSelectedEvent) {
     
       // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
       let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
-      // indice qui ATTEWNTOOOOOOOOO
+      
       winston.debug('query', query);            
 
       // let lastRequests = await 
