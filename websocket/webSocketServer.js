@@ -89,7 +89,7 @@ class WebSocketServer {
     messageEvent.on('message.create', function (message) {
       winston.info('messageEvent websocket server ', message);
         //that.sendAll(message,'message');        
-        pubSubServer.handlePublishMessage (message.id_project+'/requests/'+message.request.request_id+'/messages/', request, undefined, true);
+        pubSubServer.handlePublishMessage (message.id_project+'/requests/'+message.request.request_id+'/messages/', message, undefined, true);
       });
 
       requestEvent.on('request.create', function (request) {
