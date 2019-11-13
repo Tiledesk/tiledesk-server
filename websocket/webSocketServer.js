@@ -31,56 +31,105 @@ class WebSocketServer {
      var wss = new WebSocket.Server({  
        server: server, 
        path: "/",
-        // verifyClient: function (info, cb) {
-        //   //console.log('info.req', info.req);
-        //   // var token = info.req.headers.Authorization
-        //   let urlParsed = url.parse(info.req.url, true);
-        //   // console.log('urlParsed', urlParsed);
-        //   var queryParameter = urlParsed.query;
-        //   winston.debug('queryParameter', queryParameter);
+        verifyClient: function (info, cb) {
+          //console.log('info.req', info.req);
+          // var token = info.req.headers.Authorization
+          let urlParsed = url.parse(info.req.url, true);
+          // console.log('urlParsed', urlParsed);
+          var queryParameter = urlParsed.query;
+          winston.info('queryParameter', queryParameter);
 
-        //   var token = queryParameter.token;
-
-        //   // winston.info('config.secret:'+ config.secret);
+          var token = queryParameter.token;
+          winston.info('token:'+ token);
+          winston.info('config.secret:'+ config.secret);
 
         
-        //   if (!token)
-        //       cb(false, 401, 'Unauthorized');
-        //   else {
-        //     token = token.replace('JWT ', '');
-        //     if (token ==="123") {
-        //       cb(true);
-        //     }
-        //       jwt.verify(token, config.secret, function (err, decoded) {
-        //           if (err) {
-        //             // winston.info('error websocket', err);
-        //               cb(false, 401, 'Unauthorized');
-        //           } else {
-        //              // uncomment it
-        //                 // winston.info('valid token');
-        //                 // roleChecker.hasRoleAsPromise().then(function(project_user) {
-        //                 //   winston.info('hasRoleAsPromise project_user',project_user);
-        //                   // winston.info('ok websocket');
-        //                   info.req.user = decoded;
-        //                   cb(true);
-        //               // }).catch(function(err){
-        //               //   winston.error('hasRoleAsPromise err',err);
-        //               //   cb(false, 401, err.msg);
-        //               // });                     
+          if (!token)
+              cb(false, 401, 'Unauthorized');
+          else {
+            token = token.replace('JWT ', '');
+            if (token ==="123") {
+              winston.info('ok 123:');
+              return cb(true);
+            }
+              jwt.verify(token, config.secret, function (err, decoded) {
+                  if (err) {
+                     winston.info('error websocket', err);
+                     return cb(false, 401, 'Unauthorized');
+                  } else {
+                     // uncomment it
+                         winston.info('valid token');
+                        // roleChecker.hasRoleAsPromise().then(function(project_user) {
+                        //   winston.info('hasRoleAsPromise project_user',project_user);
+                          // winston.info('ok websocket');
+                          info.req.user = decoded;
+                          return cb(true);
+                      // }).catch(function(err){
+                      //   winston.error('hasRoleAsPromise err',err);
+                      //   cb(false, 401, err.msg);
+                      // });                     
                   
-        //           }
-        //       })
+                  }
+              })
 
-        //   }
-        // }
+          }
+        }
     });
 
-    var onMessageCallback = function(id, message) {
-      
+
+    var onConnectCallback = function(client, req) {
+      winston.info('onConnectCallback ');
       // check here if you can subscript o publish message
     }
 
-    const pubSubServer = new PubSub(wss);
+    var onDisconnectCallback = function(subscript, id) {
+      winston.info('onDisconnectCallback ',subscript, id);
+      // check here if you can subscript o publish message
+    }
+
+
+//tilebaseMess.send('{ "action": "publish", "payload": { "topic": "/apps/123/requests/sendid/conversations/RFN", "message":{"sender_id":"sendid","sender_fullname":"SFN", "recipient_id":"RFN", "recipient_fullname":"RFN","text":"hi","app_id":"123"}}}');
+    var onPublishCallback = function(publishTopic, publishMessage, from) {
+      winston.info("onPublish topic: "+publishTopic +" from: "+from, publishMessage);
+  
+    }
+
+    var onMessageCallback = function(id, message) {
+      winston.info('onMessageCallback ',id, message);
+      // check here if you can subscript o publish message
+    }
+
+    // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/app1/requests"}}');
+    var onSubscribeCallback = function(id, message) {
+      winston.info('onSubscribeCallback :'+id+ " "+ message);      
+    
+      if (id.indexOf('/requests')>0) {
+          var urlSub = id.split('/');  
+
+          var projectId = urlSub[1];
+          winston.info('projectId: '+projectId);
+
+          var query = {id_project:projectId };
+          Request.find(query).sort({updatedAt: 'asc'}).exec(function(err, requests) { 
+          
+          if (err) {
+            winston.error('onSubscribeCallback find', err);  
+          }
+          winston.info('onSubscribeCallback find', requests);  
+          pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
+    
+        });
+      }
+
+    }
+
+
+
+
+    const pubSubServer = new PubSub(wss, {onConnect: onConnectCallback, onDisconnect: onDisconnectCallback,
+      onMessage: onMessageCallback, onSubscribe: onSubscribeCallback, onPublish:onPublishCallback});
+
+
     // const pubSubServer = new PubSub(wss,onMessageCallback);
 
 
@@ -89,14 +138,14 @@ class WebSocketServer {
     messageEvent.on('message.create', function (message) {
       winston.info('messageEvent websocket server ', message);
         //that.sendAll(message,'message');        
-        pubSubServer.handlePublishMessage (message.id_project+'/requests/'+message.request.request_id+'/messages/', message, undefined, true);
+        pubSubServer.handlePublishMessage (message.id_project+'/requests/'+message.request.request_id+'/messages/', message, undefined, true, "CREATE");
       });
 
       requestEvent.on('request.create', function (request) {
         winston.info('requestEvent websocket server ', request);
           //that.sendAll(message,'request');        
           // pubSubServer.handlePublishMessage (topic, message, from, isBroadcast = false) {
-          pubSubServer.handlePublishMessage (request.id_project+'/requests/', request, undefined, true);
+          pubSubServer.handlePublishMessage (request.id_project+'/requests/', request, undefined, true, "CREATE");
           // pubSubServer.handlePublishMessage ('topic1', message, undefined, true);
         });
       

@@ -46,6 +46,7 @@ class Subscription {
 
     console.log('New subscriber via add method:', subscription)
     this.subscriptions = this.subscriptions.set(id, subscription)
+    console.log('New subscribers',this.subscriptions);
     return id
   }
 
