@@ -231,7 +231,7 @@ router.post('/:requestid/share/email', function (req, res) {
 
 router.get('/', function (req, res, next) {
 
-  winston.info("req projectid", req.projectid);
+  winston.debug("req projectid", req.projectid);
   winston.debug("req.query.sort", req.query.sort);
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
@@ -247,6 +247,10 @@ router.get('/', function (req, res, next) {
 
   var query = { "id_project": req.projectid };
 
+  // console.log('REQUEST ROUTE - req ', req); 
+  // console.log('REQUEST ROUTE - req.project ', req.project); 
+
+
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
@@ -254,7 +258,7 @@ router.get('/', function (req, res, next) {
 
   if (req.query.full_text) {
     winston.debug('req.query.fulltext', req.query.full_text);
-    query.$text = {"$search": req.query.full_text};
+    query.$text = { "$search": req.query.full_text };
   }
 
   if (req.query.status) {
@@ -279,7 +283,37 @@ router.get('/', function (req, res, next) {
   // }
 
   /**
-   * DATE RANGE  */
+   **! *** DATE RANGE  USECASE 1 ***
+   *  in the tiledesk dashboard's HISTORY PAGE
+   *  WHEN THE TRIAL IS EXIPIRED OR THE SUBSCIPTION IS NOT ACTIVE
+   *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
+   *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
+   */
+  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+
+
+    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+
+    var enddate = moment().format("YYYY-MM-DD");
+
+    console.log('»»» REQUEST ROUTE - startdate ', startdate);
+    console.log('»»» REQUEST ROUTE - enddate ', enddate);
+
+    var enddatePlusOneDay=  moment(new Date()).add(1, 'days').toDate()
+    console.log('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
+
+    // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
+
+    query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
+    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+
+  }
+ 
+ /**
+   **! *** DATE RANGE  USECASE 2 ***
+   *  in the tiledesk dashboard's HISTORY PAGE 
+   *  WHEN THE USER SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS
+   */
   if (req.query.start_date && req.query.end_date) {
     winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
     winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
@@ -289,7 +323,6 @@ router.get('/', function (req, res, next) {
     // var formattedStartDate = new Date(+req.query.start_date);
     // var formattedEndDate = new Date(+req.query.end_date);
     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
-
 
     /**
      * USING MOMENT      */
@@ -318,64 +351,72 @@ router.get('/', function (req, res, next) {
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
+  // }
+
+
 
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
-  } 
-  winston.debug("direction",direction);
+  }
+  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
-  } 
-  winston.debug("sortField",sortField);
+  }
+  winston.debug("sortField", sortField);
 
-  var sortQuery={};
+  var sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
 
   winston.info('REQUEST ROUTE - REQUEST FIND ', query)
-    return Request.find(query).
+  return Request.find(query).
     skip(skip).limit(limit).
-      populate('department').
-      populate('lead').
-      populate({path:'requester',populate:{path:'id_user'}}).
-      // populate('lead', function (err, lead44) {
-      //   //assert(doc._id === user._id) // the document itself is passed
-      //   winston.error('lead44',lead44)
-      // }).
-      // execPopulate(function (err, lead45) {
-      //   //assert(doc._id === user._id) // the document itself is passed
-      //   winston.error('lead45',lead45)
-      // }).
-      sort(sortQuery).
-      exec(function (err, requests) {
-        if (err) {
-          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-          return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
-        }
-        winston.debug('REQUEST ROUTE - REQUEST ', requests);
+    populate('department').
+    populate('lead').
+    populate({path:'requester',populate:{path:'id_user'}}).
 
-        return Request.count(query, function(err, totalRowCount) {
-          if (err) {
-            winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err)
-            return res.status(500).send({ success: false, msg: 'Error getting requests.',err:err });
-          }
-          var objectToReturn = {
-            perPage: limit,
-            count: totalRowCount,
-            requests : requests
-          };
-          winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
-          return res.json(objectToReturn);
-        });
-       
+    // populate('lead', function (err, lead44) {
+    //   //assert(doc._id === user._id) // the document itself is passed
+    //   winston.error('lead44',lead44)
+    // }).
+    // execPopulate(function (err, lead45) {
+    //   //assert(doc._id === user._id) // the document itself is passed
+    //   winston.error('lead45',lead45)
+    // }).
+    sort(sortQuery).
+    exec(function (err, requests) {
+      if (err) {
+        winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+        console.log('REQUEST ROUTE - REQUEST FIND ERR 1', err)
+
+        return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+      }
+      winston.debug('REQUEST ROUTE - REQUEST ', requests);
+
+      return Request.count(query, function (err, totalRowCount) {
+        if (err) {
+          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+          console.log('REQUEST ROUTE - REQUEST FIND ERR 2', err)
+          return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+        }
+        var objectToReturn = {
+          perPage: limit,
+          count: totalRowCount,
+          requests: requests
+        };
+        winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
+        return res.json(objectToReturn);
       });
-  
+
+    });
+
 });
+
 
 
 // DOWNLOAD HISTORY REQUESTS AS CSV
