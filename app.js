@@ -78,6 +78,10 @@ var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var admin = require('./routes/admin');
+var faqpub = require('./routes/faqpub');
+var visitor_Counter = require('./routes/visitorCounter');
+var userService = require("./services/userService");
+
 
 // var appRules = require('./modules/trigger/global/appRules');
 // appRules.start();
@@ -122,6 +126,23 @@ if (process.env.CACHE_ENABLED) {
   // https://github.com/rv-kip/express-redis-cache
   var cache = require('express-redis-cache')();
 }
+
+/*re-enable it
+if (process.env.CREATE_INITIAL_DATA!=false) {
+    userService.signup("superadmin@td.com", process.env.SUPER_PASSWORD || "superadmin", "Superadmin name", "Superadmin surname", true)
+      .then(function (savedUser) {
+        winston.info("Created initial user");
+      }).catch(function(err) {
+        if (err.code == 11000) {
+          winston.info("Initial user already exists");
+        }else {
+          winston.error("Error creating initial data ", err);
+        }
+        
+      }); 
+}
+*/
+
 
 
 var app = express();
@@ -286,7 +307,7 @@ var projectSetter = function (req, res, next) {
 
 }
 
-app.use('/admin', admin);
+// app.use('/admin', admin);
 
 app.use('/auth', auth);
 app.use('/testauth', authtest);
@@ -302,7 +323,8 @@ app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
 
 // department internal auth check
-app.use('/:projectid/departments', visitorCounter, department);
+app.use('/:projectid/departments', department);
+//app.use('/:projectid/departments', visitorCounter, department);
 // app.use('/:projectid/departments', reqLogger, department);
 
 app.use('/public/requests', publicRequest);
@@ -311,6 +333,8 @@ channelManager.use(app);
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
+app.use('/:projectid/faqpub', faqpub);
+
 // app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], bot);
 
 //attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
@@ -324,7 +348,8 @@ app.use('/projects',project);
 // app.use('/settings',setting);
 
 
-app.use('/:projectid/widgets', widgets);
+app.use('/:projectid/widgets', visitorCounter, widgets);
+app.use('/:projectid/visitorcounter', visitor_Counter);
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
