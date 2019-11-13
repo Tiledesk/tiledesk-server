@@ -33,11 +33,10 @@ var MessageSchema = new Schema({
     required: true,
     index: true
   },
-  // first: { //used by bot training feature. use request first_text insteed?
-  //   type: Boolean,
-  //   default: false
-  // },
   attributes: {
+    type: Object,
+  },
+  metadata: {
     type: Object,
   },
   createdBy: {
