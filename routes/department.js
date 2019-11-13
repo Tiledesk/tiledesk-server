@@ -9,9 +9,11 @@ var Group = require("../models/group");
 var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
+var operatingHoursService = require("../models/operatingHoursService");
 // var passport = require('passport');
 // var validtoken = require('.../middleware/valid-token')
 var winston = require('../config/winston');
+// var Project = require("../models/project");
 
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
@@ -71,19 +73,17 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
   });
 });
 
-// questo viene chiamato dal widget perche?
 
 router.get('/:departmentid/operators', function (req, res) {
   winston.info("Getting department operators");
   // getOperators(departmentid, projectid, nobot) {
-  departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot ).then(function(operatorsResult) {
+  departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot).then(function (operatorsResult) {
     return res.json(operatorsResult);
-  }).catch(function(err){
-    winston.error('Error getting the department operators ', err);     
+  }).catch(function (err) {
+    winston.error('Error getting the department operators ', err);
     return res.status(500).send({ success: false, msg: 'Error getting departments operatotors.' });
   });
 });
-
 
 // START - GET MY DEPTS
 // !!! NO MORE USED 
@@ -91,8 +91,13 @@ router.get('/:departmentid/operators', function (req, res) {
 router.get('/mydepartments', function (req, res) {
   console.log("req projectid", req.projectid);
 
-  
-  Department.find({ "id_project": req.projectid }, function (err, departments) {
+  var query = { "id_project": req.projectid };
+
+  if (req.project.isActiveSubscription() == false) {
+    query.default = true;
+  }
+
+  Department.find(query, function (err, departments) {
     if (err) return next(err);
     console.log('1) FIND MY DEPTS - ALL DEPTS ARRAY ', departments)
     // departments_array.push(departments);
@@ -149,29 +154,60 @@ router.get('/mydepartments', function (req, res) {
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
 router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 
-  winston.info("req projectid", req.projectid);
-  winston.info("req.query.sort", req.query.sort);
+  winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
+  winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
+  winston.debug("## GET ALL DEPTS eq.project.profile.type ", req.project.profile.type)
 
+  winston.debug("## GET ALL DEPTS req.project ", req.project)
+
+  var query = { "id_project": req.projectid };
+  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+
+    query.default = true;
+  }
+
+  // if (req.project) {
+  //   Project.findById(req.project._id, function (err, project) {
+  //     if (err) {
+  //       console.log("## GET ALL DEPTS Problem getting project with id:", req.project._id);
+  //       //console.warn("Error getting project with id",projectid, err);
+  //     } else {
+  //       console.log("## GET ALL DEPTS project: ", project);
+  //     }
+  //   })
+  // }
+  //console.log("req projectid", req.projectid);
+  //console.log("req.query.sort", req.query.sort);
+
+  // var query = { "id_project": req.projectid };
+
+  // if (req.project.isActiveSubscription()==false) {
+  //   query.default=true;
+  // }
 
   if (req.query.sort) {
-    winston.info("req.query.sort");
     // return Department.find({ "id_project": req.projectid }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
-      return Department.find({ "id_project": req.projectid }).sort({ name: 'asc' }).exec(function (err, departments) {      
-        if (err) {
-          winston.error('Error getting the departments.', err);
-          return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
-        }
-        winston.info("departments", departments);
-        return res.json(departments);
+    // QUESTO LO COMMENTO 11.09.19 return Department.find({ "id_project": req.projectid }).sort({ name: 'asc' }).exec(function (err, departments) { 
+      winston.debug("## GET ALL DEPTS QUERY (1)", query)
+    return Department.find(query).sort({ name: 'asc' }).exec(function (err, departments) {
+
+      if (err) {
+        winston.error('Error getting the departments.', err);
+        winston.debug('Error getting the departments.', err);
+        return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
+      }
+
+      return res.json(departments);
     });
   } else {
-    winston.info("no req.query.sort");
-    return Department.find({ "id_project": req.projectid }, function (err, departments) {
+    winston.debug("## GET ALL DEPTS QUERY (1)", query)
+    // return Department.find({ "id_project": req.projectid }, function (err, departments) {
+    return Department.find(query, function (err, departments) {
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
       }
-      winston.info("departments", departments);
+
       return res.json(departments);
     });
   }
@@ -223,14 +259,29 @@ router.get('/:departmentid', function (req, res) {
 // note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
-  // console.log("req projectid", req.projectid);
-  // console.log("req.query.sort", req.query.sort);
+  //console.log("req projectid", req.projectid);
+  //console.log("req.query.sort", req.query.sort);
 
+  /** 
+   * inserire qui cond x far funzionare sul widget  dipartimenti nn disponibili se 
+   * il piano e free con trial scaduto o a pagamento con sottoscrizione scaduta
+   */
+  var query = { "id_project": req.projectid, "status": 1 };
+  winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.projectid ', req.projectid);
+  winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ', req.project.profile.type);
+  winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ',  req.project.trialExpired);
+  winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.isActiveSubscription ',  req.project.isActiveSubscription);
+  
+
+  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+
+    query.default = true;
+  }
 
   if (req.query.sort) {
-     Department.find({ "id_project": req.projectid, "status": 1 }).sort({ name: 'asc' }).exec(function (err, departments) {
-      // return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ updatedAt: 'desc' }).exec(function (err, departments) {
-      
+    // COMMENTO QUESTO 11.09.19 return Department.find({ "id_project": req.projectid, "status": 1 }).sort({ name: 'asc' }).exec(function (err, departments) {
+    return Department.find(query).sort({ name: 'asc' }).exec(function (err, departments) {
+
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
@@ -239,7 +290,7 @@ router.get('/', function (req, res) {
       return res.json(departments);
     });
   } else {
-     Department.find({ "id_project": req.projectid, "status": 1 }, function (err, departments) {
+    return Department.find(query, function (err, departments) {
       if (err) {
         winston.error('Error getting the departments.', err);
         return res.status(500).send({ success: false, msg: 'Error getting the departments.', err: err });
