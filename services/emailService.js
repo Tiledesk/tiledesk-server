@@ -201,8 +201,8 @@ class EmailService {
                    <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                      <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                        <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                         <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                         <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                         <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                        <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                          <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                       </td>
                      </tr>
@@ -366,8 +366,8 @@ class EmailService {
                             <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                  <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                  <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                                  <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                                 <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                                   <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span> 
                                </td>
                               </tr>
@@ -383,11 +383,11 @@ class EmailService {
               `;
 
     this.send(to, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
-    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+    // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
   }
 
   /**
-   * ******** EMAIL: PASSWORD RESET REQUEST ********
+   *! *** EMAIL: PASSWORD RESET REQUEST ***
    */
   sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
 
@@ -519,8 +519,8 @@ class EmailService {
                           <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                               <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                                 <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                               </td>
                             </tr>
@@ -647,7 +647,7 @@ class EmailService {
                                     <br> <br>
                                     The password of your TileDesk account  ${to} was just changed. 
                                     <br><br>If this was you, then you can safely ignore this email.
-                                    <br><br>If this wasn't you please contact <a href="mailto:info@frontiere21.it">our support team</a>
+                                    <br><br>If this wasn't you please contact <a href="mailto:info@tiledesk.com">our support team</a>
                                 
                                     <br><br> Team TileDesk
                                   </td>
@@ -665,8 +665,8 @@ class EmailService {
                           <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                              <!--  <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                                 <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                               </td>
                             </tr>
@@ -689,7 +689,7 @@ class EmailService {
 
   
   /**
-   * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ********
+   *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ***
    */
   sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
@@ -819,8 +819,8 @@ class EmailService {
                           <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                               <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                                 <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                               </td>
                             </tr>
@@ -841,9 +841,9 @@ class EmailService {
   }
 
   /**
-   * ******** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT (USER NOT REGISTERED) ********
+   *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT (USER NOT REGISTERED) ***
    */
-  sendInvitationEmail_UserNotRegistered(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserRole) {
+  sendInvitationEmail_UserNotRegistered(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserRole, pendinginvitationid) {
 
     var html = `
 
@@ -853,7 +853,7 @@ class EmailService {
               <head>
                 <meta name="viewport" content="width=device-width" />
                 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-                <title>New email from TileDesk</title>
+                <title>New email from Tiledesk</title>
             
                 <style type="text/css">
                   img {
@@ -939,23 +939,26 @@ class EmailService {
 
                                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                     <h2 style="text-align: center; letter-spacing: 1px; font-weight: 400; line-height:24px ">
-                                      ${currentUserFirstname} ${currentUserLastname} has invited you to the TileDesk project <strong> ${projectName}</strong> 
+                                      ${currentUserFirstname} ${currentUserLastname} has invited you to the Tiledesk project <strong> ${projectName}</strong> 
                                     </h2>
 
                                     <br> <br<strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${to},</strong>
                                     
                                     <br> <br>
-                                    I invited you to take on the role of ${invitedUserRole} of the TileDesk <strong> ${projectName}</strong> project
+                                    I invited you to take on the role of ${invitedUserRole} of the Tiledesk <strong> ${projectName}</strong> project
                                 
 
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <!--   <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                         GO TO THE PROJECT
-                                      </a>
+                                      </a> -->
+                                      <a href="https://support.tiledesk.com/dashboard/#/handle-invitation/${pendinginvitationid}/${projectName}/${currentUserFirstname}/${currentUserLastname}"  style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                        GO TO THE PROJECT
+                                      </a> 
                                     </div>
 
-                                    <br><br> Team TileDesk
+                                    <br><br> Team Tiledesk
                                   </td>
                                 </tr>
                                
@@ -971,8 +974,8 @@ class EmailService {
                           <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                               <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                                <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                                <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                              <!--  <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                                 <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                               </td>
                             </tr>
@@ -1098,7 +1101,7 @@ class EmailService {
                             <!-- <br> welcome on TileDesk.com. -->
                             <br><br> Thank you for signin up with TileDesk.
                             <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/verify/email/${savedUser._id}"> click here to verify your email address. </a> </span>
-                            <br><br>Give us your feedback! We need your advice. Send an email to <a href="mailto:info@frontiere21.it">info@frontiere21.it</a>
+                            <br><br>Give us your feedback! We need your advice. Send an email to <a href="mailto:info@tiledesk.com">info@tiledesk.com</a>
                             <br><br> Team TileDesk
                           </td>
                         </tr>
@@ -1115,8 +1118,8 @@ class EmailService {
                   <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                       <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                        <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                        <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                        <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                        <!--  <br>   <span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                         <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
                       </td>
                     </tr>
@@ -1339,8 +1342,8 @@ messages.forEach(message => {
                 <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                   <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                     <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                      <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > TileDesk.com </a></span>
-                      <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span>
+                      <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
+                     <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
                     </td>
                   </tr>
                 </table>
