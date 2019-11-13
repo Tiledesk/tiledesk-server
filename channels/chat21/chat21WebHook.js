@@ -136,7 +136,7 @@ router.post('/', function(req, res) {
 
                        // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
                         return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
 
                              // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
@@ -188,7 +188,7 @@ router.post('/', function(req, res) {
             }
             // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
             return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
+              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
 
             // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {                          
                 // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
