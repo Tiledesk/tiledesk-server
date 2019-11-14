@@ -1,4 +1,0 @@
-[submodule "modules"]
-	path = modules
-	url = https://79c8c3590109b1ce5e519a2c509d48c2be44fb0b@github.com/andrealeo83/tiledesk-server-modules.git
-    branch = master
