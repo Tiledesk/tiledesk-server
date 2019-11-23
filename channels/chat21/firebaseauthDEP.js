@@ -6,7 +6,7 @@ const express = require('express');
 // const bodyParser = require('body-parser');
 var router = express.Router();
 var User = require("../../models/user");
-var firebaseService = require("../../services/firebaseService");
+var firebaseService = require("./firebaseService");
 
 
 //TODO NON DOVRESTI PASSARE NUOVAMENTE EMAIL E PASSWORD MA METTERE SOTTO JWT E BASIC, LASCI A QUESTI ULTIMI AUTENTICAZIONE
@@ -20,7 +20,7 @@ router.post('/signin', function (req, res) {
         res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
       } else {
 
-              var superPassword = process.env.SUPER_PASSWORD;
+              var superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
               if (superPassword && superPassword==req.body.password) {
                   

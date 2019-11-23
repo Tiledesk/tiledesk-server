@@ -35,6 +35,7 @@ if (admin) {
     chat21ConfigRoute = require('../../channels/chat21/configRoute');
     firebaseAuth = require('./firebaseauth');
     firebaseAuthDep = require('./firebaseauthDEP');
+    firebase = require('./firebase');
 }
 
 class Chat21Handler {
@@ -46,6 +47,7 @@ class Chat21Handler {
             app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
             app.use('/chat21/config',  chat21ConfigRoute);
             app.use('/firebase/auth',  firebaseAuthDep);
+            app.use('/:projectid/firebase', firebase); 
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
             winston.info("chat21WebHook not initialized ");
@@ -128,6 +130,7 @@ class Chat21Handler {
                         // winston.info("membersArray", membersArray);
 
                         var gAttributes = request.attributes || {};
+                        // problema requester_id
                         gAttributes["requester_id"] = request.requester_id;
                     
                         var groupId = request.request_id;

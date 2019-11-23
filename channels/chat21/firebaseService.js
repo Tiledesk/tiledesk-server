@@ -1,11 +1,11 @@
 // var path = require('path');
 
-var admin = require('../channels/chat21/firebaseConnector');
+var admin = require('./firebaseConnector');
 // var admin = require('tiledesk-chat21-app');
 // var admin = require('@tiledesk/tiledesk-chat21-app').firebaseConnector;
 
 
-var winston = require('../config/winston');
+var winston = require('../../config/winston');
 
 class FirebaseService {
 

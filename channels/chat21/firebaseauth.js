@@ -6,7 +6,7 @@
 const express = require('express');
 // const bodyParser = require('body-parser');
 var router = express.Router();
-var firebaseService = require("../../services/firebaseService");
+var firebaseService = require("./firebaseService");
 
 
 

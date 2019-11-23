@@ -4,14 +4,14 @@
 // Modules imports
 const express = require('express');
 var router = express.Router();
-var firebaseService = require("../services/firebaseService");
+var firebaseService = require("./firebaseService");
 // var config = require('../config/database'); 
 var jwt = require('jsonwebtoken');
-var validtoken = require('../middleware/valid-token');
+var validtoken = require('../../middleware/valid-token');
 // var secret = process.env.SECRET || config.secret;
-var requestUtil = require('../utils/requestUtil');
-var Project = require('../models/project');
-var winston = require('../config/winston');
+var requestUtil = require('../../utils/requestUtil');
+var Project = require('../../models/project');
+var winston = require('../../config/winston');
 
 router.post('/createtoken', validtoken, function (req, res) {
 
