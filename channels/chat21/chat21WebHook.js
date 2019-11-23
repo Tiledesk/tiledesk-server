@@ -225,16 +225,18 @@ router.post('/', function(req, res) {
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
 
     } else if (req.body.event_type == "deleted-conversation") {
-      winston.info("event_type","deleted-conversation");
+      winston.info("event_type deleted-conversation");
 
       var conversation = req.body.data;
       winston.info("conversation",conversation);
 
       var user_id = req.body.user_id;
-      winston.info("user_id",user_id);
+      winston.info("user_id: "+user_id);
 
       var recipient_id = req.body.recipient_id;
-      winston.info("recipient_id",recipient_id);
+      winston.info("recipient_id: "+recipient_id);
+
+      winston.debug("attributes",conversation.attributes);
 
  
       if (!recipient_id.startsWith("support-group")){
@@ -243,46 +245,53 @@ router.post('/', function(req, res) {
       }
 
       if (user_id!="system"){
-        winston.info("not a system conversation");
+        winston.info("we close request only for system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
 
       // prendi projectid da attributes della conversation ora è sempre presente
 
-      var conversationRef = firestore.collection('conversations').doc(recipient_id);
-      return conversationRef.get()
-          .then(doc => {
-            if (!doc.exists) {
-              winston.info('No such document!');
-            } else {
-              var firestoreConversation =  doc.data();
-              winston.info('firestoreConversation',firestoreConversation);
+      // var conversationRef = firestore.collection('conversations').doc(recipient_id);
+      // return conversationRef.get()
+      //     .then(doc => {
+      //       if (!doc.exists) {
+      //         winston.info('No such document!');
+      //       } else {
+      //         var firestoreConversation =  doc.data();
+      //         winston.info('firestoreConversation',firestoreConversation);
 
-              var firestoreSupportStatus = firestoreConversation.support_status;
-              winston.info('firestoreSupportStatus', firestoreSupportStatus);
+      //         var firestoreSupportStatus = firestoreConversation.support_status;
+      //         winston.info('firestoreSupportStatus', firestoreSupportStatus);
 
-              var firestoreMembers = firestoreConversation.members;
-              winston.info('firestoreMembers', firestoreMembers);
+      //         var firestoreMembers = firestoreConversation.members;
+      //         winston.info('firestoreMembers', firestoreMembers);
 
-              var firestoreMembersAsArray = Object.keys(firestoreMembers);
+      //         var firestoreMembersAsArray = Object.keys(firestoreMembers);
 
-              //remove system and requester_id
-              var systemIndex = firestoreMembersAsArray.indexOf("system");      
-              if (systemIndex > -1) {
-                firestoreMembersAsArray.splice(systemIndex, 1);
-              }     
+      //         //remove system and requester_id
+      //         var systemIndex = firestoreMembersAsArray.indexOf("system");      
+      //         if (systemIndex > -1) {
+      //           firestoreMembersAsArray.splice(systemIndex, 1);
+      //         }     
 
 
-                 //TODO get project_id  from the conversation 
-              // SSDS firestoreProjectid is NOT unique
-              //TODO READ PROJECTID FROM CONVESATION
-              var firestoreProjectid = firestoreConversation.projectid;
-              winston.info('firestoreProjectid', firestoreProjectid);
+      //            //TODO get project_id  from the conversation 
+      //         // SSDS firestoreProjectid is NOT unique
+      //         //TODO READ PROJECTID FROM CONVESATION
+      //         var firestoreProjectid = firestoreConversation.projectid;
+      //         winston.info('firestoreProjectid', firestoreProjectid);
               
 
+              var projectId = conversation.attributes.projectId;
+              winston.info('projectId: '+ projectId);
 
-              var query = {request_id: recipient_id, id_project: firestoreProjectid};
+              if (!projectId) {
+                return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
+              }
+              
+              var query = {request_id: recipient_id, id_project: projectId};
+              winston.info('query:'+ projectId);
               return Request.findOne(query, function(err, request) {
 
                 if (err) {
@@ -290,6 +299,7 @@ router.post('/', function(req, res) {
                   return res.status(500).send({success: false, msg: "Error finding request with query " + query, err:err });
                 }
                 if (!request) {
+                  winston.info("request not found for query ", query);
                   return res.status(404).send({success: false, msg: "Request with query " + JSON.stringify(query) + " not found" });
                 }
               
@@ -298,31 +308,31 @@ router.post('/', function(req, res) {
 
                   //TODO remove requester id from participants                 
                   
-                  return Lead.findById(request.lead, function(err, lead){
-                    // return Lead.findById(request.requester_id, function(err, lead){
-                    winston.info("lead",lead.toObject());
-                    winston.info("request",request.toObject());
-                    if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
-                      var requesterLeadIdIndex = firestoreMembersAsArray.indexOf(lead.lead_id);      
-                      if (requesterLeadIdIndex > -1) {
-                        firestoreMembersAsArray.splice(requesterLeadIdIndex, 1);
-                      }
-                    }
+                  // return Lead.findById(request.lead, function(err, lead){
+                  //   // return Lead.findById(request.requester_id, function(err, lead){
+                  //   winston.info("lead",lead.toObject());
+                  //   winston.info("request",request.toObject());
+                  //   if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
+                  //     var requesterLeadIdIndex = firestoreMembersAsArray.indexOf(lead.lead_id);      
+                  //     if (requesterLeadIdIndex > -1) {
+                  //       firestoreMembersAsArray.splice(requesterLeadIdIndex, 1);
+                  //     }
+                  //   }
 
 
-                    winston.info('firestoreMembersAsArray', firestoreMembersAsArray);
+                    // winston.info('firestoreMembersAsArray', firestoreMembersAsArray);
 
                     // se agente archivia conversazione allora chiude anche richiesta
-                    return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
+                    // return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
                       // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
-                      return requestService.closeRequestByRequestId(recipient_id, firestoreProjectid).then(function(updatedStatusRequest) {
+                      return requestService.closeRequestByRequestId(recipient_id, projectId).then(function(updatedStatusRequest) {
                         // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
                         //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
                         // }
-                        winston.info('updatedStatusRequest', updatedStatusRequest.toObject());
+                        winston.debug('updatedStatusRequest', updatedStatusRequest.toObject());
                         return res.json(updatedStatusRequest);
-                      });
+                      // });
                     }).catch(function(err){
                       winston.error("Error closing request", err);
                       return res.status(500).send({success: false, msg: 'Error closing request', err:err });
@@ -330,17 +340,17 @@ router.post('/', function(req, res) {
 
 
 
-                  });
+                  // });
             });
 
 
              
 
-            }
-          })
-          .catch(err => {
-            winston.error('Error getting document', err);
-          });
+            // }
+          // })
+          // .catch(err => {
+          //   winston.error('Error getting document', err);
+          // });
 
 
 
@@ -379,7 +389,9 @@ router.post('/', function(req, res) {
       }
       winston.info("id_project: " + id_project);
 
-      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      return Request.findOne({request_id: request_id, id_project: id_project})
+          .populate('lead')
+          .exec(function(err, request) {
         if (err){
           winston.error(err);
            return res.status(500).send({success: false, msg: 'Error joining memeber', err:err });
@@ -388,16 +400,17 @@ router.post('/', function(req, res) {
           return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
         }
 
-        return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
+        // return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
 
           winston.info("request",request.toObject());
           
-          if (lead) {
-            winston.info("lead",lead.toObject());
-          }
+          // if (lead) {
+          //   winston.info("lead",lead.toObject());
+          // }
           
           //if (lead && lead._id.toString() == request.requester_id.toString()) {
-            if (lead && lead._id == request.lead) {
+            // if (lead && lead._id == request.lead) {
+          if (request.lead.lead_id==new_member) {            
             winston.info("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
           }else {
@@ -412,7 +425,7 @@ router.post('/', function(req, res) {
          
 
 
-        });
+        // });
 
        
     });
@@ -446,7 +459,7 @@ router.post('/', function(req, res) {
       winston.info("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-      winston.error("Leave memeber ok");
+      winston.info("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){
       winston.error("Error leaving memeber", err);
