@@ -7,8 +7,7 @@ var mongoose = require('mongoose');
 var winston = require('../config/winston');
 const departmentEvent = require('../event/departmentEvent');
 const Request = require('../models/request');
-var RoleConstants = require("../models/roleConstants");
-
+const RoleConstants = require ('../models/roleConstants')
 
 class DepartmentService {
 
@@ -206,7 +205,7 @@ getOperators(departmentid, projectid, nobot) {
           // console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           // console.log('OPERATORS - »»»» nobot ', nobot)
           var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
-
+// attento indice
           return Project_user.find({ id_project: projectid, role: { $in : role } }).exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
