@@ -73,7 +73,6 @@ var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
-var firebase = require('./routes/firebase');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
@@ -155,7 +154,7 @@ app.set('view engine', 'jade');
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-XSRF-Token");
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   next();
 });
@@ -363,7 +362,6 @@ app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
 app.use('/:projectid/jwt', jwtroute);
-app.use('/:projectid/firebase', firebase); //MOVE TO CHANNELS PACKAGE
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
