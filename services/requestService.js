@@ -250,7 +250,13 @@ class RequestService {
      // console.log("request_id", request_id);
      // console.log("newstatus", newstatus);
 
-        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false}, function(err, updatedRequest) {
+        return Request       
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false})
+        .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, updatedRequest) {
+
             if (err) {
               winston.error(err);
               return reject(err);
@@ -271,7 +277,12 @@ class RequestService {
      // console.log("request_id", request_id);
      // console.log("newstatus", newstatus);
 
-        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false}, function(err, updatedRequest) {
+        return Request        
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false})
+        .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, updatedRequest) {
             if (err) {
               winston.error(err);
               return reject(err);
@@ -290,7 +301,8 @@ class RequestService {
      // console.log("request_id", request_id);
      // console.log("newstatus", newstatus);
 
-        return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
+        return Request       
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
               winston.error(err);
               return reject(err);
@@ -308,7 +320,8 @@ class RequestService {
      // console.log("request_id", request_id);
      // console.log("newstatus", newstatus);
 
-      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      return Request       
+      .findOne({request_id: request_id, id_project: id_project}, function(err, request) {
         if (err) {
           winston.error(err);
           return reject(err);
@@ -407,7 +420,15 @@ class RequestService {
     return new Promise(function (resolve, reject) {
      // console.log("request_id", request_id);
      
-        return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+        return Request      
+        .findOne({request_id: request_id, id_project: id_project})
+        
+        .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
+
+        
           if (err){
             winston.error(err);
             return reject(err);
@@ -478,7 +499,13 @@ class RequestService {
       // console.log("request_id", request_id);
       // console.log("participants", participants);
 
-      return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false}, function(err, updatedRequest) {
+      return Request
+       
+      .findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false})
+      .populate('lead')
+      .populate('department')
+      .populate({path:'requester',populate:{path:'id_user'}})
+      .exec( function(err, updatedRequest) {
         if (err) {
           winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
@@ -508,7 +535,13 @@ class RequestService {
     // console.log("member", member);
 
     return new Promise(function (resolve, reject) {
-      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      return Request       
+      .findOne({request_id: request_id, id_project: id_project})
+      
+      .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
         if (err){
           winston.error(err);
           return reject(err);
@@ -551,7 +584,12 @@ class RequestService {
     return new Promise(function (resolve, reject) {
 
     
-      return Request.findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      return Request        
+        .findOne({request_id: request_id, id_project: id_project})
+        .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
         
         if (err){
           winston.error(err);
