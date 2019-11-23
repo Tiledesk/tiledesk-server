@@ -247,6 +247,17 @@ var RequestSchema = new Schema({
 // });
 
 
+// Backcompatibility
+RequestSchema.virtual('requester_id').get(function () {
+  if (this.lead) {
+    return this.lead._id;
+  }else {
+    return null;
+  }
+});
+
+
+
 RequestSchema.virtual('participantsObj', {
   ref: 'user', // The model to use
   localField: 'participants', // Find people where `localField`
