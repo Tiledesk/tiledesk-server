@@ -11,7 +11,7 @@ router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, type)
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type).then(function(savedFaq_kb) {
     botEvent.emit('faqbot.create', savedFaq_kb);
-    if (savedFaq_kb.type==="internal") {     
+    if (savedFaq_kb.type==="internal") {      
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
     } else {
@@ -41,28 +41,50 @@ router.post('/askbot', function (req, res) {
     if (faq_kb.type =="internal") {
 
 
+
       
 
-      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
-      
-      query.$text = {"$search": req.body.question};
+      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb, "question": req.body.question};
+
+      Faq.find(query) 
+      .lean().               
+       exec(function (err, faqs) {
+         if (err) {
+           return res.status(500).send({ success: false, msg: 'Error getting object.' });
+         }
+         if (faqs && faqs.length>0) {
+          winston.debug("faqs exact", faqs);              
+
+          var result = {hits:faqs};
+          res.json(result);
+         }else {
+          query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb};
+
+          query.$text = {"$search": req.body.question};
        
-      winston.info('internal query: '+ query);
+          winston.info('internal ft query: '+ query);
+    
+           Faq.find(query,  {score: { $meta: "textScore" } })  
+           .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+           .lean().               
+            exec(function (err, faqs) {
+              if (err) {
+                return res.status(500).send({ success: false, msg: 'Error getting object.' });
+              }
+    
+               winston.debug("faqs", faqs);              
+    
+               var result = {hits:faqs};
+               res.json(result);
+            });
 
-       Faq.find(query,  {score: { $meta: "textScore" } })  
-       .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
-       .lean().               
-        exec(function (err, faqs) {
-          if (err) {
-            return res.status(500).send({ success: false, msg: 'Error getting object.' });
-          }
+            
+         }
 
-           winston.debug("faqs", faqs);              
+         
+       });
 
-           var result = {hits:faqs};
-           res.json(result);
-        });
-
+     
     }else {
       winston.info('external query: ');
       return res.status(400).send({ success: false, msg: 'Error getting object.' });
