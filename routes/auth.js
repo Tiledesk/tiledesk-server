@@ -20,6 +20,7 @@ var authEvent = require("../event/authEvent");
 var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token');
+var PendingInvitation = require("../models/pending-invitation");
 
 
 router.post('/signup', function (req, res) {
@@ -127,7 +128,7 @@ router.post('/signinAnonymously', function (req, res) {
           audience:  'https://tiledesk.com',           
         };
 
-        var token = jwt.sign(savedUser, config.secret, signOptions);
+        var token = jwt.sign(userJson, config.secret, signOptions);
 
         res.json({ success: true, token: 'JWT ' + token, user: userJson });
     }).catch(function (err) {
@@ -196,7 +197,7 @@ router.post('/signinWithCustomToken', [
           audience:  'https://tiledesk.com',           
         };
 
-        var token = jwt.sign(savedUser, config.secret, signOptions);
+        var token = jwt.sign(userJson, config.secret, signOptions);
 
         res.json({ success: true, token: 'JWT ' + token, user: userJson });
     }).catch(function (err) {
@@ -236,7 +237,7 @@ router.post('/signin', function (req, res) {
       // check if password matches
 
       if (req.body.password) {
-        var superPassword = process.env.SUPER_PASSWORD;
+        var superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
 
         // "aud": "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
@@ -286,9 +287,13 @@ router.post('/signin', function (req, res) {
           // algorithm:  "RS256"
         };
 
+         //remove password //test it              
+         let userJson = user.toObject();
+         delete userJson.password;
+
         if (superPassword && superPassword == req.body.password) {
           // TODO add subject
-          var token = jwt.sign(user, config.secret, signOptions);
+          var token = jwt.sign(userJson, config.secret, signOptions);
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
@@ -297,13 +302,11 @@ router.post('/signin', function (req, res) {
               // if user is found and password is right create a token
               // TODO use userJSON 
               // TODO add subject
-              var token = jwt.sign(user, config.secret, signOptions);
+              var token = jwt.sign(userJson, config.secret, signOptions);
              
               authEvent.emit("user.signin", {user:user, req:req});         
               
-                //remove password //test it              
-              let userJson = user.toObject();
-              delete userJson.password;
+               
 
               // return the information including token as JSON
               res.json({ success: true, token: 'JWT ' + token, user: userJson });
@@ -347,6 +350,24 @@ router.put('/verifyemail/:userid', function (req, res) {
   });
 });
 
+
+/**
+ *! *** PENDING INVITATION NO AUTH ***
+ */
+router.get('/pendinginvitationsnoauth/:pendinginvitationid', function (req, res) {
+
+  console.log('PENDING INVITATION NO AUTH GET BY ID - BODY ');
+
+  PendingInvitation.findById(req.params.pendinginvitationid, function (err, pendinginvitation) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!pendinginvitation) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    res.json(pendinginvitation);
+  });
+});
 
 /**
  * *** REQUEST RESET PSW ***
