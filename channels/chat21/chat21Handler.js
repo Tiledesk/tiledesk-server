@@ -214,6 +214,58 @@ class Chat21Handler {
                 });
             });
     
+            requestEvent.on('request.close',  function(request) {          
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);                      
+
+                        winston.info("Chat21Sender archiving conversations ");
+
+                       //iterate request.participant and archive conversation
+                       request.participants.forEach(function(participant,index) {
+
+                            chat21.conversations.archive(participant)
+                                        .then(function(data){
+                                            winston.info("Chat21 archived "+ data);
+                                    
+                                            chat21Event.emit('conversation.archived', data);                                               
+
+                                }).catch(function(err) {
+                                    winston.error("Chat21 archived err", err);
+                                    chat21Event.emit('conversation.archived.error', err);
+                                });
+                       });
+
+
+                       chat21.conversations.archive("system")
+                       .then(function(data){
+                           winston.info("Chat21 archived ", data);
+                   
+                           chat21Event.emit('conversation.archived', data);                                               
+
+                        }).catch(function(err) {
+                            winston.error("Chat21 archived err", err);
+                            chat21Event.emit('conversation.archived.error', err);
+                        });
+
+                        chat21.conversations.archive(request.requester_id)
+                       .then(function(data){
+                           winston.info("Chat21 archived ", data);
+                   
+                           chat21Event.emit('conversation.archived', data);                                               
+
+                        }).catch(function(err) {
+                            winston.error("Chat21 archived err", err);
+                            chat21Event.emit('conversation.archived.error', err);
+                        });
+
+
+                    }
+                });
+            });
+            
 
 
             messageEvent.on('message.create.first',  function(message) {          
