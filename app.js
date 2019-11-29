@@ -82,8 +82,8 @@ var visitor_Counter = require('./routes/visitorCounter');
 var userService = require("./services/userService");
 
 
-// var appRules = require('./modules/trigger/global/appRules');
-// appRules.start();
+var appRules = require('./modules/trigger/global/appRules');
+appRules.start();
 
 
 //var subscriptionNotifier = require('./services/SubscriptionNotifier');
