@@ -29,8 +29,9 @@ Note: If installation with -g fails due to permission problems (npm ERR! code 'E
 * Clone this repo
 * Install dependencies with 'npm install'
 * Configure Firebase
-   * Set Firebase databaseURL in config/firebase.js file
-   * Set the following Firebase parameters: process.env.FIREBASE_PRIVATE_KEK, process.env.FIREBASE_CLIENT_EMAIL, process.env.FIREBASE_PROJECT_ID;
+   * Set Firebase "databaseURL" in config/firebase.js file
+   * Set the chat21 "url" in config/chat21.js file
+   * (Optionally)Set the following Firebase parameters: process.env.FIREBASE_PRIVATE_KEK, process.env.FIREBASE_CLIENT_EMAIL, process.env.FIREBASE_PROJECT_ID;
 * Configure MongoDb account in config/database.js file
 * Run the app with the command 'npm start' or with 'nodemon' if you want monitoring and auto reload.
 Install nodemon with 'npm install -g nodemon'
