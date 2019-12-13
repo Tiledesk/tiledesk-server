@@ -81,7 +81,7 @@ class Chat21Handler {
                         winston.debug("Chat21Sender sending message.sending ",  message);
 
                         chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                            'Recipient Fullname', message.text, message.sender, attributes)
+                            'Recipient Fullname', message.text, message.sender, attributes, message.metadata)
                                     .then(function(data){
                                         winston.info("Chat21 sendToGroup sent ", data);
                                 
