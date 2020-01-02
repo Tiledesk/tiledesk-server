@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var winston = require('../config/winston');
 
 //NOT IN USE**************
 
@@ -37,6 +38,11 @@ var VisitorSchema = new Schema({
 
 
 var VisitorModel = mongoose.model('visitor', VisitorSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+    VisitorModel.syncIndexes();
+    winston.info("VisitorModel syncIndexes")
+  }
 
 
 module.exports = VisitorModel;

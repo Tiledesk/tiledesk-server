@@ -41,7 +41,7 @@ class BotSubscriptionNotifier {
             method: 'POST'
 
           }, function(err, result, json){            
-            winston.info("SENT notify for bot with url" + url +  " with error " + err);
+            winston.info("SENT notify for bot with url " + url +  " with error " + err);
             if (err) {
               winston.error("Error sending notify for bot with url " + url + " with error " + err);
               // next(err, json);

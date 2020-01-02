@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var winston = require('../config/winston');
 
 var ProfileSchema = new Schema({
   name: {
@@ -38,4 +39,12 @@ var ProfileSchema = new Schema({
 }
 ,{ _id : false });
 
-module.exports = mongoose.model('profile', ProfileSchema);
+var profile =mongoose.model('profile', ProfileSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  profile.syncIndexes();
+  winston.info("profile syncIndexes")
+}
+
+
+module.exports = profile;

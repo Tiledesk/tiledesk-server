@@ -6,6 +6,10 @@ var winston = require('../config/winston');
 
 class EmailService {
 
+  constructor() {
+    this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
+    winston.info('EmailService baseUrl '+ this.baseUrl);
+  }
 
 
   getTransport() {
@@ -180,7 +184,7 @@ class EmailService {
 
                      <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.request_id}/messages">here</a> to open the dashboard.
+                       Click <a href="${this.baseUrl}/#/project/${savedRequest.id_project}/wsrequest/${savedRequest.request_id}/messages">here</a> to open the dashboard.
                          
                        </td>
                      </tr>
@@ -346,7 +350,7 @@ class EmailService {
 
                               <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                  Click <a href="https://support.tiledesk.com/dashboard/#/project/${savedRequest.id_project}/request/${savedRequest.request_id}/messages">here</a> to open the dashboard.
+                                  Click <a href="${this.baseUrl}/#/project/${savedRequest.id_project}/wsrequest/${savedRequest.request_id}/messages">here</a> to open the dashboard.
                                 </td>
                               </tr>
                             
@@ -494,15 +498,15 @@ class EmailService {
                                     Seems like  you forgot your password for TileDesk. If this is true, click below to reset your password
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <a href="${this.baseUrl}/#/resetpassword/${resetPswRequestId}" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                       Reset My Password
                                       </a>
                                     </div>
-                                    <!-- <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span> -->
+                                    <!-- <br><br> To complete the setup, <span><a href="${this.baseUrl}/#/resetpassword/${resetPswRequestId}"> click here to verify your email address. </a> </span> -->
                                     <br><br>If you did not forgot your password you can safely ignore this email.
                                     <br><br><span style="font-size:12px; ">If you're having trouble clicking the "Reset My Password" button, copy and paste the URL below into your web browser: </span>
                                     <br>
-                                    <span style="color:#03a5e8; font-size:12px; ">https://support.tiledesk.com/dashboard/#/resetpassword/${resetPswRequestId}</span>
+                                    <span style="color:#03a5e8; font-size:12px; ">${this.baseUrl}/#/resetpassword/${resetPswRequestId}</span>
                                     <br><br> Team TileDesk
                                   </td>
                                 </tr>
@@ -798,7 +802,7 @@ class EmailService {
 
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <a href="${this.baseUrl}/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                         GO TO THE PROJECT
                                       </a>
                                     </div>
@@ -950,10 +954,10 @@ class EmailService {
 
                                     <div style="text-align: center;">
                                       <br><br>
-                                      <!--   <a href="https://support.tiledesk.com/dashboard/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <!--   <a href="${this.baseUrl}/#/project/${id_project}/home" style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                         GO TO THE PROJECT
                                       </a> -->
-                                      <a href="https://support.tiledesk.com/dashboard/#/handle-invitation/${pendinginvitationid}/${projectName}/${currentUserFirstname}/${currentUserLastname}"  style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
+                                      <a href="${this.baseUrl}/#/handle-invitation/${pendinginvitationid}/${projectName}/${currentUserFirstname}/${currentUserLastname}"  style=" background-color: #ff8574 !important; border: none; color: white; padding: 12px 30px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer;">
                                         GO TO THE PROJECT
                                       </a> 
                                     </div>
@@ -1100,7 +1104,7 @@ class EmailService {
                             <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">Hi ${savedUser.firstname} ${savedUser.lastname},</strong>
                             <!-- <br> welcome on TileDesk.com. -->
                             <br><br> Thank you for signin up with TileDesk.
-                            <br><br> To complete the setup, <span><a href="https://support.tiledesk.com/dashboard/#/verify/email/${savedUser._id}"> click here to verify your email address. </a> </span>
+                            <br><br> To complete the setup, <span><a href="${this.baseUrl}/#/verify/email/${savedUser._id}"> click here to verify your email address. </a> </span>
                             <br><br>Give us your feedback! We need your advice. Send an email to <a href="mailto:info@tiledesk.com">info@tiledesk.com</a>
                             <br><br> Team TileDesk
                           </td>

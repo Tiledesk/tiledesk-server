@@ -7,7 +7,7 @@ class BotEvent extends EventEmitter {}
 const botEvent = new BotEvent();
 
 
-
+//TODO use request. getBotId
 function getBotFromParticipants(participants) {
     var botIdTmp;
   
@@ -27,7 +27,7 @@ function getBotFromParticipants(participants) {
     }
   }
 
-
+//TODO use request. getBotId
 function getBotId(message) {
     var sender = message.sender;
     winston.debug("sender", sender);
@@ -72,6 +72,13 @@ messageEvent.on('message.received', function(message) {
         winston.debug("it s a message sent from system, exit");
         return null;
     }
+    if (message.text.indexOf("\\agent") > -1) { //not reply to a message containing \\agent
+        return 0;
+    }
+
+    // if (message.text.startsWith("\\")) { //not reply to a message containing \
+    //     return null;
+    // }
     
    var botId = getBotId(message);
 

@@ -14,7 +14,7 @@ Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Liv
 
 Steps to run locally:
 ```
-npm install -g tiledesk-server mongodb-runner
+npm install -g @tiledesk/tiledesk-server mongodb-runner
 mongodb-runner start
 FIREBASE_CONFIG_FILE=<FIREBASE_CONFIG_PATH.json> DATABASE_URI=mongodb://localhost/test tiledesk-server  
 ```

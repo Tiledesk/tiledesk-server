@@ -23,7 +23,6 @@ require('./middleware/passport')(passport);
 var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
-// var Project_user = require("./models/project_user");
 var validtoken = require('./middleware/valid-token');
 var noentitycheck = require('./middleware/noentitycheck');
 var roleChecker = require('./middleware/has-role');
@@ -45,6 +44,7 @@ var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
+
 winston.info("autoIndex: " + autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
@@ -79,15 +79,10 @@ var widgets = require('./routes/widget');
 var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
 var visitor_Counter = require('./routes/visitorCounter');
+var labels = require('./routes/labels');
+var labels2 = require('./routes/labels2');
 var userService = require("./services/userService");
 
-
-var appRules = require('./modules/trigger/global/appRules');
-appRules.start();
-
-
-//var subscriptionNotifier = require('./services/SubscriptionNotifier');
-//subscriptionNotifier.start();
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -96,7 +91,10 @@ botSubscriptionNotifier.start();
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
+var pubModulesManager = require('./pubmodules/pubModulesManager');
+  pubModulesManager.init();
 
+  
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
@@ -107,6 +105,11 @@ try {
 } catch(err) {
   winston.info("ModulesManager not present");
 }
+
+
+
+
+
 
 
 if (process.env.ReqLog_ENABLED) {
@@ -153,7 +156,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-XSRF-Token");
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   next();
@@ -308,6 +311,13 @@ var projectSetter = function (req, res, next) {
 
 // app.use('/admin', admin);
 
+//oauth2
+
+// app.get('/dialog/authorize', oauth2.authorization);
+// app.post('/dialog/authorize/decision', oauth2.decision);
+// app.post('/oauth/token', oauth2.token);
+
+
 app.use('/auth', auth);
 app.use('/testauth', authtest);
 
@@ -316,7 +326,7 @@ app.use('/testauth', authtest);
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
-app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], lead);
+app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
 app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
@@ -365,6 +375,9 @@ app.use('/:projectid/jwt', jwtroute);
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
+app.use('/:projectid/labels', labels);
+app.use('/:projectid/labels2', labels2);
+
 
 if (modulesManager) {
   modulesManager.use(app);

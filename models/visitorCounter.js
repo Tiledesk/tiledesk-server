@@ -45,4 +45,12 @@ var VisitorCounterSchema = new Schema({
   }
 );
 
-module.exports = conn.model('visitor_counter', VisitorCounterSchema);
+var visitor_counter = conn.model('visitor_counter', VisitorCounterSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  visitor_counter.syncIndexes();
+  winston.info("visitor_counter syncIndexes")
+}
+
+
+module.exports = visitor_counter;

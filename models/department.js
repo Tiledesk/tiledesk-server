@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var routingConstants = require('../models/routingConstants');
+var winston = require('../config/winston');
 
 var DepartmentSchema = new Schema({
   // _id: Schema.Types.ObjectId,
@@ -66,4 +67,12 @@ DepartmentSchema.virtual('bot', {
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
-module.exports = mongoose.model('department', DepartmentSchema);
+var department = mongoose.model('department', DepartmentSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  department.syncIndexes();
+  winston.info("department syncIndexes")
+}
+
+
+module.exports = department;

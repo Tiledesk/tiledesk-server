@@ -1,16 +1,14 @@
 var express = require('express');
 var router = express.Router();
 var Request = require("../models/request");
-var Message = require("../models/message");
-var emailService = require("../services/emailService");
-var User = require("../models/user");
-var Project = require("../models/project");
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
 var requestService = require('../services/requestService');
 var winston = require('../config/winston');
+const requestEvent = require('../event/requestEvent');
+
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -29,7 +27,7 @@ router.post('/', function (req, res) {
   winston.info("req.user.id: " + req.user.id);
 
   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-
+//errore requester_id
     return requestService.createWithIdAndRequester(req.body.request_id, req.user.id, req.body.requester_id, req.projectid, 
       req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
       req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
@@ -57,23 +55,51 @@ router.post('/', function (req, res) {
 router.patch('/:requestid', function (req, res) {
   winston.debug(req.body);
   // const update = _.assign({ "updatedAt": new Date() }, req.body);
-  const update = req.body;
-  winston.debug(update);
+  //const update = req.body;
+  const update = {};
+  
+  if (req.body.lead) {
+    update.lead = req.body.lead;
+  }
+  
+  if (req.body.status) {
+    update.status = req.body.status;
+  }
+
+  if (req.body.tags) {
+    update.tags = req.body.tags;
+  }
+
+  if (req.body.rating) {
+    update.rating = req.body.rating;
+  }
+
+  if (req.body.rating_message) {
+    update.rating_message = req.body.rating_message;
+  }
+
+  if (req.body.sourcePage) {
+    update.sourcePage = req.body.sourcePage;
+  }
+
+  if (req.body.language) {
+    update.language = req.body.language;
+  }
+
+  
+  winston.info("Request patch update",update);
 
   return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
     if (err) {
       winston.error('Error patching request.', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+    requestEvent.emit("request.update", updatedMessage);
     return res.json(updatedMessage);
   });
 
 });
 
-router.put('/:requestid/lead', function (req, res) {
-  winston.debug(req.body);
-  //TODO change lead
-});
 
 router.put('/:requestid/close', function (req, res) {
   winston.debug(req.body);
@@ -102,67 +128,167 @@ router.put('/:requestid/reopen', function (req, res) {
 
 });
 
-router.put('/:requestid/status', function (req, res) {
-  winston.debug(req.body);
-  //TODO change lead
-});
 
-router.put('/:requestid/status', function (req, res) {
-  winston.debug(req.body);
-  //TODO change lead
-});
 
 router.put('/:requestid/assignee', function (req, res) {
   winston.debug(req.body);
   //TODO change assignee
 });
 
+
 router.post('/:requestid/participants', function (req, res) {
   winston.debug(req.body);
-  //TODO change participants
+  
+  //addParticipantByRequestId(request_id, id_project, member)
+  return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
+
+      winston.info("participant added", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
 });
 
 router.put('/:requestid/participants', function (req, res) {
-  winston.debug(req.body);
-  //TODO change participants
+  winston.info("req.body", req.body);
+
+  var participants = [];
+  req.body.forEach(function(participant,index) {
+    participants.push(participant);
+  });
+  winston.info("var participants", participants);
+  
+  //setParticipantsByRequestId(request_id, id_project, participants)
+  return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants ).then(function(updatedRequest) {
+
+      winston.info("participant set", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
 });
 
 router.delete('/:requestid/participants', function (req, res) {
   winston.debug(req.body);
-  //TODO change participants
+  
+   //removeParticipantByRequestId(request_id, id_project, member)
+  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
+
+      winston.info("participant removed", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
+  
 });
 
-router.put('/:requestid/department', function (req, res) {
-  winston.debug(req.body);
-  //TODO change department
-});
+router.put('/:requestid/departments', function (req, res) {
+  winston.info(req.body);
+   //route(request_id, departmentid, id_project) {      
+   requestService.route(req.params.requestid, req.body.departmentid, req.projectid).then(function(updatedRequest) {
 
-router.put('/:requestid/tags', function (req, res) {
-  winston.debug(req.body);
-  //TODO change department
-});
+      winston.info("department changed", updatedRequest);
 
-router.put('/:requestid/rating', function (req, res) {
-  winston.debug(req.body);
-  //TODO change rating and rating message
-});
-
-router.post('/:requestid/attributes', function (req, res) {
-  winston.debug(req.body);
-  //TODO change attributes
-});
-
-router.put('/:requestid/attributes', function (req, res) {
-  winston.debug(req.body);
-  //TODO change attributes
-});
-
-router.delete('/:requestid/attributes', function (req, res) {
-  winston.debug(req.body);
-  //TODO change attributes
+      return res.json(updatedRequest);
+  });
 });
 
 
+
+// router.post('/:requestid/attributes', function (req, res) {
+//   winston.debug(req.body);
+  
+//   //return Request.findOneAndUpdate({"request_id":req.params.requestid},{ $push: { attributes: req.body } } , { new: true, upsert: false }, function (err, updatedMessage) {
+//     return Request.findOneAndUpdate({"request_id":req.params.requestid},{ $set: { attributes: req.body } } , { new: true, upsert: false }, function (err, updatedMessage) {
+//     if (err) {
+//       winston.error('Error patching request.', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+//     requestEvent.emit("request.update", updatedMessage);
+//     return res.json(updatedMessage);
+//   });
+
+// });
+
+// router.put('/:requestid/attributes/:attributeid', function (req, res) {
+//   winston.debug(req.body);
+  
+//   return Request.findOneAndUpdate({"request_id":req.params.requestid, "attributes._id": req.params.attributeid},{ $set: { "attributes.$": req.body}} , { new: true, upsert: false }, function (err, updatedMessage) {
+//     if (err) {
+//       winston.error('Error patching request.', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+//     requestEvent.emit("request.update", updatedMessage);
+//     return res.json(updatedMessage);
+//   });
+
+// });
+
+// router.delete('/:requestid/attributes/:attributeid', function (req, res) {
+//   winston.debug(req.body);
+  
+
+//   return Request.findOneAndUpdate({"request_id":req.params.requestid},{ "$pull": { "attributes": { "_id": req.params.attributeid } }} , { new: true, upsert: false }, function (err, updatedMessage) {
+//     if (err) {
+//       winston.error('Error patching request.', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+//     requestEvent.emit("request.update", updatedMessage);
+//     return res.json(updatedMessage);
+//   });
+
+// });
+
+
+router.patch('/:requestid/attributes',  function (req, res) {
+  var data = req.body;
+  var id_project = req.projectid;
+
+  Request.findOne({"request_id":req.params.requestid, id_project:id_project})
+  .populate('lead')
+  .populate('department')
+  .populate({path:'requester',populate:{path:'id_user'}})
+  .exec( function(err, request) {
+      if (err) {
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
+      if (!request) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+
+      
+      if (!request.attributes) {
+        winston.info("empty attributes")
+        request.attributes = {};
+      }
+
+      winston.info(" req attributes", request.attributes)
+        
+        Object.keys(data).forEach(function(key) {
+          var val = data[key];
+          winston.info("data attributes "+key+" " +val)
+          request.attributes[key] = val;
+        });     
+        
+        winston.info(" req attributes", request.attributes)
+
+        // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+        request.markModified('attributes');
+
+        request.save(function (err, savedRequest) {
+          if (err) {
+            winston.error("error saving request attributes",err)
+            return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          }
+          winston.info(" saved request attributes",savedRequest.toObject())
+          requestEvent.emit("request.update", savedRequest);
+            res.json(savedRequest);
+          });
+  });
+  
+});
+
+// unused ?
 router.post('/:requestid/share/email', function (req, res) {
 
   winston.debug("req.params.requestid", req.params.requestid);
@@ -245,7 +371,7 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid };
+  var query = { "id_project": req.projectid, "status": {$lte:1000} };
 
   // console.log('REQUEST ROUTE - req ', req); 
   // console.log('REQUEST ROUTE - req.project ', req.project); 
@@ -266,9 +392,9 @@ router.get('/', function (req, res, next) {
     query.status = req.query.status;
   }
 
-  if (req.query.requester_id) {
-    winston.debug('req.query.requester_id', req.query.requester_id);
-    query.requester_id = req.query.requester_id;
+  if (req.query.lead) {
+    winston.debug('req.query.lead', req.query.lead);
+    query.lead = req.query.lead;
   }
 
   // USERS & BOTS
@@ -453,9 +579,9 @@ router.get('/csv', function (req, res, next) {
     query.status = req.query.status;
   }
 
-  if (req.query.requester_id) {
-    winston.debug('req.query.requester_id', req.query.requester_id);
-    query.requester_id = req.query.requester_id;
+  if (req.query.lead) {
+    winston.debug('req.query.lead', req.query.lead);
+    query.lead = req.query.lead;
   }
 
   // USERS & BOTS

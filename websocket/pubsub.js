@@ -1,5 +1,6 @@
 const  Map  = require('immutable').Map;
 var _ = require('lodash');
+//const util = require('util')
 
 // import _ from 'lodash'
 // import uuid from 'uuid/v1'
@@ -8,6 +9,10 @@ const uuidv4 = require('uuid/v4');
 const Subscription = require('./subscription');
 // console.log("Subscription", Subscription);
 
+
+
+
+// https://github.com/tabvn/pubsub/blob/master/server/src/pubsub.js
 class PubSub {
 
   //constructor (wss, onConnectCallbackArg, onDisconnectCallbackArg, onMessageCallbackArg) {
@@ -42,9 +47,11 @@ class PubSub {
 
     wss.on('connection', (ws,req) => {
 
+      ws.isAlive = true;
+
       const id = this.autoId()
 
-      console.log('connection', id)
+      // console.log('connection', id)
       const client = {
         id: id,
         ws: ws,
@@ -68,10 +75,13 @@ class PubSub {
 
       // listen when receive message from client
       ws.on('message',
-        (message) => this.handleReceivedClientMessage(id, message))
+        (message) => this.handleReceivedClientMessage(id, message, req))
 
       ws.on('close', () => {
         console.log('Client is disconnected')
+
+        clearInterval(ws.timer);
+        
         // Find user subscriptions and remove
         const userSubscriptions = this.subscription.getSubscriptions(
           (sub) => sub.clientId === id)
@@ -93,11 +103,37 @@ class PubSub {
         this.removeClient(id)
 
       })
+      //https://stackoverflow.com/questions/46755493/websocket-ping-with-node-js
+     // ws.on('pong',function(mess) { console.log(ws.id+' receive a pong : '+mess); });
+
+      var thatThis = this;
+      //console.log("heartbeat timer");
+      ws.timer=setInterval(function(){thatThis.ping(ws);},30000);
 
     })
 
   }
 
+  ping(ws) {
+    console.log(' send a ping');
+    if (ws.isAlive === false) {
+      console.log(' ws.isAlive is false terminating ws');
+      return ws.terminate();
+    }
+    //ws.ping('coucou',{},true);
+    ws.isAlive = false;
+    // {
+    //   action: 'publish',
+    //   payload: {
+    //     topic: topic,
+    //     method: method,
+    //     message: message,
+    //   },
+    // })
+    var message = {action: "heartbeat", payload: {message: {text: "ping"}}};
+    ws.send(JSON.stringify(message));
+  }
+  
   /**
    * Handle add subscription
    * @param topic
@@ -108,8 +144,21 @@ class PubSub {
     const client = this.getClient(clientId)
     if (client) {
       const subscriptionId = this.subscription.add(topic, clientId)
-      client.subscriptions.push(subscriptionId)
+      console.log('handleAddSubscription this.subscription',JSON.stringify(this.subscription));
+      
+      client.subscriptions.push(subscriptionId)      
       this.addClient(client)
+
+
+      // const client = {
+      //   id: id,
+      //   ws: ws,
+      //   userId: null,
+      //   subscriptions: [],
+      // }
+     
+     
+      //console.log('handleAddSubscription this.addClient',JSON.stringify(this.clients));
     }
 
   }
@@ -123,19 +172,47 @@ class PubSub {
 
     const client = this.getClient(clientId)
 
+    console.log('handleUnsubscribe client.id', client.id, "subscriptions", client.subscriptions);
+
+
     let clientSubscriptions = _.get(client, 'subscriptions', [])
+    //console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
 
     const userSubscriptions = this.subscription.getSubscriptions(
       (s) => s.clientId === clientId && s.type === 'ws')
 
+    console.log('handleUnsubscribe userSubscriptions',JSON.stringify(userSubscriptions));
+    //console.log(util.inspect(userSubscriptions, {showHidden: false, depth: null}))
+
     userSubscriptions.forEach((sub) => {
-
-      clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id)
-
+      //clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id);
+      //console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
       // now let remove subscriptions
-      this.subscription.remove(sub.id)
+      console.log("handleUnsubscribe  sub.topic",sub.topic);
+      console.log("handleUnsubscribe  topic",topic);
 
+      if (sub.topic == topic) {
+        console.log("handleUnsubscribe  remove",sub.id);
+        var index = clientSubscriptions.indexOf(sub.id);
+        console.log("handleUnsubscribe  index",index);
+        if (index > -1) {
+          clientSubscriptions.splice(index, 1);
+        }
+        //clientSubscriptions = clientSubscriptions.remove(sub.id);
+
+        this.subscription.remove(sub.id)
+      }
+      
     })
+
+    // userSubscriptions.forEach((sub) => {
+    //   clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id);
+    //   console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+    //   // now let remove subscriptions
+    //   this.subscription.remove(sub.id)
+    // })
+    console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+     console.log('handleUnsubscribe this.subscription', JSON.stringify(this.subscription));
 
     // let update client subscriptions
     if (client) {
@@ -164,7 +241,7 @@ class PubSub {
 
       const clientId = subscription.clientId
       const subscriptionType = subscription.type  // email, phone, ....
-      console.log('CLient id of subscription', clientId, subscription)
+      // console.log('CLient id of subscription', clientId, subscription)
       // we are only handle send via websocket
       if (subscriptionType === 'ws') {
         this.send(clientId, {
@@ -185,7 +262,7 @@ class PubSub {
    * @param clientId
    * @param message
    */
-  handleReceivedClientMessage (clientId, message) {
+  handleReceivedClientMessage (clientId, message, req) {
 /*
     if (this.onMessageCallback ) {
       this.onMessageCallback(clientId, message);
@@ -195,7 +272,14 @@ class PubSub {
     }
 
     const client = this.getClient(clientId)
-    console.log('clientId',clientId, message);
+    // console.log('clientId',clientId, message);
+
+      //heartbeat
+      const ws = client.ws
+      ws.isAlive = true;
+   
+
+
     if (typeof message === 'string') {
 
       message = this.stringToJson(message)
@@ -212,6 +296,21 @@ class PubSub {
 
           break
 
+        case 'heartbeat':
+          
+          const text = _.get(message, 'payload.message.text', null);
+          console.log('received heartbeat with text ',text);
+          if (text=='ping') {
+            var messageToSend = {action: 'heartbeat', payload: {message: {text: 'pong'}}};
+            // rispondi pong solo su ping e non su pong
+            console.log('received heartbeat from ',clientId," i send a  message: ",  messageToSend);         
+            this.send(clientId, messageToSend)   
+            
+          }
+            
+
+        break
+
         case 'subscribe':
 
           //@todo handle add this subscriber
@@ -219,7 +318,7 @@ class PubSub {
           if (topic) {
 
             if (this.callbacks && this.callbacks.onSubscribe) {
-              this.callbacks.onSubscribe(topic, clientId);
+              this.callbacks.onSubscribe(topic, clientId, req);
             }
 
             this.handleAddSubscription(topic, clientId)
@@ -237,7 +336,7 @@ class PubSub {
           if (unsubscribeTopic) {
 
             if (this.callbacks && this.callbacks.onUnsubscribe) {
-              this.callbacks.onUnsubscribe(unsubscribeTopic, clientId);
+              this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
             }
 
             this.handleUnsubscribe(unsubscribeTopic, clientId)
@@ -253,7 +352,7 @@ class PubSub {
             const from = clientId;
 
             if (this.callbacks && this.callbacks.onPublish) {
-              this.callbacks.onPublish(publishTopic, publishMessage, from);
+              this.callbacks.onPublish(publishTopic, publishMessage, from, req);
             }
 
             this.handlePublishMessage(publishTopic, publishMessage, from)
@@ -268,7 +367,7 @@ class PubSub {
           if (broadcastTopicName) {
 
             if (this.callbacks && this.callbacks.onBroadcast) {
-              this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId);
+              this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
             }
 
             this.handlePublishMessage(broadcastTopicName, broadcastMessage,
@@ -313,8 +412,9 @@ class PubSub {
     if (!client.id) {
       client.id = this.autoId()
     }
+    console.log('client added', client.id,client.subscriptions);
     this.clients = this.clients.set(client.id, client)
-    console.log('clients added')
+     //console.log('clients added', JSON.stringify(this.clients))
   }
 
   /**

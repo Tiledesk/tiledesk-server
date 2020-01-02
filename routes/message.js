@@ -52,9 +52,9 @@ router.post('/', function(req, res) {
                   //     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
 
 
-                    // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
-                    return messageService.create(req.user._id || req.body.sender, req.user.fullName ||req.body.senderFullname, req.params.request_id, req.body.text,
-                      req.projectid, req.user._id, messageStatus, req.body.attributes).then(function(savedMessage){                    
+                    // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+                    return messageService.create(req.user._id || req.body.sender, req.user.fullName || req.body.senderFullname, req.params.request_id, req.body.text,
+                      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
                         return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
                           let message = savedMessage.toJSON();
@@ -76,8 +76,8 @@ router.post('/', function(req, res) {
       
           // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                           
-              return messageService.create(req.user._id || req.body.sender, req.user.fullName ||req.body.senderFullname, req.params.request_id, req.body.text,
-                request.id_project, null, messageStatus, req.body.attributes).then(function(savedMessage){
+              return messageService.create(req.user._id || req.body.sender, req.user.fullName || req.body.senderFullname, req.params.request_id, req.body.text,
+                request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){
 
                   return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));

@@ -1,5 +1,8 @@
 var Message = require("../models/message");
+var User = require("../models/user");
+var Project_user = require("../models/project_user");
 var Request = require("../models/request");
+var Message = require("../models/message");
 const WebSocket = require('ws');
 var url = require('url');
 var validtoken = require('../middleware/valid-token');
@@ -37,33 +40,56 @@ class WebSocketServer {
           let urlParsed = url.parse(info.req.url, true);
           // console.log('urlParsed', urlParsed);
           var queryParameter = urlParsed.query;
-          winston.info('queryParameter', queryParameter);
+          winston.debug('queryParameter', queryParameter);
 
           var token = queryParameter.token;
           winston.info('token:'+ token);
-          winston.info('config.secret:'+ config.secret);
+          winston.debug('config.secret:'+ config.secret);
 
         
           if (!token)
               cb(false, 401, 'Unauthorized');
           else {
             token = token.replace('JWT ', '');
-            if (token ==="123") {
-              winston.info('ok 123:');
-              return cb(true);
-            }
+            // if (token ==="123") {
+            //   winston.debug('ok 123:');
+            //   return cb(true);
+            // }
               jwt.verify(token, config.secret, function (err, decoded) {
                   if (err) {
-                     winston.info('error websocket', err);
+                     winston.error('error websocket', err);
                      return cb(false, 401, 'Unauthorized');
                   } else {
                      // uncomment it
-                         winston.info('valid token');
+                     const identifier = decoded._id || decoded._doc._id;
+
+
+                         winston.debug('valid token:'+identifier);
                         // roleChecker.hasRoleAsPromise().then(function(project_user) {
-                        //   winston.info('hasRoleAsPromise project_user',project_user);
-                          // winston.info('ok websocket');
-                          info.req.user = decoded;
-                          return cb(true);
+                        //   winston.debug('hasRoleAsPromise project_user',project_user);
+                          // winston.debug('ok websocket');
+
+                          User.findOne({_id: identifier}, 'email firstname lastname emailverified id', function (err, user) {
+                            // console.log("BasicStrategy user",user);
+                            // console.log("BasicStrategy err",err);
+                    
+                            if (err) {
+                                // console.log("BasicStrategy err.stop");
+                                return winston.erro('error websocket', err);
+                            }
+                            if (!user) {   
+                              winston.error('websocket user not found with id : '+identifier);                             
+                              return cb(false, 401, 'Unauthorized');
+                            }
+
+                            // info.req.user = decoded;
+                            info.req.user = user;
+                            winston.info('info.req.user',info.req.user.toObject());
+                            return cb(true);
+
+                          });
+
+                          
                       // }).catch(function(err){
                       //   winston.error('hasRoleAsPromise err',err);
                       //   cb(false, 401, err.msg);
@@ -78,47 +104,163 @@ class WebSocketServer {
 
 
     var onConnectCallback = function(client, req) {
-      winston.info('onConnectCallback ');
+      winston.debug('onConnectCallback ');
       // check here if you can subscript o publish message
     }
 
     var onDisconnectCallback = function(subscript, id) {
-      winston.info('onDisconnectCallback ',subscript, id);
+      winston.debug('onDisconnectCallback: '+subscript +":"+ id);
       // check here if you can subscript o publish message
     }
 
 
 //tilebaseMess.send('{ "action": "publish", "payload": { "topic": "/apps/123/requests/sendid/conversations/RFN", "message":{"sender_id":"sendid","sender_fullname":"SFN", "recipient_id":"RFN", "recipient_fullname":"RFN","text":"hi","app_id":"123"}}}');
     var onPublishCallback = function(publishTopic, publishMessage, from) {
-      winston.info("onPublish topic: "+publishTopic +" from: "+from, publishMessage);
+      winston.debug("onPublish topic: "+publishTopic +" from: "+from, publishMessage);
   
     }
 
     var onMessageCallback = function(id, message) {
-      winston.info('onMessageCallback ',id, message);
+      winston.debug('onMessageCallback ',id, message);
       // check here if you can subscript o publish message
     }
 
     // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/app1/requests"}}');
-    var onSubscribeCallback = function(id, message) {
-      winston.info('onSubscribeCallback :'+id+ " "+ message);      
+    var onSubscribeCallback = function(id, message, req) {
+      winston.debug('onSubscribeCallback :'+id+ " "+ message);      
     
-      if (id.indexOf('/requests')>0) {
+      winston.debug(' req.user._id: '+ req.user);
+
+       if (id.endsWith('/messages')) {
+         winston.debug(' messages: ');
+         var urlSub = id.split('/');  
+
+         var projectId = urlSub[1];
+         winston.debug('projectId: '+projectId);
+
+         var recipientId = urlSub[3];
+         winston.debug('recipientId: '+recipientId);
+         // winston.debug(' req.: ',req);
+       
+       
+
+         Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
+           if (err) {
+             return winston.error('error getting  Project_user', err);  
+           }
+           if (!projectuser) {
+            return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
+          }
+
+           var query = {id_project:projectId, recipient: recipientId };
+           winston.debug('query: '+query);
+           Message.find(query).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+          
+               if (err) {
+                 winston.error('onSubscribeCallback find', err);  
+               }
+               winston.debug('onSubscribeCallback find', messages);  
+               pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");                                                                                          
+    
+           });
+
+         });
+        
+     } else if (id.endsWith('/requests')) {
+
+
+        //if (id.indexOf('/requests')>0 && id.indexOf('/messages')==0) {
+      //  if (id.indexOf('/requests')>0) {
+        var urlSub = id.split('/');  
+
+        var projectId = urlSub[1];
+        winston.info('projectId: '+projectId);
+        winston.info('req.user._id: '+req.user._id);
+        // winston.debug(' req.: ',req);
+       
+       
+
+        Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
+          if (err) {
+            return winston.error('error getting  Project_user', err);  
+          }
+          if (!projectuser) {
+            return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
+          }
+          winston.info('projectuser', projectuser.toObject()); 
+
+          var query = {id_project:projectId, status: { $lt: 1000 } };
+          if (projectuser.role == "owner" || projectuser.role == "admin") {
+            winston.info('query admin: '+ JSON.stringify(query));
+          }else {
+            //query.agents =  { $in : projectuser };
+            query.agents._id = projectuser._id;
+            winston.info('query: '+ JSON.stringify(query));
+          }
+          
+          Request.find(query)
+          .populate('lead')
+          .populate('department')
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .sort({updatedAt: 'asc'}).exec(function(err, requests) { 
+          
+              if (err) {
+                winston.error('onSubscribeCallback find', err);  
+              }
+              winston.debug('onSubscribeCallback find', requests);  
+              pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
+    
+          });
+
+        });
+        
+
+
+     } else {
+
+      //if (id.indexOf('/requests')>0 && id.indexOf('/messages')==0) {
+      //  if (id.indexOf('/requests')>0) {
           var urlSub = id.split('/');  
 
           var projectId = urlSub[1];
-          winston.info('projectId: '+projectId);
+          winston.debug('projectId: '+projectId);
+          // winston.debug(' req.: ',req);
+         
+          var recipientId = urlSub[3];
+          winston.debug('recipientId: '+recipientId);
 
-          var query = {id_project:projectId };
-          Request.find(query).sort({updatedAt: 'asc'}).exec(function(err, requests) { 
+          Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
+            if (err) {
+              return winston.error('error getting  Project_user', err);  
+            }
+            if (!projectuser) {
+              return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
+            }
+
+            var query = {id_project:projectId, request_id: recipientId};
+           winston.info('query: '+ JSON.stringify(query));
+
+            // if (projectuser.role=="owner" || projectuser.role=="admin") {
+            // }else {
+            //   query = {id_project:projectId, agents: { $in : projectuser }  };
+            // }
+            
+            Request.findOne(query)
+            .populate('lead')
+            .populate('department')
+            .populate({path:'requester',populate:{path:'id_user'}})
+            .sort({updatedAt: 'asc'}).exec(function(err, request) { 
+            
+                if (err) {
+                  winston.error('onSubscribeCallback find', err);  
+                }
+                winston.debug('onSubscribeCallback find', request);  
+                pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
+      
+            });
+
+          });
           
-          if (err) {
-            winston.error('onSubscribeCallback find', err);  
-          }
-          winston.info('onSubscribeCallback find', requests);  
-          pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
-    
-        });
       }
 
     }
@@ -136,18 +278,23 @@ class WebSocketServer {
     var that = this;
 
     messageEvent.on('message.create', function (message) {
-      winston.info('messageEvent websocket server ', message);
-        //that.sendAll(message,'message');        
-        pubSubServer.handlePublishMessage (message.id_project+'/requests/'+message.request.request_id+'/messages/', message, undefined, true, "CREATE");
+      winston.debug('messageEvent websocket server ', message);
+        pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
       });
 
       requestEvent.on('request.create', function (request) {
-        winston.info('requestEvent websocket server ', request);
-          //that.sendAll(message,'request');        
-          // pubSubServer.handlePublishMessage (topic, message, from, isBroadcast = false) {
-          pubSubServer.handlePublishMessage (request.id_project+'/requests/', request, undefined, true, "CREATE");
-          // pubSubServer.handlePublishMessage ('topic1', message, undefined, true);
+        winston.debug('requestEvent websocket server ', request);
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
         });
+
+
+      requestEvent.on('request.update', function(request) {
+        winston.debug('requestEvent websocket server ', request);       
+        pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
+        pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
+     
+      });
       
 
     // https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js
@@ -175,9 +322,9 @@ class WebSocketServer {
 //           return 0;
 //        }
 
-//        winston.info('queryParameter.events'+ queryParameter.events);
+//        winston.debug('queryParameter.events'+ queryParameter.events);
 //        var events = JSON.parse(queryParameter.events);    
-//        winston.info('events', events);  
+//        winston.debug('events', events);  
        
 //        if (!events) {
 //         winston.error('events not specified');   

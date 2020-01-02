@@ -44,7 +44,7 @@ it('signinJWt-userNoAudNoSubject', (done) => {
                                                                                 
                         
 
-                            var jwtToken = jwt.sign(savedUser, config.secret);
+                            var jwtToken = jwt.sign(savedUser.toObject(), config.secret);
 
                               
                                   

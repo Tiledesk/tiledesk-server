@@ -43,46 +43,47 @@ class FaqBotHandler {
                if (err) {
                  return res.status(500).send({ success: false, msg: 'Error getting object.' });
                }
+
                if (faqs && faqs.length>0) {
-                winston.debug("faqs exact", faqs);              
-      
-                winston.debug("faqs", faqs);              
+                    winston.debug("faqs exact", faqs);              
+        
+                    winston.debug("faqs", faqs);              
 
-                let sender = 'bot_' + botId;
-                winston.debug("sender", sender);          
-            
-
-                var answerObj;
-                if (faqs && faqs.length>0 && faqs[0].answer) {
-                    answerObj = faqs[0];                
-
-                    // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
-                    messageService.send(sender, botName, message.recipient, answerObj.answer, 
-                        message.id_project, sender).then(function(savedMessage){
-
-                            winston.info("faqbot message sending ", savedMessage.toObject());  
-                    });
-    
-                }
+                    let sender = 'bot_' + botId;
+                    winston.debug("sender", sender);          
                 
-            
 
-                faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
-                    winston.info("faqbot message botAns ", botAns);  
+                    var answerObj;
+                    if (faqs && faqs.length>0 && faqs[0].answer) {
+                        answerObj = faqs[0];                
 
-                    if (botAns) {
-                        let attributes = {bot_reponse_template: botAns.template};
-                        messageService.send(sender, botName, message.recipient, botAns.text, 
-                            message.id_project, sender, attributes).then(function(savedMessage){
-                                winston.info("faqbot message botAns " ,savedMessage.toObject());  
+                        // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
+                        messageService.send(sender, botName, message.recipient, answerObj.answer, 
+                            message.id_project, sender).then(function(savedMessage){
+
+                                winston.info("faqbot message sending ", savedMessage.toObject());  
                         });
+        
                     }
-                   
+                    
+                
 
-                });
+                    faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
+                        winston.info("faqbot message botAns ", botAns);  
+
+                        if (botAns) {
+                            let attributes = {bot_reponse_template: botAns.template};
+                            messageService.send(sender, botName, message.recipient, botAns.text, 
+                                message.id_project, sender, attributes).then(function(savedMessage){
+                                    winston.info("faqbot message botAns " ,savedMessage.toObject());  
+                            });
+                        }
+                    
+
+                    });
 
 
-               }else {
+               } else {
  
                 query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id};
                 query.$text = {"$search": message.text};

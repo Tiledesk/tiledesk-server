@@ -20,8 +20,102 @@ var winston = require('../config/winston');
 
 class RequestService {
 
+//change create with this
+  routeInternal (request, departmentid, id_project) {
+   var that = this;
 
- 
+    return new Promise(function (resolve, reject) {
+
+        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+
+          // console.log("getOperators", result);
+
+          var status = 100;
+          var assigned_operator_id;
+          var participants = [];
+          
+          if (result.operators && result.operators.length>0) {
+            assigned_operator_id = result.operators[0].id_user;
+            status = 200;
+            participants.push(assigned_operator_id.toString());
+          }
+          // console.log("assigned_operator_id", assigned_operator_id);
+          // console.log("status", status);
+
+            request.status = status;
+            request.participants = participants;
+            request.department = result.department._id;
+            request.agents = result.agents;
+                  
+              return resolve(request);
+                  
+               
+        }).catch(function(err){
+          return reject(err);
+        });
+
+
+    });
+  }
+  
+  
+  route(request_id, departmentid, id_project) {
+   var that = this;
+
+   return new Promise(function (resolve, reject) {
+     // console.log("request_id", request_id);
+     // console.log("newstatus", newstatus);
+
+        return Request       
+        .findOne({request_id: request_id, id_project: id_project})
+        .populate('lead')
+        .populate('department')
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
+
+          if (err) {
+            winston.error(err);
+            return reject(err);
+          }
+            
+          that.routeInternal(request,departmentid, id_project ).then(function(routedRequest){
+
+            return routedRequest.save(function(err, savedRequest) {
+              if (err) {
+                winston.error('Error saving the request.',err);
+                return reject(err);
+              }
+          
+              savedRequest
+              .populate(
+                  [           
+                  {path:'department'},
+                  {path:'lead'},                        
+                  {path:'requester',populate:{path:'id_user'}}
+                  ]
+              ,function (err, requestComplete){
+          
+                  winston.info("Request routed",requestComplete.toObject());
+                
+                  
+                  
+                  requestEvent.emit('request.update',requestComplete);
+                  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+                  requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
+
+                  return resolve(requestComplete);
+              });
+              
+            });
+
+          }).catch(function(err) {
+            return reject(err);
+          });
+
+            
+          });
+    });
+  }
 
   createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
@@ -104,11 +198,13 @@ class RequestService {
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
+
+                  /*
                   if (id_project!="5b45e1c75313c50014b3abc6") {
                     if (process.env.NODE_ENV!= 'test') {
                       that.sendEmail(id_project, savedRequest);
                     }
-                  }
+                  }*/
                   
                   
                   requestEvent.emit('request.create.simple',savedRequest);
@@ -213,11 +309,12 @@ class RequestService {
                   
                   // console.log("XXXXXXXXXXXXXXXX");
 
+                  /*
                   if (id_project!="5b45e1c75313c50014b3abc6") {
                     if (process.env.NODE_ENV!= 'test') {
                       that.sendEmail(id_project, savedRequest);
                     }
-                  }
+                  }*/
                   
                   
                   requestEvent.emit('request.create.simple',savedRequest);
@@ -361,6 +458,8 @@ class RequestService {
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
+
+                  /* moved to requestNotification
                   //send auto transcript
                   try {                
                       Project.findById(id_project, function(err, project){                        
@@ -398,6 +497,8 @@ class RequestService {
                       winston.error("error sendTranscriptByEmail ", e);
                     }
 
+                    */
+
                     winston.info("Request closed", updatedRequest);
                     //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
@@ -430,7 +531,7 @@ class RequestService {
 
         
           if (err){
-            winston.error(err);
+            winston.error("Error getting reopened request ", err);
             return reject(err);
           }
           if (!request) {
@@ -444,12 +545,16 @@ class RequestService {
             request.status = 100;
           }
 
-         request.save(function(err, savedRequest) {
-            if (!err) {
-              requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit('request.reopen', savedRequest);
+          winston.error("sono quiiiiiiiiii ");
+          request.save(function(err, savedRequest) {
+            if (err) {
+              winston.error("Error saving reopened the request", err);
+              return reject(err);              
             }          
             
+            requestEvent.emit('request.update', savedRequest);
+            requestEvent.emit('request.reopen', savedRequest);
+
             winston.info("Request reopened", savedRequest);
             return resolve(savedRequest);
             
@@ -458,7 +563,7 @@ class RequestService {
          
 
         }).catch(function(err)  {
-          winston.error(err);
+              winston.error("Error reopening the request", err);
               return reject(err);
           });
     });
@@ -494,26 +599,39 @@ class RequestService {
     });
   }
 
-  setParticipantsByRequestId(request_id, id_project, participants) {
+  setParticipantsByRequestId(request_id, id_project, newparticipants) {
+    
+    //TODO validate participants
+    
     return new Promise(function (resolve, reject) {
       // console.log("request_id", request_id);
       // console.log("participants", participants);
 
       return Request
        
-      .findOneAndUpdate({request_id: request_id, id_project: id_project}, {participants: participants}, {new: true, upsert:false})
+      .findOne({request_id: request_id, id_project: id_project})
       .populate('lead')
       .populate('department')
       .populate({path:'requester',populate:{path:'id_user'}})
-      .exec( function(err, updatedRequest) {
+      .exec( function(err, request) {
         if (err) {
           winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }
-        requestEvent.emit('request.update',updatedRequest);
-        requestEvent.emit('request.participants.update', updatedRequest);
+        request.participants = newparticipants;
+        
+        request.save(function(err, updatedRequest) {
+          if (err) {
+            winston.error("Error setParticipantsByRequestId", err);
+            return reject(err);
+          }
+        
+           requestEvent.emit('request.update', updatedRequest);
+           requestEvent.emit('request.participants.update', {beforeRequest:request, request:updatedRequest});
 
-        return resolve(updatedRequest);
+          return resolve(updatedRequest);
+        });
+       
       });
 
       // return Request.findOne({request_id: request_id}).then(function (request) {
@@ -533,6 +651,9 @@ class RequestService {
     // console.log("request_id", request_id);
     // console.log("id_project", id_project);
     // console.log("member", member);
+
+
+//TODO control if member is a valid project_user of the project
 
     return new Promise(function (resolve, reject) {
       return Request       
@@ -565,7 +686,7 @@ class RequestService {
           request.save(function(err, savedRequest) {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit('request.participants.join', savedRequest);
+              requestEvent.emit('request.participants.join', {member:member, request: savedRequest});
             }          
             
             return resolve(savedRequest);
@@ -621,7 +742,7 @@ class RequestService {
 
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit('request.participants.leave', savedRequest);
+              requestEvent.emit('request.participants.leave', {member:member, request: savedRequest});
             }
 
             return resolve(savedRequest);
@@ -635,7 +756,8 @@ class RequestService {
   }
 
 
-
+// moved to requestNotification
+/*
   sendTranscriptByEmail(sendTo, request_id, id_project) {
     return new Promise(function (resolve, reject) {
       return Request.findOne({request_id: request_id, id_project: id_project})
@@ -676,95 +798,7 @@ class RequestService {
     });
   }
   
-
-
-
-  sendEmail(projectid, savedRequest) {
-    // send email
-    try {
-   
-   
-     Project.findById(projectid, function(err, project){
-       if (err) {
-         winston.error(err);
-       }
-   
-       if (!project) {
-        //  console.warn("Project not found", req.projectid);
-         console.warn("Project not found", projectid);
-       } else {
-         
-         // console.log("Project", project);
-   
-   
-                 if (savedRequest.status==100) { //POOLED
-                 // throw "ciao";
-                   var allAgents = savedRequest.agents;
-                  // console.log("allAgents", allAgents);
-   
-                   allAgents.forEach(project_user => {
-                   //  console.log("project_user", project_user);
-   
-                     User.findById(project_user.id_user, function (err, user) {
-                       if (err) {
-                       //  console.log(err);
-                       }
-                       if (!user) {
-                         console.warn("User not found", project_user.id_user);
-                       } else {
-                         console.log("Sending sendNewPooledRequestNotification to user with email", user.email);
-                         if (user.emailverified) {
-                           emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
-                         }else {
-                           console.log("User email not verified", user.email);
-                         }
-                       }
-                     });
-   
-                     
-                   });
-   
-                   }
-
-                   else if (savedRequest.status==200) { //ASSIGNED
-                     console.log("participants", savedRequest.participants[0]);
-   
-                     User.findById( savedRequest.participants[0], function (err, user) {
-                       if (err) {
-                         winston.error("Error sending email to " + savedRequest.participants[0], err);
-                       }
-                       if (!user) {
-                         console.warn("User not found",  savedRequest.participants[0]);
-                       } else {
-                         console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                        //  if (user.emailverified) {    enable it?                    
-                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
-                        //  }
-                       }
-                     });
-                   }
-
-
-
-                   else {
-   
-                   }
-   
-   
-         
-         }
-   
-   });
-   
-   } catch (e) {
-     console.log("Errore sending email", e);
-   }
-   //end send email
-   
-   }
- 
-
-
+*/
 
 
 }

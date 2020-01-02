@@ -1,5 +1,6 @@
 var Project_user = require("../models/project_user");
 var Faq_kb = require("../models/faq_kb");
+var Subscription = require("../models/subscription");
 var winston = require('../config/winston');
 
 
@@ -56,10 +57,11 @@ class RoleChecker {
             winston.info("isType:"+type);
             winston.info("user", user);
            
-            if (type=='subscription' && user instanceof Faq_kb){
-  
+            if (type=='subscription' && user instanceof Subscription){
+              winston.debug("is subscription");
+              return true
             } else if (type=='bot' && user instanceof Faq_kb){
-              winston.info("is bot");
+              winston.debug("is bot");
               return true
             } else {
               return false;

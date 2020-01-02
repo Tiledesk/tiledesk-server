@@ -48,6 +48,7 @@ var winston = require('../config/winston');
 
   });
 
+  // deprecated used on cloud function support (not in use in v2)
   router.post('/:requestid/notify/email', function(req, res) {
   
     winston.debug("req.params", req.params);
@@ -71,6 +72,7 @@ var winston = require('../config/winston');
 
         request = {
           first_text: req.body.first_text,
+          // problema requester_id
           requester_id: req.body.requester_id,
           id_project: req.body.id_project,
           request_id: req.body.request_id

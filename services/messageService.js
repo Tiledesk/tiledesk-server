@@ -27,19 +27,19 @@ class MessageService {
 
 
 
-   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
-       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes);
+   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
+       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type);
    }
 
-   upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata) {
+   upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
        if (!id) {
-           return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata);
+           return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata);
        } else {
             winston.info("Message changeStatus", status);
             return this.changeStatus(id, status);
        }
    }
-  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, metadata) {
+  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -56,6 +56,7 @@ class MessageService {
                 sender: sender,
                 senderFullname: senderFullname,
                 recipient: recipient,
+                type: type,
                 // recipientFullname: recipientFullname,
                 text: text,
                 id_project: id_project,

@@ -136,7 +136,7 @@ router.post('/', function(req, res) {
 
                        // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
                         return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
+                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){
 
                              // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
                         // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
@@ -188,7 +188,7 @@ router.post('/', function(req, res) {
             }
             // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
             return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.metadata).then(function(savedMessage){
+              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){
 
             // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {                          
                 // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
@@ -414,6 +414,8 @@ router.post('/', function(req, res) {
             winston.info("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
           }else {
+
+            // se gia in participants scarta
             return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
               winston.info("Join memeber ok");
               return res.json(updatedRequest);

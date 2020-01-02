@@ -22,6 +22,13 @@ class Pending_Invitation {
         }
 
         if (!pendinginvitation.length) {
+
+          if (invited_user_role == '' || invited_user_role == undefined) {
+            winston.error('** ** FIND IN PENDING INVITATION - ROLE ERROR ', invited_user_role)
+            return reject({ success: false, msg: 'Role is required.', code: 405 });
+          }
+
+
           console.log('** ** FIND IN PENDING INVITATION - OBJECT NOT FOUND -- SAVE IN PENDING INVITATION ** **')
 
           // return reject({ success: false, msg: 'Object not found.' });
@@ -40,7 +47,7 @@ class Pending_Invitation {
               return reject({ success: false, msg: 'Error saving object.', err: err });
             }
             console.log('** ** SAVE IN PENDING INVITATION RESPONSE ** **', savedPendingInvitation)
-            emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role)
+            emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role, savedPendingInvitation._id)
 
             return resolve(savedPendingInvitation);
 
@@ -49,7 +56,7 @@ class Pending_Invitation {
         } else {
 
           console.log('** ** FIND IN PENDING INVITATION - OBJECT FOUND ', pendinginvitation)
-          emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role)
+          // emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role, pendinginvitation._id)
 
           return reject({ success: false, msg: 'Pending Invitation already exist.', pendinginvitation });
         }
@@ -95,14 +102,14 @@ class Pending_Invitation {
               return reject({ msg: 'Error saving project user.' });
 
             }
-             that.removePendingInvitation(invite._id)
-            
+            that.removePendingInvitation(invite._id)
+
             //cancella inviti pending
             winston.debug('** ** CHECK NEW USER EMAIL ** PENDING INVITATION FOUND ** SAVED PROJECT USER', savedProject_user);
             return resolve(savedProject_user);
           });
 
-          
+
           // return resolve(pendinginvitation);
         });
       });
@@ -114,14 +121,14 @@ class Pending_Invitation {
   removePendingInvitation(pendingInvitationId) {
     winston.debug('DELETING PENDING INVITATION');
     return new Promise(function (resolve, reject) {
-        return PendingInvitation.remove({ _id: pendingInvitationId }, function (err, pendinginvitation) {
-          if (err) {
-            winston.error('DELETING PENDING INVITATION - ERROR ', err);
-            return reject({ success: false, msg: 'Error deleting object.' });
-          }
-          // return resolve(pendinginvitation);
-          });
+      return PendingInvitation.remove({ _id: pendingInvitationId }, function (err, pendinginvitation) {
+        if (err) {
+          winston.error('DELETING PENDING INVITATION - ERROR ', err);
+          return reject({ success: false, msg: 'Error deleting object.' });
+        }
+        // return resolve(pendinginvitation);
       });
+    });
   }
   // router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
 

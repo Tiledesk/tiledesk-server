@@ -44,9 +44,12 @@ class FaqService {
       var faqsArray = [
         { 'question': 'Ciao', 'answer': 'Ciao', 'topic': 'greetings' },
         { 'question': 'Hi', 'answer': 'Hi', 'topic': 'greetings' },
-        { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' }
+        { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
+        { 'question': 'I want an agent', 'answer': '\\agent', 'topic': 'internal' },
+        { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' },    
+        { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent. \n *👨🏻‍🦰 I want an agent', 'topic': 'internal' }
       ]
-
+      
       faqsArray.forEach(faq => {
 
         var newFaq = new Faq({

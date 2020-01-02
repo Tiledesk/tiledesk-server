@@ -288,7 +288,7 @@ describe('RequestService', function () {
             requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
               requestService.reopenRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(reopenedRequest) {
                 
-                  winston.debug("resolve reopenedRequest", reopenedRequest.toObject());
+                  winston.info("resolve reopenedRequest", reopenedRequest.toObject());
 
                   //check closedRequest
                   expect(closedRequest.status).to.equal(1000);

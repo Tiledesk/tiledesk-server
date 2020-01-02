@@ -2,9 +2,10 @@ var express = require('express');
 var router = express.Router();
 var Lead = require("../models/lead");
 var winston = require('../config/winston');
-
+var leadService = require("../services/leadService");
 csv = require('csv-express');
 csv.separator = ';';
+const leadEvent = require('../event/leadEvent');
 
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
@@ -14,28 +15,48 @@ router.post('/', function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newLead = new Lead({
-    fullname: req.body.fullname,
-    lead_id: req.body.lead_id,
-    email: req.body.email,
-    id_project: req.projectid,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
-
-  newLead.save(function (err, savedLead) {
-    if (err) {
-      winston.error('--- > ERROR ', err);
-      return res.status(500).send({ success: false, msg: 'Error saving object.' });
-    }
+  leadService.createWitId(req.body.lead_id, req.body.fullname, req.body.email, req.projectid, req.user.id, req.body.attributes).then(function(savedLead) {
     res.json(savedLead);
-  });
+  })
+
+  // var newLead = new Lead({
+  //   fullname: req.body.fullname,
+  //   lead_id: req.body.lead_id,
+  //   email: req.body.email,
+  //   id_project: req.projectid,
+  //   createdBy: req.user.id,
+  //   updatedBy: req.user.id
+  // });
+
+  // newLead.save(function (err, savedLead) {
+  //   if (err) {
+  //     winston.error('--- > ERROR ', err);
+  //     return res.status(500).send({ success: false, msg: 'Error saving object.' });
+  //   }
+  //   res.json(savedLead);
+  // });
 });
 
 router.put('/:leadid', function (req, res) {
   winston.debug(req.body);
-
-  Lead.findByIdAndUpdate(req.params.leadid, req.body, { new: true, upsert: true }, function (err, updatedLead) {
+  var update = {};
+  
+  if (req.body.fullname) {
+    update.fullname = req.body.fullname;
+  }
+  
+  if (req.body.email) {
+    update.email = req.body.email;
+  }
+  if (req.body.attributes) {
+    update.attributes = req.body.attributes;
+  }
+  if (req.body.status) {
+    update.status = req.body.status;
+  }
+  
+  
+  Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -44,13 +65,29 @@ router.put('/:leadid', function (req, res) {
     //var activity = new Activity({actor: req.user.id, verb: "LEAD_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
     //activityEvent.emit('lead.update', activity);
 
-
+    leadEvent.emit('lead.update', updatedLead);
     res.json(updatedLead);
   });
 });
 
-
 router.delete('/:leadid', function (req, res) {
+  winston.debug(req.body);
+
+  Lead.findByIdAndUpdate(req.params.leadid, {status: 1000}, { new: true, upsert: true }, function (err, updatedLead) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    //var activity = new Activity({actor: req.user.id, verb: "LEAD_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
+    //activityEvent.emit('lead.update', activity);
+
+    leadEvent.emit('lead.delete', updatedLead);
+    res.json(updatedLead);
+  });
+});
+
+router.delete('/:leadid/physical', function (req, res) {
   winston.debug(req.body);
 
   Lead.remove({ _id: req.params.leadid }, function (err, lead) {
@@ -62,6 +99,7 @@ router.delete('/:leadid', function (req, res) {
     //var activity = new Activity({actor: req.user.id, verb: "LEAD_DELETE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
     //activityEvent.emit('lead.delete', activity);
 
+    leadEvent.emit('lead.delete', lead);
 
     res.json(lead);
   });
@@ -78,7 +116,7 @@ router.get('/csv', function (req, res, next) {
   var skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid };
+  var query = { "id_project": req.projectid, "status": {$lte:1000}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
@@ -186,7 +224,7 @@ router.get('/', function (req, res) {
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid };
+  var query = { "id_project": req.projectid, "status": {$lte:1000}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);

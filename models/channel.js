@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var winston = require('../config/winston');
 
 
 var ChannelSchema = new Schema({
@@ -9,4 +10,12 @@ var ChannelSchema = new Schema({
   }
 },{ _id : false });
 
-module.exports = mongoose.model('channel', ChannelSchema);
+var channel = mongoose.model('channel', ChannelSchema);;
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  channel.syncIndexes();
+  winston.info("channel syncIndexes")
+}
+
+
+module.exports = channel;

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 // mongoose.set('debug', true);
+var winston = require('../config/winston');
 
 var AnalyticResultSchema = new Schema({
   // _id: {
@@ -13,4 +14,12 @@ var AnalyticResultSchema = new Schema({
   }}, { collection: 'requests' }
 );
 
-module.exports = mongoose.model('analyticResult', AnalyticResultSchema);
+var analyticResult= mongoose.model('analyticResult', AnalyticResultSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  analyticResult.syncIndexes();
+  winston.info("analyticResult syncIndexes")
+}
+
+
+module.exports = analyticResult;

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+var winston = require('../config/winston');
 
 var PendingInvitation = new Schema({
   
@@ -25,4 +26,12 @@ var PendingInvitation = new Schema({
   }
 );
 
-module.exports = mongoose.model('pending-invitation', PendingInvitation);
+var pending= mongoose.model('pending-invitation', PendingInvitation);
+
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  pending.syncIndexes();
+  winston.info("pending syncIndexes")
+}
+
+module.exports = pending;

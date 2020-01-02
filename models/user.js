@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
+var winston = require('../config/winston');
 
 var UserSchema = new Schema({
     _id: Schema.Types.ObjectId,
@@ -30,6 +31,18 @@ var UserSchema = new Schema({
     },
     resetpswrequestid: {
         type: String,
+    },
+    signedInAt:{
+        type:Date
+    },
+
+    // db.users.find({authUrl: {$exists : false }}).forEach(function(mydoc) {
+    //     db.users.update({_id: mydoc._id}, {$set: {authUrl: Math.random().toString(36).substring(2) + Date.now().toString(36)}})
+    //   })
+
+    authUrl: {
+        type: String,
+        index:true
     },
     attributes: {
         type: Object,
@@ -89,5 +102,10 @@ var UserModel = mongoose.model('user', UserSchema);
 // UserModel.getFullname = function () {
 //     return 
 // };
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+    UserModel.syncIndexes();
+    winston.info("UserModel syncIndexes")
+  }
 
 module.exports = UserModel;

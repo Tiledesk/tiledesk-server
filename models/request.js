@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Channel = require('../models/channel');
 var ObjectId = require('mongoose').Types.ObjectId;
+var winston = require('../config/winston');
 
 var ProjectUserSchema = require("../models/project_user").schema;
 // var Requester = require('../models/requester');
@@ -306,6 +307,37 @@ RequestSchema.virtual('availableAgents').get(function () {
   
 });
 
+
+RequestSchema.method("getBotId", function () {
+      
+      
+  if ( this.participants == null) {
+      return null;
+  }
+
+  var participants = this.participants;
+  winston.debug("participants", participants);
+
+  var botIdTmp;
+  
+  if (participants) {
+    participants.forEach(function(participant) { 
+      //winston.debug("participant", participant);
+      if (participant.indexOf("bot_")> -1) {
+        botIdTmp = participant.replace("bot_","");
+        //winston.debug("botIdTmp", botIdTmp);
+        //break;        
+      }
+    });
+  
+    return botIdTmp;
+  }else {
+    return null;
+  }
+
+});
+
+
 RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
 RequestSchema.index({ id_project: 1, type: -1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
@@ -320,4 +352,11 @@ RequestSchema.index({transcript: 'text', rating_message: 'text'},
 
 // RequestSchema.plugin(diffHistory.plugin);
 
-module.exports = mongoose.model('request', RequestSchema);
+var request =  mongoose.model('request', RequestSchema);
+if (process.env.MONGOOSE_SYNCINDEX) {
+  request.syncIndexes();
+  winston.info("message syncIndexes")
+
+}
+
+module.exports =request

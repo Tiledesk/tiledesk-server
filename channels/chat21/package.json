@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-chat21-app",
   "description": "The Tiledesk Chat21 module",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
   "license": "AGPL-3.0",
@@ -11,8 +11,9 @@
     "url": "https://github.com/Tiledesk/tiledesk-server"
   },
   "dependencies": {
-    "@chat21/chat21-node-sdk": "^1.0.28",
-    "winston": "^3.1.0"
+    "@chat21/chat21-node-sdk": "^1.0.37",
+    "winston": "^3.1.0",
+    "firebase-admin": "^7.1.1"
   },
   "devDependencies": {}
 }

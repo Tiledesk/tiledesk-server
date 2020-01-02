@@ -111,7 +111,9 @@ router.post('/signinAnonymously', function (req, res) {
         }
 
     
-        authEvent.emit("user.signin", savedUser);       
+        //authEvent.emit("user.signin", savedUser);      
+        authEvent.emit("user.signin", {user:savedUser, req:req});       
+        
         authEvent.emit("projectuser.create", savedProject_user);         
 
           winston.info('project user created ', savedProject_user.toObject());
@@ -150,10 +152,10 @@ router.post('/signinWithCustomToken', [
 
 
   var email = uuidv4() + '@tiledesk.com';
-  winston.info('signinAnonymously email: ' + email);
+  winston.info('signinWithCustomToken email: ' + email);
 
   var password = uuidv4();
-  winston.info('signinAnonymously password: ' + password);
+  winston.info('signinWithCustomToken password: ' + password);
 
   // signup ( email, password, firstname, lastname, emailverified)
   return userService.signup(email, password, req.body.firstname, req.body.lastname, false)
@@ -179,8 +181,9 @@ router.post('/signinWithCustomToken', [
           return res.status(500).send({ success: false, msg: 'Error saving object.' });
         }
 
-    
-        authEvent.emit("user.signin", savedUser);         
+        authEvent.emit("user.signin", {user:savedUser, req:req});     
+        
+        
         authEvent.emit("projectuser.create", savedProject_user);         
 
           winston.info('project user created ', savedProject_user.toObject());

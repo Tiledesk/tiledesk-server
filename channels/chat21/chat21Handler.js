@@ -2,19 +2,20 @@
 const messageEvent = require('../../event/messageEvent');
 const requestEvent = require('../../event/requestEvent');
 var messageService = require('../../services/messageService');
-var chatUtil = require('../../services/messageService');
+//var chatUtil = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
 
-var chat21Config = require('../../channels/chat21/chat21Config');
-var chat21 = require('../../channels/chat21/chat21Client');
+var chat21Config = require('./chat21Config');
+var chat21 = require('./chat21Client');
+var chat21Util = require('./chat21Util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
 
 
-const chat21Event = require('../../channels/chat21/chat21Event');
+const chat21Event = require('./chat21Event');
 
 
 var validtoken = require('../../middleware/valid-token');
@@ -23,7 +24,7 @@ var passport = require('passport');
 require('../../middleware/passport')(passport);
 
 
-var admin = require('../../channels/chat21/firebaseConnector');
+var admin = require('./firebaseConnector');
 var firestore;
 var chat21WebHook;
 var firebaseAuth;
@@ -31,8 +32,8 @@ var firebaseAuthDep;
 
 if (admin) {
     firestore = admin.firestore();
-    chat21WebHook = require('../../channels/chat21/chat21WebHook');
-    chat21ConfigRoute = require('../../channels/chat21/configRoute');
+    chat21WebHook = require('./chat21WebHook');
+    chat21ConfigRoute = require('./configRoute');
     firebaseAuth = require('./firebaseauth');
     firebaseAuthDep = require('./firebaseauthDEP');
     firebase = require('./firebase');
@@ -66,10 +67,20 @@ class Chat21Handler {
                     winston.info("Chat21Sender on message.sending ",  message);
 
 
-                    if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
+                   if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
+                    // if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
 
                     
                         chat21.auth.setAdminToken(adminToken);
+
+                        //'https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/typings/support-group-LvtMo6VMxX1j3xV3b-X?token=chat21-secret-orgAa,',
+
+                        chat21.conversations.typing(message.recipient,message.sender).finally(function() {
+                        // .then(function(){
+                        //     setTimeout(function() {
+                        //         chat21.conversations.stopTyping(message.recipient,message.sender);
+                        //     }, 1000);
+                        // });
 
                         let attributes = message.attributes;
 
@@ -80,21 +91,32 @@ class Chat21Handler {
 
                         winston.debug("Chat21Sender sending message.sending ",  message);
 
-                        chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                            'Recipient Fullname', message.text, message.sender, attributes)
-                                    .then(function(data){
-                                        winston.info("Chat21 sendToGroup sent ", data);
-                                
-                                        chat21Event.emit('message.sent', data);
+                        // chat21Util.getButtonFromText().then(function(messageData) {
 
-                                            messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
-                                                winston.info("Chat21 message sent ", upMessage.toObject());                                        
-                                            });
+                            // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text,
+                            //  sender_id, attributes, type, metadata){
 
-                            }).catch(function(err) {
-                                winston.error("Chat21 sendToGroup err", err);
-                                chat21Event.emit('message.sent.error', err);
-                            });
+                            chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
+                                'Recipient Fullname', message.text, message.sender, attributes, message.type, message.metadata)
+                                        .then(function(data){
+                                            winston.info("Chat21 sendToGroup sent ", data);
+                                    
+                                            chat21.conversations.stopTyping(message.recipient,message.sender);
+    
+                                            chat21Event.emit('message.sent', data);
+    
+                                                messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
+                                                    winston.info("Chat21 message sent ", upMessage.toObject());                                        
+                                                });
+    
+                                }).catch(function(err) {
+                                    winston.error("Chat21 sendToGroup err", err);
+                                    chat21Event.emit('message.sent.error', err);
+                                });
+
+                        // });
+                        
+                        });
                     }
                 });
             });
@@ -121,6 +143,7 @@ class Chat21Handler {
                         let members = requestObj.participants;
                         // var members = reqParticipantArray;
 
+                        members.push("system");
                         if (request.lead) {
                             members.push(request.lead.lead_id);
                         }
@@ -208,8 +231,13 @@ class Chat21Handler {
 
 
 
-                        that.saveNewRequest(JSON.parse(JSON.stringify(requestObj)), members,
-                            chat21Config.appid);
+
+                        // STOP FIRESTORE 
+                        // that.saveNewRequest(JSON.parse(JSON.stringify(requestObj)), members,
+                        //     chat21Config.appid);
+
+
+
                     }
                 });
             });
@@ -221,14 +249,16 @@ class Chat21Handler {
 
                         chat21.auth.setAdminToken(adminToken);                      
 
-                        winston.info("Chat21Sender archiving conversations ");
+                        winston.info("Chat21Sender archiving conversations for ",request.participants);
 
                        //iterate request.participant and archive conversation
                        request.participants.forEach(function(participant,index) {
 
-                            chat21.conversations.archive(participant)
+                        winston.info("Chat21Sender archiving conversation: " + request.request_id + "for " + participant);
+
+                            chat21.conversations.archive(request.request_id, participant)
                                         .then(function(data){
-                                            winston.info("Chat21 archived "+ data);
+                                            winston.info("Chat21 conversation archived result "+ data);
                                     
                                             chat21Event.emit('conversation.archived', data);                                               
 
@@ -266,8 +296,129 @@ class Chat21Handler {
                 });
             });
             
+             requestEvent.on('request.participants.update',  function(data) {       
+                   let request = data.request;
+                   //let oldParticipants = data.beforeRequest.participants;
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                        
+
+                     
+                        let requestObj = request.toJSON();
+                        
+                        winston.info("joining chat21 group for request with id: " + requestObj._id);
+                    
+                        var groupId = request.request_id;
+
+                        let members = [];
+                        
+                        members.push("system");
+
+                        // qui errore participants sembra 0,1 object ???
+                        request.participants.forEach(function(participant,index) {
+                            members.push(participant);
+                        });
+                        // requestObj.participants;
+                        // var members = reqParticipantArray;
+
+                        if (request.lead) {
+                            members.push(request.lead.lead_id);
+                        }
+                        winston.info("Chat21 group with members: " , members);  
+
+                         //setMembers: function(members, group_id){
+                        chat21.groups.setMembers(members, groupId).then(function(data) {
+                                winston.info("Chat21 group set: " , data);      
+                                chat21Event.emit('group.join', data);                                          
+                            }).catch(function(err) {
+                                winston.error("Error joining chat21 group ", err);
+                                chat21Event.emit('group.join.error', err);
+                            });
 
 
+
+                    }
+                });
+            });
+            
+            
+               requestEvent.on('request.participants.join',  function(data) {       
+                   let request = data.request;
+                   let member = data.member;
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                        
+
+                     
+                        // let requestObj = request.toJSON();
+                        
+                        var groupId = request.request_id;
+
+                        winston.info("joining member " + member +" for chat21 group with request : " + groupId);
+                                            
+
+                         //join: function(member_id, group_id){
+                        chat21.groups.join(member, groupId).then(function(data) {
+                                winston.info("Chat21 group joined: " + data);      
+                                chat21Event.emit('group.join', data);                                          
+                            }).catch(function(err) {
+                                winston.error("Error joining chat21 group ", err);
+                                chat21Event.emit('group.join.error', err);
+                            });
+
+
+
+                    }
+                });
+            });
+            
+            
+               requestEvent.on('request.participants.leave',  function(data) {       
+                   let request = data.request;
+                   let member = data.member;
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                     
+
+                     
+                        // let requestObj = request.toJSON();
+                        
+                        var groupId = request.request_id;
+
+                        winston.info("leaving " + member +" for chat21 group for request with id: " + groupId);
+                                   
+
+                         //leave: function(member_id, group_id){
+                        chat21.groups.leave(member, groupId).then(function(data) {
+                                winston.info("Chat21 group leaved: " + data);      
+                                chat21Event.emit('group.leave', data);                                          
+                            }).catch(function(err) {
+                                winston.error("Error leaving chat21 group ", err);
+                                chat21Event.emit('group.leave.error', err);
+                            });
+
+
+
+                    }
+                });
+            })
+            
+            
+            
+
+/*
             messageEvent.on('message.create.first',  function(message) {          
 
                 winston.info("chat21Handler.message.create.first", message); 
@@ -287,12 +438,12 @@ class Chat21Handler {
                 });
             });
 
-            
+*/
 
 
         }
 
-
+/*
      saveNewRequest (request, group_members, app_id) {
             //creare firestore conversation
             var newRequest = {};
@@ -363,7 +514,7 @@ class Chat21Handler {
             }) ;          
     }
 
-
+*/
 
     
 }

@@ -5,10 +5,11 @@ class Tilebase {
       this.url = url;
       this.onCreate = onCreate;
       this.onUpdate = onUpdate;
-      this.data = [];
+      //this.data = [];
       
 
     }
+/*
     insertOrUpdate(item) {
         let objIndex = this.data.findIndex((obj => obj._id == item._id));
         // console.log("objIndex", objIndex);
@@ -25,6 +26,13 @@ class Tilebase {
         
         return objIndex;
 
+    }
+
+
+*/
+    send (message) {
+        console.log("send message", message);
+        this.ws.send(message);
     }
     start(initialMessage) {
         // start(token) {
@@ -43,7 +51,8 @@ class Tilebase {
                     // var ws = new WebSocket('ws://localhost:3000/5bae41325f03b900401e39e8/messages');
                     
                     // 'ws://localhost:40510'
-                    var ws = new WebSocket(that.url);
+                    that.ws = new WebSocket(that.url);
+                    var ws = that.ws;
                     // var ws = new WebSocket(that.url, options);
                     ws.onopen = function () {
                         console.log('websocket is connected2 ...');
@@ -75,17 +84,19 @@ class Tilebase {
                                 //         message.data);
                             }
                             
-                            if (json && json.data && that.isArray(json.data)) {
-                                json.data.forEach(element => {
+                            if (json && json.payload  && json.payload.message && that.isArray(json.payload.message)) {
+                                json.payload.message.forEach(element => {
                                    // console.log("element", element);
-                                    let insUp = that.insertOrUpdate(element);
+                                    //let insUp = that.insertOrUpdate(element);
+                            let insUp = json.payload.method;
+                                console.log("insUp",insUp);
 
-                                    var object = {event: json.event, data: element};
+                                    var object = {event: json.payload, data: element};
 
-                                    if (insUp==-1 && that.onCreate) {
+                                    if (insUp=="CREATE" && that.onCreate) {
                                         that.onCreate(element, object);
                                     }
-                                    if (insUp>-1 && that.onUpdate) {
+                                    if (insUp=="UPDATE" && that.onUpdate) {
                                         that.onUpdate(element, object);
                                     }
                                     //this.data.push(element);
@@ -94,17 +105,19 @@ class Tilebase {
                                     // $('#messages').after(element.text + '<br>');
                                 });
                             }else {
-                                let insUp = that.insertOrUpdate(json);
+                                //let insUp = that.insertOrUpdate(json.payload.message);
+				                let insUp = json.payload.method;                                                                                                                                                                                                                         
+                                  console.log("insUp",insUp);     
 
-                                var object = {event: json.event, data: json};
+                                var object = {event: json.payload, data: json};
 
-                                if (insUp==-1 && that.onCreate) {
-                                    that.onCreate(json, object);
+                                if (insUp=="CREATE" && that.onCreate) {
+                                    that.onCreate(json.payload.message, object);
                                 }
-                                if (insUp>-1 && that.onUpdate) {
-                                    that.onUpdate(json, object);
+                                if (insUp=="UPDATE" && that.onUpdate) {
+                                    that.onUpdate(json.payload.message, object);
                                 }
-                                 resolve(json, object);
+                                 resolve(json.payload.message, object);
                                 // resolve
                                 // $('#messages').after(json.text + '<br>');
                             }
