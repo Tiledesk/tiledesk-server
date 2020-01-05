@@ -100,7 +100,8 @@ channelManager.listen();
 
 var modulesManager = undefined;
 try {
-  modulesManager = require('./modules/modulesManager');
+  // modulesManager = require('@tiledesk-ent/tiledesk-server-modules').modulesManager;
+  modulesManager = require('./services/modulesManager');
   modulesManager.init();
 } catch(err) {
   winston.info("ModulesManager not present");
