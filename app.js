@@ -78,7 +78,6 @@ var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
-var visitor_Counter = require('./routes/visitorCounter');
 var labels = require('./routes/labels');
 var labels2 = require('./routes/labels2');
 var userService = require("./services/userService");
@@ -359,7 +358,11 @@ app.use('/projects',project);
 
 
 app.use('/:projectid/widgets', visitorCounter, widgets);
-app.use('/:projectid/visitorcounter', visitor_Counter);
+
+if (process.env.VisitorCounter_ENABLED) {
+  var visitor_Counter = require('./routes/visitorCounter');
+  app.use('/:projectid/visitorcounter', visitor_Counter);
+}
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
