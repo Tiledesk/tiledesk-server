@@ -48,9 +48,9 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 winston.info("autoIndex: " + autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
-  mongoose.connect(config.databasetest, { "autoIndex": true });
+  mongoose.connect(config.databasetest, { "useNewUrlParser": true, "autoIndex": true });
 }else {
-  mongoose.connect(databaseUri, { "autoIndex": autoIndex });
+  mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex });
 }
 
 var auth = require('./routes/auth');
