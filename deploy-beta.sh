@@ -1,4 +1,4 @@
-npm version patch
+npm version prerelease --preid=beta
 version=`node -e 'console.log(require("./package.json").version)'`
 echo "version $version"
 
