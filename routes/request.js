@@ -17,8 +17,8 @@ csv.separator = ';';
 var messageService = require('../services/messageService');
 
 
-
-
+/*
+// comment it
 router.post('/', function (req, res) {
 
   winston.info("req.body", req.body);
@@ -49,6 +49,10 @@ router.post('/', function (req, res) {
   
   });
 });
+*/
+
+
+
 
 
 
@@ -308,51 +312,6 @@ router.post('/:requestid/share/email', function (req, res) {
 
 
 });
-
-// router.post('/:requestid/assign', function (req, res) {
-
-//   console.log(req.params.requestid);
-//   console.log("req projectid", req.projectid);
-//   console.log("req.user.id", req.user.id);
-  
-//   const assignee = req.body.assignee;
-//   console.log("assignee", assignee);
-
-//   return firebaseService.createCustomToken(req.user.id).then(customAuthToken => {
-//         console.log("customAuthToken", customAuthToken);
-//         // console.log("chat21", chat21);
-//         // console.log(" admin.auth()", JSON.stringify(admin.auth()));
-//         // console.log(" admin", admin.auth());
-        
-//        return chat21.firebaseAuth.signinWithCustomToken(customAuthToken).then(function(idToken) {
-//           chat21.auth.setCurrentToken(idToken);
-//           console.log("chat21.auth.getCurretToken()", chat21.auth.getCurrentToken());
-//           return chat21.groups.leave(req.user.id, req.params.requestid).then(function(data){
-//             return chat21.groups.join(assignee, req.params.requestid).then(function(data){
-//                   // console.log("join resolve ", data);
-//                   return res.json(data);
-//               });
-//           });
-//         });
-//     }).catch(function(err) {
-//       return res.status(500).send({ success: false, msg: 'Error assigning the request.', err: err });
-//     });
-
-      
-  
-
-//   // return requestService.removeParticipantByRequestId(request_id, req.projectid, req.user.id).then(function(request) {
-//   //   if (err) {
-//   //     return res.status(500).send({ success: false, msg: 'Error updating object.' });
-//   //   }
-//   //   return requestService.addParticipantByRequestId(request_id, req.projectid, req.params.assignee).then(function(request) {
-//   //     return res.json(request);
-//   //   });
-//   // });
-
-// });
-
-
 
 
 router.get('/', function (req, res, next) {

@@ -7,8 +7,6 @@ csv = require('csv-express');
 csv.separator = ';';
 const leadEvent = require('../event/leadEvent');
 
-//var Activity = require("../models/activity");
-//const activityEvent = require('../event/activityEvent');
 
 router.post('/', function (req, res) {
 
@@ -19,22 +17,6 @@ router.post('/', function (req, res) {
     res.json(savedLead);
   })
 
-  // var newLead = new Lead({
-  //   fullname: req.body.fullname,
-  //   lead_id: req.body.lead_id,
-  //   email: req.body.email,
-  //   id_project: req.projectid,
-  //   createdBy: req.user.id,
-  //   updatedBy: req.user.id
-  // });
-
-  // newLead.save(function (err, savedLead) {
-  //   if (err) {
-  //     winston.error('--- > ERROR ', err);
-  //     return res.status(500).send({ success: false, msg: 'Error saving object.' });
-  //   }
-  //   res.json(savedLead);
-  // });
 });
 
 router.put('/:leadid', function (req, res) {
@@ -62,8 +44,7 @@ router.put('/:leadid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "LEAD_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('lead.update', activity);
+  
 
     leadEvent.emit('lead.update', updatedLead);
     res.json(updatedLead);
@@ -79,8 +60,7 @@ router.delete('/:leadid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "LEAD_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('lead.update', activity);
+   
 
     leadEvent.emit('lead.delete', updatedLead);
     res.json(updatedLead);
@@ -96,9 +76,7 @@ router.delete('/:leadid/physical', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "LEAD_DELETE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('lead.delete', activity);
-
+  
     leadEvent.emit('lead.delete', lead);
 
     res.json(lead);

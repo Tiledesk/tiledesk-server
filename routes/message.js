@@ -112,26 +112,6 @@ router.post('/', function(req, res) {
 
 
 
-
-  // var newMessage = new Message({
-  //   sender: req.body.sender,
-  //   senderFullname: req.body.sender_fullname,
-  //   recipient: req.body.recipient,
-  //   recipientFullname: req.body.recipient_fullname,
-  //   text: req.body.text,
-  //   id_project: req.projectid,
-  //   createdBy: req.user.id,
-  //   updatedBy: req.user.id
-  // });
-
-  // newMessage.save(function(err, savedMessage) {
-  //   if (err) {
-  //     console.log(err);
-
-  //     return res.status(500).send({success: false, msg: 'Error saving object.', err:err});
-  //   }
-  //   res.json(savedMessage);
-  // });
 });
 
 

@@ -49,6 +49,7 @@ var winston = require('../config/winston');
   });
 
   // deprecated used on cloud function support (not in use in v2)
+  /*
   router.post('/:requestid/notify/email', function(req, res) {
   
     winston.debug("req.params", req.params);
@@ -108,7 +109,7 @@ var winston = require('../config/winston');
   
   });
 
-
+*/
   
 
 

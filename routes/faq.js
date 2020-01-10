@@ -222,15 +222,7 @@ router.get('/', function (req, res, next) {
 
     });
 
-  // Faq.find(query, function (err, faq) {
-  //   if (err) {
-  //     console.log('GET FAQ err ', err)
-  //     return next(err)
-  //   };
-  //   console.log('GET FAQ  ', faq)
-  //   res.json(faq);
-  // });
-
+  
 });
 
 
