@@ -81,52 +81,6 @@ class FaqService {
     });
   }
 
-  // createRemoteFaq(faqkb_remotekey, savedFaq) {
-
-  //   winston.debug('FAQ SERVICE (create remote faq) - REMOTE KEY of the FAQKB PASSED BY faq_kb routes ', faqkb_remotekey)
-  //   winston.debug('FAQ SERVICE (create remote faq) - ID OF THE NEW FAQ CREATED ', savedFaq._id)
-  //   winston.debug('FAQ SERVICE (create remote faq) - QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
-  //   winston.debug('FAQ SERVICE (create remote faq) - ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
-
-  //   var json = {
-  //     "id": savedFaq._id,
-  //     "conversation": "id:1006",
-  //     "index_in_conversation": 3,
-  //     "question": savedFaq.question,
-  //     "answer": savedFaq.answer,
-  //     "question_scored_terms": [
-  //     ],
-  //     "verified": true,
-  //     "topics": "t1 t2",
-  //     "doctype": "normal",
-  //     "state": "",
-  //     "status": 0
-  //   };
-
-
-  //   var options = {
-  //     url: 'http://ec2-52-47-168-118.eu-west-3.compute.amazonaws.com/qnamaker/v2.0/knowledgebases/' + faqkb_remotekey + '/knowledgebase',
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': 'Basic YWRtaW46YWRtaW5wNHNzdzByZA=='
-  //     },
-  //     json: json
-  //   };
-
-  //   request(options, function (err, res, body) {
-  //     if (res && (res.statusCode === 200 || res.statusCode === 201)) {
-  //       // winston.debug('FAQ KB KEY POST REQUEST BODY ', body);
-  //       winston.debug('FAQ REMOTE POST BODY ', body);
-
-
-  //     }
-  //     if (err) {
-  //       winston.debug('FAQ REMOTE POST ERROR ', err);
-  //     }
-  //   });
-  // }
-
 
 }
 
