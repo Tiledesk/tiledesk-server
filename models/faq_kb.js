@@ -21,9 +21,9 @@ var Faq_kbSchema = new Schema({
     required: true,
     index: true
   },
-  kbkey_remote: { //serve?
-    type: String,
-  },  
+  // kbkey_remote: { //serve?
+  //   type: String,
+  // },  
   type: {
     type: String,
     default: 'internal'
