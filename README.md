@@ -56,10 +56,3 @@ To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articl
 # REST API
 
 See the Tiledesk REST API [here](https://docs.tiledesk.com/apis/api)
-
-..
-
-
-
-
-document requests change dep attrib close reopen,etcc 
