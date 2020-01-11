@@ -153,7 +153,7 @@ class RequestService {
           }
           
           // console.log("assigned_operator_id", assigned_operator_id);
-          // console.log("status", status);
+           console.log("req status", status);
 
               var newRequest = new Request({
                 request_id: request_id,
