@@ -60,7 +60,6 @@ var visitor = require('./routes/visitor');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
-// var bot = require('./routes/trigger');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
 var project_user = require('./routes/project_user');
@@ -76,12 +75,12 @@ var pendinginvitation = require('./routes/pending-invitation');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
-var admin = require('./routes/admin');
+// var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
 var labels2 = require('./routes/labels2');
-var userService = require("./services/userService");
-
+// var userService = require("./services/userService");
+var fetchLabels = require('./middleware/fetchLabels');
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -321,11 +320,10 @@ var projectSetter = function (req, res, next) {
 app.use('/auth', auth);
 app.use('/testauth', authtest);
 
-// deprecated
-
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
-app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+// controlla ???
+app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], users);
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
 app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
@@ -344,10 +342,10 @@ channelManager.use(app);
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
 app.use('/:projectid/faqpub', faqpub);
 
-// app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], bot);
 
 //attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
-app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
+// controlla
+app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
 // app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq_kb);
 
 
@@ -368,8 +366,7 @@ if (process.env.VisitorCounter_ENABLED) {
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
-//TODO crud hasrole ma create per BelongsToProject anche bot,visitor, lead,etc..
-app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], request);
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], request);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
 app.use('/:projectid/publicanalytics', publicAnalytics);
@@ -380,7 +377,8 @@ app.use('/:projectid/jwt', jwtroute);
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 app.use('/:projectid/labels', labels);
-app.use('/:projectid/labels2', labels2);
+app.use('/:projectid/labels2', [fetchLabels],labels2);
+
 
 
 if (modulesManager) {
