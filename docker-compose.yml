@@ -30,7 +30,9 @@ services:
    ports:
       - "4200:80" # specify port forewarding
    networks:
-      - frontend
+        frontend:
+            aliases:
+                - web-widget
    depends_on:
       - proxy
   ionic:
@@ -50,8 +52,10 @@ services:
     ports:
       - "80:80" # specify port forewarding
     networks:
-      - frontend
-      - backend
+        frontend:
+            aliases:
+                - proxy
+        backend:
     links:
       - ionic
       - dashboard

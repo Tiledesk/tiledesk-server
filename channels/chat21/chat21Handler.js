@@ -96,8 +96,14 @@ class Chat21Handler {
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text,
                             //  sender_id, attributes, type, metadata){
 
+
+                            var timestamp = undefined;
+                            if (message.attributes && message.attributes.clienttimestamp) {
+                                timestamp = message.attributes.clienttimestamp;
+                            }
+
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                                'Recipient Fullname', message.text, message.sender, attributes, message.type, message.metadata)
+                                'Recipient Fullname', message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
                                             winston.info("Chat21 sendToGroup sent ", data);
                                     

@@ -117,6 +117,9 @@ router.post('/', function(req, res) {
                     winston.debug("rAttributes", rAttributes);
 
 
+
+                    // se /welcome devi mettere stato temporanedo della richiesta esempio 300 
+
                     // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                       // message.sender is the project_user id created with firebase custom auth
                      // vedi su

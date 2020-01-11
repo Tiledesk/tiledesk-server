@@ -56,7 +56,7 @@ class RoleChecker {
       isTypeAsFunction(type, user) {                 
             winston.info("isType:"+type);
             winston.info("user", user);
-           
+           //TODO Check if belongs to project
             if (type=='subscription' && user instanceof Subscription){
               winston.debug("is subscription");
               return true
