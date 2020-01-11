@@ -23,6 +23,7 @@ var roleChecker = require('../../middleware/has-role');
 var passport = require('passport');
 require('../../middleware/passport')(passport);
 
+const leadEvent = require('../../event/leadEvent');
 
 var admin = require('./firebaseConnector');
 var firestore;
@@ -61,6 +62,19 @@ class Chat21Handler {
         var that = this;
         winston.info("Chat21Handler listener start ");
         
+         // leadEvent.on('update')change group name wirth fullname)
+         leadEvent.on('lead.update', function(lead) {
+            setImmediate(() => {
+                winston.info("Chat21Sender on message.sending ",  message);
+
+
+               if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
+                // if (message && message.status === MessageConstants.CHAT_MESS
+               }
+            });
+        });
+
+
         messageEvent.on('message.sending', function(message) {
 
             setImmediate(() => {
@@ -93,6 +107,8 @@ class Chat21Handler {
 
                         // chat21Util.getButtonFromText().then(function(messageData) {
 
+                            message = chat21Util.parseReply(message.text);
+
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text,
                             //  sender_id, attributes, type, metadata){
 
@@ -120,9 +136,9 @@ class Chat21Handler {
                                     chat21Event.emit('message.sent.error', err);
                                 });
 
-                        // });
+                            });
                         
-                        });
+                        // });
                     }
                 });
             });
@@ -176,72 +192,6 @@ class Chat21Handler {
                                 winston.error("Error creating chat21 group ", err);
                                 chat21Event.emit('group.create.error', err);
                             });
-
-
-                            // return Promise.all([
-
-                        // if (!request.department.id_bot) {
-                        //     winston.debug("Chat21 Send welcome bot message");     
-                            
-                        //     if (request.availableAgents.length==0) {
-                               
-                        //         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes);
-                        //         messageService.send(
-                        //             'system', 
-                        //             'Bot',                                     
-                        //             request.request_id,
-                        //             i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //             request.id_project,
-                        //             'system', 
-                        //             {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                        //         );
-
-                        //         // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
-                        //         // chat21.messages.sendToGroup(
-                        //         //     'Bot', 
-                        //         //     request.request_id, 
-                        //         //     'Recipient Fullname', 
-                        //         //     i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //         //     'system', 
-                        //         //     {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                        //         // ).then(function(data){
-                        //                 // });
-                                
-                        //     }else {
-
-                        //         messageService.send(
-                        //             'system', 
-                        //             'Bot',                                     
-                        //             request.request_id,
-                        //             i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //             request.id_project,
-                        //             'system', 
-                        //             {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                        //         );
-
-
-                        //         // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
-                                
-                        //         // chat21.messages.sendToGroup(
-                        //         //     'Bot', 
-                        //         //     request.request_id, 
-                        //         //     'Recipient Fullname', 
-                        //         //     i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //         //     'system', 
-                        //         //     {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                        //         // ).then(function(data){
-
-                        //         //         });
-                        //     }
-                        // }
-
-
-
-
-                        // STOP FIRESTORE 
-                        // that.saveNewRequest(JSON.parse(JSON.stringify(requestObj)), members,
-                        //     chat21Config.appid);
-
 
 
                     }
