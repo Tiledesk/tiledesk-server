@@ -26,7 +26,7 @@ class RequestService {
 
     return new Promise(function (resolve, reject) {
 
-      return departmentService.getOperators(departmentid, id_project, nobot).then(function (result) {
+        return departmentService.getOperators(departmentid, id_project, nobot).then(function (result) {
 
           // console.log("getOperators", result);
 
@@ -39,8 +39,8 @@ class RequestService {
             status = 200;
             participants.push(assigned_operator_id.toString());
           }
-          // console.log("assigned_operator_id", assigned_operator_id);
-          // console.log("status", status);
+           winston.info("routeInternal assigned_operator_id: "+ assigned_operator_id);
+           winston.info("routeInternal status: "+ status);
 
             request.status = status;
             request.participants = participants;
@@ -79,8 +79,10 @@ class RequestService {
           }
             
           that.routeInternal(request,departmentid, id_project, nobot ).then(function(routedRequest){
-            
+
             return routedRequest.save(function(err, savedRequest) {
+              // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
+              //return routedRequest.update(function(err, savedRequest) {
               if (err) {
                 winston.error('Error saving the request.',err);
                 return reject(err);
@@ -95,6 +97,10 @@ class RequestService {
                   ]
               ,function (err, requestComplete){
           
+                  if (err) {
+                    winston.error('Error populating the request.',err);
+                    return reject(err);
+                  }
                   winston.info("Request routed",requestComplete.toObject());
                 
                   
@@ -138,23 +144,23 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-          // console.log("getOperators", result);
+           // console.log("getOperators", result);
 
-          var assigned_operator_id;
-          var participants = [];
-          console.log("req status0", status);
-          if (!status) {
-            console.log("req status check", status);
-            status = 100;
-            if (result.operators && result.operators.length>0) {
-              assigned_operator_id = result.operators[0].id_user;
-              status = 200;
-              participants.push(assigned_operator_id.toString());
-            }
-          }
-          
-          // console.log("assigned_operator_id", assigned_operator_id);
-           console.log("req status", status);
+           var assigned_operator_id;
+           var participants = [];
+           console.log("req status0", status);
+           if (!status) {
+             console.log("req status check", status);
+             status = 100;
+             if (result.operators && result.operators.length>0) {
+               assigned_operator_id = result.operators[0].id_user;
+               status = 200;
+               participants.push(assigned_operator_id.toString());
+             }
+           }
+           
+           // console.log("assigned_operator_id", assigned_operator_id);
+            console.log("req status", status);
 
               var newRequest = new Request({
                 request_id: request_id,
