@@ -1,6 +1,7 @@
 const  Map  = require('immutable').Map;
 // import uuid from 'uuid/v1'
 const uuidv4 = require('uuid/v4');
+var winston = require('../config/winston');
 
 class Subscription {
 
@@ -44,9 +45,9 @@ class Subscription {
       type: type, // email, phone
     }
 
-    // console.log('New subscriber via add method:', subscription)
+    // winston.debug('New subscriber via add method:', subscription)
     this.subscriptions = this.subscriptions.set(id, subscription)
-    // console.log('New subscribers',this.subscriptions);
+    // winston.debug('New subscribers',this.subscriptions);
     return id
   }
 

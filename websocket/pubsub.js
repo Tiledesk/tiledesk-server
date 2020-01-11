@@ -7,7 +7,8 @@ var _ = require('lodash');
 const uuidv4 = require('uuid/v4');
 
 const Subscription = require('./subscription');
-// console.log("Subscription", Subscription);
+// winston.debug("Subscription", Subscription);
+var winston = require('../config/winston');
 
 
 
@@ -17,7 +18,7 @@ class PubSub {
 
   //constructor (wss, onConnectCallbackArg, onDisconnectCallbackArg, onMessageCallbackArg) {
     constructor (wss, callbacksArg) {
-    //   console.log("wss", wss);
+    //   winston.debug("wss", wss);
     this.wss = wss
 
     this.clients = new Map()
@@ -51,7 +52,7 @@ class PubSub {
 
       const id = this.autoId()
 
-      // console.log('connection', id)
+      // winston.debug('connection', id)
       const client = {
         id: id,
         ws: ws,
@@ -78,7 +79,7 @@ class PubSub {
         (message) => this.handleReceivedClientMessage(id, message, req))
 
       ws.on('close', () => {
-        console.log('Client is disconnected')
+        winston.debug('Client is disconnected')
 
         clearInterval(ws.timer);
         
@@ -104,10 +105,10 @@ class PubSub {
 
       })
       //https://stackoverflow.com/questions/46755493/websocket-ping-with-node-js
-     // ws.on('pong',function(mess) { console.log(ws.id+' receive a pong : '+mess); });
+     // ws.on('pong',function(mess) { winston.debug(ws.id+' receive a pong : '+mess); });
 
       var thatThis = this;
-      //console.log("heartbeat timer");
+      //winston.debug("heartbeat timer");
       ws.timer=setInterval(function(){thatThis.ping(ws);},30000);
 
     })
@@ -115,9 +116,9 @@ class PubSub {
   }
 
   ping(ws) {
-    console.log(' send a ping');
+    winston.debug(' send a ping');
     if (ws.isAlive === false) {
-      console.log(' ws.isAlive is false terminating ws');
+      winston.debug(' ws.isAlive is false terminating ws');
       return ws.terminate();
     }
     //ws.ping('coucou',{},true);
@@ -144,7 +145,7 @@ class PubSub {
     const client = this.getClient(clientId)
     if (client) {
       const subscriptionId = this.subscription.add(topic, clientId)
-      console.log('handleAddSubscription this.subscription',JSON.stringify(this.subscription));
+      winston.debug('handleAddSubscription this.subscription',JSON.stringify(this.subscription));
       
       client.subscriptions.push(subscriptionId)      
       this.addClient(client)
@@ -158,7 +159,7 @@ class PubSub {
       // }
      
      
-      //console.log('handleAddSubscription this.addClient',JSON.stringify(this.clients));
+      //winston.debug('handleAddSubscription this.addClient',JSON.stringify(this.clients));
     }
 
   }
@@ -172,29 +173,29 @@ class PubSub {
 
     const client = this.getClient(clientId)
 
-    console.log('handleUnsubscribe client.id', client.id, "subscriptions", client.subscriptions);
+    winston.debug('handleUnsubscribe client.id', client.id, "subscriptions", client.subscriptions);
 
 
     let clientSubscriptions = _.get(client, 'subscriptions', [])
-    //console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+    //winston.debug('handleUnsubscribe clientSubscriptions',clientSubscriptions);
 
     const userSubscriptions = this.subscription.getSubscriptions(
       (s) => s.clientId === clientId && s.type === 'ws')
 
-    console.log('handleUnsubscribe userSubscriptions',JSON.stringify(userSubscriptions));
-    //console.log(util.inspect(userSubscriptions, {showHidden: false, depth: null}))
+    winston.debug('handleUnsubscribe userSubscriptions',JSON.stringify(userSubscriptions));
+    //winston.debug(util.inspect(userSubscriptions, {showHidden: false, depth: null}))
 
     userSubscriptions.forEach((sub) => {
       //clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id);
-      //console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+      //winston.debug('handleUnsubscribe clientSubscriptions',clientSubscriptions);
       // now let remove subscriptions
-      console.log("handleUnsubscribe  sub.topic",sub.topic);
-      console.log("handleUnsubscribe  topic",topic);
+      winston.debug("handleUnsubscribe  sub.topic",sub.topic);
+      winston.debug("handleUnsubscribe  topic",topic);
 
       if (sub.topic == topic) {
-        console.log("handleUnsubscribe  remove",sub.id);
+        winston.debug("handleUnsubscribe  remove",sub.id);
         var index = clientSubscriptions.indexOf(sub.id);
-        console.log("handleUnsubscribe  index",index);
+        winston.debug("handleUnsubscribe  index",index);
         if (index > -1) {
           clientSubscriptions.splice(index, 1);
         }
@@ -207,12 +208,12 @@ class PubSub {
 
     // userSubscriptions.forEach((sub) => {
     //   clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id);
-    //   console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+    //   winston.debug('handleUnsubscribe clientSubscriptions',clientSubscriptions);
     //   // now let remove subscriptions
     //   this.subscription.remove(sub.id)
     // })
-    console.log('handleUnsubscribe clientSubscriptions',clientSubscriptions);
-     console.log('handleUnsubscribe this.subscription', JSON.stringify(this.subscription));
+    winston.debug('handleUnsubscribe clientSubscriptions',clientSubscriptions);
+     winston.debug('handleUnsubscribe this.subscription', JSON.stringify(this.subscription));
 
     // let update client subscriptions
     if (client) {
@@ -241,7 +242,7 @@ class PubSub {
 
       const clientId = subscription.clientId
       const subscriptionType = subscription.type  // email, phone, ....
-      // console.log('CLient id of subscription', clientId, subscription)
+      // winston.debug('CLient id of subscription', clientId, subscription)
       // we are only handle send via websocket
       if (subscriptionType === 'ws') {
         this.send(clientId, {
@@ -272,7 +273,7 @@ class PubSub {
     }
 
     const client = this.getClient(clientId)
-    // console.log('clientId',clientId, message);
+    // winston.debug('clientId',clientId, message);
 
       //heartbeat
       const ws = client.ws
@@ -299,11 +300,11 @@ class PubSub {
         case 'heartbeat':
           
           const text = _.get(message, 'payload.message.text', null);
-          console.log('received heartbeat with text ',text);
+          winston.debug('received heartbeat with text ',text);
           if (text=='ping') {
             var messageToSend = {action: 'heartbeat', payload: {message: {text: 'pong'}}};
             // rispondi pong solo su ping e non su pong
-            console.log('received heartbeat from ',clientId," i send a  message: ",  messageToSend);         
+            winston.debug('received heartbeat from ',clientId," i send a  message: ",  messageToSend);         
             this.send(clientId, messageToSend)   
             
           }
@@ -397,7 +398,7 @@ class PubSub {
     try {
       message = JSON.parse(message)
     } catch (e) {
-      console.log(e, message)
+      winston.debug(e, message)
     }
 
     return message
@@ -412,9 +413,9 @@ class PubSub {
     if (!client.id) {
       client.id = this.autoId()
     }
-    console.log('client added', client.id,client.subscriptions);
+    winston.debug('client added', client.id,client.subscriptions);
     this.clients = this.clients.set(client.id, client)
-     //console.log('clients added', JSON.stringify(this.clients))
+     //winston.debug('clients added', JSON.stringify(this.clients))
   }
 
   /**
@@ -458,7 +459,7 @@ class PubSub {
       message = JSON.stringify(message)
     }
     catch (err) {
-      console.log('An error convert object message to string', err)
+      winston.debug('An error convert object message to string', err)
     }
 
     ws.send(message)
