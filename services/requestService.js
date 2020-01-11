@@ -767,49 +767,6 @@ class RequestService {
   }
 
 
-// moved to requestNotification
-/*
-  sendTranscriptByEmail(sendTo, request_id, id_project) {
-    return new Promise(function (resolve, reject) {
-      return Request.findOne({request_id: request_id, id_project: id_project})
-      .populate('department')
-      .exec(function(err, request) { 
-      if (err){
-        winston.error(err);
-        return reject(err);
-      }
-      if (!request) {
-        winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
-        return reject("Request not found for request_id "+ request_id  + " and id_project " + id_project);
-      }
-      
-
-
-      return Message.find({"recipient": request_id, id_project : id_project})
-        .sort({updatedAt: 'asc'})
-        .exec(function(err, messages) { 
-        if (err) {
-          return res.status(500).send({success: false, msg: 'Error getting messages.'});
-        }
-
-        if(!messages){
-          return reject(err);
-        }
-
-      
-
-        emailService.sendRequestTranscript(sendTo, messages, request);
-        console.log("sendTranscriptByEmail sent");
-        return resolve({sendTo: sendTo, messages: messages, request: request});
-
-      
-      });
-
-      });
-    });
-  }
-  
-*/
 
 
 }
