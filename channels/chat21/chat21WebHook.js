@@ -63,7 +63,8 @@ router.post('/', function(req, res) {
                 var userFullname;
                 var projectid;
             
-            
+                var requestStatus = undefined;
+
                 if (message.attributes) {
             
                   projectid = message.attributes.projectId;
@@ -85,9 +86,13 @@ router.post('/', function(req, res) {
             
                   userFullname = message.attributes.userFullname;
                   winston.debug("chat21 userFullname", userFullname);
+
+                  if (message.attributes.subtype == "info") {
+                    requestStatus = 0;
+                  }
                 }
                 
-            
+                winston.info("requestStatus"+ requestStatus);
                 
             
                 if (!projectid) {
@@ -103,6 +108,9 @@ router.post('/', function(req, res) {
                 if (!userFullname) {
                   userFullname = message.sender_fullname;
                 }
+
+              
+               
 
                 var leadAttributes = message.attributes;
                 leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
@@ -124,7 +132,7 @@ router.post('/', function(req, res) {
                       // message.sender is the project_user id created with firebase custom auth
                      // vedi su
                     //  ATTENTO QUI
-                      return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
+                      return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
                         // return requestService.createWithIdAndRequester(message.recipient, message.sender, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
                     
                     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
