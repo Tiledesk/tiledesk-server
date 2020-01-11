@@ -21,12 +21,12 @@ var winston = require('../config/winston');
 class RequestService {
 
 //change create with this
-  routeInternal (request, departmentid, id_project) {
+  routeInternal (request, departmentid, id_project, nobot) {
    var that = this;
 
     return new Promise(function (resolve, reject) {
 
-        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+      return departmentService.getOperators(departmentid, id_project, nobot).then(function (result) {
 
           // console.log("getOperators", result);
 
@@ -59,7 +59,7 @@ class RequestService {
   }
   
   
-  route(request_id, departmentid, id_project) {
+  route(request_id, departmentid, id_project, nobot) {
    var that = this;
 
    return new Promise(function (resolve, reject) {
@@ -78,8 +78,8 @@ class RequestService {
             return reject(err);
           }
             
-          that.routeInternal(request,departmentid, id_project ).then(function(routedRequest){
-
+          that.routeInternal(request,departmentid, id_project, nobot ).then(function(routedRequest){
+            
             return routedRequest.save(function(err, savedRequest) {
               if (err) {
                 winston.error('Error saving the request.',err);
