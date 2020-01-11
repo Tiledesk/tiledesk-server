@@ -21,6 +21,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+RUN rm .npmrc
+
 RUN mkdir /usr/src/app/confenv
 RUN touch /usr/src/app/confenv/.env
 
