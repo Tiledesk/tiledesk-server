@@ -105,9 +105,9 @@ class Chat21Handler {
 
                         winston.debug("Chat21Sender sending message.sending ",  message);
 
-                        chat21Util.getButtonFromText().then(function(messageData) {
+                        // chat21Util.getButtonFromText().then(function(messageData) {
+                        //     message = messageData;
 
-                            message = messageData;
                             // doent'work must merge older field with new message = chat21Util.parseReply(message.text);
 
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text,
@@ -139,7 +139,7 @@ class Chat21Handler {
 
                             });
                         
-                        });
+                        // });
                     }
                 });
             });
