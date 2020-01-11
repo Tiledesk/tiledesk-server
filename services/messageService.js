@@ -129,7 +129,7 @@ class MessageService {
               winston.error(err);
               return reject(err);
             }
-            messageEvent.emit('message.update',updatedMessage);
+            messageEvent.emit('message.update.simple',updatedMessage);
            // winston.debug("updatedMessage", updatedMessage);
 
            that.emitMessage(updatedMessage);
