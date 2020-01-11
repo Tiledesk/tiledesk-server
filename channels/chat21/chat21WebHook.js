@@ -87,7 +87,7 @@ router.post('/', function(req, res) {
                   userFullname = message.attributes.userFullname;
                   winston.debug("chat21 userFullname", userFullname);
 
-                  if (message.attributes.subtype == "info") {
+                  if (message.attributes.subtype === "info") {
                     requestStatus = 50;
                   }
                 }
