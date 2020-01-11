@@ -322,8 +322,8 @@ app.use('/testauth', authtest);
 
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
-// controlla ???
-app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], users);
+// controlla ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
+app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
 app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
