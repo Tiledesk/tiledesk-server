@@ -17,7 +17,6 @@ var Subscription = require('../models/subscription');
 var jwt = require('jsonwebtoken');
 const url = require('url');
 
-const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
 
 
 module.exports = function(passport) {
@@ -283,12 +282,21 @@ module.exports = function(passport) {
     
     
   ));
+
+
+
+
   
   // https://github.com/jaredhanson/passport-anonymous
 
   // passport.use(new AnonymousStrategy());
 
 
+
+
+
+ 
+  // oauth2
 /**
  * BasicStrategy & ClientPasswordStrategy
  *
@@ -300,6 +308,10 @@ module.exports = function(passport) {
  * to the `Authorization` header). While this approach is not recommended by
  * the specification, in practice it is quite common.
  */
+
+  /*
+const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
+
 function verifyClient(clientId, clientSecret, done) {
   
   db.clients.findByClientId(clientId, (error, client) => {
@@ -313,5 +325,12 @@ function verifyClient(clientId, clientSecret, done) {
 //passport.use(new BasicStrategy(verifyClient));
 
 passport.use(new ClientPasswordStrategy(verifyClient));
+
+
+*/
+
+
+
+
 
 };
