@@ -142,8 +142,9 @@ class RequestService {
 
           var assigned_operator_id;
           var participants = [];
-
+          console.log("req status0", status);
           if (!status) {
+            console.log("req status check", status);
             status = 100;
             if (result.operators && result.operators.length>0) {
               assigned_operator_id = result.operators[0].id_user;
