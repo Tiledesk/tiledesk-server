@@ -110,8 +110,7 @@ class Chat21Handler {
 
                             // doent'work must merge older field with new message = chat21Util.parseReply(message.text);
 
-                            // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text,
-                            //  sender_id, attributes, type, metadata){
+                            // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata, timestamp){
 
 
                             var timestamp = undefined;
