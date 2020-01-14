@@ -38,7 +38,6 @@ docker run -p 3000:3000 tiledesk/tiledesk-server
 ```
 docker images
 docker ps
-docker-compose up
 ```
 
 # Remove Container
@@ -76,7 +75,7 @@ docker push tiledesk/tiledesk-server:latest
 https://buddy.works/guides/how-dockerize-node-application
 
 
-== non usate ==
+== NOT USED ==
 
 docker run --name my-tiledesk-server --link my-mongo:mongo -d tiledesk-server -e FIREBASE_CONFIG_FILE=<FIREBASE_CONFIG_PATH.json> -e DATABASE_URI=mongodb://localhost/test
 
