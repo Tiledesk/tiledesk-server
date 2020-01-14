@@ -72,33 +72,16 @@ router.get('/default/clone', function (req, res) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-          console.log("saved");
-          res.redirect('/');
+          res.redirect(req.baseUrl + '/');
           // res.json(savedLabel);
           // redirect to get
         });
     }
 });
 
-
- 
-      // //  var newLabel = {data: req.labels};
-      //  var newLabel = {lang:"it",data: req.labels};
-      //   Label.findOneAndUpdate({id_project: req.projectid}, 
-      //    { $push: newLabel},
-      //    {new: true, upsert:true, setDefaultsOnInsert: true }, 
-      //    function(err, savedLabel) {
-            
-      //      if (err) {
-      //        winston.error('--- > ERROR ', err);
-      //        return res.status(500).send({ success: false, msg: 'Error saving object.' });
-      //      }
-      //      res.json(savedLabel);
-      //  });
    
         
-   
- });
+});
  
  
 
@@ -107,35 +90,20 @@ router.get('/default/:lang', function (req, res) {
 
   res.json(pickedLang);
 });
-// router.get('/default/:lang', function (req, res) {
-  
-
-//   var filePath = path.join(labelsDir, req.params.lang+'.json');
- 
-//   fs.readFile(filePath, {encoding: 'utf-8'}, function(err,data){
-//     if (!err) {
-//         winston.debug('received data: ' + data);
-//         res.writeHead(200, {'Content-Type': 'text/html'});
-//         res.write(data);
-//         res.end();
-//     } else {
-//         winston.error(err);
-//         return res.status(500).send({ success: false, msg: 'Error reading object.' });
-//     }
-//   });
-// });
 
 
-router.patch('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+
+// curl -v -X PATCH -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels2/
+
+// router.patch('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+  router.patch('/',function (req, res) {
  
   var lang = req.body.lang;
   winston.info("lang: " + lang);
 
 
-  var pickedLang = req.labels.find(l => l.lang === lang);
 
-  // var newLabel = {lang: lang, data: pickedLang};
-  var newLabel = pickedLang;
+  var newLabel = {lang: lang, data: req.body.data};
   winston.info("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
@@ -171,57 +139,58 @@ router.patch('/',  [passport.authenticate(['basic', 'jwt'], { session: false }),
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-          console.log("saved")
-          res.json(savedLabel);
+          // res.json(savedLabel);
+          res.redirect('/'+lang);
         });
       }
     });
 
 });
 
-router.put('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+// router.put('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
 
+//   winston.debug(req.body);
+//   winston.debug("req.user", req.user);
+
+// //  var _id = new mongoose.Types.ObjectId();
+
+
+//   var newLabel = req.body;
+  
+//   newLabel.id_project = req.projectid;
+//   newLabel.createdBy = req.user.id
+//   newLabel.updatedBy = req.user.id
+  
+//   // if (!req.body._id) {
+//   //   newLabel._id = new mongoose.mongo.ObjectID();
+//   // }
+
+  
+//   Label.findOneAndUpdate({id_project: req.projectid}, 
+//     { $set: newLabel},
+//     // newLabel,
+//     // { $set: { 'products.$': products }},
+//      {new: true, upsert:true, setDefaultsOnInsert: true },function(err, savedLabel) {
+//   // Label.update({_id: req.body._id}, newLabel, {upsert: true, setDefaultsOnInsert: true}, function (err, savedLabel) {
+
+
+//   // newLabel.save(function (err, savedLabel) {
+//     if (err) {
+//       winston.error('--- > ERROR ', err);
+//       return res.status(500).send({ success: false, msg: 'Error saving object.' });
+//     }
+//     res.json(savedLabel);
+//   });
+
+//  });
+
+  
+// curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/4321/labels2/
+
+router.delete('/', function (req, res) {
   winston.debug(req.body);
-  winston.debug("req.user", req.user);
 
-//  var _id = new mongoose.Types.ObjectId();
-
-
-  var newLabel = req.body;
-  
-  newLabel.id_project = req.projectid;
-  newLabel.createdBy = req.user.id
-  newLabel.updatedBy = req.user.id
-  
-  // if (!req.body._id) {
-  //   newLabel._id = new mongoose.mongo.ObjectID();
-  // }
-
-  
-  Label.findOneAndUpdate({id_project: req.projectid}, 
-    { $set: newLabel},
-    // newLabel,
-    // { $set: { 'products.$': products }},
-     {new: true, upsert:true, setDefaultsOnInsert: true },function(err, savedLabel) {
-  // Label.update({_id: req.body._id}, newLabel, {upsert: true, setDefaultsOnInsert: true}, function (err, savedLabel) {
-
-
-  // newLabel.save(function (err, savedLabel) {
-    if (err) {
-      winston.error('--- > ERROR ', err);
-      return res.status(500).send({ success: false, msg: 'Error saving object.' });
-    }
-    res.json(savedLabel);
-  });
-
- });
-
-  
-
-router.delete('/:labelid',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-  winston.debug(req.body);
-
-  Label.remove({ _id: req.params.labelid }, function (err, label) {
+  Label.remove({ id_project: req.projectid }, function (err, label) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -229,6 +198,47 @@ router.delete('/:labelid',  [passport.authenticate(['basic', 'jwt'], { session: 
 
     res.json(label);
   });
+});
+
+// curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/1235/labels2/EN
+//router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+router.delete('/:lang', function (req, res) {
+  var lang = req.params.lang;
+  winston.info("lang: " + lang);
+
+
+  Label.findOne({id_project:req.projectid}, function(err, label) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    } else {
+      if (!label) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }else {
+        var foundIndex = -1;
+        label.data.forEach(function(l, index){
+            if (l.lang == lang ) {
+              foundIndex = index;
+            }
+        });
+        winston.info("foundIndex: " + foundIndex);
+        if (foundIndex>-1) {
+          var idData = label.data[foundIndex]._id;
+          label.data.id(idData).remove();
+        }else {
+          return res.status(404).send({ success: false, msg: 'Object not found.' });
+        }
+      }
+      
+        label.save(function (err, savedLabel) {
+          if (err) {
+            winston.error('--- > ERROR ', err);
+            return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }
+          // res.json(savedLabel);
+          res.redirect('/'+lang);
+        });
+      }
+    });
 });
 
 
