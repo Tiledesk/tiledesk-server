@@ -258,7 +258,7 @@ var visitorCounter = function (req, res, next) {
 
 
 app.get('/', function (req, res) {  
-  res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://docs.tiledesk.com');
+  res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
 });
 
   
