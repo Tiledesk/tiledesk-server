@@ -26,7 +26,7 @@ router.get('/default', function (req, res) {
  
 });
 
-
+// [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],
 router.get('/default/clone', function (req, res) {
 
   // winston.info("req.body.lang: " + req.body.lang);
@@ -74,6 +74,7 @@ router.get('/default/clone', function (req, res) {
           }
           console.log("saved")
           res.json(savedLabel);
+          // redirect to get
         });
     }
 });
@@ -125,29 +126,56 @@ router.get('/default/:lang', function (req, res) {
 
 
 router.patch('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-  var data = req.body;
-  var id_project = req.projectid;
+ 
+  var lang = req.body.lang;
+  winston.info("lang: " + lang);
 
-  Label.findOne({id_project:id_project}, function(err, label) {
-      if (err) {
-        return res.status(500).send({ success: false, msg: 'Error getting object.' });
-      } else {
-        if (!label) {
-          label = new Label({          
-            id_project: req.projectid,
-            createdBy: req.user.id,
-            updatedBy: req.user.id
-          });
+
+  var pickedLang = req.labels.find(l => l.lang === lang);
+
+  // var newLabel = {lang: lang, data: pickedLang};
+  var newLabel = pickedLang;
+  winston.info("newLabel: " ,newLabel);
+
+  Label.findOne({id_project:req.projectid}, function(err, label) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    } else {
+      if (!label) {
+        label = new Label({          
+          id_project: req.projectid,
+          // createdBy: req.user.id,
+          // updatedBy: req.user.id,
+          createdBy: "req.user.id,",
+          updatedBy: "req.user.id,",
+          data: [newLabel]
+        });
+      }else {
+        var foundIndex = -1;
+        label.data.forEach(function(l, index){
+            if (l.lang == lang ) {
+              foundIndex = index;
+            }
+        });
+        winston.info("foundIndex: " + foundIndex);
+        if (foundIndex>-1) {
+          label.data[foundIndex] = newLabel;
+        }else {
+          label.data.push(newLabel);
         }
-        Object.keys(data).forEach(function(key) {
-          var val = data[key];
-          label[key] = val;
-        });        
-          label.save(function (err, savedLabel) {
-            res.json(savedLabel);
-          });
       }
-  });
+      
+        label.save(function (err, savedLabel) {
+          if (err) {
+            winston.error('--- > ERROR ', err);
+            return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }
+          console.log("saved")
+          res.json(savedLabel);
+        });
+      }
+    });
+
 });
 
 router.put('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
