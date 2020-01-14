@@ -72,8 +72,9 @@ router.get('/default/clone', function (req, res) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-          console.log("saved")
-          res.json(savedLabel);
+          console.log("saved");
+          res.redirect('/');
+          // res.json(savedLabel);
           // redirect to get
         });
     }
