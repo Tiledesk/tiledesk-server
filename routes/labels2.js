@@ -35,6 +35,11 @@ router.get('/default/clone', function (req, res) {
   
   var pickedLang = req.labels.find(l => l.lang === lang);
 
+  if (!pickedLang){
+    var pickedLangPivot = req.labels.find(l => l.lang === "EN");
+    pickedLangPivot.lang = lang;
+    pickedLang = pickedLangPivot;
+  }
   // var newLabel = {lang: lang, data: pickedLang};
   var newLabel = pickedLang;
   winston.info("newLabel: " ,newLabel);
