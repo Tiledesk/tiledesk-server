@@ -236,9 +236,10 @@ router.delete('/:project_userid', function (req, res) {
 //   });
 // });
 
-router.get('/details/:project_userid', function (req, res) {
+router.get('/:project_userid', function (req, res) {
+  // router.get('/details/:project_userid', function (req, res) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  Project_user.find({ _id: req.params.project_userid }).
+  Project_user.findOne({ _id: req.params.project_userid, id_project: req.project_id }).
     populate('id_user').
     exec(function (err, project_users) {
       if (err) {
@@ -255,18 +256,18 @@ router.get('/details/:project_userid', function (req, res) {
 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
- */
-router.get('/:user_id/:project_id', function (req, res, next) {
-  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  winston.debug("--> USER ID ", req.params.user_id);
-  winston.debug("--> PROJECT ID ", req.params.project_id);
-  Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
-    exec(function (err, project_users) {
-      if (err) return next(err);
-      res.json(project_users);
+//  */
+// router.get('/:user_id/:project_id', function (req, res, next) {
+//   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+//   winston.debug("--> USER ID ", req.params.user_id);
+//   winston.debug("--> PROJECT ID ", req.params.project_id);
+//   Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
+//     exec(function (err, project_users) {
+//       if (err) return next(err);
+//       res.json(project_users);
 
-    });
-});
+//     });
+// });
 
 
 /**
