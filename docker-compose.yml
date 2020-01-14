@@ -1,15 +1,7 @@
 version: "3.7"
-### Creates a named network with the default bridge driver
-# The network is shared between restheart and mongodb only
-# See: https://docs.docker.com/engine/userguide/networking/dockernetworks/
-# See: https://docs.docker.com/engine/reference/commandline/network_create/
 networks:
    backend:
    frontend:
-
-### Create a permanent, named data volume
-# This makes much easier to identify where the mongodb data is stored on host
-# See: https://docs.docker.com/engine/userguide/containers/dockervolumes/#mount-a-shared-storage-volume-as-a-data-volume
 volumes:
    tiledesk-datadb:
    chat21-cf:
@@ -93,7 +85,6 @@ services:
       - CHAT21_URL
       - CHAT21_APPID
       - CHAT21_ADMIN_TOKEN
-   #   - DATABASE_URI
       - MONGODB_URI=mongodb://mongo/tiledesk
       - LOAD_DOTENV_SUBFOLDER=true
 #    build: .
@@ -124,4 +115,3 @@ services:
      -  '4040:4040'
     links:
       - "server"
-    #command: ngrok http server:3000
