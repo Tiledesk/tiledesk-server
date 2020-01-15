@@ -100,10 +100,10 @@ router.get('/default/:lang', function (req, res) {
 
 
 
-// curl -v -X PATCH -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels2/
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels2/
 
-// router.patch('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-  router.patch('/',function (req, res) {
+// router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+  router.post('/',function (req, res) {
  
   var lang = req.body.lang;
   winston.info("lang: " + lang);
@@ -327,7 +327,7 @@ router.get('/:lang', function (req, res) {
         });
       
       }
-      
+
       winston.info("returnval",returnval);
 
       var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
