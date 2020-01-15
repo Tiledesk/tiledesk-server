@@ -220,7 +220,7 @@ getOperators(departmentid, projectid, nobot) {
 
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
-              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, operators: [{ id_user: 'bot_' + department.id_bot }] });
+              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, id_bot:department.id_bot, operators: [{ id_user: 'bot_' + department.id_bot }] });
             }).catch(function (error) {
 
               // winston.error("Write failed: ", error);
@@ -346,7 +346,9 @@ getOperators(departmentid, projectid, nobot) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
-    return Project_user.find({ id_project: projectid }).exec(function (err, project_users) {
+
+    var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
+    return Project_user.find({ id_project: projectid , role: { $in : role } }).exec(function (err, project_users) {
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
