@@ -25,7 +25,7 @@ router.get('/default', function (req, res) {
   res.json(req.labels);
  
 });
-
+// curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels2/default/clone
 // [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],
 router.post('/default/clone', function (req, res) {
 // router.get('/default/clone', function (req, res) {
@@ -272,9 +272,15 @@ router.get('/', function (req, res) {
         returnval = {data: req.labels};
       } else {
         returnval = labels;
-        var dataAsObj = {...req.labels, ...labels.data }
-        var data = Object.values(dataAsObj);
-        returnval.data = data;
+        // var dataAsObj = {...req.labels, ...labels.data }
+        // var data = Object.values(dataAsObj);
+        req.labels.forEach(elementDef => {
+          var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
+          if (!pickedLang) {
+            returnval.data.push(elementDef);
+          }
+        });
+      
       }
       
       winston.debug("returnval",returnval);
@@ -311,9 +317,15 @@ router.get('/:lang', function (req, res) {
         returnval = {data: req.labels};
       } else {
         returnval = labels;
-        var dataAsObj = {...req.labels, ...labels.data }
-        var data = Object.values(dataAsObj);
-        returnval.data = data;
+        // var dataAsObj = {...req.labels, ...labels.data }
+        // var data = Object.values(dataAsObj);
+        req.labels.forEach(elementDef => {
+          var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
+          if (!pickedLang) {
+            returnval.data.push(elementDef);
+          }
+        });
+      
       }
       
       winston.info("returnval",returnval);
