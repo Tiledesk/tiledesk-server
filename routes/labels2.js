@@ -27,10 +27,12 @@ router.get('/default', function (req, res) {
 });
 
 // [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],
-router.get('/default/clone', function (req, res) {
+router.post('/default/clone', function (req, res) {
+// router.get('/default/clone', function (req, res) {
 
   // winston.info("req.body.lang: " + req.body.lang);
-  var lang = req.query.lang;
+  // var lang = req.query.lang;
+  var lang = req.body.lang;
   winston.info("lang: " + lang);
   
   var pickedLang = req.labels.find(l => l.lang === lang);
