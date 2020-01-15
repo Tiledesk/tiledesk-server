@@ -163,7 +163,7 @@ describe('/signInAnonymously', () => {
                         
                             done();
                         });
-                    });
+                    }); 
                 });
              
                 
