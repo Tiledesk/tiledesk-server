@@ -573,10 +573,11 @@ class RequestService {
 
          
 
-        }).catch(function(err)  {
-              winston.error("Error reopening the request", err);
-              return reject(err);
-          });
+        })
+        // .catch(function(err)  {
+        //       winston.error("Error reopening the request", err);
+        //       return reject(err);
+        //   });
     });
 
   }
