@@ -17,8 +17,8 @@ csv.separator = ';';
 var messageService = require('../services/messageService');
 
 
-/*
-// comment it
+
+// undocumented
 router.post('/', function (req, res) {
 
   winston.info("req.body", req.body);
@@ -49,7 +49,7 @@ router.post('/', function (req, res) {
   
   });
 });
-*/
+
 
 
 
