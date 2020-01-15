@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/%40tiledesk%2Ftiledesk-server.svg)](https://badge.fury.io/js/%40tiledesk%2Ftiledesk-server)
 
-[![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=master)](https://travis-ci.org/Tiledesk/tiledesk-server)
+[![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=dev)](https://travis-ci.org/Tiledesk/tiledesk-server)
 
 # Introduction
 
