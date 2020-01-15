@@ -21,6 +21,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token');
 var PendingInvitation = require("../models/pending-invitation");
+const { check, validationResult } = require('express-validator');
 
 
 router.post('/signup', function (req, res) {
@@ -78,8 +79,20 @@ router.post('/signup', function (req, res) {
 });
 
 
-router.post('/signinAnonymously', function (req, res) {
+
+// curl -v -X POST -H 'Content-Type:application/json' -u 6b4d2080-3583-444d-9901-e3564a22a79b@tiledesk.com:c4e9b11d-25b7-43f0-b074-b5e970ea7222 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-554477/messages
+
+router.post('/signinAnonymously', 
+[
+  check('id_project').notEmpty(),  
+],
+function (req, res) {
  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
   var email = uuidv4() + '@tiledesk.com';
   winston.info('signinAnonymously email: ' + email);
 
@@ -104,35 +117,36 @@ router.post('/signinAnonymously', function (req, res) {
         updatedBy: savedUser.id
       });
 
-      return newProject_user.save(function (err, savedProject_user) {
-        if (err) {
-          winston.error('Error saving object.', err)
-          return res.status(500).send({ success: false, msg: 'Error saving object.' });
-        }
+        return newProject_user.save(function (err, savedProject_user) {
+          if (err) {
+            winston.error('Error saving object.', err)
+            return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }
 
-    
-        //authEvent.emit("user.signin", savedUser);      
-        authEvent.emit("user.signin", {user:savedUser, req:req});       
-        
-        authEvent.emit("projectuser.create", savedProject_user);         
-
-          winston.info('project user created ', savedProject_user.toObject());
-
+      
+          //authEvent.emit("user.signin", savedUser);      
+          authEvent.emit("user.signin", {user:savedUser, req:req});       
           
-        //remove password 
-        let userJson = savedUser.toObject();
-        delete userJson.password;
-        
+          authEvent.emit("projectuser.create", savedProject_user);         
 
-        var signOptions = {
-          issuer:  'https://tiledesk.com',
-          subject:  'user',
-          audience:  'https://tiledesk.com',           
-        };
+            winston.info('project user created ', savedProject_user.toObject());
 
-        var token = jwt.sign(userJson, config.secret, signOptions);
+            
+          //remove password 
+          let userJson = savedUser.toObject();
+          delete userJson.password;
+          
 
-        res.json({ success: true, token: 'JWT ' + token, user: userJson });
+          var signOptions = {
+            issuer:  'https://tiledesk.com',
+            subject:  'user',
+            audience:  'https://tiledesk.com',           
+          };
+
+          var token = jwt.sign(userJson, config.secret, signOptions);
+
+          res.json({ success: true, token: 'JWT ' + token, user: userJson });
+      });
     }).catch(function (err) {
 
       authEvent.emit("user.signin.error", {body: req.body, err:err});             
@@ -140,7 +154,7 @@ router.post('/signinAnonymously', function (req, res) {
        winston.error('Error registering new user', err);
        res.send(err);
     });
-  });
+ 
 });
 
 //caso UNI. pass jwt token with project secret sign. so aud=project/id subject=user
@@ -203,13 +217,13 @@ router.post('/signinWithCustomToken', [
         var token = jwt.sign(userJson, config.secret, signOptions);
 
         res.json({ success: true, token: 'JWT ' + token, user: userJson });
-    }).catch(function (err) {
-
-      authEvent.emit("user.signin.error", {body: req.body, err:err});             
-
-       winston.error('Error registering new user', err);
-       res.send(err);
     });
+  }).catch(function (err) {
+
+    authEvent.emit("user.signin.error", {body: req.body, err:err});             
+
+     winston.error('Error registering new user', err);
+     res.send(err);
   });
 });
 
