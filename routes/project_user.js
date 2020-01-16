@@ -239,35 +239,55 @@ router.delete('/:project_userid', function (req, res) {
 router.get('/:project_userid', function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  Project_user.findOne({ _id: req.params.project_userid, id_project: req.project_id }).
+  Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
     populate('id_user').
-    exec(function (err, project_users) {
+    exec(function (err, project_user) {
       if (err) {
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      if (!project_users) {
+      if (!project_user) {
         return res.status(404).send({ success: false, msg: 'Object not found.' });
       }
-      res.json(project_users);
+      res.json(project_user);
     });
 
 });
+
+//dep
+router.get('/:user_id/:project_id', function (req, res, next) {
+     // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+     winston.debug("--> USER ID ", req.params.user_id);
+    winston.debug("--> PROJECT ID ", req.params.project_id);
+    Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
+       exec(function (err, project_users) {
+         if (err) return next(err);
+         res.json(project_users);
+  
+       });
+   });
+  
 
 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
-// router.get('/:user_id/:project_id', function (req, res, next) {
-//   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-//   winston.debug("--> USER ID ", req.params.user_id);
-//   winston.debug("--> PROJECT ID ", req.params.project_id);
-//   Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
-//     exec(function (err, project_users) {
-//       if (err) return next(err);
-//       res.json(project_users);
+ router.get('/users/:user_id', function (req, res, next) {
+   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+   winston.debug("--> USER ID ", req.params.user_id);
+  //  winston.debug("--> PROJECT ID ", req.params.project_id);
+   Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
+    populate('id_user').
+     exec(function (err, project_user) {
+      if (err) {
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
+      if (!project_user) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      res.json(project_user);
 
-//     });
-// });
+     });
+});
 
 
 /**
