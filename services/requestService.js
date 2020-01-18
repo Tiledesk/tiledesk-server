@@ -469,47 +469,6 @@ class RequestService {
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
-
-                  /* moved to requestNotification
-                  //send auto transcript
-                  try {                
-                      Project.findById(id_project, function(err, project){                        
-                        if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
-
-                           //send email to admin
-                          Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
-                          .exec(function (err, project_users) {
-
-                            if (project_users && project_users.length>0) {
-                              project_users.forEach(project_user => {
-                                if (project_user.id_user) {
-                                  return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
-                                } else {
-                                }
-                              });  
-                            }                      
-
-                          });
-                          //end send email to admin
-
-                          //send email to lead
-                          return Lead.findById(updatedRequest.requester_id, function(err, lead){
-                             //if (lead && lead.email) {
-                              if (lead) {
-                                return that.sendTranscriptByEmail(lead.email, request_id, id_project);
-                             }
-                              
-                           });
-                          //end send email to lead
-
-                        }
-                      });
-                    }catch(e) {
-                      winston.error("error sendTranscriptByEmail ", e);
-                    }
-
-                    */
-
                     winston.info("Request closed", updatedRequest);
                     //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
