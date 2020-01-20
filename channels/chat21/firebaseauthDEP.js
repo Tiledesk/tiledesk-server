@@ -11,8 +11,10 @@ var firebaseService = require("./firebaseService");
 
 //TODO NON DOVRESTI PASSARE NUOVAMENTE EMAIL E PASSWORD MA METTERE SOTTO JWT E BASIC, LASCI A QUESTI ULTIMI AUTENTICAZIONE
 router.post('/signin', function (req, res) {
+  // auttype
     User.findOne({
       email: req.body.email
+      //,authType: 'email_password'
     }, 'email firstname lastname password id', function (err, user) {
       if (err) throw err;
   

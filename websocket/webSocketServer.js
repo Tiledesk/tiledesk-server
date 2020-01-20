@@ -69,6 +69,7 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
+                          // autType?????
                           User.findOne({_id: identifier}, 'email firstname lastname emailverified id', function (err, user) {
                             // console.log("BasicStrategy user",user);
                             // console.log("BasicStrategy err",err);

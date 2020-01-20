@@ -7,7 +7,7 @@ var UserSchema = new Schema({
     _id: Schema.Types.ObjectId,
     email: {
         type: String,
-        unique: true,
+        unique: true,//remove unique on db
         required: true,
         index: true
     },
@@ -32,7 +32,7 @@ var UserSchema = new Schema({
     resetpswrequestid: {
         type: String,
     },
-    signedInAt:{
+    signedInAt: {
         type:Date
     },
 
@@ -47,6 +47,11 @@ var UserSchema = new Schema({
     attributes: {
         type: Object,
     },
+    // authType: { // update db old data
+    //     type: String,
+    //     index:true,
+    //     default: 'email_password'
+    // },
     // auth: {
     //     type: Schema.Types.ObjectId,
     //     ref: 'auth',
@@ -97,7 +102,11 @@ UserSchema.virtual('fullName').get(function () {
     return (this.firstname || '') + ' ' + (this.lastname || '');
   });
   
+
+//UserSchema.index({ email: 1, authType: 1 }, { unique: true }); 
+
 var UserModel = mongoose.model('user', UserSchema);
+
 
 // UserModel.getFullname = function () {
 //     return 

@@ -5,7 +5,10 @@ var winston = require('../config/winston');
 
 class UserService {
 //TODO providerId cambia tutte classi di test perche è stato aggiunto providerId,
-    signup ( email, password, firstname, lastname, emailverified) {
+// add authType
+    signup ( email, password, firstname, lastname, emailverified
+        // , authType
+        ) {
         return new Promise(function (resolve, reject) {
 
             // var auth = new Auth({
@@ -24,6 +27,7 @@ class UserService {
                     firstname: firstname,
                     lastname: lastname,
                     emailverified: emailverified,
+                    // authType: authType
                     // auth: authSaved._id
                 });
                 // save the user
