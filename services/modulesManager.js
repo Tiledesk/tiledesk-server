@@ -131,12 +131,12 @@ class ModulesManager {
             winston.debug("this.resthookRoute:"+ this.resthookRoute);        
              this.subscriptionNotifier = require('@tiledesk-ent/tiledesk-server-resthook').subscriptionNotifier;
             this.subscriptionNotifier.start();
-            winston.info("ModulesManager init resthookRoute loaded");
+            winston.info("ModulesManager init resthook loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init resthookRoute module not found");
             }else {
-                winston.info("ModulesManager error initializing init resthookRoute module", err);
+                winston.info("ModulesManager error initializing init resthook module", err);
             }
         }
 
@@ -147,9 +147,9 @@ class ModulesManager {
             winston.info("ModulesManager init analyticsRoute loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init analyticsRoute module not found");
+                winston.info("ModulesManager init analytics module not found");
             }else {
-                winston.info("ModulesManager error initializing init analyticsRoute module", err);
+                winston.info("ModulesManager error initializing init analytics module", err);
             }
         }
 

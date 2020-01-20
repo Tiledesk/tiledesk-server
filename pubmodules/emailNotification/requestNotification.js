@@ -2,6 +2,7 @@
 
 var emailService = require("../../services/emailService");
 var Project = require("../../models/project");
+var Request = require("../../models/request");
 var Project_user = require("../../models/project_user");
 
 var User = require("../../models/user");
@@ -81,29 +82,29 @@ sendEmail(projectid, savedRequest) {
          console.warn("Project not found", projectid);
        } else {
          
-         // console.log("Project", project);
+         // winston.debug("Project", project);
    
    
                  if (savedRequest.status==100) { //POOLED
                  // throw "ciao";
                    var allAgents = savedRequest.agents;
-                  // console.log("allAgents", allAgents);
+                  // winston.debug("allAgents", allAgents);
    
                    allAgents.forEach(project_user => {
-                   //  console.log("project_user", project_user);
+                   //  winston.debug("project_user", project_user);
    
                      User.findById(project_user.id_user, function (err, user) {
                        if (err) {
-                       //  console.log(err);
+                       //  winston.debug(err);
                        }
                        if (!user) {
                          console.warn("User not found", project_user.id_user);
                        } else {
-                         console.log("Sending sendNewPooledRequestNotification to user with email", user.email);
+                         winston.debug("Sending sendNewPooledRequestNotification to user with email", user.email);
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
-                           console.log("User email not verified", user.email);
+                           winston.info("User email not verified", user.email);
                          }
                        }
                      });
@@ -114,16 +115,21 @@ sendEmail(projectid, savedRequest) {
                    }
 
                    else if (savedRequest.status==200) { //ASSIGNED
-                     console.log("participants", savedRequest.participants[0]);
+                    var assignedId = savedRequest.participants[0];
+                     winston.debug("participants", assignedId);
+
+                    if (assignedId.startsWith("bot_")) {
+                      return ;
+                    }
    
-                     User.findById( savedRequest.participants[0], function (err, user) {
+                     User.findById( assignedId, function (err, user) {
                        if (err) {
                          winston.error("Error sending email to " + savedRequest.participants[0], err);
                        }
                        if (!user) {
                          console.warn("User not found",  savedRequest.participants[0]);
                        } else {
-                         console.log("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                         winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
                         //  if (user.emailverified) {    enable it?                    
                           emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
                         //  }
@@ -144,7 +150,7 @@ sendEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     console.log("Errore sending email", e);
+     winston.debug("Errore sending email", e);
    }
    //end send email
    
@@ -185,7 +191,7 @@ sendEmail(projectid, savedRequest) {
       
 
         emailService.sendRequestTranscript(sendTo, messages, request);
-        console.log("sendTranscriptByEmail sent");
+        winston.debug("sendTranscriptByEmail sent");
         return resolve({sendTo: sendTo, messages: messages, request: request});
 
       

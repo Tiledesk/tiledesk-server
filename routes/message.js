@@ -33,7 +33,11 @@ router.post('/', function(req, res) {
         if (!request) { //the request doen't exists create it
 
               winston.debug("request not exists", request);                                     
-              winston.info("req.projectuser", req.projectuser);                                     
+
+              if (req.projectuser) {
+                winston.info("req.projectuser", req.projectuser);                                     
+              }
+              
               
 
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
