@@ -74,7 +74,7 @@ FaqSchema.index({question: 'text', answer: 'text'},
 
  faq.on('index', function(error) {
   // "_id index cannot be sparse"
-  console.log('index', error);
+  winston.debug('index', error);
 });
 
 if (process.env.MONGOOSE_SYNCINDEX) {
