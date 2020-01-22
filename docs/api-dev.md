@@ -122,7 +122,9 @@ smessages/5beeb3835d34344cd4962a8c
 ## Requests 
 
 ### Create 
-
+```
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"request_id":"request_id", "requester_id":"requester_id", "text":"text"}' http://localhost:3000/5ca366fdee19dbc72e98e96f/requests
+```
 
 
 ### List
