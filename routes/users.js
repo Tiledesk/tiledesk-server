@@ -108,7 +108,7 @@ router.get('/resendverifyemail', function (req, res) {
     res.status(500).json({ success: false, message: e });
   }
 });
-
+// TODO unsecure?
 router.get('/:userid', function (req, res) {
 
   User.findById(req.params.userid, 'firstname lastname _id', function (err, user) {

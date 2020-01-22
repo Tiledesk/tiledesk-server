@@ -26,6 +26,7 @@ class BotSubscriptionNotifier {
         audience:  'https://tiledesk.com/bots/'+bot._id,        
       };
 
+      // TODO metti bot_? a user._id
       var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
       json["token"] = token;
 

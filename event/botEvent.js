@@ -64,6 +64,7 @@ function getBotId(message) {
 }
 
 //modify to async
+// TODO perche nn message.create???
 messageEvent.on('message.received', function(message) {
 
     winston.debug("message", message);
@@ -72,6 +73,7 @@ messageEvent.on('message.received', function(message) {
         winston.debug("it s a message sent from system, exit");
         return null;
     }
+    
     if (message.text.indexOf("\\agent") > -1) { //not reply to a message containing \\agent
         return 0;
     }
@@ -87,6 +89,7 @@ messageEvent.on('message.received', function(message) {
    if (!botId) {
         return null;
     }else {
+                                                //loop fix for messages sent from external bot             
         if (message.sender === 'bot_'+botId || message.sender === botId) {
             winston.debug("it s a message sent from bot, exit");
             return null;        

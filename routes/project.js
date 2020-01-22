@@ -86,6 +86,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 
 // PROJECT PUT
 // should check HasRole otherwise another project user can change this
+// TODO solo owner???
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
   Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
@@ -98,6 +99,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 });
 
 // DOWNGRADE PLAN. UNUSED
+// TODO controlla deve essere owner
 router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole()], function (req, res) {
   console.log('downgradeplan - UPDATE PROJECT REQ BODY ', req.body);
    Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
@@ -139,9 +141,11 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 });
 
 // GET ALL PROJECTS BY CURRENT USER ID
+// TODO controlla hasrole serve????? 
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  winston.debug('REQ USER ID ', req.user.id)
-  Project_user.find({ id_user: req.user.id }).
+  winston.debug('REQ USER ID ', req.user._id)
+   // project_user_qui
+  Project_user.find({ id_user: req.user._id }).
     populate('id_project').
     exec(function (err, projects) {
       if (err) {
