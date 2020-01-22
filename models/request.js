@@ -307,6 +307,15 @@ RequestSchema.virtual('availableAgents').get(function () {
   
 });
 
+// TODO FIND BOT
+// RequestSchema.methods.findParticipantsObj = function(cb) {
+//   return new Promise(function (resolve, reject) {
+//     return Promise.all([mongoose.model('user').find({_id: { $in : this.participants } }), mongoose.model('faq_kb').find({_id: { $in : this.participants } })]).then(function(results){
+//       return resolve(results);
+//     });
+//   });
+// };
+
 
 RequestSchema.method("getBotId", function () {
       
@@ -323,6 +332,7 @@ RequestSchema.method("getBotId", function () {
   if (participants) {
     participants.forEach(function(participant) { 
       //winston.debug("participant", participant);
+      // bot_HERE
       if (participant.indexOf("bot_")> -1) {
         botIdTmp = participant.replace("bot_","");
         //winston.debug("botIdTmp", botIdTmp);

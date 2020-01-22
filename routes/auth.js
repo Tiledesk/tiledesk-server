@@ -25,7 +25,17 @@ const { check, validationResult } = require('express-validator');
 var UserUtil = require('../utils/userUtil');
 
 
-router.post('/signup', function (req, res) {
+router.post('/signup',
+[
+  check('email').isEmail(),  
+]
+, function (req, res) {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
   if (!req.body.email || !req.body.password) {
     return res.json({ success: false, msg: 'Please pass email and password.' });
   } else {    
