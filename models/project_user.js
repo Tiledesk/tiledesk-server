@@ -28,6 +28,12 @@ var winston = require('../config/winston');
       ref: 'user',
       index: true
     },
+    // extuser_id: { //non serve al momento
+    uuid_user: {
+      type: String,
+      index: true
+      // required: true
+    },
     role: {
       type: String,
       index: true
@@ -105,6 +111,7 @@ var winston = require('../config/winston');
   //     }
   // };
 
+  // Project_userSchema.index({ id_project: 1, uuid_user: 1 }, { unique: true }); 
 
 
 

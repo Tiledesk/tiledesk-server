@@ -14,6 +14,7 @@ var config = require('../config/database'); // get db config file
 var Faq_kb = require("../models/faq_kb");
 var Project = require('../models/project');
 var Subscription = require('../models/subscription');
+var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
 
@@ -184,6 +185,8 @@ module.exports = function(passport) {
     winston.info("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
 
     if (req && req.disablePassportEntityCheck) { //req can be null
+      // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
+      // is better to rename req.user.id to req.user._id in all files
       return done(null, jwt_payload);
     }
 
@@ -221,6 +224,26 @@ module.exports = function(passport) {
         }
       });              
 
+    } else if (subject=="userexternal") {
+    
+     
+        if (jwt_payload) {
+          winston.info("Passport JWT userexternal", jwt_payload);
+          var userM = UserUtil.decorateUser(jwt_payload);
+          winston.info("Passport JWT userexternal userM", userM);
+          return done(null, userM );
+        }                  
+
+     } else if (subject=="guest") {
+    
+     
+        if (jwt_payload) {
+          winston.info("Passport JWT guest", jwt_payload);
+          var userM = UserUtil.decorateUser(jwt_payload);
+          winston.info("Passport JWT guest userM", userM);
+          return done(null, userM );
+        }                  
+
     } else {
       winston.debug("Passport JWT generic user");
       User.findOne({_id: identifier}, function(err, user) {
@@ -247,8 +270,10 @@ module.exports = function(passport) {
 
   passport.use(new BasicStrategy(function(userid, password, done) {
         // console.log("BasicStrategy");
-
-      User.findOne({ email: userid }, 'email firstname lastname password emailverified id', function (err, user) {
+// authType
+      User.findOne({ email: userid
+        // , authType:'email_password' 
+      }, 'email firstname lastname password emailverified id', function (err, user) {
         // console.log("BasicStrategy user",user);
         // console.log("BasicStrategy err",err);
 

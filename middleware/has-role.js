@@ -54,16 +54,17 @@ class RoleChecker {
 
 
       isTypeAsFunction(type, user) {                 
-            winston.info("isType:"+type);
-            winston.info("user", user);
+            winston.debug("isType:"+type);
+            winston.debug("user", user);
            //TODO Check if belongs to project
             if (type=='subscription' && user instanceof Subscription){
-              winston.debug("is subscription");
+              winston.debug("isTypeAsFunction is subscription");
               return true
             } else if (type=='bot' && user instanceof Faq_kb){
-              winston.debug("is bot");
+              winston.debug("isTypeAsFunction is bot");
               return true
             } else {
+              winston.debug("isTypeAsFunction is false");
               return false;
             }
           }
@@ -85,7 +86,7 @@ class RoleChecker {
           // winston.debug("req.originalUrl" + req.originalUrl);
           // winston.debug("req.params" + JSON.stringify(req.params));
          // winston.info("req.params.projectid: " + req.params.projectid);
-        //  winston.info("req.user.id: " + req.user.id);
+        //  winston.info("req.user._id: " + req.user._id);
 
           // winston.info("req.projectuser: " + req.projectuser);
           //winston.debug("req.user", req.user);
@@ -103,10 +104,20 @@ class RoleChecker {
             // console.log("typers",typers);
           }
 
-          Project_user.find({ id_user: req.user.id, id_project: req.params.projectid }).
+          // if (!req.user._id) {
+          //   res.status(403).send({success: false, msg: 'req.user._id not defined.'});
+          // }
+          winston.info("hasRoleOrType req.user._id " +req.user._id);
+          // project_user_qui_importante
+
+          var query = { id_project: req.params.projectid, id_user: req.user._id};
+          if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
+            query = { id_project: req.params.projectid, uuid_user: req.user._id};
+          }
+          Project_user.find(query).
             exec(function (err, project_user) {
               if (err) {
-                winston.error(err);
+                winston.error("Error getting project_user for hasrole",err);
                 return next(err);
               }
               //winston.info("project_user: ", JSON.stringify(project_user));
@@ -152,8 +163,14 @@ class RoleChecker {
         var that = this;
 
         return new Promise(function (resolve, reject) {              
-      
-          Project_user.find({ id_user: user_id, id_project: projectid }).
+          // project_user_qui_importante
+
+          var query = { id_project: req.params.projectid, id_user: req.user._id};
+          if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
+            query = { id_project: req.params.projectid, uuid_user: req.user._id};
+          }
+
+          Project_user.find(query).
             exec(function (err, project_users) {
               if (err) {
                 winston.error(err);
