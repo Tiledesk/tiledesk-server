@@ -187,6 +187,7 @@ module.exports = function(passport) {
     if (req && req.disablePassportEntityCheck) { //req can be null
       // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
       // is better to rename req.user.id to req.user._id in all files
+      winston.info("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
 
@@ -232,7 +233,11 @@ module.exports = function(passport) {
           var userM = UserUtil.decorateUser(jwt_payload);
           winston.info("Passport JWT userexternal userM", userM);
           return done(null, userM );
-        }                  
+        }  else {
+          var err = {msg: "No jwt_payload passed. Its required"};
+          winston.error("Passport JWT userexternal err", err);
+          return done(err, false);
+        }                
 
      } else if (subject=="guest") {
     
@@ -242,7 +247,11 @@ module.exports = function(passport) {
           var userM = UserUtil.decorateUser(jwt_payload);
           winston.info("Passport JWT guest userM", userM);
           return done(null, userM );
-        }                  
+        }  else {
+          var err = {msg: "No jwt_payload passed. Its required"};
+          winston.error("Passport JWT guest err", err);
+          return done(err, false);
+        }                   
 
     } else {
       winston.debug("Passport JWT generic user");
