@@ -43,7 +43,7 @@ class WebSocketServer {
           winston.debug('queryParameter', queryParameter);
 
           var token = queryParameter.token;
-          winston.info('token:'+ token);
+          winston.debug('token:'+ token);
           winston.debug('config.secret:'+ config.secret);
 
         
@@ -85,7 +85,7 @@ class WebSocketServer {
 
                             // info.req.user = decoded;
                             info.req.user = user;
-                            winston.info('info.req.user',info.req.user.toObject());
+                            winston.debug('info.req.user',info.req.user.toObject());
                             return cb(true);
 
                           });
@@ -175,8 +175,8 @@ class WebSocketServer {
         var urlSub = id.split('/');  
 
         var projectId = urlSub[1];
-        winston.info('projectId: '+projectId);
-        winston.info('req.user._id: '+req.user._id);
+        winston.debug('projectId: '+projectId);
+        winston.debug('req.user._id: '+req.user._id);
         // winston.debug(' req.: ',req);
        
        
@@ -188,15 +188,15 @@ class WebSocketServer {
           if (!projectuser) {
             return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
           }
-          winston.info('projectuser', projectuser.toObject()); 
+          winston.debug('projectuser', projectuser.toObject()); 
 
           var query = {id_project:projectId, status: { $lt: 1000 } };
           if (projectuser.role == "owner" || projectuser.role == "admin") {
-            winston.info('query admin: '+ JSON.stringify(query));
+            winston.debug('query admin: '+ JSON.stringify(query));
           }else {
             //query.agents =  { $in : projectuser };
             query.agents._id = projectuser._id;
-            winston.info('query: '+ JSON.stringify(query));
+            winston.debug('query: '+ JSON.stringify(query));
           }
           
           Request.find(query)
@@ -239,7 +239,7 @@ class WebSocketServer {
             }
 
             var query = {id_project:projectId, request_id: recipientId};
-           winston.info('query: '+ JSON.stringify(query));
+           winston.debug('query: '+ JSON.stringify(query));
 
             // if (projectuser.role=="owner" || projectuser.role=="admin") {
             // }else {
