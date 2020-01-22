@@ -180,7 +180,7 @@ module.exports = function(passport) {
     winston.info("passport subject: " + subject);
 
     var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-    winston.info("fullUrl:"+ fullUrl);
+    winston.debug("fullUrl:"+ fullUrl);
 
     winston.info("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
 
