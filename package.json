@@ -8,7 +8,9 @@
     "pretest": "mongodb-runner start",
     "test": "mocha ./test/*.js ./modules/**/test/*.js --exit",
     "test:int": "mocha ./test-int/*.js  ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
-    "posttest": "mongodb-runner stop"
+    "posttest": "mongodb-runner stop",
+    "heroku-prebuild": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc",
+    "enable-ent": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc"
   },
   "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
