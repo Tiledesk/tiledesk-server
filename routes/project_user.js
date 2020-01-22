@@ -71,7 +71,7 @@ router.post('/invite', function (req, res) {
       return Project_user.find({ id_project: req.projectid }, function (err, projectuser) {
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
-          winston.info("Error gettting project_user for invite", err);
+          winston.error("Error gettting project_user for invite", err);
           return res.status(500).send(err);
         }
 
@@ -188,7 +188,7 @@ router.put('/:project_userid', function (req, res) {
 
   Project_user.findByIdAndUpdate(req.params.project_userid, req.body, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
-      winston.info("Error gettting project_user for update", err);
+      winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
@@ -209,7 +209,7 @@ router.delete('/:project_userid', function (req, res) {
 
   Project_user.findByIdAndRemove(req.params.project_userid, { new: false}, function (err, project_user) {
     if (err) {
-      winston.info("Error gettting project_user for delete", err);
+      winston.error("Error gettting project_user for delete", err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
@@ -248,7 +248,7 @@ router.get('/:project_userid', function (req, res) {
     populate('id_user').
     exec(function (err, project_user) {
       if (err) {
-        winston.info("Error gettting project_user for get", err);
+        winston.error("Error gettting project_user for get", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
       if (!project_user) {
@@ -279,14 +279,14 @@ router.get('/:user_id/:project_id', function (req, res, next) {
 //  */
  router.get('/users/:user_id', function (req, res, next) {
    // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-   winston.debug("--> USER ID ", req.params.user_id);
+   winston.info("--> users USER ID ", req.params.user_id);
   //  winston.debug("--> PROJECT ID ", req.params.project_id);
    // project_user_qui
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
     populate('id_user').
      exec(function (err, project_user) {
       if (err) {
-        winston.info("Error gettting project_user for get users", err);
+        winston.error("Error gettting project_user for get users", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
       if (!project_user) {
