@@ -130,6 +130,31 @@ describe('/signup', () => {
     });
 
 
+    it('signupkOWrongEmail', (done) => {
+
+        
+        //   this.timeout();
+    
+           var email = "test-signuoOk-" + Date.now() + "@email";
+           var pwd = "pwd";
+    
+              
+                        chai.request(server)
+                            .post('/auth/signup' )
+                            .send({email:email, password:pwd, lastname:"lastname", firstname: "firstname", disableEmail: true})
+                            .end((err, res) => {
+                                //console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(422);                                                                      
+                            
+                                done();
+                            });
+    
+                 
+                    
+        });
+
+
 });
 
 
