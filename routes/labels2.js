@@ -27,7 +27,7 @@ router.get('/default', function (req, res) {
 });
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels2/default/clone
 // [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],
-router.post('/default/clone', function (req, res) {
+router.post('/default/clone', function (req, res, next) {
 // router.get('/default/clone', function (req, res) {
 
   // winston.info("req.body.lang: " + req.body.lang);
@@ -79,7 +79,15 @@ router.post('/default/clone', function (req, res) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-          res.redirect(req.baseUrl + '/');
+          // res.redirect(req.baseUrl + '/');
+          
+          // express forward          
+          req.url =  '/';
+          winston.debug('--- > req.url'+req.url);
+
+          req.method = 'GET';  
+
+          return router.handle(req, res, next);
           // res.json(savedLabel);
           // redirect to get
         });
@@ -147,7 +155,14 @@ router.get('/default/:lang', function (req, res) {
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
           // res.json(savedLabel);
-          res.redirect('/'+lang);
+          //res.redirect('/'+lang);
+           // express forward          
+           req.url =  '/'+lang;
+           winston.debug('--- > req.url'+req.url);
+ 
+           req.method = 'GET';  
+ 
+           return router.handle(req, res, next);
         });
       }
     });
@@ -242,7 +257,13 @@ router.delete('/:lang', function (req, res) {
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
           // res.json(savedLabel);
-          res.redirect('/'+lang);
+          // res.redirect('/'+lang);
+           req.url =  '/'+lang;
+           winston.debug('--- > req.url'+req.url);
+ 
+           req.method = 'GET';  
+ 
+           return router.handle(req, res, next);
         });
       }
     });
