@@ -16,7 +16,7 @@ module.exports = function(req, res, next) {
               winston.error('Error getting labels', err);
               return res.status(500).send({ success: false, msg: 'Error reading object.' });
           }
-          winston.info('label fetched', data);
+          winston.debug('label fetched', data);
           req.labels = JSON.parse(data);
           next();
         });

@@ -107,7 +107,7 @@ class RoleChecker {
           // if (!req.user._id) {
           //   res.status(403).send({success: false, msg: 'req.user._id not defined.'});
           // }
-          winston.info("hasRoleOrType req.user._id " +req.user._id);
+          winston.debug("hasRoleOrType req.user._id " +req.user._id);
           // project_user_qui_importante
 
           var query = { id_project: req.params.projectid, id_user: req.user._id};

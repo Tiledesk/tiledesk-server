@@ -182,7 +182,7 @@ module.exports = function(passport) {
     var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     winston.debug("fullUrl:"+ fullUrl);
 
-    winston.info("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
+    winston.debug("req.disablePassportEntityCheck:"+req.disablePassportEntityCheck);
 
     if (req && req.disablePassportEntityCheck) { //req can be null
       // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
