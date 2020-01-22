@@ -3,12 +3,13 @@
 var winston = require('../../config/winston');
 
 var chat21Enabled = process.env.CHAT21_ENABLED;
-winston.info("chat21Enabled: "+chat21Enabled);
+winston.debug("chat21Enabled: "+chat21Enabled);
 
 if (chat21Enabled && chat21Enabled == "true"){
   // if (chat21Enabled){
 
       //firestore
+      winston.info("chat21 channel enabled"); 
       var firebaseConfig = require('./firebaseConfig');
 
       var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
