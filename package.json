@@ -28,7 +28,7 @@
     "tiledesk-server": "./bin/www"
   },
   "optionalDependencies": {
-    "@tiledesk-ent/tiledesk-server-payments": "^1.0.1",
+    "@tiledesk-ent/tiledesk-server-payments": "^1.0.2",
     "@tiledesk-ent/tiledesk-server-analytics": "^1.0.1",
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.1",
