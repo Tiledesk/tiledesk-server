@@ -93,11 +93,13 @@ sudo docker run --env-file FIREBASE_CONFIG_FILE="/home/andrea/dev/tiledesk-serve
 sudo docker run --env DATABASE_URI="mongodb://10.108.109.1/test" --env-file ./.env.list --link my-mongo:mongo tiledesk-server
 
 
-disable heroku cache
+# Disable heroku cache
+
 heroku config:set NODE_MODULES_CACHE=false -a tiledesk-server-pre
 heroku config:set NODE_MODULES_CACHE=true
 
 
+# Config set
 https://stackoverflow.com/questions/35483721/failed-to-replace-env-in-config-using-bash-npm
 npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
 npm publish
@@ -107,5 +109,12 @@ heroku config set "//registry.npmjs.org/:_authToken"=${NPM_TOKEN}  -a tiledesk-s
 
 
 
+# Enable enterprise module:
 
 npm run enable-ent
+
+
+# Change Local dependencies 
+https://github.com/npm/npm/blob/b706d637d5965dbf8f7ce07dc5c4bc80887f30d8/doc/files/package.json.md#local-paths
+
+
