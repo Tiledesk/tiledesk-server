@@ -21,17 +21,19 @@ router.post('/invite', function (req, res) {
 
   // var email = req.body.email
   winston.debug('»»» INVITE USER EMAIL', req.body.email);
-  winston.debug('»»» CURRENT USER ID', req.user.id);
-  winston.debug('»»» PROJECT ID', req.body.id_project);
-
-  User.findOne({ email: req.body.email }, function (err, user) {
+  winston.debug('»»» CURRENT USER ID', req.user._id);
+  winston.debug('»»» PROJECT ID', req.projectid);
+// authType
+  User.findOne({ email: req.body.email
+    // , authType: 'email_password' 
+  }, function (err, user) {
     if (err) throw err;
 
     if (!user) {
       /*
        * *** USER NOT FOUND > SAVE EMAIL AND PROJECT ID IN PENDING INVITATION *** */
       // TODO req.user.firstname is null for bot visitor
-      return pendinginvitation.saveInPendingInvitation(req.body.id_project, req.body.project_name, req.body.email, req.body.role, req.user.id, req.user.firstname, req.user.lastname)
+      return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, req.body.email, req.body.role, req.user._id, req.user.firstname, req.user.lastname)
         .then(function (savedPendingInvitation) {
 
 
@@ -66,9 +68,10 @@ router.post('/invite', function (req, res) {
        * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
-      return Project_user.find({ id_project: req.body.id_project }, function (err, projectuser) {
+      return Project_user.find({ id_project: req.projectid }, function (err, projectuser) {
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
+          winston.info("Error gettting project_user for invite", err);
           return res.status(500).send(err);
         }
 
@@ -113,7 +116,7 @@ router.post('/invite', function (req, res) {
 
           var newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
-            id_project: req.body.id_project,
+            id_project: req.projectid,
             id_user: user._id,
             role: req.body.role,
             user_available: true,
@@ -141,7 +144,7 @@ router.post('/invite', function (req, res) {
             var invitedUserFirstname = user.firstname
             var invitedUserLastname = user.lastname
 
-            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.body.project_name, req.body.id_project, invitedUserFirstname, invitedUserLastname, req.body.role)
+            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.project.name, req.projectid, invitedUserFirstname, invitedUserLastname, req.body.role)
             
             // try {
               //test it
@@ -185,6 +188,7 @@ router.put('/:project_userid', function (req, res) {
 
   Project_user.findByIdAndUpdate(req.params.project_userid, req.body, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
+      winston.info("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
@@ -205,6 +209,7 @@ router.delete('/:project_userid', function (req, res) {
 
   Project_user.findByIdAndRemove(req.params.project_userid, { new: false}, function (err, project_user) {
     if (err) {
+      winston.info("Error gettting project_user for delete", err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
@@ -243,6 +248,7 @@ router.get('/:project_userid', function (req, res) {
     populate('id_user').
     exec(function (err, project_user) {
       if (err) {
+        winston.info("Error gettting project_user for get", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
       if (!project_user) {
@@ -253,19 +259,19 @@ router.get('/:project_userid', function (req, res) {
 
 });
 
-//dep
+//TODO deprecate
 router.get('/:user_id/:project_id', function (req, res, next) {
-     // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-     winston.debug("--> USER ID ", req.params.user_id);
-    winston.debug("--> PROJECT ID ", req.params.project_id);
-    Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
-       exec(function (err, project_users) {
-         if (err) return next(err);
-         res.json(project_users);
-  
-       });
-   });
-  
+  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+  winston.debug("--> USER ID ", req.params.user_id);
+ winston.debug("--> PROJECT ID ", req.params.project_id);
+ Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
+    exec(function (err, project_users) {
+      if (err) return next(err);
+      res.json(project_users);
+
+    });
+});
+
 
 
 /**
@@ -275,10 +281,12 @@ router.get('/:user_id/:project_id', function (req, res, next) {
    // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
    winston.debug("--> USER ID ", req.params.user_id);
   //  winston.debug("--> PROJECT ID ", req.params.project_id);
+   // project_user_qui
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
     populate('id_user').
      exec(function (err, project_user) {
       if (err) {
+        winston.info("Error gettting project_user for get users", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
       if (!project_user) {
@@ -307,6 +315,10 @@ router.get('/', function (req, res) {
   Project_user.find({ id_project: req.projectid, role: { $in : role } }).
     populate('id_user').
     exec(function (err, project_users) {
+      if (err) {
+        winston.info("Error gettting project_user for get users", err);
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
+      }
       // console.log('PROJECT USER ROUTES - project_users: ', project_users)
       res.json(project_users);
     });
