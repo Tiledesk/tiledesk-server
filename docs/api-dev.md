@@ -4,6 +4,8 @@
 
 ```
 curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:3000/auth/signup
+
+curl -v -X POST -d 'email=andrea.leo@f22.it&password=123456' https://tiledesk-server-pre.herokuapp.com/auth/signup
 ```
 
 
@@ -11,7 +13,51 @@ curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:30
 
 ```
 curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' http://localhost:3000/auth/signin
+
+curl -v -X POST -d 'email=andrea.leo@f21.it&password=123456' https://tiledesk-server-pre.herokuapp.com/auth/signin
 ```
+
+
+## Signin anonymously
+
+```
+curl -v -X POST -H 'Content-Type:application/json' -d '{"firstname":"Andrew", "lastname":"Lee", "id_project":"123"}' http://localhost:3000/auth/signinAnonymously
+```
+
+curl -v -X POST -H 'Content-Type:application/json' -d '{"id_project":"5e28108c361fbb001729e960"}' https://tiledesk-server-pre.herokuapp.com/auth/signinAnonymously
+
+
+## Signin custom token
+
+
+{
+  "_id": "123456",
+  "firstname": "andrea custom",
+  "lastname": "leo custom",
+  "email": "email2@email.com",
+  "custom1": "val1",
+  "attributes": {"c1":"v1"},
+  "sub": "userexternal",
+  "aud": "https://tiledesk.com/projects/5e28108c361fbb001729e960"
+}
+
+
+custom project secret: 4fa91e0b-bd9a-4025-b672-a5377edb70d9
+
+generato su https://jwt.io/
+
+https://jwt.io/
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIxMjM0NTYiLCJmaXJzdG5hbWUiOiJhbmRyZWEgY3VzdG9tIiwibGFzdG5hbWUiOiJsZW8gY3VzdG9tIiwiZW1haWwiOiJlbWFpbDJAZW1haWwuY29tIiwiY3VzdG9tMSI6InZhbDEiLCJhdHRyaWJ1dGVzIjp7ImMxIjoidjEifSwic3ViIjoidXNlcmV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly90aWxlZGVzay5jb20vcHJvamVjdHMvNWUyODEwOGMzNjFmYmIwMDE3MjllOTYwIn0.bkTwyedGSDSKcJan0flhXRk6fvPU31BiFQpqaJT9UGU
+
+
+curl -v -X POST -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIxMjM0NTYiLCJmaXJzdG5hbWUiOiJhbmRyZWEgY3VzdG9tIiwibGFzdG5hbWUiOiJsZW8gY3VzdG9tIiwiZW1haWwiOiJlbWFpbDJAZW1haWwuY29tIiwiY3VzdG9tMSI6InZhbDEiLCJhdHRyaWJ1dGVzIjp7ImMxIjoidjEifSwic3ViIjoidXNlcmV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly90aWxlZGVzay5jb20vcHJvamVjdHMvNWUyODEwOGMzNjFmYmIwMDE3MjllOTYwIn0.bkTwyedGSDSKcJan0flhXRk6fvPU31BiFQpqaJT9UGU" \
+ https://tiledesk-server-pre.herokuapp.com/auth/signinWithCustomToken
+
+
+
+
 
 
 ## Firebase signin
@@ -44,6 +90,27 @@ curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -
 ```
 curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"sender":"io", "sender_fullname":"Andrea Leo", "text":"firstText"}' http://localhost:3000/5ca366fdee19dbc72e98e96f/requests/req123456/messages
 ```
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-5544/messages
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u 5fa26a59-6944-43eb-852a-36850086c357@tiledesk.com:a7de28c6-d309-4539-9749-43dd4535fa7c -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-554477991/messages
+
+
+con anonym user
+curl -v -X POST -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIwYzI2YmY2Mi1iM2RmLTQ1N2EtYjk1OS0zMGQzNjRiYTA2ZjEiLCJmaXJzdG5hbWUiOiJHdWVzdCIsImlkIjoiMGMyNmJmNjItYjNkZi00NTdhLWI5NTktMzBkMzY0YmEwNmYxIiwiZnVsbE5hbWUiOiJHdWVzdCAiLCJpYXQiOjE1Nzk2ODQ2MDcsImF1ZCI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwiaXNzIjoiaHR0cHM6Ly90aWxlZGVzay5jb20iLCJzdWIiOiJndWVzdCJ9.iDD_L35WsFI_gq3GXtJets5zjpZswbn4qdrv-kMgZu8" \
+ -d '{"text":"firstTextAnon"}' https://tiledesk-server-pre.herokuapp.com/5e28108c361fbb001729e960/requests/support-group-55447799177/messages
+
+con ct user:
+
+curl -v -X POST -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIxMjM0NTYiLCJmaXJzdG5hbWUiOiJhbmRyZWEgY3VzdG9tIiwibGFzdG5hbWUiOiJsZW8gY3VzdG9tIiwiZW1haWwiOiJlbWFpbDJAZW1haWwuY29tIiwiY3VzdG9tMSI6InZhbDEiLCJhdHRyaWJ1dGVzIjp7ImMxIjoidjEifSwic3ViIjoidXNlcmV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly90aWxlZGVzay5jb20vcHJvamVjdHMvNWUyODEwOGMzNjFmYmIwMDE3MjllOTYwIn0.bkTwyedGSDSKcJan0flhXRk6fvPU31BiFQpqaJT9UGU" \
+ -d '{"text":"firstTextCT"}' https://tiledesk-server-pre.herokuapp.com/5e28108c361fbb001729e960/requests/support-group-5544779917789/messages
+
+
+
+
 ### Get
 ```
 smessages/5beeb3835d34344cd4962a8c
@@ -56,9 +123,6 @@ smessages/5beeb3835d34344cd4962a8c
 
 ### Create 
 
-```
-curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"request_id":"request_id", "requester_id":"requester_id", "text":"text"}' http://localhost:3000/5ca366fdee19dbc72e98e96f/requests
-```
 
 
 ### List
