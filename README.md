@@ -12,7 +12,7 @@ Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Liv
 
 # Installation
 
-Steps to run locally:
+Steps to run with npm:
 ```
 npm install -g @tiledesk/tiledesk-server mongodb-runner
 mongodb-runner start

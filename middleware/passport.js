@@ -191,6 +191,7 @@ module.exports = function(passport) {
       return done(null, jwt_payload);
     }
 
+    //TODO check into DB if JWT is revoked 
 
     if (subject == "bot") {
       winston.debug("Passport JWT bot");
