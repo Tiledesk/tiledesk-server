@@ -1,0 +1,119 @@
+version: "3.7"
+networks:
+   backend:
+   frontend:
+volumes:
+   tiledesk-datadb:
+   chat21-cf:
+   tiledesk-server-config2:
+
+
+services:
+  dashboard:
+   image: tiledesk/tiledesk-dashboard
+   container_name: tiledesk-dashboard
+   ports:
+      - "4500:80" # specify port forewarding
+   networks:
+         frontend: 
+            aliases:
+                - dashboard
+  web-widget:
+   image: chat21/chat21-web-widget:latest-remoteconfig
+   container_name: chat21-web-widget
+   ports:
+      - "4200:80" # specify port forewarding
+   networks:
+        frontend:
+            aliases:
+                - web-widget
+   depends_on:
+      - proxy
+  ionic:
+   image: chat21/chat21-ionic
+   container_name: chat21-ionic
+   ports:
+      - "8080:80" # specify port forewarding
+   networks:
+      frontend: 
+            aliases:
+                - ionic
+  proxy:
+    #image: nginx
+    #container_name: proxy
+    image: tiledesk/tiledesk-docker-proxy
+    container_name: tiledesk-docker-proxy
+    #volumes:
+     # - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80" # specify port forewarding
+    networks:
+        frontend:
+            aliases:
+                - proxy
+        backend:
+    command: [nginx-debug, '-g', 'daemon off;']
+  cloud-functions:
+   image: chat21/chat21-cloud-functions
+   container_name: chat21-cloud-functions
+   volumes:
+     - chat21-cf:/home #persist firebase login
+   ports:
+     - "9005:9005" # specify port forewarding
+     - "5000:5000"
+  server:
+    image: tiledesk/tiledesk-server:beta
+    container_name: tiledesk-server
+    restart: always
+    networks:
+          backend:
+            aliases:
+                - server
+    volumes:    
+        #  - type: bind
+        #    source: ./
+        #    target: /usr/src/app/
+        - tiledesk-server-config2:/usr/src/app/confenv
+      # - ./:/usr/src/app/
+
+    #env_file:
+    #     - .env
+    environment: 
+      - FIREBASE_PRIVATE_KEY
+      - FIREBASE_CONFIG_FILE
+      - FIREBASE_CLIENT_EMAIL
+      - FIREBASE_PROJECT_ID
+      - CHAT21_ENABLED
+      - CHAT21_URL
+      - CHAT21_APPID
+      - CHAT21_ADMIN_TOKEN
+      - MONGODB_URI=mongodb://mongo/tiledesk
+      - LOAD_DOTENV_SUBFOLDER=true
+#    build: .
+    depends_on:
+      - mongo
+    ports:
+      - "3000:3000"
+  mongo:
+    container_name: mongo
+    image: mongo
+    command: --bind_ip_all
+    volumes:
+      - tiledesk-datadb:/data/db
+    networks:
+          backend:
+            aliases:
+                - mongo
+      ### Uncoment below if you want to map mongodb port
+      #ports:
+      #   - "27017:27017"
+  ngrok:
+    container_name: ngrok
+    image: wernight/ngrok
+    command: ngrok http server:3000
+    networks:
+          backend:
+            aliases:
+                - ngrok
+    ports:
+     -  '4040:4040
