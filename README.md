@@ -28,10 +28,7 @@ Note: If installation with -g fails due to permission problems (npm ERR! code 'E
 
 * Clone this repo
 * Install dependencies with 'npm install'
-* Configure Firebase
-   * Set Firebase databaseURL in config/firebase.js file
-   * Set the following Firebase parameters: process.env.FIREBASE_PRIVATE_KEK, process.env.FIREBASE_CLIENT_EMAIL, process.env.FIREBASE_PROJECT_ID;
-* Configure MongoDb account in config/database.js file
+* Configure the tiledesk .env file. You can see an example in the file .env.sample under the root folder. Rename it from .env.sample to .env and configure it properly. 
 * Run the app with the command 'npm start' or with 'nodemon' if you want monitoring and auto reload.
 Install nodemon with 'npm install -g nodemon'
 
