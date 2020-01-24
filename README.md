@@ -6,6 +6,8 @@
 
 Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs and Express. Build your own customer support with a multi-channel platform for Web, Android and iOS. More info here https://www.tiledesk.com.
 
+You can find more info here: https://developer.tiledesk.com
+
 # Prerequisites
 
 * Nodejs and npm installed 
@@ -52,4 +54,4 @@ To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articl
 
 # REST API
 
-See the Tiledesk REST API [here](https://docs.tiledesk.com/apis/api)
+See the Tiledesk REST API [here](https://developer.tiledesk.com/apis/api)
