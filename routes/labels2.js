@@ -354,6 +354,10 @@ router.get('/:lang', function (req, res) {
       var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
       //var pickedLang = returnval.data[req.params.lang];
 
+      if (!pickedLang) {
+        return res.status(404).send({ success: false, msg: 'object not found.' });
+      }
+
       return res.json(pickedLang);
       
     });
