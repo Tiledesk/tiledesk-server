@@ -118,8 +118,14 @@ class Chat21Handler {
                                 timestamp = message.attributes.clienttimestamp;
                             }
 
+                            var recipient_fullname = "Guest"; 
+                            if (message.request && message.request.lead) {
+                                recipient_fullname = request.lead.fullname;
+                            }
+
+
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                                'Recipient Fullname', message.text, message.sender, attributes, message.type, message.metadata, timestamp)
+                                recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
                                             winston.info("Chat21 sendToGroup sent ", data);
                                     
