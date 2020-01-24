@@ -111,6 +111,33 @@ curl -v -X POST -H 'Content-Type:application/json' \
 
 
 
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:123456 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-554477991/messages
+
+=====
+
+con agente ==
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"hello from api"}' https://tiledesk-server-pre.herokuapp.com/5e2aba4cb4c9f80017d50907/requests/tyuiop112/messages
+
+
+con anonimo
+
+
+curl -v -X POST -H 'Content-Type:application/json' -d '{"id_project":"5e2aba4cb4c9f80017d50907", "firstname":"John"}' https://tiledesk-server-pre.herokuapp.com/auth/signinAnonymously
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDVkYzU1MC1kMjNhLTRkMDUtODZlNy04YmY5ZjU1Y2ZhZWUiLCJmaXJzdG5hbWUiOiJKb2huIiwiaWQiOiI2MDVkYzU1MC1kMjNhLTRkMDUtODZlNy04YmY5ZjU1Y2ZhZWUiLCJmdWxsTmFtZSI6IkpvaG4gIiwiaWF0IjoxNTc5ODYwMjkyLCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoiZ3Vlc3QifQ.qh7W8N6E06uWdcgcwev7MQ8t62rzBtwrDaDxKUftxQE" \
+ -d '{"text":"hello from anonym3 "}' https://tiledesk-server-pre.herokuapp.com/5e2aba4cb4c9f80017d50907/requests/support-group-5544779915432123126/messages
+
+
+
+
+
+
+
+
 ### Get
 ```
 smessages/5beeb3835d34344cd4962a8c

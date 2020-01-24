@@ -96,7 +96,7 @@ sudo docker run --env DATABASE_URI="mongodb://10.108.109.1/test" --env-file ./.e
 # Disable heroku cache
 
 heroku config:set NODE_MODULES_CACHE=false -a tiledesk-server-pre
-heroku config:set NODE_MODULES_CACHE=true
+heroku config:set NODE_MODULES_CACHE=true -a tiledesk-server-pre
 
 
 # Config set

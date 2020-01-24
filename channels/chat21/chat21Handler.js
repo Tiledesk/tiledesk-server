@@ -119,8 +119,8 @@ class Chat21Handler {
                             }
 
                             var recipient_fullname = "Guest"; 
-                            if (message.request && message.request.lead && request.lead.fullname) {
-                                recipient_fullname = request.lead.fullname;
+                            if (message.request && message.request.lead && message.request.lead.fullname) {
+                                recipient_fullname = message.request.lead.fullname;
                             }
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
