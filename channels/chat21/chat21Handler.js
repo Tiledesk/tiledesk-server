@@ -103,7 +103,7 @@ class Chat21Handler {
                         attributes['tiledesk_message_id'] = message._id;
 
                         if (message.request) {
-                            attributes['projectId'] = message.request.id_project; //used by ionic to open request detail 
+                            attributes['projectId'] = message.request.id_project; //TODO not used. used by ionic to open request detail ???
                         }
                         
 
@@ -188,6 +188,10 @@ class Chat21Handler {
                         // problema requester_id
                         gAttributes["requester_id"] = request.requester_id;
                     
+                        if (request) {
+                            gAttributes['projectId'] = request.id_project; //used by ionic to open request detail 
+                        }
+
                         var groupId = request.request_id;
 
                         var group_name = "Guest"; 
