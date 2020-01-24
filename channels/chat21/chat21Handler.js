@@ -102,6 +102,11 @@ class Chat21Handler {
                         
                         attributes['tiledesk_message_id'] = message._id;
 
+                        if (message.request) {
+                            attributes['projectId'] = message.request.id_project; //used by ionic to open request detail 
+                        }
+                        
+
 
                         winston.debug("Chat21Sender sending message.sending ",  message);
 
