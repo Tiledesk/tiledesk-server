@@ -84,7 +84,7 @@ router.delete('/:leadid/physical', function (req, res) {
 });
 
 
-// DOWNLOAD CONTACTS AS CSV
+// DOWNLOAD leads AS CSV
 router.get('/csv', function (req, res, next) {
   var limit = 100000; // Number of leads per page
   var page = 0;
