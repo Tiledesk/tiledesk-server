@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-chat21-app",
   "description": "The Tiledesk Chat21 module",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": false,
   "author": "Andrea Leo - Frontiere21 SRL",
   "license": "AGPL-3.0",
