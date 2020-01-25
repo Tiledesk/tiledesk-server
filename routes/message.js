@@ -83,6 +83,7 @@ router.post('/', function(req, res) {
               return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
                 request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){
 
+                  // TOOD update also request attributes and sourcePage
                   return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                      
@@ -165,7 +166,7 @@ router.post('/', function(req, res) {
 
 router.get('/', function(req, res) {
 
-  return Message.find({"recipient": req.params.request_id, id_project: req.projectid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+  return Message.find({"recipient": req.params.request_id, id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
       if (err) return next(err);
       res.json(messages);
     });

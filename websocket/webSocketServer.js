@@ -155,7 +155,7 @@ class WebSocketServer {
 
            var query = {id_project:projectId, recipient: recipientId };
            winston.debug('query: '+query);
-           Message.find(query).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+           Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
           
                if (err) {
                  winston.error('onSubscribeCallback find', err);  
