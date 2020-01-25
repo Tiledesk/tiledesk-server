@@ -87,7 +87,7 @@ class Chat21Handler {
                             
 
                             // update: function(name, owner, attributes, group_id){
-                            chat21.groups.update(lead.fullname, undefined, undefined, request.requester_id).then(function(data) {
+                            chat21.groups.update(lead.fullname, undefined, undefined, request.request_id).then(function(data) {
                                 winston.info("Chat21 group updated: " + data);      
                                 chat21Event.emit('group.update', data);                                          
                             }).catch(function(err) {
