@@ -286,6 +286,7 @@ router.patch('/:requestid/attributes',  function (req, res) {
           }
           winston.info(" saved request attributes",savedRequest.toObject())
           requestEvent.emit("request.update", savedRequest);
+          requestEvent.emit("request.attributes.update", savedRequest);
             res.json(savedRequest);
           });
   });
