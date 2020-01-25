@@ -6,7 +6,7 @@ var messageService = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
-
+var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
 var chat21Util = require('./chat21Util');
@@ -65,12 +65,42 @@ class Chat21Handler {
          // leadEvent.on('update')change group name wirth fullname)
          leadEvent.on('lead.update', function(lead) {
             setImmediate(() => {
-                winston.info("Chat21Sender on message.sending ",  message);
+                winston.info("Chat21Handler on lead.update ",  lead);
 
+                Request.find({lead: lead._id}, function(err, requests) {
 
-               if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
-                // if (message && message.status === MessageConstants.CHAT_MESS
-               }
+                    if (err) {
+                        winston.error("Error getting request by lead", err);
+                        return 0;
+                    }
+                    if (!requests || (requests && requests.length==0)) {
+                        winston.info("No request found for lead id " +lead._id );
+                        return 0;
+                    }
+                    
+                    chat21.auth.setAdminToken(adminToken);
+
+                    requests.forEach(function(request) {
+                        if (request.channel.name === ChannelConstants.CHAT21) {
+
+                            winston.info("Chat21Handler  lead.update for request ",  request);
+                            
+
+                            // update: function(name, owner, attributes, group_id){
+                            chat21.groups.update(lead.fullname, undefined, undefined, request.requester_id).then(function(data) {
+                                winston.info("Chat21 group updated: " + data);      
+                                chat21Event.emit('group.update', data);                                          
+                            }).catch(function(err) {
+                                winston.error("Error updating chat21 group ", err);
+                                chat21Event.emit('group.update.error', err);
+                            });
+
+                        }
+                    })
+                  
+                });
+
+              
             });
         });
 
@@ -194,8 +224,10 @@ class Chat21Handler {
                         if (request.lead) {
                             gAttributes['userFullname'] = request.lead.fullname; //used by ionic to open request detail 
                             gAttributes['userEmail'] = request.lead.email; //used by ionic to open request detail 
+                            // TOOD is it necessary?
                             gAttributes['senderAuthInfo'] = {authType: "USER", authVar: {uid:request.lead.lead_id}}; //used by ionic otherwise ionic dont show userFullname in the participants panel
                         }
+                        // TODO ionic dont show attributes panel if attributes.client is empty. bug?
                         gAttributes['client'] = request.userAgent || 'n.d.'; //used by ionic to open request detail 
                         gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
