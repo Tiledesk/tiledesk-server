@@ -35,7 +35,7 @@
     "@tiledesk-ent/tiledesk-server-triggers": "^1.0.2"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-chat21-app": "^1.0.8",
+    "@tiledesk/tiledesk-chat21-app": "^1.0.9",
     "amqplib": "^0.5.5",
     "apollo-server": "^2.9.12",
     "apollo-server-express": "^2.9.12",

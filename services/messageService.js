@@ -118,6 +118,7 @@ class MessageService {
     }
   }
 
+//   TODO must update also message.attributes from chat21
   changeStatus(message_id, newstatus) {
     var that = this;
     return new Promise(function (resolve, reject) {
