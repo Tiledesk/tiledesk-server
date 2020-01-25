@@ -200,6 +200,7 @@ class Chat21Handler {
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
                         
+                        winston.info("Chat21 group create gAttributes: ",gAttributes);  
                         
                         var groupId = request.request_id;
 
