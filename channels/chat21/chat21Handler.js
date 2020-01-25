@@ -194,12 +194,16 @@ class Chat21Handler {
                         if (request.lead) {
                             gAttributes['userFullname'] = request.lead.fullname; //used by ionic to open request detail 
                             gAttributes['userEmail'] = request.lead.email; //used by ionic to open request detail 
+                            gAttributes['senderAuthInfo'] = {authType: "USER", authVar: {uid:request.lead.lead_id}}; //used by ionic otherwise ionic dont show userFullname in the participants panel
                         }
                         gAttributes['client'] = request.userAgent || 'n.d.'; //used by ionic to open request detail 
                         gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
                         
+                        
+
+ 
                         winston.info("Chat21 group create gAttributes: ",gAttributes);  
 
                         var groupId = request.request_id;
