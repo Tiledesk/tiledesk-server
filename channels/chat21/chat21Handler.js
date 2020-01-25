@@ -188,10 +188,19 @@ class Chat21Handler {
                         // problema requester_id
                         gAttributes["requester_id"] = request.requester_id;
                     
-                        if (request) {
-                            gAttributes['projectId'] = request.id_project; //used by ionic to open request detail 
-                        }
+                       
+                        gAttributes['projectId'] = request.id_project; //used by ionic to open request detail 
 
+                        if (request.lead) {
+                            gAttributes['userFullname'] = request.lead.fullname; //used by ionic to open request detail 
+                            gAttributes['userEmail'] = request.lead.email; //used by ionic to open request detail 
+                        }
+                        gAttributes['client'] = request.userAgent; //used by ionic to open request detail 
+                        gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
+                        gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
+                        gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
+                        
+                        
                         var groupId = request.request_id;
 
                         var group_name = "Guest"; 
