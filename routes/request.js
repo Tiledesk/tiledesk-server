@@ -90,6 +90,11 @@ router.patch('/:requestid', function (req, res) {
     update.language = req.body.language;
   }
 
+  if (req.body.first_text) {
+    update.first_text = req.body.first_text;
+  }
+
+
   
   winston.info("Request patch update",update);
 
@@ -247,6 +252,8 @@ router.put('/:requestid/departments', function (req, res) {
 router.patch('/:requestid/attributes',  function (req, res) {
   var data = req.body;
   var id_project = req.projectid;
+
+  // TODO use service method
 
   Request.findOne({"request_id":req.params.requestid, id_project:id_project})
   .populate('lead')
