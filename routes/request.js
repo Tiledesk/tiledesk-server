@@ -98,13 +98,18 @@ router.patch('/:requestid', function (req, res) {
   
   winston.info("Request patch update",update);
 
-  return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false }, function (err, updatedMessage) {
+  return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false })
+  .populate('lead')
+  .populate('department')
+  .populate({path:'requester',populate:{path:'id_user'}})
+  .exec( function(err, request) {
+       
     if (err) {
       winston.error('Error patching request.', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-    requestEvent.emit("request.update", updatedMessage);
-    return res.json(updatedMessage);
+    requestEvent.emit("request.update", request);
+    return res.json(request);
   });
 
 });
