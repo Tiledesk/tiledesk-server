@@ -13,6 +13,7 @@ const requestEvent = require('../event/requestEvent');
 csv = require('csv-express');
 csv.separator = ';';
 
+const { check, validationResult } = require('express-validator');
 
 var messageService = require('../services/messageService');
 
@@ -150,8 +151,17 @@ router.put('/:requestid/assignee', function (req, res) {
 });
 
 
-router.post('/:requestid/participants', function (req, res) {
+router.post('/:requestid/participants', 
+[
+  check('member').notEmpty(),  
+],
+function (req, res) {
   winston.debug(req.body);
+  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
   
   //addParticipantByRequestId(request_id, id_project, member)
   return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
@@ -182,6 +192,21 @@ router.put('/:requestid/participants', function (req, res) {
   
 });
 
+router.delete('/:requestid/participants/:participantid', function (req, res) {
+  winston.debug(req.body);
+  
+   //removeParticipantByRequestId(request_id, id_project, member)
+  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid ).then(function(updatedRequest) {
+
+      winston.info("participant removed", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
+  
+});
+
+// TODO deprecated
 router.delete('/:requestid/participants', function (req, res) {
   winston.debug(req.body);
   
