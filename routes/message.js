@@ -12,14 +12,25 @@ var leadService = require('../services/leadService');
 var winston = require('../config/winston');
 var MessageConstants = require("../models/messageConstants");
 
+const { check, validationResult } = require('express-validator');
+
 // var roleChecker = require('../middleware/has-role');
 
-router.post('/', function(req, res) {
+router.post('/', 
+[
+  check('text').notEmpty(),  
+],
+function(req, res) {
 
   winston.debug('req.body', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
 
