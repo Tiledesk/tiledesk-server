@@ -179,6 +179,7 @@ class WebSocketServer {
         winston.debug('req.user._id: '+req.user._id);
         // winston.debug(' req.: ',req);
        
+        winston.info('find project_user');
        
 
         Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
@@ -192,11 +193,11 @@ class WebSocketServer {
 
           var query = {id_project:projectId, status: { $lt: 1000 } };
           if (projectuser.role == "owner" || projectuser.role == "admin") {
-            winston.debug('query admin: '+ JSON.stringify(query));
+            winston.info('query admin: '+ JSON.stringify(query));
           }else {
             //query.agents =  { $in : projectuser };
             query.agents._id = projectuser._id;
-            winston.debug('query: '+ JSON.stringify(query));
+            winston.info('query: '+ JSON.stringify(query));
           }
           
           Request.find(query)
@@ -208,7 +209,7 @@ class WebSocketServer {
               if (err) {
                 winston.error('onSubscribeCallback find', err);  
               }
-              winston.debug('onSubscribeCallback find', requests);  
+              winston.info('onSubscribeCallback find', requests);  
               pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
     
           });
