@@ -334,6 +334,11 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   var limit = 40; // Number of request per page
+
+  if (req.query.limit) {
+    limit = req.query.limit;
+  }
+
   var page = 0;
 
   if (req.query.page) {
