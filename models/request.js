@@ -357,6 +357,8 @@ RequestSchema.index({transcript: 'text', rating_message: 'text'},
  {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
 
+ RequestSchema.index({ id_project: 1, status: 1, updatedAt: 1 }); // query for websocket
+
  //
 //RequestSchema.index({name: 'transcript_fulltext', 'transcript': 'text'},);
 
