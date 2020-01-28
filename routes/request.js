@@ -424,16 +424,16 @@ router.get('/', function (req, res, next) {
 
     var enddate = moment().format("YYYY-MM-DD");
 
-    console.log('»»» REQUEST ROUTE - startdate ', startdate);
-    console.log('»»» REQUEST ROUTE - enddate ', enddate);
+    winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
+    winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
 
     var enddatePlusOneDay=  moment(new Date()).add(1, 'days').toDate()
-    console.log('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
+    winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
     // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
 
     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
-    console.log('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+    winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   }
  
@@ -501,47 +501,38 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.info('REQUEST ROUTE - REQUEST FIND ', query)
-  return Request.find(query).
+  winston.info('REQUEST ROUTE - REQUEST FIND ', query);
+
+  var q1 = Request.find(query).
     skip(skip).limit(limit).
     populate('department').
     populate('lead').
     populate({path:'requester',populate:{path:'id_user'}}).
-
-    // populate('lead', function (err, lead44) {
-    //   //assert(doc._id === user._id) // the document itself is passed
-    //   winston.error('lead44',lead44)
-    // }).
-    // execPopulate(function (err, lead45) {
-    //   //assert(doc._id === user._id) // the document itself is passed
-    //   winston.error('lead45',lead45)
-    // }).
     sort(sortQuery).
-    exec(function (err, requests) {
-      if (err) {
-        winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
-        console.log('REQUEST ROUTE - REQUEST FIND ERR 1', err)
+    exec();
 
-        return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
-      }
-      winston.debug('REQUEST ROUTE - REQUEST ', requests);
+  var q2 =  Request.countDocuments(query).exec();
 
-      return Request.count(query, function (err, totalRowCount) {
-        if (err) {
-          winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
-          console.log('REQUEST ROUTE - REQUEST FIND ERR 2', err)
-          return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
-        }
-        var objectToReturn = {
-          perPage: limit,
-          count: totalRowCount,
-          requests: requests
-        };
-        winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
-        return res.json(objectToReturn);
-      });
+  var promises = [
+    q1,
+    q2
+  ];
 
-    });
+  Promise.all(promises).then(function(results) {
+    var objectToReturn = {
+      perPage: limit,
+      count: results[1],
+      requests: results[0]
+    };
+    winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
+    winston.info('finito')
+    return res.json(objectToReturn);
+
+  }).catch(function(err){
+    winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+    return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+  });
+  
 
 });
 
