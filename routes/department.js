@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Department = require("../models/department");
 var departmentService = require("../services/departmentService");
+var departmentEvent = require("../event/departmentEvent");
 
 var Project_user = require("../models/project_user");
 var Group = require("../models/group");
@@ -41,7 +42,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
       winston.error('Error creating the department ', err);
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
-    winston.info('NEW DEPT SAVED ', savedDepartment)
+    winston.info('NEW DEPT SAVED ', savedDepartment);
+    departmentEvent.emit('department.create', savedDepartment);
     res.json(savedDepartment);
   });
 });
@@ -55,6 +57,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
       winston.error('Error putting the department ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+    departmentEvent.emit('department.update', updatedDepartment);
     res.json(updatedDepartment);
   });
 });
@@ -69,6 +72,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
       winston.error('Error deleting the department ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+    departmentEvent.emit('department.delete', department);
     res.json(department);
   });
 });

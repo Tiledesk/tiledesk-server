@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Group = require("../models/group");
+var groupEvent = require("../event/groupEvent");
 var winston = require('../config/winston');
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
@@ -24,10 +25,8 @@ router.post('/', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "GROUP_CREATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('group.create', activity);
-
-
+  
+    groupEvent.emit('group.create', savedGroup);
     res.json(savedGroup);
   });
 });
@@ -42,9 +41,7 @@ router.put('/:groupid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "GROUP_UPDATE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('group.update', activity);
-
+    groupEvent.emit('group.update', updatedGroup);
     res.json(updatedGroup);
   });
 });
@@ -60,8 +57,7 @@ router.delete('/:groupid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
-    //var activity = new Activity({actor: req.user.id, verb: "GROUP_DELETE", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-    //activityEvent.emit('group.delete', activity);
+    groupEvent.emit('group.delete', group);
 
     res.json(group);
   });
