@@ -336,7 +336,7 @@ router.get('/', function (req, res, next) {
   var limit = 40; // Number of request per page
 
   if (req.query.limit) {
-    limit = req.query.limit;
+    limit = parseInt(req.query.limit);
   }
 
   var page = 0;
