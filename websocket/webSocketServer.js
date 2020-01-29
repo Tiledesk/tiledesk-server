@@ -195,9 +195,10 @@ class WebSocketServer {
           if (projectuser.role == "owner" || projectuser.role == "admin") {
             winston.info('query admin: '+ JSON.stringify(query));
           }else {
-            //query.agents =  { $in : projectuser };
-            query.agents = {_id: projectuser._id};
-            // query.agents._id = projectuser._id;
+          
+            query["$or"] = [ {agents: {_id: projectuser._id}}, {participants: projectuser._id}]
+            // query.agents = {_id: projectuser._id};
+            
             winston.info('query: '+ JSON.stringify(query));
           }
           
@@ -210,7 +211,7 @@ class WebSocketServer {
               if (err) {
                 winston.error('onSubscribeCallback find', err);  
               }
-              winston.info('onSubscribeCallback find', requests);  
+              winston.debug('onSubscribeCallback find', requests);  
               pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
     
           });
@@ -274,10 +275,6 @@ class WebSocketServer {
     const pubSubServer = new PubSub(wss, {onConnect: onConnectCallback, onDisconnect: onDisconnectCallback,
       onMessage: onMessageCallback, onSubscribe: onSubscribeCallback, onPublish:onPublishCallback});
 
-
-    // const pubSubServer = new PubSub(wss,onMessageCallback);
-
-
     var that = this;
 
     messageEvent.on('message.create', function (message) {
@@ -287,6 +284,7 @@ class WebSocketServer {
 
       requestEvent.on('request.create', function (request) {
         winston.debug('requestEvent websocket server ', request);
+        // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
         });
