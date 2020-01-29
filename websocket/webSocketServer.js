@@ -196,7 +196,8 @@ class WebSocketServer {
             winston.info('query admin: '+ JSON.stringify(query));
           }else {
             //query.agents =  { $in : projectuser };
-            query.agents._id = projectuser._id;
+            query.agents = {_id: projectuser._id};
+            // query.agents._id = projectuser._id;
             winston.info('query: '+ JSON.stringify(query));
           }
           
