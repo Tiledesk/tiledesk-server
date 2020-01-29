@@ -6,6 +6,7 @@ var messageService = require('../services/messageService');
 var MessageConstants = require("../models/messageConstants");
 var winston = require('../config/winston');
 var faqBotSupport = require('../services/faqBotSupport');
+var BotFromParticipant = require("../utils/botFromParticipant");
 
 class FaqBotHandler {
  
@@ -15,10 +16,11 @@ class FaqBotHandler {
         botEvent.on('bot.message.received.notify.internal', function(message) {
                            
 
-           var botName = message.request.department.bot.name;
-           winston.debug("botName " + botName);
+        //    var botName = message.request.department.bot.name;
+        //    winston.debug("botName " + botName);
 
-           var botId = message.request.department.bot._id;
+           var botId =  BotFromParticipant.getBotId(message);
+
            winston.debug("botId " + botId);
 
            winston.debug("message.text "+ message.text);
@@ -33,6 +35,9 @@ class FaqBotHandler {
             }
             winston.info('faq_kb ', faq_kb.toJSON());
             winston.info('faq_kb.type :'+ faq_kb.type);
+
+            var botName = faq_kb.name;
+            winston.debug("botName " + botName);
 
             var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
