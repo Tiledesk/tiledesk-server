@@ -68,7 +68,12 @@ router.post('/invite', function (req, res) {
        * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
-      return Project_user.find({ id_project: req.projectid }, function (err, projectuser) {
+
+      var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];     
+      winston.debug("role", role);
+    
+      // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+      return Project_user.find({ id_project: req.projectid, role: { $in : role }  }, function (err, projectuser) {
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
           winston.error("Error gettting project_user for invite", err);
