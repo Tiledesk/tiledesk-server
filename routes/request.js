@@ -375,6 +375,13 @@ router.get('/', function (req, res, next) {
 
   var query = { "id_project": req.projectid, "status": {$lte:1000} };
 
+  var projectuser = req.projectuser;
+
+  if (projectuser.role == "owner" || projectuser.role == "admin") {
+  }else {  
+    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]
+  }
+
   // console.log('REQUEST ROUTE - req ', req); 
   // console.log('REQUEST ROUTE - req.project ', req.project); 
 

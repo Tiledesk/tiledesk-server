@@ -122,7 +122,8 @@ var RequestSchema = new Schema({
 
   participants: {  //TODO trasformare in objectid di tipo project_user
     type: Array,
-    required: false
+    required: false,
+    index: true
   },
 
   department: {

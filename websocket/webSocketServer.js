@@ -197,10 +197,7 @@ class WebSocketServer {
           if (projectuser.role == "owner" || projectuser.role == "admin") {
             winston.info('query admin: '+ JSON.stringify(query));
           }else {
-          
-            query["$or"] = [ { "agents": {"_id": projectuser._id}}, {"participants": req.user._id}]
-            // query.agents = {_id: projectuser._id};
-            
+            query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
             winston.info('query agent: '+ JSON.stringify(query));
           }
 
