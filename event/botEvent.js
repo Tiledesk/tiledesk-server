@@ -65,7 +65,8 @@ function getBotId(message) {
 
 //modify to async
 // TODO perche nn message.create???
-messageEvent.on('message.received', function(message) {
+//messageEvent.on('message.received', function(message) {
+messageEvent.on('message.create', function(message) {
 
     winston.debug("message", message);
 
