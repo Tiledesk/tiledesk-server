@@ -158,7 +158,8 @@ class WebSocketServer {
            Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
           
                if (err) {
-                 winston.error('onSubscribeCallback find', err);  
+                 winston.error('Error finding message for onSubscribeCallback', err);  
+                 return 0;
                }
                winston.debug('onSubscribeCallback find', messages);  
                pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");                                                                                          
@@ -191,6 +192,7 @@ class WebSocketServer {
           }
           winston.debug('projectuser', projectuser.toObject()); 
 
+          // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
           var query = {id_project:projectId, status: { $lt: 1000 } };
           if (projectuser.role == "owner" || projectuser.role == "admin") {
             winston.info('query admin: '+ JSON.stringify(query));
@@ -199,7 +201,7 @@ class WebSocketServer {
             query["$or"] = [ {agents: {_id: projectuser._id}}, {participants: req.user._id}]
             // query.agents = {_id: projectuser._id};
             
-            winston.info('query: '+ JSON.stringify(query));
+            winston.info('query agent: '+ JSON.stringify(query));
           }
           
           Request.find(query)
@@ -209,7 +211,8 @@ class WebSocketServer {
           .sort({updatedAt: 'asc'}).exec(function(err, requests) { 
           
               if (err) {
-                winston.error('onSubscribeCallback find', err);  
+                winston.error('Error finding request for onSubscribeCallback', err);  
+                return 0;
               }
               winston.debug('onSubscribeCallback find', requests);  
               pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
@@ -256,7 +259,8 @@ class WebSocketServer {
             .sort({updatedAt: 'asc'}).exec(function(err, request) { 
             
                 if (err) {
-                  winston.error('onSubscribeCallback find', err);  
+                  winston.error('Error finding request for onSubscribeCallback', err);  
+                  return 0;
                 }
                 winston.debug('onSubscribeCallback find', request);  
                 pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
