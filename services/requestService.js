@@ -77,7 +77,8 @@ class RequestService {
             winston.error(err);
             return reject(err);
           }
-            
+                   
+
           that.routeInternal(request,departmentid, id_project, nobot ).then(function(routedRequest){
 
             return routedRequest.save(function(err, savedRequest) {
@@ -122,6 +123,74 @@ class RequestService {
           });
     });
   }
+
+
+
+  reroute(request_id, id_project, nobot) {
+    var that = this;
+ 
+    return new Promise(function (resolve, reject) {
+      // console.log("request_id", request_id);
+      // console.log("newstatus", newstatus);
+ 
+         return Request       
+         .findOne({request_id: request_id, id_project: id_project})
+         .populate('lead')
+         .populate('department')
+         .populate({path:'requester',populate:{path:'id_user'}})
+         .exec( function(err, request) {
+ 
+           if (err) {
+             winston.error(err);
+             return reject(err);
+           }
+                    
+ 
+           that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
+ 
+             return routedRequest.save(function(err, savedRequest) {
+               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
+               //return routedRequest.update(function(err, savedRequest) {
+               if (err) {
+                 winston.error('Error saving the request.',err);
+                 return reject(err);
+               }
+           
+               savedRequest
+               .populate(
+                   [           
+                   {path:'department'},
+                   {path:'lead'},                        
+                   {path:'requester',populate:{path:'id_user'}}
+                   ]
+               ,function (err, requestComplete){
+           
+                   if (err) {
+                     winston.error('Error populating the request.',err);
+                     return reject(err);
+                   }
+                   winston.info("Request routed",requestComplete.toObject());
+                 
+                   
+                   
+                   requestEvent.emit('request.update',requestComplete);
+                   requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+                   requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
+ 
+                   return resolve(requestComplete);
+               });
+               
+             });
+ 
+           }).catch(function(err) {
+             return reject(err);
+           });
+ 
+             
+           });
+     });
+   }
+
 
   createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
@@ -170,10 +239,6 @@ class RequestService {
                 status: status,
                 participants: participants,
                 department: result.department._id,
-
-            
-                // rating: req.body.rating,
-                // rating_message: req.body.rating_message,
             
                 agents: result.agents,
                 //availableAgents: result.available_agents,
@@ -280,12 +345,7 @@ class RequestService {
                 first_text: first_text,
                 status: status,
                 participants: participants,
-                department: result.department._id,
-
-            
-                // rating: req.body.rating,
-                // rating_message: req.body.rating_message,
-            
+                department: result.department._id,                           
                 agents: result.agents,
                 //availableAgents: result.available_agents,
 
@@ -724,6 +784,56 @@ class RequestService {
           
       });
     });
+  }
+
+
+
+  updateAttributesByRequestId(request_id, id_project, attributes) {
+    var data = attributes;
+  
+    Request.findOne({"request_id":request_id, id_project:id_project})
+    .populate('lead')
+    .populate('department')
+    .populate({path:'requester',populate:{path:'id_user'}})
+    .exec( function(err, request) {
+        if (err) {
+          return reject(err);
+        }
+        if (!request) {
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+  
+        
+        if (!request.attributes) {
+          winston.info("empty attributes")
+          request.attributes = {};
+        }
+  
+        winston.info(" req attributes", request.attributes)
+          
+          Object.keys(data).forEach(function(key) {
+            var val = data[key];
+            winston.info("data attributes "+key+" " +val)
+            request.attributes[key] = val;
+          });     
+          
+          winston.info(" req attributes", request.attributes)
+  
+          // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+          request.markModified('attributes');
+  
+          request.save(function (err, savedRequest) {
+            if (err) {
+              winston.error("error saving request attributes",err)
+              return reject({msg:"Error saving request attributes",err:err});
+            }
+            winston.info(" saved request attributes",savedRequest.toObject())
+            requestEvent.emit("request.update", savedRequest);
+            requestEvent.emit("request.attributes.update", savedRequest);
+              return resolve(savedRequest);
+            });
+    });
+    
   }
 
 
