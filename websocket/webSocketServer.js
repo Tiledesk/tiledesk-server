@@ -203,6 +203,8 @@ class WebSocketServer {
             
             winston.info('query agent: '+ JSON.stringify(query));
           }
+
+          console.log('query agent c: ',query);
           
           Request.find(query)
           .populate('lead')
