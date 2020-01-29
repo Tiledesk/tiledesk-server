@@ -193,12 +193,12 @@ class WebSocketServer {
           winston.debug('projectuser', projectuser.toObject()); 
 
           // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
-          var query = {id_project:projectId, status: { $lt: 1000 } };
+          var query = {"id_project":projectId, "status": { $lt: 1000 } };
           if (projectuser.role == "owner" || projectuser.role == "admin") {
             winston.info('query admin: '+ JSON.stringify(query));
           }else {
           
-            query["$or"] = [ {agents: {_id: projectuser._id}}, {participants: req.user._id}]
+            query["$or"] = [ { "agents": {"_id": projectuser._id}}, {"participants": req.user._id}]
             // query.agents = {_id: projectuser._id};
             
             winston.info('query agent: '+ JSON.stringify(query));
