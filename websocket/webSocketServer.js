@@ -196,7 +196,7 @@ class WebSocketServer {
             winston.info('query admin: '+ JSON.stringify(query));
           }else {
           
-            query["$or"] = [ {agents: {_id: projectuser._id}}, {participants: projectuser._id}]
+            query["$or"] = [ {agents: {_id: projectuser._id}}, {participants: req.user._id}]
             // query.agents = {_id: projectuser._id};
             
             winston.info('query: '+ JSON.stringify(query));
