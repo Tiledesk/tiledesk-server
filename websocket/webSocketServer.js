@@ -214,7 +214,7 @@ class WebSocketServer {
                 winston.error('Error finding request for onSubscribeCallback', err);  
                 return 0;
               }
-              winston.debug('onSubscribeCallback find', requests);  
+              winston.info('found requests for onSubscribeCallback', requests);  
               pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
     
           });
