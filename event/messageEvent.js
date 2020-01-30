@@ -31,10 +31,10 @@ messageEvent.on('message.create', emitCompleteMessage);
 messageEvent.on('message.update', emitCompleteMessage);
 
 function populateMessageCreate(message) {
-  return populateMessage(message, 'message.create');
+  return populateMessageWithLastRequestMessages(message, 'message.create');
 }
 function populateMessageUpdate(message) {
-  return populateMessage(message, 'message.update');
+  return populateMessageWithLastRequestMessages(message, 'message.update');
 }
 
 function populateMessage(message, eventPrefix) {
@@ -113,7 +113,7 @@ function populateMessage(message, eventPrefix) {
 
 }
 
-function populateMessageWithRequestMessages(message, eventPrefix) {
+function populateMessageWithLastRequestMessages(message, eventPrefix) {
 
 
   winston.debug("Subscription.notify "+eventPrefix, message.toObject());
@@ -141,7 +141,10 @@ function populateMessageWithRequestMessages(message, eventPrefix) {
       var requestJson = request.toJSON();
      
 
-      Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                        
+      Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({createdAt: 'desc'})
+        .limit(5)
+        .exec(function(err, messages) {                        
+
         winston.debug("populateMessage messages",messages );
 
 
