@@ -78,7 +78,6 @@ var widgets = require('./routes/widget');
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
-var labels2 = require('./routes/labels2');
 // var userService = require("./services/userService");
 var fetchLabels = require('./middleware/fetchLabels');
 
@@ -376,8 +375,8 @@ app.use('/:projectid/jwt', jwtroute);
 
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
-app.use('/:projectid/labels', labels);
-app.use('/:projectid/labels2', [fetchLabels],labels2);
+app.use('/:projectid/labels', [fetchLabels],labels);
+app.use('/:projectid/labels2', [fetchLabels],labels);
 
 
 

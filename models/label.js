@@ -3,23 +3,31 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
 
-var LabelSchema = new Schema({
-  
+var LabelEntrySchema = new Schema({
   lang: { 
     type: String,
     required: true,
-    index: true
+    index:true
   },
-  key: { 
+  data: {
+    type: Object,
+    required: true
+  },
+  category: {
     type: String,
-    required: true,
+    required: false,
     index: true
   },
-  message: { 
-    type: String,
+});
+
+var LabelSchema = new Schema({
+  
+  data: { 
+    //type: Array,
+    type: [LabelEntrySchema],
     required: true,
-    index: true
-  },
+    //index: true
+  }, 
   attributes: {
     type: Object,
   },
