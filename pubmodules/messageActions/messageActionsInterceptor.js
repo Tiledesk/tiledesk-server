@@ -79,7 +79,7 @@ class MessageActionsInterceptor {
                     //TODO USE FINALLY?
                     //TODO you can use reroute?
 
-                    // requestService.route(request.request_id, request.department, request.id_project, true ).then(function() {
+                    requestService.reroute(request.request_id, request.id_project, true ).then(function() {
 
                         // messageService.send(
                         //     'system', 
@@ -91,7 +91,7 @@ class MessageActionsInterceptor {
                         //     {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
                         // );
 
-                    // });
+                    });
                }   
                
                
