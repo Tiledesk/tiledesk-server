@@ -196,6 +196,27 @@ class Chat21Handler {
             });
 
 
+            requestEvent.on('request.attributes.update',  function(request) {          
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                        var gattributes = request.attributes;
+                        chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
+                            winston.info("Chat21 group gattributes updated: " + data);      
+                            chat21Event.emit('group.update', data);        
+                            chat21Event.emit('group.attributes.update', data);                                          
+                        }).catch(function(err) {
+                            winston.error("Error updating chat21  gattributes group ", err);
+                            chat21Event.emit('group.attributes.update.error', err);
+                        });
+
+                    }
+                });
+            });
+
 
             requestEvent.on('request.create',  function(request) {          
 
@@ -246,6 +267,8 @@ class Chat21Handler {
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
                         
                         
+                        
+
 
  
                         winston.info("Chat21 group create gAttributes: ",gAttributes);  
