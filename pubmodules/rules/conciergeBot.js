@@ -35,10 +35,10 @@ class ConciergeBot {
             // if ( message.sender == message.request.lead.lead_id) {   
                 winston.info("message send from lead");
                 // changeStatusByRequestId(request_id, id_project, newstatus) {
-                    requestService.changeStatusByRequestId(request_id, id_project, newstatus).then(function (reqStatusChanged) {
+                    // requestService.changeStatusByRequestId(message.request.request_id, message.request.id_project, "").then(function (reqStatusChanged) {
                          // reroute(request_id, id_project, nobot)
                         requestService.reroute(message.request.request_id, message.request.id_project, false );
-                    });
+                    // });
                 
 
             }       
