@@ -88,9 +88,9 @@ router.post('/', function(req, res) {
                   winston.debug("chat21 userFullname", userFullname);
 
                   // TODO proactive status
-                  // if (message.attributes.subtype === "info") {                    
-                  //   requestStatus = 50;
-                  // }
+                  if (message.attributes.subtype === "info") {                    
+                    requestStatus = 50;
+                  }
                 }
                 
                 winston.info("requestStatus"+ requestStatus);
@@ -206,6 +206,10 @@ router.post('/', function(req, res) {
                 // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
                 //   request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
 
+
+
+                // TOOD update also request attributes and sourcePage
+                
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        

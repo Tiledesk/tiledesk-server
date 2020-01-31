@@ -43,7 +43,7 @@ class MessageActionsInterceptor {
         
         messageActionEvent.on("agent", function(message) {
             
-             winston.info("called \agent action");
+             winston.info("called \\agent action");
              
              var request = message.request;
              
