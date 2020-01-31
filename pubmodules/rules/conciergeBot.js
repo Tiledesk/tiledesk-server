@@ -22,7 +22,7 @@ class ConciergeBot {
             winston.info(" ConciergeBot request create", request);
             if (request.status < 100 && request.department.id_bot) {
                 // addParticipantByRequestId(request_id, id_project, member) {
-                    requestService.addParticipantByRequestId(request.request_id, request.id_project, botId);
+                    requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot);
 
             }
         });
