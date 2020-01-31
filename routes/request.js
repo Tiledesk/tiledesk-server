@@ -109,6 +109,11 @@ router.patch('/:requestid', function (req, res) {
       winston.error('Error patching request.', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Request not found' });
+    }
+
     requestEvent.emit("request.update", request);
     return res.json(request);
   });
