@@ -207,7 +207,9 @@ class WebSocketServer {
           .populate('lead')
           .populate('department')
           .populate({path:'requester',populate:{path:'id_user'}})
-          .sort({updatedAt: 'asc'}).exec(function(err, requests) { 
+          .sort({updatedAt: 'asc'})
+          .limit(100)
+          .exec(function(err, requests) { 
           
               if (err) {
                 winston.error('Error finding request for onSubscribeCallback', err);  
