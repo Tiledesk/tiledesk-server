@@ -17,10 +17,9 @@ class ConciergeBot {
         winston.info("ConciergeBot listener start ");
         
 
-
-        
+ 
         requestEvent.on('request.create',  function(request) {   
-            winston.info(" ConciergeBot request create", message);
+            winston.info(" ConciergeBot request create", request);
             if (request.status < 100 && request.department.id_bot) {
                 // addParticipantByRequestId(request_id, id_project, member) {
                     requestService.addParticipantByRequestId(request.request_id, request.id_project, botId);
@@ -30,17 +29,18 @@ class ConciergeBot {
 
         messageEvent.on('message.create',  function(message) {
             winston.info(" ConciergeBot message create", message);
-            var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+            var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
             if (message.request.status < 100 && message.sender == message.request.lead.lead_id && !botId) {
             // if ( message.sender == message.request.lead.lead_id) {   
                 winston.info("message send from lead");
                 // reroute(request_id, id_project, nobot)
-                requestService.reroute(request.request_id, request.id_project, false );
+                requestService.reroute(message.request.request_id, message.request.id_project, false );
 
             }       
 
         });
+        
 
         requestEvent.on('request.participants.join',  function(data) {       
                     let request = data.request;
