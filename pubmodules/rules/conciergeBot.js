@@ -36,7 +36,8 @@ class ConciergeBot {
                 });
             });
 
-            requestEvent.on('request.participants.join',  function(data) {     
+            requestEvent.on('request.participants.update',  function(data) {     
+            // requestEvent.on('request.participants.join',  function(data) {     
             // requestEvent.on('request.create',  function(request) {          
                 let request = data.request;
                 let member = data.member;
