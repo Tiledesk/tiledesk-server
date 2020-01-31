@@ -58,32 +58,38 @@ class MessageActionsInterceptor {
                    
                    // removeParticipantByRequestId(request_id, id_project, member) 
                    //TODO USE FINALLY?
+                   //TODO you can use reroute?
                    requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(){
                         requestService.route(request.request_id, request.department, request.id_project, true ).then(function() {
-                                messageService.send(
-                                    'system', 
-                                    'Bot',                                     
-                                    request.request_id,
-                                    i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
-                                    request.id_project,
-                                    'system', 
-                                    {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
-                                );
+
+                                // messageService.send(
+                                //     'system', 
+                                //     'Bot',                                     
+                                //     request.request_id,
+                                //     i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
+                                //     request.id_project,
+                                //     'system', 
+                                //     {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
+                                // );
+
                         });
                    });
                }   else {
                 //route(request_id, departmentid, id_project) {      
                     //TODO USE FINALLY?
+                    //TODO you can use reroute?
                     requestService.route(request.request_id, request.department, request.id_project, true ).then(function() {
-                        messageService.send(
-                            'system', 
-                            'Bot',                                     
-                            request.request_id,
-                            i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
-                            request.id_project,
-                            'system', 
-                            {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
-                        );
+
+                        // messageService.send(
+                        //     'system', 
+                        //     'Bot',                                     
+                        //     request.request_id,
+                        //     i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
+                        //     request.id_project,
+                        //     'system', 
+                        //     {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
+                        // );
+
                     });
                }   
                
