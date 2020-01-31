@@ -34,8 +34,12 @@ class ConciergeBot {
             if (message.request.status < 100 && message.sender == message.request.lead.lead_id && !botId) {
             // if ( message.sender == message.request.lead.lead_id) {   
                 winston.info("message send from lead");
-                // reroute(request_id, id_project, nobot)
-                requestService.reroute(message.request.request_id, message.request.id_project, false );
+                // changeStatusByRequestId(request_id, id_project, newstatus) {
+                    requestService.changeStatusByRequestId(request_id, id_project, newstatus).then(function (reqStatusChanged) {
+                         // reroute(request_id, id_project, nobot)
+                        requestService.reroute(message.request.request_id, message.request.id_project, false );
+                    });
+                
 
             }       
 
