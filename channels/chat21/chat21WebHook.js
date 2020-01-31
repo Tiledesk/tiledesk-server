@@ -88,9 +88,9 @@ router.post('/', function(req, res) {
                   winston.debug("chat21 userFullname", userFullname);
 
                   // TODO proactive status
-                  if (message.attributes.subtype === "info") {                    
-                    requestStatus = 50;
-                  }
+                  // if (message.attributes.subtype === "info") {                    
+                  //   requestStatus = 50;
+                  // }
                 }
                 
                 winston.info("requestStatus"+ requestStatus);

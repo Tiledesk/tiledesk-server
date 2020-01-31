@@ -17,7 +17,7 @@ class ConciergeBot {
         winston.info("ConciergeBot listener start ");
         
 
- 
+ /*
         requestEvent.on('request.create',  function(request) {   
             winston.info(" ConciergeBot request create", request);
             if (request.status < 100 && request.department.id_bot) {
@@ -45,7 +45,7 @@ class ConciergeBot {
 
         });
         
-
+*/
         requestEvent.on('request.participants.join',  function(data) {       
                     let request = data.request;
                     let member = data.member;
