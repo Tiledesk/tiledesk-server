@@ -36,13 +36,16 @@ class ConciergeBot {
                 });
             });
 
-
-            requestEvent.on('request.create',  function(request) {          
-
+            requestEvent.on('request.participants.join',  function(data) {     
+            // requestEvent.on('request.create',  function(request) {          
+                let request = data.request;
+                let member = data.member;
                 setImmediate(() => {
                   
 
-                        if (!request.department.id_bot) {
+                        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+                        if (!botId) {                        
+                        // if (!request.department.id_bot) {
                             
                             winston.debug("ConciergeBot send welcome bot message");     
                             
@@ -58,17 +61,7 @@ class ConciergeBot {
                                     'system', 
                                     {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
                                 );
-
-                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"} });
-                                // chat21.messages.sendToGroup(
-                                //     'Bot', 
-                                //     request.request_id, 
-                                //     'Recipient Fullname', 
-                                //     i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                                //     'system', 
-                                //     {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                                // ).then(function(data){
-                                        // });
+                            
                                 
                             }else {
 
@@ -82,19 +75,7 @@ class ConciergeBot {
                                     {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
                                 );
 
-
-                                // chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", chatUtil.getMessage("JOIN_OPERATOR_MESSAGE", message.language, chatSupportApi.LABELS), app_id, {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}});
-                                
-                                // chat21.messages.sendToGroup(
-                                //     'Bot', 
-                                //     request.request_id, 
-                                //     'Recipient Fullname', 
-                                //     i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                                //     'system', 
-                                //     {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                                // ).then(function(data){
-
-                                //         });
+                               
                             }
                         }
                     
