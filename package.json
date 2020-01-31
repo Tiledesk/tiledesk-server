@@ -6,8 +6,8 @@
     "start": "node ./bin/www",
     "watchenv": "nodemon --watch .env --watch ./confenv/.env ./bin/www",
     "pretest": "mongodb-runner start",
-    "test": "mocha ./test/*.js ./modules/**/test/*.js --exit",
-    "test:int": "mocha ./test-int/*.js  ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
+    "test": "mocha ./test/*.js ./pubmodules/**/test/*.js ./modules/**/test/*.js ./channels/*/test/*.js ./node_modules/@tiledesk-ent/**/test/*.js  --exit",
+    "test:int": "mocha ./test-int/*.js  ./pubmodules/**/test-int/*.js ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
     "posttest": "mongodb-runner stop",
     "heroku-prebuild": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc",
     "enable-ent": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc"
@@ -32,7 +32,7 @@
     "@tiledesk-ent/tiledesk-server-analytics": "^1.0.1",
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.1",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.5"
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.6"
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.0.11",
