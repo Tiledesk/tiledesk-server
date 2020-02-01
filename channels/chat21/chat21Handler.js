@@ -10,6 +10,7 @@ var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
 var chat21Util = require('./chat21Util');
+var tiledeskUtil = require('./tiledeskUtil');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
@@ -169,6 +170,10 @@ class Chat21Handler {
                             if (message.request && message.request.lead && message.request.lead.fullname) {
                                 recipient_fullname = message.request.lead.fullname;
                             }
+
+                            const parsedMessage = tiledeskUtil.parseReply(message.text);
+                            winston.info("Chat21 sendToGroup parsedMessage ", parsedMessage);
+                            message = parsedMessage.message;
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
