@@ -10,7 +10,7 @@ var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
 var chat21Util = require('./chat21Util');
-var tiledeskUtil = require('./tiledeskUtil');
+var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
