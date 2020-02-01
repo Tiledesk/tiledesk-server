@@ -176,7 +176,13 @@ class Chat21Handler {
                             winston.info("Chat21 sendToGroup parsedMessage " + JSON.stringify(parsedReply));
 
                             // message = {...message, ...parsedReply.message };
-                            merge(message,parsedReply.message );
+                            // merge(message, parsedReply.message );
+                            message.text = parsedReply.message.text;
+                            message.type = parsedReply.message.type;
+                            message.metadata = parsedReply.metadata;
+                            
+                            var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
+                            message.attributes = msg_attributes;
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
