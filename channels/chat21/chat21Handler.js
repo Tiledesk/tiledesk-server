@@ -180,9 +180,13 @@ class Chat21Handler {
                             message.text = parsedReply.message.text;
                             message.type = parsedReply.message.type;
                             message.metadata = parsedReply.metadata;
-                            
-                            var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
-                            message.attributes = msg_attributes;
+
+                            // var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
+                            if (parsedReply.message && parsedReply.message.attributes) {
+                                for(const [key, value] of Object.entries(parsedReply.message.attributes)) {
+                                    message.attributes[key] = value
+                                }
+                            }                            
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
