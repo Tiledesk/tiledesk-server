@@ -184,7 +184,7 @@ class Chat21Handler {
                             // var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
                             if (parsedReply.message && parsedReply.message.attributes) {
                                 for(const [key, value] of Object.entries(parsedReply.message.attributes)) {
-                                    message.attributes[key] = value
+                                    attributes[key] = value
                                 }
                             }                            
 
