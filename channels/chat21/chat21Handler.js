@@ -173,7 +173,8 @@ class Chat21Handler {
 
                             const parsedMessage = tiledeskUtil.parseReply(message.text);
                             winston.info("Chat21 sendToGroup parsedMessage " + JSON.stringify(parsedMessage));
-                            message = parsedMessage.message;
+
+                            message = {...message, ...parsedMessage };
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
