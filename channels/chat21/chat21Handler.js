@@ -14,6 +14,7 @@ var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
+var merge = require('lodash.merge');
 
 
 const chat21Event = require('./chat21Event');
@@ -174,7 +175,8 @@ class Chat21Handler {
                             const parsedReply = tiledeskUtil.parseReply(message.text);
                             winston.info("Chat21 sendToGroup parsedMessage " + JSON.stringify(parsedReply));
 
-                            message = {...message, ...parsedReply.message };
+                            // message = {...message, ...parsedReply.message };
+                            merge(message,parsedReply.message );
 
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
