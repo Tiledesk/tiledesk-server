@@ -28,8 +28,11 @@ class EventService {
           winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
           return reject(err);
         }
-        eventEvent.emit(name, savedEvent);
-        event2Event.emit(name, savedEvent);
+        savedEvent.populate('project_user',function (err, savedEventPopulated){
+          eventEvent.emit('event.emit', savedEventPopulated);
+          event2Event.emit(name, savedEventPopulated);
+        });
+       
         return resolve(savedEvent);
       });
     });
