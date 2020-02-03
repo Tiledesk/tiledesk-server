@@ -13,6 +13,7 @@ var Lead = require('../models/lead');
 const requestEvent = require('../event/requestEvent');
 var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
+const uuidv4 = require('uuid/v4');
 
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
@@ -125,7 +126,7 @@ class RequestService {
   }
 
 
-
+  // 2020-01-29T11:47:13.285411+00:00 app[web.1]: error: Error saving the request.No matching document found for id "5e317007a5ad430017a3eea1" version 6 modifiedPaths "participants, department, agents" {"name":"VersionError","version":6,"modifiedPaths":["participants","department","agents"],"stack":"VersionError: No matching document found for id \"5e317007a5ad430017a3eea1\" version 6 modifiedPaths \"participants, department, agents\"\n    at VersionError.MongooseError [as constructor] (/app/node_modules/mongoose/lib/error/mongooseError.js:10:11)\n    at new VersionError (/app/node_modules/mongoose/lib/error/version.js:18:17)\n    at generateVersionError (/app/node_modules/mongoose/lib/model.js:409:10)\n    at model.Model.save (/app/node_modules/mongoose/lib/model.js:463:28)\n    at /app/services/requestService.js:151:35\n    at processTicksAndRejections (internal/process/next_tick.js:81:5)"}
   reroute(request_id, id_project, nobot) {
     var that = this;
  
@@ -191,6 +192,13 @@ class RequestService {
      });
    }
 
+  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+
+    var request_id = 'support-group-'+uuidv4();
+    winston.debug("request_id: "+request_id);
+    
+    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
+  }
 
   createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
@@ -688,8 +696,7 @@ class RequestService {
 
     return new Promise(function (resolve, reject) {
       return Request       
-      .findOne({request_id: request_id, id_project: id_project})
-      
+      .findOne({request_id: request_id, id_project: id_project})      
       .populate('lead')
         .populate('department')
         .populate({path:'requester',populate:{path:'id_user'}})
@@ -718,6 +725,7 @@ class RequestService {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
               requestEvent.emit('request.participants.join', {member:member, request: savedRequest});
+              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
             }          
             
             return resolve(savedRequest);
@@ -774,6 +782,7 @@ class RequestService {
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
               requestEvent.emit('request.participants.leave', {member:member, request: savedRequest});
+              // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
             }
 
             return resolve(savedRequest);
