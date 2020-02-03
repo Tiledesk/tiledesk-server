@@ -19,9 +19,10 @@ router.post('/', [
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
-  
-  // emit(name, attributes, id_project, createdBy) {
-  eventService.emit(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.user.id).then(function(event) {
+
+  // emit(name, attributes, id_project, project_user, createdBy) {
+  eventService.emit2(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.body.id_user, req.user.id).then(function(event) {
+    // eventService.emit(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.user.id).then(function(event) {
     res.json(event);
   }).catch(function(err) {
     winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)

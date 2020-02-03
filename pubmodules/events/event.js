@@ -24,6 +24,11 @@ var EventSchema = new Schema({
     required: true,
     index: true
   },
+  id_user: {
+    type: String,
+    required: true,
+    index: true
+  },
   createdBy: {
     type: String,
     required: true,
