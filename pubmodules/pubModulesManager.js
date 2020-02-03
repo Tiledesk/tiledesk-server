@@ -13,6 +13,7 @@ class PubModulesManager {
         this.messageActions = undefined;
         this.emailNotification = undefined;
         
+        this.eventsRoute = undefined;
       
     }
 
@@ -20,11 +21,12 @@ class PubModulesManager {
 
     use(app) {
         var that = this;
-        winston.info("PubModulesManager using controllers");       
+        winston.info("PubModulesManager using controllers");     
 
-      
-      
-
+        if (this.eventsRoute) {
+            app.use('/:projectid/events', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('guest')], this.eventsRoute);
+            winston.info("ModulesManager eventsRoute controller loaded");       
+        }
         
     }
 
@@ -71,6 +73,19 @@ class PubModulesManager {
             }
         }
         
+
+        try {           
+            this.eventsRoute = require('./events/eventRoute');
+            winston.debug("this.eventRoute:"+ this.eventsRoute);          
+            winston.info("PubModulesManager init eventsRoute loaded.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init eventsRoute module not found",err);
+            }else {
+                winston.info("PubModulesManager error initializing init eventsRoute module", err);
+            }
+        }
+
         
 
 

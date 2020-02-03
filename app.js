@@ -379,6 +379,9 @@ app.use('/:projectid/labels', [fetchLabels],labels);
 app.use('/:projectid/labels2', [fetchLabels],labels);
 
 
+if (pubModulesManager) {
+  pubModulesManager.use(app);
+}
 
 if (modulesManager) {
   modulesManager.use(app);

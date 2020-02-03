@@ -54,12 +54,20 @@ var winston = require('../config/winston');
       required: true
     }
   }, {
-      timestamps: true
+      timestamps: true,
+      toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
     }
   );
 
  
-
+  Project_userSchema.virtual('events', {
+    ref: 'event', // The model to use
+    localField: '_id', // Find people where `localField`
+    foreignField: 'project_user', // is equal to `foreignField`
+    justOne: false,
+    // options: { getters: true }
+    options: { sort: { createdAt: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
 
   // Project_userSchema.methods = {
   //     toStringTest : function() {
