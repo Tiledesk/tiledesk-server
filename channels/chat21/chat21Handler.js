@@ -14,7 +14,7 @@ var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
-var merge = require('lodash.merge');
+// var merge = require('lodash.merge');
 
 
 const chat21Event = require('./chat21Event');
