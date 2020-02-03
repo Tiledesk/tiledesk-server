@@ -4,12 +4,22 @@ var Event = require("./event");
 var winston = require('../../config/winston');
 const eventEvent = require('./eventEvent');
 const eventService = require('./eventService');
+const { check, validationResult } = require('express-validator');
 
 
-router.post('/', function (req, res) {
+router.post('/', [
+  check('name').notEmpty(),  
+],function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
+
+    
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
   // emit(name, attributes, id_project, createdBy) {
   eventService.emit(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.user.id).then(function(event) {
     res.json(event);
