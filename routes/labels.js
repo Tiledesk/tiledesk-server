@@ -26,8 +26,8 @@ router.get('/default', function (req, res) {
  
 });
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels/default/clone
-// [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],
-router.post('/default/clone', function (req, res, next) {
+
+router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
 // router.get('/default/clone', function (req, res) {
 
   // winston.info("req.body.lang: " + req.body.lang);
@@ -110,8 +110,8 @@ router.get('/default/:lang', function (req, res) {
 
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels/
 
-// router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-  router.post('/',function (req, res, next) {
+router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+  // router.post('/',function (req, res, next) {
  
   var lang = req.body.lang;
   winston.info("lang: " + lang);
@@ -209,7 +209,7 @@ router.get('/default/:lang', function (req, res) {
   
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/4321/labels/
 
-router.delete('/', function (req, res) {
+router.delete('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug(req.body);
 
   Label.remove({ id_project: req.projectid }, function (err, label) {
@@ -223,8 +223,8 @@ router.delete('/', function (req, res) {
 });
 
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/1235/labels/EN
-//router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-router.delete('/:lang', function (req, res, next) {
+router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
+// router.delete('/:lang', function (req, res, next) {
   var lang = req.params.lang;
   winston.info("lang: " + lang);
 
