@@ -164,7 +164,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
 
-    welcomeOnJoin() {
+    welcomeOnJoin(request) {
         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
         if (!botId) {                        
         // if (!request.department.id_bot) {
