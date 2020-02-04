@@ -207,7 +207,7 @@ class WebSocketServer {
           .populate('lead')
           .populate('department')
           .populate({path:'requester',populate:{path:'id_user'}})
-          .sort({updatedAt: 'asc'})
+          .sort({updatedAt: 'desc'})
           .limit(100)
           .exec(function(err, requests) { 
           
