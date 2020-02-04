@@ -17,9 +17,10 @@ const { check, validationResult } = require('express-validator');
 // var roleChecker = require('../middleware/has-role');
 
 router.post('/', 
-[
-  check('text').notEmpty(),  
-],
+// se type image text può essere empty validare meglio.
+// [
+//   check('text').notEmpty(),  
+// ],
 function(req, res) {
 
   winston.debug('req.body', req.body);
