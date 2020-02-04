@@ -33,7 +33,7 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
   // winston.info("req.body.lang: " + req.body.lang);
   // var lang = req.query.lang;
   var lang = req.body.lang;
-  winston.info("lang: " + lang);
+  winston.debug("lang: " + lang);
   
   var pickedLang = req.labels.find(l => l.lang === lang);
 
@@ -44,7 +44,7 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
   }
   // var newLabel = {lang: lang, data: pickedLang};
   var newLabel = pickedLang;
-  winston.info("newLabel: " ,newLabel);
+  winston.debug("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
     if (err) {
@@ -333,7 +333,7 @@ router.get('/:lang', function (req, res) {
       winston.debug("here /", labels);
       let returnval;
       if (!labels) {
-        winston.info("here  no labels");
+        winston.debug("here  no labels");
 
         returnval = {data: req.labels};
       } else {
@@ -349,7 +349,7 @@ router.get('/:lang', function (req, res) {
       
       }
 
-      winston.info("returnval",returnval);
+      winston.debug("returnval",returnval);
 
       var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
       //var pickedLang = returnval.data[req.params.lang];
