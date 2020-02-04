@@ -68,7 +68,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             requestEvent.on('request.create',  function(request) {   
                 setImmediate(() => {                  
-                    this.welcomeOnJoin(request);
+                    that.welcomeOnJoin(request);
                 });
             });
 
@@ -80,7 +80,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 setImmediate(() => {
                   
 
-                    this.welcomeOnJoin(request);
+                    that.welcomeOnJoin(request);
                         // var botId = BotFromParticipant.getBotFromParticipants(request.participants);
                         // if (!botId) {                        
                         // // if (!request.department.id_bot) {
