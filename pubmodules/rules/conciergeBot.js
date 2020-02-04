@@ -23,7 +23,7 @@ class ConciergeBot {
             if (request.status < 100 && request.department.id_bot) {
                 // addParticipantByRequestId(request_id, id_project, member) {
                     requestService.addParticipantByRequestId(request.request_id, request.id_project, "bot_"+request.department.id_bot);
-
+devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente al primo messaggio non riceve il welcome iniziale
             }
         });
 
@@ -66,6 +66,12 @@ class ConciergeBot {
                 });
             });
 
+            requestEvent.on('request.create',  function(request) {   
+                setImmediate(() => {                  
+                    this.welcomeOnJoin(request);
+                });
+            });
+
             requestEvent.on('request.participants.update',  function(data) {     
             // requestEvent.on('request.participants.join',  function(data) {     
             // requestEvent.on('request.create',  function(request) {          
@@ -74,41 +80,42 @@ class ConciergeBot {
                 setImmediate(() => {
                   
 
-                        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
-                        if (!botId) {                        
-                        // if (!request.department.id_bot) {
+                    this.welcomeOnJoin(request);
+                        // var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+                        // if (!botId) {                        
+                        // // if (!request.department.id_bot) {
                             
-                            winston.debug("ConciergeBot send welcome bot message");     
+                        //     winston.debug("ConciergeBot send welcome bot message");     
                             
-                            if (request.availableAgents.length==0) {
+                        //     if (request.availableAgents.length==0) {
                                
-                                // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
-                                messageService.send(
-                                    'system', 
-                                    'Bot',                                     
-                                    request.request_id,
-                                    i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                                    request.id_project,
-                                    'system', 
-                                    {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                                );
+                        //         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
+                        //         messageService.send(
+                        //             'system', 
+                        //             'Bot',                                     
+                        //             request.request_id,
+                        //             i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                        //             request.id_project,
+                        //             'system', 
+                        //             {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                        //         );
                             
                                 
-                            }else {
+                        //     }else {
 
-                                messageService.send(
-                                    'system', 
-                                    'Bot',                                     
-                                    request.request_id,
-                                    i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                                    request.id_project,
-                                    'system', 
-                                    {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                                );
+                        //         messageService.send(
+                        //             'system', 
+                        //             'Bot',                                     
+                        //             request.request_id,
+                        //             i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                        //             request.id_project,
+                        //             'system', 
+                        //             {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                        //         );
 
                                
-                            }
-                        }
+                        //     }
+                        // }
                     
                     });
 
@@ -152,6 +159,47 @@ class ConciergeBot {
 
 
 
+    }
+
+
+
+
+    welcomeOnJoin() {
+        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+        if (!botId) {                        
+        // if (!request.department.id_bot) {
+            
+            winston.debug("ConciergeBot send welcome bot message");     
+            
+            if (request.availableAgents.length==0) {
+               
+                // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
+                messageService.send(
+                    'system', 
+                    'Bot',                                     
+                    request.request_id,
+                    i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                    request.id_project,
+                    'system', 
+                    {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                );
+            
+                
+            }else {
+
+                messageService.send(
+                    'system', 
+                    'Bot',                                     
+                    request.request_id,
+                    i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                    request.id_project,
+                    'system', 
+                    {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                );
+
+               
+            }
+        } 
     }
 
 
