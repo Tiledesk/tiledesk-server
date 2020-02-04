@@ -146,9 +146,8 @@ class Chat21Handler {
                         
                         attributes['tiledesk_message_id'] = message._id;
 
-                        if (message.request) {
-                            attributes['projectId'] = message.request.id_project; //TODO not used. used by ionic to open request detail ???
-                        }
+                        attributes['projectId'] = message.id_project; //TODO not used. used by ionic to open request detail ???
+                        
                         
 
 
@@ -177,10 +176,17 @@ class Chat21Handler {
 
                             // message = {...message, ...parsedReply.message };
                             // merge(message, parsedReply.message );
-                            message.text = parsedReply.message.text;
-                            message.type = parsedReply.message.type;
-                            message.metadata = parsedReply.metadata;
 
+                            if (parsedReply.message.text) {
+                                message.text = parsedReply.message.text;
+                            }
+                            if (parsedReply.message.type) {
+                                message.type = parsedReply.message.type;
+                            }
+                            if (parsedReply.message.type) {
+                                message.metadata = parsedReply.message.metadata;
+                            }
+                            
                             // var msg_attributes = {...message.attributes, ...parsedReply.message.attributes };
                             if (parsedReply.message && parsedReply.message.attributes) {
                                 for(const [key, value] of Object.entries(parsedReply.message.attributes)) {
