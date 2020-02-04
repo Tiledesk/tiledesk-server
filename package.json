@@ -32,7 +32,7 @@
     "@tiledesk-ent/tiledesk-server-analytics": "^1.0.1",
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.1",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.13"
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.14"
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.0.11",
