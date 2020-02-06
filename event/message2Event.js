@@ -17,7 +17,7 @@ const message2Event = new Message2Event({
   wildcard: true,
 });
 
-winston.info("message2Event init");
+winston.debug("message2Event init");
 
 
 //TODO CHANGEIT
