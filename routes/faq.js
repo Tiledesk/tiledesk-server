@@ -103,9 +103,6 @@ router.post('/', function (req, res) {
   });
 });
 
-// END NEW
-
-// SEARCH REMOTE FAQ 
 //TODO RIFATTORIZZA IN MODALITA' REST CHIEDI LEO
 
 

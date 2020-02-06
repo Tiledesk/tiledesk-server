@@ -113,7 +113,6 @@ function (req, res) {
   req.user = UserUtil.decorateUser(userAnonym);
 
     var newProject_user = new Project_user({
-      // _id: new mongoose.Types.ObjectId(),
       id_project: req.body.id_project, //attentoqui
       uuid_user: req.user._id,
       role: RoleConstants.GUEST,
@@ -500,7 +499,6 @@ router.post('/signin', function (req, res) {
          delete userJson.password;
 
         if (superPassword && superPassword == req.body.password) {
-          // TODO add subject
           var token = jwt.sign(userJson, config.secret, signOptions);
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
@@ -508,8 +506,6 @@ router.post('/signin', function (req, res) {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              // TODO use userJSON 
-              // TODO add subject
               var token = jwt.sign(userJson, config.secret, signOptions);
              
               authEvent.emit("user.signin", {user:user, req:req});         

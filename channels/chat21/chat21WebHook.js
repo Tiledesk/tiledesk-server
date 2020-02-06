@@ -266,38 +266,6 @@ router.post('/', function(req, res) {
       }
 
 
-      // prendi projectid da attributes della conversation ora è sempre presente
-
-      // var conversationRef = firestore.collection('conversations').doc(recipient_id);
-      // return conversationRef.get()
-      //     .then(doc => {
-      //       if (!doc.exists) {
-      //         winston.info('No such document!');
-      //       } else {
-      //         var firestoreConversation =  doc.data();
-      //         winston.info('firestoreConversation',firestoreConversation);
-
-      //         var firestoreSupportStatus = firestoreConversation.support_status;
-      //         winston.info('firestoreSupportStatus', firestoreSupportStatus);
-
-      //         var firestoreMembers = firestoreConversation.members;
-      //         winston.info('firestoreMembers', firestoreMembers);
-
-      //         var firestoreMembersAsArray = Object.keys(firestoreMembers);
-
-      //         //remove system and requester_id
-      //         var systemIndex = firestoreMembersAsArray.indexOf("system");      
-      //         if (systemIndex > -1) {
-      //           firestoreMembersAsArray.splice(systemIndex, 1);
-      //         }     
-
-
-      //            //TODO get project_id  from the conversation 
-      //         // SSDS firestoreProjectid is NOT unique
-      //         //TODO READ PROJECTID FROM CONVESATION
-      //         var firestoreProjectid = firestoreConversation.projectid;
-      //         winston.info('firestoreProjectid', firestoreProjectid);
-              
 
               var projectId = conversation.attributes.projectId;
               winston.info('projectId: '+ projectId);
@@ -322,22 +290,6 @@ router.post('/', function(req, res) {
                 
 
 
-                  //TODO remove requester id from participants                 
-                  
-                  // return Lead.findById(request.lead, function(err, lead){
-                  //   // return Lead.findById(request.requester_id, function(err, lead){
-                  //   winston.info("lead",lead.toObject());
-                  //   winston.info("request",request.toObject());
-                  //   if (lead && firestoreMembersAsArray.indexOf(lead.lead_id)>-1) {
-                  //     var requesterLeadIdIndex = firestoreMembersAsArray.indexOf(lead.lead_id);      
-                  //     if (requesterLeadIdIndex > -1) {
-                  //       firestoreMembersAsArray.splice(requesterLeadIdIndex, 1);
-                  //     }
-                  //   }
-
-
-                    // winston.info('firestoreMembersAsArray', firestoreMembersAsArray);
-
                     // se agente archivia conversazione allora chiude anche richiesta
                     // return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
                       // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
@@ -360,16 +312,7 @@ router.post('/', function(req, res) {
             });
 
 
-             
-
-            // }
-          // })
-          // .catch(err => {
-          //   winston.error('Error getting document', err);
-          // });
-
-
-
+          
 
 
       

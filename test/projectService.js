@@ -1,7 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-// require('./controllers/todo.controller.test.js');
 var expect = require('chai').expect;
 
 var assert = require('chai').assert;

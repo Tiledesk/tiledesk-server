@@ -77,7 +77,6 @@ class MessageActionsInterceptor {
                }   else {
                 //route(request_id, departmentid, id_project) {      
                     //TODO USE FINALLY?
-                    //TODO you can use reroute?
 
                     requestService.reroute(request.request_id, request.id_project, true ).then(function() {
 

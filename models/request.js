@@ -151,7 +151,7 @@ var RequestSchema = new Schema({
 
 
   //messages_count Integer The number of conversation parts in this conversation.
-  //TODO
+  //TODO delete this
   messages_count: {
     type: Number,
     default: 0
@@ -162,7 +162,6 @@ var RequestSchema = new Schema({
   },
 
   //tags List A list of tags associated with the conversation.
-//TODO
   tags: {
     type: Array,
     required: false

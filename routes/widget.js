@@ -69,7 +69,7 @@ var Department = require("../models/department");
   // };
   
 
-
+// TOOD add labels
     Promise.all([
       Project.findById(req.projectid).select('-settings'),
       availableUsers(),

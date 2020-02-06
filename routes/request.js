@@ -211,20 +211,20 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
   
 });
 
-// TODO deprecated
-router.delete('/:requestid/participants', function (req, res) {
-  winston.debug(req.body);
+// // TODO deprecated
+// router.delete('/:requestid/participants', function (req, res) {
+//   winston.debug(req.body);
   
-   //removeParticipantByRequestId(request_id, id_project, member)
-  return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
+//    //removeParticipantByRequestId(request_id, id_project, member)
+//   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
 
-      winston.info("participant removed", updatedRequest);
+//       winston.info("participant removed", updatedRequest);
 
-      return res.json(updatedRequest);
-  });
+//       return res.json(updatedRequest);
+//   });
   
   
-});
+// });
 
 router.put('/:requestid/departments', function (req, res) {
   winston.info(req.body);

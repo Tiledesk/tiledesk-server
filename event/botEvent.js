@@ -64,8 +64,7 @@ function getBotId(message) {
  
 }
 
-//modify to async
-// TODO perche nn message.create???
+//TODO modify to async
 //messageEvent.on('message.received', function(message) {
 messageEvent.on('message.create', function(message) {
 

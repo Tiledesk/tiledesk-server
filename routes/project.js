@@ -91,7 +91,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 });
 
 // DOWNGRADE PLAN. UNUSED
-// TODO controlla deve essere owner
 router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
   winston.debug('downgradeplan - UPDATE PROJECT REQ BODY ', req.body);
    Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {

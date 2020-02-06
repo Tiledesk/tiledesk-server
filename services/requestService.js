@@ -29,7 +29,7 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, nobot).then(function (result) {
 
-          // console.log("getOperators", result);
+          // winston.debug("getOperators", result);
 
           var status = 100;
           var assigned_operator_id;
@@ -64,8 +64,8 @@ class RequestService {
    var that = this;
 
    return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
         return Request       
         .findOne({request_id: request_id, id_project: id_project})
@@ -131,8 +131,8 @@ class RequestService {
     var that = this;
  
     return new Promise(function (resolve, reject) {
-      // console.log("request_id", request_id);
-      // console.log("newstatus", newstatus);
+      // winston.debug("request_id", request_id);
+      // winston.debug("newstatus", newstatus);
  
          return Request       
          .findOne({request_id: request_id, id_project: id_project})
@@ -221,13 +221,13 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-           // console.log("getOperators", result);
+           // winston.debug("getOperators", result);
 
            var assigned_operator_id;
            var participants = [];
-          //  console.log("req status0", status);
+          //  winston.debug("req status0", status);
            if (!status) {
-            //  console.log("req status check", status);
+            //  winston.debug("req status check", status);
              status = 100;
              if (result.operators && result.operators.length>0) {
                assigned_operator_id = result.operators[0].id_user;
@@ -236,8 +236,8 @@ class RequestService {
              }
            }
            
-           // console.log("assigned_operator_id", assigned_operator_id);
-            // console.log("req status", status);
+           // winston.debug("assigned_operator_id", assigned_operator_id);
+            // winston.debug("req status", status);
 
               var newRequest = new Request({
                 request_id: request_id,
@@ -266,7 +266,7 @@ class RequestService {
               });
                     
 
-              // console.log('newRequest.',newRequest);
+              // winston.debug('newRequest.',newRequest);
 
 
           
@@ -280,7 +280,7 @@ class RequestService {
               
                   winston.info("Request created",savedRequest.toObject());
                   
-                  // console.log("XXXXXXXXXXXXXXXX");
+                  // winston.debug("XXXXXXXXXXXXXXXX");
 
 
                   /*
@@ -317,7 +317,7 @@ class RequestService {
 
   createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
-    // console.log("request_id", request_id);
+    // winston.debug("request_id", request_id);
 
 
     if (!departmentid) {
@@ -334,7 +334,7 @@ class RequestService {
 
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
-          // console.log("getOperators", result);
+          // winston.debug("getOperators", result);
 
           var status = 100;
           var assigned_operator_id;
@@ -344,8 +344,8 @@ class RequestService {
             status = 200;
             participants.push(assigned_operator_id.toString());
           }
-          // console.log("assigned_operator_id", assigned_operator_id);
-          // console.log("status", status);
+          // winston.debug("assigned_operator_id", assigned_operator_id);
+          // winston.debug("status", status);
 
               var newRequest = new Request({
                 request_id: request_id,
@@ -372,7 +372,7 @@ class RequestService {
               });
                     
 
-              // console.log('newRequest.',newRequest);
+              // winston.debug('newRequest.',newRequest);
 
 
           
@@ -386,7 +386,7 @@ class RequestService {
               
                   winston.info("Request created",savedRequest.toObject());
                   
-                  // console.log("XXXXXXXXXXXXXXXX");
+                  // winston.debug("XXXXXXXXXXXXXXXX");
 
                   /*
                   if (id_project!="5b45e1c75313c50014b3abc6") {
@@ -423,8 +423,8 @@ class RequestService {
   changeStatusByRequestId(request_id, id_project, newstatus) {
 
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
         return Request       
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false})
@@ -450,8 +450,8 @@ class RequestService {
   setClosedAtByRequestId(request_id, id_project, closed_at) {
 
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
         return Request        
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false})
@@ -464,7 +464,7 @@ class RequestService {
               return reject(err);
             }
 
-           // console.log("updatedRequest", updatedRequest);
+           // winston.debug("updatedRequest", updatedRequest);
             return resolve(updatedRequest);
           });
     });
@@ -474,8 +474,8 @@ class RequestService {
   incrementMessagesCountByRequestId(request_id, id_project) {
 
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
         return Request       
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
@@ -493,8 +493,8 @@ class RequestService {
   updateWaitingTimeByRequestId(request_id, id_project) {
 
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
-     // console.log("newstatus", newstatus);
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
 
       return Request       
       .findOne({request_id: request_id, id_project: id_project}, function(err, request) {
@@ -505,11 +505,11 @@ class RequestService {
         //update waiting_time only the first time
         if (!request.waiting_time) {
           var waitingTime = Date.now() - request.createdAt;
-          // console.log("waitingTime", waitingTime);
+          // winston.debug("waitingTime", waitingTime);
   
          
           request.waiting_time = waitingTime;
-            // console.log(" request",  request);
+            // winston.debug(" request",  request);
             winston.debug("Request  waitingTime setted");
           return resolve(request.save());
         }else {
@@ -527,13 +527,13 @@ class RequestService {
 
     var that = this;
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
+     // winston.debug("request_id", request_id);
      
 
         return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
-            // console.log("updatedRequest", updatedRequest);
+            // winston.debug("updatedRequest", updatedRequest);
             return messageService.getTranscriptByRequestId(request_id, id_project).then(function(transcript) {
-             // console.log("transcript", transcript);
+             // winston.debug("transcript", transcript);
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
@@ -557,7 +557,7 @@ class RequestService {
 
     var that = this;
     return new Promise(function (resolve, reject) {
-     // console.log("request_id", request_id);
+     // winston.debug("request_id", request_id);
      
         return Request      
         .findOne({request_id: request_id, id_project: id_project})
@@ -611,15 +611,15 @@ class RequestService {
   updateTrascriptByRequestId(request_id, id_project, transcript) {
 
     return new Promise(function (resolve, reject) {
-      // console.log("request_id", request_id);
-      // console.log("transcript", transcript);
+      // winston.debug("request_id", request_id);
+      // winston.debug("transcript", transcript);
 
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
               winston.error(err);
               return reject(err);
             }
-           // console.log("updatedRequest", updatedRequest);
+           // winston.debug("updatedRequest", updatedRequest);
             return resolve(updatedRequest);
           });
     });
@@ -642,8 +642,7 @@ class RequestService {
     //TODO validate participants
     
     return new Promise(function (resolve, reject) {
-      // console.log("request_id", request_id);
-      // console.log("participants", participants);
+      
 
       return Request
        
@@ -673,9 +672,9 @@ class RequestService {
       });
 
       // return Request.findOne({request_id: request_id}).then(function (request) {
-      //   console.log("request", request);
+      //   winston.debug("request", request);
       //     request.participants=participants;
-      //     console.log("request after", request);
+      //     winston.debug("request after", request);
       //     return request.save().then(function(savedRequest) {
       //       return resolve(savedRequest);
       //     }).catch(function (err) {
@@ -686,9 +685,9 @@ class RequestService {
   }
 
   addParticipantByRequestId(request_id, id_project, member) {
-    // console.log("request_id", request_id);
-    // console.log("id_project", id_project);
-    // console.log("member", member);
+    // winston.debug("request_id", request_id);
+    // winston.debug("id_project", id_project);
+    // winston.debug("member", member);
 
 
 //TODO control if member is a valid project_user of the project
@@ -736,9 +735,9 @@ class RequestService {
   }
 
   removeParticipantByRequestId(request_id, id_project, member) {
-    // console.log("request_id", request_id);
-    // console.log("id_project", id_project);
-    // console.log("member", member);
+    // winston.debug("request_id", request_id);
+    // winston.debug("id_project", id_project);
+    // winston.debug("member", member);
 
     return new Promise(function (resolve, reject) {
 
@@ -760,11 +759,11 @@ class RequestService {
         }
 
         var index = request.participants.indexOf(member);
-        // console.log("index", index);
+        // winston.debug("index", index);
 
         if (index > -1) {
           request.participants.splice(index, 1);
-          // console.log(" request.participants",  request.participants);
+          // winston.debug(" request.participants",  request.participants);
         }
         if (request.status!=1000) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
           if (request.participants.length>0) { 
@@ -774,7 +773,7 @@ class RequestService {
           }
         }
          
-          // console.log(" request",  request);
+          // winston.debug(" request",  request);
        
           request.save(function(err, savedRequest) {
 

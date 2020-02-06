@@ -3,7 +3,6 @@ process.env.NODE_ENV = 'test';
 
 require('dotenv').config();
 
-// require('./controllers/todo.controller.test.js');
 var expect = require('chai').expect;
 
 var assert = require('chai').assert;
