@@ -41,15 +41,6 @@ var ProjectSchema = new Schema({
       return new Profile();
     }
   },
-  // profile: {
-  //   type: String,
-  //   default: 'free',
-  //   required: true
-  // },
-  // trialDays: {
-  //   type: Number,
-  //   default: 30
-  // },
   versions: {
     type: Number,
     default: 30
