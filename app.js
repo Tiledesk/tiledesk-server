@@ -31,7 +31,6 @@ var winston = require('./config/winston');
 
 //bin start
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
-
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
 if (!databaseUri) {
@@ -78,7 +77,6 @@ var widgets = require('./routes/widget');
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
-// var userService = require("./services/userService");
 var fetchLabels = require('./middleware/fetchLabels');
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
@@ -218,7 +216,7 @@ var reqLogger = function (req, res, next) {
         if (err) {
           winston.error('Error saving reqlog ', err)
         }
-        //console.log('Reqlog saved ', reqlogSaved)
+        winston.debug('Reqlog saved ', reqlogSaved)
       });
 
       next()
@@ -265,7 +263,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  //console.log("projectIdSetter projectid", projectid);
+  winston.debug("projectIdSetter projectid: "+ projectid);
 
   // if (projectid) {
     req.projectid = projectid;
@@ -280,12 +278,12 @@ var projectIdSetter = function (req, res, next) {
 
 var projectSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  //console.log("projectSetter projectid", projectid);
+  winston.debug("projectSetter projectid:" + projectid);
 
   if (projectid) {
     Project.findById(projectid, function(err, project){
       if (err) {
-         console.warn("Problem getting project with id",projectid);
+        winston.warn("Problem getting project with id: " + projectid);
         //console.warn("Error getting project with id",projectid, err);
       }
   
@@ -310,7 +308,6 @@ var projectSetter = function (req, res, next) {
 // app.use('/admin', admin);
 
 //oauth2
-
 // app.get('/dialog/authorize', oauth2.authorization);
 // app.post('/dialog/authorize/decision', oauth2.decision);
 // app.post('/oauth/token', oauth2.token);
@@ -339,14 +336,9 @@ channelManager.use(app);
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
+//Deprecated??
 app.use('/:projectid/faqpub', faqpub);
-
-
-//attention don't use hasRole. It is used by chatsupportApi.getBot with a fixed basic auth credetials.TODO change it
-// controlla
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
-// app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole()], faq_kb);
-
 
 // project internal auth check
 app.use('/projects',project);
@@ -363,7 +355,6 @@ if (process.env.VisitorCounter_ENABLED) {
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
-// app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, HasRole('admin')], project_user);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], request);
 
@@ -376,8 +367,6 @@ app.use('/:projectid/jwt', jwtroute);
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 app.use('/:projectid/labels', [fetchLabels],labels);
-app.use('/:projectid/labels2', [fetchLabels],labels);
-
 
 if (pubModulesManager) {
   pubModulesManager.use(app);
