@@ -35,16 +35,17 @@ class BotSubscriptionNotifier {
           request({
             url: url,
             headers: {
-             'Content-Type' : 'application/json',        
+             'Content-Type' : 'application/json', 
+             'User-Agent': 'tiledesk-bot'       
               //'x-hook-secret': s.secret
             },
             json: json,
             method: 'POST'
 
           }, function(err, result, json){            
-            winston.info("SENT notify for bot with url " + url +  " with error " + err);
+            winston.info("SENT notify for bot with url " + url +  " with err " + err);
             if (err) {
-              winston.error("Error sending notify for bot with url " + url + " with error " + err);
+              winston.error("Error sending notify for bot with url " + url + " with err " + err);
               // next(err, json);
             }
           });

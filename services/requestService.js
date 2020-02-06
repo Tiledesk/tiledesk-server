@@ -583,7 +583,6 @@ class RequestService {
             request.status = 100;
           }
 
-          winston.error("sono quiiiiiiiiii ");
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error("Error saving reopened the request", err);

@@ -35,7 +35,7 @@ class MessageService {
        if (!id) {
            return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata);
        } else {
-            winston.info("Message changeStatus", status);
+            winston.debug("Message changeStatus", status);
             return this.changeStatus(id, status);
        }
    }
