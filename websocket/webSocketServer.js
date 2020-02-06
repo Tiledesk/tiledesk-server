@@ -200,8 +200,6 @@ class WebSocketServer {
             query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
             winston.debug('query agent: '+ JSON.stringify(query));
           }
-
-          console.log('query agent c: ',query);
           
           Request.find(query)
           .populate('lead')
