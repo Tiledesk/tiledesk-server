@@ -195,10 +195,10 @@ class WebSocketServer {
           // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
           var query = {"id_project":projectId, "status": { $lt: 1000 } };
           if (projectuser.role == "owner" || projectuser.role == "admin") {
-            winston.info('query admin: '+ JSON.stringify(query));
+            winston.debug('query admin: '+ JSON.stringify(query));
           }else {
             query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
-            winston.info('query agent: '+ JSON.stringify(query));
+            winston.debug('query agent: '+ JSON.stringify(query));
           }
 
           console.log('query agent c: ',query);
