@@ -446,14 +446,7 @@ router.post('/signin', function (req, res) {
       if (req.body.password) {
         var superPassword = process.env.SUPER_PASSWORD || "superadmin";
 
-
-        // "aud": "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
-        // "iat": 1539784440,
-        // "exp": 1539788040,
-        // "iss": "firebase-adminsdk-z2x9h@chat-v2-dev.iam.gserviceaccount.com",
-        // "sub": "firebase-adminsdk-z2x9h@chat-v2-dev.iam.gserviceaccount.com",
-        // "uid": "123456_123456"
-      
+        // TODO externalize iss aud sub 
 
         // https://auth0.com/docs/api-auth/tutorials/verify-access-token#validate-the-claims              
         var signOptions = {
