@@ -132,22 +132,9 @@ router.get('/csv', function (req, res, next) {
         winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV ERR ', err)
         return next(err);
       }
-      winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)
-      // return Lead.count(query, function (err, totalRowCount) {
-
-      //   var objectToReturn = {
-      //     perPage: limit,
-      //     count: totalRowCount,
-      //     leads: leads
-      //   };
-
-
-      //var activity = new Activity({actor: req.user.id, verb: "LEAD_DOWNLOAD_CSV", actionObj: req.body, target: req.originalUrl, id_project: req.projectid });
-      //activityEvent.emit('lead.download.csv', activity);
-
+      winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)      
       
       return res.csv(leads, true);
-      // });
     });
 });
 
@@ -164,30 +151,6 @@ router.get('/:leadid', function (req, res) {
     res.json(lead);
   });
 });
-
-// NEW - accept '_id' and requester id
-// router.get('/:id', function (req, res) {
-//   console.log('GET LEAD BY ID REQUEST BODY ', req.body);
-//   console.log('++ ++ ++ GET LEAD BY ID REQUEST req.param.length ', req.params.id);
-//   // var objId = new ObjectId( (req.params.id.length != 24) ? "NOID56789012" : req.params.id );
-//   var objId = (req.params.id.length != 24) ? "NOID56789012" : req.params.id ;
-
-//   console.log('++ ++ ++ + GET LEAD BY ID REQUEST objId ', objId);
-//   console.log('++ ++ ++ + GET LEAD BY ID REQUEST req.param.length ', req.params.id.length);
-//   // 5bf6f696a5d49a0015d3513d
-//   // 6Hs47HiHpOajpK4rYf20CgNTIcs1
-//   Lead.findOne({ $or: [{ _id: objId }, { lead_id: req.params.id, id_project: req.projectid}] }, function (err, lead) {
-//     if (err) {
-//       winston.error('Error getting lead.' , err);
-//       // return res.status(500).send({ success: false, msg: 'Error getting object.' });
-//     }
-//     if (!lead) {
-//       return res.status(404).send({ success: false, msg: 'Object not found.' });
-//     }
-//     return res.json(lead);
-//   });
-// });
-
 
 
 router.get('/', function (req, res) {
@@ -218,20 +181,17 @@ router.get('/', function (req, res) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  //console.log("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  //console.log("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
 
-  // Lead.find({ "id_project": req.projectid }, function (err, leads, next) {
   return Lead.find(query).
     skip(skip).limit(limit).
     sort(sortQuery).

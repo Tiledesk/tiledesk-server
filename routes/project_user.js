@@ -34,16 +34,10 @@ router.post('/invite', function (req, res) {
        * *** USER NOT FOUND > SAVE EMAIL AND PROJECT ID IN PENDING INVITATION *** */
       // TODO req.user.firstname is null for bot visitor
       return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, req.body.email, req.body.role, req.user._id, req.user.firstname, req.user.lastname)
-        .then(function (savedPendingInvitation) {
-
-
-        // try {
+        .then(function (savedPendingInvitation) {      
            
             authEvent.emit('project_user.invite.pending', {req: req, savedPendingInvitation: savedPendingInvitation});
-        // } catch(e) {winston.error('Error emitting activity');}
      
-
-
           return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
         })
         .catch(function (err) {
@@ -72,7 +66,7 @@ router.post('/invite', function (req, res) {
       var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];     
       winston.debug("role", role);
     
-      // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+      // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
       return Project_user.find({ id_project: req.projectid, role: { $in : role }  }, function (err, projectuser) {
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
@@ -81,7 +75,7 @@ router.post('/invite', function (req, res) {
         }
 
         if (!projectuser) {
-          // console.log('*** PRJCT-USER NOT FOUND ***')
+          // winston.debug('*** PRJCT-USER NOT FOUND ***')
           return res.status(404).send({ success: false, msg: 'Project user not found.' });
         }
 
@@ -89,8 +83,8 @@ router.post('/invite', function (req, res) {
           try {
             projectuser.forEach(p_user => {
               if (p_user) {
-                // console.log('»»»» FOUND USER ID: ', user._id, ' TYPE OF ', typeof (user._id))
-                // console.log('»»»» PRJCT USER > USER ID: ', p_user.id_user, ' TYPE OF ', typeof (p_user.id_user));
+                // winston.debug('»»»» FOUND USER ID: ', user._id, ' TYPE OF ', typeof (user._id))
+                // winston.debug('»»»» PRJCT USER > USER ID: ', p_user.id_user, ' TYPE OF ', typeof (p_user.id_user));
                 var projectUserId = p_user.id_user.toString();
                 var foundUserId = user._id.toString()
 
@@ -98,7 +92,7 @@ router.post('/invite', function (req, res) {
                 winston.debug('»»»» PRJCT USER > USER ID: ', projectUserId, ' TYPE OF ', typeof (projectUserId));
 
                 // var n = projectuser.includes('5ae6c62c61c7d54bf119ac73');
-                // console.log('USER IS ALREADY A MEMBER OF THE PROJECT ', n)
+                // winston.debug('USER IS ALREADY A MEMBER OF THE PROJECT ', n)
                 if (projectUserId == foundUserId) {
                   // if ('5ae6c62c61c7d54bf119ac73' == '5ae6c62c61c7d54bf119ac73') {
 
@@ -170,7 +164,7 @@ router.post('/invite', function (req, res) {
             //   }
 
             //   if (project) {
-            //     console.log('INVITE USER - PROJECT FOUND BY PROJECT ID ' , project)
+            //     winston.debug('INVITE USER - PROJECT FOUND BY PROJECT ID ' , project)
             //     if (project){
             //       var projectName = project.name;
 
@@ -196,9 +190,7 @@ router.put('/:project_userid', function (req, res) {
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-
-  
-        updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
+      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
           authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
       });
     
@@ -220,35 +212,17 @@ router.delete('/:project_userid', function (req, res) {
 
     winston.info("Removed project_user", project_user);
 
-  
     project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){   
       authEvent.emit('project_user.delete', {req: req, project_userPopulated: project_userPopulated});
     });
     
-      res.json(project_user);
+    res.json(project_user);
   });
 });
 
-
-/* !! NOT USED */
-// router.get('/:project_userid', function (req, res) {
-
-//   console.log(req.body);
-
-//   Project_user.findById(req.params.project_userid, function (err, project_user) {
-//     if (err) {
-//       return res.status(500).send({ success: false, msg: 'Error getting object.' });
-//     }
-//     if (!project_user) {
-//       return res.status(404).send({ success: false, msg: 'Object not found.' });
-//     }
-//     res.json(project_user);
-//   });
-// });
-
 router.get('/:project_userid', function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
-  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
+  // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
     populate('id_user').
     exec(function (err, project_user) {
@@ -270,9 +244,7 @@ router.get('/:project_userid', function (req, res) {
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
  router.get('/users/:user_id', function (req, res, next) {
-   // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
    winston.info("--> users USER ID ", req.params.user_id);
-  //  winston.debug("--> PROJECT ID ", req.params.project_id);
    // project_user_qui
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
     populate('id_user').
@@ -290,10 +262,9 @@ router.get('/:project_userid', function (req, res) {
 });
 
 
-//TODO deprecate
+//TODO deprecate. Used by pstream dashboard
 router.get('/:user_id/:project_id', function (req, res, next) {
-  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
-  winston.debug("--> USER ID ", req.params.user_id);
+ winston.debug("--> USER ID ", req.params.user_id);
  winston.debug("--> PROJECT ID ", req.params.project_id);
  Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
     exec(function (err, project_users) {
@@ -317,7 +288,6 @@ router.get('/', function (req, res) {
   }
   winston.debug("role", role);
 
-  // console.log("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.find({ id_project: req.projectid, role: { $in : role } }).
     populate('id_user').
     exec(function (err, project_users) {
@@ -325,14 +295,8 @@ router.get('/', function (req, res) {
         winston.info("Error gettting project_user for get users", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      // console.log('PROJECT USER ROUTES - project_users: ', project_users)
       res.json(project_users);
     });
-  // , function (err, project_users) {
-  //   if (err) return next(err);
-  //   console.log('PROJECT USER ROUTES - project_users ', project_users)
-  //   res.json(project_users);
-  // });
 });
 
 

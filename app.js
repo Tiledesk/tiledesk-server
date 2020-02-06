@@ -284,15 +284,12 @@ var projectSetter = function (req, res, next) {
     Project.findById(projectid, function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid);
-        //console.warn("Error getting project with id",projectid, err);
       }
   
       if (!project) {
-        //console.warn("Project not found for id", req.projectid);
         next();
       } else {
         req.project = project;
-        // console.log("req.project", req.project);
         next(); //call next one time for projectSetter function
       }
     
@@ -321,7 +318,7 @@ app.use('/:projectid', [projectIdSetter, projectSetter]);
 // controlla ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
-app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
+// app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
 
@@ -330,6 +327,7 @@ app.use('/:projectid/departments', department);
 //app.use('/:projectid/departments', visitorCounter, department);
 // app.use('/:projectid/departments', reqLogger, department);
 
+// TODO security issues
 app.use('/public/requests', publicRequest);
 
 channelManager.use(app);
@@ -340,7 +338,7 @@ app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: f
 app.use('/:projectid/faqpub', faqpub);
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
 
-// project internal auth check
+// project internal auth check. TODO check security issues?
 app.use('/projects',project);
 
 // app.use('/settings',setting);
@@ -354,6 +352,7 @@ if (process.env.VisitorCounter_ENABLED) {
 }
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
+// TOOD security issues
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], request);
@@ -362,6 +361,7 @@ app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
+//TODO deprecated?
 app.use('/:projectid/jwt', jwtroute);
 
 

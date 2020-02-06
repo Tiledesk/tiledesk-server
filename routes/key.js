@@ -49,9 +49,6 @@ router.post('/generate', function (req, res) {
         else {
             return res.json({publicKey: publicKey, privateKey: privateKey,jwtSecret: jwtSecret });
         }
-        // return res.json({key: key});
-        // var file = __dirname + 'key';
-        // res.download(key); // Set disposition and send it.
      });
         
 

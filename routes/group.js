@@ -3,8 +3,7 @@ var router = express.Router();
 var Group = require("../models/group");
 var groupEvent = require("../event/groupEvent");
 var winston = require('../config/winston');
-//var Activity = require("../models/activity");
-//const activityEvent = require('../event/activityEvent');
+
 
 
 router.post('/', function (req, res) {
@@ -88,8 +87,7 @@ router.get('/', function (req, res) {
   winston.debug("req projectid", req.projectid);
 
 
-  Group.find({ "id_project": req.projectid, trashed: false }, function (err, groups) {    
-    // console.log('4')
+  Group.find({ "id_project": req.projectid, trashed: false }, function (err, groups) {        
     if (err) {
       winston.error('Error getting the group ', err);
       return next(err);

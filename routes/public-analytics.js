@@ -2,13 +2,13 @@ var express = require('express');
 var router = express.Router();
 var AnalyticResult = require("../models/analyticResult");
 var mongoose = require('mongoose');
-
+var winston = require('../config/winston');
 
 
   router.get('/waiting/current', function(req, res) {
   
-    //console.log(req.params);
-    //console.log("req.projectid",  req.projectid);    
+    //winston.debug(req.params);
+    //winston.debug("req.projectid",  req.projectid);    
    
       
     AnalyticResult.aggregate([
@@ -24,10 +24,10 @@ var mongoose = require('mongoose');
       .exec(function(err, result) {
 
           if (err) {
-            console.log(err);
+            winston.debug(err);
             return res.status(500).send({success: false, msg: 'Error getting analytics.'});
           }
-          //console.log(result);
+          //winston.debug(result);
 
           res.json(result);
     });

@@ -15,7 +15,7 @@ router.post('/', function (req, res) {
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
     } else {
-      console.log('external bot: ', savedFaq_kb);
+      winston.debug('external bot: ', savedFaq_kb);
     } 
     res.json(savedFaq_kb);
   });

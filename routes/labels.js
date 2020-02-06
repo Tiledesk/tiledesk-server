@@ -12,12 +12,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
-var fs = require('fs');
-var path = require('path');
-
-
-// var labelsDir = __dirname+"/../config/labels/widget/";
-// winston.info('labelsDir: ' + labelsDir);
 
 
 router.get('/default', function (req, res) {
@@ -28,10 +22,6 @@ router.get('/default', function (req, res) {
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels/default/clone
 
 router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
-// router.get('/default/clone', function (req, res) {
-
-  // winston.info("req.body.lang: " + req.body.lang);
-  // var lang = req.query.lang;
   var lang = req.body.lang;
   winston.debug("lang: " + lang);
   
@@ -42,7 +32,6 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
     pickedLangPivot.lang = lang;
     pickedLang = pickedLangPivot;
   }
-  // var newLabel = {lang: lang, data: pickedLang};
   var newLabel = pickedLang;
   winston.debug("newLabel: " ,newLabel);
 
@@ -53,10 +42,8 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
       if (!label) {
         label = new Label({          
           id_project: req.projectid,
-          // createdBy: req.user.id,
-          // updatedBy: req.user.id,
-          createdBy: "req.user.id,",
-          updatedBy: "req.user.id,",
+          createdBy: req.user.id,
+          updatedBy: req.user.id,        
           data: [newLabel]
         });
       }else {
@@ -78,8 +65,7 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
           if (err) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
-          }
-          // res.redirect(req.baseUrl + '/');
+          }        
           
           // express forward          
           req.url =  '/';
@@ -87,9 +73,7 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
 
           req.method = 'GET';  
 
-          return router.handle(req, res, next);
-          // res.json(savedLabel);
-          // redirect to get
+          return router.handle(req, res, next);        
         });
     }
 });
@@ -111,7 +95,6 @@ router.get('/default/:lang', function (req, res) {
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels/
 
 router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-  // router.post('/',function (req, res, next) {
  
   var lang = req.body.lang;
   winston.info("lang: " + lang);
@@ -128,10 +111,8 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
       if (!label) {
         label = new Label({          
           id_project: req.projectid,
-          // createdBy: req.user.id,
-          // updatedBy: req.user.id,
-          createdBy: "req.user.id,",
-          updatedBy: "req.user.id,",
+          createdBy: req.user.id,
+          updatedBy: req.user.id,          
           data: [newLabel]
         });
       }else {
@@ -153,9 +134,7 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
           if (err) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
-          }
-          // res.json(savedLabel);
-          //res.redirect('/'+lang);
+          }          
            // express forward          
            req.url =  '/'+lang;
            winston.debug('--- > req.url'+req.url);
@@ -168,43 +147,6 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
     });
 
 });
-
-// router.put('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-
-//   winston.debug(req.body);
-//   winston.debug("req.user", req.user);
-
-// //  var _id = new mongoose.Types.ObjectId();
-
-
-//   var newLabel = req.body;
-  
-//   newLabel.id_project = req.projectid;
-//   newLabel.createdBy = req.user.id
-//   newLabel.updatedBy = req.user.id
-  
-//   // if (!req.body._id) {
-//   //   newLabel._id = new mongoose.mongo.ObjectID();
-//   // }
-
-  
-//   Label.findOneAndUpdate({id_project: req.projectid}, 
-//     { $set: newLabel},
-//     // newLabel,
-//     // { $set: { 'products.$': products }},
-//      {new: true, upsert:true, setDefaultsOnInsert: true },function(err, savedLabel) {
-//   // Label.update({_id: req.body._id}, newLabel, {upsert: true, setDefaultsOnInsert: true}, function (err, savedLabel) {
-
-
-//   // newLabel.save(function (err, savedLabel) {
-//     if (err) {
-//       winston.error('--- > ERROR ', err);
-//       return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//     }
-//     res.json(savedLabel);
-//   });
-
-//  });
 
   
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/4321/labels/
@@ -224,7 +166,6 @@ router.delete('/',  [passport.authenticate(['basic', 'jwt'], { session: false })
 
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/1235/labels/EN
 router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res) {
-// router.delete('/:lang', function (req, res, next) {
   var lang = req.params.lang;
   winston.info("lang: " + lang);
 
@@ -256,8 +197,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-          // res.json(savedLabel);
-          // res.redirect('/'+lang);
+         
            req.url =  '/'+lang;
            winston.debug('--- > req.url'+req.url);
  
@@ -274,7 +214,6 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
 router.get('/', function (req, res) {
  
   var query = { "id_project": req.projectid};
-  // var query = {};
 
   winston.debug("query /", query);
 
@@ -319,7 +258,6 @@ router.get('/:lang', function (req, res) {
  
   
   var query = { "id_project": req.projectid};
-  // var query = {};
 
   winston.debug("query /", query);
 
