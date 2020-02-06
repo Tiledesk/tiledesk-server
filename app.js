@@ -55,7 +55,6 @@ if (process.env.NODE_ENV == 'test')  {
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
 var lead = require('./routes/lead');
-var visitor = require('./routes/visitor');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
