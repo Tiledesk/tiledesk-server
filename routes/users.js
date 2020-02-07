@@ -15,7 +15,26 @@ router.put('/', function (req, res) {
 
   winston.debug('UPDATE USER - REQ BODY ', req.body);
 
-  User.findByIdAndUpdate(req.user._id, req.body, { new: true, upsert: true }, function (err, updatedUser) {
+  var update = {};
+  
+  // if (req.body.email) {
+  //   update.email = req.body.email;
+  // }
+  // if (req.body.password) {
+  //   update.password = req.body.password;
+  // }
+  if (req.body.firstname) {
+    update.firstname = req.body.firstname;
+  }
+  if (req.body.lastname) {
+    update.lastname = req.body.lastname;
+  }
+  if (req.body.attributes) {
+    update.attributes = req.body.attributes;
+  }
+  
+
+  User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
     if (err) {
       winston.error(err);
       return res.status(500).send({ success: false, msg: err });
@@ -29,10 +48,28 @@ router.put('/', function (req, res) {
   });
 });
 
-router.put('/changepsw', function (req, res) {
-  winston.debug('CHANGE PSW - USER ID: ', req.body.userid);
 
-  User.findOne({ _id: req.body.userid })
+router.delete('/', function (req, res) {
+
+  winston.debug('delete USER - REQ BODY ', req.body);
+
+  User.remove({ _id: req.user.id }, function (err, user) {
+    if (err) {
+      winston.error(err);
+      return res.status(500).send({ success: false, msg: err });
+    }
+
+    winston.debug('deleted USER ', user);    
+    res.json({ success: true, user });
+  });
+});
+
+
+router.put('/changepsw', function (req, res) {
+
+  winston.debug('CHANGE PSW - USER ID: ', req.user.id);
+
+  User.findOne({ _id: req.user.id })
   .select("+password")
   .exec(function (err, user) {
     
@@ -89,10 +126,10 @@ router.get('/resendverifyemail', function (req, res) {
     res.status(500).json({ success: false, message: e });
   }
 });
-// TODO unsecure?
-router.get('/:userid', function (req, res) {
 
-  User.findById(req.params.userid, 'firstname lastname _id', function (err, user) {
+router.get('/', function (req, res) {
+
+  User.findById(req.user.id, 'firstname lastname _id', function (err, user) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
