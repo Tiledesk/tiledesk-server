@@ -34,7 +34,20 @@ router.put('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
-  Group.findByIdAndUpdate(req.params.groupid, req.body, { new: true, upsert: true }, function (err, updatedGroup) {
+  var update = {};
+  
+  if (req.body.name) {
+    update.name = req.body.name;
+  }
+  if (req.body.members) {
+    update.members = req.body.members;
+  }
+  if (req.body.trashed) {
+    update.trashed = req.body.trashed;
+  }
+  
+
+  Group.findByIdAndUpdate(req.params.groupid, update, { new: true, upsert: true }, function (err, updatedGroup) {
     if (err) {
       winston.error('Error putting the group ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -50,12 +63,13 @@ router.delete('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
-  Group.remove({ _id: req.params.groupid }, function (err, group) {
+  Group.findOneAndRemove(req.params.groupid, function (err, group) {
+    // Group.remove({ _id: req.params.groupid }, function (err, group) {
     if (err) {
       winston.error('Error removing the group ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
-
+// nn funziuona perchje nn c'è id_project
     groupEvent.emit('group.delete', group);
 
     res.json(group);
