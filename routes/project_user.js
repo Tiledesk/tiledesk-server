@@ -12,14 +12,18 @@ var winston = require('../config/winston');
 var RoleConstants = require("../models/roleConstants");
 
 
+var passport = require('passport');
+require('../middleware/passport')(passport);
+var validtoken = require('../middleware/valid-token')
+var roleChecker = require('../middleware/has-role');
+
 
 
 // NEW: INVITE A USER
-router.post('/invite', function (req, res) {
+router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug('-> INVITE USER ', req.body);
 
-  // var email = req.body.email
   winston.debug('»»» INVITE USER EMAIL', req.body.email);
   winston.debug('»»» CURRENT USER ID', req.user._id);
   winston.debug('»»» PROJECT ID', req.projectid);
@@ -180,12 +184,50 @@ router.post('/invite', function (req, res) {
   });
 });
 
-
-router.put('/:project_userid', function (req, res) {
+router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
   winston.debug(req.body);
 
-  Project_user.findByIdAndUpdate(req.params.project_userid, req.body, { new: true, upsert: true }, function (err, updatedProject_user) {
+  var update = {};
+  
+  if (req.body.user_available) {
+    update.user_available = req.body.user_available;
+  }
+  if (req.body.attributes) {
+    update.attributes = req.body.attributes;
+  }
+
+  Project_user.findByIdAndUpdate(req.projectuser.id, update, { new: true, upsert: true }, function (err, updatedProject_user) {
+    if (err) {
+      winston.error("Error gettting project_user for update", err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
+      });
+    
+
+    res.json(updatedProject_user);
+  });
+});
+
+router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+  winston.debug(req.body);
+
+  var update = {};
+  
+  if (req.body.role) {
+    update.role = req.body.role;
+  }
+  if (req.body.user_available) {
+    update.user_available = req.body.user_available;
+  }
+  if (req.body.attributes) {
+    update.attributes = req.body.attributes;
+  }
+
+  Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -200,7 +242,7 @@ router.put('/:project_userid', function (req, res) {
 });
 
 
-router.delete('/:project_userid', function (req, res) {
+router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
 
@@ -220,7 +262,7 @@ router.delete('/:project_userid', function (req, res) {
   });
 });
 
-router.get('/:project_userid', function (req, res) {
+router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
@@ -243,7 +285,7 @@ router.get('/:project_userid', function (req, res) {
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
- router.get('/users/:user_id', function (req, res, next) {
+ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res, next) {
    winston.info("--> users USER ID ", req.params.user_id);
    // project_user_qui
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
@@ -263,7 +305,7 @@ router.get('/:project_userid', function (req, res) {
 
 
 //TODO deprecate. Used by pstream dashboard
-router.get('/:user_id/:project_id', function (req, res, next) {
+router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')],function (req, res, next) {
  winston.debug("--> USER ID ", req.params.user_id);
  winston.debug("--> PROJECT ID ", req.params.project_id);
  Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
@@ -280,7 +322,7 @@ router.get('/:user_id/:project_id', function (req, res, next) {
  * WF: 1. GET PROJECT-USER by the passed project ID
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */
-router.get('/', function (req, res) {
+router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
   var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
   if (req.query.role) {
