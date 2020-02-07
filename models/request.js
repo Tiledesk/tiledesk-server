@@ -166,7 +166,10 @@ var RequestSchema = new Schema({
     type: Array,
     required: false
   },
-
+  notes: {
+    type: String,
+    required: false,
+  }, 
   //rating
   rating: {
     type: Number,
