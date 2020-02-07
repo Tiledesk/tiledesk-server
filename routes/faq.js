@@ -110,7 +110,29 @@ router.put('/:faqid', function (req, res) {
 
   winston.debug('UPDATE FAQ ', req.body);
 
-  Faq.findByIdAndUpdate(req.params.faqid, req.body, { new: true, upsert: true }, function (err, updatedFaq) {
+  var update = {};
+  
+
+  if (req.body.intent) {
+    update.intent = req.body.intent;
+  }
+  if (req.body.question) {
+    update.question = req.body.question;
+  }
+  if (req.body.answer) {
+    update.answer = req.body.answer;
+  }
+  if (req.body.topic) {
+    update.topic = req.body.topic;
+  }
+  if (req.body.status) {
+    update.status = req.body.status;
+  }
+  if (req.body.language) {
+    update.language = req.body.language;
+  }
+
+  Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
