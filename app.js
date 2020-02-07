@@ -44,7 +44,7 @@ if (process.env.MONGOOSE_AUTOINDEX) {
   autoIndex = process.env.MONGOOSE_AUTOINDEX;
 }
 
-winston.info("autoIndex: " + autoIndex);
+winston.info("DB AutoIndex: " + autoIndex);
 
 if (process.env.NODE_ENV == 'test')  {
   mongoose.connect(config.databasetest, { "useNewUrlParser": true, "autoIndex": true });
@@ -55,7 +55,6 @@ if (process.env.NODE_ENV == 'test')  {
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
 var lead = require('./routes/lead');
-var visitor = require('./routes/visitor');
 var message = require('./routes/message');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
@@ -315,10 +314,10 @@ app.use('/testauth', authtest);
 
 
 app.use('/:projectid', [projectIdSetter, projectSetter]);
-// controlla ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
+// TODO check security issue ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
-// app.use('/:projectid/visitors', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], visitor);
 
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType(null, 'bot')] , message);
 
@@ -334,8 +333,10 @@ channelManager.use(app);
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
+
 //Deprecated??
 app.use('/:projectid/faqpub', faqpub);
+
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
 
 // project internal auth check. TODO check security issues?
@@ -343,17 +344,20 @@ app.use('/projects',project);
 
 // app.use('/settings',setting);
 
-
 app.use('/:projectid/widgets', visitorCounter, widgets);
 
 if (process.env.VisitorCounter_ENABLED) {
   var visitor_Counter = require('./routes/visitorCounter');
+  // TODO add check permissions
   app.use('/:projectid/visitorcounter', visitor_Counter);
 }
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
-// TOOD security issues
+// TOOD security issues. internal route check 
 app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
+
+// app.use('/:projectid/project_users', project_user);
+// app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], request);
 
@@ -361,6 +365,7 @@ app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
+
 //TODO deprecated?
 app.use('/:projectid/jwt', jwtroute);
 
