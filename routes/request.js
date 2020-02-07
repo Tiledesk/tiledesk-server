@@ -74,6 +74,10 @@ router.patch('/:requestid', function (req, res) {
   if (req.body.tags) {
     update.tags = req.body.tags;
   }
+  
+  if (req.body.notes) {
+    update.notes = req.body.notes;
+  }
 
   if (req.body.rating) {
     update.rating = req.body.rating;
