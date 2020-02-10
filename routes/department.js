@@ -92,7 +92,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
   winston.debug(req.body);
   winston.info("req.params.departmentid: "+req.params.departmentid);
 
-  Department.findOneAndRemove(req.params.departmentid, function (err, department) {
+  Department.findOneAndRemove({_id: req.params.departmentid}, function (err, department) {
   // Department.remove({ _id: req.params.departmentid }, function (err, department) {
     
     if (err) {

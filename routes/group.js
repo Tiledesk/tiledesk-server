@@ -63,7 +63,7 @@ router.delete('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
-  Group.findOneAndRemove(req.params.groupid, function (err, group) {
+  Group.findOneAndRemove({_id: req.params.groupid}, function (err, group) {
     // Group.remove({ _id: req.params.groupid }, function (err, group) {
     if (err) {
       winston.error('Error removing the group ', err);
