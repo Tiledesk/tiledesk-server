@@ -3,7 +3,7 @@ var router = express.Router();
 var Project = require("../models/project");
 var winston = require('../config/winston');
 var Project_user = require("../models/project_user");
-var operatingHoursService = require("../models/operatingHoursService");
+var operatingHoursService = require("../services/operatingHoursService");
 var AnalyticResult = require("../models/analyticResult");
 var Department = require("../models/department");
 
