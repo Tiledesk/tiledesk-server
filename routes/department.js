@@ -55,7 +55,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   if (req.body.id_bot) {
     update.id_bot = req.body.id_bot;
   }
-  if (req.body.bot_only) {
+  if (req.body.bot_only!=undefined) {
     update.bot_only = req.body.bot_only;
   }
   if (req.body.routing) {
