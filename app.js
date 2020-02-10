@@ -285,6 +285,7 @@ var projectSetter = function (req, res, next) {
         winston.warn("Problem getting project with id: " + projectid);
       }
   
+      winston.debug("projectSetter project:" + project);
       if (!project) {
         next();
       } else {
@@ -354,9 +355,9 @@ if (process.env.VisitorCounter_ENABLED) {
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 // TOOD security issues. internal route check 
-app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
+// app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
+app.use('/:projectid/project_users', project_user);
 
-// app.use('/:projectid/project_users', project_user);
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], request);

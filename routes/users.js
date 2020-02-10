@@ -6,9 +6,9 @@ var emailService = require("../services/emailService");
 var winston = require('../config/winston');
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
-});
+// router.get('/', function (req, res, next) {
+//   res.send('respond with a resource');
+// });
 
 
 router.put('/', function (req, res) {
@@ -128,7 +128,7 @@ router.get('/resendverifyemail', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-
+  winston.info("users");
   User.findById(req.user.id, 'firstname lastname _id', function (err, user) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

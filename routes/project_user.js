@@ -1,5 +1,5 @@
 var express = require('express');
-var router = express.Router();
+var router = express.Router({mergeParams: true});
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var User = require("../models/user");
@@ -323,7 +323,6 @@ router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { s
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
-
   var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
   if (req.query.role) {
     role = req.query.role;
