@@ -186,18 +186,20 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
 router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
-  winston.debug(req.body);
+  winston.info("qui", req.body);
 
   var update = {};
   
-  if (req.body.user_available) {
+  if (req.body.user_available != undefined) {
     update.user_available = req.body.user_available;
   }
   if (req.body.attributes) {
     update.attributes = req.body.attributes;
   }
 
-  Project_user.findByIdAndUpdate(req.projectuser.id, update, { new: true, upsert: true }, function (err, updatedProject_user) {
+  winston.info("qui2", update);
+
+  Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -220,12 +222,14 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   if (req.body.role) {
     update.role = req.body.role;
   }
-  if (req.body.user_available) {
+  if (req.body.user_available != undefined) {
     update.user_available = req.body.user_available;
   }
   if (req.body.attributes) {
     update.attributes = req.body.attributes;
   }
+
+  winston.info("project_userid update", update);
 
   Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
