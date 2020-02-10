@@ -213,7 +213,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
-  winston.debug(req.body);
+  winston.info("project_userid update", req.body);
 
   var update = {};
   
