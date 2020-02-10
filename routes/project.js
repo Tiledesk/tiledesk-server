@@ -162,7 +162,9 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
 // GET ALL PROJECTS BY CURRENT USER ID
 // TODO controlla hasrole serve????? 
-router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+// router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+  // altrimenti 403
+  router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   winston.debug('REQ USER ID ', req.user._id)
    // project_user_qui
   Project_user.find({ id_user: req.user._id }).
