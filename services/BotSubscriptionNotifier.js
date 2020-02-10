@@ -3,7 +3,7 @@ const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
 var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
-
+const uuidv4 = require('uuid/v4');
 
 class BotSubscriptionNotifier {
    
@@ -23,7 +23,8 @@ class BotSubscriptionNotifier {
       var signOptions = {
         issuer:  'https://tiledesk.com',
         subject:  'bot',
-        audience:  'https://tiledesk.com/bots/'+bot._id,        
+        audience:  'https://tiledesk.com/bots/'+bot._id,   
+        jwtid: uuidv4()       
       };
 
       // TODO metti bot_? a user._id

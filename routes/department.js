@@ -1,23 +1,21 @@
 var express = require('express');
-var router = express.Router();
+var router = express.Router({mergeParams: true});
 var Department = require("../models/department");
 var departmentService = require("../services/departmentService");
 var departmentEvent = require("../event/departmentEvent");
 
-var Project_user = require("../models/project_user");
 var Group = require("../models/group");
 
 var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
-var operatingHoursService = require("../models/operatingHoursService");
-// var passport = require('passport');
-// var validtoken = require('.../middleware/valid-token')
+var roleChecker = require('../middleware/has-role');
+
 var winston = require('../config/winston');
-// var Project = require("../models/project");
 
+// attento qui
 
-router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug("DEPT REQ BODY ", req.body);
   var newDepartment = new Department({
@@ -48,11 +46,37 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
   });
 });
 
-router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
 
-  Department.findByIdAndUpdate(req.params.departmentid, req.body, { new: true, upsert: true }, function (err, updatedDepartment) {
+  var update = {};
+  
+  if (req.body.id_bot) {
+    update.id_bot = req.body.id_bot;
+  }
+  if (req.body.bot_only) {
+    update.bot_only = req.body.bot_only;
+  }
+  if (req.body.routing) {
+    update.routing = req.body.routing;
+  }
+  if (req.body.name) {
+    update.name = req.body.name;
+  }
+  if (req.body.id_group) {
+    update.id_group = req.body.id_group;
+  }
+  if (req.body.online_msg) {
+    update.online_msg = req.body.online_msg;
+  }
+  if (req.body.status) {
+    update.status = req.body.status;
+  }  
+
+
+
+  Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
     if (err) {
       winston.error('Error putting the department ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -63,15 +87,18 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 });
 
 
-router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
 
-  Department.remove({ _id: req.params.departmentid }, function (err, department) {
+  Department.findOneAndRemove(req.params.departmentid, function (err, department) {
+  // Department.remove({ _id: req.params.departmentid }, function (err, department) {
+    
     if (err) {
       winston.error('Error deleting the department ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+    // nn funziuona perchje nn c'è id_project
     departmentEvent.emit('department.delete', department);
     res.json(department);
   });
@@ -92,71 +119,72 @@ router.get('/:departmentid/operators', function (req, res) {
 // START - GET MY DEPTS
 // !!! NO MORE USED 
 // ============= GET ALL GROUPS WITH THE PASSED PROJECT ID =============
-router.get('/mydepartments', function (req, res) {
-  console.log("req projectid", req.projectid);
+// elimino???
+// router.get('/mydepartments', function (req, res) {
+//   winston.debug("req projectid", req.projectid);
 
-  var query = { "id_project": req.projectid };
+//   var query = { "id_project": req.projectid };
 
-  if (req.project.isActiveSubscription() == false) {
-    query.default = true;
-  }
+//   if (req.project.isActiveSubscription() == false) {
+//     query.default = true;
+//   }
 
-  Department.find(query, function (err, departments) {
-    if (err) return next(err);
-    console.log('1) FIND MY DEPTS - ALL DEPTS ARRAY ', departments)
-    // departments_array.push(departments);
-    // console.log('-- -- -- array of depts - null', arr)
+//   Department.find(query, function (err, departments) {
+//     if (err) return next(err);
+//     winston.debug('1) FIND MY DEPTS - ALL DEPTS ARRAY ', departments)
+//     // departments_array.push(departments);
+//     // winston.debug('-- -- -- array of depts - null', arr)
 
-    Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
-      if (err) return next(err);
-      console.log('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
-      var mydepts = []
-      departments.forEach(dept => {
+//     Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
+//       if (err) return next(err);
+//       winston.debug('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
+//       var mydepts = []
+//       departments.forEach(dept => {
 
-        // console.log('3) DEPT ', dept)
-        if (dept.id_group == null) {
-          console.log('DEPT NAME (when null/undefined) ', dept.name, ', dept id ', dept._id)
-          mydepts.push(dept._id);
+//         // winston.debug('3) DEPT ', dept)
+//         if (dept.id_group == null) {
+//           winston.debug('DEPT NAME (when null/undefined) ', dept.name, ', dept id ', dept._id)
+//           mydepts.push(dept._id);
 
-          // FOR DEBUG
-          // mydepts.forEach(mydept => {
-          //   console.log('- MY DEPT NAME: ', mydept.name, ', ID GROUP: ', mydept.id_group)
-          // });
-          // console.log('- MY DEPTS ARRAY ', mydepts)
-        }
-        else {
-          deptContainsMyGroup(groups)
-          // groups.forEach(group => {
-          //   console.log('4) GROUP ', group)
-          //   if ( group._id == dept.id_group) {
-          //     mydepts.push(dept);
-          //     console.log('-- MY DEPTS ARRAY ', mydepts)
-          //   }
-          // });
-          // console.log('-- MY DEPTS ARRAY ', mydepts)
-        }
+//           // FOR DEBUG
+//           // mydepts.forEach(mydept => {
+//           //   winston.debug('- MY DEPT NAME: ', mydept.name, ', ID GROUP: ', mydept.id_group)
+//           // });
+//           // winston.debug('- MY DEPTS ARRAY ', mydepts)
+//         }
+//         else {
+//           deptContainsMyGroup(groups)
+//           // groups.forEach(group => {
+//           //   winston.debug('4) GROUP ', group)
+//           //   if ( group._id == dept.id_group) {
+//           //     mydepts.push(dept);
+//           //     winston.debug('-- MY DEPTS ARRAY ', mydepts)
+//           //   }
+//           // });
+//           // winston.debug('-- MY DEPTS ARRAY ', mydepts)
+//         }
 
-        function deptContainsMyGroup(groups) {
-          groups.forEach(group => {
-            // console.log('4) GROUP ', group)
-            if (group._id == dept.id_group) {
-              console.log('DEPT NAME (my departments) ', dept.name, ', dept id ', dept._id)
-              mydepts.push(dept._id);
-            }
-          });
-        }
+//         function deptContainsMyGroup(groups) {
+//           groups.forEach(group => {
+//             // winston.debug('4) GROUP ', group)
+//             if (group._id == dept.id_group) {
+//               winston.debug('DEPT NAME (my departments) ', dept.name, ', dept id ', dept._id)
+//               mydepts.push(dept._id);
+//             }
+//           });
+//         }
 
-      });
-      return res.json(mydepts);
-    })
+//       });
+//       return res.json(mydepts);
+//     })
 
-  });
-})
+//   });
+// })
 
 // ======================== ./END - GET MY DEPTS ========================
 
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
-router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
   winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
   winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
@@ -173,15 +201,15 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
   // if (req.project) {
   //   Project.findById(req.project._id, function (err, project) {
   //     if (err) {
-  //       console.log("## GET ALL DEPTS Problem getting project with id:", req.project._id);
+  //       winston.debug("## GET ALL DEPTS Problem getting project with id:", req.project._id);
   //       //console.warn("Error getting project with id",projectid, err);
   //     } else {
-  //       console.log("## GET ALL DEPTS project: ", project);
+  //       winston.debug("## GET ALL DEPTS project: ", project);
   //     }
   //   })
   // }
-  //console.log("req projectid", req.projectid);
-  //console.log("req.query.sort", req.query.sort);
+  //winston.debug("req projectid", req.projectid);
+  //winston.debug("req.query.sort", req.query.sort);
 
   // var query = { "id_project": req.projectid };
 
@@ -219,23 +247,23 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
 
 
 router.get('/:departmentid', function (req, res) {
-  console.log(req.body);
+  winston.debug(req.body);
 
   let departmentid = req.params.departmentid;
 
 
   if (departmentid == "default") {
-    console.log("departmentid", departmentid);
+    winston.debug("departmentid", departmentid);
 
     var query = {};
-    // console.log("req.query", req.query);
+    // winston.debug("req.query", req.query);
 
     // if (req.appid) {
     query.id_project = req.projectid;
     query.default = true;
     // }
 
-    console.log("query", query);
+    winston.debug("query", query);
 
     Department.findOne(query, function (err, department) {
       if (err) return (err);
@@ -263,8 +291,8 @@ router.get('/:departmentid', function (req, res) {
 // note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
-  //console.log("req projectid", req.projectid);
-  //console.log("req.query.sort", req.query.sort);
+  //winston.debug("req projectid", req.projectid);
+  //winston.debug("req.query.sort", req.query.sort);
 
   /** 
    * inserire qui cond x far funzionare sul widget  dipartimenti nn disponibili se 
