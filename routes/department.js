@@ -85,11 +85,12 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
     res.json(updatedDepartment);
   });
 });
-
+// nn funziona
 
 router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
+  winston.info("req.params.departmentid: "+req.params.departmentid);
 
   Department.findOneAndRemove(req.params.departmentid, function (err, department) {
   // Department.remove({ _id: req.params.departmentid }, function (err, department) {
