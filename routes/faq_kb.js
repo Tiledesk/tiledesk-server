@@ -38,8 +38,8 @@ router.post('/askbot', function (req, res) {
     if (!faq_kb) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
-    winston.info('faq_kb ', faq_kb.toJSON());
-    winston.info('faq_kb.type :'+ faq_kb.type);
+    winston.debug('faq_kb ', faq_kb.toJSON());
+    winston.debug('faq_kb.type :'+ faq_kb.type);
     if (faq_kb.type =="internal") {
 
 
@@ -64,7 +64,7 @@ router.post('/askbot', function (req, res) {
 
           query.$text = {"$search": req.body.question};
        
-          winston.info('internal ft query: '+ query);
+          winston.debug('internal ft query: '+ query);
     
            Faq.find(query,  {score: { $meta: "textScore" } })  
            .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score

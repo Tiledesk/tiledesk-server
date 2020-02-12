@@ -33,8 +33,8 @@ class FaqBotHandler {
             if (!faq_kb) {
               return res.status(404).send({ success: false, msg: 'Object not found.' });
             }
-            winston.info('faq_kb ', faq_kb.toJSON());
-            winston.info('faq_kb.type :'+ faq_kb.type);
+            winston.debug('faq_kb ', faq_kb.toJSON());
+            winston.debug('faq_kb.type :'+ faq_kb.type);
 
             var botName = faq_kb.name;
             winston.debug("botName " + botName);
@@ -74,7 +74,7 @@ class FaqBotHandler {
                 
 
                     faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
-                        winston.info("faqbot message botAns ", botAns);  
+                        winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
                             let attributes = {bot_reponse_template: botAns.template};
@@ -119,13 +119,13 @@ class FaqBotHandler {
                 
 
                     faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
-                        winston.info("faqbot message botAns ", botAns);  
+                        winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
                             let attributes = {bot_reponse_template: botAns.template};
                             messageService.send(sender, botName, message.recipient, botAns.text, 
                                 message.id_project, sender, attributes).then(function(savedMessage){
-                                    winston.info("faqbot message botAns " ,savedMessage.toObject());  
+                                    winston.debug("faqbot message botAns " ,savedMessage.toObject());  
                             });
                         }
 
@@ -147,11 +147,7 @@ class FaqBotHandler {
 
              });
 
-            // se messaggio per faqBot
-            // sollevo evento e webhook message.create.forbot
-            // serco su mongo o servizio gianluca
-            // invio messaggio su chat21
-         
+          
         });
     }
 

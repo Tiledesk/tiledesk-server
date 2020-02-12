@@ -93,7 +93,7 @@ router.post('/', function(req, res) {
                   // }
                 }
                 
-                winston.info("requestStatus"+ requestStatus);
+                winston.debug("requestStatus "+ requestStatus);
                 
             
                 if (!projectid) {
@@ -136,8 +136,7 @@ router.post('/', function(req, res) {
                       return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
                         // return requestService.createWithIdAndRequester(message.recipient, message.sender, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
                     
-                    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                      winston.info("here requestService.createWithId");
+                    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {                    
                        //return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
 
 
