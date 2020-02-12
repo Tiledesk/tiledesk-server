@@ -12,7 +12,7 @@ var requestUtil = require('../utils/requestUtil');
 var Project = require('../models/project');
 var winston = require('../config/winston');
 
-
+// deprecated??
 router.post('/decode', validtoken, function (req, res) {
 
     // var project_id = req.query.project_id;
