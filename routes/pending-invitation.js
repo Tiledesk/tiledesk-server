@@ -65,8 +65,16 @@ router.put('/:pendinginvitationid', function (req, res) {
 
   winston.debug('PENDING INVITATION UPDATE - BODY ', req.body);
 
+  var update = {};
+  if (req.body.email) {
+    update.email = req.body.email;
+  }
+  if (req.body.role) {
+    update.role = req.body.role;
+  }
+
   PendingInvitation
-    .findByIdAndUpdate(req.params.pendinginvitationid, req.body, { new: true, upsert: true },
+    .findByIdAndUpdate(req.params.pendinginvitationid, update, { new: true, upsert: true },
       function (err, updatedPendingInvitation) {
         if (err) {
           return res.status(500).send({ success: false, msg: 'Error updating object.' });
