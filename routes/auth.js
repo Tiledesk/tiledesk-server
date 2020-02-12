@@ -126,23 +126,23 @@ function (req, res) {
             winston.error('Error saving object.', err)
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
-
-    
-          authEvent.emit("user.signin", {user:userAnonym, req:req});       
-          
-          authEvent.emit("projectuser.create", savedProject_user);         
-
-          winston.info('project user created ', savedProject_user.toObject());
-
-          
+                  
 
           var signOptions = {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
-            audience:  'https://tiledesk.com',           
+            audience:  'https://tiledesk.com',
+            jwtid: uuidv4()        
           };
 
           var token = jwt.sign(userAnonym, config.secret, signOptions);
+
+
+          authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});       
+          
+          authEvent.emit("projectuser.create", savedProject_user);         
+
+          winston.info('project user created ', savedProject_user.toObject());
 
           res.json({ success: true, token: 'JWT ' + token, user: userAnonym });
       });
@@ -290,7 +290,9 @@ router.post('/signinWithCustomToken', [
           
             authEvent.emit("projectuser.create", savedProject_user);         
 
-              winston.info('project user created ', savedProject_user.toObject());
+            authEvent.emit("user.signin", {user:req.user, req:req, token: req.headers["authorization"]});      
+
+            winston.info('project user created ', savedProject_user.toObject());
 
               
 
@@ -485,6 +487,9 @@ router.post('/signin', function (req, res) {
           // uid: user._id  Uncaught ValidationError: "uid" is not allowed
           // expiresIn:  "12h",
           // algorithm:  "RS256"
+
+
+          jwtid: uuidv4()  
         };
 
          //remove password //test it              
@@ -501,7 +506,7 @@ router.post('/signin', function (req, res) {
               // if user is found and password is right create a token
               var token = jwt.sign(userJson, config.secret, signOptions);
              
-              authEvent.emit("user.signin", {user:user, req:req});         
+              authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
               
                
 
@@ -528,7 +533,7 @@ router.post('/signin', function (req, res) {
 router.put('/verifyemail/:userid', function (req, res) {
 
   winston.debug('VERIFY EMAIL - REQ BODY ', req.body);
-
+// controlla
   User.findByIdAndUpdate(req.params.userid, req.body, { new: true, upsert: true }, function (err, findUser) {
     if (err) {
       winston.error(err);
