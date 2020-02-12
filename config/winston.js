@@ -1,6 +1,5 @@
 var appRoot = require('app-root-path');
 var winston = require('winston');
-// var config = require('../config/database');
 
 
 var options = {
