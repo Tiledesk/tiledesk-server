@@ -128,29 +128,6 @@ messageEvent.on('message.create', function(message) {
 
     });
     
-    
-    // if(message.request && message.request.department && message.request.department) {
-    //     winston.debug("message.request.department", message.request.department);
-
-    //     var bot = message.request.department.bot;
-    
-
-    //     winston.debug("bot", bot);
-
-    //     if (bot) {
-    //         if (bot.type==="internal") {
-    //             botEvent.emit('bot.message.received.notify.internal', message);
-               
-    //         }else {
-    //             if (bot.url) {
-    //                 var botNotification = {bot: bot, message: message};
-    //                 botEvent.emit('bot.message.received.notify.external', botNotification);
-    //             }else {
-    //                 winston.warn("bot url is not defined", bot);
-    //             }
-    //         }
-    //     } 
-    // }
 
 
 });
