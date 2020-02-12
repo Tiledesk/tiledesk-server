@@ -313,10 +313,19 @@ var projectSetter = function (req, res, next) {
 app.use('/auth', auth);
 app.use('/testauth', authtest);
 
-
-app.use('/:projectid', [projectIdSetter, projectSetter]);
 // TODO check security issue ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+
+// TODO security issues
+if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
+  winston.info(" Transcript view page is disabled");
+}else {
+  app.use('/public/requests', publicRequest);
+}
+
+app.use('/:projectid', [projectIdSetter, projectSetter]);
+
+
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
 
@@ -327,8 +336,7 @@ app.use('/:projectid/departments', department);
 //app.use('/:projectid/departments', visitorCounter, department);
 // app.use('/:projectid/departments', reqLogger, department);
 
-// TODO security issues
-app.use('/public/requests', publicRequest);
+
 
 channelManager.use(app);
 
