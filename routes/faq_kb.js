@@ -14,6 +14,8 @@ router.post('/', function (req, res) {
     if (savedFaq_kb.type==="internal") {      
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
+    // } else if (savedFaq_kb.type==="dialogflow") {  
+    //   winston.debug('dialogflow bot: ', savedFaq_kb);
     } else {
       winston.debug('external bot: ', savedFaq_kb);
     } 
