@@ -128,8 +128,8 @@ curl -v -X POST -H 'Content-Type:application/json' -d '{"id_project":"5e2aba4cb4
 
 
 curl -v -X POST -H 'Content-Type:application/json' \
- -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MDVkYzU1MC1kMjNhLTRkMDUtODZlNy04YmY5ZjU1Y2ZhZWUiLCJmaXJzdG5hbWUiOiJKb2huIiwiaWQiOiI2MDVkYzU1MC1kMjNhLTRkMDUtODZlNy04YmY5ZjU1Y2ZhZWUiLCJmdWxsTmFtZSI6IkpvaG4gIiwiaWF0IjoxNTc5ODYwMjkyLCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoiZ3Vlc3QifQ.qh7W8N6E06uWdcgcwev7MQ8t62rzBtwrDaDxKUftxQE" \
- -d '{"text":"hello from anonym16"}' https://tiledesk-server-pre.herokuapp.com/5e2aba4cb4c9f80017d50907/requests/support-group-55447799154321231216/messages
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJkNWYwZjZiOS1iYWM5LTQ5NGEtOWVmMy03YjBjZTc0OGM2MTkiLCJmaXJzdG5hbWUiOiJKb2huIiwiaWQiOiJkNWYwZjZiOS1iYWM5LTQ5NGEtOWVmMy03YjBjZTc0OGM2MTkiLCJmdWxsTmFtZSI6IkpvaG4gIiwiaWF0IjoxNTc5OTU2OTU1LCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoiZ3Vlc3QifQ.ISnrH7rixeQoNLdrdFVIIBTJsJkAtkaIMYSn_SBR8L0" \
+ -d '{"text":"hello my name is John and I need help"}' https://tiledesk-server-pre.herokuapp.com/5e2c35c8f0dbc10017bb3aac/requests/support-group-27df7cbf-3946-4ca4-9b17-dc16114108f10/messages
 
 
 
@@ -160,6 +160,7 @@ curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -
 curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/5bedbbd18b9ed53a6a3f3dd3/requests/req123456/
 ```
 
+curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 https://tiledesk-server-pre.herokuapp.com/5df26badde7e1c001743b63c/requests/?limit=10
 
 ### Get
 
@@ -245,3 +246,99 @@ curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -
 
 
 
+
+
+curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/5bedbbd18b9ed53a6a3f3dd3/events
+
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -d '{"id_project":"5e37f45c4d82de00178b96ad"}' https://tiledesk-server-pre.herokuapp.com/auth/signinAnonymously
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"name":"e1", "attributes": {"attr1":"val1"}}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/events
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJiNmFiNTFlMS05NWQ0LTQ3YTAtYjg2ZC0xMWU4OGY2MWMxMmMiLCJmaXJzdG5hbWUiOiJHdWVzdCIsImlkIjoiYjZhYjUxZTEtOTVkNC00N2EwLWI4NmQtMTFlODhmNjFjMTJjIiwiZnVsbE5hbWUiOiJHdWVzdCAiLCJpYXQiOjE1ODA3MjkxNjIsImF1ZCI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwiaXNzIjoiaHR0cHM6Ly90aWxlZGVzay5jb20iLCJzdWIiOiJndWVzdCJ9.0Xv0461DP7LLaJ9l1dMiWXlF7f69LBeofsrngvgQTIQ" \
+  -d '{"name":"e1", "attributes": {"attr1":"val1"}}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/events
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"name":"e1","attributes": {"id_user":"mBmETIl7uWPn5L2LzUTlxQO6re62", "fullname":"uccio","email":"4@4.it","attr1":"val1"}}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/events
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/requests/support-group-2dd08a5d-73b3-4aed-bb58-7580fef2d03c/messages
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"message.create", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/subscriptions
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"request.create", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/subscriptions
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"request.update", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/subscriptions
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"request.create", "target":"https://webservice.claybox.dc.pype.engineering/v3/tiledesk/message"}' https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/subscriptions
+
+
+
+
+
+
+curl -v -X GET -u andrea.leo@frontiere21.it:258456  https://tiledesk-server-pre.herokuapp.com/5e37f45c4d82de00178b96ad/subscriptions/history
+
+curl -v -X GET -u andrea.leo@frontiere21.it:XXXXX https://tiledesk-server-pre.herokuapp.com/<PROJECT_ID>/subscriptions/history
+
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"project_user.invite", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"project_user.update", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"project_user.delete", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"department.create", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"department.update", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"department.delete", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"group.create", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"group.update", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"event":"group.delete", "target":"https://tiledesk.requestcatcher.com/test"}' https://tiledesk-server-pre.herokuapp.com/5e20a68e7c2e640017f2f40f/subscriptions
+
+
+
+
+
+
+
+
+curl -v -X GET -H 'Content-Type:application/json' \
+ -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YWIxMWM2YjgzZGMyNDAwMTRkNDYwOTUiLCJlbWFpbCI6ImFuZHJlYS5sZW9AZjIxLml0IiwiZmlyc3RuYW1lIjoiYW5kcmVhIiwiaWF0IjoxNTgxMTgzNDk4LCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoidXNlciIsImp0aSI6IjMwMDQ5YWRmLWY5NzEtNGI2Ni05Y2JhLTMwMmQwMGNhZmVjMSJ9.o63BsK4_mSNnS_dp5T2jbJgvy_GhyN81zO8Gpvx8sIM" \
+   http://localhost:3000/5e3e9f51b44414f76a4c5c22/events
+
+
+
+
+
+curl -v -X GET -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/jwt/history
+
+curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/jwt/history/4691a1e0-9b25-4c81-a1f2-b63b8ba8fec6
+
+
+curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e3e9f51b44414f76a4c5c22/project_users/
+
+
+
+curl -v -X GET  -u andrea.leo@f21.it:123456 http://localhost:3000/projects/
