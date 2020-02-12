@@ -21,6 +21,7 @@ router.post('/',
 // [
 //   check('text').notEmpty(),  
 // ],
+// 
 function(req, res) {
 
   winston.debug('req.body', req.body);
@@ -71,6 +72,7 @@ function(req, res) {
                     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
                     return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
                       req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
+                        // TODO remove increment
                         return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
                           let message = savedMessage.toJSON();
