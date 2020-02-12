@@ -19,6 +19,8 @@ class ModulesManager {
         this.activityArchiver = undefined;
         this.activityRoute = undefined;
         this.facebookRoute = undefined;
+        this.jwthistoryArchiver = undefined;
+        this.jwthistoryRoute = undefined;
       
     }
 
@@ -80,6 +82,12 @@ class ModulesManager {
         if (this.activityRoute) {
             app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.activityRoute);
              winston.info("ModulesManager activities controller loaded");       
+        }
+
+        if (this.jwthistoryRoute) {
+            // ??????
+            app.use('/jwt/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], this.jwthistoryRoute);
+             winston.info("ModulesManager jwthistory controller loaded");       
         }
 
         // if (this.facebookRoute) {
@@ -172,10 +180,10 @@ class ModulesManager {
         try {
             this.activityArchiver = require('@tiledesk-ent/tiledesk-server-activities').activityArchiver;
             this.activityArchiver.listen();
-            winston.debug("this.elasticIndexer:"+ this.activityArchiver);   
+            winston.debug("this.activityArchiver:"+ this.activityArchiver);   
             
             this.activityRoute = require('@tiledesk-ent/tiledesk-server-activities').activityRoute;
-            winston.debug("this.triggerRoute:"+ this.activityRoute);
+            winston.debug("this.activityRoute:"+ this.activityRoute);
 
             winston.info("ModulesManager init activities loaded");
         } catch(err) {
@@ -183,6 +191,25 @@ class ModulesManager {
                 winston.info("ModulesManager init activities module not found");
             }else {
                 winston.info("ModulesManager error initializing init activities module", err);
+            }
+        }
+
+
+
+        try {
+            this.jwthistoryArchiver = require('@tiledesk-ent/tiledesk-server-jwthistory').jwthistoryArchiver;
+            this.jwthistoryArchiver.listen();
+            winston.debug("this.jwthistoryArchiver:"+ this.jwthistoryArchiver);   
+            
+            this.jwthistoryRoute = require('@tiledesk-ent/tiledesk-server-jwthistory').jwthistoryRoute;
+            winston.debug("this.jwthistoryRoute:"+ this.jwthistoryRoute);
+
+            winston.info("ModulesManager init jwthistory loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init jwthistory module not found",err);
+            }else {
+                winston.info("ModulesManager error initializing init jwthistory module", err);
             }
         }
 
