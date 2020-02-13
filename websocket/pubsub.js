@@ -231,12 +231,16 @@ class PubSub {
    * @isBroadcast = false that mean send all, if true, send all not me
    */
   handlePublishMessage (topic, message, from, isBroadcast = false, method) {
+  
 
     let subscriptions = isBroadcast
       ? this.subscription.getSubscriptions(
         (sub) => sub.topic === topic && sub.clientId !== from)
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
+
+
+        winston.debug("handlePublishMessage!!!!!!!!!!!", subscriptions);    
     // now let send to all subscribers in the topic with exactly message from publisher
     subscriptions.forEach((subscription) => {
 
@@ -328,6 +332,7 @@ class PubSub {
               try {
                 var resCallBack =  await this.callbacks.onSubscribe(topic, clientId, req);
                 winston.info("resCallBack onSubscribe",resCallBack);
+                //console.log("resCallBack onSubscribe",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onSubscribe err",e);
                 return 0;
@@ -336,9 +341,25 @@ class PubSub {
 
             this.handleAddSubscription(topic, clientId);
 
-            resCallBack.then(function(resultPublish){
-              winston.info("resCallBack resultPublish",resultPublish);
-            });
+
+            if (resCallBack.publishFunction) {
+              resCallBack.publishFunction();
+            }
+
+            
+
+            // if (resCallBack.publishPromise) {
+            //   resCallBack.publishPromise.then(function(resultPublish){
+            //     // winston.info("resCallBack resultPublish",resultPublish);
+            //     console.log("resCallBack resultPublish",resultPublish);
+            //     // resultPublish.then(function(resultPublish2){
+            //     //   winston.info("resCallBack resultPublish2",resultPublish2);
+            //     //   console.log("resCallBack resultPublish2",resultPublish2);
+            //     // });
+
+            //   });
+            // }
+           
 
 
           }

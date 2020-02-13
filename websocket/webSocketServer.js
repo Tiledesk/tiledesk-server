@@ -201,11 +201,16 @@ class WebSocketServer {
                           }
                           winston.debug('onSubscribeCallback find', messages);  
 
-                          const publishPromise = new Promise(function(resolve, reject) {
-                            return resolve(pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE"));
-                          });
 
-                          return resolve(publishPromise);                                                                                          
+                          return resolve({publishFunction:function() {
+                            pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");
+                          }});     
+
+                          // const publishPromise = new Promise(function(resolve, reject) {
+                          //   return resolve(pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE"));
+                          // });
+
+                          // return resolve(publishPromise);                                                                                          
                 
                       });
                   });
@@ -258,11 +263,16 @@ class WebSocketServer {
                     }
                     winston.debug('found requests for onSubscribeCallback', requests);  
 
-                    const publishPromise = new Promise(function(resolve, reject) {
-                      return resolve(pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE"));
-                    });
+                    // const publishPromise = new Promise(function(resolve, reject) {
+                    //   pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE")
+                    //   return resolve("ok");
+                    // });
 
-                    return resolve(publishPromise);          
+                    // return resolve("ok");          
+                    // return resolve({publishPromise:publishPromise});          
+                    return resolve({publishFunction:function() {
+                      pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");
+                    }});          
 
           
                 });
@@ -314,11 +324,16 @@ class WebSocketServer {
                       }
                       winston.debug('onSubscribeCallback find', request);  
 
-                      const publishPromise = new Promise(function(resolve, reject) {
-                        return resolve(pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE"));
-                      });
+                      return resolve({publishFunction:function() {
+                        pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");
+                      }});    
+
+                      // const publishPromise = new Promise(function(resolve, reject) {
+                      //   return resolve(pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE"));
+                      // });
   
-                      return resolve(publishPromise); 
+                      // return resolve("ok"); 
+                      // return resolve(publishPromise); 
                                                             
             
                   });
