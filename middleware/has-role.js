@@ -85,7 +85,14 @@ class RoleChecker {
           
           // winston.debug("req.originalUrl" + req.originalUrl);
           // winston.debug("req.params" + JSON.stringify(req.params));
-         // winston.info("req.params.projectid: " + req.params.projectid);
+
+        // same route doesnt contains projectid so you can't use that
+          // winston.debug("req.params.projectid: " + req.params.projectid);
+          if (!req.params.projectid) {
+            res.status(400).send({success: false, msg: 'req.params.projectid is not defined.'});
+          }
+
+
         //  winston.info("req.user._id: " + req.user._id);
 
           // winston.info("req.projectuser: " + req.projectuser);
@@ -110,17 +117,20 @@ class RoleChecker {
           winston.debug("hasRoleOrType req.user._id " +req.user._id);
           // project_user_qui_importante
 
+          // JWT_HERE
           var query = { id_project: req.params.projectid, id_user: req.user._id};
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id};
           }
+          winston.debug("hasRoleOrType query " + JSON.stringify(query));
+
           Project_user.find(query).
             exec(function (err, project_user) {
               if (err) {
                 winston.error("Error getting project_user for hasrole",err);
                 return next(err);
               }
-              //winston.info("project_user: ", JSON.stringify(project_user));
+              winston.debug("project_user: ", JSON.stringify(project_user));
               
               
       
@@ -165,6 +175,7 @@ class RoleChecker {
         return new Promise(function (resolve, reject) {              
           // project_user_qui_importante
 
+           // JWT_HERE
           var query = { id_project: req.params.projectid, id_user: req.user._id};
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id};

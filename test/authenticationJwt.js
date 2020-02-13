@@ -408,7 +408,7 @@ it('signinJWt-userYESAudYesSubject', (done) => {
                                         console.log("jwtToken", jwtToken);
                                         chai.request(server)
                                         // .get('/'+ savedProject._id + '/faq_kb')
-                                        .get('/testauth/bot')
+                                        .get('/'+savedProject._id+'/authtestWithRoleCheck/bot')
                                        
                                         .set('Authorization', 'JWT '+jwtToken)
                                         .send()
