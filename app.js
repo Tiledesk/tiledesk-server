@@ -54,6 +54,8 @@ if (process.env.NODE_ENV == 'test')  {
 
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
+var authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
+
 var lead = require('./routes/lead');
 var message = require('./routes/message');
 var department = require('./routes/department');
@@ -262,7 +264,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  winston.debug("projectIdSetter projectid: "+ projectid);
+  winston.info("projectIdSetter projectid: "+ projectid);
 
   // if (projectid) {
     req.projectid = projectid;
@@ -311,7 +313,7 @@ var projectSetter = function (req, res, next) {
 
 
 app.use('/auth', auth);
-app.use('/testauth', authtest);
+app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
 
 // TODO check security issue ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
@@ -326,6 +328,7 @@ if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
 app.use('/:projectid', [projectIdSetter, projectSetter]);
 
 
+app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], lead);
 
