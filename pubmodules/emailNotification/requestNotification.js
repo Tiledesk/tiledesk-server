@@ -10,6 +10,7 @@ var Lead = require("../../models/lead");
 var Message = require("../../models/message");
 const requestEvent = require('../../event/requestEvent');
 var winston = require('../../config/winston');
+var RoleConstants = require("../../models/roleConstants");
 
 class RequestNotification {
 
@@ -32,7 +33,7 @@ listen() {
             if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
 
               //send email to admin
-              Project_user.find({ id_project: id_project,  $or:[ {"role": "admin"}, {"role": "owner"}]  } ).populate('id_user')
+              Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]} } ).populate('id_user')
               .exec(function (err, project_users) {
 
                 if (project_users && project_users.length>0) {

@@ -67,7 +67,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
 
-      var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];     
+      var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT];     
       winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
@@ -309,16 +309,16 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
 //TODO deprecate. Used by pstream dashboard
-router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')],function (req, res, next) {
- winston.debug("--> USER ID ", req.params.user_id);
- winston.debug("--> PROJECT ID ", req.params.project_id);
- Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
-    exec(function (err, project_users) {
-      if (err) return next(err);
-      res.json(project_users);
+// router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')],function (req, res, next) {
+//  winston.debug("--> USER ID ", req.params.user_id);
+//  winston.debug("--> PROJECT ID ", req.params.project_id);
+//  Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
+//     exec(function (err, project_users) {
+//       if (err) return next(err);
+//       res.json(project_users);
 
-    });
-});
+//     });
+// });
 
 
 /**

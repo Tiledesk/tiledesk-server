@@ -6,6 +6,7 @@ var Project_user = require("../models/project_user");
 var operatingHoursService = require("../services/operatingHoursService");
 var AnalyticResult = require("../models/analyticResult");
 var Department = require("../models/department");
+var RoleConstants = require("../models/roleConstants");
 
 
 
@@ -19,7 +20,7 @@ var Department = require("../models/department");
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
           if (isOpen) {            
-            Project_user.find({ id_project: req.projectid, user_available: true }).
+            Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).
               populate('id_user').
               exec(function (err, project_users) {
                 winston.debug('project_users:'+ project_users);
