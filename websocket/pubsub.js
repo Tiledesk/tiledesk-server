@@ -468,7 +468,7 @@ class PubSub {
     if (!client.id) {
       client.id = this.autoId()
     }
-    winston.info('client added', {id: client.id, subscriptions: client.subscriptions});
+    winston.debug('client added', {id: client.id, subscriptions: client.subscriptions});
     this.clients = this.clients.set(client.id, client)
      winston.debug('clients added: ',this.clients)
   }
