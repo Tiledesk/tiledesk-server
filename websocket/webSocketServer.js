@@ -164,7 +164,7 @@ class WebSocketServer {
                    return reject({err:'Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId});
                 }
 
-                var queryRequest = {id_project:projectId, recipient: recipientId };     
+                var queryRequest = {id_project:projectId, request_id: recipientId };     
 
                 if (projectuser.role == "owner" || projectuser.role == "admin") {
                   winston.debug('queryRequest admin: '+ JSON.stringify(queryRequest));
