@@ -252,7 +252,7 @@ class WebSocketServer {
                       return reject(err);
                     }
                     winston.debug('found requests for onSubscribeCallback', requests);  
-                    pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
+                    return resolve(pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE"));                                                                                          
           
                 });
 
@@ -302,7 +302,7 @@ class WebSocketServer {
                         return reject(err);
                       }
                       winston.debug('onSubscribeCallback find', request);  
-                      pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
+                      return resolve(pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE"));                                                                                          
             
                   });
 
