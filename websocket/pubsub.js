@@ -16,9 +16,9 @@ var winston = require('../config/winston');
 // https://github.com/tabvn/pubsub/blob/master/server/src/pubsub.js
 class PubSub {
 
-  //constructor (wss, onConnectCallbackArg, onDisconnectCallbackArg, onMessageCallbackArg) {
     constructor (wss, callbacksArg) {
-    //   winston.debug("wss", wss);
+    winston.debug("wss", wss);
+
     this.wss = wss
 
     this.clients = new Map()
@@ -31,42 +31,38 @@ class PubSub {
     this.handleUnsubscribe = this.handleUnsubscribe.bind(this)
     this.handlePublishMessage = this.handlePublishMessage.bind(this)
     this.removeClient = this.removeClient.bind(this)
-    
-    /*
-    this.onConnectCallback = onConnectCallbackArg;
-    this.onDisconnectCallback = onDisconnectCallbackArg;
-    this.onMessageCallback = onMessageCallbackArg;
-      */
+     
      this.callbacks = callbacksArg;
 
     this.load()
   }
 
-  load () {
+   load() {
 
     const wss = this.wss
 
-    wss.on('connection', (ws,req) => {
+    wss.on('connection', async (ws,req) => {
 
       ws.isAlive = true;
 
       const id = this.autoId()
 
-      // winston.debug('connection', id)
+      winston.debug('connection', id)
       const client = {
         id: id,
         ws: ws,
         userId: null,
         subscriptions: [],
       }
-
-      /*
-      if (this.onConnectCallback ) {
-        this.onConnectCallback(client);
-      }
-*/
+     
       if (this.callbacks && this.callbacks.onConnect) {
-        this.callbacks.onConnect(client, req);
+        try {
+          var resCallBack =  await await this.callbacks.onConnect(client, req);
+          winston.info("resCallBack onConnect",resCallBack);
+        } catch(e) {
+          winston.warn("resCallBack onConnect err",e);
+          return 0;
+        }        
       }
 
       // add new client to the map
@@ -78,7 +74,7 @@ class PubSub {
       ws.on('message',
         (message) => this.handleReceivedClientMessage(id, message, req))
 
-      ws.on('close', () => {
+      ws.on('close', async () => {
         winston.debug('Client is disconnected')
 
         clearInterval(ws.timer);
@@ -87,12 +83,16 @@ class PubSub {
         const userSubscriptions = this.subscription.getSubscriptions(
           (sub) => sub.clientId === id)
 
-          /*
-        if (this.onDisconnectCallback ) {
-          this.onDisconnectCallback(userSubscriptions, id);
-        }*/
-        if (this.callbacks && this.callbacks.onDisconnect) {
-          this.callbacks.onDisconnect(id, userSubscriptions);
+       
+        if (this.callbacks && this.callbacks.onDisconnect) {          
+          try {
+            var resCallBack =  await this.callbacks.onDisconnect(id, userSubscriptions);
+            winston.info("resCallBack onDisconnect",resCallBack);
+          } catch(e) {
+            winston.warn("resCallBack onDisconnect err",e);
+            return 0;
+          }
+
         }
     
         userSubscriptions.forEach((sub) => {
@@ -263,13 +263,19 @@ class PubSub {
    * @param clientId
    * @param message
    */
-  handleReceivedClientMessage (clientId, message, req) {
+  async handleReceivedClientMessage (clientId, message, req) {
 /*
     if (this.onMessageCallback ) {
       this.onMessageCallback(clientId, message);
     }*/
-    if (this.callbacks && this.callbacks.onMessage) {
-      this.callbacks.onMessage(clientId, message);
+    if (this.callbacks && this.callbacks.onMessage) {      
+      try {
+        var resCallBack =  await this.callbacks.onMessage(clientId, message);
+        winston.info("resCallBack onMessage",resCallBack);
+      } catch(e) {
+        winston.warn("resCallBack onMessage err",e);
+        return 0;
+      }
     }
 
     const client = this.getClient(clientId)
@@ -319,7 +325,13 @@ class PubSub {
           if (topic) {
 
             if (this.callbacks && this.callbacks.onSubscribe) {
-              this.callbacks.onSubscribe(topic, clientId, req);
+              try {
+                var resCallBack =  await this.callbacks.onSubscribe(topic, clientId, req);
+                winston.info("resCallBack onSubscribe",resCallBack);
+              } catch(e) {
+                winston.warn("resCallBack onSubscribe err",e);
+                return 0;
+              }
             }
 
             this.handleAddSubscription(topic, clientId)
@@ -336,8 +348,14 @@ class PubSub {
 
           if (unsubscribeTopic) {
 
-            if (this.callbacks && this.callbacks.onUnsubscribe) {
-              this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
+            if (this.callbacks && this.callbacks.onUnsubscribe) {              
+              try {
+                var resCallBack =  await this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
+                winston.info("resCallBack onUnsubscribe",resCallBack);
+              } catch(e) {
+                winston.warn("resCallBack onUnsubscribe err",e);
+                return 0;
+              }
             }
 
             this.handleUnsubscribe(unsubscribeTopic, clientId)
@@ -352,8 +370,14 @@ class PubSub {
           if (publishTopic) {
             const from = clientId;
 
-            if (this.callbacks && this.callbacks.onPublish) {
-              this.callbacks.onPublish(publishTopic, publishMessage, from, req);
+            if (this.callbacks && this.callbacks.onPublish) {              
+              try {
+                var resCallBack =  await this.callbacks.onPublish(publishTopic, publishMessage, from, req);
+                winston.info("resCallBack onPublish",resCallBack);
+              } catch(e) {
+                winston.warn("resCallBack onPublish err",e);
+                return 0;
+              }
             }
 
             this.handlePublishMessage(publishTopic, publishMessage, from)
@@ -366,9 +390,14 @@ class PubSub {
           const broadcastTopicName = _.get(message, 'payload.topic', null)
           const broadcastMessage = _.get(message, 'payload.message')
           if (broadcastTopicName) {
-
-            if (this.callbacks && this.callbacks.onBroadcast) {
-              this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
+            if (this.callbacks && this.callbacks.onBroadcast) {              
+              try {
+                var resCallBack =  await this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
+                winston.info("resCallBack onPublish",resCallBack);
+              } catch(e) {
+                winston.warn("resCallBack onPublish err",e);
+                return 0;
+              }
             }
 
             this.handlePublishMessage(broadcastTopicName, broadcastMessage,
@@ -413,9 +442,9 @@ class PubSub {
     if (!client.id) {
       client.id = this.autoId()
     }
-    winston.debug('client added', client.id,client.subscriptions);
+    winston.info('client added', {id: client.id, subscriptions: client.subscriptions});
     this.clients = this.clients.set(client.id, client)
-     //winston.debug('clients added', JSON.stringify(this.clients))
+     winston.debug('clients added: ',this.clients)
   }
 
   /**

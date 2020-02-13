@@ -50,11 +50,7 @@ class WebSocketServer {
           if (!token)
               cb(false, 401, 'Unauthorized');
           else {
-            token = token.replace('JWT ', '');
-            // if (token ==="123") {
-            //   winston.debug('ok 123:');
-            //   return cb(true);
-            // }
+            token = token.replace('JWT ', '');            
               jwt.verify(token, config.secret, function (err, decoded) {
                   if (err) {
                      winston.error('error websocket', err);
@@ -104,172 +100,216 @@ class WebSocketServer {
     });
 
 
-    var onConnectCallback = function(client, req) {
+    var onConnectCallback = async function(client, req) {
       winston.debug('onConnectCallback ');
+      return new Promise(function(resolve, reject) {
+        return resolve("ok");
+      });
       // check here if you can subscript o publish message
     }
 
-    var onDisconnectCallback = function(subscript, id) {
+    var onDisconnectCallback = async function(subscript, id) {
       winston.debug('onDisconnectCallback: '+subscript +":"+ id);
+      return new Promise(function(resolve, reject) {
+        return resolve("ok");
+      });
       // check here if you can subscript o publish message
     }
 
 
 //tilebaseMess.send('{ "action": "publish", "payload": { "topic": "/apps/123/requests/sendid/conversations/RFN", "message":{"sender_id":"sendid","sender_fullname":"SFN", "recipient_id":"RFN", "recipient_fullname":"RFN","text":"hi","app_id":"123"}}}');
-    var onPublishCallback = function(publishTopic, publishMessage, from) {
+    var onPublishCallback = async function(publishTopic, publishMessage, from) {
       winston.debug("onPublish topic: "+publishTopic +" from: "+from, publishMessage);
+      return new Promise(function(resolve, reject) {
+        return resolve("ok");
+      });
   
     }
 
-    var onMessageCallback = function(id, message) {
+    var onMessageCallback = async function(id, message) {
       winston.debug('onMessageCallback ',id, message);
+      return new Promise(function(resolve, reject) {
+        return resolve("ok");
+      });
       // check here if you can subscript o publish message
     }
 
     // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/app1/requests"}}');
-    var onSubscribeCallback = function(id, message, req) {
-      winston.debug('onSubscribeCallback :'+id+ " "+ message);      
-    
-      winston.debug(' req.user._id: '+ req.user);
-
-       if (id.endsWith('/messages')) {
-         winston.debug(' messages: ');
-         var urlSub = id.split('/');  
-
-         var projectId = urlSub[1];
-         winston.debug('projectId: '+projectId);
-
-         var recipientId = urlSub[3];
-         winston.debug('recipientId: '+recipientId);
-         // winston.debug(' req.: ',req);
-       
-       
-
-         Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
-           if (err) {
-             return winston.error('error getting  Project_user', err);  
-           }
-           if (!projectuser) {
-            return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
-          }
-
-           var query = {id_project:projectId, recipient: recipientId };
-           winston.debug('query: '+query);
-           Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+    var onSubscribeCallback = async function(id, message, req) {
+      return new Promise(function(resolve, reject) {
+            winston.debug('onSubscribeCallback :'+id+ " "+ message);      
           
-               if (err) {
-                 winston.error('Error finding message for onSubscribeCallback', err);  
-                 return 0;
-               }
-               winston.debug('onSubscribeCallback find', messages);  
-               pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");                                                                                          
-    
-           });
+            winston.debug(' req.user._id: '+ req.user);
 
-         });
-        
-     } else if (id.endsWith('/requests')) {
+            if (id.endsWith('/messages')) {
+              winston.debug(' messages: ');
+              var urlSub = id.split('/');  
 
+              var projectId = urlSub[1];
+              winston.debug('projectId: '+projectId);
 
-        //if (id.indexOf('/requests')>0 && id.indexOf('/messages')==0) {
-      //  if (id.indexOf('/requests')>0) {
-        var urlSub = id.split('/');  
-
-        var projectId = urlSub[1];
-        winston.debug('projectId: '+projectId);
-        winston.debug('req.user._id: '+req.user._id);
-        // winston.debug(' req.: ',req);
-       
-        winston.info('find project_user');
-       
-
-        Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
-          if (err) {
-            return winston.error('error getting  Project_user', err);  
-          }
-          if (!projectuser) {
-            return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
-          }
-          winston.debug('projectuser', projectuser.toObject()); 
-
-          // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
-          var query = {"id_project":projectId, "status": { $lt: 1000 } };
-          if (projectuser.role == "owner" || projectuser.role == "admin") {
-            winston.debug('query admin: '+ JSON.stringify(query));
-          }else {
-            query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
-            winston.debug('query agent: '+ JSON.stringify(query));
-          }
-          
-          Request.find(query)
-          .populate('lead')
-          .populate('department')
-          .populate({path:'requester',populate:{path:'id_user'}})
-          .sort({updatedAt: 'desc'})
-          .limit(100)
-          .exec(function(err, requests) { 
-          
-              if (err) {
-                winston.error('Error finding request for onSubscribeCallback', err);  
-                return 0;
-              }
-              winston.debug('found requests for onSubscribeCallback', requests);  
-              pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
-    
-          });
-
-        });
-        
-
-
-     } else {
-
-      //if (id.indexOf('/requests')>0 && id.indexOf('/messages')==0) {
-      //  if (id.indexOf('/requests')>0) {
-          var urlSub = id.split('/');  
-
-          var projectId = urlSub[1];
-          winston.debug('projectId: '+projectId);
-          // winston.debug(' req.: ',req);
-         
-          var recipientId = urlSub[3];
-          winston.debug('recipientId: '+recipientId);
-
-          Project_user.findOne({ id_project: projectId, id_user:  req.user._id }, function (err, projectuser) {
-            if (err) {
-              return winston.error('error getting  Project_user', err);  
-            }
-            if (!projectuser) {
-              return winston.error('Project_user not found with id '+ req.user._id + ' and projectid ' + projectId);  
-            }
-
-            var query = {id_project:projectId, request_id: recipientId};
-           winston.debug('query: '+ JSON.stringify(query));
-
-            // if (projectuser.role=="owner" || projectuser.role=="admin") {
-            // }else {
-            //   query = {id_project:projectId, agents: { $in : projectuser }  };
-            // }
+              var recipientId = urlSub[3];
+              winston.debug('recipientId: '+recipientId);
+              // winston.debug(' req.: ',req);
             
-            Request.findOne(query)
-            .populate('lead')
-            .populate('department')
-            .populate({path:'requester',populate:{path:'id_user'}})
-            .sort({updatedAt: 'asc'}).exec(function(err, request) { 
             
+
+              Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] }, function (err, projectuser) {
                 if (err) {
-                  winston.error('Error finding request for onSubscribeCallback', err);  
-                  return 0;
+                   winston.error('error getting  Project_user', err);  
+                   return reject(err);
                 }
-                winston.debug('onSubscribeCallback find', request);  
-                pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
-      
-            });
+                if (!projectuser) {
+                   winston.error('Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                   return reject({err:'Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId});
+                }
 
-          });
+                var queryRequest = {id_project:projectId, recipient: recipientId };     
+
+                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                  winston.debug('queryRequest admin: '+ JSON.stringify(queryRequest));
+                }else {
+                  queryRequest["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                  winston.debug('queryRequest agent: '+ JSON.stringify(queryRequest));
+                }
+
+
+                Request.findOne(queryRequest)                
+                .exec(function(err, request) { 
+                
+                    if (err) {
+                      winston.error('Error finding request for onSubscribeCallback', err);  
+                      return reject(err);
+                    }
+                    if (!request) {
+                       winston.error('Request query not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                       return reject({err:'Request query not found for user id '+ req.user._id + ' and projectid ' + projectId});
+                    }
+
+                    winston.debug('found request for onSubscribeCallback', request);  
+
+
+              
+                      var query = {id_project:projectId, recipient: recipientId };                       
+                      winston.debug('query : '+ JSON.stringify(query));
+
+                      Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+                      
+                          if (err) {
+                            winston.error('Error finding message for onSubscribeCallback', err);  
+                            return reject(err);
+                          }
+                          winston.debug('onSubscribeCallback find', messages);  
+                          return resolve(pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE"));                                                                                          
+                
+                      });
+                  });
+
+              });
+              
+          } else if (id.endsWith('/requests')) {
+
+              var urlSub = id.split('/');  
+
+              var projectId = urlSub[1];
+              winston.debug('projectId: '+projectId);
+              winston.debug('req.user._id: '+req.user._id);
+              // winston.debug(' req.: ',req);
+            
+              winston.debug('find project_user');
+            
+
+              Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  }, function (err, projectuser) {
+                if (err) {
+                   winston.error('error getting  Project_user', err);  
+                   return reject(err);
+                }
+                if (!projectuser) {
+                   winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                   return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
+                }
+                winston.debug('projectuser', projectuser.toObject()); 
+
+                // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
+                var query = {"id_project":projectId, "status": { $lt: 1000 } };
+                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                  winston.debug('query admin: '+ JSON.stringify(query));
+                }else {
+                  query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                  winston.debug('query agent: '+ JSON.stringify(query));
+                }
+                
+                Request.find(query)
+                .populate('lead')
+                .populate('department')
+                .populate({path:'requester',populate:{path:'id_user'}})
+                .sort({updatedAt: 'desc'})
+                .limit(100)
+                .exec(function(err, requests) { 
+                
+                    if (err) {
+                      winston.error('Error finding request for onSubscribeCallback', err);  
+                      return reject(err);
+                    }
+                    winston.debug('found requests for onSubscribeCallback', requests);  
+                    pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
           
-      }
+                });
 
+              });
+              
+
+
+          } else {
+
+                var urlSub = id.split('/');  
+
+                var projectId = urlSub[1];
+                winston.debug('projectId: '+projectId);
+                // winston.debug(' req.: ',req);
+              
+                var recipientId = urlSub[3];
+                winston.debug('recipientId: '+recipientId);
+
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] }, function (err, projectuser) {
+                  if (err) {
+                     winston.error('error getting  Project_user', err);  
+                     return reject(err);
+                  }
+                  if (!projectuser) {
+                     winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
+                  }
+
+                  var query = {id_project:projectId, request_id: recipientId};
+                winston.debug('query: '+ JSON.stringify(query));
+
+                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                  winston.debug('query admin: '+ JSON.stringify(query));
+                }else {
+                  query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                  winston.debug('query agent: '+ JSON.stringify(query));
+                }
+                  
+                  Request.findOne(query)
+                  .populate('lead')
+                  .populate('department')
+                  .populate({path:'requester',populate:{path:'id_user'}})
+                  .sort({updatedAt: 'asc'}).exec(function(err, request) { 
+                  
+                      if (err) {
+                        winston.error('Error finding request for onSubscribeCallback', err);  
+                        return reject(err);
+                      }
+                      winston.debug('onSubscribeCallback find', request);  
+                      pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
+            
+                  });
+
+                });
+                
+            }
+          });
     }
 
 
