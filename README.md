@@ -18,8 +18,13 @@ Steps to run with npm:
 ```
 npm install -g @tiledesk/tiledesk-server mongodb-runner
 mongodb-runner start
-FIREBASE_CONFIG_FILE=<FIREBASE_CONFIG_PATH.json> DATABASE_URI=mongodb://localhost/test tiledesk-server  
+curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env.sample
+cp .env.sample .env # And configure it
+tiledesk-server  
 ```
+
+If you want to load .env file from another path: 
+DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server 
 
 Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 

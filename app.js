@@ -1,11 +1,16 @@
+var dotenvPath = undefined;
+
+if (process.env.DOTENV_PATH) {
+  dotenvPath = process.env.DOTENV_PATH;
+  console.log("load dotenv form DOTENV_PATH", dotenvPath);
+}
+
 if (process.env.LOAD_DOTENV_SUBFOLDER ) {
   console.log("load dotenv form LOAD_DOTENV_SUBFOLDER");
-  require('dotenv').config({ path: __dirname+'/confenv/.env' });
-
-}else {
-  require('dotenv').config();
-
+  dotenvPath = __dirname+'/confenv/.env';
 }
+
+require('dotenv').config({ path: dotenvPath});
 
 
 var express = require('express');
