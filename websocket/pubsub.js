@@ -58,7 +58,7 @@ class PubSub {
       if (this.callbacks && this.callbacks.onConnect) {
         try {
           var resCallBack =  await await this.callbacks.onConnect(client, req);
-          winston.info("resCallBack onConnect",resCallBack);
+          winston.debug("resCallBack onConnect",resCallBack);
         } catch(e) {
           winston.warn("resCallBack onConnect err",e);
           return 0;
@@ -87,7 +87,7 @@ class PubSub {
         if (this.callbacks && this.callbacks.onDisconnect) {          
           try {
             var resCallBack =  await this.callbacks.onDisconnect(id, userSubscriptions);
-            winston.info("resCallBack onDisconnect",resCallBack);
+            winston.debug("resCallBack onDisconnect",resCallBack);
           } catch(e) {
             winston.warn("resCallBack onDisconnect err",e);
             return 0;
@@ -275,7 +275,7 @@ class PubSub {
     if (this.callbacks && this.callbacks.onMessage) {      
       try {
         var resCallBack =  await this.callbacks.onMessage(clientId, message);
-        winston.info("resCallBack onMessage",resCallBack);
+        winston.debug("resCallBack onMessage",resCallBack);
       } catch(e) {
         winston.warn("resCallBack onMessage err",e);
         return 0;
@@ -377,7 +377,7 @@ class PubSub {
             if (this.callbacks && this.callbacks.onUnsubscribe) {              
               try {
                 var resCallBack =  await this.callbacks.onUnsubscribe(unsubscribeTopic, clientId, req);
-                winston.info("resCallBack onUnsubscribe",resCallBack);
+                winston.debug("resCallBack onUnsubscribe",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onUnsubscribe err",e);
                 return 0;
@@ -399,7 +399,7 @@ class PubSub {
             if (this.callbacks && this.callbacks.onPublish) {              
               try {
                 var resCallBack =  await this.callbacks.onPublish(publishTopic, publishMessage, from, req);
-                winston.info("resCallBack onPublish",resCallBack);
+                winston.debug("resCallBack onPublish",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onPublish err",e);
                 return 0;
@@ -419,7 +419,7 @@ class PubSub {
             if (this.callbacks && this.callbacks.onBroadcast) {              
               try {
                 var resCallBack =  await this.callbacks.onBroadcast(broadcastTopicName, broadcastMessage, clientId, req);
-                winston.info("resCallBack onPublish",resCallBack);
+                winston.debug("resCallBack onPublish",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onPublish err",e);
                 return 0;
