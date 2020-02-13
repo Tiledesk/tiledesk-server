@@ -453,7 +453,7 @@ it('signinWithCustomTokenKONoID', (done) => {
             });
         });
             
-});
+}).timeout(20000);
 
 
 

@@ -340,7 +340,7 @@ it('signinJWt-userYESAudYesSubject', (done) => {
 
 
                         var signOptions = {                                                            
-                            subject:  'user',                                                                 
+                            subject:  'userexternal',                                                                 
                             audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
                             };
 
