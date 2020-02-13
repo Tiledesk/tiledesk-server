@@ -153,6 +153,33 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
 
+
+
+        requestEvent.on('request.reopen',  function(request) {          
+
+            setImmediate(() => {
+                                        
+                        winston.info("ConciergeBot send reopen bot message");     
+                                            
+                        // return chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", "Chat closed", app_id, {subtype:"info/support","updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"} });
+
+                            messageService.send(
+                                'system', 
+                                'Bot',                                     
+                                request.request_id,
+                                "Chat reopened", 
+                                request.id_project,
+                                'system', 
+                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_REOPENED"}}
+                            );
+
+                            
+                        
+                    
+                
+                });       
+
+
     });
 
 
