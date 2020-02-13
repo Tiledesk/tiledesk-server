@@ -151,11 +151,12 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 
                 });
 
+    });
 
 
 
 
-        requestEvent.on('request.reopen',  function(request) {          
+    requestEvent.on('request.reopen',  function(request) {          
 
             setImmediate(() => {
                                         
@@ -178,7 +179,6 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     
                 
                 });       
-
 
     });
 
