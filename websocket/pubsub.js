@@ -334,7 +334,12 @@ class PubSub {
               }
             }
 
-            this.handleAddSubscription(topic, clientId)
+            this.handleAddSubscription(topic, clientId);
+
+            resCallBack.then(function(resultPublish){
+              winston.info("resCallBack resultPublish",resultPublish);
+            });
+
 
           }
 

@@ -188,7 +188,7 @@ class WebSocketServer {
 
                     winston.debug('found request for onSubscribeCallback', request);  
 
-                     resolve("ok");
+
               
                       var query = {id_project:projectId, recipient: recipientId };                       
                       winston.debug('query : '+ JSON.stringify(query));
@@ -197,11 +197,15 @@ class WebSocketServer {
                       
                           if (err) {
                             winston.error('Error finding message for onSubscribeCallback', err);  
-                            // return reject(err);
-                            return 0;
+                            return reject(err);
                           }
                           winston.debug('onSubscribeCallback find', messages);  
-                          pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");                                                                                          
+
+                          const publishPromise = new Promise(function(resolve, reject) {
+                            return resolve(pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE"));
+                          });
+
+                          return resolve(publishPromise);                                                                                          
                 
                       });
                   });
@@ -230,7 +234,6 @@ class WebSocketServer {
                    return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                 }
                 winston.debug('projectuser', projectuser.toObject()); 
-                resolve("ok");
 
                 // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
                 var query = {"id_project":projectId, "status": { $lt: 1000 } };
@@ -251,11 +254,16 @@ class WebSocketServer {
                 
                     if (err) {
                       winston.error('Error finding request for onSubscribeCallback', err);  
-                      // return reject(err);
-                      return 0;
+                      return reject(err);
                     }
                     winston.debug('found requests for onSubscribeCallback', requests);  
-                    pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");                                                                                          
+
+                    const publishPromise = new Promise(function(resolve, reject) {
+                      return resolve(pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE"));
+                    });
+
+                    return resolve(publishPromise);          
+
           
                 });
 
@@ -284,8 +292,6 @@ class WebSocketServer {
                      return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
 
-                  resolve("ok");
-                  
                   var query = {id_project:projectId, request_id: recipientId};
                 winston.debug('query: '+ JSON.stringify(query));
 
@@ -307,7 +313,13 @@ class WebSocketServer {
                         return reject(err);
                       }
                       winston.debug('onSubscribeCallback find', request);  
-                      pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");                                                                                          
+
+                      const publishPromise = new Promise(function(resolve, reject) {
+                        return resolve(pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE"));
+                      });
+  
+                      return resolve(publishPromise); 
+                                                            
             
                   });
 
