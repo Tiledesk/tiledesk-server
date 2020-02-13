@@ -26,7 +26,8 @@ var Faq_kbSchema = new Schema({
   // },  
   type: {
     type: String,
-    default: 'internal'
+    default: 'internal',
+    index: true
   },
   // external: {
   //   type: Boolean,
@@ -34,12 +35,16 @@ var Faq_kbSchema = new Schema({
   // },
   trashed: {
     type: Boolean,
+    index: true
   },
   secret: {
     type: String,
     required: true,
     default: uuidv4(),
     select: false
+  },
+  attributes: {
+    type: Object,
   },
   createdBy: {
     type: String,

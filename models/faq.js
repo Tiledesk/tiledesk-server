@@ -6,6 +6,7 @@ var winston = require('../config/winston');
 var FaqSchema = new Schema({
   id_faq_kb: {
     type: String,
+    index: true
     // required: true
     // type: Schema.Types.ObjectId,
     // ref: 'faq_kb'
@@ -16,7 +17,7 @@ var FaqSchema = new Schema({
   },
   question: {
     type: String,
-    required: true
+    required: true 
   },
   answer: {
     type: String,
@@ -29,17 +30,20 @@ var FaqSchema = new Schema({
   },
   topic: {
     type: String,
-    default: "default"
+    default: "default",
+    index: true
     // required: true
   },
   status: {
     type: String,
-    default: "live"
+    default: "live",
+    index: true
     // required: true
   },
   language: {
     type: String,
-    required: false
+    required: false,
+    index: true
   },
 
 //   "stats":{  

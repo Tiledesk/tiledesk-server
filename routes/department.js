@@ -292,13 +292,10 @@ router.get('/:departmentid', function (req, res) {
 // note:THE STATUS EQUAL TO 1 CORRESPONDS TO THE DEPARTMENTS VISIBLE THE STATUS EQUAL TO 0 CORRESPONDS TO THE HIDDEN DEPARTMENTS
 router.get('/', function (req, res) {
 
-  //winston.debug("req projectid", req.projectid);
-  //winston.debug("req.query.sort", req.query.sort);
+  winston.debug("req projectid", req.projectid);
+  winston.debug("req.query.sort", req.query.sort);
 
-  /** 
-   * inserire qui cond x far funzionare sul widget  dipartimenti nn disponibili se 
-   * il piano e free con trial scaduto o a pagamento con sottoscrizione scaduta
-   */
+
   var query = { "id_project": req.projectid, "status": 1 };
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.projectid ', req.projectid);
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ', req.project.profile.type);

@@ -30,24 +30,24 @@ var DepartmentSchema = new Schema({
   },
   id_group: {
     type: String,
-    // required: true
   },
+  // used??
   online_msg: {
     type: String,
-    // required: true
   },
   offline_msg: {
     type: String,
-    // required: true
   },
   default: {
     type: Boolean,
-    default:false
+    default:false,
+    index: true
     // required: true
   },
   status: {
     type: Number,
-    default: 1
+    default: 1,
+    index: true
     // required: true
   },
   createdBy: {

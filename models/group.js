@@ -9,7 +9,8 @@ var GroupSchema = new Schema({
     required: true
   },
   members: {
-    type: Array, "default": []
+    type: Array, "default": [],
+    index: true
     // required: true
   },
   id_project: {
@@ -19,6 +20,7 @@ var GroupSchema = new Schema({
   },
   trashed: {
     type: Boolean,
+    index: true
   },
   createdBy: {
     type: String,

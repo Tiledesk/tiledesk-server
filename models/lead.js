@@ -12,7 +12,8 @@ var LeadSchema = new Schema({
   
   lead_id: { 
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   fullname: {
     type: String,
