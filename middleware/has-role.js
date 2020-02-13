@@ -89,7 +89,7 @@ class RoleChecker {
         // same route doesnt contains projectid so you can't use that
           // winston.debug("req.params.projectid: " + req.params.projectid);
           if (!req.params.projectid) {
-            res.status(400).send({success: false, msg: 'req.params.projectid is not defined.'});
+            return res.status(400).send({success: false, msg: 'req.params.projectid is not defined.'});
           }
 
 
