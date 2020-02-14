@@ -72,7 +72,7 @@ class WebSocketServer {
                     
                             if (err) {
                                 // console.log("BasicStrategy err.stop");
-                                return winston.erro('error websocket', err);
+                                return winston.error('error websocket', err);
                             }
                             if (!user) {   
                               winston.error('websocket user not found with id : '+identifier);                             
