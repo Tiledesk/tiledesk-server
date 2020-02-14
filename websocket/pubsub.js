@@ -331,7 +331,7 @@ class PubSub {
             if (this.callbacks && this.callbacks.onSubscribe) {
               try {
                 var resCallBack =  await this.callbacks.onSubscribe(topic, clientId, req);
-                winston.info("resCallBack onSubscribe",resCallBack);
+                winston.debug("resCallBack onSubscribe",resCallBack);
                 //console.log("resCallBack onSubscribe",resCallBack);
               } catch(e) {
                 winston.warn("resCallBack onSubscribe err",e);
