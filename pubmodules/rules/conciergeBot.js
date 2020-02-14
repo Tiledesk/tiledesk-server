@@ -51,11 +51,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     let member = data.member;
 
                 setImmediate(() => {
-                    winston.info("ConciergeBot member: " + member);
+                    winston.debug("ConciergeBot member: " + member);
                     if (member.indexOf("bot_")==-1) {
                         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
                         if (botId) {
-                            winston.info("removing botId: " + botId);
+                            winston.debug("removing botId: " + botId);
                             
                             // removeParticipantByRequestId(request_id, id_project, member) 
                             requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId );

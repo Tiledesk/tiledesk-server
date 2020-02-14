@@ -174,7 +174,7 @@ router.post('/', function(req, res) {
 
         
 
-            winston.info("request  exists", request.toObject());
+            winston.debug("request  exists", request.toObject());
 
             // var projectid;
             // if (message.attributes) {
@@ -264,7 +264,7 @@ router.post('/', function(req, res) {
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
-
+// chiudi apri e chiudi. projectid nn c'è in attributes
 
               var projectId = conversation.attributes.projectId;
               winston.info('projectId: '+ projectId);
