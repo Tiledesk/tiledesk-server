@@ -9,8 +9,12 @@ var Department = require("../models/department");
 var RoleConstants = require("../models/roleConstants");
 
 
+router.get('/load', function(req, res) {
+  winston.debug(req.projectid);
+  // redirect to widget
+});
 
-  router.get('/', function(req, res) {
+router.get('/', function(req, res) {
     winston.debug(req.projectid);
 
 

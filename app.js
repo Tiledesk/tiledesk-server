@@ -80,6 +80,8 @@ var pendinginvitation = require('./routes/pending-invitation');
 var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
+var widgetsLoader = require('./routes/widgetLoader');
+
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
@@ -319,6 +321,8 @@ var projectSetter = function (req, res, next) {
 
 app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
+
+app.use('/widgets', widgetsLoader);
 
 // TODO check security issue ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
