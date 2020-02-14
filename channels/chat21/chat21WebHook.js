@@ -246,10 +246,10 @@ router.post('/', function(req, res) {
       winston.info("conversation",conversation);
 
       var user_id = req.body.user_id;
-      winston.info("user_id: "+user_id);
+      winston.debug("user_id: "+user_id);
 
       var recipient_id = req.body.recipient_id;
-      winston.info("recipient_id: "+recipient_id);
+      winston.debug("recipient_id: "+recipient_id);
 
       winston.debug("attributes",conversation.attributes);
 
@@ -274,7 +274,7 @@ router.post('/', function(req, res) {
               }
               
               var query = {request_id: recipient_id, id_project: projectId};
-              winston.info('query:'+ projectId);
+              winston.debug('query:'+ projectId);
               return Request.findOne(query, function(err, request) {
 
                 if (err) {
@@ -282,7 +282,7 @@ router.post('/', function(req, res) {
                   return res.status(500).send({success: false, msg: "Error finding request with query " + query, err:err });
                 }
                 if (!request) {
-                  winston.info("request not found for query ", query);
+                  winston.warn("request not found for query ", query);
                   return res.status(404).send({success: false, msg: "Request with query " + JSON.stringify(query) + " not found" });
                 }
               
@@ -319,7 +319,7 @@ router.post('/', function(req, res) {
     }else if (req.body.event_type == "join-member") {
       winston.info("event_type","join-member");
 
-      winston.info("req.body", JSON.stringify(req.body));
+      winston.debug("req.body", JSON.stringify(req.body));
 
       var data = req.body.data;
       //winston.debug("data",data);
@@ -328,7 +328,7 @@ router.post('/', function(req, res) {
       // winston.debug("group",group);
 
       var new_member = req.body.member_id;
-      winston.info("new_member: " + new_member);
+      winston.debug("new_member: " + new_member);
 
       if (new_member=="system") {
         winston.warn("new_member "+ new_member+ " not added to participants");
@@ -336,7 +336,7 @@ router.post('/', function(req, res) {
       }
 
       var request_id = req.body.group_id;
-      winston.info("request_id: " + request_id);
+      winston.debug("request_id: " + request_id);
 
       var id_project;
       if (group && group.attributes) {
@@ -345,7 +345,7 @@ router.post('/', function(req, res) {
         winston.error("id_project "+ id_project+ " isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
-      winston.info("id_project: " + id_project);
+      winston.debug("id_project: " + id_project);
 
       return Request.findOne({request_id: request_id, id_project: id_project})
           .populate('lead')
@@ -360,7 +360,7 @@ router.post('/', function(req, res) {
 
         // return Lead.findOne({lead_id: new_member, id_project: id_project}, function(err, lead) {
 
-          winston.info("request",request.toObject());
+          winston.debug("request",request.toObject());
           
           // if (lead) {
           //   winston.info("lead",lead.toObject());
@@ -394,20 +394,20 @@ router.post('/', function(req, res) {
   }else if (req.body.event_type == "leave-member") {
     winston.info("event_type","leave-member");
     
-    winston.info("req.body", JSON.stringify(req.body));
+    winston.debug("req.body", JSON.stringify(req.body));
 
 
     var data = req.body.data;
     // winston.debug("data",data);
 
     var group = data.group;
-    winston.info("group",group);
+    winston.debug("group",group);
 
     var new_member = req.body.member_id;
-    winston.info("new_member",new_member);
+    winston.debug("new_member",new_member);
 
     var request_id = req.body.group_id;
-    winston.info("request_id", request_id);
+    winston.debug("request_id", request_id);
 
 
     var id_project;
@@ -416,7 +416,7 @@ router.post('/', function(req, res) {
       }else {
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
-      winston.info("id_project", id_project);
+      winston.debug("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
       winston.info("Leave memeber ok");
@@ -431,17 +431,17 @@ router.post('/', function(req, res) {
 
     winston.info("event_type","deleted-archivedconversation");
 
-    winston.info("req.body",req.body);
+    winston.debug("req.body",req.body);
 
 
       var conversation = req.body.data;
       // winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
-      winston.info("user_id",user_id);
+      winston.debug("user_id",user_id);
 
       var recipient_id = req.body.recipient_id;
-      winston.info("recipient_id",recipient_id);
+      winston.debug("recipient_id",recipient_id);
 
      
 
@@ -463,7 +463,7 @@ router.post('/', function(req, res) {
       }else {
         return res.status(400).send({success: false, msg: "not a support deleting archived conversation" });
       }
-      winston.info("id_project", id_project);
+      winston.debug("id_project", id_project);
 
 
       return requestService.reopenRequestByRequestId(recipient_id, id_project).then(function(updatedRequest) {
