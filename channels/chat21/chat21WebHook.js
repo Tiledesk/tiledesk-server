@@ -34,7 +34,7 @@ router.post('/', function(req, res) {
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"1234567891234567891", "recipient_fullname":"Andrea Leo","text":"text"}}' http://localhost:3000/chat21/requests
 
 
-    winston.info("event_type", "new-message");
+    winston.debug("event_type", "new-message");
 
     var message = req.body.data;
  
@@ -243,7 +243,7 @@ router.post('/', function(req, res) {
       winston.info("event_type deleted-conversation");
 
       var conversation = req.body.data;
-      winston.info("conversation",conversation);
+      winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
       winston.debug("user_id: "+user_id);
@@ -267,7 +267,7 @@ router.post('/', function(req, res) {
 // chiudi apri e chiudi. projectid nn c'è in attributes
 
               var projectId = conversation.attributes.projectId;
-              winston.info('projectId: '+ projectId);
+              winston.debug('projectId: '+ projectId);
 
               if (!projectId) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
