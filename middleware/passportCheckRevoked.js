@@ -89,7 +89,7 @@ module.exports = function(passport) {
                         }
 
                         winston.debug("faq_kb: ", faq_kb );
-                        winston.info("faq_kb.secret: "+ faq_kb.secret );
+                        winston.debug("faq_kb.secret: "+ faq_kb.secret );
                         done(null, faq_kb.secret);
                       });
                     }
@@ -111,7 +111,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         winston.debug("project: ", project );
-                        winston.info("project.jwtSecret: "+ project.jwtSecret );
+                        winston.debug("project.jwtSecret: "+ project.jwtSecret );
                         done(null, project.jwtSecret);
                       });
 
@@ -134,7 +134,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         winston.debug("subscription: ", subscription );
-                        winston.info("subscription.secret: "+ subscription.secret );
+                        winston.debug("subscription.secret: "+ subscription.secret );
                         done(null, subscription.secret);
                       });
                     }             

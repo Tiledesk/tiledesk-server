@@ -290,7 +290,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
  router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res, next) {
-   winston.info("--> users USER ID ", req.params.user_id);
+   winston.debug("--> users USER ID ", req.params.user_id);
    // project_user_qui
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
     populate('id_user').

@@ -132,23 +132,23 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         winston.debug("subscription: ", subscription );
-                        winston.info("subscription.secret: "+ subscription.secret );
+                        winston.debug("subscription.secret: "+ subscription.secret );
                         done(null, subscription.secret);
                       });
                     }             
 
                     else if (decoded.aud == "https://tiledesk.com") {                
-                      winston.info("config.jwtSecret: "+ config.secret );
+                      winston.debug("config.jwtSecret: "+ config.secret );
                       done(null, config.secret);
                     }
 
                     else {                
-                      winston.info("config.jwtSecret: "+ config.secret );
+                      winston.debug("config.jwtSecret: "+ config.secret );
                       done(null, config.secret);
                     }
               }
               else {
-                winston.info("config.jwtSecret: "+ config.secret );
+                winston.debug("config.jwtSecret: "+ config.secret );
                 done(null, config.secret);
               }             
             }
@@ -174,10 +174,12 @@ module.exports = function(passport) {
      const identifier = jwt_payload._id || jwt_payload._doc._id;
     
     // const subject = jwt_payload.sub || jwt_payload._id || jwt_payload._doc._id;
-    winston.info("passport identifier: " + identifier);
+    winston.debug("passport identifier: " + identifier);
 
     const subject = jwt_payload.sub;
-    winston.info("passport subject: " + subject);
+    winston.debug("passport subject: " + subject);
+
+    winston.info("passport identifier: " + identifier + " subject " + subject);
 
     var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     winston.debug("fullUrl:"+ fullUrl);

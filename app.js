@@ -271,7 +271,7 @@ app.get('/', function (req, res) {
 
 var projectIdSetter = function (req, res, next) {
   var projectid = req.params.projectid;
-  winston.info("projectIdSetter projectid: "+ projectid);
+  winston.debug("projectIdSetter projectid: "+ projectid);
 
   // if (projectid) {
     req.projectid = projectid;
