@@ -3,12 +3,6 @@ var Faq_kb = require("../models/faq_kb");
 var winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 
-const BOT_DIALOGFLOW_ENDPOINT = process.env.BOT_DIALOGFLOW_ENDPOINT;
-winston.debug("BOT_DIALOGFLOW_ENDPOINT: " + BOT_DIALOGFLOW_ENDPOINT);
-
-if (BOT_DIALOGFLOW_ENDPOINT) {
-  winston.info("BOT_DIALOGFLOW_ENDPOINT: " + BOT_DIALOGFLOW_ENDPOINT);
-}
 
 class FaqService {
 
@@ -27,10 +21,7 @@ class FaqService {
           createdBy: user_id,
           updatedBy: user_id
         });
-      
-        if (type==="dialogflow") {
-          url = BOT_DIALOGFLOW_ENDPOINT;
-        }
+             
 
         newFaq_kb.save(function (err, savedFaq_kb) {
           if (err) {

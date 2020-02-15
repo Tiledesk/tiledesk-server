@@ -21,7 +21,7 @@ class ModulesManager {
         this.facebookRoute = undefined;
         this.jwthistoryArchiver = undefined;
         this.jwthistoryRoute = undefined;
-      
+        this.dialogflowListener = undefined;
     }
 
     injectBefore(app) {
@@ -38,7 +38,7 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager injectBefore graphql module not found", err);
             }else {
-                winston.info("ModulesManager error initializing graphql module", err);
+                winston.error("ModulesManager error initializing graphql module", err);
             }
             
         }
@@ -117,7 +117,7 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init trigger module not found");
             }else {
-                winston.info("ModulesManager error initializing init trigger module", err);
+                winston.error("ModulesManager error initializing init trigger module", err);
             }
         }
 
@@ -130,7 +130,7 @@ class ModulesManager {
            if (err.code == 'MODULE_NOT_FOUND') {
                winston.info("ModulesManager init stripe module not found");
            }else {
-                winston.info("ModulesManager error initializing init stripe module", err);
+                winston.error("ModulesManager error initializing init stripe module", err);
            }
         } 
       
@@ -144,7 +144,7 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init resthookRoute module not found",err);
             }else {
-                winston.info("ModulesManager error initializing init resthook module", err);
+                winston.error("ModulesManager error initializing init resthook module", err);
             }
         }
 
@@ -157,7 +157,7 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init analytics module not found");
             }else {
-                winston.info("ModulesManager error initializing init analytics module", err);
+                winston.error("ModulesManager error initializing init analytics module", err);
             }
         }
 
@@ -190,7 +190,7 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init activities module not found");
             }else {
-                winston.info("ModulesManager error initializing init activities module", err);
+                winston.error("ModulesManager error initializing init activities module", err);
             }
         }
 
@@ -209,10 +209,26 @@ class ModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init jwthistory module not found",err);
             }else {
-                winston.info("ModulesManager error initializing init jwthistory module", err);
+                winston.error("ModulesManager error initializing init jwthistory module", err);
             }
         }
 
+        try {
+            this.dialogflowListener = require('@tiledesk-ent/tiledesk-server-dialogflow').listener;
+            this.dialogflowListener.listen();
+            winston.debug("this.dialogflowListener:"+ this.dialogflowListener);           
+
+            winston.info("ModulesManager init dialogflow loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init dialogflow module not found",err);
+            }else {
+                winston.error("ModulesManager error initializing init dialogflow module", err);
+            }
+        }
+
+
+        
 /*
         try {
            
