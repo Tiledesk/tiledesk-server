@@ -10,16 +10,20 @@ You can find more info here: https://developer.tiledesk.com
 
 # Prerequisites
 
-* Nodejs and npm installed 
+* [Nodejs](https://www.npmjs.com/) and npm installed 
+* [MongoDb](https://www.mongodb.com) installed
 
-# Installation
+# Running Tiledesk Server
+
+## Run locally with npm
 
 Steps to run with npm:
+
 ```
 npm install -g @tiledesk/tiledesk-server mongodb-runner
 mongodb-runner start
-curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env.sample
-cp .env.sample .env # And configure it
+curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env
+#configure .env file properly
 tiledesk-server  
 ```
 
@@ -29,7 +33,28 @@ DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server
 Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 
 
-# Running Tiledesk Server elsewhere
+## Using Docker
+
+
+### Configure .env file 
+```
+curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env
+#configure .env file properly
+```
+
+### Running
+If you want to run tiledesk and mongo with docker run :
+
+```
+docker run --name tiledesk-mongo -d mongo
+docker run -p 3000:3000 --env DATABASE_URI="mongodb://mongo/tiledesk-server" --env-file .env --link tiledesk-mongo:mongo tiledesk/tiledesk-server:beta
+```
+
+Otherwise if you want to run tiledesk only with docker run :
+
+```
+docker run -p 3000:3000 --env DATABASE_URI="mongodb://YOUR_MONGO_INSTALLATION_ENDPOINT/tiledesk-server" --env-file .env tiledesk/tiledesk-server:beta
+```
 
 ## Install from source code
 
@@ -45,16 +70,6 @@ Install nodemon with 'npm install -g nodemon'
 Deploy with button:
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Tiledesk/tiledesk-server)
-
-
-To see the log run : 
-
-```
-heroku logs  -n 2000 --tail -a tiledesk-server
-```
-
-
-To use a custom domain with AWS Route 53 see https://devcenter.heroku.com/articles/route-53
 
 
 # REST API
