@@ -1,9 +1,12 @@
-var request = require('request');
 const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
 var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const uuidv4 = require('uuid/v4');
+
+var request = require('retry-request', {
+  request: require('request')
+});
 
 class BotSubscriptionNotifier {
    
