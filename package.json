@@ -33,7 +33,8 @@
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.9",
     "@tiledesk-ent/tiledesk-server-triggers": "^1.0.15",
-    "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.3"
+    "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.3",
+    "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.2"
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.0.12",
@@ -54,6 +55,7 @@
     "express": "~4.17.1",
     "express-redis-cache": "^1.1.3",
     "express-session": "^1.17.0",
+    "express-validator": "^6.3.1",
     "fast-csv": "^3.4.0",
     "get-timezone-offset": "^1.0.3",
     "graphql": "^14.5.8",
@@ -74,13 +76,13 @@
     "passport-jwt": "^4.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
+    "retry-request": "^4.1.1",
     "serve-favicon": "~2.5.0",
     "socket.io": "^2.3.0",
     "uniqid": "^5.2.0",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
-    "ws": "^7.2.0",
-    "express-validator": "^6.3.1"
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
