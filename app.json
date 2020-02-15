@@ -9,6 +9,22 @@
       "description": "Firebase API key.",
       "value": ""
     },
+    "FIREBASE_AUTHDOMAIN": {
+      "description": "Firebase Auth domain.",
+      "value": ""
+    },
+    "FIREBASE_DATABASEURL": {
+      "description": "Firebase database url.",
+      "value": ""
+    },
+    "FIREBASE_STORAGEBUCKET": {
+      "description": "Firebase storage bucket.",
+      "value": ""
+    },
+    "FIREBASE_MESSAGINGSENDERID": {
+      "description": "Firebase messaging sender id.",
+      "value": ""
+    },    
      "FIREBASE_CLIENT_EMAIL": {
       "description": "Firebase Client email.",
       "value": ""
@@ -21,6 +37,10 @@
       "description": "Firebase project id.",
       "value": ""
     },
+    "CHAT21_ENABLED": {
+      "description": "Enable or disable Chat21 module.",
+      "value": "true"
+    },
     "CHAT21_URL": {
       "description": "The Chat21 server endpoint.",
       "value": "https://us-central1-tiledesk-test.cloudfunctions.net"
@@ -28,6 +48,10 @@
     "CHAT21_APPID": {
       "description": "A unique identifier for your chat21 app.",
       "value": "myAppId"
+    },
+    "WIDGET_LOCATION": {
+      "description": "Your widget url endpoint",
+      "value": "http://localhost:4200/"
     },
     "CHAT21_ADMIN_TOKEN": {
       "description": "The Chat21 admin token.",
