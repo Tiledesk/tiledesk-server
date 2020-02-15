@@ -58,10 +58,9 @@ docker run -p 3000:3000 --env DATABASE_URI="mongodb://YOUR_MONGO_INSTALLATION_EN
 ## Install from source code
 
 * Clone this repo
-* Install dependencies with 'npm install'
+* Install dependencies with `npm install`
 * Configure the tiledesk .env file. You can see an example in the file .env.sample under the root folder. Rename it from .env.sample to .env and configure it properly. 
-* Run the app with the command 'npm start' or with 'nodemon' if you want monitoring and auto reload.
-Install nodemon with 'npm install -g nodemon'
+* Run the app with the command `npm start` or with `nodemon` if you want monitoring and auto reload. Install nodemon with `npm install -g nodemon`
 
 
 ## Deploy on Heroku
