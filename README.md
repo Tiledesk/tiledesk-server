@@ -23,12 +23,11 @@ Steps to run with npm:
 npm install -g @tiledesk/tiledesk-server mongodb-runner
 mongodb-runner start
 curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env
-#configure .env file properly
+nano .env #configure .env file properly
 tiledesk-server  
 ```
 
-If you want to load .env file from another path: 
-DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server 
+If you want to load .env file from another path: `DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server`
 
 Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 
@@ -39,7 +38,7 @@ Note: If installation with -g fails due to permission problems (npm ERR! code 'E
 ### Configure .env file 
 ```
 curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/dev/.env.sample --output .env
-#configure .env file properly
+nano .env #configure .env file properly
 ```
 
 ### Running
