@@ -88,24 +88,14 @@ var RequestSchema = new Schema({
   //   // ref: 'lead'
   // },
 
-
-  // ==== REQUESTER_ID====
-
-
-
-  // requester_fullname: {
-  //   type: String,
-  //   required: false
-  // },
+  subject: {
+    type: String
+  },
   first_text: {
     type: String,
     required: true
   },
-  // membersCount: {
-  //   type: Number,
-  //   required: false,
-  //   default:0
-  // },
+
   status: {
     type: Number,
     required: false,
@@ -170,7 +160,6 @@ var RequestSchema = new Schema({
     type: String,
     required: false,
   }, 
-  //rating
   rating: {
     type: Number,
     required: false,

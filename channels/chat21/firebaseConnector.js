@@ -14,7 +14,7 @@ if (chat21Enabled && chat21Enabled == "true"){
 
       var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
 
-      winston.info('firebaseConnector firebaseConfig.databaseURL:'+ firebaseConfig.databaseURL);
+      winston.info('firebaseConnector firebaseConfig.databaseURL:'+ firebaseConfig.databaseUrl);
 
       var private_key = process.env.FIREBASE_PRIVATE_KEY;
       winston.info('firebaseConnector private_key:'+ private_key);
@@ -35,7 +35,7 @@ if (chat21Enabled && chat21Enabled == "true"){
               "client_email": client_email,
               "project_id": firebase_project_id,
             };
-            winston.debug('serviceAccount from env', serviceAccount);
+            winston.debug('firebase serviceAccount from env', serviceAccount);
       }
 
       const admin = require('firebase-admin');

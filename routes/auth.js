@@ -243,6 +243,10 @@ router.post('/signinWithCustomToken', [
     if (!req.user.aud) { //serve??
       return res.status(400).send({ success: false, msg: 'JWT Aud field is required' });
     }
+    // TODO add required jti?
+    // if (!req.user.jti) { 
+    //   return res.status(400).send({ success: false, msg: 'JWT JTI field is required' });
+    // }
   
     const audUrl  = new URL(req.user.aud);
     winston.debug("audUrl: "+ audUrl );

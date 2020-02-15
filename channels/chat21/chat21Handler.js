@@ -87,9 +87,12 @@ class Chat21Handler {
 
                             winston.info("Chat21Handler  lead.update for request ",  request);
                             
-
+                            var groupName = lead.fullname;
+                            if (request.subject) {
+                                groupName=request.subject;
+                            }
                             // update: function(name, owner, attributes, group_id){
-                            chat21.groups.update(lead.fullname, undefined, undefined, request.request_id).then(function(data) {
+                            chat21.groups.update(groupName, undefined, undefined, request.request_id).then(function(data) {
                                 winston.info("Chat21 group updated: " + data);      
                                 chat21Event.emit('group.update', data);                                          
                             }).catch(function(err) {
@@ -169,6 +172,9 @@ class Chat21Handler {
                             var recipient_fullname = "Guest"; 
                             if (message.request && message.request.lead && message.request.lead.fullname) {
                                 recipient_fullname = message.request.lead.fullname;
+                            }
+                            if (message.request && message.request.subject ) {
+                                recipient_fullname = message.request.subject;
                             }
 
                             /*
@@ -304,6 +310,9 @@ class Chat21Handler {
                         var group_name = "Guest"; 
                         if (request.lead) {
                             group_name = request.lead.fullname;
+                        }
+                        if (request.subject) {
+                            group_name = request.subject;
                         }
 
                         chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
@@ -492,106 +501,10 @@ class Chat21Handler {
                 });
             })
             
-            
-            
 
-/*
-            messageEvent.on('message.create.first',  function(message) {          
-
-                winston.info("chat21Handler.message.create.first", message); 
-
-                setImmediate(() => {
-                    if (message.request.channel.name === ChannelConstants.CHAT21) {
-
-                        var firestoreUpdate = {first_message : JSON.parse(JSON.stringify(message))};
-
-                        winston.info("firestoreUpdate", firestoreUpdate); 
-
-                        return firestore.collection('conversations').doc(message.request.request_id).set(firestoreUpdate, { merge: true }).then(function(writeResult) {                            
-                             winston.info('message.create.first saved', writeResult);
-                             chat21Event.emit('firestore.first_message', firestoreUpdate);
-                        }) ;    
-                    }
-                });
-            });
-
-*/
 
 
         }
-
-/*
-     saveNewRequest (request, group_members, app_id) {
-            //creare firestore conversation
-            var newRequest = {};
-
-            newRequest.created_on = admin.firestore.FieldValue.serverTimestamp(); 
-
-            if (request.lead._id) {
-                //newRequest.requester_id = request.requester_id;
-                newRequest.requester_id = request.lead.lead_id;
-            }
-            
-
-            if (request.lead) {
-                newRequest.requester_fullname = request.lead.fullname;
-            }
-            
-            // set projectid. widget send projectid field. ohh noooo
-            // "channel_type":"group","language":"it","metadata":"", ...... , :( "projectid":"5cc2d1554ce7ee00175e07f2",......, "recipient":"support-group-Lde6vlnfK8k8SCgtbUd","recipient_fullname":"aleo1",
-            newRequest.projectid = request.id_project;
-
-            newRequest.first_text = request.first_text;
-            newRequest.departmentid = request.department._id.toString(); 
-    
-            group_members.push("system");
-
-            var group_membersAsObj = {};
-            group_members.forEach(function(prop,index) {
-                group_membersAsObj[prop] = 1;
-            });
-            winston.info('group_membersAsObj', group_membersAsObj);
-            newRequest.members = group_membersAsObj;
-            
-            
-            var membersCount = Object.keys(group_members).length;
-            // newRequest.membersCount = membersCount;
-
-            newRequest.agents = request.agents;
-            newRequest.availableAgents = request.availableAgents;
-    
-            if (request.assignedOperatorId) {
-                newRequest.assigned_operator_id = request.assignedOperatorId;
-            }
-    
-            if (membersCount==2){
-                newRequest.support_status = 100;
-            }else {
-                newRequest.support_status = 200;
-            }
-    
-            if (request.attributes != null) {
-                newRequest.attributes = request.attributes;
-            }
-    
-            newRequest.app_id = app_id;
-    
-            // if (request.messages && request.messages.length>0) {
-            //     newRequest.first_message = request.messages[0];
-            // }
-            
-            
-            winston.info('firestore newRequest', newRequest);
-    
-    
-           
-            return firestore.collection('conversations').doc(request.request_id).set(newRequest, { merge: true }).then(function(writeResult){
-                winston.info('newRequest saved', writeResult);
-                chat21Event.emit('firestore.newRequest', writeResult);
-            }) ;          
-    }
-
-*/
 
     
 }

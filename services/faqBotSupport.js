@@ -67,7 +67,7 @@ class FaqBotSupport {
                             if (botAnswer.score>threshold) {
                                 winston.info('botAnswer.score is high. Not respond with bot sentence ');
                             }else {
-
+//TODO sistema risposte default 
                                 winston.debug('dep_op_response.available_agents.length: ' + dep_op_response.available_agents.length);
                                 if (dep_op_response.available_agents.length>0) {
                                     var message_key = "DEFAULT_CLOSING_SENTENCE_REPLY_MESSAGE";
