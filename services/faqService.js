@@ -1,6 +1,5 @@
 var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
-var request = require('request');
 var winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 

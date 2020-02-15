@@ -1,16 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Faq = require("../models/faq");
-var Faq_kb = require("../models/faq_kb");
-var request = require('request');
-var multer = require('multer')
-var upload = multer()
-const faqBotEvent = require('../event/faqBotEvent');
-var winston = require('../config/winston');
 
-var parsecsv = require("fast-csv");
-csv = require('csv-express');
-csv.separator = ';';
 
 
 
