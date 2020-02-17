@@ -324,7 +324,6 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 
 app.use('/widgets', widgetsLoader);
 
-// TODO check security issue ??? , roleChecker.hasRole('agent') nn va perche utente nn appartine a progetti
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 
 // TODO security issues
