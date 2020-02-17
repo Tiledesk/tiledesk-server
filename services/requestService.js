@@ -192,15 +192,15 @@ class RequestService {
      });
    }
 
-  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
 
     var request_id = 'support-group-'+uuidv4();
     winston.debug("request_id: "+request_id);
     
-    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
+    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject);
   }
 
-  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
 
     if (!departmentid) {
       departmentid ='default';
@@ -244,6 +244,7 @@ class RequestService {
                 requester: project_user_id,
                 lead: lead_id,
                 first_text: first_text,
+                subject: subject,
                 status: status,
                 participants: participants,
                 department: result.department._id,

@@ -99,6 +99,10 @@ router.patch('/:requestid', function (req, res) {
     update.first_text = req.body.first_text;
   }
 
+  if (req.body.subject) {
+    update.subject = req.body.subject;
+  }
+
 
   
   winston.info("Request patch update",update);
@@ -706,11 +710,13 @@ router.get('/csv', function (req, res, next) {
 
 router.get('/:requestid', function (req, res) {
 
-  winston.debug("get request by id ", req.params.requestid);
+  winston.info("get request by id ", req.params.requestid);
 
   Request.findOne({"request_id":req.params.requestid})
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  // .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
   // .populate({path:'requester'})

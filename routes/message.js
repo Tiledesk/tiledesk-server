@@ -60,7 +60,7 @@ function(req, res) {
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                 return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
                   req.body.text, req.body.departmentid, req.body.sourcePage, 
-                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
+                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
 
 
                 // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
