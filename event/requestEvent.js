@@ -21,7 +21,7 @@ requestEvent.on('request.create.simple', function(request) {
             [           
             {path:'department'},
             {path:'lead'},
-            {path:'availableAgents'},                        
+            // {path:'availableAgents'},                        
             {path:'requester',populate:{path:'id_user'}}
             ]
         ,function (err, requestComplete){
