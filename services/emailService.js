@@ -11,7 +11,7 @@ class EmailService {
     winston.info('EmailService baseUrl '+ this.baseUrl);
 
 
-    this.enabled = process.env.EMAIL_ENABLED;
+    this.enabled = process.env.EMAIL_ENABLED || false;
     winston.info('EmailService enabled '+ this.enabled);
   }
 
