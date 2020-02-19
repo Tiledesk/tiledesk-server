@@ -81,42 +81,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                   
 
                     that.welcomeOnJoin(request);
-                        // var botId = BotFromParticipant.getBotFromParticipants(request.participants);
-                        // if (!botId) {                        
-                        // // if (!request.department.id_bot) {
-                            
-                        //     winston.debug("ConciergeBot send welcome bot message");     
-                            
-                        //     if (request.availableAgents.length==0) {
-                               
-                        //         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
-                        //         messageService.send(
-                        //             'system', 
-                        //             'Bot',                                     
-                        //             request.request_id,
-                        //             i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //             request.id_project,
-                        //             'system', 
-                        //             {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                        //         );
-                            
-                                
-                        //     }else {
-
-                        //         messageService.send(
-                        //             'system', 
-                        //             'Bot',                                     
-                        //             request.request_id,
-                        //             i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                        //             request.id_project,
-                        //             'system', 
-                        //             {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                        //         );
-
-                               
-                        //     }
-                        // }
-                    
+                       
                     });
 
 
