@@ -10,6 +10,7 @@ cache:
 env:
 - MONGODB_VERSION=4.0.x MONGODB_TOPOLOGY=standalone
 before_install:
+- npm run enable-ent
 - openssl aes-256-cbc -K $encrypted_f39920166870_key -iv $encrypted_f39920166870_iv
   -in .firebasekey.json.enc -out .firebasekey.json -d
 deploy:
