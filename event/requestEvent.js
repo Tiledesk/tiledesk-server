@@ -20,7 +20,8 @@ requestEvent.on('request.create.simple', function(request) {
         .populate(
             [           
             {path:'department'},
-            {path:'lead'},                        
+            {path:'lead'},
+            {path:'availableAgents'},                        
             {path:'requester',populate:{path:'id_user'}}
             ]
         ,function (err, requestComplete){
