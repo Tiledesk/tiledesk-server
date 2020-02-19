@@ -9,6 +9,10 @@ class EmailService {
   constructor() {
     this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
     winston.info('EmailService baseUrl '+ this.baseUrl);
+
+
+    this.enabled = process.env.EMAIL_ENABLED;
+    winston.info('EmailService enabled '+ this.enabled);
   }
 
 
@@ -34,6 +38,12 @@ class EmailService {
   }
 
   send(to, subject, html) {
+
+    if (!this.enabled) {
+      winston.info('EmailService is disabled. Not sending email');
+      return 0;
+    }
+
     let mailOptions = {
       from: config.from, // sender address
       to: to,
