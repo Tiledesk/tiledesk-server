@@ -34,7 +34,7 @@
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.10",
     "@tiledesk-ent/tiledesk-server-triggers": "^1.0.17",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.3",
-    "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.4"
+    "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.5"
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.0.12",
