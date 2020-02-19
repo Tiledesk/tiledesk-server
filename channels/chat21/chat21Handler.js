@@ -164,7 +164,7 @@ class Chat21Handler {
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata, timestamp){
 
 
-                            var timestamp = new Date.now();
+                            var timestamp = Date.now();
                             // var timestamp = undefined;
                             if (message.attributes && message.attributes.clienttimestamp) {
                                 timestamp = message.attributes.clienttimestamp;
