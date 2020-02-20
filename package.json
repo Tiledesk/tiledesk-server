@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.0.1-beta.30",
+  "version": "2.0.1-beta.31",
   "scripts": {
     "start": "node ./bin/www",
     "watchenv": "nodemon --watch .env --watch ./confenv/.env ./bin/www",
@@ -9,7 +9,7 @@
     "test": "mocha ./test/*.js ./pubmodules/**/test/*.js ./modules/**/test/*.js ./channels/*/test/*.js ./node_modules/@tiledesk-ent/**/test/*.js  --exit",
     "test:int": "mocha ./test-int/*.js  ./pubmodules/**/test-int/*.js ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
     "posttest": "mongodb-runner stop",
-    "heroku-prebuild": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc",
+    "preinstall": "if [ $ENABLE_ENTERPRISE_MODULE ]; then npm enable-ent; fi",
     "enable-ent": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc"
   },
   "private": false,
