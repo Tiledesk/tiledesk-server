@@ -21,6 +21,8 @@ requestEvent.on('request.create.simple', function(request) {
             [           
             {path:'department'},
             {path:'lead'},
+            {path:'participatingBots'},
+            {path:'participatingAgents'},          
             // {path:'availableAgents'},                        
             {path:'requester',populate:{path:'id_user'}}
             ]
