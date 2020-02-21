@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+// mongoose.set("debug", true);
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Channel = require('../models/channel');
@@ -113,7 +114,26 @@ var RequestSchema = new Schema({
   participants: {  //TODO trasformare in objectid di tipo project_user
     type: Array,
     required: false,
-    index: true
+    index: true,
+    // set: function(v) {
+    //   console.log("sdsadsadsadsadsadasda", v)
+    //   // console.log("sdsadsadsadsadsadasda2", this)
+    //   this.participantsAgents = [];
+    //   this.participantsBots = [];
+    //   if (v) {
+    //     v.forEach(participant =>  { 
+    //       console.log("sdsadsadsadsadsadasda participant ", participant)     
+    //       if (participant.indexOf("bot_")== -1) {
+    //         this.participantsAgents.push(participant);
+    //         console.log("sdsadsadsadsadsadasda participant2 ", participant) 
+    //       }else {
+    //         this.participantsBots.push(participant);
+    //       }
+    //     });  
+    //   }
+    //   console.log("sdsadsadsadsadsadasda return ", v)
+    //   return v;
+    // }
   },
 
   department: {
@@ -170,7 +190,7 @@ var RequestSchema = new Schema({
   }, 
 
 
-  // all the agents of the project or the department at the request time 
+  // all the agents of the project or the department at the request creation time 
   // renameit
   agents: [ProjectUserSchema],
   
@@ -225,6 +245,7 @@ var RequestSchema = new Schema({
 
 },{
   timestamps: true,
+  toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
@@ -251,9 +272,22 @@ RequestSchema.virtual('requester_id').get(function () {
 
 
 
-RequestSchema.virtual('participantsObj', {
+RequestSchema.virtual('participatingAgents', {
   ref: 'user', // The model to use
-  localField: 'participants', // Find people where `localField`
+  // localField: 'participants', // Find people where `localField`
+  // localField: 'participantsAgents',
+  localField: function() {
+    this.participantsAgents = [];
+    if (this.participants && this.participants.length>0) {
+      this.participants.forEach(participant => {      
+        if (participant.indexOf("bot_")== -1) {
+          this.participantsAgents.push(participant);
+        }
+      });
+      return "participantsAgents";
+    }
+  
+  },
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
@@ -275,27 +309,31 @@ RequestSchema.virtual('participantsObj', {
 //   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 // });
 
-RequestSchema.virtual('assignedOperatorId').get(function () {
-  if (this.participants && this.participants.lenght>0) {
-    return this.participants[0];
-  }else {
-    return null;
-  }
-});
+
+// TODO not used
+// RequestSchema.virtual('assignedOperatorId').get(function () {
+//   if (this.participants && this.participants.lenght>0) {
+//     return this.participants[0];
+//   }else {
+//     return null;
+//   }
+// });
+
+
 // RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
 RequestSchema.virtual('availableAgents').get(function () {
-  var project_users_available = this.agents.filter(function (projectUser) {
-    if (projectUser.user_available == true) {
-      return true;
-    }
-  });
-  winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
+    var project_users_available = this.agents.filter(function (projectUser) {
+      if (projectUser.user_available == true) {
+        return true;
+      }
+    });
+    winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
 
-  if (project_users_available && project_users_available.length>0){
-    return project_users_available;
-  }else {
-    return [];
-  }
+    if (project_users_available && project_users_available.length>0){
+      return project_users_available;
+    }else {
+      return [];
+    }
   
 });
 
@@ -308,6 +346,71 @@ RequestSchema.virtual('availableAgents').get(function () {
 //   });
 // };
 
+
+/*
+TODO UNCOMMET
+// RequestSchema.virtual('participatingBots').get(function () {
+//   return mongoose.model('faq_kb').find({_id: { $in : this.getBotId() } });
+// });
+
+
+
+*/
+
+// RequestSchema.virtual('botid').get(function () {
+  
+//   if ( this.participants == null) {
+//     return null;
+// }
+
+// var participants = this.participants;
+// winston.debug("participants", participants);
+
+// var botIdTmp;
+
+// if (participants) {
+//   participants.forEach(function(participant) { 
+//     //winston.debug("participant", participant);
+//     // bot_HERE
+//     if (participant.indexOf("bot_")> -1) {
+//       botIdTmp = participant.replace("bot_","");
+//       //winston.debug("botIdTmp", botIdTmp);
+//       //break;        
+//     }
+//   });
+//   winston.info("botIdTmp:"+ botIdTmp);
+//   return botIdTmp;
+// }else {
+//   return null;
+// }
+// });
+
+
+
+RequestSchema.virtual('participatingBots', {
+  ref: 'faq_kb', // The model to use
+  // localField: "participantsBots",
+  localField: function() {
+    this.participantsBots = [];
+    if (this.participants && this.participants.length>0) {
+      this.participants.forEach(participant => {      
+        if (participant.indexOf("bot_")> -1) {
+          this.participantsBots.push(participant.replace("bot_",""));
+        }
+      });
+      return "participantsBots";
+    }
+  },
+  foreignField: '_id', // is equal to `foreignField`
+  justOne: false,
+  //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+/*
+// RequestSchema.methods.getBot = function(cb) {
+//   return mongoose.model('faq_kb').find({_id: { $in : this.getBotId() } });
+// };
+*/
 
 RequestSchema.method("getBotId", function () {
       
