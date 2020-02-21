@@ -2,10 +2,12 @@
 process.env.NODE_ENV = 'test';
 
 var User = require('../models/user');
+
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
 var userService = require('../services/userService');
 var leadService = require('../services/leadService');
+
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -13,6 +15,9 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
 var winston = require('../config/winston');
+
+var Department = require('../models/department');
+var faqService = require('../services/faqService');
 
 // chai.config.includeStack = true;
 
@@ -93,7 +98,7 @@ describe('RequestRoute', () => {
             .end(function(err, res) {
                 //console.log("res",  res);
 
-                // console.log("res.body",  res.body);
+                 console.log("res.body",  res.body);
 
                 res.should.have.status(200);
                 res.body.should.be.a('object');
@@ -101,7 +106,9 @@ describe('RequestRoute', () => {
                 res.body.should.have.property('department').not.eql(null);
                 // res.body.should.have.property('lead').eql(null);
                 res.body.should.have.property('request_id').eql("request_requestroute-getbyid");                
-                res.body.should.have.property('requester').not.eql(null);                
+                res.body.should.have.property('requester').not.eql(null);        
+                expect(res.body.participatingAgents.length).to.equal(1);        
+                expect(res.body.participatingBots.length).to.equal(0);        
                 expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
                done();
             });
@@ -114,6 +121,69 @@ describe('RequestRoute', () => {
   });
 });
     });
+});
+
+
+it('getbyidWithPartecipatingBots', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-signup-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+
+
+      faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                    
+
+
+        Department.findOneAndUpdate({id_project: savedProject._id, default:true}, {id_bot:savedBot._id},{ new: true, upsert: false }, function (err, updatedDepartment) {
+
+          winston.error("err", err);
+          winston.info("updatedDepartment", updatedDepartment.toObject());
+
+
+    // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+    //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+      requestService.createWithIdAndRequester("request_requestroute-getbyidWithPartecipatingBots", savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
+        winston.debug("resolve", savedRequest.toObject());
+       
+
+        chai.request(server)
+          .get('/'+ savedProject._id + '/requests/'+savedRequest.request_id)
+          .auth(email, pwd)
+          .end(function(err, res) {
+              //console.log("res",  res);
+
+               console.log("res.body",  res.body);
+
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              
+              res.body.should.have.property('department').not.eql(null);
+                            
+              // res.body.should.have.property('lead').eql(null);
+              res.body.should.have.property('request_id').eql("request_requestroute-getbyidWithPartecipatingBots");                
+              res.body.should.have.property('requester').not.eql(null);                
+              expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
+              expect(res.body.participatingAgents.length).to.equal(0);        
+              expect(res.body.participatingBots.length).to.equal(1);
+             done();
+          });
+          // .catch(function(err) {
+          //     console.log("test reject", err);
+          //     assert.isNotOk(err,'Promise error');
+          //     done();
+          // });
+  // });
+});
+});
+      });
+    });
+  });
 });
 
 
@@ -150,7 +220,8 @@ describe('RequestRoute', () => {
                 expect(res.body.requests[0].requester).to.not.equal(null);
                 console.log("res.body.requests[0].requester",  res.body.requests[0].requester);
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
-          
+                // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
+                // expect(res.body.requests[0].participatingBots.length).to.equal(0);
                done();
             });
             // .catch(function(err) {
