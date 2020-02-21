@@ -287,8 +287,8 @@ RequestSchema.virtual('participatingAgents', {
         
         //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
           if (participant.indexOf("bot_")== -1) {
-          this.participantsAgents.push(participant);
-        }
+            this.participantsAgents.push(participant);
+          }
       });     
     }
     return "participantsAgents";
@@ -400,7 +400,7 @@ RequestSchema.virtual('participatingBots', {
     this.participantsBots = [];
     if (this.participants && this.participants.length>0) {
       this.participants.forEach(participant => {      
-        if (participant && participant.indexOf != undefined &&  participant.indexOf("bot_")> -1) {
+        if (participant.indexOf("bot_")> -1) {
           this.participantsBots.push(participant.replace("bot_",""));
         }
       });      
