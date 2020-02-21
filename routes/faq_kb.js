@@ -86,7 +86,7 @@ router.post('/askbot', function (req, res) {
      
     }else {
       winston.info('external query: ');
-      return res.status(400).send({ success: false, msg: 'Error getting object.' });
+      return res.status(400).send({ success: false, msg: 'askbot on external bot.' });
     }
    
     
