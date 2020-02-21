@@ -278,14 +278,16 @@ RequestSchema.virtual('participatingAgents', {
   // localField: 'participantsAgents',
   localField: function() {
     this.participantsAgents = [];
+    console.log("this.participants",this.participants);
     if (this.participants && this.participants.length>0) {
       this.participants.forEach(participant => {      
+        console.log("participants",participant);
         if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
           this.participantsAgents.push(participant);
         }
-      });
-      return "participantsAgents";
+      });     
     }
+    return "participantsAgents";
   
   },
   foreignField: '_id', // is equal to `foreignField`
@@ -397,9 +399,9 @@ RequestSchema.virtual('participatingBots', {
         if (participant && participant.indexOf != undefined &&  participant.indexOf("bot_")> -1) {
           this.participantsBots.push(participant.replace("bot_",""));
         }
-      });
-      return "participantsBots";
+      });      
     }
+    return "participantsBots";
   },
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
