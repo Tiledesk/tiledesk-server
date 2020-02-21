@@ -278,12 +278,12 @@ RequestSchema.virtual('participatingAgents', {
   // localField: 'participantsAgents',
   localField: function() {
     this.participantsAgents = [];
-    console.log("this.participants",this.participants);
-    console.log("this._id",this._id);
+    // console.log("this.participants",this.participants);
+    // console.log("this._id",this._id);
     if (this.participants && this.participants.length>0) {
       this.participants.forEach(participant => {      
-        console.log("participant",participant);
-        console.log(" typeof participant", typeof participant);
+        // console.log("participant",participant);
+        // console.log(" typeof participant", typeof participant);
         
         //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
           if (participant.indexOf("bot_")== -1) {
