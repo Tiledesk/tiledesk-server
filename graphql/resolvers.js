@@ -84,6 +84,8 @@ const resolvers = {
           return await Request.find(query)
             .populate('department').
             populate('lead').
+            populate('participatingBots').
+            populate('participatingAgents'). 
             populate({path:'requester',populate:{path:'id_user'}});
         },
         async messages() {

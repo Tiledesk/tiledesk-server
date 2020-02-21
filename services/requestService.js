@@ -71,6 +71,8 @@ class RequestService {
         .findOne({request_id: request_id, id_project: id_project})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
 
@@ -138,6 +140,8 @@ class RequestService {
          .findOne({request_id: request_id, id_project: id_project})
          .populate('lead')
          .populate('department')
+         .populate('participatingBots')
+         .populate('participatingAgents')  
          .populate({path:'requester',populate:{path:'id_user'}})
          .exec( function(err, request) {
  
@@ -431,6 +435,8 @@ class RequestService {
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, updatedRequest) {
 
@@ -458,6 +464,8 @@ class RequestService {
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, updatedRequest) {
             if (err) {
@@ -566,6 +574,8 @@ class RequestService {
         
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
 
@@ -651,6 +661,8 @@ class RequestService {
       .findOne({request_id: request_id, id_project: id_project})
       .populate('lead')
       .populate('department')
+      .populate('participatingBots')
+      .populate('participatingAgents')  
       .populate({path:'requester',populate:{path:'id_user'}})
       .exec( function(err, request) {
         if (err) {
@@ -699,6 +711,8 @@ class RequestService {
       .findOne({request_id: request_id, id_project: id_project})      
       .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
         if (err){
@@ -748,6 +762,8 @@ class RequestService {
         .findOne({request_id: request_id, id_project: id_project})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
         
@@ -803,6 +819,8 @@ class RequestService {
     Request.findOne({"request_id":request_id, id_project:id_project})
     .populate('lead')
     .populate('department')
+    .populate('participatingBots')
+    .populate('participatingAgents')  
     .populate({path:'requester',populate:{path:'id_user'}})
     .exec( function(err, request) {
         if (err) {

@@ -110,6 +110,8 @@ router.patch('/:requestid', function (req, res) {
   return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false })
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   .exec( function(err, request) {
        
@@ -301,6 +303,8 @@ router.patch('/:requestid/attributes',  function (req, res) {
   Request.findOne({"request_id":req.params.requestid, id_project:id_project})
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   .exec( function(err, request) {
       if (err) {
@@ -716,7 +720,7 @@ router.get('/:requestid', function (req, res) {
   .populate('lead')
   .populate('department')
   .populate('participatingBots')
-  // .populate('participatingAgents')  
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
   // .populate({path:'requester'})
