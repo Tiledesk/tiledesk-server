@@ -549,7 +549,6 @@ router.get('/', function (req, res, next) {
       requests: results[0]
     };
     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
-    winston.info('finito')
     return res.json(objectToReturn);
 
   }).catch(function(err){
