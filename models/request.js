@@ -281,7 +281,9 @@ RequestSchema.virtual('participatingAgents', {
     console.log("this.participants",this.participants);
     if (this.participants && this.participants.length>0) {
       this.participants.forEach(participant => {      
-        console.log("participants",participant);
+        console.log("participant",participant);
+        console.log(" typeof participant", typeof participant);
+        
         //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
           if (participant.indexOf("bot_")== -1) {
           this.participantsAgents.push(participant);
