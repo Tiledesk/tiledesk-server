@@ -530,6 +530,8 @@ router.get('/', function (req, res, next) {
   var q1 = Request.find(query).
     skip(skip).limit(limit).
     populate('department').
+    populate('participatingBots').
+    populate('participatingAgents').
     populate('lead').
     populate({path:'requester',populate:{path:'id_user'}}).
     sort(sortQuery).
