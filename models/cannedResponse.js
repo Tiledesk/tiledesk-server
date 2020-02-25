@@ -37,7 +37,7 @@ var CannedResponseSchema = new Schema({
 //  {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
 
- var CannedResponse = mongoose.model('CannedResponse', CannedResponseSchema);
+ var CannedResponse = mongoose.model('cannedResponse', CannedResponseSchema);
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   CannedResponse.syncIndexes();
