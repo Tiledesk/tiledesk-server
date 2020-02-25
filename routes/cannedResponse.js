@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var CannedResponse = require("../models/CannedResponse");
+var CannedResponse = require("../models/cannedResponse");
 var winston = require('../config/winston');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
