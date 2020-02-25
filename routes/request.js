@@ -390,7 +390,7 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lte:1000} };
+  var query = { "id_project": req.projectid, "status": {$lt:1000} };
 
   var projectuser = req.projectuser;
 
