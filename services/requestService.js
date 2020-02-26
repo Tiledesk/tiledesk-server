@@ -652,7 +652,7 @@ class RequestService {
   setParticipantsByRequestId(request_id, id_project, newparticipants) {
     
     //TODO validate participants
-    
+    // validate if array of string newparticipants
     return new Promise(function (resolve, reject) {
       
 
@@ -705,7 +705,7 @@ class RequestService {
 
 
 //TODO control if member is a valid project_user of the project
-
+// validate member is string
     return new Promise(function (resolve, reject) {
       return Request       
       .findOne({request_id: request_id, id_project: id_project})      
