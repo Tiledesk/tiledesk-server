@@ -14,3 +14,9 @@ mocha trigger.js   --grep 'Trigger.EventEmitCreateRequest'
 
 
 mocha ./test/authenticationJwt.js    --grep 'AuthenticationJWT.signinJWt-Project-external-user-YESAudYesSubject'
+
+mocha ./test/requestRoute.js    --grep 'RequestRoute.getbyidWithPartecipatingBots'
+
+mocha trigger.js   --grep 'Trigger.EventEmitCreateRequest'
+
+
