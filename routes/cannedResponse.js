@@ -82,7 +82,19 @@ router.delete('/:cannedResponseid/physical', function (req, res) {
   });
 });
 
+router.get('/:cannedResponseid', function (req, res) {
+  winston.debug(req.body);
 
+  CannedResponse.findById(req.params.cannedResponseid, function (err, cannedResponse) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!cannedResponse) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    res.json(cannedResponse);
+  });
+});
 
 router.get('/', function (req, res) {
   var limit = 40; // Number of CannedResponses per page
