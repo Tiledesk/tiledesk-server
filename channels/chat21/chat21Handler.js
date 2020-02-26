@@ -125,7 +125,7 @@ class Chat21Handler {
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on faqbot.create ",  userData);
+                winston.info("Chat21Handler on faqbot.create ",  bot);
 
                 chat21.auth.setAdminToken(adminToken);
 
@@ -149,7 +149,7 @@ class Chat21Handler {
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on faqbot.create ",  userData);
+                winston.info("Chat21Handler on faqbot.create ",  bot);
 
                 chat21.auth.setAdminToken(adminToken);
 
