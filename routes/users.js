@@ -4,6 +4,7 @@ var router = express.Router();
 var User = require("../models/user");
 var emailService = require("../services/emailService");
 var winston = require('../config/winston');
+const authEvent = require('../event/authEvent');
 
 /* GET users listing. */
 // router.get('/', function (req, res, next) {
@@ -44,6 +45,9 @@ router.put('/', function (req, res) {
     if (!updatedUser) {
       return res.status(404).send({ success: false, msg: 'User not found' });
     }
+
+    authEvent.emit("user.update", {updatedUser: updatedUser, req: req});     
+
     res.json({ success: true, updatedUser });
   });
 });
