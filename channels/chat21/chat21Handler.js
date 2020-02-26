@@ -72,8 +72,8 @@ class Chat21Handler {
 
         // su projectUser create e update
         authEvent.on('user.signup', function(userData) {
-            var firstName = userData.savedUser.firstName;
-            var lastName = userData.savedUser.lastName;
+            var firstName = userData.savedUser.firstname;
+            var lastName = userData.savedUser.lastname;
             var email = userData.savedUser.email;
             var current_user = userData.savedUser.id;
 
@@ -96,9 +96,8 @@ class Chat21Handler {
 
 
         authEvent.on('user.update', function(userData) {
-            var firstName = userData.updatedUser.firstName;
-            var lastName = userData.updatedUser.lastName;
-            var email = userData.updatedUser.email;
+            var firstName = userData.updatedUser.firstname;
+            var lastName = userData.updatedUser.lastname;            
             var current_user = userData.updatedUser.id;
 
             setImmediate(() => {
