@@ -5,7 +5,9 @@ var config = require('../config/database');
 var winston = require('../config/winston');
 var dbUrl = process.env.MONGODB_LOGS_URI || config.databaselogs || process.env.MONGODB_URI;
 winston.info('ReqLogSchema dbUrl: '+dbUrl);
-var conn      = mongoose.connect(dbUrl, { "useNewUrlParser": true, "autoIndex": true });
+
+var conn      = mongoose.createConnection(dbUrl, { "autoIndex": true });	
+// var conn      = mongoose.connect(dbUrl, { "useNewUrlParser": true, "autoIndex": true });
 
 
 
