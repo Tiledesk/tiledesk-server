@@ -5,7 +5,8 @@ var config = require('../config/database');
 var winston = require('../config/winston');
 var dbUrl = process.env.MONGODB_LOGS_URI || config.databaselogs || process.env.MONGODB_URI;
 winston.info('ReqLogSchema dbUrl: '+dbUrl);
-var conn      = mongoose.createConnection(dbUrl, { "autoIndex": true });
+var conn      = mongoose.connect(dbUrl, { "useNewUrlParser": true, "autoIndex": true });
+
 
 
 // db.getCollection('reqlogs').aggregate([ {$group:{_id:{id_project:"$id_project"},  "count":{$sum:1}}},{$sort:{"count":-1}}])
