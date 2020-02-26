@@ -15,7 +15,9 @@ services:
    ports:
       - "4500:80" # specify port forewarding
    networks:
-         - frontend
+         frontend: 
+            aliases:
+                - dashboard
   web-widget:
    image: chat21/chat21-web-widget:latest-remoteconfig
    container_name: chat21-web-widget
@@ -33,7 +35,9 @@ services:
    ports:
       - "8080:80" # specify port forewarding
    networks:
-      - frontend
+      frontend: 
+            aliases:
+                - ionic
   proxy:
     #image: nginx
     #container_name: proxy
@@ -48,10 +52,6 @@ services:
             aliases:
                 - proxy
         backend:
-    links:
-      - ionic
-      - dashboard
-      - server
     command: [nginx-debug, '-g', 'daemon off;']
   cloud-functions:
    image: chat21/chat21-cloud-functions
@@ -62,11 +62,13 @@ services:
      - "9005:9005" # specify port forewarding
      - "5000:5000"
   server:
-    image: tiledesk/tiledesk-server:beta
+    image: tiledesk/tiledesk-server
     container_name: tiledesk-server
     restart: always
     networks:
-         - backend
+          backend:
+            aliases:
+                - server
     volumes:    
         #  - type: bind
         #    source: ./
@@ -92,8 +94,6 @@ services:
       - mongo
     ports:
       - "3000:3000"
-    links:
-      - mongo
   mongo:
     container_name: mongo
     image: mongo
@@ -101,7 +101,9 @@ services:
     volumes:
       - tiledesk-datadb:/data/db
     networks:
-         - backend
+          backend:
+            aliases:
+                - mongo
       ### Uncoment below if you want to map mongodb port
       #ports:
       #   - "27017:27017"
@@ -110,8 +112,8 @@ services:
     image: wernight/ngrok
     command: ngrok http server:3000
     networks:
-     - backend
+          backend:
+            aliases:
+                - ngrok
     ports:
-     -  '4040:4040'
-    links:
-      - "server"
+     -  '4040:4040

@@ -23,16 +23,22 @@ var messageService = require('../services/messageService');
 var projectService = require('../services/projectService');
 var departmentService = require('../services/departmentService');
 var leadService = require('../services/leadService');
+var userService = require('../services/userService');
 
 var Request = require("../models/request");
+var requestEvent = require('../event/requestEvent');
 
 describe('RequestService', function () {
 
-  var userid = "5badfe5d553d1844ad654072";
+  // var userid = "5badfe5d553d1844ad654072";
 
   it('createWithIdAndCreateNewLead', function (done) {
     // this.timeout(10000);
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
 
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
      projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
 
@@ -66,8 +72,75 @@ describe('RequestService', function () {
         });
     });
   });
+    });
+  });
+
+
+
+
+
+  it('createWithIdAndCreateNewLeadAndCheckRequestEvent', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+
+     projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+
+      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+
+        requestEvent.on('request.create', function(savedRequest) {
+
+          if (savedRequest.request_id === "createWithIdAndCreateNewLeadAndCheckRequestEvent" ) {
+
+        
+              console.log("savedRequest",savedRequest.toJSON());
+
+              winston.debug("resolve", savedRequest.toObject());
+              expect(savedRequest.request_id).to.equal("createWithIdAndCreateNewLeadAndCheckRequestEvent");
+              expect(savedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+              expect(savedRequest.first_text).to.equal("first_text");
+              expect(savedRequest.agents).to.have.lengthOf(1);
+              expect(savedRequest.status).to.equal(200);
+              expect(savedRequest.participants).to.have.lengthOf(1);
+              expect(savedRequest.participants).to.contains(userid);
+              console.log("savedRequest.participants[0]", savedRequest.participants[0]);
+              expect(savedRequest.participants[0].toString()).to.equal(userid);
+              
+              expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
+
+              expect(savedRequest.participatingAgents.length).to.equal(1);        
+              expect(savedRequest.participatingBots.length).to.equal(0);
+              expect(savedRequest.availableAgents.length).to.equal(1);
+              
+              // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
+              // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
+
+              expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+              // aiuto
+              // expect(savedRequest.department).to.equal("requester_id1");
+              done();
+        }
+
+        });
+       requestService.createWithIdAndRequester("createWithIdAndCreateNewLeadAndCheckRequestEvent", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+         
+        }).catch(function(err) {
+            console.log("test reject",err);
+            assert.isNotOk(err,'Promise error');
+            done();
+        });
+    });
+  });
+});
 
   });
+
 
 
 
@@ -111,11 +184,15 @@ describe('RequestService', function () {
 
 
 
-  var userid = "5badfe5d553d1844ad654072";
 
   it('createWithIdAndCreatedBy', function (done) {
     // this.timeout(10000);
 
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
      projectService.createAndReturnProjectAndProjectUser("createWithIdAndCreatedBy", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
       // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
@@ -144,7 +221,7 @@ describe('RequestService', function () {
             done();
         });
     });
-
+  });
   });
 
 
@@ -152,6 +229,12 @@ describe('RequestService', function () {
 
   it('createWithIdWithPooledDepartment', function (done) {
     // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
      projectService.createAndReturnProjectAndProjectUser("createWithIdWithPooledDepartment", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
@@ -175,10 +258,17 @@ describe('RequestService', function () {
     });
   });
   });
+  });
 
  
   it('updageWaitingTimeRequest', function (done) {
     this.timeout(1000);
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+
     var messageSender = "5badfe5d553d1844ad654072";
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
@@ -206,6 +296,7 @@ describe('RequestService', function () {
                   });
             }, 500);
         });
+      });
   });
 });
 
@@ -216,6 +307,12 @@ describe('RequestService', function () {
 
 
   it('closeRequest', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
         var savedProject = savedProjectAndPU.project;
@@ -238,6 +335,7 @@ describe('RequestService', function () {
                     done();
                   });
               });
+            });
           });
     });
   });
@@ -245,6 +343,12 @@ describe('RequestService', function () {
 
 
   it('closeRequestAndSendTranscript', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
     projectService.createAndReturnProjectAndProjectUser("test1", userid, {email: {autoSendTranscriptToRequester:true}}).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
@@ -269,6 +373,7 @@ describe('RequestService', function () {
                   done();
                 });
             });
+          });
         });
       });
   });
@@ -277,6 +382,12 @@ describe('RequestService', function () {
 
 
   it('reopenRequest', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
@@ -306,6 +417,7 @@ describe('RequestService', function () {
                   done();
                 });
             });
+          });
           });   
   });
 });
@@ -313,6 +425,12 @@ describe('RequestService', function () {
 
 
   it('addparticipant', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
   projectService.createAndReturnProjectAndProjectUser("addparticipant-project", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
@@ -339,6 +457,7 @@ describe('RequestService', function () {
           assert.isNotOk(err,'Promise error');
           done();
       });
+    });
 
     });
   });
@@ -349,6 +468,12 @@ describe('RequestService', function () {
 
 
 it('removeparticipant', function (done) {
+
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
 
   projectService.createAndReturnProjectAndProjectUser("removeparticipant-project", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
@@ -378,12 +503,19 @@ it('removeparticipant', function (done) {
     });
   });
 });
+});
 
 
 
 
 
 it('closeRequestAndRemoveParticipant', function (done) {
+
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
 
   projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
@@ -412,6 +544,7 @@ it('closeRequestAndRemoveParticipant', function (done) {
               });
           });
       });
+    });
 });
 });
 

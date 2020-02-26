@@ -3,5 +3,5 @@ module.exports = {
   'username': 'postmaster@mg.tiledesk.com',
   'from': 'Tiledesk Notification <postmaster@mg.tiledesk.com>',
   'bcc': 'tiledesknotification@frontiere21.it',
-  'baseUrl':'https://support.tiledesk.com/dashboard',
+  'baseUrl':'https://console.tiledesk.com/dashboard',
 };

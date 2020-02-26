@@ -94,7 +94,7 @@ router.get('/csv', function (req, res, next) {
   var skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lte:1000}};
+  var query = { "id_project": req.projectid, "status": {$lt:1000}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
@@ -165,7 +165,7 @@ router.get('/', function (req, res) {
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": {$lte:1000}};
+  var query = { "id_project": req.projectid, "status": {$lt:1000}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);

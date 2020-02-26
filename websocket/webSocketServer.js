@@ -252,6 +252,8 @@ class WebSocketServer {
                 Request.find(query)
                 .populate('lead')
                 .populate('department')
+                .populate('participatingBots')
+                .populate('participatingAgents')  
                 .populate({path:'requester',populate:{path:'id_user'}})
                 .sort({updatedAt: 'desc'})
                 .limit(100)
@@ -315,6 +317,8 @@ class WebSocketServer {
                   Request.findOne(query)
                   .populate('lead')
                   .populate('department')
+                  .populate('participatingBots')
+                  .populate('participatingAgents')  
                   .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'asc'}).exec(function(err, request) { 
                   

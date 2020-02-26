@@ -197,7 +197,6 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     update.attributes = req.body.attributes;
   }
 
-  winston.info("qui2", update);
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {

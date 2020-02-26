@@ -1,5 +1,4 @@
 
-// unused
 module.exports = function(req, res, next) {
         // winston.debug("valid-token");
         var token = getToken(req.headers);

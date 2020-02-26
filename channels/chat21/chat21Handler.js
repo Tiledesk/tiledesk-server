@@ -1,5 +1,7 @@
 
 const messageEvent = require('../../event/messageEvent');
+const authEvent = require('../../event/authEvent');
+const botEvent = require('../../event/botEvent');
 const requestEvent = require('../../event/requestEvent');
 var messageService = require('../../services/messageService');
 //var chatUtil = require('../../services/messageService');
@@ -64,6 +66,109 @@ class Chat21Handler {
         var that = this;
         winston.info("Chat21Handler listener start ");
         
+        // POST https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/contacts
+        // PUT https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/contacts
+        // {"firstname":"Andrea","lastname":"Leo","email":"andrea.leo@frontiere21.it"}
+
+        // su projectUser create e update
+        authEvent.on('user.signup', function(userData) {
+            var firstName = userData.savedUser.firstname;
+            var lastName = userData.savedUser.lastname;
+            var email = userData.savedUser.email;
+            var current_user = userData.savedUser.id;
+
+            setImmediate(() => {
+                winston.info("Chat21Handler on user.signup ",  userData);
+
+                chat21.auth.setAdminToken(adminToken);
+
+                // create: function(firstname, lastname, email, current_user){
+                chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {
+                    winston.info("Chat21 contact created: " + data);      
+                    chat21Event.emit('contact.create', data);                                          
+                }).catch(function(err) {
+                    winston.error("Error creating chat21 contact ", err);
+                    chat21Event.emit('contact.create.error', err);
+                });
+
+            });
+        });
+
+
+        authEvent.on('user.update', function(userData) {
+            var firstName = userData.updatedUser.firstname;
+            var lastName = userData.updatedUser.lastname;            
+            var current_user = userData.updatedUser.id;
+
+            setImmediate(() => {
+                winston.info("Chat21Handler on user.update ",  userData);
+
+                chat21.auth.setAdminToken(adminToken);
+
+                // update: function(firstname, lastname, current_user){
+                chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
+                    winston.info("Chat21 contact updated: " + data);      
+                    chat21Event.emit('contact.update', data);                                          
+                }).catch(function(err) {
+                    winston.error("Error updating chat21 contact ", err);
+                    chat21Event.emit('contact.update.error', err);
+                });
+
+            });
+        });
+
+
+        botEvent.on('faqbot.create', function(bot) {
+            var firstName = bot.name;
+            var lastName = "";
+            var email = "";
+            var current_user = "bot_"+bot.id;
+
+            setImmediate(() => {
+                winston.info("Chat21Handler on faqbot.create ",  bot);
+
+                chat21.auth.setAdminToken(adminToken);
+
+                // create: function(firstname, lastname, email, current_user){
+                chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {
+                    winston.info("Chat21 contact created: " + data);      
+                    chat21Event.emit('contact.create', data);                                          
+                }).catch(function(err) {
+                    winston.error("Error creating chat21 contact ", err);
+                    chat21Event.emit('contact.create.error', err);
+                });
+
+            });
+        });
+
+
+
+        botEvent.on('faqbot.update', function(bot) {
+            var firstName = bot.name;
+            var lastName = "";
+            var current_user = "bot_"+bot.id;
+
+            setImmediate(() => {
+                winston.info("Chat21Handler on faqbot.create ",  bot);
+
+                chat21.auth.setAdminToken(adminToken);
+
+               // update: function(firstname, lastname, current_user){
+                chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
+                    winston.info("Chat21 contact updated: " + data);      
+                    chat21Event.emit('contact.update', data);                                          
+                }).catch(function(err) {
+                    winston.error("Error updating chat21 contact ", err);
+                    chat21Event.emit('contact.update.error', err);
+                });
+
+            });
+        });
+
+
+    
+
+
          // leadEvent.on('update')change group name wirth fullname)
          leadEvent.on('lead.update', function(lead) {
             setImmediate(() => {
@@ -164,7 +269,8 @@ class Chat21Handler {
                             // sendToGroup: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata, timestamp){
 
 
-                            var timestamp = undefined;
+                            var timestamp = Date.now();
+                            // var timestamp = undefined;
                             if (message.attributes && message.attributes.clienttimestamp) {
                                 timestamp = message.attributes.clienttimestamp;
                             }

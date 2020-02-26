@@ -77,6 +77,7 @@ roundRobin(operatorSelectedEvent) {
       return resolve(operatorSelectedEvent);
     }
 
+    // db.getCollection('requests').find({id_project: "5c12662488379d0015753c49", participants: { $exists: true, $ne: [] }}).sort({_id:-1}).limit(1)
     
       // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
       let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
@@ -118,7 +119,7 @@ roundRobin(operatorSelectedEvent) {
           //   at /Users/andrealeo/dev/chat21/tiledesk-server/services/requestService.js:55:56
           //   at processTicksAndRejections (internal/process/next_tick.js:81:5)
           // (node:74274) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)          
-          if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0){
+          if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0) {
             winston.info('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
             return resolve(operatorSelectedEvent);
           }
@@ -295,12 +296,18 @@ getOperators(departmentid, projectid, nobot) {
 
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
-        return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {
+        // riprodurre su v2
+         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {          
+          // uni error round robin
+        //return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {
+
           // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
           if (err) {
             // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER - ERR ', err);
             return reject(err);
           }
+          winston.debug("project_users",project_users);
+          
           if (project_users && project_users.length > 0) {
             // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT USER (IN THE GROUP) LENGHT ', project_users.length);
 

@@ -10,7 +10,6 @@ var winston = require('../config/winston');
 router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, type)
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type).then(function(savedFaq_kb) {
-    botEvent.emit('faqbot.create', savedFaq_kb);
     if (savedFaq_kb.type==="internal") {      
 
       faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
@@ -87,7 +86,7 @@ router.post('/askbot', function (req, res) {
      
     }else {
       winston.info('external query: ');
-      return res.status(400).send({ success: false, msg: 'Error getting object.' });
+      return res.status(400).send({ success: false, msg: 'askbot on external bot.' });
     }
    
     

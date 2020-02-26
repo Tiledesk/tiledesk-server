@@ -44,7 +44,9 @@ function populateMessage(message, eventPrefix) {
   
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
-  populate('department').        
+  populate('department'). 
+  populate('participatingBots').
+  populate('participatingAgents').        
   populate({path:'requester',populate:{path:'id_user'}}).
   exec(function (err, request) {
 
@@ -120,7 +122,9 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
   
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
-  populate('department').        
+  populate('department').  
+  populate('participatingBots').
+  populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
   exec(function (err, request) {
 

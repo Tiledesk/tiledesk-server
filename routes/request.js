@@ -99,6 +99,10 @@ router.patch('/:requestid', function (req, res) {
     update.first_text = req.body.first_text;
   }
 
+  if (req.body.subject) {
+    update.subject = req.body.subject;
+  }
+
 
   
   winston.info("Request patch update",update);
@@ -106,6 +110,8 @@ router.patch('/:requestid', function (req, res) {
   return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false })
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   .exec( function(err, request) {
        
@@ -297,6 +303,8 @@ router.patch('/:requestid/attributes',  function (req, res) {
   Request.findOne({"request_id":req.params.requestid, id_project:id_project})
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   .exec( function(err, request) {
       if (err) {
@@ -382,7 +390,7 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lte:1000} };
+  var query = { "id_project": req.projectid, "status": {$lt:1000} };
 
   var projectuser = req.projectuser;
 
@@ -522,6 +530,8 @@ router.get('/', function (req, res, next) {
   var q1 = Request.find(query).
     skip(skip).limit(limit).
     populate('department').
+    populate('participatingBots').
+    populate('participatingAgents').
     populate('lead').
     populate({path:'requester',populate:{path:'id_user'}}).
     sort(sortQuery).
@@ -541,7 +551,6 @@ router.get('/', function (req, res, next) {
       requests: results[0]
     };
     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
-    winston.info('finito')
     return res.json(objectToReturn);
 
   }).catch(function(err){
@@ -706,11 +715,13 @@ router.get('/csv', function (req, res, next) {
 
 router.get('/:requestid', function (req, res) {
 
-  winston.debug("get request by id ", req.params.requestid);
+  winston.info("get request by id ", req.params.requestid);
 
   Request.findOne({"request_id":req.params.requestid})
   .populate('lead')
   .populate('department')
+  .populate('participatingBots')
+  .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
   // .populate({path:'requester'})

@@ -71,6 +71,8 @@ class RequestService {
         .findOne({request_id: request_id, id_project: id_project})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
 
@@ -138,6 +140,8 @@ class RequestService {
          .findOne({request_id: request_id, id_project: id_project})
          .populate('lead')
          .populate('department')
+         .populate('participatingBots')
+         .populate('participatingAgents')  
          .populate({path:'requester',populate:{path:'id_user'}})
          .exec( function(err, request) {
  
@@ -192,15 +196,15 @@ class RequestService {
      });
    }
 
-  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
 
     var request_id = 'support-group-'+uuidv4();
     winston.debug("request_id: "+request_id);
     
-    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
+    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject);
   }
 
-  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
 
     if (!departmentid) {
       departmentid ='default';
@@ -244,6 +248,7 @@ class RequestService {
                 requester: project_user_id,
                 lead: lead_id,
                 first_text: first_text,
+                subject: subject,
                 status: status,
                 participants: participants,
                 department: result.department._id,
@@ -430,6 +435,8 @@ class RequestService {
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, updatedRequest) {
 
@@ -457,6 +464,8 @@ class RequestService {
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, updatedRequest) {
             if (err) {
@@ -565,6 +574,8 @@ class RequestService {
         
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
 
@@ -641,7 +652,7 @@ class RequestService {
   setParticipantsByRequestId(request_id, id_project, newparticipants) {
     
     //TODO validate participants
-    
+    // validate if array of string newparticipants
     return new Promise(function (resolve, reject) {
       
 
@@ -650,6 +661,8 @@ class RequestService {
       .findOne({request_id: request_id, id_project: id_project})
       .populate('lead')
       .populate('department')
+      .populate('participatingBots')
+      .populate('participatingAgents')  
       .populate({path:'requester',populate:{path:'id_user'}})
       .exec( function(err, request) {
         if (err) {
@@ -692,12 +705,14 @@ class RequestService {
 
 
 //TODO control if member is a valid project_user of the project
-
+// validate member is string
     return new Promise(function (resolve, reject) {
       return Request       
       .findOne({request_id: request_id, id_project: id_project})      
       .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
         if (err){
@@ -747,6 +762,8 @@ class RequestService {
         .findOne({request_id: request_id, id_project: id_project})
         .populate('lead')
         .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
         
@@ -802,6 +819,8 @@ class RequestService {
     Request.findOne({"request_id":request_id, id_project:id_project})
     .populate('lead')
     .populate('department')
+    .populate('participatingBots')
+    .populate('participatingAgents')  
     .populate({path:'requester',populate:{path:'id_user'}})
     .exec( function(err, request) {
         if (err) {

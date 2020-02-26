@@ -12,4 +12,11 @@ router.get('/load', function(req, res) {
 });
   
 
+var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
+
+router.get('/test/load', function(req, res) {
+  // winston.debug(req.projectid);
+  res.redirect(widgetTestLocation);
+});
+
 module.exports = router;

@@ -53,7 +53,7 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
               foundIndex = index;
             }
         });
-        winston.info("foundIndex: " + foundIndex);
+        winston.debug("foundIndex: " + foundIndex);
         if (foundIndex>-1) {
           label.data[foundIndex] = newLabel;
         }else {
@@ -97,12 +97,12 @@ router.get('/default/:lang', function (req, res) {
 router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
  
   var lang = req.body.lang;
-  winston.info("lang: " + lang);
+  winston.debug("lang: " + lang);
 
 
 
   var newLabel = {lang: lang, data: req.body.data};
-  winston.info("newLabel: " ,newLabel);
+  winston.debug("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
     if (err) {
@@ -122,7 +122,7 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
               foundIndex = index;
             }
         });
-        winston.info("foundIndex: " + foundIndex);
+        winston.debug("foundIndex: " + foundIndex);
         if (foundIndex>-1) {
           label.data[foundIndex] = newLabel;
         }else {
@@ -167,7 +167,7 @@ router.delete('/',  [passport.authenticate(['basic', 'jwt'], { session: false })
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/1235/labels/EN
 router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
   var lang = req.params.lang;
-  winston.info("lang: " + lang);
+  winston.debug("lang: " + lang);
 
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
@@ -183,7 +183,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
               foundIndex = index;
             }
         });
-        winston.info("foundIndex: " + foundIndex);
+        winston.debug("foundIndex: " + foundIndex);
         if (foundIndex>-1) {
           var idData = label.data[foundIndex]._id;
           label.data.id(idData).remove();
