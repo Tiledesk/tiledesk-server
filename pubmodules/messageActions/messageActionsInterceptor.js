@@ -41,6 +41,37 @@ class MessageActionsInterceptor {
                 });
         });
         
+        // messageActionEvent.on("start", function(message) {
+        //     winston.info("called \\agent action");
+             
+        //     var request = message.request;
+            
+            
+        //      //var botId = botEvent.getBotId(message);
+        //      var botId =  BotFromParticipant.getBotId(message);
+
+        //       winston.debug("botId: " + botId);
+           
+              
+        //       if (!botId) {
+        //         if (request.availableAgents.length==0) {
+                    
+        //         }else {
+
+        //         }
+        //             messageService.send(
+        //                             'system', 
+        //                             'Bot',                                     
+        //                             request.request_id,
+        //                             i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
+        //                             request.id_project,
+        //                             'system', 
+        //                             {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
+        //                         );
+
+        //       }
+        // });
+
         messageActionEvent.on("agent", function(message) {
             
              winston.info("called \\agent action");
