@@ -37,6 +37,7 @@
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.5"
   },
   "dependencies": {
+    "@godaddy/terminus": "^4.3.1",
     "@tiledesk/tiledesk-chat21-app": "^1.0.12",
     "amqplib": "^0.5.5",
     "apollo-server": "^2.9.12",
