@@ -11,6 +11,7 @@ router.post('/', function (req, res) {
   winston.debug("req.user", req.user);
 
   var newCannedResponse = new CannedResponse({
+    title: req.body.title,  
     text: req.body.text,  
     id_project: req.projectid,
     createdBy: req.user.id,
@@ -33,6 +34,7 @@ router.put('/:cannedResponseid', function (req, res) {
   var update = {};
   
 
+  update.title = req.body.title;   
   update.text = req.body.text;   
   update.attributes = req.body.attributes;
   

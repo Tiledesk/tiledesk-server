@@ -5,9 +5,14 @@ var winston = require('../config/winston');
 
 var CannedResponseSchema = new Schema({
   
-  text: {
+  title: {
     type: String,
     required: false,
+    index: true
+  },
+  text: {
+    type: String,
+    required: true,
     index: true
   },
   attributes: {
