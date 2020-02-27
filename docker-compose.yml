@@ -1,7 +1,7 @@
 version: "3.7"
-networks:
-   backend:
-   frontend:
+# networks:
+#    backend:
+#    frontend:
 volumes:
    tiledesk-datadb:
    chat21-cf:
@@ -12,13 +12,16 @@ services:
   dashboard:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
-   #required??
-   #env_file: 
-   #     - .env
+   #required for old docker version
+  #  env_file: 
+  #     - .env
    environment: 
       - FEATURES_TOKEN=PAY:F-ANA:F-ACT:F-TRI:F-GRO:F-DEP:F-OPH:F-MTL:F-DGF:F-NAT:F
       - SERVER_BASE_URL=/api/
       - CHAT_BASE_URL=/chat/
+      - WS_URL
+      - WIDGET_LOCATION
+      - WIDGET_TEST_LOCATION
       - FIREBASE_APIKEY
       - FIREBASE_AUTHDOMAIN
       - FIREBASE_DATABASEURL
@@ -27,19 +30,19 @@ services:
       - FIREBASE_MESSAGINGSENDERID
    ports:
       - "4500:80" # specify port forewarding
-   networks:
-         frontend: 
-            aliases:
-                - dashboard
+  #  networks:
+  #        frontend: 
+  #           aliases:
+  #               - dashboard
   web-widget:
    image: chat21/chat21-web-widget:latest-remoteconfig
    container_name: chat21-web-widget
    ports:
       - "4200:80" # specify port forewarding
-   networks:
-        frontend:
-            aliases:
-                - web-widget
+  #  networks:
+  #       frontend:
+  #           aliases:
+  #               - web-widget
    depends_on:
       - proxy
   ionic:
@@ -47,24 +50,27 @@ services:
    container_name: chat21-ionic
    ports:
       - "8080:80" # specify port forewarding
-   networks:
-      frontend: 
-            aliases:
-                - ionic
+  #  networks:
+  #     frontend: 
+  #           aliases:
+  #               - ionic
   proxy:
-    #image: nginx
-    #container_name: proxy
     image: tiledesk/tiledesk-docker-proxy
     container_name: tiledesk-docker-proxy
+    #image: nginx
+    #container_name: proxy
     #volumes:
      # - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80" # specify port forewarding
-    networks:
-        frontend:
-            aliases:
-                - proxy
-        backend:
+    depends_on:
+      - server
+      - dashboard
+    # networks:
+    #     frontend:
+    #         aliases:
+    #             - proxy
+    #     backend:
     command: [nginx-debug, '-g', 'daemon off;']
   cloud-functions:
    image: chat21/chat21-cloud-functions
@@ -78,10 +84,10 @@ services:
     image: tiledesk/tiledesk-server
     container_name: tiledesk-server
     restart: always
-    networks:
-          backend:
-            aliases:
-                - server
+    # networks:
+    #       backend:
+    #         aliases:
+    #             - server
     volumes:    
         #  - type: bind
         #    source: ./
@@ -89,9 +95,9 @@ services:
         - tiledesk-server-config2:/usr/src/app/confenv
       # - ./:/usr/src/app/
 
-    #not required
-    #env_file:
-    #    - .env
+    #required for old docker version
+    env_file:
+      - .env
     environment: 
       - FIREBASE_PRIVATE_KEY
       - FIREBASE_CONFIG_FILE
@@ -114,10 +120,10 @@ services:
     command: --bind_ip_all
     volumes:
       - tiledesk-datadb:/data/db
-    networks:
-          backend:
-            aliases:
-                - mongo
+    # networks:
+    #       backend:
+    #         aliases:
+    #             - mongo
       ### Uncoment below if you want to map mongodb port
       #ports:
       #   - "27017:27017"
@@ -125,9 +131,9 @@ services:
     container_name: ngrok
     image: wernight/ngrok
     command: ngrok http server:3000
-    networks:
-          backend:
-            aliases:
-                - ngrok
+    # networks:
+    #       backend:
+    #         aliases:
+    #             - ngrok
     ports:
      -  '4040:4040'
