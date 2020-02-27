@@ -76,12 +76,15 @@ function healthCheck () {
 
   // ERR_CONNECTING_TO_MONGO
   if (readyState === 0 || readyState === 3) {
+    console.log('Mongoose has disconnected');
     return Promise.reject(new Error('Mongoose has disconnected'))
   }
   // CONNECTING_TO_MONGO
   if (readyState === 2) {
+    console.log('Mongoose is connecting');
     return Promise.reject(new Error('Mongoose is connecting'))
   }
+  console.log('Mongoose connected');
   // CONNECTED_TO_MONGO
   return Promise.resolve()
 
