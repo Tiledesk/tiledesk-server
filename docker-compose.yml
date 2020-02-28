@@ -58,7 +58,13 @@ services:
    container_name: chat21-ionic
    ports:
       - "8080:80" #use expose if you want to block external access
+   env_file: 
+      - .env
    environment: 
+      - DASHBOARD_URL=/dashboard/
+      - CHAT_SEND_BY_EMAIL_LINK=mailto:?subject=Transcript Chat Conversation&body=Hi,%0D%0A%0D%0Ahere the transcript:%0D%0A%0D%0Ahttps://api.tiledesk.com/v1/public/requests/
+      - FIREBASESTORAGE_BASE_URL_IMAGE=https://firebasestorage.googleapis.com/v0/b/
+      - CHAT21_URL
       - FIREBASE_APIKEY
       - FIREBASE_AUTHDOMAIN
       - FIREBASE_DATABASEURL
@@ -124,7 +130,7 @@ services:
       - CHAT21_APPID
       - CHAT21_ADMIN_TOKEN
       - MONGODB_URI=mongodb://mongo/tiledesk
-      - LOAD_DOTENV_SUBFOLDER=true
+      #- LOAD_DOTENV_SUBFOLDER=true
 #    build: .
     depends_on:
       - mongo
