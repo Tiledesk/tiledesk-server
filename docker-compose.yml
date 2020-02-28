@@ -16,7 +16,7 @@ services:
   #  env_file: 
   #     - .env
    environment: 
-      - FEATURES_TOKEN=PAY:F-ANA:F-ACT:F-TRI:F-GRO:F-DEP:F-OPH:F-MTL:F-DGF:F-NAT:F
+      - FEATURES_TOKEN=PAY:F-ANA:F-ACT:F-TRI:F-GRO:F-DEP:F-OPH:F-MTL:F-DGF:F-NAT:T
       - SERVER_BASE_URL=/api/
       - CHAT_BASE_URL=/chat/
       - WS_URL
@@ -34,17 +34,17 @@ services:
   #        frontend: 
   #           aliases:
   #               - dashboard
-  web-widget:
+  webwidget:
    image: chat21/chat21-web-widget:latest-remoteconfig
    container_name: chat21-web-widget
    ports:
       - "4200:80" # specify port forewarding
+   depends_on:
+      - proxy
   #  networks:
   #       frontend:
   #           aliases:
   #               - web-widget
-   depends_on:
-      - proxy
   ionic:
    image: chat21/chat21-ionic
    container_name: chat21-ionic
@@ -66,6 +66,7 @@ services:
     depends_on:
       - server
       - dashboard
+      # - webwidget
     # networks:
     #     frontend:
     #         aliases:
