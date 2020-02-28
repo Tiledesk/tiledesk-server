@@ -155,7 +155,7 @@ class ModulesManager {
             winston.info("ModulesManager init analyticsRoute loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init analytics module not found");
+                winston.info("ModulesManager init analytics module not found",err);
             }else {
                 winston.error("ModulesManager error initializing init analytics module", err);
             }

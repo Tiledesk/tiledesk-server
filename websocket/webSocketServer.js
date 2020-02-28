@@ -75,7 +75,7 @@ class WebSocketServer {
                                 return winston.error('error websocket', err);
                             }
                             if (!user) {   
-                              winston.error('websocket user not found with id : '+identifier);                             
+                              winston.debug('websocket user not found with id : '+identifier);                             
                               return cb(false, 401, 'Unauthorized');
                             }
 
