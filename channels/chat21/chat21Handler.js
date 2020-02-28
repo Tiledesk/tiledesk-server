@@ -78,7 +78,7 @@ class Chat21Handler {
             var current_user = userData.savedUser.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on user.signup ",  userData);
+                winston.debug("Chat21Handler on user.signup ",  userData);
 
                 chat21.auth.setAdminToken(adminToken);
 
@@ -101,7 +101,7 @@ class Chat21Handler {
             var current_user = userData.updatedUser.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on user.update ",  userData);
+                winston.debug("Chat21Handler on user.update ",  userData);
 
                 chat21.auth.setAdminToken(adminToken);
 
@@ -125,7 +125,7 @@ class Chat21Handler {
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on faqbot.create ",  bot);
+                winston.debug("Chat21Handler on faqbot.create ",  bot);
 
                 chat21.auth.setAdminToken(adminToken);
 
@@ -149,7 +149,7 @@ class Chat21Handler {
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
-                winston.info("Chat21Handler on faqbot.create ",  bot);
+                winston.debug("Chat21Handler on faqbot.create ",  bot);
 
                 chat21.auth.setAdminToken(adminToken);
 
@@ -172,7 +172,7 @@ class Chat21Handler {
          // leadEvent.on('update')change group name wirth fullname)
          leadEvent.on('lead.update', function(lead) {
             setImmediate(() => {
-                winston.info("Chat21Handler on lead.update ",  lead);
+                winston.debug("Chat21Handler on lead.update ",  lead);
 
                 Request.find({lead: lead._id}, function(err, requests) {
 

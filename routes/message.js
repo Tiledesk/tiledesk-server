@@ -48,7 +48,7 @@ function(req, res) {
               winston.debug("request not exists", request);                                     
 
               if (req.projectuser) {
-                winston.info("req.projectuser", req.projectuser);                                     
+                winston.debug("req.projectuser", req.projectuser);                                     
               }
               
               
