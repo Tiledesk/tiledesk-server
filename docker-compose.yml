@@ -13,13 +13,14 @@ services:
    image: tiledesk/tiledesk-dashboard
    container_name: tiledesk-dashboard
    #required for old docker version
-  #  env_file: 
-  #     - .env
+   env_file: 
+      - .env
    environment: 
       - FEATURES_TOKEN=PAY:F-ANA:F-ACT:F-TRI:F-GRO:F-DEP:F-OPH:F-MTL:F-DGF:F-NAT:T
       - SERVER_BASE_URL=/api/
       - CHAT_BASE_URL=/chat/
       - WS_URL
+      - WS_URL_RELATIVE=/ws/
       - WIDGET_LOCATION
       - WIDGET_TEST_LOCATION
       - FIREBASE_APIKEY
@@ -29,7 +30,7 @@ services:
       - FIREBASE_STORAGEBUCKET
       - FIREBASE_MESSAGINGSENDERID
    ports:
-      - "4500:80" # specify port forewarding
+      - "4500:80" #use expose if you want to block external access
   #  networks:
   #        frontend: 
   #           aliases:
@@ -37,8 +38,15 @@ services:
   webwidget:
    image: chat21/chat21-web-widget:latest-remoteconfig
    container_name: chat21-web-widget
-   ports:
+   ports: 
       - "4200:80" # specify port forewarding
+   environment: 
+      - FIREBASE_APIKEY
+      - FIREBASE_AUTHDOMAIN
+      - FIREBASE_DATABASEURL
+      - FIREBASE_PROJECT_ID
+      - FIREBASE_STORAGEBUCKET
+      - FIREBASE_MESSAGINGSENDERID
    depends_on:
       - proxy
   #  networks:
@@ -49,7 +57,14 @@ services:
    image: chat21/chat21-ionic
    container_name: chat21-ionic
    ports:
-      - "8080:80" # specify port forewarding
+      - "8080:80" #use expose if you want to block external access
+   environment: 
+      - FIREBASE_APIKEY
+      - FIREBASE_AUTHDOMAIN
+      - FIREBASE_DATABASEURL
+      - FIREBASE_PROJECT_ID
+      - FIREBASE_STORAGEBUCKET
+      - FIREBASE_MESSAGINGSENDERID
   #  networks:
   #     frontend: 
   #           aliases:
