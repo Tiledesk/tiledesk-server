@@ -190,12 +190,8 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
   var update = {};
   
-  if (req.body.user_available != undefined) {
-    update.user_available = req.body.user_available;
-  }
-  if (req.body.attributes) {
-    update.attributes = req.body.attributes;
-  }
+  update.user_available = req.body.user_available;
+  update.attributes = req.body.attributes;
 
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
@@ -218,15 +214,9 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   var update = {};
   
-  if (req.body.role) {
-    update.role = req.body.role;
-  }
-  if (req.body.user_available != undefined) {
-    update.user_available = req.body.user_available;
-  }
-  if (req.body.attributes) {
-    update.attributes = req.body.attributes;
-  }
+  update.role = req.body.role;
+  update.user_available = req.body.user_available;
+  update.attributes = req.body.attributes;
 
   winston.info("project_userid update", update);
 

@@ -18,21 +18,10 @@ router.put('/', function (req, res) {
 
   var update = {};
   
-  // if (req.body.email) {
-  //   update.email = req.body.email;
-  // }
-  // if (req.body.password) {
-  //   update.password = req.body.password;
-  // }
-  if (req.body.firstname) {
-    update.firstname = req.body.firstname;
-  }
-  if (req.body.lastname) {
-    update.lastname = req.body.lastname;
-  }
-  if (req.body.attributes) {
-    update.attributes = req.body.attributes;
-  }
+  update.firstname = req.body.firstname;
+  update.lastname = req.body.lastname;
+  update.attributes = req.body.attributes;
+  
   
 
   User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {

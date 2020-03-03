@@ -83,27 +83,14 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
   var update = {};
   
-  if (req.body.name) {
-    update.name = req.body.name;
-  }
-  if (req.body.activeOperatingHours!=undefined) {
-    update.activeOperatingHours = req.body.activeOperatingHours;
-  }
-  if (req.body.operatingHours) {
-    update.operatingHours = req.body.operatingHours;
-  }
-  if (req.body.settings) {
-    update.settings = req.body.settings;
-  }
-  if (req.body.widget) {
-    update.widget = req.body.widget;
-  }
-  if (req.body.versions) {
-    update.versions = req.body.versions;
-  }
-  if (req.body.channels) {
-    update.channels = req.body.channels;
-  }
+  update.name = req.body.name;
+  update.activeOperatingHours = req.body.activeOperatingHours;
+  update.operatingHours = req.body.operatingHours;
+  update.settings = req.body.settings;
+  update.widget = req.body.widget;
+  update.versions = req.body.versions;
+  update.channels = req.body.channels;
+
 
 
   Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {

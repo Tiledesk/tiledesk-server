@@ -23,19 +23,10 @@ router.put('/:leadid', function (req, res) {
   winston.debug(req.body);
   var update = {};
   
-  if (req.body.fullname) {
     update.fullname = req.body.fullname;
-  }
-  
-  if (req.body.email) {
     update.email = req.body.email;
-  }
-  if (req.body.attributes) {
     update.attributes = req.body.attributes;
-  }
-  if (req.body.status) {
     update.status = req.body.status;
-  }
   
   
   Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {

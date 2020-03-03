@@ -52,28 +52,14 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 
   var update = {};
   
-  // if (req.body.id_bot) {
     update.id_bot = req.body.id_bot;
-  // }
-  // if (req.body.bot_only!=undefined) {
     update.bot_only = req.body.bot_only;
-  // }
-  if (req.body.routing) {
     update.routing = req.body.routing;
-  }
-  if (req.body.name) {
     update.name = req.body.name;
-  }
-  // if (req.body.id_group) {
     update.id_group = req.body.id_group;
-  // }
-  if (req.body.online_msg) {
     update.online_msg = req.body.online_msg;
-  }
-  if (req.body.status) {
     update.status = req.body.status;
-  }  
-
+  
 
 
   Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {

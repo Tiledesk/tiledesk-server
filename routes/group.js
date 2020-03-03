@@ -36,15 +36,9 @@ router.put('/:groupid', function (req, res) {
 
   var update = {};
   
-  if (req.body.name) {
     update.name = req.body.name;
-  }
-  if (req.body.members) {
     update.members = req.body.members;
-  }
-  if (req.body.trashed) {
     update.trashed = req.body.trashed;
-  }
   
 
   Group.findByIdAndUpdate(req.params.groupid, update, { new: true, upsert: true }, function (err, updatedGroup) {

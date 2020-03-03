@@ -102,21 +102,11 @@ router.put('/:faq_kbid', function (req, res) {
 
   var update = {};
   
-  if (req.body.name) {
     update.name = req.body.name;
-  }
-  if (req.body.url) {
     update.url = req.body.url;
-  }
-  if (req.body.webhookUrl) {
     update.webhookUrl = req.body.webhookUrl;
-  }
-  if (req.body.type) {
     update.type = req.body.type;
-  }
-  if (req.body.trashed) {
     update.trashed = req.body.trashed;
-  }
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
     if (err) {
