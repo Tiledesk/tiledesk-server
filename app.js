@@ -87,6 +87,7 @@ var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
 var cannedResponse = require("./routes/cannedResponse");
+var tag = require("./routes/tag");
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -394,6 +395,9 @@ app.use('/:projectid/jwt', jwtroute);
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 app.use('/:projectid/labels', [fetchLabels],labels);
 app.use('/:projectid/canned', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], cannedResponse);
+app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], tag);
+
+
 
 if (pubModulesManager) {
   pubModulesManager.use(app);

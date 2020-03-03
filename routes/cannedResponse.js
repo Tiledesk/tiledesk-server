@@ -20,7 +20,7 @@ router.post('/', function (req, res) {
 
   newCannedResponse.save(function (err, savedCannedResponse) {
     if (err) {
-      winston.debug('--- > ERROR ', err)
+      winston.error('--- > ERROR ', err)
 
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
