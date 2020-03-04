@@ -7,6 +7,7 @@ var ObjectId = require('mongoose').Types.ObjectId;
 var winston = require('../config/winston');
 
 var ProjectUserSchema = require("../models/project_user").schema;
+var NoteSchema = require("../models/note").schema;
 // var Requester = require('../models/requester');
 
 // var MessageSchema = require("../models/message").schema;
@@ -176,10 +177,8 @@ var RequestSchema = new Schema({
     type: Array,
     required: false
   },
-  notes: {
-    type: String,
-    required: false,
-  }, 
+  notes: [NoteSchema],
+
   rating: {
     type: Number,
     required: false,

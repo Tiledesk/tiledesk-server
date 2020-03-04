@@ -347,6 +347,52 @@ router.patch('/:requestid/attributes',  function (req, res) {
   
 });
 
+router.post('/:requestid/notes',  function (req, res) {
+  var note = {};
+  note.text = req.body.text;
+  note.id_project = req.id_project;
+  note.createdBy = req.user.id;
+
+  return Request.findOneAndUpdate({request_id:req.params.requestid, id_project:req.projectid},{ $push: { notes: note } } , { new: true, upsert: false })
+    .populate('lead')
+    .populate('department')
+    .populate('participatingBots')
+    .populate('participatingAgents')  
+    .populate({path:'requester',populate:{path:'id_user'}})
+    .exec( function(err, updatedRequest) {
+
+    if (err) {
+      winston.error('Error adding request note.', err);
+      return res.status(500).send({ success: false, msg: 'Error adding request object.' });
+    }
+    requestEvent.emit("request.update", updatedRequest);
+    return res.json(updatedRequest);
+  });
+
+});
+
+
+router.delete('/:requestid/notes/:noteid',  function (req, res) {
+  
+  return Request.findOneAndUpdate({request_id: req.params.requestid, id_project:req.projectid},{ $pull: { notes: { "_id": req.params.noteid }  } } , { new: true, upsert: false })
+    .populate('lead')
+    .populate('department')
+    .populate('participatingBots')
+    .populate('participatingAgents')  
+    .populate({path:'requester',populate:{path:'id_user'}})
+    .exec( function(err, updatedRequest) {
+
+    if (err) {
+      winston.error('Error adding request note.', err);
+      return res.status(500).send({ success: false, msg: 'Error adding request object.' });
+    }
+    requestEvent.emit("request.update", updatedRequest);
+    return res.json(updatedRequest);
+  });
+
+});
+
+
 // unused ?
 router.post('/:requestid/share/email', function (req, res) {
 
