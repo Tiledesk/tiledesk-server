@@ -10,6 +10,11 @@ var TagSchema = new Schema({
     required: true,
     index: true
   },  
+  color: {
+    type: String,
+    required: false,
+    index: false
+  },  
   attributes: {
     type: Object,
   },

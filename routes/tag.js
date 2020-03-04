@@ -11,6 +11,7 @@ router.post('/', function (req, res) {
 
   var newTag = new Tag({
     tag: req.body.tag,  
+    color: req.body.color,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
@@ -33,6 +34,7 @@ router.put('/:tagid', function (req, res) {
   
 
   update.tag = req.body.tag;   
+  update.color = req.body.color;
   
   
   Tag.findByIdAndUpdate(req.params.tagid, update, { new: true, upsert: true }, function (err, updatedTag) {
