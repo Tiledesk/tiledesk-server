@@ -107,7 +107,7 @@ router.get('/:departmentid/operators', async (req, res) => {
     for (const aa of operatorsResult.available_agents) {
       query.participants = aa.id_user;
       winston.info("department operators query:" , query);
-      var count =  await Request.countDocuments(query).exec();
+      var count =  await Request.countDocuments(query);
       winston.info("department operators count: "+ count);
       operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
     }
