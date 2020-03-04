@@ -171,7 +171,7 @@ router.get('/:departmentid/operators', function (req, res) {
 // ======================== ./END - GET MY DEPTS ========================
 
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
-router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrType('agent', 'bot')], function (req, res) {
+router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], function (req, res) {
 
   winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
   winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)

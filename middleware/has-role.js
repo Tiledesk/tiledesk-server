@@ -67,16 +67,42 @@ class RoleChecker {
               winston.debug("isTypeAsFunction is false");
               return false;
             }
+       }
+
+
+      isTypesAsFunction(types, user) {                 
+        winston.debug("isTypes:"+types);
+        winston.debug("user", user);
+        var isType = false;
+        var BreakException = {};
+
+        if (types && types.length>0) {
+          try {
+            types.forEach(type => {
+              winston.debug("type:"+type);
+              isType = this.isTypeAsFunction(type, user);
+              winston.debug("isType:"+ isType);
+              if (isType==true) {
+                throw BreakException; //https://stackoverflow.com/questions/2641347/short-circuit-array-foreach-like-calling-break
+              }
+            });
+
+          } catch (e) {
+            if (e !== BreakException) throw e;
           }
+        }
+
+        return isType;
+      }    
         
   
       
 
       hasRole(role) {
-        return this.hasRoleOrType(role);
+        return this.hasRoleOrTypes(role);
       }
 
-       hasRoleOrType(role,type) {
+       hasRoleOrTypes(role, types) {
            
         var that = this;
 
@@ -101,9 +127,11 @@ class RoleChecker {
       
 
           // console.log("QUIIIIIIIIIIIIIIIIIIIIIII",type);
-          if (type) {
+          if (types && types.length>0) {
             // console.log("QUIIIIIIIIIIIIIIIIIIIIIII");
-            var checkRes = that.isTypeAsFunction(type, req.user);
+            var checkRes = that.isTypesAsFunction(types, req.user);
+            winston.info("checkRes: " + checkRes);
+
             if (checkRes) {
              return next();
             }            
@@ -167,7 +195,7 @@ class RoleChecker {
         
       }
 
-
+// unused
       hasRoleAsPromise(role, user_id, projectid) {
            
         var that = this;

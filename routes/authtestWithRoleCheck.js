@@ -11,7 +11,7 @@ router.get('/',  function (req, res) {
   });
   
   router.get('/bot', [   
-    roleChecker.hasRoleOrType(null,'bot')],
+    roleChecker.hasRoleOrTypes(null,['bot'])],
      function (req, res) {
     res.send('{"success":true}');
   });
