@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.0.1-beta.35",
+  "version": "2.0.1-beta.36",
   "scripts": {
     "start": "node ./bin/www",
     "watchenv": "nodemon --watch .env --watch ./confenv/.env ./bin/www",
@@ -31,7 +31,7 @@
     "@tiledesk-ent/tiledesk-server-payments": "^1.0.2",
     "@tiledesk-ent/tiledesk-server-analytics": "^1.0.2",
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.6",
-    "@tiledesk-ent/tiledesk-server-resthook": "^1.0.10",
+    "@tiledesk-ent/tiledesk-server-resthook": "^1.0.11",
     "@tiledesk-ent/tiledesk-server-triggers": "^1.0.22",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.3",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.5"
