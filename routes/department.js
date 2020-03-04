@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router({mergeParams: true});
 var Department = require("../models/department");
+var Request = require("../models/request");
 var departmentService = require("../services/departmentService");
 var departmentEvent = require("../event/departmentEvent");
 
@@ -92,15 +93,31 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 });
 
 
-router.get('/:departmentid/operators', function (req, res) {
+router.get('/:departmentid/operators', async (req, res) => {
   winston.info("Getting department operators");
   // getOperators(departmentid, projectid, nobot) {
-  departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot).then(function (operatorsResult) {
+  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot);
+  winston.info("Getting department operators operatorsResult", operatorsResult);
+
+  operatorsResult.available_agents_request  = [];
+
+  if (operatorsResult && operatorsResult.available_agents && operatorsResult.available_agents.length > 0) {
+    var query = {id_project: req.projectid, status: {$lt:1000}};      
+    // asyncForEach(operatorsResult.available_agents, async (aa) => {
+    for (const aa of operatorsResult.available_agents) {
+      query.participants = aa.id_user;
+      winston.info("department operators query:" , query);
+      var count =  await Request.countDocuments(query).exec();
+      winston.info("department operators count: "+ count);
+      operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
+    }
+  }
+  
     return res.json(operatorsResult);
-  }).catch(function (err) {
-    winston.error('Error getting the department operators ', err);
-    return res.status(500).send({ success: false, msg: 'Error getting departments operatotors.' });
-  });
+  // }).catch(function (err) {
+  //   winston.error('Error getting the department operators ', err);
+  //   return res.status(500).send({ success: false, msg: 'Error getting departments operatotors.' });
+  // });
 });
 
 // START - GET MY DEPTS

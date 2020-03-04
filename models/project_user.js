@@ -68,6 +68,14 @@ var winston = require('../config/winston');
     options: { sort: { createdAt: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
+
+// Project_userSchema.virtual('numRequests', {
+//   ref: 'request', // The model to use
+//   localField: 'id_user', // Find people where `localField`
+//   foreignField: 'participants', // is equal to `foreignField`
+//   count: true // And only get the number of docs
+// });
+
   // Project_userSchema.methods = {
   //     toStringTest : function() {
   //     return role;
