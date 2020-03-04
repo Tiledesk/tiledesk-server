@@ -13,10 +13,10 @@ before_install:
 - npm run enable-ent
 - openssl aes-256-cbc -K $encrypted_f39920166870_key -iv $encrypted_f39920166870_iv
   -in .firebasekey.json.enc -out .firebasekey.json -d
-deploy:
-  provider: herokuDISABLED
-  api_key:
-    secure: Lii7UafzO+WY0b3lAHk+OOgwpPC7jbb+ZuXFibtCawM3RyPNZj91m0on+rOM/k8+s6p/moD7VYoaWtwxjnPhjJsXf8kfbZTOq8d3dhW8qP8o3VBmNbwJGFpHbYPg7UMRaTf2opyNdbreuCV5/19WKSeLjvhBM2TOyFxKJIGevTNjBRJoQI48E5+ciaCzK29jkMq7LgIPUgm+V+hxkYM3DK4BuK+NR6FzLtAkcAJJMthcl82L7NtykA0k+RbeeYYdiPV7dVMvv58v5ifPoL//8JtBNvGPeVJkwPmz2c9Nej9kAURLW5vITFKksHt95yb1pvWG3b9lvkMoLgEkYmdS/O6Jlvoke6FaNnaH7FE3IQEfJ141FO81zqgZ15+LPeAyrAesKnr3f5hR+7iL1f3sVR8cGpCP7fGy2HNXQZCcNC5y2djX8NQdyjWCSxqMOHen6Dww8IQsmTK6sVVpLBtDnaDTpLXTv994RjEk7RCCSp5hXCjE1sNPRPiv/eqPyFt22jxwLSuUnjAR3qE/IpbGlhs6UWInftoqwBOT0+8NA92dCWq8pRoVAZ4/aD1Sph/VjRAVlIwKrytYpV89MjYhLJv02Zt3iEvoy5RUYBL8OYJbDpcq4BvU73aZ1C5PTNPBy3/8ieHR2KKeabqC1YpFBtHJ131Zn5JLvdArakHmaio=
-  app: tiledesk-server-pre
-  on:
-    repo: Tiledesk/tiledesk-server
+# deploy:
+#   provider: herokuDISABLED
+#   api_key:
+#     secure: Lii7UafzO+WY0b3lAHk+OOgwpPC7jbb+ZuXFibtCawM3RyPNZj91m0on+rOM/k8+s6p/moD7VYoaWtwxjnPhjJsXf8kfbZTOq8d3dhW8qP8o3VBmNbwJGFpHbYPg7UMRaTf2opyNdbreuCV5/19WKSeLjvhBM2TOyFxKJIGevTNjBRJoQI48E5+ciaCzK29jkMq7LgIPUgm+V+hxkYM3DK4BuK+NR6FzLtAkcAJJMthcl82L7NtykA0k+RbeeYYdiPV7dVMvv58v5ifPoL//8JtBNvGPeVJkwPmz2c9Nej9kAURLW5vITFKksHt95yb1pvWG3b9lvkMoLgEkYmdS/O6Jlvoke6FaNnaH7FE3IQEfJ141FO81zqgZ15+LPeAyrAesKnr3f5hR+7iL1f3sVR8cGpCP7fGy2HNXQZCcNC5y2djX8NQdyjWCSxqMOHen6Dww8IQsmTK6sVVpLBtDnaDTpLXTv994RjEk7RCCSp5hXCjE1sNPRPiv/eqPyFt22jxwLSuUnjAR3qE/IpbGlhs6UWInftoqwBOT0+8NA92dCWq8pRoVAZ4/aD1Sph/VjRAVlIwKrytYpV89MjYhLJv02Zt3iEvoy5RUYBL8OYJbDpcq4BvU73aZ1C5PTNPBy3/8ieHR2KKeabqC1YpFBtHJ131Zn5JLvdArakHmaio=
+#   app: tiledesk-server-pre
+#   on:
+#     repo: Tiledesk/tiledesk-server
