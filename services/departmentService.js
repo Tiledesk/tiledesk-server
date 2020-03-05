@@ -144,7 +144,11 @@ roundRobin(operatorSelectedEvent) {
 
           // operatorSelectedEvent.operators = [{id_user: nextOperator.id_user}];
           operatorSelectedEvent.operators = [nextOperator];
+
+          operatorSelectedEvent.lastOperatorId = lastOperatorId;
+          operatorSelectedEvent.lastRequest = lastRequest;
           operatorSelectedEvent.lastOperatorIndex = lastOperatorIndex;
+
 
           return resolve(operatorSelectedEvent);
       });
