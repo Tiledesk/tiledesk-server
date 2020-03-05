@@ -130,7 +130,7 @@ class RoleChecker {
           if (types && types.length>0) {
             // console.log("QUIIIIIIIIIIIIIIIIIIIIIII");
             var checkRes = that.isTypesAsFunction(types, req.user);
-            winston.info("checkRes: " + checkRes);
+            winston.debug("checkRes: " + checkRes);
 
             if (checkRes) {
              return next();

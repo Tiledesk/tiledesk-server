@@ -93,11 +93,11 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 });
 
 
-router.get('/:departmentid/operators', async (req, res) => {
-  winston.info("Getting department operators");
+router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], async (req, res) => {
+  winston.debug("Getting department operators req.projectid: "+req.projectid);
   // getOperators(departmentid, projectid, nobot) {
   var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot);
-  winston.info("Getting department operators operatorsResult", operatorsResult);
+  winston.debug("Getting department operators operatorsResult", operatorsResult);
 
   operatorsResult.available_agents_request  = [];
 
@@ -105,10 +105,10 @@ router.get('/:departmentid/operators', async (req, res) => {
     var query = {id_project: req.projectid, status: {$lt:1000}};      
     // asyncForEach(operatorsResult.available_agents, async (aa) => {
     for (const aa of operatorsResult.available_agents) {
-      query.participants = aa.id_user;
-      winston.info("department operators query:" , query);
+      query.participants = aa.id_user._id.toString();// attento qui
+      winston.debug("department operators query:" , query);
       var count =  await Request.countDocuments(query);
-      winston.info("department operators count: "+ count);
+      winston.debug("department operators count: "+ count);
       operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
     }
   }
