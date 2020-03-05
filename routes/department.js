@@ -93,7 +93,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 });
 
 
-router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], async (req, res) => {
+router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
   // getOperators(departmentid, projectid, nobot) {
   var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot);
