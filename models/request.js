@@ -175,7 +175,8 @@ var RequestSchema = new Schema({
   //tags List A list of tags associated with the conversation.
   tags: {
     type: Array,
-    required: false
+    required: false,
+    index: true
   },
   notes: [NoteSchema],
 

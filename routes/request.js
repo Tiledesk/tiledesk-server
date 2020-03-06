@@ -475,6 +475,11 @@ router.get('/', function (req, res, next) {
     query.participants = req.query.participant;
   }
 
+  if (req.query.tags) {
+    winston.debug('req.query.tags', req.query.tags);
+    query.tags = req.query.tags;
+  }
+
   // if (req.query.request_id) {
   //   console.log('req.query.request_id', req.query.request_id);
   //   query.request_id = req.query.request_id;
