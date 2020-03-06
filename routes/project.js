@@ -83,6 +83,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
   var update = {};
   
+
   update.name = req.body.name;
   update.activeOperatingHours = req.body.activeOperatingHours;
   update.operatingHours = req.body.operatingHours;
@@ -97,6 +98,49 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     if (err) {
       winston.error('Error putting project ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+    projectEvent.emit('project.update', updatedProject );
+    res.json(updatedProject);
+  });
+});
+
+router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  winston.debug('PATCH PROJECT REQ BODY ', req.body);
+
+  var update = {};
+  
+  if (req.body.name) {
+    update.name = req.body.name;
+  }
+
+  if (req.body.activeOperatingHours) {
+    update.activeOperatingHours = req.body.activeOperatingHours;
+  }
+  
+  if (req.body.operatingHours) {
+    update.operatingHours = req.body.operatingHours;
+  }
+  
+  if (req.body.settings) {
+    update.settings = req.body.settings;
+  }
+
+  if (req.body.widget) {
+    update.widget = req.body.widget;
+  }
+
+  if (req.body.versions) {
+    update.versions = req.body.versions;
+  }
+  
+  if (req.body.channels) {
+    update.channels = req.body.channels; 
+  }
+ 
+  Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {
+    if (err) {
+      winston.error('Error putting project ', err);
+      return res.status(500).send({ success: false, msg: 'Error patching object.' });
     }
     projectEvent.emit('project.update', updatedProject );
     res.json(updatedProject);
