@@ -32,6 +32,9 @@ var TagSchema = new Schema({
 }
 );
 
+TagSchema.index({ id_project: 1, tag: 1 }, { unique: true }); 
+
+
  var Tag = mongoose.model('tag', TagSchema);
 
 
