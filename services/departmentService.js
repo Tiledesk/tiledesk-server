@@ -384,7 +384,10 @@ getOperators(departmentid, projectid, nobot) {
           let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid };
           departmentEvent.emit('operator.select', objectToReturn);
 
-          that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
+          that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
+            if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
+              objectToReturnRoundRobin.operators = [];
+            }
             return resolve(objectToReturnRoundRobin);
           });
           
