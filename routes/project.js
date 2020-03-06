@@ -99,9 +99,18 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.settings) {
     update.settings = req.body.settings;
   }
-  if (req.body["settings.email.autoSendTranscriptToRequester"]) {
+  if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
+
+  if (req.body["settings.max_agent_served_chat"]!=undefined) {
+    update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
+  }
+
+  if (req.body["settings.reassignment_delay"]!=undefined) {
+    update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
+  }
+
 
   if (req.body.widget) {
     update.widget = req.body.widget;
@@ -151,10 +160,19 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update.settings = req.body.settings;
   }
 
-  if (req.body["settings.email.autoSendTranscriptToRequester"]) {
+  if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
-  
+
+  if (req.body["settings.max_agent_served_chat"]!=undefined) {
+    update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
+  }
+
+  if (req.body["settings.reassignment_delay"]!=undefined) {
+    update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
+  }
+
+
   if (req.body.widget) {
     update.widget = req.body.widget;
   }
