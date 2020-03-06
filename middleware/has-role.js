@@ -58,13 +58,13 @@ class RoleChecker {
             winston.debug("user", user);
            //TODO Check if belongs to project
             if (type=='subscription' && user instanceof Subscription){
-              winston.info("isTypeAsFunction is subscription");
+              winston.debug("isTypeAsFunction is subscription");
               return true
             } else if (type=='bot' && user instanceof Faq_kb){
-              winston.info("isTypeAsFunction is bot");
+              winston.debug("isTypeAsFunction is bot");
               return true
             } else {
-              winston.info("isTypeAsFunction is false");
+              winston.debug("isTypeAsFunction is false");
               return false;
             }
        }
@@ -81,7 +81,7 @@ class RoleChecker {
             types.forEach(type => {
               winston.debug("type:"+type);
               isType = this.isTypeAsFunction(type, user);
-              winston.info("isType:"+ isType);
+              winston.debug("isType:"+ isType);
               if (isType==true) {
                 throw BreakException; //https://stackoverflow.com/questions/2641347/short-circuit-array-foreach-like-calling-break
               }
