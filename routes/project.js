@@ -79,7 +79,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
 });
 
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-  winston.debug('UPDATE PROJECT REQ BODY ', req.body);
+  winston.info('UPDATE PROJECT REQ BODY ', req.body);
 
   var update = {};
   
@@ -99,6 +99,9 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.settings) {
     update.settings = req.body.settings;
   }
+  if (req.body["settings.email.autoSendTranscriptToRequester"]) {
+    update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
+  }
 
   if (req.body.widget) {
     update.widget = req.body.widget;
@@ -111,7 +114,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.channels) {
     update.channels = req.body.channels; 
   }
-
+  
 
   winston.info('UPDATE PROJECT REQ BODY ', update);
 
@@ -148,6 +151,10 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update.settings = req.body.settings;
   }
 
+  if (req.body["settings.email.autoSendTranscriptToRequester"]) {
+    update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
+  }
+  
   if (req.body.widget) {
     update.widget = req.body.widget;
   }
@@ -161,7 +168,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
  
   winston.info('UPDATE PROJECT REQ BODY ', update);
-  
+
   Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
       winston.error('Error putting project ', err);
