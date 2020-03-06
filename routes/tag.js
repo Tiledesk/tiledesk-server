@@ -19,7 +19,7 @@ router.post('/', function (req, res) {
 
   newTag.save(function (err, savedTag) {
     if (err) {
-      winston.error('--- > ERROR ', err)    
+      // winston.error('--- > ERROR ', err)    
       if (err.code === 11000) { //error for dupes
           return Tag.findOne({id_project:req.projectid, tag: req.body.tag },function (err, savedTag) {
             res.json(savedTag);

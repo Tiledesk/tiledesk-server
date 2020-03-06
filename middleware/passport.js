@@ -158,7 +158,7 @@ module.exports = function(passport) {
   winston.debug("passport opts: ", opts);
 
   passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
-    winston.info("jwt_payload",jwt_payload);
+    winston.debug("jwt_payload",jwt_payload);
     // console.log("req",req);
     
 
@@ -179,7 +179,7 @@ module.exports = function(passport) {
     const subject = jwt_payload.sub;
     winston.debug("passport subject: " + subject);
 
-    winston.info("passport identifier: " + identifier + " subject " + subject);
+    winston.debug("passport identifier: " + identifier + " subject " + subject);
 
     var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     winston.debug("fullUrl:"+ fullUrl);
