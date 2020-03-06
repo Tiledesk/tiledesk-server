@@ -283,14 +283,14 @@ module.exports = function(passport) {
       winston.debug("Passport JWT generic user");
       User.findOne({_id: identifier}, function(err, user) {
           if (err) {
-            winston.info("Passport JWT generic err", err);
+            winston.error("Passport JWT generic err", err);
             return done(err, false);
           }
           if (user) {
-            winston.info("Passport JWT generic user", user);
+            winston.debug("Passport JWT generic user", user);
             return done(null, user);
           } else {
-            winston.info("Passport JWT generic not user");
+            winston.debug("Passport JWT generic not user");
             return done(null, false);
           }
       });
