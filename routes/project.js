@@ -84,19 +84,19 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   var update = {};
   
 //like patch
-  if (req.body.name) {
+  if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
 
-  if (req.body.activeOperatingHours) {
+  if (req.body.activeOperatingHours!=undefined) {
     update.activeOperatingHours = req.body.activeOperatingHours;
   }
   
-  if (req.body.operatingHours) {
+  if (req.body.operatingHours!=undefined) {
     update.operatingHours = req.body.operatingHours;
   }
   
-  if (req.body.settings) {
+  if (req.body.settings!=undefined) {
     update.settings = req.body.settings;
   }
   if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
@@ -112,15 +112,15 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   }
 
 
-  if (req.body.widget) {
+  if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
   }
 
-  if (req.body.versions) {
+  if (req.body.versions!=undefined) {
     update.versions = req.body.versions;
   }
   
-  if (req.body.channels) {
+  if (req.body.channels!=undefined) {
     update.channels = req.body.channels; 
   }
   
@@ -144,22 +144,21 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
 
   var update = {};
   
-  if (req.body.name) {
+  if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
 
-  if (req.body.activeOperatingHours) {
+  if (req.body.activeOperatingHours!=undefined) {
     update.activeOperatingHours = req.body.activeOperatingHours;
   }
   
-  if (req.body.operatingHours) {
+  if (req.body.operatingHours!=undefined) {
     update.operatingHours = req.body.operatingHours;
   }
   
-  if (req.body.settings) {
+  if (req.body.settings!=undefined) {
     update.settings = req.body.settings;
   }
-
   if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
@@ -173,17 +172,18 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
-  if (req.body.widget) {
+  if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
   }
 
-  if (req.body.versions) {
+  if (req.body.versions!=undefined) {
     update.versions = req.body.versions;
   }
   
-  if (req.body.channels) {
+  if (req.body.channels!=undefined) {
     update.channels = req.body.channels; 
   }
+  
  
   winston.info('UPDATE PROJECT REQ BODY ', update);
 
