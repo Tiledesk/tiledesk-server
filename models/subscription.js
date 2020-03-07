@@ -35,6 +35,7 @@ var SubscriptionSchema = new Schema({
 }
 );
 
+SubscriptionSchema.index({ id_project: 1, event: 1, target: 1  }, { unique: true }); 
 
 var subscription = mongoose.model('subscription', SubscriptionSchema);
 
