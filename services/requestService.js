@@ -31,22 +31,24 @@ class RequestService {
 
           // winston.debug("getOperators", result);
 
-          var status = 100;
+          var status = 100; //unserved
           var assigned_operator_id;
           var participants = [];
           
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
-            status = 200;
+            status = 200; //served
             participants.push(assigned_operator_id.toString());
           }
            winston.info("routeInternal assigned_operator_id: "+ assigned_operator_id);
            winston.info("routeInternal status: "+ status);
 
-            request.status = status;
-            request.participants = participants;
-            request.department = result.department._id;
-            request.agents = result.agents;
+          request.status = status;
+          request.participants = participants;
+          request.department = result.department._id;
+          request.agents = result.agents;
+
+          request.waiting_time = undefined //reset waiting_time on reroute
                   
               return resolve(request);
                   
@@ -232,10 +234,10 @@ class RequestService {
           //  winston.debug("req status0", status);
            if (!status) {
             //  winston.debug("req status check", status);
-             status = 100;
+             status = 100; //unserved
              if (result.operators && result.operators.length>0) {
                assigned_operator_id = result.operators[0].id_user;
-               status = 200;
+               status = 200; //served
                participants.push(assigned_operator_id.toString());
              }
            }
@@ -669,8 +671,16 @@ class RequestService {
           winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }
+
+        if (request.participants.length>0) { 
+          request.status = 200; //served
+        } else {
+          request.status = 100; //unserved
+        }
+
         request.participants = newparticipants;
-        
+        request.waiting_time = undefined //reset waiting_time on reroute ????
+
         request.save(function(err, updatedRequest) {
           if (err) {
             winston.error("Error setParticipantsByRequestId", err);
