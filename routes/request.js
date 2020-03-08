@@ -8,6 +8,7 @@ var moment = require('moment');
 var requestService = require('../services/requestService');
 var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
+var Subscription = require("../models/subscription");
 
 
 csv = require('csv-express');
@@ -15,7 +16,7 @@ csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
 
-var messageService = require('../services/messageService');
+// var messageService = require('../services/messageService');
 
 
 
@@ -66,7 +67,8 @@ router.patch('/:requestid', function (req, res) {
   if (req.body.lead) {
     update.lead = req.body.lead;
   }
-  
+ 
+  // TODO test it. does it work?
   if (req.body.status) {
     update.status = req.body.status;
   }
@@ -188,6 +190,12 @@ function (req, res) {
   
 });
 
+/*
+error: uncaughtException: Cannot set property 'participants' of null
+2020-03-08T12:53:35.793660+00:00 app[web.1]: TypeError: Cannot set property 'participants' of null
+2020-03-08T12:53:35.793660+00:00 app[web.1]:     at /app/services/requestService.js:672:30
+2020-03-08T12:53:35.793661+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
+*/
 router.put('/:requestid/participants', function (req, res) {
   winston.info("req.body", req.body);
 
@@ -440,7 +448,11 @@ router.get('/', function (req, res, next) {
 
   var projectuser = req.projectuser;
 
-  if (projectuser.role == "owner" || projectuser.role == "admin") {
+
+  if (req.user instanceof Subscription) {
+//all request 
+  } else if (projectuser && projectuser.role == "owner" || projectuser.role == "admin") {
+//all request 
   }else {  
     query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]
   }
