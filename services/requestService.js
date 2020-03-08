@@ -670,15 +670,16 @@ class RequestService {
         if (err) {
           winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
-        }
+        }       
+
+        request.participants = newparticipants;
 
         if (request.participants.length>0) { 
           request.status = 200; //served
         } else {
           request.status = 100; //unserved
         }
-
-        request.participants = newparticipants;
+        
         request.waiting_time = undefined //reset waiting_time on reroute ????
 
         request.save(function(err, updatedRequest) {
