@@ -53,7 +53,7 @@ var LeadSchema = new Schema({
 );
 
 LeadSchema.index({fullname: 'text', email: 'text'},
- {"name":"fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+ {"name":"lead_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
 
  var lead = mongoose.model('lead', LeadSchema);
