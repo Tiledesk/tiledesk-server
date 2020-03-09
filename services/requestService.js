@@ -731,6 +731,7 @@ class RequestService {
           return reject(err);
         }
         if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
 
@@ -747,6 +748,9 @@ class RequestService {
           }
 
           request.save(function(err, savedRequest) {
+            if (err) {
+              winston.error(err);
+            }
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
               requestEvent.emit('request.participants.join', {member:member, request: savedRequest});
