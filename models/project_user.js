@@ -45,6 +45,9 @@ var winston = require('../config/winston');
     attributes: {
       type: Object,
     },
+    max_served_chat: {
+      type: Number,
+    },
     last_ip: {
         type: String,
     },
