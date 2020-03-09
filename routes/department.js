@@ -112,6 +112,8 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
       operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
     }
   }
+
+  operatorsResult.project = req.project;
   
     return res.json(operatorsResult);
   // }).catch(function (err) {
