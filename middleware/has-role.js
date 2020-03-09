@@ -177,7 +177,7 @@ class RoleChecker {
                   var hierarchicalRoles = that.ROLES[userRole];
                   // winston.debug("hierarchicalRoles", hierarchicalRoles);
       
-                  if ( hierarchicalRoles.includes(role)) {
+                  if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
                     next();
                   }else {
                     res.status(403).send({success: false, msg: 'you dont have the required role.'});
