@@ -23,10 +23,19 @@ router.put('/:leadid', function (req, res) {
   winston.debug(req.body);
   var update = {};
   
-    update.fullname = req.body.fullname;
-    update.email = req.body.email;
-    update.attributes = req.body.attributes;
-    update.status = req.body.status;
+    if (req.body.fullname!=undefined) {
+      update.fullname = req.body.fullname;
+    }
+    
+    if (req.body.email!=undefined) {
+      update.email = req.body.email;
+    }
+    if (req.body.attributes!=undefined) {
+      update.attributes = req.body.attributes;
+    }
+    if (req.body.status!=undefined) {
+      update.status = req.body.status;
+    }
   
   
   Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {
@@ -41,6 +50,30 @@ router.put('/:leadid', function (req, res) {
     res.json(updatedLead);
   });
 });
+
+// router.put('/:leadid', function (req, res) {
+//   winston.debug(req.body);
+//   var update = {};
+  
+//   // trasforma in patch altrimenti nn va
+//     update.fullname = req.body.fullname;
+//     update.email = req.body.email;
+//     update.attributes = req.body.attributes;
+//     update.status = req.body.status;
+  
+  
+//   Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {
+//     if (err) {
+//       winston.error('--- > ERROR ', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+
+  
+
+//     leadEvent.emit('lead.update', updatedLead);
+//     res.json(updatedLead);
+//   });
+// });
 
 router.delete('/:leadid', function (req, res) {
   winston.debug(req.body);

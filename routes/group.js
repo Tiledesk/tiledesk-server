@@ -35,10 +35,15 @@ router.put('/:groupid', function (req, res) {
   winston.debug(req.body);
 
   var update = {};
-  
+  if (req.body.name!=undefined) {
     update.name = req.body.name;
+  }
+  if (req.body.members!=undefined) {
     update.members = req.body.members;
+  }
+  if (req.body.trashed!=undefined) {
     update.trashed = req.body.trashed;
+  }
   
 
   Group.findByIdAndUpdate(req.params.groupid, update, { new: true, upsert: true }, function (err, updatedGroup) {
@@ -52,6 +57,27 @@ router.put('/:groupid', function (req, res) {
   });
 });
 
+// router.put('/:groupid', function (req, res) {
+
+//   winston.debug(req.body);
+
+//   var update = {};
+  
+//     update.name = req.body.name;
+//     update.members = req.body.members;
+//     update.trashed = req.body.trashed;
+  
+
+//   Group.findByIdAndUpdate(req.params.groupid, update, { new: true, upsert: true }, function (err, updatedGroup) {
+//     if (err) {
+//       winston.error('Error putting the group ', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+
+//     groupEvent.emit('group.update', updatedGroup);
+//     res.json(updatedGroup);
+//   });
+// });
 
 router.delete('/:groupid', function (req, res) {
 

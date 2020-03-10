@@ -33,10 +33,15 @@ router.put('/:cannedResponseid', function (req, res) {
   winston.debug(req.body);
   var update = {};
   
-
-  update.title = req.body.title;   
-  update.text = req.body.text;   
-  update.attributes = req.body.attributes;
+  if (req.body.title!=undefined) {
+    update.title = req.body.title; 
+  }  
+  if (req.body.text!=undefined) {
+    update.text = req.body.text;   
+  }
+  if (req.body.attributes!=undefined) {
+    update.attributes = req.body.attributes;
+  }
   
   
   CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, update, { new: true, upsert: true }, function (err, updatedCannedResponse) {

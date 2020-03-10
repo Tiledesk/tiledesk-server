@@ -52,14 +52,27 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   winston.debug(req.body);
 
   var update = {};
-  
+  if (req.body.id_bot!=undefined) {
     update.id_bot = req.body.id_bot;
+  }
+  if (req.body.bot_only!=undefined) {
     update.bot_only = req.body.bot_only;
+  }
+  if (req.body.routing!=undefined) {
     update.routing = req.body.routing;
+  }
+  if (req.body.name!=undefined) {
     update.name = req.body.name;
+  }
+  if (req.body.id_group!=undefined) {
     update.id_group = req.body.id_group;
+  }
+  if (req.body.online_msg!=undefined) {
     update.online_msg = req.body.online_msg;
+  }
+  if (req.body.status!=undefined) {
     update.status = req.body.status;
+  }
   
 
 
@@ -72,7 +85,31 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
     res.json(updatedDepartment);
   });
 });
-// nn funziona
+
+// router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+//   winston.debug(req.body);
+
+//   var update = {};
+//     update.id_bot = req.body.id_bot;
+//     update.bot_only = req.body.bot_only;
+//     update.routing = req.body.routing;
+//     update.name = req.body.name;
+//     update.id_group = req.body.id_group;
+//     update.online_msg = req.body.online_msg;
+//     update.status = req.body.status;
+  
+
+
+//   Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
+//     if (err) {
+//       winston.error('Error putting the department ', err);
+//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+//     }
+//     departmentEvent.emit('department.update', updatedDepartment);
+//     res.json(updatedDepartment);
+//   });
+// });
 
 router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 

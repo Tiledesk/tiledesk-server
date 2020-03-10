@@ -110,13 +110,24 @@ router.put('/:faqid', function (req, res) {
 
   var update = {};
   
-
+  if (req.body.intent!=undefined) {
     update.intent = req.body.intent;
+  }
+  if (req.body.question!=undefined) {
     update.question = req.body.question;
+  }
+  if (req.body.answer!=undefined) {
     update.answer = req.body.answer;
+  }
+  if (req.body.topic!=undefined) {
     update.topic = req.body.topic;
+  }
+  if (req.body.status!=undefined) {
     update.status = req.body.status;
+  }
+  if (req.body.language!=undefined) {
     update.language = req.body.language;
+  }
 
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {

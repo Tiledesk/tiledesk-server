@@ -101,12 +101,21 @@ router.put('/:faq_kbid', function (req, res) {
   winston.debug(req.body);
 
   var update = {};
-  
+  if (req.body.name!=undefined) {
     update.name = req.body.name;
+  }
+  if (req.body.url!=undefined) {
     update.url = req.body.url;
+  }
+  if (req.body.webhookUrl!=undefined) {
     update.webhookUrl = req.body.webhookUrl;
+  }
+  if (req.body.type!=undefined) {
     update.type = req.body.type;
+  }
+  if (req.body.trashed!=undefined) {
     update.trashed = req.body.trashed;
+  }
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
     if (err) {
