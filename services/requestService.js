@@ -671,7 +671,10 @@ class RequestService {
           winston.error("Error setParticipantsByRequestId", err);
           return reject(err);
         }       
-
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
         request.participants = newparticipants;
 
         if (request.participants.length>0) { 
@@ -727,7 +730,7 @@ class RequestService {
         .populate({path:'requester',populate:{path:'id_user'}})
         .exec( function(err, request) {
         if (err){
-          winston.error(err);
+          winston.error("Error adding participant ", err);
           return reject(err);
         }
         if (!request) {
@@ -746,7 +749,7 @@ class RequestService {
           } else {
             request.status = 100;
           }
-
+// check error here
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error(err);
@@ -783,11 +786,12 @@ class RequestService {
         .exec( function(err, request) {
         
         if (err){
-          winston.error(err);
+          winston.error("Error removing participant ", err);
           return reject(err);
         }
 
         if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
 
