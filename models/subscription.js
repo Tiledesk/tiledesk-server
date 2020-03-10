@@ -26,6 +26,12 @@ var SubscriptionSchema = new Schema({
     required: true,
     index: true
   },
+  global: {
+    type: Boolean,
+    default: false,
+    select: false,
+    index: true
+  },
   createdBy: {
     type: String,
     required: true
