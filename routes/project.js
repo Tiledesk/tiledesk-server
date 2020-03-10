@@ -111,7 +111,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
   }
 
-
+  if (req.body["settings.automatic_idle_chats"]!=undefined) {
+    update["settings.automatic_idle_chats"] = req.body["settings.automatic_idle_chats"];
+  }
+  
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
   }
@@ -159,6 +162,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   if (req.body.settings!=undefined) {
     update.settings = req.body.settings;
   }
+  
   if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
@@ -171,7 +175,10 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
   }
 
-
+  if (req.body["settings.automatic_idle_chats"]!=undefined) {
+    update["settings.automatic_idle_chats"] = req.body["settings.automatic_idle_chats"];
+  }
+  
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
   }
