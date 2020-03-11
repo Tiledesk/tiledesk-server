@@ -270,7 +270,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 // });
 
 
-router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['subscription'])], function (req, res) {
 
   winston.info("project_userid update", req.body);
 
