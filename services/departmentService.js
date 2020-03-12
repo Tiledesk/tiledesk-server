@@ -120,7 +120,7 @@ roundRobin(operatorSelectedEvent) {
           //   at processTicksAndRejections (internal/process/next_tick.js:81:5)
           // (node:74274) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). (rejection id: 1)          
           if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0) {
-            winston.info('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
+            winston.debug('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
             return resolve(operatorSelectedEvent);
           }
 
