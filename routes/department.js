@@ -135,7 +135,7 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
   
   var disableWebHookCall = false;
   if (req.query.disableWebHookCall) {
-    disableWebHookCall = req.query.disableWebHookCall;
+    disableWebHookCall = (req.query.disableWebHookCall == 'true') ;
   }
   winston.info("disableWebHookCall: "+ disableWebHookCall);
 
