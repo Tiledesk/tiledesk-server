@@ -137,7 +137,7 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
   if (req.query.disableWebHookCall) {
     disableWebHookCall = req.query.disableWebHookCall;
   }
-  winston.info("disableWebHookCall", disableWebHookCall);
+  winston.info("disableWebHookCall: "+ disableWebHookCall);
 
   // getOperators(departmentid, projectid, nobot) {
   var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall);
