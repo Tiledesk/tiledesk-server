@@ -132,8 +132,15 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
+  
+  var disableWebHookCall = false;
+  if (req.query.disableWebHookCall) {
+    disableWebHookCall = req.query.disableWebHookCall;
+  }
+  winston.info("disableWebHookCall", disableWebHookCall);
+
   // getOperators(departmentid, projectid, nobot) {
-  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot);
+  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall);
   winston.debug("Getting department operators operatorsResult", operatorsResult);
 
   operatorsResult.available_agents_request  = [];
