@@ -99,16 +99,36 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.settings!=undefined) {
     update.settings = req.body.settings;
   }
+  
   if (req.body["settings.email.autoSendTranscriptToRequester"]!=undefined) {
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
+  }
+
+
+
+  if (req.body["settings.chat_limit_on"]!=undefined) {
+    update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
   }
 
   if (req.body["settings.max_agent_served_chat"]!=undefined) {
     update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
   }
 
+
+
+  if (req.body["settings.reassignment_on"]!=undefined) {
+    update["settings.reassignment_on"] = req.body["settings.reassignment_on"];
+  }
+
   if (req.body["settings.reassignment_delay"]!=undefined) {
     update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
+  }
+
+
+
+
+  if (req.body["settings.automatic_unavailable_status_on"]!=undefined) {
+    update["settings.automatic_unavailable_status_on"] = req.body["settings.automatic_unavailable_status_on"];
   }
 
   if (req.body["settings.automatic_idle_chats"]!=undefined) {
@@ -167,12 +187,31 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
 
+
+
+  if (req.body["settings.chat_limit_on"]!=undefined) {
+    update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
+  }
+
   if (req.body["settings.max_agent_served_chat"]!=undefined) {
     update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
   }
 
+
+
+  if (req.body["settings.reassignment_on"]!=undefined) {
+    update["settings.reassignment_on"] = req.body["settings.reassignment_on"];
+  }
+
   if (req.body["settings.reassignment_delay"]!=undefined) {
     update["settings.reassignment_delay"] = req.body["settings.reassignment_delay"];
+  }
+
+
+
+
+  if (req.body["settings.automatic_unavailable_status_on"]!=undefined) {
+    update["settings.automatic_unavailable_status_on"] = req.body["settings.automatic_unavailable_status_on"];
   }
 
   if (req.body["settings.automatic_idle_chats"]!=undefined) {
