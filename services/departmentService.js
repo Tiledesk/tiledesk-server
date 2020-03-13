@@ -394,9 +394,10 @@ getOperators(departmentid, projectid, nobot) {
             departmentEvent.emit('operator.select', {result:objectToReturnRoundRobin, resolve: resolve, reject: reject});
 
             // attento qui
-            // if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
-            //   objectToReturnRoundRobin.operators = [];
-            // }
+            // da riabilitare
+            if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
+              objectToReturnRoundRobin.operators = [];
+            }
 
             //is resolved by departmentEvent or SubscriptionNotifier
             // return resolve(objectToReturnRoundRobin);
