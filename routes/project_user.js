@@ -354,8 +354,11 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 //  */
  router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
    winston.debug("--> users USER ID ", req.params.user_id);
-   // project_user_qui
+
    Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
+//TODO correct is an array
+  // Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
+   
     populate('id_user').
      exec(function (err, project_user) {
       if (err) {
