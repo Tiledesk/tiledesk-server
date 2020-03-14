@@ -133,10 +133,11 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
   
-  var disableWebHookCall = false;
+  var disableWebHookCall = undefined;
   if (req.query.disableWebHookCall) {
     disableWebHookCall = (req.query.disableWebHookCall == 'true') ;
   }
+
   winston.info("disableWebHookCall: "+ disableWebHookCall);
 
   // getOperators(departmentid, projectid, nobot) {
@@ -166,70 +167,6 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
   // });
 });
 
-// START - GET MY DEPTS
-// !!! NO MORE USED 
-// ============= GET ALL GROUPS WITH THE PASSED PROJECT ID =============
-// elimino???
-// router.get('/mydepartments', function (req, res) {
-//   winston.debug("req projectid", req.projectid);
-
-//   var query = { "id_project": req.projectid };
-
-//   if (req.project.isActiveSubscription() == false) {
-//     query.default = true;
-//   }
-
-//   Department.find(query, function (err, departments) {
-//     if (err) return next(err);
-//     winston.debug('1) FIND MY DEPTS - ALL DEPTS ARRAY ', departments)
-//     // departments_array.push(departments);
-//     // winston.debug('-- -- -- array of depts - null', arr)
-
-//     Group.find({ "id_project": req.projectid, trashed: false, members: req.user.id }, function (err, groups) {
-//       if (err) return next(err);
-//       winston.debug('2) GET MY DEPTS - MY GROUPS ARRAY ', groups)
-//       var mydepts = []
-//       departments.forEach(dept => {
-
-//         // winston.debug('3) DEPT ', dept)
-//         if (dept.id_group == null) {
-//           winston.debug('DEPT NAME (when null/undefined) ', dept.name, ', dept id ', dept._id)
-//           mydepts.push(dept._id);
-
-//           // FOR DEBUG
-//           // mydepts.forEach(mydept => {
-//           //   winston.debug('- MY DEPT NAME: ', mydept.name, ', ID GROUP: ', mydept.id_group)
-//           // });
-//           // winston.debug('- MY DEPTS ARRAY ', mydepts)
-//         }
-//         else {
-//           deptContainsMyGroup(groups)
-//           // groups.forEach(group => {
-//           //   winston.debug('4) GROUP ', group)
-//           //   if ( group._id == dept.id_group) {
-//           //     mydepts.push(dept);
-//           //     winston.debug('-- MY DEPTS ARRAY ', mydepts)
-//           //   }
-//           // });
-//           // winston.debug('-- MY DEPTS ARRAY ', mydepts)
-//         }
-
-//         function deptContainsMyGroup(groups) {
-//           groups.forEach(group => {
-//             // winston.debug('4) GROUP ', group)
-//             if (group._id == dept.id_group) {
-//               winston.debug('DEPT NAME (my departments) ', dept.name, ', dept id ', dept._id)
-//               mydepts.push(dept._id);
-//             }
-//           });
-//         }
-
-//       });
-//       return res.json(mydepts);
-//     })
-
-//   });
-// })
 
 // ======================== ./END - GET MY DEPTS ========================
 

@@ -1,6 +1,7 @@
 
 var Department = require("../models/department");
 var Project_user = require("../models/project_user");
+var Project = require("../models/project");
 var Group = require("../models/group");
 var operatingHoursService = require("./operatingHoursService");
 var mongoose = require('mongoose');
@@ -158,11 +159,31 @@ roundRobin(operatorSelectedEvent) {
 
 
 
-getOperators(departmentid, projectid, nobot, disableWebHookCall) {
+getOperators(departmentid, projectid, nobot, disableWebHookCall=true) {
+
+
 
   var that = this;
   return new Promise(function (resolve, reject) {
        // console.log("»»» »»» --> DEPT ID ", departmentid);
+
+
+    return Project.findById(projectid, function(err, project) {
+      if (err) {
+        winston.error('Project findById ', err);
+        return reject(err);
+      }
+      if (!project) {
+        winston.error("Project not found with id ", projectid);
+        return reject({ success: false, msg: "Project not found with id "});
+      }
+
+
+      if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
+        disableWebHookCall = false;
+      }
+   
+
 
       let query;
       if (departmentid == 'default' || departmentid == undefined) {
@@ -264,6 +285,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
           });
         }
       });
+    });
   });
 };
 
