@@ -179,6 +179,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall=true) {
       }
 
 
+      //if pro enabled disableWebHookCall = false
       if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
         disableWebHookCall = false;
       }
@@ -415,14 +416,11 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall=true) {
 
             departmentEvent.emit('operator.select', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
 
-            // attento qui
-            // da riabilitare
-            if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
-              objectToReturnRoundRobin.operators = [];
-            }
-            // if (project_users.max limit enabled) {
-            //   return operators = [];
+            // attento qui            
+            // if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
+            //   objectToReturnRoundRobin.operators = [];
             // }
+          
 
             //is resolved by departmentEvent or SubscriptionNotifier
             // return resolve(objectToReturnRoundRobin);
