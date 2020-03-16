@@ -159,7 +159,7 @@ roundRobin(operatorSelectedEvent) {
 
 
 
-getOperators(departmentid, projectid, nobot, disableWebHookCall=true) {
+getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 
 
 
@@ -179,10 +179,16 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall=true) {
       }
 
 
-      //if pro enabled disableWebHookCall = false
-      if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
-        disableWebHookCall = false;
+      // if not defined
+      if (disableWebHookCall==undefined) {
+              //if pro enabled disableWebHookCall = false
+        if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
+          disableWebHookCall = false;
+        } else {
+          disableWebHookCall = true;
+        }
       }
+      
    
 
 
