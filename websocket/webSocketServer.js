@@ -14,6 +14,7 @@ var config = require('../config/database'); // get db config file
 var winston = require('../config/winston');
 var roleChecker = require('../middleware/has-role');
 const PubSub = require('./pubsub');
+const authEvent = require('../event/authEvent');
 
 class WebSocketServer {
 
@@ -283,7 +284,37 @@ class WebSocketServer {
               
 
 
-          } else {
+        } else if (id.indexOf('/project_users/') > -1) {
+
+          var urlSub = id.split('/');  
+
+          var projectId = urlSub[1];
+          winston.debug('projectId: '+projectId);
+              
+          var puId = urlSub[3];
+          winston.info('puId: '+puId);
+
+          var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
+          winston.info(' query: ',query);
+
+          Project_user.findOne(query, function (err, projectuser) {
+            if (err) {
+               winston.error('error getting  Project_user', err);  
+               return reject(err);
+            }
+            if (!projectuser) {
+               winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+               return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
+            }
+
+            return resolve({publishFunction:function() {
+              pubSubServer.handlePublishMessage (id, projectuser, undefined, true, "CREATE");
+            }});        
+
+          });
+        } else {
+
+            //request/id
 
                 var urlSub = id.split('/');  
 
@@ -345,6 +376,10 @@ class WebSocketServer {
                 });
                 
             }
+
+            //creare weksocket for projectuser update per available and unavailable
+
+
           });
     }
 
@@ -374,6 +409,14 @@ class WebSocketServer {
         pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
         pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
      
+      });
+
+      authEvent.on('project_user.update',function(data) {
+        var pu = data.updatedProject_userPopulated;
+        winston.debug('pu', pu);
+
+        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/'+pu.id, pu, undefined, true, "CREATE");
+
       });
       
 
