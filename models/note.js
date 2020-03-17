@@ -13,11 +13,11 @@ var NoteSchema = new Schema({
   attributes: {
     type: Object,
   },
-  id_project: {
-    type: String,
-    required: true,
-    index: true
-  },
+  // id_project: {
+  //   type: String,
+  //   required: true,
+  //   index: true
+  // },
   createdBy: {
     type: String,
     required: true

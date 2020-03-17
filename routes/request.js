@@ -215,6 +215,7 @@ router.put('/:requestid/participants', function (req, res) {
   
 });
 
+
 router.delete('/:requestid/participants/:participantid', function (req, res) {
   winston.debug(req.body);
   
@@ -358,7 +359,7 @@ router.patch('/:requestid/attributes',  function (req, res) {
 router.post('/:requestid/notes',  function (req, res) {
   var note = {};
   note.text = req.body.text;
-  note.id_project = req.id_project;
+  // note.id_project = req.projectid;
   note.createdBy = req.user.id;
 
   return Request.findOneAndUpdate({request_id:req.params.requestid, id_project:req.projectid},{ $push: { notes: note } } , { new: true, upsert: false })
