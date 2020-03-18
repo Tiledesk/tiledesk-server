@@ -6,10 +6,8 @@ var emailService = require("../services/emailService");
 var winston = require('../config/winston');
 const authEvent = require('../event/authEvent');
 
-/* GET users listing. */
-// router.get('/', function (req, res, next) {
-//   res.send('respond with a resource');
-// });
+
+
 
 
 router.put('/', function (req, res) {
