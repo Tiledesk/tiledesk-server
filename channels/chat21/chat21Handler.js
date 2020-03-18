@@ -403,6 +403,8 @@ class Chat21Handler {
                         gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
+
+                        gAttributes['_request'] = request; //used by ionic to open request detail 
                         
                         
                         
@@ -414,7 +416,8 @@ class Chat21Handler {
                         var groupId = request.request_id;
 
                         var group_name = "Guest"; 
-                        if (request.lead) {
+
+                        if (request.lead && request.lead.fullname) {
                             group_name = request.lead.fullname;
                         }
                         if (request.subject) {
