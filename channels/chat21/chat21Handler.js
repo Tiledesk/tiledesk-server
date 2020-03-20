@@ -207,6 +207,7 @@ class Chat21Handler {
 
                              // updateAttributes: function(attributes, group_id){
                                  var gattributes = {userFullname:lead.fullname, userEmail: lead.email }
+                                //  qui1
                             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
                                 winston.info("Chat21 group gattributes updated: " + data);      
                                 chat21Event.emit('group.update', data);        
@@ -342,6 +343,31 @@ class Chat21Handler {
                         chat21.auth.setAdminToken(adminToken);
 
                         var gattributes = request.attributes;
+                        // qui1
+                        chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
+                            winston.info("Chat21 group gattributes updated: " + data);      
+                            chat21Event.emit('group.update', data);        
+                            chat21Event.emit('group.attributes.update', data);                                          
+                        }).catch(function(err) {
+                            winston.error("Error updating chat21  gattributes group ", err);
+                            chat21Event.emit('group.attributes.update.error', err);
+                        });
+
+                    }
+                });
+            });
+
+
+            // new qui
+            requestEvent.on('request.update',  function(request) {          
+
+                setImmediate(() => {
+                    if (request.channel.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                        var gattributes = { "_request":request};
+                        // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
                             winston.info("Chat21 group gattributes updated: " + data);      
                             chat21Event.emit('group.update', data);        
@@ -428,6 +454,7 @@ class Chat21Handler {
                             group_name = request.subject;
                         }
 
+                        // qui1
                         chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.info("Chat21 group created: " + data);      
                                 chat21Event.emit('group.create', data);                                          
