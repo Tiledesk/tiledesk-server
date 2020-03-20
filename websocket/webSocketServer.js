@@ -282,8 +282,8 @@ class WebSocketServer {
 
               });
               
-
-
+              // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/5e71139f61dd040bc9594cee/project_users/5e71139f61dd040bc9594cef"}}')
+              //curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e71139f61dd040bc9594cee/project_users/
         } else if (id.indexOf('/project_users/') > -1) {
 
           var urlSub = id.split('/');  
