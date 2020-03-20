@@ -54,6 +54,7 @@ describe('RequestService', function () {
           expect(savedRequest.participants).to.contains(userid);
           console.log("savedRequest.participants[0]", savedRequest.participants[0]);
           expect(savedRequest.participants[0].toString()).to.equal(userid);
+          expect(savedRequest.assigned_at).to.not.equal(null);
           
           expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
@@ -286,7 +287,7 @@ describe('RequestService', function () {
                         expect(upRequest.waiting_time).to.not.equal(null);
                         expect(upRequest.waiting_time).to.gte(500);
                         expect(upRequest.waiting_time).to.lte(maxWaitingTime);
-                      
+                        expect(upRequest.first_response_at).to.not.equal(null);
                         done();                         
                       }).catch(function(err){
                         winston.error("test reject", err);
