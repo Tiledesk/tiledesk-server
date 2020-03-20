@@ -52,9 +52,11 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   winston.debug(req.body);
 
   var update = {};
-  if (req.body.id_bot!=undefined) {
+
+
+  // if (req.body.id_bot!=undefined) {
     update.id_bot = req.body.id_bot;
-  }
+  // }
   if (req.body.bot_only!=undefined) {
     update.bot_only = req.body.bot_only;
   }
@@ -64,9 +66,9 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
-  if (req.body.id_group!=undefined) {
+  // if (req.body.id_group!=undefined) {
     update.id_group = req.body.id_group;
-  }
+  // }
   if (req.body.online_msg!=undefined) {
     update.online_msg = req.body.online_msg;
   }
@@ -128,6 +130,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
     res.json(department);
   });
 });
+
 
 
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
