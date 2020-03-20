@@ -1,6 +1,6 @@
 module.exports = {
   'secret':'nodeauthsecret',
-  'database': 'mongodb://localhost/tiledesk',
-  'databaselogs': 'mongodb://localhost/tiledesk-logs',
-  'databasetest': 'mongodb://localhost/tiledesk-test'
+  'database': 'mongodb://localhost:27017/tiledesk',
+  'databaselogs': 'mongodb://localhost:27017/tiledesk-logs',
+  'databasetest': 'mongodb://localhost:27017/tiledesk-test'
 };
