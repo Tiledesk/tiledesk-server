@@ -298,10 +298,11 @@ describe('/SendMessageSigninAnonym', () => {
                           expect(res.body.user.firstname).to.equal("Guest");                                               
                          
                           expect(res.body.token).to.not.equal(undefined);  
-                                                                       
+                                          
+                          var rid = 'support-group-'+ Date.now();
                       
                           chai.request(server)
-                              .post('/'+ savedProject._id + '/requests/sendMessageSigninAnonym/messages')
+                              .post('/'+ savedProject._id + '/requests/'+rid+'/messages')
                               .set('Authorization', res.body.token)
                               .set('content-type', 'application/json')
                               .send({"text":"text"})
@@ -314,13 +315,13 @@ describe('/SendMessageSigninAnonym', () => {
                                   expect(res.body.sender).to.equal(userId);
                                   // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
                                   // expect(res.body.senderFullname).to.equal("senderFullname");
-                                  expect(res.body.recipient).to.equal("sendMessageSigninAnonym");
+                                  expect(res.body.recipient).to.equal(rid);
                                   expect(res.body.text).to.equal("text");
                                   expect(res.body.id_project).to.equal(savedProject._id.toString());
                                   expect(res.body.createdBy).to.equal(userId);
                                   expect(res.body.status).to.equal(0);
 
-                                  expect(res.body.request.request_id).to.equal("sendMessageSigninAnonym");
+                                  expect(res.body.request.request_id).to.equal(rid);
                                   expect(res.body.request.first_text).to.equal("text");
                                   expect(res.body.request.id_project).to.equal(savedProject._id.toString());
                                   expect(res.body.request.createdBy).to.equal(userId);
@@ -333,7 +334,7 @@ describe('/SendMessageSigninAnonym', () => {
                                  
                             
                                   chai.request(server)
-                                    .get('/'+ savedProject._id + '/requests/sendMessageSigninAnonym')
+                                    .get('/'+ savedProject._id + '/requests/'+rid)
                                     .auth(email, pwd)
                                     .set('content-type', 'application/json')                                   
                                     .end(function(err, res) {
