@@ -601,6 +601,10 @@ router.get('/', function (req, res, next) {
     sort(sortQuery).
     exec();
 
+
+    // TODO if ?onlycount=true do not perform find query but only 
+    // set q1 to undefined; to skip query
+
   var q2 =  Request.countDocuments(query).exec();
 
   var promises = [
