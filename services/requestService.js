@@ -31,6 +31,8 @@ class RequestService {
 
           // winston.debug("getOperators", result);
 
+          var assigned_at = undefined;          
+            
           var status = 100; //unserved
           var assigned_operator_id;
           var participants = [];
@@ -39,6 +41,7 @@ class RequestService {
             assigned_operator_id = result.operators[0].id_user;
             status = 200; //served
             participants.push(assigned_operator_id.toString());
+            assigned_at = Date.now();            
           }
            winston.info("routeInternal assigned_operator_id: "+ assigned_operator_id);
            winston.info("routeInternal status: "+ status);
@@ -47,7 +50,7 @@ class RequestService {
           request.participants = participants;
           request.department = result.department._id;
           request.agents = result.agents;
-
+          request.assigned_at = assigned_at;
           request.waiting_time = undefined //reset waiting_time on reroute
                   
               return resolve(request);
@@ -228,7 +231,8 @@ class RequestService {
         return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
 
            // winston.debug("getOperators", result);
-
+           
+           var assigned_at = undefined;          
            var assigned_operator_id;
            var participants = [];
           //  winston.debug("req status0", status);
@@ -239,6 +243,7 @@ class RequestService {
                assigned_operator_id = result.operators[0].id_user;
                status = 200; //served
                participants.push(assigned_operator_id.toString());
+               assigned_at = Date.now();
              }
            }
            
@@ -264,7 +269,8 @@ class RequestService {
                 sourcePage: sourcePage,
                 language: language,
                 userAgent: userAgent,
-            
+                assigned_at : assigned_at,
+
                 attributes: attributes,
                 //standard
                 id_project: id_project,
@@ -346,9 +352,11 @@ class RequestService {
           var status = 100;
           var assigned_operator_id;
           var participants = [];
+          var assigned_at = undefined;
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
             status = 200;
+            assigned_at = Date.now();
             participants.push(assigned_operator_id.toString());
           }
           // winston.debug("assigned_operator_id", assigned_operator_id);
@@ -370,7 +378,7 @@ class RequestService {
                 sourcePage: sourcePage,
                 language: language,
                 userAgent: userAgent,
-            
+                assigned_at:assigned_at,
                 attributes: attributes,
                 //standard
                 id_project: id_project,
@@ -515,11 +523,14 @@ class RequestService {
         }
         //update waiting_time only the first time
         if (!request.waiting_time) {
-          var waitingTime = Date.now() - request.createdAt;
+          var now = Date.now();
+          var waitingTime = now - request.createdAt;
           // winston.debug("waitingTime", waitingTime);
   
          
           request.waiting_time = waitingTime;
+          request.first_response_at = now;
+
             // winston.debug(" request",  request);
             winston.debug("Request  waitingTime setted");
           return resolve(request.save());
@@ -593,6 +604,7 @@ class RequestService {
 
           if (request.participants.length>0) {
             request.status = 200;
+            // assigned_at?
           } else {
             request.status = 100;
           }
@@ -679,6 +691,7 @@ class RequestService {
 
         if (request.participants.length>0) { 
           request.status = 200; //served
+          // assigned_at?
         } else {
           request.status = 100; //unserved
         }
@@ -742,10 +755,13 @@ class RequestService {
       // return Request.findById(id).then(function (request) {
         if (request.participants.indexOf(member)==-1){
           request.participants.push(member);
+          // qui assignetat
         }
 
-          if (request.participants.length>0) {
+          if (request.participants.length>0) {          
             request.status = 200;
+            var assigned_at = Date.now();
+            request.assigned_at = assigned_at;
           } else {
             request.status = 100;
           }
@@ -805,6 +821,7 @@ class RequestService {
         if (request.status!=1000) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
           if (request.participants.length>0) { 
             request.status = 200;
+            // assignet_at?
           } else {
             request.status = 100;
           }

@@ -153,6 +153,16 @@ var RequestSchema = new Schema({
     type: String
   },
 
+  //timestamp when the agent reply the first time to a visitor
+  first_response_at: {
+    type: Date
+  },
+
+  //timestamp when the agent reply the first time to a visitor
+  assigned_at: {
+    type: Date
+  },
+
   // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served.
   // Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
   waiting_time: {
