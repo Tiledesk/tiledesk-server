@@ -115,13 +115,20 @@ router.get('/:groupid', function (req, res) {
 });
 
 
-// GET ALL GROUPS WITH THE PASSED PROJECT ID
+
 router.get('/', function (req, res) {
 
   winston.debug("req projectid", req.projectid);
 
+  var query = { "id_project": req.projectid, trashed: false };
 
-  Group.find({ "id_project": req.projectid, trashed: false }, function (err, groups) {        
+  if (req.query.member) {
+    query.members = { $in : req.query.member }
+  }
+  
+  winston.info("query", query);
+  
+  Group.find(query, function (err, groups) {        
     if (err) {
       winston.error('Error getting the group ', err);
       return next(err);
