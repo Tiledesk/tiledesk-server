@@ -121,8 +121,8 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             // _id: new mongoose.Types.ObjectId(),
             id_project: req.projectid,
             id_user: user._id,
-            role: req.body.role,
-            user_available: true,
+            role: req.body.role,           
+            user_available: req.body.user_available || true, //initial user_available value
             createdBy: req.user.id,
             updatedBy: req.user.id
           });

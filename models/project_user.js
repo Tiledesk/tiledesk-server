@@ -40,6 +40,8 @@ var winston = require('../config/winston');
     },
     user_available: {
       type: Boolean,
+      default: true,
+      index: true
       // required: true
     },
     attributes: {
