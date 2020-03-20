@@ -404,8 +404,12 @@ class Chat21Handler {
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
 
-                        // gAttributes['_request'] = request; //used by ionic to open request detail 
                         
+                        // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610
+                        var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+                            if (v === undefined) { return null; } return v; 
+                         }));
+                         gAttributes['_request'] = requestWithoutUndefined; //used by ionic to open request detail 
                         
                         
 
