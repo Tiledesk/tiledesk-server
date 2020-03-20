@@ -425,6 +425,8 @@ router.post('/signinWithCustomToken', [
 
 
 
+// TODO aggiungere logout? con user.logout event?
+
 router.post('/signin', function (req, res) {
   winston.debug("req.body.email", req.body.email);
 // authType
