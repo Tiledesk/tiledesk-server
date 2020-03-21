@@ -26,7 +26,7 @@ class ConciergeBot {
 devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente al primo messaggio non riceve il welcome iniziale
             }
         });
-
+*/
         messageEvent.on('message.create',  function(message) {
             winston.info(" ConciergeBot message create", message);
             var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
@@ -45,7 +45,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
         });
         
-*/
+
+       
+        
+
         requestEvent.on('request.participants.join',  function(data) {       
                     let request = data.request;
                     let member = data.member;
@@ -163,6 +166,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             
             winston.debug("ConciergeBot send welcome bot message");     
             
+           
             if (request.availableAgents.length==0) {
                
                 // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
