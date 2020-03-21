@@ -3,6 +3,7 @@
 var emailService = require("../../services/emailService");
 var Project = require("../../models/project");
 var Request = require("../../models/request");
+var RequestConstants = require("../../models/requestConstants");
 var Project_user = require("../../models/project_user");
 
 var User = require("../../models/user");
@@ -85,8 +86,10 @@ sendEmail(projectid, savedRequest) {
          
          // winston.debug("Project", project);
    
-   
-                 if (savedRequest.status==100) { //POOLED
+
+
+              // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
+                 if (savedRequest.status==RequestConstants.UNSERVED) { //POOLED
                  // throw "ciao";
                    var allAgents = savedRequest.agents;
                   // winston.debug("allAgents", allAgents);
@@ -115,7 +118,8 @@ sendEmail(projectid, savedRequest) {
    
                    }
 
-                   else if (savedRequest.status==200) { //ASSIGNED
+                   // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
+                   else if (savedRequest.status==RequestConstants.SERVED) { //ASSIGNED
                     var assignedId = savedRequest.participants[0];
                      winston.debug("participants", assignedId);
 

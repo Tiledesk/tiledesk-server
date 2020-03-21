@@ -14,6 +14,7 @@ const requestEvent = require('../event/requestEvent');
 var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
+var RequestConstants = require("../models/requestConstants");
 
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
@@ -33,13 +34,13 @@ class RequestService {
 
           var assigned_at = undefined;          
             
-          var status = 100; //unserved
+          var status = RequestConstants.UNSERVED; //unserved
           var assigned_operator_id;
           var participants = [];
           
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
-            status = 200; //served
+            status =  RequestConstants.SERVED; //served
             participants.push(assigned_operator_id.toString());
             assigned_at = Date.now();            
           }
@@ -238,10 +239,10 @@ class RequestService {
           //  winston.debug("req status0", status);
            if (!status) {
             //  winston.debug("req status check", status);
-             status = 100; //unserved
+             status = RequestConstants.UNSERVED; //unserved
              if (result.operators && result.operators.length>0) {
                assigned_operator_id = result.operators[0].id_user;
-               status = 200; //served
+               status =  RequestConstants.SERVED; //served
                participants.push(assigned_operator_id.toString());
                assigned_at = Date.now();
              }
@@ -349,13 +350,13 @@ class RequestService {
 
           // winston.debug("getOperators", result);
 
-          var status = 100;
+          var status =  RequestConstants.UNSERVED;
           var assigned_operator_id;
           var participants = [];
           var assigned_at = undefined;
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
-            status = 200;
+            status =  RequestConstants.SERVED;
             assigned_at = Date.now();
             participants.push(assigned_operator_id.toString());
           }
@@ -603,10 +604,10 @@ class RequestService {
           }
 
           if (request.participants.length>0) {
-            request.status = 200;
+            request.status =  RequestConstants.SERVED;
             // assigned_at?
           } else {
-            request.status = 100;
+            request.status =  RequestConstants.UNSERVED;
           }
 
           request.save(function(err, savedRequest) {
@@ -690,10 +691,10 @@ class RequestService {
         request.participants = newparticipants;
 
         if (request.participants.length>0) { 
-          request.status = 200; //served
+          request.status =  RequestConstants.SERVED; //served
           // assigned_at?
         } else {
-          request.status = 100; //unserved
+          request.status =  RequestConstants.UNSERVED; //unserved
         }
         
         request.waiting_time = undefined //reset waiting_time on reroute ????
@@ -759,11 +760,11 @@ class RequestService {
         }
 
           if (request.participants.length>0) {          
-            request.status = 200;
+            request.status =  RequestConstants.SERVED;
             var assigned_at = Date.now();
             request.assigned_at = assigned_at;
           } else {
-            request.status = 100;
+            request.status =  RequestConstants.UNSERVED;
           }
 // check error here
           request.save(function(err, savedRequest) {
@@ -818,12 +819,12 @@ class RequestService {
           request.participants.splice(index, 1);
           // winston.debug(" request.participants",  request.participants);
         }
-        if (request.status!=1000) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+        if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
           if (request.participants.length>0) { 
-            request.status = 200;
+            request.status =  RequestConstants.SERVED;
             // assignet_at?
           } else {
-            request.status = 100;
+            request.status =  RequestConstants.UNSERVED;
           }
         }
          

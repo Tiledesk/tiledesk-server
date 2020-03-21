@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 var Channel = require('../models/channel');
 var ObjectId = require('mongoose').Types.ObjectId;
 var winston = require('../config/winston');
+var RequestConstants = require("../models/requestConstants");
 
 var ProjectUserSchema = require("../models/project_user").schema;
 var NoteSchema = require("../models/note").schema;
@@ -101,7 +102,7 @@ var RequestSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: 100,
+    default: RequestConstants.UNSERVED,
     index: true
   }, 
 
