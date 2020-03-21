@@ -31,7 +31,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             winston.info(" ConciergeBot message create", message);
             var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
-            if (message.request.status < 100 && message.sender == message.request.lead.lead_id && !botId) {
+            if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
             // if ( message.sender == message.request.lead.lead_id) {   
                 winston.info("message send from lead");
                 // changeStatusByRequestId(request_id, id_project, newstatus) {
@@ -165,7 +165,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
         // if (!request.department.id_bot) {
             
             winston.debug("ConciergeBot send welcome bot message");     
-            
+          
            
             if (request.availableAgents.length==0) {
                
