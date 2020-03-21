@@ -464,6 +464,33 @@ class RequestService {
 
   }
 
+  changeFirstTextByRequestId(request_id, id_project, first_text) {
+
+    return new Promise(function (resolve, reject) {
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
+
+        return Request       
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {first_text: first_text}, {new: true, upsert:false})
+        .populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, updatedRequest) {
+
+            if (err) {
+              winston.error(err);
+              return reject(err);
+            }
+            requestEvent.emit('request.update',updatedRequest);
+            //TODO emit request.clone or reopen also 
+
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
 
   setClosedAtByRequestId(request_id, id_project, closed_at) {
 
