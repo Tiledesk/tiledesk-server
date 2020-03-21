@@ -34,11 +34,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
             // if ( message.sender == message.request.lead.lead_id) {   
                 winston.info("message send from lead");
-                // changeStatusByRequestId(request_id, id_project, newstatus) {
-                    // requestService.changeStatusByRequestId(message.request.request_id, message.request.id_project, "").then(function (reqStatusChanged) {
+                // changeFirstTextByRequestId(request_id, id_project, first_text) {
+                     requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
                          // reroute(request_id, id_project, nobot)
                         requestService.reroute(message.request.request_id, message.request.id_project, false );
-                    // });
+                     });
                 
 
             }       
