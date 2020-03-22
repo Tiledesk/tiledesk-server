@@ -63,6 +63,7 @@ class FaqBotHandler {
                         answerObj = faqs[0];     
 
                         answerObj.score = 100; //exact search not set score
+                        winston.info("answerObj.score", answerObj.score);  
 
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
                         messageService.send(sender, botName, message.recipient, answerObj.answer, 
