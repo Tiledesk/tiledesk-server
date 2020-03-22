@@ -22,6 +22,8 @@ class ModulesManager {
         this.jwthistoryArchiver = undefined;
         this.jwthistoryRoute = undefined;
         this.dialogflowListener = undefined;
+        this.requestHistoryArchiver = undefined;
+        this.requestHistoryRoute = undefined;
     }
 
     injectBefore(app) {
@@ -85,9 +87,12 @@ class ModulesManager {
         }
 
         if (this.jwthistoryRoute) {
-            // ??????
             app.use('/jwt/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], this.jwthistoryRoute);
-             winston.info("ModulesManager jwthistory controller loaded");       
+            winston.info("ModulesManager jwthistory controller loaded");       
+        }
+        if (this.requestHistoryRoute) {
+            app.use('/:projectid/requests/:request_id/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['subscription'])] , this.requestHistoryRoute);
+            winston.info("ModulesManager requestHistory controller loaded"); 
         }
 
         // if (this.facebookRoute) {
@@ -212,6 +217,30 @@ class ModulesManager {
                 winston.error("ModulesManager error initializing init jwthistory module", err);
             }
         }
+
+
+
+
+        try {
+            this.requestHistoryArchiver = require('@tiledesk-ent/tiledesk-server-request-history').listener;
+            this.requestHistoryArchiver.listen();
+            winston.debug("this.requestHistoryArchiver:"+ this.requestHistoryArchiver);   
+            
+            this.requestHistoryRoute = require('@tiledesk-ent/tiledesk-server-request-history').route;
+            winston.debug("this.requestHistoryRoute:"+ this.requestHistoryRoute);
+
+            winston.info("ModulesManager init requestHistory loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init requestHistory module not found",err);
+            }else {
+                winston.error("ModulesManager error initializing init requestHistory module", err);
+            }
+        }
+
+
+        
+
 
         try {
             this.dialogflowListener = require('@tiledesk-ent/tiledesk-server-dialogflow').listener;

@@ -63,7 +63,7 @@ class FaqBotSupport {
                         // if (qnaresp.answer.startsWith("\\")) { //if \\agent dont append se sei siddisfatto...
 
                         // } else {
-                            winston.info('botAnswer.score: ' + botAnswer.score);
+                            winston.debug('botAnswer.score: ' + botAnswer.score);
                             if (botAnswer.score>threshold) {
                                 winston.info('botAnswer.score is high. Not respond with bot sentence ');
                             }else {
