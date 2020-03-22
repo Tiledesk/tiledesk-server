@@ -60,7 +60,9 @@ class FaqBotHandler {
 
                     var answerObj;
                     if (faqs && faqs.length>0 && faqs[0].answer) {
-                        answerObj = faqs[0];                
+                        answerObj = faqs[0];     
+
+                        answerObj.score = 100; //exact search not set score
 
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
                         messageService.send(sender, botName, message.recipient, answerObj.answer, 
