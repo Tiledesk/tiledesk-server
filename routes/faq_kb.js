@@ -54,7 +54,12 @@ router.post('/askbot', function (req, res) {
          if (faqs && faqs.length>0) {
           winston.debug("faqs exact", faqs);              
 
+          faqs.forEach(f => {
+            f.score = 100;
+          });
           var result = {hits:faqs};
+
+
           res.json(result);
          }else {
           query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb};
