@@ -29,10 +29,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 */
         messageEvent.on('message.create',  function(message) {
             winston.info(" ConciergeBot message create", message);
-            var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
+            //var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
-            if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
-            // if ( message.sender == message.request.lead.lead_id) {   
+            if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
+            
                 winston.info("message send from lead");
                 // changeFirstTextByRequestId(request_id, id_project, first_text) {
                      requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
