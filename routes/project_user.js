@@ -158,24 +158,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             
             return res.json(savedProject_user);
 
-            // found the project by the project id to indicate the project name in the email
-            // Project.findOne({ _id: req.body.id_project }, function (err, project) {
-
-            //   if (err) throw err;
-
-            //   if (!project) {
-            //     return res.json({ success: false, msg: 'Project not found.' });
-            //   }
-
-            //   if (project) {
-            //     winston.debug('INVITE USER - PROJECT FOUND BY PROJECT ID ' , project)
-            //     if (project){
-            //       var projectName = project.name;
-
-            //     }
-            //   }
-            // });
-
+  
           });
 
         }

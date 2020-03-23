@@ -273,7 +273,7 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
-  Project.findById(req.params.projectid, function (err, project) {
+  Project.findOne({_id: req.params.projectid, status:100}, function (err, project) {
     if (err) {
       winston.error('Error getting project ', err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

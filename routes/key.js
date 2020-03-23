@@ -35,7 +35,7 @@ router.post('/generate', function (req, res) {
     };
     winston.debug('update', update);
 
-    return Project.findByIdAndUpdate(req.projectid, update, { new: true, upsert: false }, function (err, updatedProject) {
+    return Project.findOneAndUpdate({_id: req.projectid, status:100}, update, { new: true, upsert: false }, function (err, updatedProject) {
         if (err) {
             winston.error('Error updating project key', err);
             return res.status(500).send({ success: false, msg: 'Error updating project key.' });

@@ -291,7 +291,7 @@ var projectSetter = function (req, res, next) {
   winston.debug("projectSetter projectid:" + projectid);
 
   if (projectid) {
-    Project.findById(projectid, function(err, project){
+    Project.findOne({_id: projectid, status: 100}, function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid);
       }

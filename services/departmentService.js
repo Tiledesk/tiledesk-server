@@ -168,7 +168,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
        // console.log("»»» »»» --> DEPT ID ", departmentid);
 
 
-    return Project.findById(projectid, function(err, project) {
+    return Project.findOne({_id: projectid, status: 100}, function(err, project) {
       if (err) {
         winston.error('Project findById ', err);
         return reject(err);

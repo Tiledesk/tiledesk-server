@@ -25,7 +25,7 @@ router.post('/decode', validtoken, function (req, res) {
     // }
 
 
-    return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
+    return  Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret',function(err, project) {
       if (err) {
         winston.error('Error finding project', err);
         return res.status(500).send({ success: false, msg: 'Error finding project.' });
@@ -84,8 +84,7 @@ router.post('/decode', validtoken, function (req, res) {
   router.post('/generatetestjwt', validtoken, function (req, res) {
     
     winston.debug("req.body", req.body);
-
-    return Project.findById(req.projectid, '+jwtSecret',function(err, project) {
+    return  Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret',function(err, project) {    
         if (err) {
           winston.error('Error finding project', err);
           return res.status(500).send({ success: false, msg: 'Error finding project.' });

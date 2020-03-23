@@ -30,7 +30,7 @@ listen() {
         var request_id  = request.request_id;
         //send auto transcript
         try {                
-          Project.findById(id_project, function(err, project){                        
+          Project.findOne({_id: id_project, status: 100}, function(err, project){                        
             if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
 
               //send email to admin
@@ -74,7 +74,7 @@ sendEmail(projectid, savedRequest) {
     try {
    
    
-     Project.findById(projectid, function(err, project){
+    Project.findOne({_id: projectid, status: 100}, function(err, project){
        if (err) {
          winston.error(err);
        }

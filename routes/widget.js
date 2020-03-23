@@ -76,7 +76,7 @@ router.get('/', function(req, res) {
 
 // TOOD add labels
     Promise.all([
-      Project.findById(req.projectid).select('-settings'),
+      Project.findOne({_id: req.projectid, status: 100}).select('-settings'),
       availableUsers(),
       Department.find({ "id_project": req.projectid, "status": 1 }),
       waiting()

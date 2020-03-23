@@ -10,7 +10,7 @@ class OperatingHoursService {
   projectIsOpenNow(projectId, callback) {
 
     // winston.debug('O ---> [ OHS ] -> PROJECT ID ', projectId)
-    Project.findById(projectId, function (err, project) {
+    Project.findOne({_id: projectId, status: 100}, function (err, project) {
       // winston.debug("XXXXXXXX project", project);
       if (err) {
         winston.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);

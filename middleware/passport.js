@@ -99,7 +99,7 @@ module.exports = function(passport) {
                       }
 
                       winston.debug("project id: "+ AudienceId );
-                      Project.findById(AudienceId).select('+jwtSecret').exec(function (err, project){
+                      Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret').exec(function (err, project){
                         if (err) {
                           winston.error("auth Project err: ", err );
                           return done(null, null);
