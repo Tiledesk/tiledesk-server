@@ -72,14 +72,14 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
         winston.error('Error creating department for project ', err);
         // return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
-      winston.info('Default Department created')
+      winston.debug('Default Department created')
       // res.json(savedDepartment);
     });
   });
 });
 
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-  winston.info('UPDATE PROJECT REQ BODY ', req.body);
+  winston.debug('UPDATE PROJECT REQ BODY ', req.body);
 
   var update = {};
   
@@ -257,7 +257,7 @@ router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'],
  });
 
 
-router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
+router.delete('/:projectid/physical', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
   winston.debug(req.body);
   // TODO delete also department, faq_kb, faq, group, label, lead, message, project_users, requests, subscription
   Project.remove({ _id: req.params.projectid }, function (err, project) {
@@ -269,6 +269,20 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
     res.json(project);
   });
 });
+
+router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
+  winston.debug(req.body);
+  // TODO delete also department, faq_kb, faq, group, label, lead, message, project_users, requests, subscription
+  Project.findByIdAndUpdate(req.params.projectid, {status:0}, { new: true, upsert: true }, function (err, project) {
+    if (err) {
+      winston.error('Error deleting project ', err);
+      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+    }
+    projectEvent.emit('project.delete', project );
+    res.json(project);
+  });
+});
+
 
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {

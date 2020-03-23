@@ -14,7 +14,7 @@ class PubModulesManager {
         this.emailNotification = undefined;
         
         this.eventsRoute = undefined;
-      
+        this.entityEraser = undefined;
     }
 
   
@@ -87,6 +87,18 @@ class PubModulesManager {
         }
 
         
+        try {
+            this.entityEraser = require('./entityEraser');
+            winston.debug("this.entityEraser:"+ this.entityEraser);
+            this.entityEraser.eraserInterceptor.listen();
+            winston.info("PubModulesManager init entityEraser loaded.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init entityEraser module not found",err);
+            }else {
+                winston.info("PubModulesManager error initializing init entityEraser module", err);
+            }
+        }
 
 
       

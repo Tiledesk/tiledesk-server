@@ -5,6 +5,7 @@ var User = require("../models/user");
 var emailService = require("../services/emailService");
 var winston = require('../config/winston');
 const authEvent = require('../event/authEvent');
+const uuidv4 = require('uuid/v4');
 
 
 
@@ -42,6 +43,36 @@ router.put('/', function (req, res) {
 
 router.delete('/', function (req, res) {
 
+  // cambia active 0
+  // anonimizzo email 
+  // cancello virtualmente progetti owner
+  winston.debug('delete USER - REQ BODY ', req.body);
+
+  
+  var update = {status:0, email: uuidv4()+'@tiledesk.com',firstname: 'anonymized',lastname: 'anonymized'};
+  User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
+    if (err) {
+      winston.error(err);
+      return res.status(500).send({ success: false, msg: err });
+    }
+
+    winston.debug('UPDATED USER ', updatedUser);
+    if (!updatedUser) {
+      return res.status(404).send({ success: false, msg: 'User not found' });
+    }
+
+    authEvent.emit("user.delete", {user: updatedUser, req: req}); 
+
+    res.json({ success: true, updatedUser });
+  });
+});
+
+
+router.delete('/physical', function (req, res) {
+
+  // cambia active 0
+  // anonimizzo email 
+  // cancello virtualmente progetti owner
   winston.debug('delete USER - REQ BODY ', req.body);
 
   User.remove({ _id: req.user.id }, function (err, user) {
