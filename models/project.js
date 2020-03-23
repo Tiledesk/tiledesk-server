@@ -36,7 +36,7 @@ var ProjectSchema = new Schema({
     required: true,
     default: 100,
     index: true,
-    select: false
+    // select: false
   }, 
   jwtSecret: {
     type: String,

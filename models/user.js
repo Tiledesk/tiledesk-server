@@ -52,7 +52,7 @@ var UserSchema = new Schema({
         required: true,
         default: 100,
         index: true,
-        select: false
+        // select: false
     }, 
     // authType: { // update db old data
     //     type: String,

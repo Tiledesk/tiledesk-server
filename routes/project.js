@@ -311,7 +311,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     // populate('id_project').
     populate({
       path: 'id_project',
-      match: { status: 100 },
+      // match: { status: 100 }, //not filter only not populate
     }).
     exec(function (err, projects) {
       if (err) {
