@@ -308,7 +308,11 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   winston.debug('REQ USER ID ', req.user._id)
    // project_user_qui
   Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
-    populate('id_project').
+    // populate('id_project').
+    populate({
+      path: 'id_project',
+      match: { status: 100 },
+    }).
     exec(function (err, projects) {
       if (err) {
         winston.error('Error getting projects: ', err);
