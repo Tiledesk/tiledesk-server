@@ -22,7 +22,7 @@ class EntityInterceptor {
             var userid = data.user.id;
             var query = { id_user: userid,  role: { $in : [RoleConstants.OWNER]} } ;
 
-            winston.info("query: ", query);
+            winston.debug("query: ", query);
 
                 setImmediate(() => {
                     Project_user.find(query).populate('id_user')
