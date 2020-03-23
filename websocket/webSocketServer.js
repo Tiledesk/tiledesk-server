@@ -67,7 +67,7 @@ class WebSocketServer {
                           // winston.debug('ok websocket');
 
                           // autType?????
-                          User.findOne({_id: identifier}, 'email firstname lastname emailverified id', function (err, user) {
+                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id', function (err, user) {
                             // console.log("BasicStrategy user",user);
                             // console.log("BasicStrategy err",err);
                     

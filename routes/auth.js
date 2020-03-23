@@ -431,7 +431,7 @@ router.post('/signin', function (req, res) {
   winston.debug("req.body.email", req.body.email);
 // authType
   User.findOne({
-    email: req.body.email,
+    email: req.body.email, status: 100
     //authType: 'email_password'
   }, 'email firstname lastname password emailverified id', function (err, user) {
     if (err) {
@@ -586,7 +586,7 @@ router.put('/requestresetpsw', function (req, res) {
 
   winston.debug('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
 // auttype
-  User.findOne({ email: req.body.email
+  User.findOne({ email: req.body.email, status: 100
     // , authType: 'email_password' 
   }, function (err, user) {
     if (err) {

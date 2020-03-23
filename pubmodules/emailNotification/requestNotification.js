@@ -97,7 +97,7 @@ sendEmail(projectid, savedRequest) {
                    allAgents.forEach(project_user => {
                    //  winston.debug("project_user", project_user);
    
-                     User.findById(project_user.id_user, function (err, user) {
+                     User.findOne({_id: project_user.id_user, status: 100}, function (err, user) {
                        if (err) {
                        //  winston.debug(err);
                        }
@@ -127,7 +127,7 @@ sendEmail(projectid, savedRequest) {
                       return ;
                     }
    
-                     User.findById( assignedId, function (err, user) {
+                     User.findOne({_id: assignedId, status: 100}, function (err, user) {
                        if (err) {
                          winston.error("Error sending email to " + savedRequest.participants[0], err);
                        }

@@ -13,7 +13,7 @@ var firebaseService = require("./firebaseService");
 router.post('/signin', function (req, res) {
   // auttype
     User.findOne({
-      email: req.body.email
+      email: req.body.email, status: 100
       //,authType: 'email_password'
     }, 'email firstname lastname password id', function (err, user) {
       if (err) throw err;

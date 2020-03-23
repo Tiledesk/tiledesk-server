@@ -28,7 +28,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
   winston.debug('»»» CURRENT USER ID', req.user._id);
   winston.debug('»»» PROJECT ID', req.projectid);
 // authType
-  User.findOne({ email: req.body.email
+  User.findOne({ email: req.body.email, status: 100
     // , authType: 'email_password' 
   }, function (err, user) {
     if (err) throw err;

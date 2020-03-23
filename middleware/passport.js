@@ -258,7 +258,7 @@ module.exports = function(passport) {
 
     } else {
       winston.debug("Passport JWT generic user");
-      User.findOne({_id: identifier}, function(err, user) {
+      User.findOne({_id: identifier, status: 100}, function(err, user) {
           if (err) {
             winston.error("Passport JWT generic err", err);
             return done(err, false);
@@ -283,7 +283,7 @@ module.exports = function(passport) {
   passport.use(new BasicStrategy(function(userid, password, done) {
         // console.log("BasicStrategy");
 // authType
-      User.findOne({ email: userid
+      User.findOne({ email: userid, status: 100
         // , authType:'email_password' 
       }, 'email firstname lastname password emailverified id', function (err, user) {
         // console.log("BasicStrategy user",user);

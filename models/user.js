@@ -47,6 +47,13 @@ var UserSchema = new Schema({
     attributes: {
         type: Object,
     },
+    status: {
+        type: Number,
+        required: true,
+        default: 100,
+        index: true,
+        select: false
+    }, 
     // authType: { // update db old data
     //     type: String,
     //     index:true,
