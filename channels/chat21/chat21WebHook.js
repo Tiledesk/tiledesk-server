@@ -6,6 +6,9 @@ var Lead = require("../../models/lead");
 var requestService = require('../../services/requestService');
 var messageService = require('../../services/messageService');
 var leadService = require('../../services/leadService');
+var eventService = require('../../pubmodules/events/eventService');
+var Project_user = require("../../models/project_user");
+
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
@@ -483,6 +486,45 @@ else if (req.body.event_type == "typing-start") {
   winston.info("event_type","typing-start");
 
   winston.info("req.body",req.body);
+
+
+  var recipient_id = req.body.recipient_id;
+  winston.debug("recipient_id",recipient_id);
+
+  var writer_id = req.body.writer_id;
+  winston.debug("writer_id",writer_id);
+
+  if (!recipient_id.startsWith("support-group")){
+    winston.info("not a support conversation");
+    return res.status(400).send({success: false, msg: "not a support conversation" });
+  }
+
+  return Request.findOne({request_id: request_id})
+  // .populate('lead')
+  .exec(function(err, request) {
+  if (err){
+    winston.error(err);
+    return res.status(500).send({success: false, msg: 'Error finding request', err:err });
+  }
+  if (!request) {
+    return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
+  }
+
+
+  return Project_user.findOne({id_user: writer_id, id_project: request.id_project}, function(err, pu){
+    if (err){
+      winston.error(err);
+      return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
+    }
+    eventService.emit("typing-start", attributes, request.id_project, pu, pu.id_user).then(function (data) {
+      return res.json(data);
+    });
+  });
+ 
+
+
+  });
+  
 
 }
 
