@@ -207,11 +207,14 @@ router.post('/', function(req, res) {
 
 
 
+                // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
+
                 // TOOD update also request attributes and sourcePage
                 
                     return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        
+                      // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId");
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
@@ -473,6 +476,13 @@ router.post('/', function(req, res) {
         return res.status(500).send({success: false, msg: 'Error reopening request', err:err });
       });
 
+
+}
+else if (req.body.event_type == "typing-start") {
+
+  winston.info("event_type","typing-start");
+
+  winston.info("req.body",req.body);
 
 }
 
