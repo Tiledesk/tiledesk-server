@@ -493,6 +493,10 @@ else if (req.body.event_type == "typing-start") {
 
   var writer_id = req.body.writer_id;
   winston.debug("writer_id",writer_id);
+  
+
+  var data = req.body.data;
+  winston.debug("data",data);
 
   if (!recipient_id.startsWith("support-group")){
     winston.info("not a support conversation");
@@ -517,7 +521,7 @@ else if (req.body.event_type == "typing-start") {
   //     return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
   //   }
   // eventService.emit("typing-start", attributes, request.id_project, pu, pu.id_user).then(function (data) {
-    eventService.emit("typing-start", attributes, request.id_project, null, "system").then(function (data) {
+    eventService.emit("typing-start", data, request.id_project, null, "system").then(function (data) {
       return res.json(data);
     });
   // });
