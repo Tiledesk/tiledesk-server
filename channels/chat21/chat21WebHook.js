@@ -499,7 +499,7 @@ else if (req.body.event_type == "typing-start") {
     return res.status(400).send({success: false, msg: "not a support conversation" });
   }
 
-  return Request.findOne({request_id: request_id})
+  return Request.findOne({request_id: recipient_id})
   // .populate('lead')
   .exec(function(err, request) {
   if (err){
