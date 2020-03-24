@@ -17,7 +17,7 @@ var EventSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'project_user',
     index: true,
-    required: true
+    required: false
   },
   id_project: {
     type: String,

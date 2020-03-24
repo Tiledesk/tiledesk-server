@@ -511,15 +511,16 @@ else if (req.body.event_type == "typing-start") {
   }
 
 
-  return Project_user.findOne({id_user: writer_id, id_project: request.id_project}, function(err, pu){
-    if (err){
-      winston.error(err);
-      return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
-    }
-    eventService.emit("typing-start", attributes, request.id_project, pu, pu.id_user).then(function (data) {
+  // return Project_user.findOne({id_user: writer_id, id_project: request.id_project}, function(err, pu){
+  //   if (err){
+  //     winston.error(err);
+  //     return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
+  //   }
+  // eventService.emit("typing-start", attributes, request.id_project, pu, pu.id_user).then(function (data) {
+    eventService.emit("typing-start", attributes, request.id_project, null, "system").then(function (data) {
       return res.json(data);
     });
-  });
+  // });
  
 
 
