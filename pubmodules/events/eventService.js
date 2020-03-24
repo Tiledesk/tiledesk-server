@@ -62,6 +62,8 @@ class EventService {
         savedEvent.populate({path:'project_user',populate:{path:'id_user'}},function (err, savedEventPopulated){
         // savedEvent.populate('project_user',function (err, savedEventPopulated){
           eventEvent.emit('event.emit', savedEventPopulated);
+          eventEvent.emit('event.emit.'+name, savedEventPopulated);
+          
           event2Event.emit(name, savedEventPopulated);
         });
        
