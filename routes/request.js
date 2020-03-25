@@ -9,6 +9,10 @@ var requestService = require('../services/requestService');
 var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 var Subscription = require("../models/subscription");
+var leadService = require('../services/leadService');
+var messageService = require('../services/messageService');
+const uuidv4 = require('uuid/v4');
+var MessageConstants = require("../models/messageConstants");
 
 
 csv = require('csv-express');
@@ -26,24 +30,50 @@ router.post('/', function (req, res) {
   winston.info("req.body", req.body);
 
   winston.info("req.projectid: " + req.projectid);
-  winston.info("req.user.id: " + req.user.id);
+  winston.info("req.user.id: " + req.user.id);                              
 
-  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-//errore requester_id
-    return requestService.createWithIdAndRequester(req.body.request_id, req.user.id, req.body.requester_id, req.projectid, 
-      req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
-      req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
+    if (req.projectuser) {
+      winston.debug("req.projectuser", req.projectuser);                                     
+    }
+    
+        
+    let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
+    winston.debug('messageStatus: ' + messageStatus);
+
+    var request_id = req.params.request_id || 'support-group-'+uuidv4();
+
+    // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
+    return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
+    .then(function(createdLead) {
+
+        // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+      return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
+        req.body.text, req.body.departmentid, req.body.sourcePage, 
+        req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
 
 
-    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-    // return requestService.createWithId(req.body.request_id, req.body.requester_id, req.projectid, 
-    //   req.body.first_text, req.body.department, req.body.sourcePage, req.body.language, req.body.userAgent, 
-    //   req.body.status, req.user.id, req.body.attributes).then(function(savedRequest) {
-           
-      
-        winston.debug("savedRequest", savedRequest);
+      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+        // return requestService.createWithId(req.params.request_id, req.body.sender, req.projectid, 
+        //     req.body.text, req.body.departmentid, req.body.sourcePage, 
+        //     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
 
-    return res.json(savedRequest);
+
+          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+          return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
+            req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
+              // TODO remove increment
+              return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+
+                let message = savedMessage.toJSON();
+                message.request = savedRequestWithIncrement;
+                return res.json(message);
+              });
+            });
+          });                           
+            
+        
+                      
+
 
   }).catch(function(err) {
     winston.error('Error saving request.', err);
