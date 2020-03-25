@@ -25,7 +25,11 @@ const { check, validationResult } = require('express-validator');
 
 
 // undocumented
-router.post('/', function (req, res) {
+router.post('/', 
+[
+  check('text').notEmpty(),  
+],
+function (req, res) {
 
   winston.info("req.body", req.body);
 
