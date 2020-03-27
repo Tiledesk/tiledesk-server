@@ -167,7 +167,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             
             winston.debug("ConciergeBot send welcome bot message");     
           
-           
+              // TODO if (request is assigned allora manda we are putting inn touch )
+            // controlla dopo reassing
             if (request.availableAgents.length==0) {
                
                 // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
@@ -178,7 +179,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
                     request.id_project,
                     'system', 
-                    {"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                    //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                    {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
                 );
             
                 
@@ -191,7 +193,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
                     request.id_project,
                     'system', 
-                    {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                    {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                    // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
                 );
 
                
