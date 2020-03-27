@@ -183,6 +183,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
       if (disableWebHookCall==undefined) {
               //if pro enabled disableWebHookCall = false
         if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
+          // winston.info('disableWebHookCall pro');
           disableWebHookCall = false;
         } else {
           disableWebHookCall = true;
@@ -256,7 +257,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
               // here subscription notifier??
-              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, id_bot:department.id_bot, operators: [{ id_user: 'bot_' + department.id_bot }] });
+              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, id_bot:department.id_bot, project: project, operators: [{ id_user: 'bot_' + department.id_bot }] });
             }).catch(function (error) {
 
               // winston.error("Write failed: ", error);
@@ -280,7 +281,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
           *  * agents (i.e., all the project users) 
           *  * operators (i.e. the id of a user selected random from the available project users considering personal availability in the range of the operating hours)
           * --------------------------------------------------------------------------------*/
-          return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall).then(function (value) {
+          return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project).then(function (value) {
 
             // console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
             value['department'] = department
@@ -296,7 +297,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
   });
 };
 
- findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall) {
+ findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
@@ -304,18 +305,18 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 
     if (department.id_group != null) {
 
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project));
 
     } else {
 
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project));
 
     }
 
   });
 };
 
- findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall) {
+ findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
@@ -356,11 +357,11 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
                 selectedoperator = that.getRandomAvailableOperator(_available_agents);
               }
 
-              let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid };
+              let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid, project: project };
 
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
-                departmentEvent.emit('operator.select', {result:objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
+                departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
 
                 //is resolved by departmentEvent or SubscriptionNotifier
                 // return resolve(objectToReturnRoundRobin);
@@ -389,7 +390,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 }
 
 
- findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall) {
+ findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project) {
 
   var that = this;
 
@@ -416,11 +417,11 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
             selectedoperator = that.getRandomAvailableOperator(_available_agents);
           }
 
-          let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid };
+          let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project };
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
 
-            departmentEvent.emit('operator.select', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
+            departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
 
             // attento qui            
             // if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {

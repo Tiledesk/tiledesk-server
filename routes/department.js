@@ -53,7 +53,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 
   var update = {};
 
-
+// qui errore su visibile invisible
   // if (req.body.id_bot!=undefined) {
     update.id_bot = req.body.id_bot;
   // }
@@ -132,6 +132,7 @@ router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { sessi
 });
 
 
+// TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
 
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
@@ -141,27 +142,27 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
     disableWebHookCall = (req.query.disableWebHookCall == 'true') ;
   }
 
-  winston.info("disableWebHookCall: "+ disableWebHookCall);
+  winston.debug("disableWebHookCall: "+ disableWebHookCall);
 
   // getOperators(departmentid, projectid, nobot) {
   var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall);
   winston.debug("Getting department operators operatorsResult", operatorsResult);
 
-  operatorsResult.available_agents_request  = [];
+  // operatorsResult.available_agents_request  = [];
 
-  if (operatorsResult && operatorsResult.available_agents && operatorsResult.available_agents.length > 0) {
-    var query = {id_project: req.projectid, status: {$lt:1000}};      
-    // asyncForEach(operatorsResult.available_agents, async (aa) => {
-    for (const aa of operatorsResult.available_agents) {
-      query.participants = aa.id_user._id.toString();// attento qui
-      winston.debug("department operators query:" , query);
-      var count =  await Request.countDocuments(query);
-      winston.debug("department operators count: "+ count);
-      operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
-    }
-  }
+  // if (operatorsResult && operatorsResult.available_agents && operatorsResult.available_agents.length > 0) {
+  //   var query = {id_project: req.projectid, status: {$lt:1000}};      
+  //   // asyncForEach(operatorsResult.available_agents, async (aa) => {
+  //   for (const aa of operatorsResult.available_agents) {
+  //     query.participants = aa.id_user._id.toString();// attento qui
+  //     winston.debug("department operators query:" , query);
+  //     var count =  await Request.countDocuments(query);
+  //     winston.debug("department operators count: "+ count);
+  //     operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
+  //   }
+  // }
 
-  operatorsResult.project = req.project;
+    // operatorsResult.project = req.project;
   
     return res.json(operatorsResult);
   // }).catch(function (err) {
