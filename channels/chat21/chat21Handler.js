@@ -529,9 +529,6 @@ class Chat21Handler {
                    
                 
 
-
-                //    fai diff tra vecchi e nuovi e archivia 
-
                 setImmediate(() => {
                     if (request.channel.name === ChannelConstants.CHAT21) {
 
@@ -577,6 +574,13 @@ class Chat21Handler {
         
                         var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                         winston.info("removedParticipants ", removedParticipants);
+
+                           //   var a2 = [];
+                        //   // var a2 = ['a1', 'b1'];
+                        //   //var a1 = ['a', 'b', 'c', 'd'];
+                        //   var a1 = ['a1', 'b2'];
+                        //  var c = a2.filter(d => !a1.includes(d)) // gives ["c", "d"]
+                        //   console.log(c);
 
                         removedParticipants.forEach(function(removedParticipant) {
                             winston.info("removedParticipant ", removedParticipant);
