@@ -522,9 +522,15 @@ class Chat21Handler {
                 });
             });
             
+            
+
              requestEvent.on('request.participants.update',  function(data) {       
                    let request = data.request;
-                   //let oldParticipants = data.beforeRequest.participants;
+                   
+                
+
+
+                //    fai diff tra vecchi e nuovi e archivia 
 
                 setImmediate(() => {
                     if (request.channel.name === ChannelConstants.CHAT21) {
@@ -564,6 +570,30 @@ class Chat21Handler {
                                 winston.error("Error joining chat21 group ", err);
                                 chat21Event.emit('group.join.error', err);
                             });
+
+
+                        let oldParticipants = data.beforeRequest.participants;
+                        let newParticipants = data.request.participants;
+        
+                        var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                        winston.info("removedParticipants ", removedParticipants);
+
+                        removedParticipants.forEach(function(removedParticipant) {
+                            winston.info("removedParticipant ", removedParticipant);
+
+                            chat21.conversations.archive(removedParticipant)
+                            .then(function(data){
+                                winston.info("Chat21 archived ", data);
+                        
+                                chat21Event.emit('conversation.archived', data);                                               
+        
+                                }).catch(function(err) {
+                                    winston.error("Chat21 archived err", err);
+                                    chat21Event.emit('conversation.archived.error', err);
+                                });
+
+                        });
+                        
 
 
 
@@ -635,6 +665,21 @@ class Chat21Handler {
                                 chat21Event.emit('group.leave.error', err);
                             });
 
+
+                            // anche devi archiviare la conversazione per utente corrente 
+
+                            chat21.conversations.archive(member)
+                            .then(function(data){
+                                winston.info("Chat21 archived ", data);
+                        
+                                chat21Event.emit('conversation.archived', data);                                               
+     
+                             }).catch(function(err) {
+                                 winston.error("Chat21 archived err", err);
+                                 chat21Event.emit('conversation.archived.error', err);
+                             });
+
+                           
 
 
                     }
