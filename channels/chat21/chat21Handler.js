@@ -494,8 +494,8 @@ class Chat21Handler {
                                 });
                        });
 
-
-                       chat21.conversations.archive("system")
+                    //    archive: function(recipient_id, user_id){
+                       chat21.conversations.archive(request.request_id, "system")
                        .then(function(data){
                            winston.info("Chat21 archived ", data);
                    
@@ -506,7 +506,8 @@ class Chat21Handler {
                             chat21Event.emit('conversation.archived.error', err);
                         });
 
-                        chat21.conversations.archive(request.requester_id)
+                        // archive: function(recipient_id, user_id){
+                        chat21.conversations.archive(request.request_id, request.requester_id)
                        .then(function(data){
                            winston.info("Chat21 archived ", data);
                    
@@ -585,7 +586,8 @@ class Chat21Handler {
                         removedParticipants.forEach(function(removedParticipant) {
                             winston.info("removedParticipant ", removedParticipant);
 
-                            chat21.conversations.archive(removedParticipant)
+                            // archive: function(recipient_id, user_id){
+                            chat21.conversations.archive(request.request_id, removedParticipant)
                             .then(function(data){
                                 winston.info("Chat21 archived ", data);
                         
@@ -672,7 +674,7 @@ class Chat21Handler {
 
                             // anche devi archiviare la conversazione per utente corrente 
 
-                            chat21.conversations.archive(member)
+                            chat21.conversations.archive(request.request_id, member)
                             .then(function(data){
                                 winston.info("Chat21 archived ", data);
                         
