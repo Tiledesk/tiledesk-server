@@ -121,7 +121,7 @@ departmentEvent.on('operator.select.base2', async (res) => {
     winston.info('operator.select max_agent_served_chat: '+max_agent_served_chat);   
 
   }else {
-    winston.info("chat_limit_on not defined return standard ");
+    winston.info("chat_limit_on not defined calling next ");
     return callNextEvent('operator.select', res);
   }
 
