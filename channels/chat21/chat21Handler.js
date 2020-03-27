@@ -571,8 +571,11 @@ class Chat21Handler {
 
 
                         let oldParticipants = data.beforeRequest.participants;
+                        winston.info("oldParticipants ", oldParticipants);
+
                         let newParticipants = data.request.participants;
-        
+                        winston.info("newParticipants ", newParticipants);
+
                         var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                         winston.info("removedParticipants ", removedParticipants);
 
