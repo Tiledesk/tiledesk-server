@@ -44,19 +44,20 @@ describe('RequestRoute', () => {
             .post('/'+ savedProject._id + '/requests/')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"request_id":"request_id", "first_text":"first_text"})
+            .send({"text":"first_text"})
             .end(function(err, res) {
                 //console.log("res",  res);
-                // console.log("res.body",  res.body);
+                console.log("res.body",  res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 
-                res.body.should.have.property('request_id').eql('request_id');
+                expect(res.body.agents.length).to.equal(1);
+                // res.body.should.have.property('request_id').eql('request_id');
                 // res.body.should.have.property('requester_id').eql('requester_id');
                 res.body.should.have.property('first_text').eql('first_text');
                 res.body.should.have.property('id_project').eql(savedProject._id.toString());
                 res.body.should.have.property('createdBy').eql(savedUser._id.toString());
-                res.body.should.have.property('messages_count').eql(0);
+                res.body.should.have.property('messages_count').gt(0);
                 res.body.should.have.property('status').eql(200);
                 
                 // res.body.should.have.property('agents').eql(savedUser._id);

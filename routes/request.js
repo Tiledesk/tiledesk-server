@@ -36,6 +36,12 @@ function (req, res) {
   winston.info("req.projectid: " + req.projectid);
   winston.info("req.user.id: " + req.user.id);                              
 
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
     if (req.projectuser) {
       winston.debug("req.projectuser", req.projectuser);                                     
     }
@@ -68,9 +74,9 @@ function (req, res) {
               // TODO remove increment
               return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
-                let message = savedMessage.toJSON();
-                message.request = savedRequestWithIncrement;
-                return res.json(message);
+                // let message = savedMessage.toJSON();
+                // message.request = savedRequestWithIncrement;
+                return res.json(savedRequestWithIncrement);
               });
             });
           });                           
