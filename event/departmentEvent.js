@@ -114,6 +114,9 @@ departmentEvent.on('operator.select.base2', async (res) => {
 
 
   var project = operatorsResult.project;
+  var max_agent_served_chat = undefined;
+
+  
   // console.log("project: ", project);
 
   if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_served_chat) {
@@ -149,9 +152,6 @@ departmentEvent.on('operator.select.base2', async (res) => {
 
 
 
-
-
-    var max_agent_served_chat = undefined;
    
 
     var available_agents_request = operatorsResult.available_agents_request;
