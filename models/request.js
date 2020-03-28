@@ -24,7 +24,7 @@ var RequestSchema = new Schema({
 
   request_id: {
     type: String,
-    required: false,
+    required: true,
     index: true
   },
 
