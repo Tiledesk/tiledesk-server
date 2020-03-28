@@ -116,6 +116,7 @@ class RequestService {
                   
                   
                   requestEvent.emit('request.update',requestComplete);
+                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
                   requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
                   requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
 
@@ -185,6 +186,7 @@ class RequestService {
                    
                    
                    requestEvent.emit('request.update',requestComplete);
+                   requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
                    requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
                    requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
  
@@ -456,6 +458,7 @@ class RequestService {
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
+            requestEvent.emit("request.update.comment", {comment:"STATUS_CHANGE",request:updatedRequest});
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
@@ -484,6 +487,7 @@ class RequestService {
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
+            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_CHANGE",request:updatedRequest});
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
@@ -644,6 +648,7 @@ class RequestService {
             }          
             
             requestEvent.emit('request.update', savedRequest);
+            requestEvent.emit("request.update.comment", {comment:"REOPEN",request:savedRequest});
             requestEvent.emit('request.reopen', savedRequest);
 
             winston.info("Request reopened", savedRequest);
@@ -733,6 +738,7 @@ class RequestService {
           }
         
            requestEvent.emit('request.update', updatedRequest);
+           requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:updatedRequest});
            requestEvent.emit('request.participants.update', {beforeRequest:request, request:updatedRequest});
 
           return resolve(updatedRequest);
@@ -800,6 +806,7 @@ class RequestService {
             }
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_ADD",request:savedRequest});
               requestEvent.emit('request.participants.join', {member:member, request: savedRequest});
               // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
             }          
@@ -861,6 +868,7 @@ class RequestService {
 
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_REMOVE",request:savedRequest});
               requestEvent.emit('request.participants.leave', {member:member, request: savedRequest});
               // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
             }
@@ -920,6 +928,7 @@ class RequestService {
             }
             winston.info(" saved request attributes",savedRequest.toObject())
             requestEvent.emit("request.update", savedRequest);
+            requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_UPDATE",request:savedRequest});
             requestEvent.emit("request.attributes.update", savedRequest);
               return resolve(savedRequest);
             });
