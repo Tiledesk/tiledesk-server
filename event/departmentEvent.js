@@ -141,9 +141,9 @@ departmentEvent.on('operator.select.base2', async (res) => {
     // asyncForEach(operatorsResult.available_agents, async (aa) => {
     for (const aa of operatorsResult.available_agents) {
       query.participants = aa.id_user._id.toString();// attento qui
-      winston.debug("department operators query:" , query);
+      winston.info("department operators query:" , query);
       var count =  await Request.countDocuments(query);
-      winston.debug("department operators count: "+ count);
+      winston.info("department operators count: "+ count);
       operatorsResult.available_agents_request.push({project_user: aa, openRequetsCount : count});
 
     }
