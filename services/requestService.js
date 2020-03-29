@@ -88,12 +88,15 @@ class RequestService {
           }
                    
 
+          
+          var requestBeforeRoute = Object.assign({}, request);
+
           that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
-            winston.info("request.participants " +request.request_id , request.participants);
+            winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             winston.info("routedRequest.participants" +routedRequest.request_id , routedRequest.participants);
 
-            if (request.participants == routedRequest.participants) {
+            if (requestBeforeRoute.participants == routedRequest.participants) {
               winston.info("request " +request.request_id +" contains already the same participants. routed to the same participants");
               return resolve(request);
             }
