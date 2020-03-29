@@ -7,6 +7,7 @@ var MessageConstants = require("../../models/messageConstants");
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 var BotFromParticipant = require("../../utils/botFromParticipant");
+const RequestConstants = require('../../models/requestConstants');
 
 class ConciergeBot {
 
@@ -169,36 +170,40 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
           
               // TODO if (request is assigned allora manda we are putting inn touch )
             // controlla dopo reassing
-            if (request.availableAgents.length==0) {
-               
-                // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
-                messageService.send(
-                    'system', 
-                    'Bot',                                     
-                    request.request_id,
-                    i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                    request.id_project,
-                    'system', 
-                    //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                    {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                );
-            
-                
-            }else {
-
-                messageService.send(
-                    'system', 
-                    'Bot',                                     
-                    request.request_id,
-                    i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                    request.id_project,
-                    'system', 
-                    {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                    // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                );
-
-               
+            if (request.status = RequestConstants.SERVED) {
+                if (request.participants.length==0) {
+                    // if (request.availableAgents.length==0) {
+                       
+                        // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
+                        messageService.send(
+                            'system', 
+                            'Bot',                                     
+                            request.request_id,
+                            i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                            request.id_project,
+                            'system', 
+                            //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                            {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                        );
+                    
+                        
+                    }else {
+        
+                        messageService.send(
+                            'system', 
+                            'Bot',                                     
+                            request.request_id,
+                            i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+                            request.id_project,
+                            'system', 
+                            {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                            // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                        );
+        
+                       
+                    }
             }
+            
         } 
     }
 
