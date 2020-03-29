@@ -312,7 +312,7 @@ class Chat21Handler {
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
-                                            winston.info("Chat21 sendToGroup sent ", data);
+                                            winston.debug("Chat21 sendToGroup sent ", data);
                                     
                                             chat21.conversations.stopTyping(message.recipient,message.sender);
     
@@ -394,7 +394,7 @@ class Chat21Handler {
                         // let requestObj = request.toObject();
                         let requestObj = request.toJSON();
                         
-                        winston.info("creating chat21 group for request with id: " + requestObj._id);
+                        winston.debug("creating chat21 group for request with id: " + requestObj._id);
 
                         // winston.info("requestObj.participants: "+ Object.prototype.toString.call(requestObj.participants));
                         winston.debug("requestObj.participants: "+ JSON.stringify(requestObj.participants));
@@ -441,7 +441,7 @@ class Chat21Handler {
 
 
  
-                        winston.info("Chat21 group create gAttributes: ",gAttributes);  
+                        winston.debug("Chat21 group create gAttributes: ",gAttributes);  
 
                         var groupId = request.request_id;
 
@@ -456,7 +456,7 @@ class Chat21Handler {
 
                         // qui1
                         chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
-                                winston.info("Chat21 group created: " + data);      
+                                winston.info("Chat21 group created: " + JSON.stringify(data));      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
@@ -527,7 +527,7 @@ class Chat21Handler {
 
              requestEvent.on('request.participants.update',  function(data) {       
                    let request = data.request;
-                   
+                   let removedParticipants = data.removedParticipants;
                 
 
                 setImmediate(() => {
@@ -570,14 +570,16 @@ class Chat21Handler {
                             });
 
 
-                        let oldParticipants = data.beforeRequest.participants;
-                        winston.info("oldParticipants ", oldParticipants);
+                        // let oldParticipants = data.beforeRequest.participants;
+                        // winston.info("oldParticipants ", oldParticipants);
 
-                        let newParticipants = data.request.participants;
-                        winston.info("newParticipants ", newParticipants);
+                        // let newParticipants = data.request.participants;
+                        // winston.info("newParticipants ", newParticipants);
 
-                        var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                        winston.info("removedParticipants ", removedParticipants);
+                        // var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                        // winston.info("removedParticipants ", removedParticipants);
+
+
 
                            //   var a2 = [];
                         //   // var a2 = ['a1', 'b1'];

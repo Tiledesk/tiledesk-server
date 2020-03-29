@@ -287,7 +287,7 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 // });
 
 router.put('/:requestid/departments', function (req, res) {
-  winston.info(req.body);
+  winston.debug(req.body);
    //route(request_id, departmentid, id_project) {      
     requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot).then(function(updatedRequest) {
       

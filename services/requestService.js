@@ -785,7 +785,24 @@ class RequestService {
         
            requestEvent.emit('request.update', updatedRequest);
            requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:updatedRequest});
-           requestEvent.emit('request.participants.update', {beforeRequest:request, request:updatedRequest});
+
+
+           let oldParticipants = request.participants;
+           winston.info("oldParticipants ", oldParticipants);
+
+           let newParticipants = updatedRequest.participants;
+           winston.info("newParticipants ", newParticipants);
+
+           var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+           winston.info("removedParticipants ", removedParticipants);
+
+           var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+           winston.info("addedParticipants ", addedParticipants);
+
+           requestEvent.emit('request.participants.update', {beforeRequest:request, 
+                      removedParticipants:removedParticipants, 
+                      addedParticipants:addedParticipants,
+                      request:updatedRequest});
 
           return resolve(updatedRequest);
         });

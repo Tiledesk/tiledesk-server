@@ -50,6 +50,10 @@ var winston = require('../config/winston');
     max_served_chat: {
       type: Number,
     },
+    number_assigned_requests: {
+      type: Number,
+      index: true
+    },
     last_ip: {
         type: String,
     },

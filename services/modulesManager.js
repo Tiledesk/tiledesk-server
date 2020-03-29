@@ -24,6 +24,8 @@ class ModulesManager {
         this.dialogflowListener = undefined;
         this.requestHistoryArchiver = undefined;
         this.requestHistoryRoute = undefined;
+        this.routingQueue = undefined;
+
     }
 
     injectBefore(app) {
@@ -255,6 +257,23 @@ class ModulesManager {
                 winston.error("ModulesManager error initializing init dialogflow module", err);
             }
         }
+
+
+        try {
+            this.routingQueue = require('@tiledesk-ent/tiledesk-server-routing-queue').listener;
+            this.routingQueue.listen();
+            winston.debug("this.routingQueue:"+ this.routingQueue);           
+
+            winston.info("ModulesManager init routing queue loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init routing queue module not found",err);
+            }else {
+                winston.error("ModulesManager error initializing init routing queue module", err);
+            }
+        }
+
+        
 
 
         
