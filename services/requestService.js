@@ -117,7 +117,9 @@ class RequestService {
                   [           
                   {path:'department'},
                   {path:'lead'},                        
-                  {path:'requester',populate:{path:'id_user'}}
+                  {path:'requester',populate:{path:'id_user'}},
+                  {path:'participatingBots'},  
+                  {path:'participatingAgents'}                
                   ]
               ,function (err, requestComplete){
           
@@ -187,7 +189,9 @@ class RequestService {
                    [           
                    {path:'department'},
                    {path:'lead'},                        
-                   {path:'requester',populate:{path:'id_user'}}
+                   {path:'requester',populate:{path:'id_user'}},
+                   {path:'participatingBots'},  
+                   {path:'participatingAgents'}   
                    ]
                ,function (err, requestComplete){
            
