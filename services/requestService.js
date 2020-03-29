@@ -591,7 +591,32 @@ class RequestService {
      // winston.debug("request_id", request_id);
      
 
-        return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
+     return Request      
+     .findOne({request_id: request_id, id_project: id_project})
+     
+     .populate('lead')
+     .populate('department')
+     .populate('participatingBots')
+     .populate('participatingAgents')  
+     .populate({path:'requester',populate:{path:'id_user'}})
+     .exec( function(err, request) {
+
+     
+       if (err){
+         winston.error("Error getting closing request ", err);
+         return reject(err);
+       }
+       if (!request) {
+         winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
+         return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
+       }
+      
+       if (request.status == RequestConstants.CLOSED) {
+        winston.info("Request already closed for request_id "+ request_id + " and id_project " + id_project);
+        return resolve(request);
+       }
+
+       return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
             // winston.debug("updatedRequest", updatedRequest);
             return messageService.getTranscriptByRequestId(request_id, id_project).then(function(transcript) {
              // winston.debug("transcript", transcript);
@@ -610,6 +635,7 @@ class RequestService {
             winston.error(err);
               return reject(err);
           });
+        });
     });
 
   }
