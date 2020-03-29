@@ -90,6 +90,12 @@ class RequestService {
 
           that.routeInternal(request,departmentid, id_project, nobot ).then(function(routedRequest){
 
+
+            if (request.participants == routedRequest.participants) {
+              winston.info("routed to the same participants");
+              return resolve(request);
+            }
+
             return routedRequest.save(function(err, savedRequest) {
               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
               //return routedRequest.update(function(err, savedRequest) {
@@ -444,6 +450,7 @@ class RequestService {
      // winston.debug("request_id", request_id);
      // winston.debug("newstatus", newstatus);
 
+     //TODO CHECK IF ALREADY CLOSED
         return Request       
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {status: newstatus}, {new: true, upsert:false})
         .populate('lead')
@@ -634,6 +641,11 @@ class RequestService {
             return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
           }
 
+          if (request.status == RequestConstants.SERVED || request.status == RequestConstants.UNSERVED) {
+            winston.info("request already open"); 
+            return resolve(request);
+          }
+
           if (request.participants.length>0) {
             request.status =  RequestConstants.SERVED;
             // assigned_at?
@@ -789,8 +801,7 @@ class RequestService {
       // return Request.findById(id).then(function (request) {
         if (request.participants.indexOf(member)==-1){
           request.participants.push(member);
-          // qui assignetat
-        }
+
 
           if (request.participants.length>0) {          
             request.status =  RequestConstants.SERVED;
@@ -813,6 +824,14 @@ class RequestService {
             
             return resolve(savedRequest);
           });
+
+          // qui assignetat
+        } else {
+          winston.info('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
+          return resolve(request);
+        }
+
+         
       
           
       });
@@ -852,8 +871,10 @@ class RequestService {
         if (index > -1) {
           request.participants.splice(index, 1);
           // winston.debug(" request.participants",  request.participants);
-        }
-        if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+
+
+
+          if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
           if (request.participants.length>0) { 
             request.status =  RequestConstants.SERVED;
             // assignet_at?
@@ -876,6 +897,13 @@ class RequestService {
             return resolve(savedRequest);
 
           });
+
+
+        }else {
+          winston.info('Request member '+ member+ ' not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return resolve(request);
+        }
+        
 
         
           
