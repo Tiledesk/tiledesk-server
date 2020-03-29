@@ -15,7 +15,7 @@ var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
-
+var requestUtil = require("../utils/requestUtil");
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
 
@@ -89,16 +89,17 @@ class RequestService {
                    
 
           
-          var requestBeforeRoute = Object.assign({}, request);
+          // var requestBeforeRoute = Object.assign({}, request);
           var beforeParticipants = request.participants;
           console.log("beforeParticipants ", beforeParticipants);
 
           that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
-            console.log("routedRequest.participants" +routedRequest.request_id , routedRequest.participants);
+            console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
 
-            if (beforeParticipants == routedRequest.participants) {
+
+            if (requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
               winston.info("request " +request.request_id +" contains already the same participants. routed to the same participants");
               return resolve(request);
             }
