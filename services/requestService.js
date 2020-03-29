@@ -92,7 +92,7 @@ class RequestService {
 
 
             if (request.participants == routedRequest.participants) {
-              winston.info("routed to the same participants");
+              winston.info("request " +request.request_id +" contains already the same participants. routed to the same participants");
               return resolve(request);
             }
 
@@ -900,7 +900,7 @@ class RequestService {
 
 
         }else {
-          winston.info('Request member '+ member+ ' not found for request_id '+ request_id + ' and id_project '+ id_project);
+          winston.info('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
           return resolve(request);
         }
         
