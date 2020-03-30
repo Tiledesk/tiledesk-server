@@ -414,7 +414,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
       project_users.forEach(function(project_user) {
         var pu = project_user.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project && req.project.settings && req.project.settings.max_agent_served_chat);
         ret.push(pu);
       });
 
