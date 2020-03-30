@@ -36,7 +36,7 @@
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.5",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.0.3",
-    "@tiledesk-ent/tiledesk-server-routing-queue": "^1.0.1"
+    "@tiledesk-ent/tiledesk-server-routing-queue": "^1.0.3"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
