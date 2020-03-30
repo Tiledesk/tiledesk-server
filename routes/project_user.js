@@ -10,6 +10,7 @@ var pendinginvitation = require("../services/pendingInvitationService");
 const authEvent = require('../event/authEvent');
 var winston = require('../config/winston');
 var RoleConstants = require("../models/roleConstants");
+var ProjectUserUtil = require("../utils/project_userUtil");
 
 
 var passport = require('passport');
@@ -152,7 +153,11 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             // try {
               //test it
               savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
-                   authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: savedProject_userPopulated});
+                var pu = savedProject_userPopulated.toJSON();
+                pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        
+                
+                   authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: pu});
               });
             // } catch(e) {winston.error('Error emitting activity');}
             
@@ -216,8 +221,12 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
-          authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
+      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+
+        var pu = updatedProject_userPopulated.toJSON();
+        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        
+        authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
     
 
@@ -283,7 +292,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
       updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
-          authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
+        var pu = updatedProject_userPopulated.toJSON();
+        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
     
 
@@ -325,7 +337,10 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       if (!project_user) {
         return res.status(404).send({ success: false, msg: 'Object not found.' });
       }
-      res.json(project_user);
+      // res.json(project_user);
+      var pu = project_user.toJSON();
+      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+      res.json(pu);
     });
 
 });
@@ -351,7 +366,11 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       if (!project_user) {
         return res.status(404).send({ success: false, msg: 'Object not found.' });
       }
-      res.json(project_user);
+     
+      // res.json(project_user);
+      var pu = project_user.toJSON();
+      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+      res.json(pu);
 
      });
 });
@@ -384,12 +403,32 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
   Project_user.find({ id_project: req.projectid, role: { $in : role } }).
     populate('id_user').
+    // lean().                   
     exec(function (err, project_users) {
       if (err) {
         winston.info("Error gettting project_user for get users", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      res.json(project_users);
+
+      var ret = [];
+
+      project_users.forEach(function(project_user) {
+        var pu = project_user.toJSON();
+        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        ret.push(pu);
+      });
+
+      // project_users = project_users.map(function(project_user) {
+      //   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+      //   // project_user.isBusy = project_user.isBusy(req.project?.settings?.max_agent_served_chat);
+      //   project_user.isBusy = project_user.isBusy(req.project.settings && req.project.settings.max_agent_served_chat); 
+      //   // project_user.isBusy = "yesss"
+      //   return project_user;
+      // });
+
+      // res.json(project_users);
+      res.json(ret);
+      
     });
 });
 

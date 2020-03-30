@@ -78,6 +78,27 @@ var winston = require('../config/winston');
     options: { sort: { createdAt: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
+// Project_userSchema.statics.busy = function(project_max_served_chat) {
+
+//   var maxServedChat=undefined;
+//   if (project_max_served_chat && project_max_served_chat> -1) {
+//     maxServedChat = project_max_served_chat;
+//   }
+
+//   if (this.max_served_chat && this.max_served_chat>-1 && this.max_served_chat > maxServedChat) {
+//     maxServedChat = this.max_served_chat;
+//   }
+
+//   winston.info("maxServedChat: "+maxServedChat);
+
+//   if (maxServedChat && this.number_assigned_requests >= maxServedChat) {
+//     return true;
+//   }else {
+//     return false;
+//   }
+// }
+
+
 
 // Project_userSchema.virtual('numRequests', {
 //   ref: 'request', // The model to use
