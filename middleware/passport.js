@@ -17,6 +17,7 @@ var Subscription = require('../models/subscription');
 var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
+jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 
 
 
@@ -157,7 +158,8 @@ module.exports = function(passport) {
 
   winston.debug("passport opts: ", opts);
 
-  passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
+  passport.use(new JwtStrategy(opts, async(req, jwt_payload, done)  => {
+  // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
     winston.debug("jwt_payload",jwt_payload);
     // console.log("req",req);
     
@@ -194,7 +196,15 @@ module.exports = function(passport) {
     }
 
     //TODO check into DB if JWT is revoked 
-
+    if (jwthistory) {
+      var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
+      winston.info("passport jwt jwtRevoked: "+ jwtRevoked);
+      if (jwtRevoked) {
+        winston.warn("passport jwt is revoked with jti: "+ jwt_payload.jti);
+        return done(null, false);
+      }
+    }
+    
     if (subject == "bot") {
       winston.debug("Passport JWT bot");
       Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
