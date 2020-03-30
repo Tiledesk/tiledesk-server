@@ -191,20 +191,20 @@ module.exports = function(passport) {
     if (req && req.disablePassportEntityCheck) { //req can be null
       // jwt_payload.id = jwt_payload._id; //often req.user.id is used inside code. req.user.id  is a mongoose getter of _id
       // is better to rename req.user.id to req.user._id in all files
-      winston.info("req.disablePassportEntityCheck enabled");
+      winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
 
     //TODO check into DB if JWT is revoked 
     if (jwthistory) {
       var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
-      winston.info("passport jwt jwtRevoked: "+ jwtRevoked);
+      winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
       if (jwtRevoked) {
         winston.warn("passport jwt is revoked with jti: "+ jwt_payload.jti);
         return done(null, false);
       }
     }
-    
+
     if (subject == "bot") {
       winston.debug("Passport JWT bot");
       Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
