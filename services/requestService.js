@@ -767,6 +767,8 @@ class RequestService {
           winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
+        var oldParticipants = request.participants;
+
         request.participants = newparticipants;
 
         if (request.participants.length>0) { 
@@ -788,7 +790,6 @@ class RequestService {
            requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:updatedRequest});
 
 
-           let oldParticipants = request.participants;
            winston.info("oldParticipants ", oldParticipants);
 
            let newParticipants = updatedRequest.participants;
