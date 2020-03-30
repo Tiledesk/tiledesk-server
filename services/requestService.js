@@ -112,16 +112,15 @@ class RequestService {
                 return reject(err);
               }
           
-              savedRequest
-              .populate(
-                  [           
-                  {path:'department'},
-                  {path:'lead'},                        
-                  {path:'requester',populate:{path:'id_user'}},
-                  {path:'participatingBots'},  
-                  {path:'participatingAgents'}                
-                  ]
-              ,function (err, requestComplete){
+              return Request       //to populate correctly i must re-exec the query
+              .findById(savedRequest.id)
+              .populate('lead')
+              .populate('department')
+              .populate('participatingBots')
+              .populate('participatingAgents')  
+              .populate({path:'requester',populate:{path:'id_user'}})
+              .exec( function(err, requestComplete) {
+             
           
                   if (err) {
                     winston.error('Error populating the request.',err);
@@ -184,17 +183,15 @@ class RequestService {
                  return reject(err);
                }
            
-               savedRequest
-               .populate(
-                   [           
-                   {path:'department'},
-                   {path:'lead'},                        
-                   {path:'requester',populate:{path:'id_user'}},
-                   {path:'participatingBots'},  
-                   {path:'participatingAgents'}   
-                   ]
-               ,function (err, requestComplete){
-           
+               return Request       //to populate correctly i must re-exec the query
+               .findById(savedRequest.id)
+               .populate('lead')
+               .populate('department')
+               .populate('participatingBots')
+               .populate('participatingAgents')  
+               .populate({path:'requester',populate:{path:'id_user'}})
+               .exec( function(err, requestComplete) {
+                
                    if (err) {
                      winston.error('Error populating the request.',err);
                      return reject(err);

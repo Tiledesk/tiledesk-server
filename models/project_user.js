@@ -52,6 +52,7 @@ var winston = require('../config/winston');
     },
     number_assigned_requests: {
       type: Number,
+      default:0,
       index: true
     },
     last_ip: {
