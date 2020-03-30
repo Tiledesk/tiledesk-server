@@ -292,10 +292,10 @@ class WebSocketServer {
           winston.debug('projectId: '+projectId);
               
           var puId = urlSub[3];
-          winston.info('puId: '+puId);
+          winston.debug('puId: '+puId);
 
           var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
-          winston.info(' query: ',query);
+          winston.debug(' query: ',query);
 
           Project_user.findOne(query, function (err, projectuser) {
             if (err) {
