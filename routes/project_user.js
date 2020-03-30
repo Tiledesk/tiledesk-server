@@ -368,9 +368,9 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       }
      
       // res.json(project_user);
-      var pu = project_user.toJSON();
+      var pu = project_user[0].toJSON();
       pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
-      res.json(pu);
+      res.json([pu]);
 
      });
 });
