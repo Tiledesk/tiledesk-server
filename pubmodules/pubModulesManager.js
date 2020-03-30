@@ -20,6 +20,9 @@ class PubModulesManager {
   
 
     use(app) {
+        
+    }
+    useUnderProjects(app) {
         var that = this;
         winston.info("PubModulesManager using controllers");     
 

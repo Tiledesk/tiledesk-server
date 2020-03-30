@@ -13,6 +13,12 @@ class ChannelManager {
         chat21Handler.use(app);
     }
 
+    useUnderProjects(app) {
+        var that = this;
+        // winston.info("ChannelManager using controllers");
+        chat21Handler.useUnderProjects(app);
+    }
+
     listen() {
         var that = this;
         if (process.env.NODE_ENV != 'test')  {

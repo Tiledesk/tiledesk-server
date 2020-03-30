@@ -61,13 +61,26 @@ class ModulesManager {
 
     use(app) {
         var that = this;
-        winston.info("ModulesManager using controllers");       
+        // winston.info("ModulesManager using controllers");  
 
         if (this.stripe) {
             app.use('/modules/payments/stripe', this.stripe);
             winston.info("ModulesManager stripe controller loaded");       
         }
 
+
+        if (this.jwthistoryRoute) {
+            app.use('/jwt/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], this.jwthistoryRoute);
+            winston.info("ModulesManager jwthistory controller loaded");       
+        }
+
+        
+    }
+    useUnderProjects(app) {
+        var that = this;
+        winston.info("ModulesManager using controllers");       
+
+      
         if (this.triggerRoute) {
             app.use('/:projectid/modules/triggers', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.triggerRoute);
             winston.info("ModulesManager trigger controller loaded");       
@@ -88,10 +101,7 @@ class ModulesManager {
              winston.info("ModulesManager activities controller loaded");       
         }
 
-        if (this.jwthistoryRoute) {
-            app.use('/jwt/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], this.jwthistoryRoute);
-            winston.info("ModulesManager jwthistory controller loaded");       
-        }
+     
         if (this.requestHistoryRoute) {
             app.use('/:projectid/requests/:request_id/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['subscription'])] , this.requestHistoryRoute);
             winston.info("ModulesManager requestHistory controller loaded"); 

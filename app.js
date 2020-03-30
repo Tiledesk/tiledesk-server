@@ -335,6 +335,20 @@ if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
   app.use('/public/requests', publicRequest);
 }
 
+// project internal auth check. TODO check security issues?
+app.use('/projects',project);
+
+channelManager.use(app);
+
+if (pubModulesManager) {
+  pubModulesManager.use(app);
+}
+
+if (modulesManager) {
+  modulesManager.use(app);
+}
+
+
 app.use('/:projectid', [projectIdSetter, projectSetter]);
 
 
@@ -351,7 +365,7 @@ app.use('/:projectid/departments', department);
 
 
 
-channelManager.use(app);
+channelManager.useUnderProjects(app);
 
 
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
@@ -361,8 +375,7 @@ app.use('/:projectid/faqpub', faqpub);
 
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
 
-// project internal auth check. TODO check security issues?
-app.use('/projects',project);
+
 
 // app.use('/settings',setting);
 
@@ -400,11 +413,11 @@ app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: 
 
 
 if (pubModulesManager) {
-  pubModulesManager.use(app);
+  pubModulesManager.useUnderProjects(app);
 }
 
 if (modulesManager) {
-  modulesManager.use(app);
+  modulesManager.useUnderProjects(app);
 }
  
   
