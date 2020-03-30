@@ -239,7 +239,7 @@ describe('RequestService', function () {
 
      projectService.createAndReturnProjectAndProjectUser("createWithIdWithPooledDepartment", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-      departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
+      departmentService.create("PooledDepartment-for-createWithIdWith-createWithIdWithPooledDepartment", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
        requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
           winston.debug("resolve savedRequest");
           expect(savedRequest.request_id).to.equal("request_id1");
@@ -425,45 +425,45 @@ describe('RequestService', function () {
 
 
 
-//   it('addparticipant', function (done) {
+  it('addparticipant', function (done) {
 
-//     var email = "test-request-create-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
 
-//     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-//       var userid = savedUser.id;
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
 
-//   projectService.createAndReturnProjectAndProjectUser("addparticipant-project", userid).then(function(savedProjectAndPU) {
-//     var savedProject = savedProjectAndPU.project;
-//      requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
-//       //  inserisci id valido
-//        var member = 'agent1';
-//        requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
-//         winston.info("resolve", savedRequestParticipant.toObject());
-//         expect(savedRequestParticipant.request_id).to.equal("request_id1");
+  projectService.createAndReturnProjectAndProjectUser("addparticipant-project", userid).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+     requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+      //  inserisci id valido
+       var member = 'agent1';
+       requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
+        winston.info("resolve", savedRequestParticipant.toObject());
+        expect(savedRequestParticipant.request_id).to.equal("request_id1");
 
-//         winston.info("savedProjectAndPU.project_user._id.toString():"+savedProjectAndPU.project_user._id.toString());
-//         expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+        winston.info("savedProjectAndPU.project_user._id.toString():"+savedProjectAndPU.project_user._id.toString());
+        expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
 
-//         expect(savedRequestParticipant.first_text).to.equal("first_text");
-//         expect(savedRequestParticipant.agents).to.have.lengthOf(1);
-//         expect(savedRequestParticipant.status).to.equal(200);
-//         expect(savedRequestParticipant.participants).to.have.lengthOf(2);
-//         expect(savedRequestParticipant.participants).to.contains(userid);
-//         expect(savedRequestParticipant.participants).to.contains(member);
-//         expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
+        expect(savedRequestParticipant.first_text).to.equal("first_text");
+        expect(savedRequestParticipant.agents).to.have.lengthOf(1);
+        expect(savedRequestParticipant.status).to.equal(200);
+        expect(savedRequestParticipant.participants).to.have.lengthOf(2);
+        expect(savedRequestParticipant.participants).to.contains(userid);
+        expect(savedRequestParticipant.participants).to.contains(member);
+        expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
 
-//         done();
-//       }).catch(function(err) {
-//           console.log("test reject");
-//           assert.isNotOk(err,'Promise error');
-//           done();
-//       });
-//     });
+        done();
+      }).catch(function(err) {
+          console.log("test reject");
+          assert.isNotOk(err,'Promise error');
+          done();
+      });
+    });
 
-//     });
-//   });
-// });
+    });
+  });
+});
 
 
 

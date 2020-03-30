@@ -19,7 +19,9 @@ class RequestNotification {
 listen() {
     var that = this;
      requestEvent.on("request.create", function(request) {
+
       setImmediate(() => {
+   
          that.sendEmail(request.id_project, request);
       });
      });
@@ -70,18 +72,19 @@ listen() {
 }
 
 sendEmail(projectid, savedRequest) {
+  //  console.log("savedRequest23", savedRequest);
     // send email
     try {
    
    
     Project.findOne({_id: projectid, status: 100}, function(err, project){
        if (err) {
-         winston.error(err);
+         return winston.error(err);
        }
    
        if (!project) {
         //  console.warn("Project not found", req.projectid);
-         console.warn("Project not found", projectid);
+        return console.warn("Project not found", projectid);
        } else {
          
          // winston.debug("Project", project);
@@ -121,7 +124,12 @@ sendEmail(projectid, savedRequest) {
                    // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                    else if (savedRequest.status==RequestConstants.SERVED) { //ASSIGNED
                     var assignedId = savedRequest.participants[0];
-                     winston.debug("participants", assignedId);
+
+                    //  winston.info("assignedId1:"+ assignedId);
+
+                    //  if (!assignedId) {
+                    //    console.log("attention90", savedRequest);
+                    //  }
 
                     if (assignedId.startsWith("bot_")) {
                       return ;
