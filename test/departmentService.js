@@ -69,7 +69,7 @@ describe('DepartmentService()', function () {
         pu2.save(function (err, savedProject_user3) {
           winston.debug("savedProject_user3", savedProject_user3.toObject());
 
-          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          departmentService.create("PooledDepartment-for-createWithIdWith-createFirstWithAssignedDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
           // requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
             // getOperators(departmentid, projectid, nobot) {
@@ -146,7 +146,7 @@ describe('DepartmentService()', function () {
         // pu2.save(function (err, savedProject_user3) {
           // winston.debug("savedProject_user3", savedProject_user3.toObject());
 
-          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
           requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
             // getOperators(departmentid, projectid, nobot) {
@@ -207,7 +207,7 @@ describe('DepartmentService()', function () {
     userService.signup( email+'3' ,pwd, "Test Firstname3", "Test lastname3").then(function(savedUser3) {
     projectService.create("createWithAssignedDepartment", savedUser._id).then(function(savedProject) {
 
-          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedDepartmentNoBeforeRequestOneAgent", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
 
             // getOperators(departmentid, projectid, nobot) {
             departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult0) {
@@ -259,7 +259,8 @@ describe('DepartmentService()', function () {
         winston.debug("savedProject_user2", savedProject_user2.toObject());
 
 
-          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+        departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedALLOFFLINEDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          // requestService.createWithIdAndRequester("request_id1-createRoundRobinWithAssignedALLOFFLINEDepartment", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
           requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
             // getOperators(departmentid, projectid, nobot) {
@@ -268,22 +269,22 @@ describe('DepartmentService()', function () {
 
               requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
 
-            departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
-              winston.info("resolve operatorsResult", operatorsResult);
+                departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
+                  winston.info("resolve operatorsResult", operatorsResult);
 
-              expect(operatorsResult.department._id.toString()).to.equal(createdDepartment._id.toString());
-              expect(operatorsResult.available_agents.length).to.equal(0);
-
-       
-
-              expect(operatorsResult.agents.length).to.equal(2);
-              expect(operatorsResult.group).to.equal(undefined);
+                  expect(operatorsResult.department._id.toString()).to.equal(createdDepartment._id.toString());
+                  expect(operatorsResult.available_agents.length).to.equal(0);
 
           
-              done();
-            });
+
+                  expect(operatorsResult.agents.length).to.equal(2);
+                  expect(operatorsResult.group).to.equal(undefined);
+
+              
+                  done();
+                });
+          });
         });
-      });
       });
     });
       });
@@ -335,7 +336,7 @@ describe('DepartmentService()', function () {
         winston.debug("savedProject_user2", savedProject_user2.toObject());
 
 
-          departmentService.create("PooledDepartment-for-createWithIdWith", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+          departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedLastOperatorNotAvailableAndOtherNotAvailableDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
           requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
             // getOperators(departmentid, projectid, nobot) {
