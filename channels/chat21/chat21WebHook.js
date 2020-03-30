@@ -299,6 +299,8 @@ router.post('/', function(req, res) {
                     // return requestService.setParticipantsByRequestId(recipient_id, firestoreProjectid, firestoreMembersAsArray).then(function(updatedParticipantsRequest) {
                       // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
+
+                      //TODO do not close the request if it's already closed
                       return requestService.closeRequestByRequestId(recipient_id, projectId).then(function(updatedStatusRequest) {
                         // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
                         //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
