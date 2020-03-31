@@ -239,7 +239,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             
         } 
     }
-
+    }
 
     
 }
