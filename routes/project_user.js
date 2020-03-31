@@ -154,7 +154,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
               //test it
               savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
                 var pu = savedProject_userPopulated.toJSON();
-                pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+                pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_served_chat);
         
                 
                    authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: pu});
@@ -224,7 +224,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
 
         var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_served_chat);
         
         authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
@@ -293,7 +293,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     }
       updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
         var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
         
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
