@@ -44,8 +44,8 @@ class RequestService {
             participants.push(assigned_operator_id.toString());
             assigned_at = Date.now();            
           }
-           winston.info("routeInternal assigned_operator_id: "+ assigned_operator_id);
-           winston.info("routeInternal status: "+ status);
+           winston.debug("routeInternal assigned_operator_id: "+ assigned_operator_id);
+           winston.debug("routeInternal status: "+ status);
 
           request.status = status;
           request.participants = participants;

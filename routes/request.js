@@ -291,7 +291,7 @@ router.put('/:requestid/departments', function (req, res) {
    //route(request_id, departmentid, id_project) {      
     requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot).then(function(updatedRequest) {
       
-      winston.info("department changed", updatedRequest);
+      winston.debug("department changed", updatedRequest);
 
       return res.json(updatedRequest);
   });
