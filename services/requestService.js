@@ -129,10 +129,29 @@ class RequestService {
                   winston.info("Request routed",requestComplete.toObject());
                 
                   
+
+
+                  var oldParticipants = beforeParticipants;
+                  winston.info("oldParticipants ", oldParticipants);
+
+                  let newParticipants = requestComplete.participants;
+                  winston.info("newParticipants ", newParticipants);
+
+                  var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                  winston.info("removedParticipants ", removedParticipants);
+
+                  var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                  winston.info("addedParticipants ", addedParticipants);
+
                   
                   requestEvent.emit('request.update',requestComplete);
                   requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
-                  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+                  // requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+                  requestEvent.emit('request.participants.update', {beforeRequest:request, 
+                    removedParticipants:removedParticipants, 
+                    addedParticipants:addedParticipants,
+                    request:requestComplete});
+
                   requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
 
                   return resolve(requestComplete);
@@ -172,7 +191,8 @@ class RequestService {
              return reject(err);
            }
                     
- 
+           var oldParticipants = request.participants;
+
            that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
  
              return routedRequest.save(function(err, savedRequest) {
@@ -202,7 +222,26 @@ class RequestService {
                    
                    requestEvent.emit('request.update',requestComplete);
                    requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
-                   requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+
+
+                   winston.info("oldParticipants ", oldParticipants);
+ 
+                   let newParticipants = requestComplete.participants;
+                   winston.info("newParticipants ", newParticipants);
+ 
+                   var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+                   winston.info("removedParticipants ", removedParticipants);
+ 
+                   var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+                   winston.info("addedParticipants ", addedParticipants);
+
+
+                  //  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+                   requestEvent.emit('request.participants.update', {beforeRequest:request, 
+                    removedParticipants:removedParticipants, 
+                    addedParticipants:addedParticipants,
+                    request:requestComplete});
+
                    requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
  
                    return resolve(requestComplete);
