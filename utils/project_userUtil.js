@@ -1,12 +1,14 @@
 
 class ProjectUserUtil {
 
-    isBusy(project_user, project) {
+    isBusy(project_user, project_max_served_chat) {
        
-        var project_max_served_chat  = project && project.settings && project.settings.max_agent_served_chat;
+        // console.log("project",project);
+        // var project_max_served_chat  = project && project.settings && project.settings.max_agent_served_chat;
         // var project_max_served_chat  = 0;
+        
         var maxServedChat=undefined;
-
+        console.log("project_max_served_chat:", project_max_served_chat);
         if (project_max_served_chat == undefined) {
             return false;
         }
