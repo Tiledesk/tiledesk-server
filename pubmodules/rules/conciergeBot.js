@@ -74,6 +74,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             requestEvent.on('request.create',  function(request) {   
                 setImmediate(() => {                  
                     that.welcomeOnJoin(request);
+                    that.welcomeAgentOnJoin(request);
                 });
             });
 
@@ -86,12 +87,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                   
 
                     that.welcomeOnJoin(request);
+                    that.welcomeAgentOnJoin(request);
                        
-                    });
+                });
 
-
-
-        });
+            });
 
 
 
@@ -202,6 +202,39 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
         
                        
                     }
+            }
+            
+        } 
+    }
+
+
+
+
+    welcomeAgentOnJoin(request) {
+        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+        if (!botId) {                        
+        // if (!request.department.id_bot) {
+            
+            winston.debug("ConciergeBot send agent welcome bot message");     
+          
+              // TODO if (request is assigned allora manda we are putting inn touch )
+            // controlla dopo reassing
+            if (request.status == RequestConstants.SERVED) {
+                if (request.participants.length==0) {
+                    // if (request.availableAgents.length==0) {
+                       
+                        // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
+                        messageService.send(
+                            'system', 
+                            'Bot',                                     
+                            request.request_id,
+                            i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
+                            request.id_project,
+                            'system',                             
+                            {subtype:"info/support", "updateconversation" : true, messagelabel: {key: "TOUCHING_OPERATOR"}}
+                        );
+                    
+                                           
             }
             
         } 
