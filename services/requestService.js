@@ -28,7 +28,9 @@ class RequestService {
 
     return new Promise(function (resolve, reject) {
 
-        return departmentService.getOperators(departmentid, id_project, nobot).then(function (result) {
+      var context = {request: request};
+
+        return departmentService.getOperators(departmentid, id_project, nobot, context).then(function (result) {
 
           // winston.debug("getOperators", result);
 
@@ -285,7 +287,11 @@ class RequestService {
 
     return new Promise(function (resolve, reject) {
 
-        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+        var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
+          first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
+          createdBy:createdBy, attributes:attributes, subject:subject}};
+
+        return departmentService.getOperators(departmentid, id_project, false, context).then(function (result) {
 
            // winston.debug("getOperators", result);
            
@@ -402,7 +408,11 @@ class RequestService {
 
     return new Promise(function (resolve, reject) {
 
-        return departmentService.getOperators(departmentid, id_project, false).then(function (result) {
+      var context = {request: {request_id:request_id, requester_id:requester_id, id_project:id_project, 
+        first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
+        createdBy:createdBy, attributes:attributes}};
+
+        return departmentService.getOperators(departmentid, id_project, false, context).then(function (result) {
 
           // winston.debug("getOperators", result);
 

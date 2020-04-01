@@ -145,7 +145,10 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
   winston.debug("disableWebHookCall: "+ disableWebHookCall);
 
   // getOperators(departmentid, projectid, nobot) {
-  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall);
+
+
+    var context = {req:req};
+  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall, context);
   winston.debug("Getting department operators operatorsResult", operatorsResult);
 
   // operatorsResult.available_agents_request  = [];

@@ -159,7 +159,7 @@ roundRobin(operatorSelectedEvent) {
 
 
 
-getOperators(departmentid, projectid, nobot, disableWebHookCall) {
+getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
 
@@ -281,7 +281,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
           *  * agents (i.e., all the project users) 
           *  * operators (i.e. the id of a user selected random from the available project users considering personal availability in the range of the operating hours)
           * --------------------------------------------------------------------------------*/
-          return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project).then(function (value) {
+          return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project, context).then(function (value) {
 
             // console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
             value['department'] = department
@@ -297,7 +297,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
   });
 };
 
- findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project) {
+ findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project, context) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
@@ -305,18 +305,18 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 
     if (department.id_group != null) {
 
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project, context));
 
     } else {
 
-      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project));
+      return resolve(that.findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project, context));
 
     }
 
   });
 };
 
- findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project) {
+ findProjectUsersAllAndAvailableWithOperatingHours_group(projectid, department, disableWebHookCall, project, context) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
@@ -361,7 +361,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
-                departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
+                departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject, context: context});
 
                 //is resolved by departmentEvent or SubscriptionNotifier
                 // return resolve(objectToReturnRoundRobin);
@@ -390,7 +390,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 }
 
 
- findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project) {
+ findProjectUsersAllAndAvailableWithOperatingHours_nogroup(projectid, department, disableWebHookCall, project, context) {
 
   var that = this;
 
@@ -421,7 +421,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall) {
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
 
-            departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject});
+            departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject, context: context});
 
             // attento qui            
             // if (objectToReturnRoundRobin.department._id == "5e5d40b2bd0a9b00179ff3cf" ) {
