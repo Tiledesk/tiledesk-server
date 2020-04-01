@@ -150,7 +150,7 @@ class WebSocketServer {
             winston.debug('projectId: '+projectId);
 
 
-            return Project.findOne({ id_project: projectId, status: 100}).exec(function(err, project) {
+            return Project.findOne({ _id: projectId, status: 100}).exec(function(err, project) {
               if (err) {
                 winston.error('Error getting  Project', err);  
                 return reject(err);
