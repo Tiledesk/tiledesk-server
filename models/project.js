@@ -4,6 +4,14 @@ var winston = require('../config/winston');
 var Profile = require('../models/profile');
 var Channel = require('../models/channel');
 
+var trialEnabled = process.env.TRIAL_MODE_ENABLED || false;
+winston.debug("trial mode enabled: "+trialEnabled );
+
+if (trialEnabled) {
+  winston.info("Trial mode enabled");
+}
+
+
 var ProjectSchema = new Schema({
   _id: Schema.Types.ObjectId,
 
@@ -69,6 +77,12 @@ var ProjectSchema = new Schema({
 );
 
 ProjectSchema.virtual('trialExpired').get(function () {
+
+
+  if (trialEnabled === false) {
+    return false;
+  }
+
   // https://stackoverflow.com/questions/6963311/add-days-to-a-date-object
   let now = new Date();
   winston.debug("now.getTime() " + now.getTime());
