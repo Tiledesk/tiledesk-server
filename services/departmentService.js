@@ -161,7 +161,7 @@ roundRobin(operatorSelectedEvent) {
 
 getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
-
+  winston.debug('context0.0',context);
 
   var that = this;
   return new Promise(function (resolve, reject) {
@@ -281,6 +281,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           *  * agents (i.e., all the project users) 
           *  * operators (i.e. the id of a user selected random from the available project users considering personal availability in the range of the operating hours)
           * --------------------------------------------------------------------------------*/
+         winston.debug("context0",context);
           return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project, context).then(function (value) {
 
             // console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
@@ -361,6 +362,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
+                winston.debug("context2",context);
                 departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin, disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject, context: context});
 
                 //is resolved by departmentEvent or SubscriptionNotifier
@@ -420,7 +422,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project };
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
-
+            winston.debug("context2",context);
             departmentEvent.emit('operator.select.base1', {result:objectToReturnRoundRobin,  disableWebHookCall: disableWebHookCall, resolve: resolve, reject: reject, context: context});
 
             // attento qui            
