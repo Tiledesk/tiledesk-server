@@ -30,7 +30,8 @@ class RequestService {
 
       var context = {request: request};
 
-        return departmentService.getOperators(departmentid, id_project, nobot, context).then(function (result) {
+          // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
+        return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
 
           // winston.debug("getOperators", result);
 
@@ -291,7 +292,10 @@ class RequestService {
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject}};
 
-        return departmentService.getOperators(departmentid, id_project, false, context).then(function (result) {
+          winston.info("context",context);
+
+          // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
+        return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
 
            // winston.debug("getOperators", result);
            
@@ -412,7 +416,9 @@ class RequestService {
         first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
         createdBy:createdBy, attributes:attributes}};
 
-        return departmentService.getOperators(departmentid, id_project, false, context).then(function (result) {
+                  // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
+
+        return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
 
           // winston.debug("getOperators", result);
 
