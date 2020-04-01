@@ -36,7 +36,34 @@ router.put('/:leadid', function (req, res) {
     if (req.body.status!=undefined) {
       update.status = req.body.status;
     }
-  
+
+
+    if (req.body.phone!=undefined) {
+      update.phone = req.body.phone;
+    }
+    if (req.body.company!=undefined) {
+      update.company = req.body.company;
+    }
+    if (req.body.note!=undefined) {
+      update.note = req.body.note;
+    }
+    
+    if (req.body.streetAddress!=undefined) {
+      update.streetAddress = req.body.streetAddress;
+    }
+    if (req.body.city!=undefined) {
+      update.city = req.body.city;
+    }
+    if (req.body.region!=undefined) {
+      update.region = req.body.region;
+    }
+    if (req.body.zipcode!=undefined) {
+      update.zipcode = req.body.zipcode;
+    }
+    if (req.body.country!=undefined) {
+      update.country = req.body.country;
+    }  
+
   
   Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {
     if (err) {

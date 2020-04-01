@@ -24,6 +24,38 @@ var LeadSchema = new Schema({
     required: false,
     index: true
   },
+  phone: {
+    type: String,
+    required: false
+  },
+  company: {
+    type: String,
+    required: false
+  },
+  note: {
+    type: String,
+    required: false
+  },
+  streetAddress: {
+    type: String,
+    required: false
+  },
+  city: {
+    type: String,
+    required: false
+  },
+  region: {
+    type: String,
+    required: false
+  },
+  zipcode: {
+    type: String,
+    required: false
+  },
+  country: {
+    type: String,
+    required: false
+  },
   attributes: {
     type: Object,
   },
