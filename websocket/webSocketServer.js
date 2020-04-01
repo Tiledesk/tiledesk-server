@@ -16,6 +16,7 @@ var winston = require('../config/winston');
 var roleChecker = require('../middleware/has-role');
 const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
+var ProjectUserUtil = require("../utils/project_userUtil");
 
 class WebSocketServer {
 
