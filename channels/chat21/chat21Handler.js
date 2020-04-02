@@ -11,6 +11,11 @@ var winston = require('../../config/winston');
 var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
+winston.info('Chat21Handler chat21.CHAT21_URL: '+ chat21.CHAT21_URL);
+winston.info('Chat21Handler chat21.CHAT21_APPID: '+ chat21.CHAT21_APPID);
+
+
+
 var chat21Util = require('./chat21Util');
 var tiledeskUtil = require('./tiledesk-util');
 
@@ -518,7 +523,8 @@ class Chat21Handler {
                         });
 
                         // archive: function(recipient_id, user_id){
-                        chat21.conversations.archive(request.request_id, request.requester_id)
+                        chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
+
                        .then(function(data){
                            winston.info("Chat21 archived ", data);
                    
