@@ -47,6 +47,7 @@ nano .env #configure .env file properly
 If you want to run tiledesk and mongo with docker run :
 
 ```
+docker run --name tiledesk-mongo -d mongo
 docker run -p 3000:3000 --env DATABASE_URI="mongodb://mongo/tiledesk-server" --env-file .env --link tiledesk-mongo:mongo tiledesk/tiledesk-server
 ```
 
