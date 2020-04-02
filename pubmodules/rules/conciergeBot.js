@@ -86,7 +86,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 setImmediate(() => {
                   
 
-                    that.welcomeOnJoin(request);
+                    // that.welcomeOnJoin(request);
                     that.welcomeAgentOnJoin(request);
                        
                 });
