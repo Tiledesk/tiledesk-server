@@ -220,7 +220,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
               // TODO if (request is assigned allora manda we are putting inn touch )
             // controlla dopo reassing
             if (request.status == RequestConstants.SERVED) {
-                if (request.participants.length==0) {
+                if (request.participants.length>0) {
+                    
                     // if (request.availableAgents.length==0) {
                        
                         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
