@@ -304,6 +304,9 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 });
 
 
+
+// fai servizio di patch degli attributi come request
+
 router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
@@ -369,7 +372,10 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
      
       // res.json(project_user);
       var pu = project_user[0].toJSON();
-      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+
+
+    
+      pu.isBusy = ProjectUserUtil.isBusy(project_user[0], req.project.settings && req.project.settings.max_agent_served_chat);
       res.json([pu]);
 
      });
