@@ -119,7 +119,7 @@ class ModulesManager {
 
    
     init() {
-        winston.info("ModulesManager init");
+        winston.debug("ModulesManager init");
 
 
         try {
