@@ -258,7 +258,7 @@ class Chat21Handler {
 
                         //'https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/typings/support-group-LvtMo6VMxX1j3xV3b-X?token=chat21-secret-orgAa,',
 
-                        chat21.conversations.typing(message.recipient,message.sender).finally(function() {
+                        chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
                         // .then(function(){
                         //     setTimeout(function() {
                         //         chat21.conversations.stopTyping(message.recipient,message.sender);
@@ -330,7 +330,7 @@ class Chat21Handler {
                                         .then(function(data){
                                             winston.debug("Chat21 sendToGroup sent ", data);
                                     
-                                            chat21.conversations.stopTyping(message.recipient,message.sender);
+                                            // chat21.conversations.stopTyping(message.recipient,message.sender);
     
                                             chat21Event.emit('message.sent', data);
     
