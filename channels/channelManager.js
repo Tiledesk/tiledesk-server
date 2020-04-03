@@ -9,13 +9,13 @@ class ChannelManager {
 
     use(app) {
         var that = this;
-        winston.info("ChannelManager using controllers");
+        winston.debug("ChannelManager using controllers");
         chat21Handler.use(app);
     }
 
     useUnderProjects(app) {
         var that = this;
-        // winston.info("ChannelManager using controllers");
+        winston.debug("ChannelManager using controllers");
         chat21Handler.useUnderProjects(app);
     }
 

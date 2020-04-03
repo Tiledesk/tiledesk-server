@@ -24,7 +24,7 @@ class PubModulesManager {
     }
     useUnderProjects(app) {
         var that = this;
-        winston.info("PubModulesManager using controllers");     
+        winston.debug("PubModulesManager using controllers");     
 
         if (this.eventsRoute) {
             app.use('/:projectid/events', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('guest')], this.eventsRoute);
@@ -35,7 +35,7 @@ class PubModulesManager {
 
    
     init() {
-        winston.info("PubModulesManager init");
+        winston.debug("PubModulesManager init");
 
         try {
             this.appRules = require('./rules/appRules');
@@ -43,7 +43,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init rules loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init rules module not found",err);
+                winston.info("PubModulesManager init rules module not found");
             }else {
                 winston.info("PubModulesManager error initializing init rules module", err);
             }
@@ -56,7 +56,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init messageActions loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init messageActions module not found",err);
+                winston.info("PubModulesManager init messageActions module not found");
             }else {
                 winston.info("PubModulesManager error initializing init messageActions module", err);
             }
@@ -70,7 +70,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init requestNotification loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init emailNotification module not found",err);
+                winston.info("PubModulesManager init emailNotification module not found");
             }else {
                 winston.info("PubModulesManager error initializing init emailNotification module", err);
             }
@@ -83,7 +83,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init eventsRoute loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init eventsRoute module not found",err);
+                winston.info("PubModulesManager init eventsRoute module not found");
             }else {
                 winston.info("PubModulesManager error initializing init eventsRoute module", err);
             }
@@ -97,7 +97,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init entityEraser loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init entityEraser module not found",err);
+                winston.info("PubModulesManager init entityEraser module not found");
             }else {
                 winston.info("PubModulesManager error initializing init entityEraser module", err);
             }

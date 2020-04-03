@@ -78,7 +78,7 @@ class ModulesManager {
     }
     useUnderProjects(app) {
         var that = this;
-        winston.info("ModulesManager using controllers");       
+        winston.debug("ModulesManager using controllers");       
 
       
         if (this.triggerRoute) {

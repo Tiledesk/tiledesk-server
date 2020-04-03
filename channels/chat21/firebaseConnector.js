@@ -55,6 +55,6 @@ if (chat21Enabled && chat21Enabled == "true"){
 
           
 }else { 
-  winston.info("chat21 channel disabled"); 
+  winston.info("Chat21 channel disabled. ATTENTION you must configure and enable it"); 
   module.exports = undefined;
 }
