@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg)](https://travis-ci.org/Tiledesk/tiledesk-server)
 
-[![Dev branch Build Status](https://travis-ci.org/Tiledesk/tiledesk-server.svg?branch=dev)](https://travis-ci.org/Tiledesk/tiledesk-server/dev)
 
 # Introduction
 
