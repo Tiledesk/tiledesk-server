@@ -103,7 +103,7 @@ class RequestService {
 
 
             if (requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-              winston.info("request " +request.request_id +" contains already the same participants. routed to the same participants");
+              winston.debug("request " +request.request_id +" contains already the same participants. routed to the same participants");
               return resolve(request);
             }
 
@@ -676,7 +676,7 @@ class RequestService {
        }
       
        if (request.status == RequestConstants.CLOSED) {
-        winston.info("Request already closed for request_id "+ request_id + " and id_project " + id_project);
+        winston.debug("Request already closed for request_id "+ request_id + " and id_project " + id_project);
         return resolve(request);
        }
 
@@ -732,7 +732,7 @@ class RequestService {
           }
 
           if (request.status == RequestConstants.SERVED || request.status == RequestConstants.UNSERVED) {
-            winston.info("request already open"); 
+            winston.debug("request already open"); 
             return resolve(request);
           }
 
@@ -935,7 +935,7 @@ class RequestService {
 
           // qui assignetat
         } else {
-          winston.info('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
+          winston.debug('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
           return resolve(request);
         }
 
