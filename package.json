@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
-    "@tiledesk/tiledesk-chat21-app": "^1.0.13",
+    "@tiledesk/tiledesk-chat21-app": "^1.0.14",
     "amqplib": "^0.5.5",
     "apollo-server": "^2.9.12",
     "apollo-server-express": "^2.9.12",
