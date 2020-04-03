@@ -17,9 +17,14 @@ var Subscription = require('../models/subscription');
 var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
-jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 
 
+var jwthistory = undefined;
+try {
+  jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
+} catch(err) {
+  winston.info("jwthistory not present");
+}
 
 module.exports = function(passport) {
     
