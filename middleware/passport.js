@@ -23,7 +23,7 @@ var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
-  winston.info("jwthistory not present");
+  winston.debug("jwthistory not present");
 }
 
 module.exports = function(passport) {
