@@ -159,7 +159,7 @@ class ModulesManager {
             winston.info("ModulesManager init resthook loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init resthookRoute module not found",err);
+                winston.info("ModulesManager init resthookRoute module not found");
             }else {
                 winston.error("ModulesManager error initializing init resthook module", err);
             }
@@ -224,7 +224,7 @@ class ModulesManager {
             winston.info("ModulesManager init jwthistory loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init jwthistory module not found",err);
+                winston.info("ModulesManager init jwthistory module not found");
             }else {
                 winston.error("ModulesManager error initializing init jwthistory module", err);
             }
@@ -244,7 +244,7 @@ class ModulesManager {
             winston.info("ModulesManager init requestHistory loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init requestHistory module not found",err);
+                winston.info("ModulesManager init requestHistory module not found");
             }else {
                 winston.error("ModulesManager error initializing init requestHistory module", err);
             }
@@ -262,7 +262,7 @@ class ModulesManager {
             winston.info("ModulesManager init dialogflow loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init dialogflow module not found",err);
+                winston.info("ModulesManager init dialogflow module not found");
             }else {
                 winston.error("ModulesManager error initializing init dialogflow module", err);
             }
@@ -277,7 +277,7 @@ class ModulesManager {
             winston.info("ModulesManager init routing queue loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init routing queue module not found",err);
+                winston.info("ModulesManager init routing queue module not found");
             }else {
                 winston.error("ModulesManager error initializing init routing queue module", err);
             }
