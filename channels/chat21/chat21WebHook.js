@@ -100,11 +100,11 @@ router.post('/', function(req, res) {
                 
             
                 if (!projectid) {
-                  winston.info("projectid is null. Not a support message");
+                  winston.debug("projectid is null. Not a support message");
                   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
                 }
                 if (!message.recipient.startsWith("support-group")) {
-                  winston.info("recipient not starts wiht support-group. Not a support message");
+                  winston.debug("recipient not starts wiht support-group. Not a support message");
                   return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
                 }
             
@@ -192,7 +192,7 @@ router.post('/', function(req, res) {
             // }
             
             if (!message.recipient.startsWith("support-group")) {
-              winston.info("recipient not starts with support-group. Not a support message");
+              winston.debug("recipient not starts with support-group. Not a support message");
               return res.status(400).send({success: false, msg: "recipient not starts with support-group. Not a support message"});
             }
         
@@ -246,7 +246,7 @@ router.post('/', function(req, res) {
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
 
     } else if (req.body.event_type == "deleted-conversation") {
-      winston.info("event_type deleted-conversation");
+      winston.debug("event_type deleted-conversation");
 
       var conversation = req.body.data;
       winston.debug("conversation",conversation);
@@ -261,12 +261,12 @@ router.post('/', function(req, res) {
 
  
       if (!recipient_id.startsWith("support-group")){
-        winston.info("not a support conversation");
+        winston.debug("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
       if (user_id!="system"){
-        winston.info("we close request only for system conversation");
+        winston.debug("we close request only for system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
@@ -324,7 +324,7 @@ router.post('/', function(req, res) {
       
 
     }else if (req.body.event_type == "join-member") {
-      winston.info("event_type","join-member");
+      winston.debug("event_type","join-member");
 
       winston.debug("req.body", JSON.stringify(req.body));
 
@@ -376,13 +376,13 @@ router.post('/', function(req, res) {
           //if (lead && lead._id.toString() == request.requester_id.toString()) {
             // if (lead && lead._id == request.lead) {
           if (request.lead.lead_id==new_member) {            
-            winston.info("don't  joining request.lead or a lead");
+            winston.debug("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
           }else {
 
             // se gia in participants scarta
             return requestService.addParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-              winston.info("Join memeber ok");
+              winston.debug("Join memeber ok");
               return res.json(updatedRequest);
             }).catch(function(err){
               winston.error("Error joining memeber", err);
@@ -399,7 +399,7 @@ router.post('/', function(req, res) {
 
 
   }else if (req.body.event_type == "leave-member") {
-    winston.info("event_type","leave-member");
+    winston.debug("event_type","leave-member");
     
     winston.debug("req.body", JSON.stringify(req.body));
 
@@ -426,7 +426,7 @@ router.post('/', function(req, res) {
       winston.debug("id_project", id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
-      winston.info("Leave memeber ok");
+      winston.debug("Leave memeber ok");
       return res.json(updatedRequest);
     }).catch(function(err){
       winston.error("Error leaving memeber", err);
@@ -436,7 +436,7 @@ router.post('/', function(req, res) {
   
   else if (req.body.event_type == "deleted-archivedconversation") {
 
-    winston.info("event_type","deleted-archivedconversation");
+    winston.debug("event_type","deleted-archivedconversation");
 
     winston.debug("req.body",req.body);
 
@@ -454,12 +454,12 @@ router.post('/', function(req, res) {
 
 
       if (!recipient_id.startsWith("support-group")){
-        winston.info("not a support conversation");
+        winston.debug("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
       if (user_id!="system"){
-        winston.info("not a system conversation");
+        winston.debug("not a system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
@@ -484,9 +484,9 @@ router.post('/', function(req, res) {
 }
 else if (req.body.event_type == "typing-start") {
 
-  winston.info("event_type","typing-start");
+  winston.debug("event_type","typing-start");
 
-  winston.info("req.body",req.body);
+  winston.debug("req.body",req.body);
 
 
   var recipient_id = req.body.recipient_id;
@@ -500,7 +500,7 @@ else if (req.body.event_type == "typing-start") {
   winston.debug("data",data);
 
   if (!recipient_id.startsWith("support-group")){
-    winston.info("not a support conversation");
+    winston.debug("not a support conversation");
     return res.status(400).send({success: false, msg: "not a support conversation" });
   }
 
