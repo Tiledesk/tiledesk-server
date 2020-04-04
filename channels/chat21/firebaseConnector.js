@@ -18,6 +18,9 @@ if (chat21Enabled && chat21Enabled == "true"){
 
       var private_key = process.env.FIREBASE_PRIVATE_KEY;
       winston.info('firebaseConnector private_key:'+ private_key);
+      // var private_key_masked = private_key.replace(/\d(?=\d{4})/g, "*");
+      // winston.info('firebaseConnector private_key:'+ private_key_masked);// <-- TODO obscure it
+      
       var client_email = process.env.FIREBASE_CLIENT_EMAIL;
       winston.info('firebaseConnector client_email:'+ client_email);
       var firebase_project_id = process.env.FIREBASE_PROJECT_ID;
