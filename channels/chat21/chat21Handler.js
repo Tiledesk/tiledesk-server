@@ -11,8 +11,7 @@ var winston = require('../../config/winston');
 var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
-winston.info('Chat21Handler chat21.CHAT21_URL: '+ chat21.CHAT21_URL);
-winston.info('Chat21Handler chat21.CHAT21_APPID: '+ chat21.CHAT21_APPID);
+
 
 
 
@@ -330,6 +329,7 @@ class Chat21Handler {
                                         .then(function(data){
                                             winston.debug("Chat21 sendToGroup sent ", data);
                                     
+
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);
     
                                             chat21Event.emit('message.sent', data);

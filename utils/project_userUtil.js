@@ -8,7 +8,7 @@ class ProjectUserUtil {
         // var project_max_served_chat  = 0;
 
         var maxServedChat=undefined;
-        console.log("project_max_served_chat:", project_max_served_chat);
+        // console.log("project_max_served_chat:", project_max_served_chat);
         if (project_max_served_chat == undefined) {
             return false;
         }
@@ -21,9 +21,9 @@ class ProjectUserUtil {
             maxServedChat = project_user.max_served_chat;
         }
 
-        console.log("maxServedChat: "+maxServedChat);
-        console.log("project_user.id: "+project_user.id);
-        console.log("project_user.number_assigned_requests: "+project_user.number_assigned_requests);
+        // console.log("maxServedChat: "+maxServedChat);
+        // console.log("project_user.id: "+project_user.id);
+        // console.log("project_user.number_assigned_requests: "+project_user.number_assigned_requests);
 
         if (maxServedChat!=undefined && project_user.number_assigned_requests >= maxServedChat) {
             return true;
