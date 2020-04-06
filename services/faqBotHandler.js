@@ -65,12 +65,20 @@ class FaqBotHandler {
                         answerObj.score = 100; //exact search not set score
                         winston.debug("answerObj.score", answerObj.score);  
 
+                        faqBotSupport.getButtonFromText(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
-                        messageService.send(sender, botName, message.recipient, answerObj.answer, 
-                            message.id_project, sender).then(function(savedMessage){
-
-                                winston.info("faqbot message sending ", savedMessage.toObject());  
+                           
+                            messageService.send(sender, botName, message.recipient, bot_answer.text, 
+                                message.id_project, sender, bot_answer.attributes, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
+                                    winston.debug("faqbot message botAns " ,savedMessage.toObject());  
+                            });
+                        
+                           /* messageService.send(sender, botName, message.recipient, answerObj.answer, 
+                                message.id_project, sender).then(function(savedMessage){
+                                    winston.info("faqbot message sending ", savedMessage.toObject());  
+                            });*/
                         });
+                      
         
                     }
                     
@@ -81,11 +89,11 @@ class FaqBotHandler {
                     //     winston.debug("faqbot message botAns ", botAns);  
 
                     //     if (botAns) {
-                    //         let attributes = {bot_reponse_template: botAns.template};
+                    //         // let attributes = {bot_reponse_template: botAns.template};
                     //         messageService.send(sender, botName, message.recipient, botAns.text, 
-                    //             message.id_project, sender, attributes).then(function(savedMessage){
+                    //             message.id_project, sender, botAns.attributes, botAns.type, botAns.metadata).then(function(savedMessage){
                     //                 winston.info("faqbot message bot answer " ,savedMessage.toObject());  
-                    //         });
+                    //         });                           
                     //     }            
                     // });
 
@@ -124,9 +132,11 @@ class FaqBotHandler {
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
-                            let attributes = {bot_reponse_template: botAns.template};
+                            // let attributes = {bot_reponse_template: botAns.template};
+
+                            // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
                             messageService.send(sender, botName, message.recipient, botAns.text, 
-                                message.id_project, sender, attributes).then(function(savedMessage){
+                                message.id_project, sender, botAns.attributes, botAns.type, botAns.metadata).then(function(savedMessage){
                                     winston.debug("faqbot message botAns " ,savedMessage.toObject());  
                             });
                         }

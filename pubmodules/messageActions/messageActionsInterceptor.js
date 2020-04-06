@@ -25,7 +25,7 @@ class MessageActionsInterceptor {
                 setImmediate(() => {
                   
                        if (message.text.indexOf("\\")>-1) {
-                             winston.info("message text contains command ");
+                             winston.debug("message text contains command ");
                              
                              var start = message.text.indexOf("\\");
                              var end = message.text.length;

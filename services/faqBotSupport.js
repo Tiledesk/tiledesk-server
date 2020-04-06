@@ -43,7 +43,7 @@ class FaqBotSupport {
         var that = this;
         // text = "*"
         return new Promise(function(resolve, reject) {
-            console.log("getButtonFromText ******",text)
+            winston.debug("getButtonFromText ******",text);
             var repl_message = {};
             // cerca i bottoni eventualmente definiti
             var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
@@ -53,7 +53,7 @@ class FaqBotSupport {
                 repl_message.text = text_with_removed_buttons
                 var buttons = []
                 text_buttons.forEach(element => {
-                console.log("button ", element)
+                winston.debug("button ", element)
                 var remove_extra_from_button = /^\*/mg;
                 var button_text = element.replace(remove_extra_from_button, "").trim()
                 var button = {}
@@ -79,7 +79,7 @@ class FaqBotSupport {
             var imagetext = text.match(image_pattern);
             if (imagetext && imagetext.length>0) {
                 var imageurl = imagetext[0].replace("\\image:","").trim();
-                console.log("imageurl ", imageurl)
+                winston.debug("imageurl ", imageurl)
                 var text_with_removed_image = text.replace(image_pattern,"").trim();
                 repl_message.text = text_with_removed_image + " " + imageurl
                 repl_message.metadata = {src: imageurl, width:200, height:200};
@@ -91,7 +91,7 @@ class FaqBotSupport {
             var webhooktext = text.match(webhook_pattern);
             if (webhooktext && webhooktext.length>0) {
                 var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
-                console.log("webhookurl ", webhookurl)
+                winston.debug("webhookurl ", webhookurl)
 
                 return request({                        
                     uri :  webhookurl,
@@ -105,14 +105,14 @@ class FaqBotSupport {
                         if (response.statusCode >= 400) {                  
                             return reject(`HTTP Error: ${response.statusCode}`);
                         }
-                        console.log("webhookurl repl_message ", response);
+                        winston.debug("webhookurl repl_message ", response);
                         that.getButtonFromText(response.text,message, bot,qna).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
              
             }else {
-                console.log("repl_message ", repl_message)
+                winston.info("repl_message ", repl_message)
                 return resolve(repl_message);
             }
 
