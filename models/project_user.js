@@ -6,24 +6,15 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
 
-// module.exports = function() {
-
 
   var Project_userSchema = new Schema({
-    // id_project: {
-    //   type: String,
-    //   // required: true
-    // },
-    // _id: Schema.Types.ObjectId,
     id_project: {
       type: Schema.Types.ObjectId,
       ref: 'project',
       index: true
       // required: true
     },
-    id_user: {
-      // type: String,
-      // required: true
+    id_user: {      
       type: Schema.Types.ObjectId,
       ref: 'user',
       index: true
