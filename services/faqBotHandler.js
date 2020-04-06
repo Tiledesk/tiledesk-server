@@ -119,8 +119,8 @@ class FaqBotHandler {
                     }
                     
                 
-                        faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
-                    // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
+                        // faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
+                    faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
