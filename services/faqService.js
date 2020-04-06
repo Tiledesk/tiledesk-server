@@ -31,6 +31,8 @@ class FaqService {
           winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
           botEvent.emit('faqbot.create', savedFaq_kb);
+          
+          that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
 
           return resolve(savedFaq_kb);
         });  
