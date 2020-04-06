@@ -305,19 +305,36 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 // router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
   // altrimenti 403
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
-  winston.debug('REQ USER ID ', req.user._id)
-   // project_user_qui
+  winston.debug('REQ USER ID ', req.user._id);
+
+  var direction = -1; //-1 descending , 1 ascending
+  if (req.query.direction) {
+    direction = req.query.direction;
+  } 
+  winston.debug("direction",direction);
+
+  var sortField = "updatedAt";
+  if (req.query.sort) {
+    sortField = req.query.sort;
+  } 
+  winston.debug("sortField",sortField);
+
+  var sortQuery={};
+  sortQuery[sortField] = direction;
+
   Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
     // populate('id_project').
     populate({
       path: 'id_project',
       // match: { status: 100 }, //not filter only not populate
     }).
+    sort(sortQuery).
     exec(function (err, projects) {
       if (err) {
         winston.error('Error getting projects: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
-      }            
+      }       
+
       res.json(projects);
     });
 });
