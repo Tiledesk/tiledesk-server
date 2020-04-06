@@ -2,16 +2,8 @@
 
 'use strict';
 
-// const request = require('request-promise');  
-
-// const Entities = require('html-entities').AllHtmlEntities;
-// const entities = new Entities();
-// const chatUtil = require('./chat-util');
-// const https = require('https');
-// const agent = new https.Agent({keepAlive: true});
-
-// const BASE_API_URL = "https://api.tiledesk.com/v1";
 const departmentService = require('../services/departmentService');
+const Faq = require('../models/faq');
 var winston = require('../config/winston');
 
 
@@ -45,6 +37,55 @@ class FaqBotSupport {
         return label;
      
     }
+
+
+
+    getBotMessageNew(botAnswer, projectid, bot, message, threshold) {
+        var that = this;
+          return new Promise(function(resolve, reject) {
+  
+              winston.debug('botAnswer', botAnswer);
+                // var found = false;
+                var bot_answer={};
+  
+                      if (!botAnswer ) {                          
+  
+                        var query = { "id_project": projectid, "id_faq_kb": bot._id, "question": "defaultFallback"};
+                        winston.info('query', query);
+
+                        Faq.find(query) 
+                        .lean().               
+                         exec(function (err, faqs) {
+                           if (err) {
+                             return res.status(500).send({ success: false, msg: 'Error getting object.' });
+                           }
+            
+                           winston.info("faqs", faqs);  
+
+                           if (faqs && faqs.length>0) {
+                                winston.debug("faqs exact", faqs);  
+
+                                bot_answer.text=faqs[0].answer;
+                                // found = true;
+                                return resolve(bot_answer);
+                                // that.getButtonFromText(bot_answer.text,message, bot, qnaresp).then(function(bot_answerres) {
+                                //     return resolve(bot_answerres);
+                                // });
+                           } else {
+                                var message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
+                                bot_answer.text = that.getMessage(message_key, message.language, faqBotSupport.LABELS);                        
+                                // console.log("bot_answer ", bot_answer)
+                                return resolve(bot_answer);
+                           }
+                        });                        
+                      } 
+                              
+  
+      });
+  
+      }
+
+
 
     getBotMessage(botAnswer, projectid, departmentid, language, threshold) {
       var that = this;

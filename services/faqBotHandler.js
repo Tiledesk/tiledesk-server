@@ -63,7 +63,7 @@ class FaqBotHandler {
                         answerObj = faqs[0];     
 
                         answerObj.score = 100; //exact search not set score
-                        winston.info("answerObj.score", answerObj.score);  
+                        winston.debug("answerObj.score", answerObj.score);  
 
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
                         messageService.send(sender, botName, message.recipient, answerObj.answer, 
@@ -75,20 +75,19 @@ class FaqBotHandler {
                     }
                     
                 
+                    // getBotMessageNew(botAnswer, projectid, bot, language, threshold) 
+                    // faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
+                    // // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
+                    //     winston.debug("faqbot message botAns ", botAns);  
 
-                    faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
-                        winston.debug("faqbot message botAns ", botAns);  
-
-                        if (botAns) {
-                            let attributes = {bot_reponse_template: botAns.template};
-                            messageService.send(sender, botName, message.recipient, botAns.text, 
-                                message.id_project, sender, attributes).then(function(savedMessage){
-                                    winston.info("faqbot message botAns " ,savedMessage.toObject());  
-                            });
-                        }
-                    
-
-                    });
+                    //     if (botAns) {
+                    //         let attributes = {bot_reponse_template: botAns.template};
+                    //         messageService.send(sender, botName, message.recipient, botAns.text, 
+                    //             message.id_project, sender, attributes).then(function(savedMessage){
+                    //                 winston.info("faqbot message bot answer " ,savedMessage.toObject());  
+                    //         });
+                    //     }            
+                    // });
 
 
                } else {
@@ -120,8 +119,8 @@ class FaqBotHandler {
                     }
                     
                 
-
-                    faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
+                        faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
+                    // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
