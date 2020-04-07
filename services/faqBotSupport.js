@@ -7,6 +7,11 @@ const Faq = require('../models/faq');
 var winston = require('../config/winston');
 
 
+var request = require('retry-request', {
+    request: require('request')
+  });
+
+  
 class FaqBotSupport {
 
 

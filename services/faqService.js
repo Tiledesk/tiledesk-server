@@ -49,7 +49,9 @@ class FaqService {
         { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
         { 'question': 'I want an agent', 'answer': '\\agent', 'topic': 'internal' },
         { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' },    
-        { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent. \n*👨🏻‍🦰I want an agent', 'topic': 'internal' } //TODO se metto spazio n * nn va
+        { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent. \n*👨🏻‍🦰I want an agent', 'topic': 'internal' }, //TODO se metto spazio n * nn va
+        { 'question': 'sampleimage', 'answer': '\\image:https://www.tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png', 'topic': 'sample' },    
+        { 'question': 'samplewebhook', 'answer': '\\webhook:https://webhook.site/b6d632c8-44f5-46e2-9cc3-2dc92f08414e', 'topic': 'sample' },    
       ]
       
       faqsArray.forEach(faq => {
