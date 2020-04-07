@@ -5,18 +5,20 @@ var winston = require('../config/winston');
 var widgetConfig = require('../config/widget');
 
 var widgetLocation = process.env.WIDGET_LOCATION || widgetConfig.location;
+var url = require('url');
 
 router.get('/load', function(req, res) {
-  // winston.debug(req.projectid);
-  res.redirect(widgetLocation);
+  var query = url.parse(req.url).query;
+  winston.info(query);
+  res.redirect(widgetLocation+'?'+query);
 });
   
 
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
 
 router.get('/test/load', function(req, res) {
-  // winston.debug(req.projectid);
-  res.redirect(widgetTestLocation);
+  var query = url.parse(req.url).query;
+  res.redirect(widgetTestLocation+'?'+query);
 });
 
 module.exports = router;
