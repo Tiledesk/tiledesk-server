@@ -105,7 +105,7 @@ class FaqBotSupport {
                     },
                     method: 'POST',
                     json: true,
-                    body: {text: text, bot: bot, message: message, faq: faq},
+                    body: {payload:{text: text, bot: bot, message: message, faq: faq}},
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
@@ -120,7 +120,7 @@ class FaqBotSupport {
 
                         var text = undefined;
                         if(response && response.text===undefined) {
-                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq.id;
+                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id;
                         }else {
                             text = response.text;
                         }
