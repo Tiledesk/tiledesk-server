@@ -44,7 +44,7 @@ class FaqBotSupport {
     }
 
 
-    getButtonFromText(text, message, bot,qna) { 
+    getButtonFromText(text, message, bot, faq) { 
         var that = this;
         // text = "*"
         return new Promise(function(resolve, reject) {
@@ -105,7 +105,7 @@ class FaqBotSupport {
                     },
                     method: 'POST',
                     json: true,
-                    body: {text: text, bot: bot, message: message, qna: qna},
+                    body: {text: text, bot: bot, message: message, faq: faq},
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
@@ -117,7 +117,14 @@ class FaqBotSupport {
                         //     return reject(`HTTP Error: ${response.statusCode}`);
                         // }
                         winston.debug("webhookurl repl_message ", response);
-                        that.getButtonFromText(response.text,message, bot,qna).then(function(bot_answer) {
+
+                        var text = undefined;
+                        if(response && response.text===undefined) {
+                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq.id;
+                        }else {
+                            text = response.text;
+                        }
+                        that.getButtonFromText(text,message, bot, faq).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
