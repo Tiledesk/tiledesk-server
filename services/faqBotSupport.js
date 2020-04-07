@@ -106,10 +106,16 @@ class FaqBotSupport {
                     method: 'POST',
                     json: true,
                     body: {text: text, bot: bot, message: message, qna: qna},
-                    }).then(response => {
-                        if (response.statusCode >= 400) {                  
-                            return reject(`HTTP Error: ${response.statusCode}`);
+                    // }).then(response => {
+                    }, function(err, response, json){
+                        if (err) {
+                            bot_answer.text = err +' '+ response.text;
+                            bot_answer.type = "text";
+                            return resolve(bot_answer);
                         }
+                        // if (response.statusCode >= 400) {                  
+                        //     return reject(`HTTP Error: ${response.statusCode}`);
+                        // }
                         winston.debug("webhookurl repl_message ", response);
                         that.getButtonFromText(response.text,message, bot,qna).then(function(bot_answer) {
                             return resolve(bot_answer);
