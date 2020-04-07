@@ -48,14 +48,19 @@ describe('FaqService()', function () {
                
                 var query = { "id_project": savedProject._id };
 
+
+                // aggiunta qui 
                 query.$text = {"$search": "question"};
                  
-                return Faq.find(query,  {score: { $meta: "textScore" } })  
+                return Faq.find(query,  {score: { $meta: "textScore" } }) 
+                .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
                 .lean().               
                   exec(function (err, faqs) {
                     console.log("faqs", faqs);
-                    expect(faqs.length).to.equal(1);
+                    // expect(faqs.length).to.equal(1);
                     expect(faqs[0]._id.toString()).to.equal(savedFaq._id.toString());
+                    expect(faqs[0].answer).to.equal("answer");
+                    expect(faqs[0].question).to.equal("question");
                     expect(faqs[0].score).to.not.equal(null);
                     done();   
                   });
