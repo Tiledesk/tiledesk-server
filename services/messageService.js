@@ -1,34 +1,15 @@
 'use strict';
 
-// var Request = require("../models/request");
 var Message = require("../models/message");
 var MessageConstants = require("../models/messageConstants");
-
-// var mongoose = require('mongoose');
-// var requestService = require('../services/requestService');
-// var leadService = require('../services/leadService');
-// winston.debug("requestService", requestService);
-
 const messageEvent = require('../event/messageEvent');
-
 var winston = require('../config/winston');
 
 class MessageService {
 
 
-    // sender: message.sender,
-    //   senderFullname: message.sender_fullname,
-    //   recipient: message.recipient,
-    //   recipientFullname: message.recipient_fullname,
-    //   text: message.text,
-    //   id_project: projectid,
-    //   createdBy: "system",
-    //   updatedBy: "system"
-
-
-
-   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
-       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type);
+   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) {
+       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata);
    }
 
    upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
