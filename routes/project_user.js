@@ -5,7 +5,6 @@ var mongoose = require('mongoose');
 var User = require("../models/user");
 var emailService = require("../services/emailService");
 var Project = require("../models/project");
-// var PendingInvitation = require("../models/pending-invitation");
 var pendinginvitation = require("../services/pendingInvitationService");
 const authEvent = require('../event/authEvent');
 var winston = require('../config/winston');
@@ -118,12 +117,16 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
           winston.debug('NO ERROR, SO CREATE AND SAVE A NEW PROJECT USER ')
 
+          var user_available = true;
+          if (req.body.user_available!=undefined) {
+            user_available = req.body.user_available;
+          }
           var newProject_user = new Project_user({
             // _id: new mongoose.Types.ObjectId(),
             id_project: req.projectid,
             id_user: user._id,
             role: req.body.role,           
-            user_available: req.body.user_available || true, //initial user_available value
+            user_available: user_available, 
             createdBy: req.user.id,
             updatedBy: req.user.id
           });
@@ -305,7 +308,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
 
-// fai servizio di patch degli attributi come request
+// TODO fai servizio di patch degli attributi come request
 
 router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
@@ -382,18 +385,19 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 });
 
 
-//TODO deprecate. Used by pstream dashboard
-// router.get('/:user_id/:project_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')],function (req, res, next) {
-//  winston.debug("--> USER ID ", req.params.user_id);
-//  winston.debug("--> PROJECT ID ", req.params.project_id);
-//  Project_user.find({ id_user: req.params.user_id, id_project: req.params.project_id }).
-//     exec(function (err, project_users) {
-//       if (err) return next(err);
-//       res.json(project_users);
+  // TODO if project is deleted
 
-//     });
-// });
-
+// 2020-03-31T17:25:45.939421+00:00 app[web.1]: 
+// 2020-03-31T17:25:45.998260+00:00 app[web.1]: error: uncaughtException: Cannot read property 'settings' of undefined
+// 2020-03-31T17:25:45.998262+00:00 app[web.1]: TypeError: Cannot read property 'settings' of undefined
+// 2020-03-31T17:25:45.998262+00:00 app[web.1]:     at /app/routes/project_user.js:372:68
+// 2020-03-31T17:25:45.998263+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
+// 2020-03-31T17:25:45.998263+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/utils.js:276:16
+// 2020-03-31T17:25:45.998263+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4798:21
+// 2020-03-31T17:25:45.998264+00:00 app[web.1]:     at _hooks.execPost (/app/node_modules/mongoose/lib/query.js:4364:11)
+// 2020-03-31T17:25:45.998264+00:00 app[web.1]:     at /app/node_modules/kareem/index.js:135:16
+// 2020-03-31T17:25:45.998269+00:00 app[web.1]:     at processTicksAndRejections (internal/process/next_tick.js:74:9) {"error":{},"stack":"TypeError: Cannot read property 'settings' of undefined\n    at /app/routes/project_user.js:372
+// 
 
 /**
  * RETURN THE PROJECT-USERS OBJECTS FILTERD BY PROJECT-ID AND WITH NESTED THE USER OBJECT
