@@ -74,15 +74,12 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             requestEvent.on('request.create',  function(request) {   
                 setImmediate(() => {                  
                     that.welcomeOnJoin(request);
-                    that.welcomeAgentOnJoin(request);
+                    // that.welcomeAgentOnJoin(request);
                 });
             });
 
-            requestEvent.on('request.participants.update',  function(data) {     
-            // requestEvent.on('request.participants.join',  function(data) {     
-            // requestEvent.on('request.create',  function(request) {          
-                let request = data.request;
-                let member = data.member;
+            requestEvent.on('request.participants.update',  function(data) {                      
+                let request = data.request;            
                 setImmediate(() => {
                   
 
@@ -91,6 +88,22 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                        
                 });
 
+            });
+
+
+            requestEvent.on('request.participants.join',  function(data) {       
+                let request = data.request;
+                let member = data.member;
+
+                setImmediate(() => {
+                  
+
+                    // that.welcomeOnJoin(request);
+                    that.welcomeAgentOnJoin(request);
+                       
+                });
+
+                
             });
 
 
@@ -232,7 +245,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
                             request.id_project,
                             'system',                             
-                            {subtype:"info", "updateconversation" : true, messagelabel: {key: "TOUCHING_OPERATOR"}}
+                            {subtype:"info", "updateconversation" : true, "updateconversationfor":request.participants,messagelabel: {key: "TOUCHING_OPERATOR"}}
+                            // updateconversation only for id utente per risolvere 
                         );
                     
                                            
