@@ -12,7 +12,7 @@ router.post('/', function (req, res) {
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type).then(function(savedFaq_kb) {
     if (savedFaq_kb.type==="internal") {      
 
-      faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
+      // faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
     } else {
       winston.debug('external bot: ', savedFaq_kb);
     } 
