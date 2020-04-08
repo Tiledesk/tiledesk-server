@@ -34,7 +34,7 @@ class BotSubscriptionNotifier {
       var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
       json["token"] = token;
 
-      winston.info("BotSubscriptionNotifier notify json ", json );
+      winston.debug("BotSubscriptionNotifier notify json ", json );
 
           request({
             url: url,
