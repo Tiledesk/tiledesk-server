@@ -196,12 +196,13 @@ app.use(bodyParser.json({
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(cookieParser());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use(morgan('dev'));
-app.use(morgan('combined', { stream: winston.stream }));
 
+if (process.env.ENABLE_ACCESSLOG) {
+  app.use(morgan('combined', { stream: winston.stream }));
+}
 
 app.use(passport.initialize());
 
