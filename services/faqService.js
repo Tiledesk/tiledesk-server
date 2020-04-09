@@ -7,13 +7,14 @@ const botEvent = require('../event/botEvent');
 class FaqService {
 
 
-  create(name, url, projectid, user_id, type) {
+  create(name, url, projectid, user_id, type, description) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
         //winston.debug('FAQ-KB POST REQUEST BODY ', req.body);
         var newFaq_kb = new Faq_kb({
           name: name,
+          description: description,
           url: url,
           id_project: projectid,
           type: type,

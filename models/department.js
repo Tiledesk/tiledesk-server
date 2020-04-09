@@ -25,7 +25,7 @@ var DepartmentSchema = new Schema({
   },
   description: {
     type: String,
-    index:true
+    // index:true
   },
   id_project: {
     type: String,

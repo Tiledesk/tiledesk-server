@@ -6,7 +6,12 @@ var winston = require('../config/winston');
 var Faq_kbSchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    index:true
+  },
+  description: {
+    type: String,
+    // index:true
   },
   url: { 
     type: String,

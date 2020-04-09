@@ -109,6 +109,9 @@ router.put('/:faq_kbid', function (req, res) {
   if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
+  if (req.body.description!=undefined) {
+    update.description = req.body.description;
+  }
   if (req.body.url!=undefined) {
     update.url = req.body.url;
   }
