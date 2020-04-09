@@ -322,6 +322,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
+
   Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
     // populate('id_project').
     populate({
@@ -329,13 +330,15 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       // match: { status: 100 }, //not filter only not populate
     }).
     sort(sortQuery).
-    exec(function (err, projects) {
+    exec(function (err, project_users) {
       if (err) {
-        winston.error('Error getting projects: ', err);
+        winston.error('Error getting project_users: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }       
 
-      res.json(projects);
+      project_users.sort((a, b) => (a.project && b.project && a.project.updatedAt > b.project.updatedAt) ? 1 : -1)
+      project_users.reverse(); 
+      res.json(project_users);
     });
 });
 
