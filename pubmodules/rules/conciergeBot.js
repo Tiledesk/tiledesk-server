@@ -98,8 +98,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 setImmediate(() => {
                   
 
+                    // manda solo a nuovo agente
+
                     // that.welcomeOnJoin(request);
-                    that.welcomeAgentOnJoin(request);
+                    that.welcomeAgentOnJoin(request, member);
                        
                 });
 
@@ -223,7 +225,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
 
-    welcomeAgentOnJoin(request) {
+    welcomeAgentOnJoin(request, member) {
         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
         if (!botId) {                        
         // if (!request.department.id_bot) {
@@ -237,6 +239,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     
                     // if (request.availableAgents.length==0) {
                        
+                    var updateconversationfor = request.participants;
+
+                    if (member) {
+                        updateconversationfor = [member];
+                    }
                         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
                         messageService.send(
                             'system', 
@@ -245,7 +252,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
                             request.id_project,
                             'system',                             
-                            {subtype:"info", "updateconversation" : true, "updateconversationfor":request.participants,messagelabel: {key: "TOUCHING_OPERATOR"}}
+                            {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor,messagelabel: {key: "TOUCHING_OPERATOR"}}
                             // updateconversation only for id utente per risolvere 
                         );
                     
