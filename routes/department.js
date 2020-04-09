@@ -22,6 +22,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
   var newDepartment = new Department({
     routing: req.body.routing,
     name: req.body.name,
+    description: req.body.description,
     default: req.body.default,
     status: req.body.status,
     id_group: req.body.id_group,
@@ -66,6 +67,9 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   if (req.body.name!=undefined) {
     update.name = req.body.name;
   }
+  if (req.body.description!=undefined) {
+    update.description = req.body.description;
+  }  
   // if (req.body.id_group!=undefined) {
     update.id_group = req.body.id_group;
   // }
