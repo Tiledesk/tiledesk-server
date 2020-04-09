@@ -38,8 +38,12 @@ var winston = require('./config/winston');
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
-if (!databaseUri) {
+if (!databaseUri) { //TODO??
   winston.warn('DATABASE_URI not specified, falling back to localhost.');
+}
+
+if (process.env.NODE_ENV == 'test')  {
+  databaseUri = config.databasetest;
 }
 
 winston.info("databaseUri: " + databaseUri);
@@ -51,11 +55,10 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 
 winston.info("DB AutoIndex: " + autoIndex);
 
-if (process.env.NODE_ENV == 'test')  {
-  mongoose.connect(config.databasetest, { "useNewUrlParser": true, "autoIndex": true });
-}else {
-  mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex });
-}
+mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+  if (err) { return winston.error('Failed to connect to MongoDB on '+databaseUri);}
+});
+
 
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
@@ -75,6 +78,7 @@ var group = require('./routes/group');
 
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
+var userRequest = require('./routes/user-request');
 var publicAnalytics = require('./routes/public-analytics');
 var pendinginvitation = require('./routes/pending-invitation');
 var jwtroute = require('./routes/jwt');
@@ -192,6 +196,7 @@ app.use(bodyParser.json({
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use(morgan('dev'));
@@ -394,7 +399,10 @@ app.use('/:projectid/project_users', project_user);
 
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
+app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('guest', ['bot','subscription'])], userRequest);
+
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], request);
+
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
 app.use('/:projectid/publicanalytics', publicAnalytics);
