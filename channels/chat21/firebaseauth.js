@@ -7,15 +7,15 @@ const express = require('express');
 // const bodyParser = require('body-parser');
 var router = express.Router();
 var firebaseService = require("./firebaseService");
+var winston = require('../../config/winston');
 
 
 
 router.post('/createCustomToken', function (req, res) {
-  
-                  
+                    
               
         var uid = req.user.id;
-        console.log("uid",uid);
+        winston.debug("uid",uid);
 
         firebaseService.createCustomToken(uid).then(customAuthToken => {
         
