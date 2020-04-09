@@ -336,7 +336,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }       
 
-      project_users.sort((a, b) => (a.project && b.project && a.project.updatedAt > b.project.updatedAt) ? 1 : -1)
+      project_users.sort((a, b) => (a.id_project && b.id_project && a.id_project.updatedAt > b.id_project.updatedAt) ? 1 : -1)
       project_users.reverse(); 
       res.json(project_users);
     });
