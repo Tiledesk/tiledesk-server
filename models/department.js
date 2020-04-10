@@ -59,7 +59,8 @@ var DepartmentSchema = new Schema({
     required: true
   }
 },{
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true }
 }
 );
 
@@ -69,6 +70,14 @@ DepartmentSchema.virtual('bot', {
   foreignField: '_id', // is equal to `foreignField`
   justOne: true,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
+DepartmentSchema.virtual('hasBot').get(function () {
+  if (this.id_bot!=undefined) {
+    return true;
+  }else {
+    return false;
+  }
 });
 
 var department = mongoose.model('department', DepartmentSchema);

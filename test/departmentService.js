@@ -70,6 +70,10 @@ describe('DepartmentService()', function () {
           winston.debug("savedProject_user3", savedProject_user3.toObject());
 
           departmentService.create("PooledDepartment-for-createWithIdWith-createFirstWithAssignedDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
+
+            expect(createdDepartment.hasBot).to.equal(false);
+            
+
           // requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
             // getOperators(departmentid, projectid, nobot) {

@@ -172,6 +172,8 @@ it('getbyidWithPartecipatingBots', function (done) {
               expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
               expect(res.body.participatingAgents.length).to.equal(0);        
               expect(res.body.participatingBots.length).to.equal(1);
+              expect(res.body.department.hasBot).to.equal(true);
+
              done();
           });
           // .catch(function(err) {
