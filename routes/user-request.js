@@ -23,7 +23,10 @@ router.patch('/:requestid/rating', function (req, res) {
   
   winston.info("Request user patch update",update);
 
-  return Request.findOneAndUpdate({"request_id":req.params.requestid, "requester": req.projectuser.id}, { $set: update }, { new: true, upsert: false })
+  var query = {"request_id":req.params.requestid};
+  // var query = {"request_id":req.params.requestid, "requester": req.projectuser.id};
+
+  return Request.findOneAndUpdate(query, { $set: update }, { new: true, upsert: false })
   .populate('lead')
   .populate('department')
   .populate('participatingBots')
