@@ -281,8 +281,11 @@ RequestSchema.virtual('requester_id').get(function () {
   }
 });
 
-
-
+// chat21 message {"attributes":{"client":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15","departmentId":"5e8c59158b283d00170a3ce9","departmentName":"Default Department","projectId":"5e8c59158b283d00170a3ce7","requester_id":"lfsns7RRJTceE9ZqbIQy7IhfKN72","sourcePage":"https://widget-pre.tiledesk.com/v2/assets/test_widget_page/index.html?tiledesk_projectid=5e8c59158b283d00170a3ce7&project_name=Nonius%20Assistant&isOpen=true","userEmail":"afr@noniussoftware.com","userFullname":"Ana Ramos"},"channel_type":"group","language":"en-GB","metadata":"","recipient":"support-group-M4UBUDHZWEhiCkC0GG5","recipient_fullname":"Ana Ramos","sender":"lfsns7RRJTceE9ZqbIQy7IhfKN72","senderAuthInfo":{"authType":"USER","authVar":{"token":{"aud":"chat21-pre-01","auth_time":1586256437,"exp":1586527977,"firebase":{"sign_in_provider":"anonymous"},"iat":1586524377,"iss":"https://securetoken.google.com/chat21-pre-01","provider_id":"anonymous","sub":"lfsns7RRJTceE9ZqbIQy7IhfKN72","user_id":"lfsns7RRJTceE9ZqbIQy7IhfKN72"},"uid":"lfsns7RRJTceE9ZqbIQy7IhfKN72"}},"sender_fullname":"Ana Ramos","status":150,"text":"support","timestamp":1586526222674,"type":"text"}
+// TypeError: Cannot read property 'indexOf' of null
+// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at participants.forEach.participant (/app/models/request.js:301:27)
+// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at Array.forEach (<anonymous>)
+// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at Object.localField (/app/models/request.js:296:25)
 RequestSchema.virtual('participatingAgents', {
   ref: 'user', // The model to use
   // localField: 'participants', // Find people where `localField`
@@ -296,7 +299,9 @@ RequestSchema.virtual('participatingAgents', {
       this.participants.forEach(participant => {      
         // console.log("participant",participant);
         // console.log(" typeof participant", typeof participant);
-        
+        if (!participant) {
+          winston.error("participant is not defined for request with _id: " + this._id + " participant: "+participant);
+        }
         //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
           if (participant.indexOf("bot_") === -1) {
             // console.log("participant added",participant);
