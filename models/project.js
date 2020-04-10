@@ -58,7 +58,7 @@ var ProjectSchema = new Schema({
   },
   versions: {
     type: Number,
-    default: 30
+    default: 200
   },
   channels: {
     type: [Channel.schema],
