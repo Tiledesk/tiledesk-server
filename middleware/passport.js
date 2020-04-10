@@ -93,7 +93,7 @@ module.exports = function(passport) {
                         }
 
                         winston.debug("faq_kb: ", faq_kb );
-                        winston.info("faq_kb.secret: "+ faq_kb.secret );
+                        // winston.debug("faq_kb.secret: "+ faq_kb.secret );
                         done(null, faq_kb.secret);
                       });
                     }
