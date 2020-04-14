@@ -568,6 +568,37 @@ class RequestService {
 
   }
 
+
+
+  changePreflightByRequestId(request_id, id_project, preflight) {
+
+    return new Promise(function (resolve, reject) {
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
+
+        return Request       
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {preflight: preflight}, {new: true, upsert:false})
+        .populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, updatedRequest) {
+
+            if (err) {
+              winston.error(err);
+              return reject(err);
+            }
+            requestEvent.emit('request.update',updatedRequest);
+            requestEvent.emit("request.update.comment", {comment:"PREFLIGHT_CHANGE",request:updatedRequest});
+            //TODO emit request.clone or reopen also 
+
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
   setClosedAtByRequestId(request_id, id_project, closed_at) {
 
     return new Promise(function (resolve, reject) {
@@ -762,7 +793,8 @@ class RequestService {
 
             winston.info("Request reopened", savedRequest);
 
-            // TODO allora neanche qui participatingAgent è ok?
+            // TODO allora neanche qui participatingAgent è ok? 
+            
             return resolve(savedRequest);
             
           });
