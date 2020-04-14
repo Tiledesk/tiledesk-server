@@ -77,6 +77,22 @@ class Chat21Handler {
         
     }
 
+    typing(message, timestamp) {
+        return new Promise(function (resolve, reject) {
+
+            //no typing for subtype info
+            if (message.attributes && message.attributes.subtype && message.attributes.subtype==='info') {
+                return resolve();
+            }else {
+                chat21.conversations.typing(message.recipient, message.sender, message.text, timestamp).finally(function() {
+                    return resolve();
+                });
+            }
+            
+
+        });
+    }
+
 
     listen() {
 
@@ -245,6 +261,9 @@ class Chat21Handler {
         });
 
 
+
+       
+
         messageEvent.on('message.sending', function(message) {
 
             setImmediate(() => {
@@ -259,7 +278,9 @@ class Chat21Handler {
 
                         //'https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/typings/support-group-LvtMo6VMxX1j3xV3b-X?token=chat21-secret-orgAa,',
 
-                        chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
+
+                        //chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
+                        that.typing(message,new Date() ).then(function() {
                        
 
                         let attributes = message.attributes;
