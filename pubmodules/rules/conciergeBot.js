@@ -32,7 +32,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             winston.debug(" ConciergeBot message create", message);
             //var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
-            if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+            if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                 // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
             
                 winston.debug("message send from lead");
@@ -42,7 +43,6 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                         requestService.reroute(message.request.request_id, message.request.id_project, false );
                      });
                 
-
             }       
 
         });
