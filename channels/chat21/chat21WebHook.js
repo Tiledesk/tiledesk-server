@@ -130,18 +130,16 @@ router.post('/', function(req, res) {
 
 
 
-                    // se /welcome devi mettere stato temporanedo della richiesta esempio 300 
 
-                    // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
                       // message.sender is the project_user id created with firebase custom auth
-                     // vedi su
-                    //  ATTENTO QUI
-                      return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
-                        // return requestService.createWithIdAndRequester(message.recipient, message.sender, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
-                    
-                    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {                    
-                       //return requestService.createWithId(message.recipient, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, null, null, rAttributes).then(function (savedRequest) {
 
+
+                      // return Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}, function (err, projectuser) {
+
+                      // });
+                    // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+                      return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
+                 
 
                         var messageId = undefined;
                         if (message.attributes && message.attributes.tiledesk_message_id) {
@@ -151,12 +149,7 @@ router.post('/', function(req, res) {
                        // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
                         return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){
-
-                             // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
-                        // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                        //   projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
-                                       
-
+                                                                
                             return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
                               return res.json(savedRequestWithIncrement);
                             });
@@ -202,13 +195,7 @@ router.post('/', function(req, res) {
             }
             // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
             return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){
-
-            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {                          
-                // return messageService.create(message.sender, message.sender_fullname, message.recipient, message.text,
-                //   request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes).then(function(savedMessage){
-
-
+              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){      
 
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 

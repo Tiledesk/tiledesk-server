@@ -56,6 +56,8 @@ class Chat21Handler {
             app.use('/chat21/requests',  chat21WebHook);
             app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
             app.use('/chat21/config',  chat21ConfigRoute);
+
+            // TODO serve +?
             app.use('/firebase/auth',  firebaseAuthDep);
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
@@ -258,11 +260,7 @@ class Chat21Handler {
                         //'https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/typings/support-group-LvtMo6VMxX1j3xV3b-X?token=chat21-secret-orgAa,',
 
                         chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
-                        // .then(function(){
-                        //     setTimeout(function() {
-                        //         chat21.conversations.stopTyping(message.recipient,message.sender);
-                        //     }, 1000);
-                        // });
+                       
 
                         let attributes = message.attributes;
 
