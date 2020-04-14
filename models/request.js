@@ -8,6 +8,8 @@ var winston = require('../config/winston');
 var RequestConstants = require("../models/requestConstants");
 
 var ProjectUserSchema = require("../models/project_user").schema;
+var RequestStatus = require("../models/requestStatus");
+
 var NoteSchema = require("../models/note").schema;
 // var Requester = require('../models/requester');
 
@@ -105,6 +107,21 @@ var RequestSchema = new Schema({
     default: RequestConstants.UNSERVED,
     index: true
   }, 
+
+  // statusObj: {
+  //   type: RequestStatus,
+  //   required: true,
+  //   default: function () {
+  //     return new RequestStatus();
+  //   },
+  //   index: true
+  // }, 
+
+  preflight: {
+    type: Boolean,
+    default: false,
+    index:true
+  },
 
   // The admin the conversation is currently assigned to.
 // Note nobody_admin indicates the conversation is assigned to Nobody.

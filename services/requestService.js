@@ -261,15 +261,15 @@ class RequestService {
      });
    }
 
-  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
+  createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
     var request_id = 'support-group-'+uuidv4();
     winston.debug("request_id: "+request_id);
     
-    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject);
+    return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
   }
 
-  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject) {
+  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
     if (!departmentid) {
       departmentid ='default';
@@ -292,7 +292,7 @@ class RequestService {
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject}};
 
-          winston.info("context",context);
+          winston.debug("context",context);
 
           // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
         return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
@@ -342,7 +342,8 @@ class RequestService {
                 //standard
                 id_project: id_project,
                 createdBy: createdBy,
-                updatedBy: createdBy
+                updatedBy: createdBy,
+                preflight: preflight
               });
                     
 
@@ -673,14 +674,20 @@ class RequestService {
        if (!request) {
          winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
          return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
-       }
-      
+       }      
        if (request.status == RequestConstants.CLOSED) {
+         // qui1000
+      //  if (request.statusObj.closed) {
         winston.debug("Request already closed for request_id "+ request_id + " and id_project " + id_project);
         return resolve(request);
        }
 
+     
        return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
+         //  qui1000
+        // return that.changeStatusByRequestId(request_id, id_project, {closed:true}).then(function(updatedRequest) {
+          
+
             // winston.debug("updatedRequest", updatedRequest);
             return messageService.getTranscriptByRequestId(request_id, id_project).then(function(transcript) {
              // winston.debug("transcript", transcript);
@@ -754,6 +761,8 @@ class RequestService {
             requestEvent.emit('request.reopen', savedRequest);
 
             winston.info("Request reopened", savedRequest);
+
+            // TODO allora neanche qui participatingAgent è ok?
             return resolve(savedRequest);
             
           });
@@ -861,21 +870,13 @@ class RequestService {
                       addedParticipants:addedParticipants,
                       request:updatedRequest});
 
+// TODO allora neanche qui participatingAgent è ok?
           return resolve(updatedRequest);
         });
        
       });
 
-      // return Request.findOne({request_id: request_id}).then(function (request) {
-      //   winston.debug("request", request);
-      //     request.participants=participants;
-      //     winston.debug("request after", request);
-      //     return request.save().then(function(savedRequest) {
-      //       return resolve(savedRequest);
-      //     }).catch(function (err) {
-      //       return reject(err);
-      //     });
-      // });
+
     });
   }
 
@@ -884,10 +885,18 @@ class RequestService {
     // winston.debug("id_project", id_project);
     // winston.debug("member", member);
 
+ 
 
 //TODO control if member is a valid project_user of the project
 // validate member is string
     return new Promise(function (resolve, reject) {
+
+      if (member==undefined) {
+        var err = "addParticipantByRequestId error, member field is null";
+        winston.error(err);
+        return reject(err);
+      }
+
       return Request       
       .findOne({request_id: request_id, id_project: id_project})      
       .populate('lead')
@@ -930,7 +939,7 @@ class RequestService {
               // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
             }          
             
-            return resolve(savedRequest);
+            // TODO allora neanche qui participatingAgent è ok?            return resolve(savedRequest);
           });
 
           // qui assignetat
@@ -952,6 +961,14 @@ class RequestService {
     // winston.debug("member", member);
 
     return new Promise(function (resolve, reject) {
+
+
+
+      if (member==undefined) {
+        var err = "removeParticipantByRequestId error, member field is null";
+        winston.error(err);
+        return reject(err);
+      }
 
     
       return Request        
@@ -983,6 +1000,7 @@ class RequestService {
 
 
           if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
+                // qui1000 ????
           if (request.participants.length>0) { 
             request.status =  RequestConstants.SERVED;
             // assignet_at?
@@ -1001,6 +1019,8 @@ class RequestService {
               requestEvent.emit('request.participants.leave', {member:member, request: savedRequest});
               // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
             }
+
+          // TODO allora neanche qui participatingAgent è ok?
 
             return resolve(savedRequest);
 
@@ -1066,10 +1086,140 @@ class RequestService {
             requestEvent.emit("request.update", savedRequest);
             requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_UPDATE",request:savedRequest});
             requestEvent.emit("request.attributes.update", savedRequest);
+            // allora neanche qui participatingAgent è ok?
               return resolve(savedRequest);
             });
     });
     
+  }
+
+
+
+
+
+
+  addTagByRequestId(request_id, id_project, tag) {
+    // winston.debug("request_id", request_id);
+    // winston.debug("id_project", id_project);
+    // winston.debug("member", member);
+
+    return new Promise(function (resolve, reject) {
+
+      if (tag==undefined) {
+        var err = "addTagByRequestId error, tag field is null";
+        winston.error(err);
+        return reject(err);
+      }
+
+      return Request       
+      .findOne({request_id: request_id, id_project: id_project})      
+      .populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
+        if (err){
+          winston.error("Error adding tag ", err);
+          return reject(err);
+        }
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+
+
+      // return Request.findById(id).then(function (request) {
+        if (request.participants.indexOf(tag)==-1){
+          request.tags.push(tag);        
+// check error here
+          request.save(function(err, savedRequest) {
+            if (err) {
+              winston.error(err);
+            }
+            if (!err) {
+              requestEvent.emit('request.update', savedRequest);      
+              requestEvent.emit("request.update.comment", {comment:"TAG_ADD",request:savedRequest});        
+            }          
+            
+            // allora neanche qui participatingAgent è ok?
+            return resolve(savedRequest);
+          });
+
+          // qui assignetat
+        } else {
+          winston.debug('Request tag '+ tag+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
+          return resolve(request);
+        }                       
+      });
+   });
+  }
+
+
+  removeTagByRequestId(request_id, id_project, tag) {
+    // winston.debug("request_id", request_id);
+    // winston.debug("id_project", id_project);
+    // winston.debug("member", member);
+
+    return new Promise(function (resolve, reject) {
+
+
+
+      if (tag==undefined) {
+        var err = "removeTagByRequestId error, tag field is null";
+        winston.error(err);
+        return reject(err);
+      }
+
+    
+      return Request        
+        .findOne({request_id: request_id, id_project: id_project})
+        .populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, request) {
+        
+        if (err){
+          winston.error("Error removing tag ", err);
+          return reject(err);
+        }
+
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+
+        var index = request.tags.indexOf(tag);
+        // winston.debug("index", index);
+
+        if (index > -1) {
+          request.tags.splice(index, 1);
+          // winston.debug(" request.participants",  request.participants);    
+       
+          request.save(function(err, savedRequest) {
+
+            if (!err) {
+              requestEvent.emit('request.update', savedRequest);
+              requestEvent.emit("request.update.comment", {comment:"TAG_REMOVE",request:savedRequest});
+            }
+
+            // allora neanche qui participatingAgent è ok?
+
+            return resolve(savedRequest);
+
+          });
+
+
+        }else {
+          winston.info('Request tag '+ tag+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return resolve(request);
+        }      
+        
+          
+      });
+    });
   }
 
 

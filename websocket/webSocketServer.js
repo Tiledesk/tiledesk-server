@@ -247,7 +247,11 @@ class WebSocketServer {
                   winston.debug('projectuser', projectuser.toObject()); 
   
                   // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
-                  var query = {"id_project":projectId, "status": { $lt: 1000 } };
+                  
+                  var query = {"id_project":projectId, "status": { $lt: 1000 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
+                   //  qui1000
+                  // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
+
                   if (projectuser.role == "owner" || projectuser.role == "admin") {
                     winston.debug('query admin: '+ JSON.stringify(query));
                   }else {
@@ -387,15 +391,21 @@ class WebSocketServer {
       requestEvent.on('request.create', function (request) {
         winston.debug('requestEvent websocket server ', request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
+
+        if (request.preflight===false) {
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
-        });
+        }
+          
+      });
 
 
       requestEvent.on('request.update', function(request) {
-        winston.debug('requestEvent websocket server ', request);       
-        pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
-        pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
+        winston.debug('requestEvent websocket server ', request);  
+        if (request.preflight===false) {     
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
+        }
      
       });
 
