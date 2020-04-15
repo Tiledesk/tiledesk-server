@@ -242,7 +242,7 @@ class Chat21Handler {
                                  var gattributes = {userFullname:lead.fullname, userEmail: lead.email }
                                 //  qui1
                             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                                winston.info("Chat21 group gattributes updated: " + data);      
+                                winston.info("Chat21 group gattributes updated: " + JSON.stringify(data));      
                                 chat21Event.emit('group.update', data);        
                                 chat21Event.emit('group.attributes.update', data);                                          
                             }).catch(function(err) {
@@ -380,7 +380,7 @@ class Chat21Handler {
                         var gattributes = request.attributes;
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                            winston.info("Chat21 group gattributes updated: " + data);      
+                            winston.info("Chat21 group gattributes updated: " + JSON.stringify(data));      
                             chat21Event.emit('group.update', data);        
                             chat21Event.emit('group.attributes.update', data);                                          
                         }).catch(function(err) {
@@ -404,7 +404,7 @@ class Chat21Handler {
                         var gattributes = { "_request":request};
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                            winston.info("Chat21 group gattributes updated: " + data);      
+                            winston.info("Chat21 group gattributes updated: " +  JSON.stringify(data));      
                             chat21Event.emit('group.update', data);        
                             chat21Event.emit('group.attributes.update', data);                                          
                         }).catch(function(err) {
@@ -416,6 +416,8 @@ class Chat21Handler {
                 });
             });
 
+
+         
 
             requestEvent.on('request.create',  function(request) {          
 
@@ -614,14 +616,7 @@ class Chat21Handler {
                         // var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
                         // winston.info("removedParticipants ", removedParticipants);
 
-
-
-                           //   var a2 = [];
-                        //   // var a2 = ['a1', 'b1'];
-                        //   //var a1 = ['a', 'b', 'c', 'd'];
-                        //   var a1 = ['a1', 'b2'];
-                        //  var c = a2.filter(d => !a1.includes(d)) // gives ["c", "d"]
-                        //   console.log(c);
+                       
 
                         removedParticipants.forEach(function(removedParticipant) {
                             winston.info("removedParticipant ", removedParticipant);
@@ -669,7 +664,7 @@ class Chat21Handler {
 
                          //join: function(member_id, group_id){
                         chat21.groups.join(member, groupId).then(function(data) {
-                                winston.info("Chat21 group joined: " + data);      
+                                winston.info("Chat21 group joined: " + JSON.stringify(data));      
                                 chat21Event.emit('group.join', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error joining chat21 group ", err);

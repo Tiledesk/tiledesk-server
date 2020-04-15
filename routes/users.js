@@ -150,7 +150,7 @@ router.get('/resendverifyemail', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-  winston.info("users");
+  winston.debug("users");
   User.findById(req.user.id, 'firstname lastname _id', function (err, user) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

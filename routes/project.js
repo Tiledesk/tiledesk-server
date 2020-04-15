@@ -148,7 +148,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   }
   
 
-  winston.info('UPDATE PROJECT REQ BODY ', update);
+  winston.debug('UPDATE PROJECT REQ BODY ', update);
 
 
 
