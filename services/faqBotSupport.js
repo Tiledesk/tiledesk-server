@@ -130,7 +130,7 @@ class FaqBotSupport {
                     });
              
             }else {
-                winston.info("repl_message ", repl_message)
+                winston.debug("repl_message ", repl_message)
                 return resolve(repl_message);
             }
 
@@ -151,7 +151,7 @@ class FaqBotSupport {
                       if (!botAnswer ) {                          
   
                         var query = { "id_project": projectid, "id_faq_kb": bot._id, "question": "defaultFallback"};
-                        winston.info('query', query);
+                        winston.debug('query', query);
 
                         Faq.find(query) 
                         .lean().               
@@ -160,7 +160,7 @@ class FaqBotSupport {
                              return res.status(500).send({ success: false, msg: 'Error getting object.' });
                            }
             
-                           winston.info("faqs", faqs);  
+                           winston.debug("faqs", faqs);  
 
                            if (faqs && faqs.length>0) {
                                 winston.debug("faqs exact", faqs);  

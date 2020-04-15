@@ -25,7 +25,7 @@ class Chat21Util {
                     repl_message.text = text_with_removed_buttons
                     var buttons = []
                     text_buttons.forEach(element => {
-                    console.log("button ", element)
+                    // console.log("button ", element)
                     var remove_extra_from_button = /^\*/mg;
                     var button_text = element.replace(remove_extra_from_button, "").trim()
                     var button = {}
@@ -45,7 +45,7 @@ class Chat21Util {
                 
                 }  else if (imagetext && imagetext.length>0) {
                     var imageurl = imagetext[0].replace("\\image:","").trim();
-                    console.log("imageurl ", imageurl)
+                    // console.log("imageurl ", imageurl)
                     var text_with_removed_image = text.replace(image_pattern,"").trim();
                     repl_message.text = text_with_removed_image + " " + imageurl
                     repl_message.metadata = {src: imageurl, width:200, height:200};
@@ -56,7 +56,7 @@ class Chat21Util {
                
                 else if (webhooktext && webhooktext.length>0) {
                     var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
-                    console.log("webhookurl ", webhookurl)
+                    // console.log("webhookurl ", webhookurl)
     
                     return request({                        
                         uri :  webhookurl,
@@ -70,14 +70,14 @@ class Chat21Util {
                             if (response.statusCode >= 400) {                  
                                 return reject(`HTTP Error: ${response.statusCode}`);
                             }
-                            console.log("webhookurl repl_message ", response);
+                            // console.log("webhookurl repl_message ", response);
                             that.getButtonFromText(response.text,message, bot,qna).then(function(bot_answer) {
                                 return resolve(bot_answer);
                             });
                         });
                  
                 }else {
-                    console.log("repl_message ", repl_message)
+                    // console.log("repl_message ", repl_message)
                     return resolve(repl_message);
                 }
     
