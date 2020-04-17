@@ -23,7 +23,7 @@ var projectService = require('../services/projectService');
 var Request = require("../models/request");
 
 
-describe('messageService()', function () {
+describe('messageService', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 
@@ -54,8 +54,7 @@ describe('messageService()', function () {
 
 
   it('createMessageAndUpdateTwoMessagesCount', function (done) {
-    // this.timeout(10000);
-
+    // this.timeout(10000);  
       projectService.create("test1", userid).then(function(savedProject) {
         // attento reqid
         requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
@@ -77,6 +76,8 @@ describe('messageService()', function () {
           });
         });
     });
+  
+
   });
 
 
@@ -86,5 +87,104 @@ describe('messageService()', function () {
 
 
 
+
+  it('createMessageMultiLanguage', function (done) {
+    // this.timeout(10000);
+
+
+    var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+    console.log("messageTransformerInterceptor",messageTransformerInterceptor);
+    messageTransformerInterceptor.listen();
+
+
+
+      projectService.create("test1", userid).then(function(savedProject) {
+        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "${LABEL_PLACEHOLDER}",
+          savedProject._id, userid).then(function(savedMessage){
+            winston.debug("resolve savedMessage", savedMessage.toObject());
+     
+          expect(savedMessage.text).to.equal("type your message..");
+          expect(savedMessage.sender).to.equal(userid);
+          expect(savedMessage.senderFullname).to.equal("test sender");
+          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+          done();
+
+        }).catch(function(err){
+          assert.isNotOk(err,'Promise error');
+          done();
+        });
+
+      });
+    });
+
+
+
+  it('createMessageMultiLanguageNOTFound', function (done) {
+    // this.timeout(10000);
+
+
+    var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+    console.log("messageTransformerInterceptor",messageTransformerInterceptor);
+    messageTransformerInterceptor.listen();
+
+
+
+      projectService.create("test1", userid).then(function(savedProject) {
+        // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "${NOTFOUND_LABEL}",
+          savedProject._id, userid).then(function(savedMessage){
+            winston.debug("resolve savedMessage", savedMessage.toObject());
+     
+          expect(savedMessage.text).to.equal("${NOTFOUND_LABEL}");
+          expect(savedMessage.sender).to.equal(userid);
+          expect(savedMessage.senderFullname).to.equal("test sender");
+          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+          done();
+
+        }).catch(function(err){
+          assert.isNotOk(err,'Promise error');
+          done();
+        });
+
+      });
+    });
+
+
+
+
+
+    it('createMessageMultiLanguageNOLanguage', function (done) {
+      // this.timeout(10000);
+  
+  
+      var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
+      console.log("messageTransformerInterceptor",messageTransformerInterceptor);
+      messageTransformerInterceptor.listen();
+  
+  
+  
+        projectService.create("test1", userid).then(function(savedProject) {
+          // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+        messageService.create(userid, "test sender", "testrecipient-createMessage", "${LABEL_PLACEHOLDER}",
+        savedProject._id, userid, undefined,   {language:'XXXX'}).then(function(savedMessage){
+          winston.debug("resolve savedMessage", savedMessage.toObject());
+       
+            expect(savedMessage.text).to.equal("${LABEL_PLACEHOLDER}");
+            expect(savedMessage.sender).to.equal(userid);
+            expect(savedMessage.senderFullname).to.equal("test sender");
+            expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+            done();
+  
+          }).catch(function(err){
+            assert.isNotOk(err,'Promise error');
+            done();
+          });
+  
+        });
+      });
+  
+
+      
 
 });

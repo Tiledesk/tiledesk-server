@@ -3,6 +3,7 @@
 var Message = require("../models/message");
 var MessageConstants = require("../models/messageConstants");
 const messageEvent = require('../event/messageEvent');
+const messagePromiseEvent = require('../event/messagePromiseEvent');
 var winston = require('../config/winston');
 
 class MessageService {
@@ -29,50 +30,69 @@ class MessageService {
             createdBy = sender;
           }
     
-          
+          var beforeMessage = {sender:sender, senderFullname:senderFullname, recipient:recipient
+            , text:text, id_project:id_project, createdBy:createdBy, status:status, attributes:attributes,
+             type:type, metadata:metadata};
+
+          var messageToCreate = beforeMessage;
+
+        //   messageEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage});
+
+       
+
+          messagePromiseEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage}).then(results => {
+            winston.info('message.create.simple.before', results);
+
+            if (results && results.beforeMessage) {
+                messageToCreate =  results.beforeMessage;
+            }
+
+                 // if (id_project) {
+
+                    var newMessage = new Message({
+                        sender: messageToCreate.sender,
+                        senderFullname: messageToCreate.senderFullname,
+                        recipient: messageToCreate.recipient,
+                        type: messageToCreate.type,
+                        // recipientFullname: recipientFullname,
+                        text: messageToCreate.text,
+                        id_project: messageToCreate.id_project,
+                        createdBy: messageToCreate.createdBy,
+                        updatedBy: messageToCreate.createdBy,
+                        status : messageToCreate.status,
+                        metadata: messageToCreate.metadata,
+                        attributes: messageToCreate.attributes
+                    });
+                    
+                    // winston.debug("create new message", newMessage);
+        
+                    return newMessage.save(function(err, savedMessage) {
+                        if (err) {
+                            winston.error(err);
+                            return reject(err);
+                        }
+                        winston.info("Message created", savedMessage.toObject());
+        
+                        messageEvent.emit('message.create.simple', savedMessage);
+        
+                        that.emitMessage(savedMessage);
+                        // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
+                        //     messageEvent.emit('message.received.simple', savedMessage);
+                        // }
+        
+                        // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+                        //     messageEvent.emit('message.sending.simple', savedMessage);
+                        // }
+                        
+        
+                        return resolve(savedMessage);
+                    });
+        
     
-        // if (id_project) {
+                                        
+          });
 
-            var newMessage = new Message({
-                sender: sender,
-                senderFullname: senderFullname,
-                recipient: recipient,
-                type: type,
-                // recipientFullname: recipientFullname,
-                text: text,
-                id_project: id_project,
-                createdBy: createdBy,
-                updatedBy: createdBy,
-                status : status,
-                metadata: metadata,
-                attributes: attributes
-            });
-            
-            // winston.debug("create new message", newMessage);
-
-            return newMessage.save(function(err, savedMessage) {
-                if (err) {
-                    winston.error(err);
-                    return reject(err);
-                }
-                winston.info("Message created", savedMessage.toObject());
-
-                messageEvent.emit('message.create.simple', savedMessage);
-
-                that.emitMessage(savedMessage);
-                // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
-                //     messageEvent.emit('message.received.simple', savedMessage);
-                // }
-
-                // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
-                //     messageEvent.emit('message.sending.simple', savedMessage);
-                // }
-                
-
-                return resolve(savedMessage);
-            });
-
-    
+   
        
 
     });

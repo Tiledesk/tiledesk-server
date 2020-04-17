@@ -15,6 +15,7 @@ class PubModulesManager {
         
         this.eventsRoute = undefined;
         this.entityEraser = undefined;
+        this.messageTransformer = undefined;
     }
 
   
@@ -61,6 +62,20 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing init messageActions module", err);
             }
         }
+
+        try {
+            this.messageTransformer = require('./messageTransformer');
+            winston.debug("this.messageTransformer:"+ this.messageTransformer);
+            this.messageTransformer.messageTransformerInterceptor.listen();
+            winston.info("PubModulesManager init messageTransformer loaded.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init messageTransformer module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init messageTransformer module", err);
+            }
+        }
+        
         
         
          try {
