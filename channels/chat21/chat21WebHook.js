@@ -146,9 +146,9 @@ router.post('/', function(req, res) {
                           messageId = message.attributes.tiledesk_message_id;
                         }
 
-                       // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
+                       // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language)
                         return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){
+                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata, language).then(function(savedMessage){
                                                                 
                             return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
                               return res.json(savedRequestWithIncrement);
@@ -190,12 +190,20 @@ router.post('/', function(req, res) {
             }
         
             var messageId = undefined;
-            if (message.attributes && message.attributes.tiledesk_message_id) {
-              messageId = message.attributes.tiledesk_message_id;
+            var language = undefined;
+            if (message.attributes) {
+              if (message.attributes.tiledesk_message_id) {
+                messageId = message.attributes.tiledesk_message_id;
+              }
+              if (message.attributes.language) {
+                language = message.attributes.language;
+              }
             }
-            // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
+
+
+            // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
             return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata).then(function(savedMessage){      
+              request.id_project, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata, language).then(function(savedMessage){      
 
                 // TODO se stato = 50 e scrive visitatotre sposto a stato 100 poi queuue lo smista
 
