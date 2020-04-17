@@ -5,7 +5,8 @@ var winston = require('../config/winston');
 var MessageSchema = new Schema({
   sender: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   senderFullname: {
     type: String,
@@ -13,7 +14,8 @@ var MessageSchema = new Schema({
   },
   recipient: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
   // recipientFullname: {
   //   type: String,
@@ -23,10 +25,16 @@ var MessageSchema = new Schema({
     type: String,
     required: true,
     default: 'text',
+    index: true
   },
   text: {
     type: String,
     required: true
+  },
+  language: {
+    type: String,
+    required: false,
+    index:true
   },
   id_project: {
     type: String,
@@ -57,6 +65,10 @@ var MessageSchema = new Schema({
 
 MessageSchema.index({ recipient: 1, updatedAt:1 }); // schema level
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 }); // schema level
+
+MessageSchema.index({text: 'text'},
+ {"name":"message_fulltext","default_language": "italian","language_override": "language"}); // schema level
+
 
 var message = mongoose.model('message', MessageSchema);
 

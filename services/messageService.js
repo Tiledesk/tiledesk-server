@@ -9,19 +9,19 @@ var winston = require('../config/winston');
 class MessageService {
 
 
-   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) {
-       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata);
+   send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
+       return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
    }
 
-   upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+   upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
        if (!id) {
-           return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata);
+           return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language);
        } else {
             winston.debug("Message changeStatus", status);
             return this.changeStatus(id, status);
        }
    }
-  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -32,7 +32,7 @@ class MessageService {
     
           var beforeMessage = {sender:sender, senderFullname:senderFullname, recipient:recipient
             , text:text, id_project:id_project, createdBy:createdBy, status:status, attributes:attributes,
-             type:type, metadata:metadata};
+             type:type, metadata:metadata,language:language};
 
           var messageToCreate = beforeMessage;
 
@@ -61,7 +61,8 @@ class MessageService {
                         updatedBy: messageToCreate.createdBy,
                         status : messageToCreate.status,
                         metadata: messageToCreate.metadata,
-                        attributes: messageToCreate.attributes
+                        attributes: messageToCreate.attributes,
+                        language: messageToCreate.language && messageToCreate.language.toUpperCase()
                     });
                     
                     // winston.debug("create new message", newMessage);

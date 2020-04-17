@@ -31,15 +31,17 @@ describe('messageService', function () {
     // this.timeout(10000);
 
       projectService.create("test1", userid).then(function(savedProject) {
-        // create(sender, senderFullname, recipient, text, id_project, createdBy) {
-      messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
-          savedProject._id, userid).then(function(savedMessage){
+        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+        messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
+          savedProject._id, userid, undefined, {a1:"a1"}, undefined, undefined, "it"  ).then(function(savedMessage){
             winston.debug("resolve savedMessage", savedMessage.toObject());
      
           expect(savedMessage.text).to.equal("hello");
           expect(savedMessage.sender).to.equal(userid);
           expect(savedMessage.senderFullname).to.equal("test sender");
           expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+          expect(savedMessage.language).to.equal("IT");
+          expect(savedMessage.attributes.a1).to.equal("a1");
           done();
 
         }).catch(function(err){
