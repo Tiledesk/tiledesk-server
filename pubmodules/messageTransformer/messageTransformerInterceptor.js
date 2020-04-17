@@ -19,6 +19,10 @@ class MessageTransformerInterceptor {
 
             var message = data.beforeMessage;
             
+            if (!message.text) { //for image i think
+                return data;
+            }
+            
             // https://stackoverflow.com/questions/413071/regex-to-get-string-between-curly-braces
             var re = /\${([^}]+)\}/;
             var m = message.text.match(re);
