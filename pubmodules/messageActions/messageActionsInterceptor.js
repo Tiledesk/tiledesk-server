@@ -85,12 +85,15 @@ class MessageActionsInterceptor {
                winston.debug("botId: " + botId);
             
                if (botId) {
-                   winston.info("removing botId: " + botId);
+                   winston.info("removing botId: bot_" + botId);
                    
                    // removeParticipantByRequestId(request_id, id_project, member) 
                    //TODO USE FINALLY?
                    //TODO you can use reroute?
-                   requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(){
+                   requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(removedRequest){
+                    winston.info("removeParticipantByRequestId: ", removedRequest);
+  
+                    // route(request_id, departmentid, id_project, nobot) {
                         requestService.route(request.request_id, request.department, request.id_project, true ).then(function() {
 
                                 // messageService.send(
