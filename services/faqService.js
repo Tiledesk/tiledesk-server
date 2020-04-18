@@ -29,7 +29,7 @@ class FaqService {
             winston.error('--- > ERROR ', err)
             return reject('Error saving object.' );
           }
-          winston.info('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
+          winston.debug('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())              
       
           botEvent.emit('faqbot.create', savedFaq_kb);
           

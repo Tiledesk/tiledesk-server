@@ -94,7 +94,8 @@ class MessageActionsInterceptor {
                     winston.info("removeParticipantByRequestId: ", removedRequest);
   
                     // route(request_id, departmentid, id_project, nobot) {
-                        requestService.route(request.request_id, request.department, request.id_project, true ).then(function() {
+                        requestService.route(request.request_id, request.department, request.id_project, true ).then(function(routedRequest) {
+                            winston.info("routedRequest: ", routedRequest);
 
                                 // messageService.send(
                                 //     'system', 
