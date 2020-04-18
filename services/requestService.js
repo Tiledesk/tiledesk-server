@@ -135,16 +135,16 @@ class RequestService {
 
 
                   var oldParticipants = beforeParticipants;
-                  winston.info("oldParticipants ", oldParticipants);
+                  winston.debug("oldParticipants ", oldParticipants);
 
                   let newParticipants = requestComplete.participants;
-                  winston.info("newParticipants ", newParticipants);
+                  winston.debug("newParticipants ", newParticipants);
 
                   var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                  winston.info("removedParticipants ", removedParticipants);
+                  winston.debug("removedParticipants ", removedParticipants);
 
                   var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                  winston.info("addedParticipants ", addedParticipants);
+                  winston.debug("addedParticipants ", addedParticipants);
 
                   
                   requestEvent.emit('request.update',requestComplete);
@@ -303,6 +303,7 @@ class RequestService {
            var assigned_operator_id;
            var participants = [];
           //  winston.debug("req status0", status);
+
            if (!status) {
             //  winston.debug("req status check", status);
              status = RequestConstants.UNSERVED; //unserved
@@ -591,7 +592,6 @@ class RequestService {
             }
             requestEvent.emit('request.update',updatedRequest);
             requestEvent.emit("request.update.comment", {comment:"PREFLIGHT_CHANGE",request:updatedRequest});
-            //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
           });
@@ -794,6 +794,7 @@ class RequestService {
             winston.info("Request reopened", savedRequest);
 
             // TODO allora neanche qui participatingAgent è ok? 
+
             
             return resolve(savedRequest);
             
@@ -1142,6 +1143,7 @@ class RequestService {
         winston.error(err);
         return reject(err);
       }
+      
 
       return Request       
       .findOne({request_id: request_id, id_project: id_project})      
@@ -1223,8 +1225,10 @@ class RequestService {
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
 
-        var index = request.tags.indexOf(tag);
-        // winston.debug("index", index);
+        // var index = request.tags.indexOf(tag);
+        var index = request.tags.findIndex(t => t.tag === tag);
+
+        winston.info("index", index);
 
         if (index > -1) {
           request.tags.splice(index, 1);

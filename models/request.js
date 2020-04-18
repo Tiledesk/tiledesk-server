@@ -3,7 +3,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Channel = require('../models/channel');
-var ObjectId = require('mongoose').Types.ObjectId;
 var winston = require('../config/winston');
 var RequestConstants = require("../models/requestConstants");
 
@@ -11,8 +10,8 @@ var ProjectUserSchema = require("../models/project_user").schema;
 var RequestStatus = require("../models/requestStatus");
 
 var NoteSchema = require("../models/note").schema;
+var TagSchema = require("../models/tag");
 // var Requester = require('../models/requester');
-
 // var MessageSchema = require("../models/message").schema;
 
 //https://github.com/Automattic/mongoose/issues/5924
@@ -200,12 +199,13 @@ var RequestSchema = new Schema({
     type: Date
   },
 
-  //tags List A list of tags associated with the conversation.
-  tags: {
-    type: Array,
-    required: false,
-    index: true
-  },
+  tags: [TagSchema],
+
+  // tags: {
+  //   type: Array,
+  //   required: false,
+  //   index: true
+  // },
   notes: [NoteSchema],
 
   rating: {

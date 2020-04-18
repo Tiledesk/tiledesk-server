@@ -31,7 +31,7 @@ var MessageSchema = new Schema({
     type: String,
     required: true
   },
-  language: {
+  language: { //ISO 639-1 (Two letter codes) https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
     type: String,
     required: false,
     index:true

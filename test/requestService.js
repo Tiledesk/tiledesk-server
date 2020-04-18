@@ -26,6 +26,7 @@ var leadService = require('../services/leadService');
 var userService = require('../services/userService');
 
 var Request = require("../models/request");
+// var Tag = require('../models/tag');
 var requestEvent = require('../event/requestEvent');
 
 describe('RequestService', function () {
@@ -549,6 +550,90 @@ it('closeRequestAndRemoveParticipant', function (done) {
     });
 });
 });
+
+
+
+
+it('addTag', function (done) {
+  // this.timeout(10000);
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
+   projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+
+    leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+
+     requestService.createWithIdAndRequester("request_id1-addTag", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        winston.debug("resolve", savedRequest.toObject());
+        expect(savedRequest.request_id).to.equal("request_id1-addTag");
+        expect(savedRequest.tags.length).to.equal(0);
+        
+        var tag = {tag:"tag1"};
+        requestService.addTagByRequestId("request_id1-addTag", savedProject._id, tag).then(function(savedReqTag) {
+          expect(savedReqTag.request_id).to.equal("request_id1-addTag");
+          expect(savedReqTag.tags.length).to.equal(1);
+          expect(savedReqTag.tags[0].tag).to.equal("tag1");
+          done();
+        });
+
+      
+      }).catch(function(err) {
+          console.log("test reject",err);
+          assert.isNotOk(err,'Promise error');
+          done();
+      });
+  });
+});
+  });
+});
+
+
+
+it('removeTag', function (done) {
+  // this.timeout(10000);
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
+   projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+
+    leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+
+     requestService.createWithIdAndRequester("request_id1-addTag", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        winston.debug("resolve", savedRequest.toObject());
+        expect(savedRequest.request_id).to.equal("request_id1-addTag");
+        expect(savedRequest.tags.length).to.equal(0);
+        
+        var tag = {tag:"tag1"};
+        requestService.addTagByRequestId("request_id1-addTag", savedProject._id, tag).then(function(savedReqTag) {
+          expect(savedReqTag.request_id).to.equal("request_id1-addTag");
+          expect(savedReqTag.tags.length).to.equal(1);
+          expect(savedReqTag.tags[0].tag).to.equal("tag1");
+
+          requestService.removeTagByRequestId("request_id1-addTag", savedProject._id, "tag1").then(function(savedReqTagRem) {
+            expect(savedReqTagRem.request_id).to.equal("request_id1-addTag");
+            expect(savedReqTagRem.tags.length).to.equal(0);            
+            done();
+          });
+          
+        });
+
+      
+      }).catch(function(err) {
+          console.log("test reject",err);
+          assert.isNotOk(err,'Promise error');
+          done();
+      });
+  });
+});
+  });
+});
+
 
 
 });

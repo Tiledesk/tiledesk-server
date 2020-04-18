@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var Tag = require("../models/tag");
+var TagLibrary = require("../models/tagLibrary");
 var winston = require('../config/winston');
 
 
@@ -9,7 +9,7 @@ router.post('/', function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var newTag = new Tag({
+  var newTag = new TagLibrary({
     tag: req.body.tag,  
     color: req.body.color,
     id_project: req.projectid,
@@ -21,7 +21,7 @@ router.post('/', function (req, res) {
     if (err) {
       // winston.error('--- > ERROR ', err)    
       if (err.code === 11000) { //error for dupes
-          return Tag.findOne({id_project:req.projectid, tag: req.body.tag },function (err, savedTag) {
+          return TagLibrary.findOne({id_project:req.projectid, tag: req.body.tag },function (err, savedTag) {
             res.json(savedTag);
           });
       }    
@@ -42,7 +42,7 @@ router.put('/:tagid', function (req, res) {
   update.color = req.body.color;
   
   
-  Tag.findByIdAndUpdate(req.params.tagid, update, { new: true, upsert: true }, function (err, updatedTag) {
+  TagLibrary.findByIdAndUpdate(req.params.tagid, update, { new: true, upsert: true }, function (err, updatedTag) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -58,7 +58,7 @@ router.put('/:tagid', function (req, res) {
 router.delete('/:tagid', function (req, res) {
   winston.debug(req.body);
 
-  Tag.remove({ _id: req.params.tagid }, function (err, tag) {
+  TagLibrary.remove({ _id: req.params.tagid }, function (err, tag) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -74,7 +74,7 @@ router.delete('/:tagid', function (req, res) {
 router.get('/:tagid', function (req, res) {
   winston.debug(req.body);
 
-  Tag.findById(req.params.tagid, function (err, tag) {
+  TagLibrary.findById(req.params.tagid, function (err, tag) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -120,7 +120,7 @@ router.get('/', function (req, res) {
 
   winston.debug("sort query", sortQuery);
 
-  return Tag.find(query).
+  return TagLibrary.find(query).
     skip(skip).limit(limit).
     sort(sortQuery).
     exec(function (err, tags) {
