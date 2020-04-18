@@ -90,7 +90,7 @@ router.post('/askbot', function (req, res) {
 
      
     }else {
-      winston.info('external query: ');
+      winston.debug('external query: ');
       return res.status(400).send({ success: false, msg: 'askbot on external bot.' });
     }
    

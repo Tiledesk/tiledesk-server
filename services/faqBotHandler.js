@@ -121,7 +121,7 @@ class FaqBotHandler {
                         messageService.send(sender, botName, message.recipient, answerObj.answer, 
                             message.id_project, sender).then(function(savedMessage){
 
-                                winston.info("faqbot message sending ", savedMessage.toObject());  
+                                winston.debug("faqbot message sending ", savedMessage.toObject());  
                         });
         
                     }

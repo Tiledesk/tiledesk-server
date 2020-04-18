@@ -126,7 +126,7 @@ router.get('/', function (req, res) {
     query.members = { $in : req.query.member }
   }
   
-  winston.info("query", query);
+  winston.debug("query", query);
   
   Group.find(query, function (err, groups) {        
     if (err) {

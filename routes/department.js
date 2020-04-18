@@ -42,7 +42,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
       winston.error('Error creating the department ', err);
       return res.status(500).send({ success: false, msg: 'Error saving object.' });
     }
-    winston.info('NEW DEPT SAVED ', savedDepartment);
+    winston.debug('NEW DEPT SAVED ', savedDepartment);
     departmentEvent.emit('department.create', savedDepartment);
     res.json(savedDepartment);
   });
@@ -120,7 +120,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
-  winston.info("req.params.departmentid: "+req.params.departmentid);
+  winston.debug("req.params.departmentid: "+req.params.departmentid);
 
   Department.findOneAndRemove({_id: req.params.departmentid}, function (err, department) {
   // Department.remove({ _id: req.params.departmentid }, function (err, department) {

@@ -41,7 +41,7 @@ class MessageService {
        
 
           messagePromiseEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage}).then(results => {
-            winston.info('message.create.simple.before', results);
+            winston.debug('message.create.simple.before', results);
 
             if (results && results.beforeMessage) {
                 messageToCreate =  results.beforeMessage;
