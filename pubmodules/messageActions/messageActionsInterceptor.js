@@ -91,11 +91,11 @@ class MessageActionsInterceptor {
                    //TODO USE FINALLY?
                    //TODO you can use reroute?
                    requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(removedRequest){
-                    winston.info("removeParticipantByRequestId: ", removedRequest);
+                    winston.debug("removeParticipantByRequestId: ", removedRequest);
   
                     // route(request_id, departmentid, id_project, nobot) {
                         requestService.route(request.request_id, request.department, request.id_project, true ).then(function(routedRequest) {
-                            winston.info("routedRequest: ", routedRequest);
+                            winston.debug("routedRequest: ", routedRequest);
 
                                 // messageService.send(
                                 //     'system', 
