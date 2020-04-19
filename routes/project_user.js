@@ -267,7 +267,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['subscription'])], function (req, res) {
 
-  winston.info("project_userid update", req.body);
+  winston.debug("project_userid update", req.body);
 
   var update = {};
   
@@ -287,14 +287,17 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.attributes = req.body.attributes;
   }
 
-  winston.info("project_userid update", update);
+  winston.debug("project_userid update", update);
 
   Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){                
+      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+        if (err) {
+          winston.error("Error gettting updatedProject_userPopulated for update", err);
+        }            
         var pu = updatedProject_userPopulated.toJSON();
         pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
         
@@ -385,6 +388,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 });
 
 
+
   // TODO if project is deleted
 
 // 2020-03-31T17:25:45.939421+00:00 app[web.1]: 
@@ -416,7 +420,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     // lean().                   
     exec(function (err, project_users) {
       if (err) {
-        winston.info("Error gettting project_user for get users", err);
+        winston.error("Error gettting project_user for get users", err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
 
