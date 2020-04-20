@@ -67,7 +67,7 @@ MessageSchema.index({ recipient: 1, updatedAt:1 }); // schema level
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 }); // schema level
 
 MessageSchema.index({text: 'text'},
- {"name":"message_fulltext","default_language": "italian","language_override": "language"}); // schema level
+ {"name":"message_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
 
 var message = mongoose.model('message', MessageSchema);
