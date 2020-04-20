@@ -1,6 +1,7 @@
 
 const messagePromiseEvent = require('../../event/messagePromiseEvent');
 const labelService = require('../../services/labelService');
+const Request = require('../../models/request');
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 
@@ -32,9 +33,28 @@ class MessageTransformerInterceptor {
 
                 var language = "EN";
 
-                if (message.language) {
-                    language  = message.language.toUpperCase();
+
+                var request = await Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+                    populate('lead').
+                    populate('department').  
+                    populate('participatingBots').
+                    populate('participatingAgents').       
+                    populate({path:'requester',populate:{path:'id_user'}}).
+                    exec();
+              
+                winston.info('request mti: ', request);
+
+                if (request && request.language) {
+                    language  = request.language.toUpperCase();
                 }
+
+
+
+                // if (message.language) {
+                //     language  = message.language.toUpperCase();
+                // }
+
+
                 // if (message.attributes && message.attributes.language) {
                 //     language  = message.attributes.language.toUpperCase();
                 // }
