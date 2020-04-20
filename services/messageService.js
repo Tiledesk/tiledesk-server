@@ -28,7 +28,7 @@ class MessageService {
 
         if (!createdBy) {
             createdBy = sender;
-          }
+        }
     
           var beforeMessage = {sender:sender, senderFullname:senderFullname, recipient:recipient
             , text:text, id_project:id_project, createdBy:createdBy, status:status, attributes:attributes,
@@ -62,7 +62,7 @@ class MessageService {
                         status : messageToCreate.status,
                         metadata: messageToCreate.metadata,
                         attributes: messageToCreate.attributes,
-                        language: messageToCreate.language && messageToCreate.language.toUpperCase()
+                        language: messageToCreate.language
                     });
                     
                     // winston.debug("create new message", newMessage);
