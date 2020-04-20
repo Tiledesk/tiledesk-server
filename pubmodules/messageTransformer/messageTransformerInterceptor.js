@@ -15,7 +15,7 @@ class MessageTransformerInterceptor {
         winston.info("MessageTransformerInterceptor listener start ");
         
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
-            winston.debug('MessageTransformerInterceptor message.create.simple.before', data); 
+            winston.info('MessageTransformerInterceptor message.create.simple.before', data); 
 
             var message = data.beforeMessage;
             
@@ -32,9 +32,12 @@ class MessageTransformerInterceptor {
 
                 var language = "EN";
 
-                if (message.attributes && message.attributes.language) {
-                    language  = message.attributes.language.toUpperCase();
+                if (message.language) {
+                    language  = message.language.toUpperCase();
                 }
+                // if (message.attributes && message.attributes.language) {
+                //     language  = message.attributes.language.toUpperCase();
+                // }
 
                 winston.info('language: '+language);
 
