@@ -150,86 +150,71 @@ function (req, res) {
  
 });
 
+router.post('/resigninAnonymously', 
+[
+  check('id_project').notEmpty(),  
+  noentitycheck,
+  passport.authenticate(['jwt'], { session: false }), 
 
-
-// curl -v -X POST -H 'Content-Type:application/json' -u 6b4d2080-3583-444d-9901-e3564a22a79b@tiledesk.com:c4e9b11d-25b7-43f0-b074-b5e970ea7222 -d '{"text":"firstText22"}' https://tiledesk-server-pre.herokuapp.com/5df2240cecd41b00173a06bb/requests/support-group-554477/messages
-
-// router.post('/signinAnonymouslyCreateUser', 
-// [
-//   check('id_project').notEmpty(),  
-// ],
-// function (req, res) {
+],
+function (req, res) {
  
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(422).json({ errors: errors.array() });
-//   }
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
+// TODO remove email.sec?
 
-//   var email = uuidv4() + '@tiledesk.com';
-//   winston.info('signinAnonymously email: ' + email);
+  var id_project = req.body.id_project;
 
-//   var password = uuidv4();
-//   winston.info('signinAnonymously password: ' + password);
-
-//   // signup ( email, password, firstname, lastname, emailverified)
-//   return userService.signup(email, password, req.body.firstname, req.body.lastname, false
-//     //, "anonymous"
-//     )
-//     .then(function (savedUser) {
+  winston.debug("11111 req.user._id: " +req.user._id + " " + id_project);
 
 
-//       winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
+  // evitare inserimenti multipli
+  Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.GUEST}).              
+  exec(function (err, project_users) {
+  if (err) {
+    winston.error(err);
+    return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+  }
+  winston.debug("11111 project_users ", project_users);
 
+  if (!project_users) {
 
-//       var newProject_user = new Project_user({
-//         // _id: new mongoose.Types.ObjectId(),
-//         id_project: req.body.id_project, //attentoqui
-//         id_user: savedUser._id,
-//         role: RoleConstants.GUEST,
-//         user_available: true,
-//         createdBy: savedUser.id,
-//         updatedBy: savedUser.id
-//       });
+    var newProject_user = new Project_user({
+      id_project: req.body.id_project, //attentoqui
+      uuid_user: req.user._id,
+      role: RoleConstants.GUEST,
+      user_available: true,
+      createdBy: req.user._id,
+      updatedBy: req.user._id
+    });
 
-//         return newProject_user.save(function (err, savedProject_user) {
-//           if (err) {
-//             winston.error('Error saving object.', err)
-//             return res.status(500).send({ success: false, msg: 'Error saving object.' });
-//           }
+        return newProject_user.save(function (err, savedProject_user) {
+          if (err) {
+            winston.error('Error saving object.', err)
+            return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }
 
-      
-//           //authEvent.emit("user.signin", savedUser);      
-//           authEvent.emit("user.signin", {user:savedUser, req:req});       
+          // controlla se già esiste su llo stesso progetto
+                  
           
-//           authEvent.emit("projectuser.create", savedProject_user);         
-
-//             winston.info('project user created ', savedProject_user.toObject());
-
-            
-//           //remove password 
-//           let userJson = savedUser.toObject();
-//           delete userJson.password;
           
+          authEvent.emit("projectuser.create", savedProject_user);         
 
-//           var signOptions = {
-//             issuer:  'https://tiledesk.com',
-//             subject:  'user',
-//             audience:  'https://tiledesk.com',           
-//           };
+          winston.info('project user created ', savedProject_user.toObject());
 
-//           var token = jwt.sign(userJson, config.secret, signOptions);
-
-//           res.json({ success: true, token: 'JWT ' + token, user: userJson });
-//       });
-//     }).catch(function (err) {
-
-//       authEvent.emit("user.signin.error", {body: req.body, err:err});             
-
-//        winston.error('Error registering new user', err);
-//        res.send(err);
-//     });
+          return res.json({ success: true, token: 'JWT ' + req.headers["authorization"], user: req.user });
+      });
+    }else {
+      // return res.json({ success: true, token: 'JWT ' + token, user: req.user });
+      return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+    }
+  });
  
-// });
+});
+
 
 
 router.post('/signinWithCustomToken', [
@@ -302,7 +287,7 @@ router.post('/signinWithCustomToken', [
 
             return res.json({ success: true, token: req.headers["authorization"], user: req.user });
         });
-      }else {
+      } else {
         winston.info('project user already exists ');
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
