@@ -64,7 +64,7 @@ class MessageTransformerInterceptor {
             // if (message.text.indexOf("${")>-1) {
             
                 winston.debug('MessageTransformerInterceptor enter');
-                var label = await labelService.getByLanguageAndKey(message.id_project,language, messageExtracted);
+                var label = await labelService.get(message.id_project,language, messageExtracted);
                 if (label) {
                     message.text=label;  
                 }

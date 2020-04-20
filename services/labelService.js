@@ -26,6 +26,17 @@ fetchDefault() {
     });
 }
 
+get(id_project, language, key) {
+   var ret = this.getByLanguageAndKey(id_project, language, key);
+
+   if (ret) {
+       return ret;
+   } else {
+       return this.getByLanguageAndKey(id_project, "EN", key);
+   }
+
+}
+
 getByLanguageAndKey(id_project, language, key) {
     var that = this;
     return new Promise(function (resolve, reject) {

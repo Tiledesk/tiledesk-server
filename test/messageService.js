@@ -40,7 +40,7 @@ describe('messageService', function () {
           expect(savedMessage.sender).to.equal(userid);
           expect(savedMessage.senderFullname).to.equal("test sender");
           expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
-          expect(savedMessage.language).to.equal("IT");
+          expect(savedMessage.language).to.equal("it");
           expect(savedMessage.attributes.a1).to.equal("a1");
           done();
 
@@ -172,7 +172,7 @@ describe('messageService', function () {
         savedProject._id, userid, undefined,   {language:'XXXX'}).then(function(savedMessage){
           winston.debug("resolve savedMessage", savedMessage.toObject());
        
-            expect(savedMessage.text).to.equal("${LABEL_PLACEHOLDER}");
+            expect(savedMessage.text).to.equal("type your message.."); //EN default
             expect(savedMessage.sender).to.equal(userid);
             expect(savedMessage.senderFullname).to.equal("test sender");
             expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
