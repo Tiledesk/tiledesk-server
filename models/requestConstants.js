@@ -1,5 +1,6 @@
 module.exports = {
-        SERVED : 200,
+        TEMP : 50,
         UNSERVED : 100,
+        SERVED : 200,
         CLOSED: 1000
 }
