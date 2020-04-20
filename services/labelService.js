@@ -26,8 +26,8 @@ fetchDefault() {
     });
 }
 
-get(id_project, language, key) {
-   var ret = this.getByLanguageAndKey(id_project, language, key);
+async get(id_project, language, key) {
+   var ret = await this.getByLanguageAndKey(id_project, language, key);
 
    if (ret) {
        return ret;

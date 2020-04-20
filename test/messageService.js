@@ -167,9 +167,9 @@ describe('messageService', function () {
   
   
         projectService.create("test1", userid).then(function(savedProject) {
-          // create(sender, senderFullname, recipient, text, id_project, createdBy) {
+          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
         messageService.create(userid, "test sender", "testrecipient-createMessage", "${LABEL_PLACEHOLDER}",
-        savedProject._id, userid, undefined,   {language:'XXXX'}).then(function(savedMessage){
+        savedProject._id, userid, undefined,   undefined, undefined, undefined, "XXXX").then(function(savedMessage){
           winston.debug("resolve savedMessage", savedMessage.toObject());
        
             expect(savedMessage.text).to.equal("type your message.."); //EN default
