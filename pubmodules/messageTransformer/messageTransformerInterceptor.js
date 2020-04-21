@@ -16,7 +16,7 @@ class MessageTransformerInterceptor {
         winston.info("MessageTransformerInterceptor listener start ");
         
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
-            winston.info('MessageTransformerInterceptor message.create.simple.before', data); 
+            winston.debug('MessageTransformerInterceptor message.create.simple.before', data); 
 
             var message = data.beforeMessage;
             
@@ -42,7 +42,7 @@ class MessageTransformerInterceptor {
                     populate({path:'requester',populate:{path:'id_user'}}).
                     exec();
               
-                winston.info('request mti: ', request);
+                winston.debug('request mti: ', request);
 
                 if (request && request.language) {
                     language  = request.language.toUpperCase();
