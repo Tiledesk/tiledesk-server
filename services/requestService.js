@@ -227,16 +227,16 @@ class RequestService {
                    requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
 
 
-                   winston.info("oldParticipants ", oldParticipants);
+                   winston.debug("oldParticipants ", oldParticipants);
  
                    let newParticipants = requestComplete.participants;
-                   winston.info("newParticipants ", newParticipants);
+                   winston.debug("newParticipants ", newParticipants);
  
                    var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                   winston.info("removedParticipants ", removedParticipants);
+                   winston.debug("removedParticipants ", removedParticipants);
  
                    var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                   winston.info("addedParticipants ", addedParticipants);
+                   winston.debug("addedParticipants ", addedParticipants);
 
 
                   //  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
