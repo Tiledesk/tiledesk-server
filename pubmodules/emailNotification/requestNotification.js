@@ -18,6 +18,9 @@ class RequestNotification {
 
 listen() {
     var that = this;
+    
+
+
      requestEvent.on("request.create", function(request) {
 
       setImmediate(() => {
@@ -25,6 +28,20 @@ listen() {
          that.sendEmail(request.id_project, request);
       });
      });
+
+
+     requestEvent.on("request.participants.update", function(data) {
+
+      var request = data.request;
+      
+      setImmediate(() => {
+   
+         that.sendEmail(request.id_project, request);
+      });
+     });
+
+
+    //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 
      requestEvent.on("request.close", function(request) {
       setImmediate(() => {
