@@ -315,7 +315,7 @@ class PubSub {
             var messageToSend = {action: 'heartbeat', payload: {message: {text: 'pong'}}};
             // rispondi pong solo su ping e non su pong
             winston.debug('received heartbeat from ',clientId," i send a  message: ",  messageToSend);         
-            // this.send(clientId, messageToSend)   
+            this.send(clientId, messageToSend)   
             
           }
             
