@@ -117,12 +117,15 @@ class FaqBotHandler {
                     if (faqs && faqs.length>0 && faqs[0].answer) {
                         answerObj = faqs[0];                
 
-                        // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
-                        messageService.send(sender, botName, message.recipient, answerObj.answer, 
-                            message.id_project, sender).then(function(savedMessage){
+                        faqBotSupport.getButtonFromText(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
+                            // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
+                                messageService.send(sender, botName, message.recipient, bot_answer.text, 
+                                    message.id_project, sender, bot_answer.attributes, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
 
-                                winston.debug("faqbot message sending ", savedMessage.toObject());  
+                                        winston.debug("faqbot message sending ", savedMessage.toObject());  
+                                });
                         });
+                        
         
                     }
                     
