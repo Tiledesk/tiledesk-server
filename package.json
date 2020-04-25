@@ -32,7 +32,7 @@
     "@tiledesk-ent/tiledesk-server-analytics": "^1.0.5",
     "@tiledesk-ent/tiledesk-server-activities": "^1.0.13",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.0.35",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.52",
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.0.53",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.0.5",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.6",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.0.4",
