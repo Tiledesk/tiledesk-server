@@ -41,7 +41,6 @@
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
     "@tiledesk/tiledesk-chat21-app": "^1.0.14",
-    "amqplib": "^0.5.5",
     "apollo-server": "^2.9.12",
     "apollo-server-express": "^2.9.12",
     "app-root-path": "^3.0.0",
@@ -78,6 +77,7 @@
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
     "promise-events": "^0.1.8",
+    "redis": "^3.0.2",
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
     "retry-request": "^4.1.1",
