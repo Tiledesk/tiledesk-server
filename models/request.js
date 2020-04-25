@@ -271,11 +271,12 @@ var RequestSchema = new Schema({
     required: true
   },
 
-},{
+}, {
   timestamps: true,
   toObject: { virtuals: true }, //IMPORTANT FOR trigger used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
+
 );
 
 // // https://mongoosejs.com/docs/api.html#query_Query-populate

@@ -361,24 +361,9 @@ class RequestService {
               
               
                   winston.info("Request created",savedRequest.toObject());
+                                    
                   
-                  // winston.debug("XXXXXXXXXXXXXXXX");
-
-
-                  /*
-                  if (id_project!="5b45e1c75313c50014b3abc6") {
-                    if (process.env.NODE_ENV!= 'test') {
-                      that.sendEmail(id_project, savedRequest);
-                    }
-                  }*/
-                  
-                  
-                  requestEvent.emit('request.create.simple',savedRequest);
-
-
-                  //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
-                  //activityEvent.emit('request.create', activity);
-
+                  requestEvent.emit('request.create.simple', savedRequest);
                   
                   return resolve(savedRequest);
                   
@@ -475,23 +460,9 @@ class RequestService {
               
               
                   winston.info("Request created",savedRequest.toObject());
-                  
-                  // winston.debug("XXXXXXXXXXXXXXXX");
-
-                  /*
-                  if (id_project!="5b45e1c75313c50014b3abc6") {
-                    if (process.env.NODE_ENV!= 'test') {
-                      that.sendEmail(id_project, savedRequest);
-                    }
-                  }*/
-                  
+                                
                   
                   requestEvent.emit('request.create.simple',savedRequest);
-
-
-                  //var activity = new Activity({actor: createdBy, verb: "REQUEST_CREATE", actionObj: newRequest, target: savedRequest._id, id_project: id_project });
-                  //activityEvent.emit('request.create', activity);
-
                   
                   return resolve(savedRequest);
                   
