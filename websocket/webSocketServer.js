@@ -389,7 +389,7 @@ class WebSocketServer {
       messageCreateKey = 'message.create.queue';
     }
     messageEvent.on(messageCreateKey, function (message) {
-      winston.debug('messageEvent websocket server ', message);
+      winston.debug('messageEvent websocket server: '+messageCreateKey, message);
         pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
     });
 
@@ -400,7 +400,7 @@ class WebSocketServer {
     }
     winston.info('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, function (request) {
-        winston.info('requestEvent websocket server ', request);
+        winston.info('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
@@ -416,7 +416,7 @@ class WebSocketServer {
       }
       winston.info('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
-        winston.info('requestEvent websocket server ', request);  
+        winston.info('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
