@@ -383,12 +383,23 @@ class WebSocketServer {
 
     var that = this;
 
-    messageEvent.on('message.create', function (message) {
+
+    var messageCreateKey = 'message.create';
+    if (messageEvent.queueEnabled) {
+      messageCreateKey = 'message.create.queue';
+    }
+    messageEvent.on(messageCreateKey, function (message) {
       winston.debug('messageEvent websocket server ', message);
         pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
-      });
+    });
 
-      requestEvent.on('request.create', function (request) {
+    // var reconnect = require('./reconnect');
+    var requestCreateKey = 'request.create';
+    if (requestEvent.queueEnabled) {
+      requestCreateKey = 'request.create.queue';
+    }
+    winston.info('requestCreateKey: ' + requestCreateKey);
+      requestEvent.on(requestCreateKey, function (request) {
         winston.debug('requestEvent websocket server ', request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
@@ -399,8 +410,12 @@ class WebSocketServer {
           
       });
 
-
-      requestEvent.on('request.update', function(request) {
+      var requestUpdateKey = 'request.update';
+      if (requestEvent.queueEnabled) {
+        requestUpdateKey = 'request.update.queue';
+      }
+      winston.info('requestUpdateKey: ' + requestUpdateKey);
+      requestEvent.on(requestUpdateKey, function(request) {
         winston.debug('requestEvent websocket server ', request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   

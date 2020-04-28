@@ -9,7 +9,12 @@ var MessageConstants = require("../models/messageConstants");
 
 
 
-class MessageEvent extends EventEmitter {}
+class MessageEvent extends EventEmitter { 
+  constructor() {
+    super();
+    this.queueEnabled = false;
+  }
+}
 
 const messageEvent = new MessageEvent();
 
@@ -144,6 +149,7 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
       
       var requestJson = request.toJSON();
      
+
 
       Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({createdAt: 'desc'})
         .limit(5)

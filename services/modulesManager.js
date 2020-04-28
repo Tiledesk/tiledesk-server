@@ -25,6 +25,7 @@ class ModulesManager {
         this.requestHistoryArchiver = undefined;
         this.requestHistoryRoute = undefined;
         this.routingQueue = undefined;
+        this.queue = undefined;
 
     }
 
@@ -280,6 +281,21 @@ class ModulesManager {
                 winston.info("ModulesManager init routing queue module not found");
             }else {
                 winston.error("ModulesManager error initializing init routing queue module", err);
+            }
+        }
+
+
+
+        try {
+            this.queue = require('@tiledesk-ent/tiledesk-server-queue');            
+            winston.debug("this.queue:"+ this.queue);           
+
+            winston.info("ModulesManager init queue loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init queue module not found");
+            }else {
+                winston.error("ModulesManager error initializing init queue module", err);
             }
         }
 

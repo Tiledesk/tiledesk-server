@@ -4,7 +4,12 @@ var Request = require("../models/request");
 
 var winston = require('../config/winston');
 
-class RequestEvent extends EventEmitter {}
+class RequestEvent extends EventEmitter {
+    constructor() {
+        super();
+        this.queueEnabled = false;
+      }
+}
 
 const requestEvent = new RequestEvent();
 
