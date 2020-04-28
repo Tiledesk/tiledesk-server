@@ -400,7 +400,7 @@ class WebSocketServer {
     }
     winston.info('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, function (request) {
-        winston.debug('requestEvent websocket server ', request);
+        winston.info('requestEvent websocket server ', request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
@@ -416,7 +416,7 @@ class WebSocketServer {
       }
       winston.info('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
-        winston.debug('requestEvent websocket server ', request);  
+        winston.info('requestEvent websocket server ', request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
