@@ -262,6 +262,30 @@ class PubSub {
     })
   }
 
+
+
+
+  /**
+   * Handle publish a message to a topic
+   * @param topic
+   * @param message
+   * @param from
+   * @isBroadcast = false that mean send all, if true, send all not me
+   */
+  handlePublishMessageToClientId (topic, message, clientId, method) {
+  
+        this.send(clientId, {
+          action: 'publish',
+          payload: {
+            topic: topic,
+            method: method,
+            message: message,
+          },
+        })
+      
+
+  }
+
   /**
    * Handle receive client message
    * @param clientId

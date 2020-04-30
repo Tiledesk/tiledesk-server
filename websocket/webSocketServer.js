@@ -138,13 +138,14 @@ class WebSocketServer {
     }
 
     // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/app1/requests"}}');
-    var onSubscribeCallback = async function(id, message, req) {
+
+    var onSubscribeCallback = async function(topic, clientId, req) {
       return new Promise(function(resolve, reject) {
-            winston.debug('onSubscribeCallback :'+id+ " "+ message);      
+            winston.debug('onSubscribeCallback :'+topic+ " "+ clientId);      
           
             winston.debug(' req.user._id: '+ req.user);
 
-            var urlSub = id.split('/');  
+            var urlSub = topic.split('/');  
 
             var projectId = urlSub[1];
             winston.debug('projectId: '+projectId);
@@ -161,7 +162,7 @@ class WebSocketServer {
                 return reject({err:'Project_user not found for projectid ' + projectId});
               }
 
-              if (id.endsWith('/messages')) {
+              if (topic.endsWith('/messages')) {
                 winston.debug(' messages: ');           
   
                 var recipientId = urlSub[3];
@@ -219,7 +220,8 @@ class WebSocketServer {
   
   
                             return resolve({publishFunction:function() {
-                              pubSubServer.handlePublishMessage (id, messages, undefined, true, "CREATE");
+                              // handlePublishMessageToClientId (topic, message, clientId, method) {
+                              pubSubServer.handlePublishMessageToClientId (id, messages, clientId, "CREATE");
                             }});                                                                                                
                   
                         });
@@ -227,7 +229,7 @@ class WebSocketServer {
   
                 });
                 
-            } else if (id.endsWith('/requests')) {
+            } else if (topic.endsWith('/requests')) {
               
                 winston.debug('req.user._id: '+req.user._id);
                 // winston.debug(' req.: ',req);
@@ -277,8 +279,9 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
-                      return resolve({publishFunction:function() {
-                        pubSubServer.handlePublishMessage (id, requests, undefined, true, "CREATE");
+                      return resolve({publishFunction:function() {                        
+                        // handlePublishMessageToClientId (topic, message, clientId, method) {
+                        pubSubServer.handlePublishMessageToClientId (id, requests, clientId, "CREATE");
                       }});          
   
             
@@ -288,7 +291,7 @@ class WebSocketServer {
                 
                 // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/5e71139f61dd040bc9594cee/project_users/5e71139f61dd040bc9594cef"}}')
                 //curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e71139f61dd040bc9594cee/project_users/
-          } else if (id.indexOf('/project_users/') > -1) {        
+          } else if (topic.indexOf('/project_users/') > -1) {        
                 
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
@@ -312,7 +315,8 @@ class WebSocketServer {
               
   
               return resolve({publishFunction:function() {
-                pubSubServer.handlePublishMessage (id, pu, undefined, true, "CREATE");
+              // handlePublishMessageToClientId (topic, message, clientId, method) {
+                pubSubServer.handlePublishMessageToClientId (id, pu, clientId, "CREATE");
               }});        
   
             });
@@ -360,7 +364,8 @@ class WebSocketServer {
                         winston.debug('onSubscribeCallback find', request);  
   
                         return resolve({publishFunction:function() {
-                          pubSubServer.handlePublishMessage (id, request, undefined, true, "CREATE");
+                          // handlePublishMessageToClientId (topic, message, clientId, method) {
+                          pubSubServer.handlePublishMessageToClientId (id, request, clientId, "CREATE");
                         }});                         
               
                     });
@@ -435,7 +440,6 @@ class WebSocketServer {
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
         winston.debug('pu', pu);
-
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/'+pu.id, pu, undefined, true, "CREATE");
 
       });
