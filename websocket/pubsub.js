@@ -240,7 +240,7 @@ class PubSub {
         (subs) => subs.topic === topic)
 
 
-        winston.debug("handlePublishMessage!!!!!!!!!!!", subscriptions);    
+        winston.info("handlePublishMessage!!!!!!!!!!!", subscriptions);    
     // now let send to all subscribers in the topic with exactly message from publisher
     subscriptions.forEach((subscription) => {
 
