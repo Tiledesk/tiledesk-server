@@ -37,7 +37,7 @@
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.0.6",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.0.4",
     "@tiledesk-ent/tiledesk-server-routing-queue": "^1.0.7",
-    "@tiledesk-ent/tiledesk-server-queue": "^1.0.1"
+    "@tiledesk-ent/tiledesk-server-queue": "^1.0.2"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
@@ -67,6 +67,7 @@
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
+    "mix-hash": "^1.0.5",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
     "mongoose": "^5.7.13",
