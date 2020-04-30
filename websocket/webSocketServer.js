@@ -221,7 +221,7 @@ class WebSocketServer {
   
                             return resolve({publishFunction:function() {
                               // handlePublishMessageToClientId (topic, message, clientId, method) {
-                              pubSubServer.handlePublishMessageToClientId (id, messages, clientId, "CREATE");
+                              pubSubServer.handlePublishMessageToClientId (topic, messages, clientId, "CREATE");
                             }});                                                                                                
                   
                         });
@@ -281,7 +281,7 @@ class WebSocketServer {
        
                       return resolve({publishFunction:function() {                        
                         // handlePublishMessageToClientId (topic, message, clientId, method) {
-                        pubSubServer.handlePublishMessageToClientId (id, requests, clientId, "CREATE");
+                        pubSubServer.handlePublishMessageToClientId (topic, requests, clientId, "CREATE");
                       }});          
   
             
@@ -316,7 +316,7 @@ class WebSocketServer {
   
               return resolve({publishFunction:function() {
               // handlePublishMessageToClientId (topic, message, clientId, method) {
-                pubSubServer.handlePublishMessageToClientId (id, pu, clientId, "CREATE");
+                pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
               }});        
   
             });
@@ -365,7 +365,7 @@ class WebSocketServer {
   
                         return resolve({publishFunction:function() {
                           // handlePublishMessageToClientId (topic, message, clientId, method) {
-                          pubSubServer.handlePublishMessageToClientId (id, request, clientId, "CREATE");
+                          pubSubServer.handlePublishMessageToClientId (topic, request, clientId, "CREATE");
                         }});                         
               
                     });
