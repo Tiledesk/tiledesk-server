@@ -258,7 +258,8 @@ class WebSocketServer {
                     query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
                     winston.debug('query agent: '+ JSON.stringify(query));
                   }
-                  
+
+                  //cacheimportantehere
                   Request.find(query)
                   .populate('lead')
                   .populate('department')
@@ -267,6 +268,7 @@ class WebSocketServer {
                   .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
+                  // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
                   
                       if (err) {
@@ -424,7 +426,13 @@ class WebSocketServer {
      
       });
 
-      authEvent.on('project_user.update',function(data) {
+
+      var projectuserUpdateKey = 'project_user.update';
+      if (authEvent.queueEnabled) {
+        projectuserUpdateKey = 'project_user.update.queue';
+      }
+      winston.info('projectuserUpdateKey: ' + projectuserUpdateKey);
+      authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
         winston.debug('pu', pu);
 
