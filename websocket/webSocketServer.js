@@ -395,6 +395,8 @@ class WebSocketServer {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
+    winston.info('messageCreateKey: ' + messageCreateKey);
+
     messageEvent.on(messageCreateKey, function (message) {
       winston.info('messageEvent websocket server: '+messageCreateKey, message);
         pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
