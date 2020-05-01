@@ -107,6 +107,7 @@ class RequestService {
               return resolve(request);
             }
 
+              //cacheinvalidation
             return routedRequest.save(function(err, savedRequest) {
               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
               //return routedRequest.update(function(err, savedRequest) {
@@ -198,6 +199,7 @@ class RequestService {
 
            that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
  
+              //cacheinvalidation
              return routedRequest.save(function(err, savedRequest) {
                // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
                //return routedRequest.update(function(err, savedRequest) {
@@ -352,7 +354,7 @@ class RequestService {
 
 
           
-
+              //cacheinvalidation
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
                     winston.error('Error createWithId the request.',err);
@@ -451,7 +453,7 @@ class RequestService {
 
 
           
-
+              //cacheinvalidation
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
                     winston.error('Error createWithId the request.',err);
@@ -639,6 +641,7 @@ class RequestService {
 
             // winston.debug(" request",  request);
             winston.debug("Request  waitingTime setted");
+              //cacheinvalidation
           return resolve(request.save());
         }else {
           return resolve(request);
@@ -752,6 +755,7 @@ class RequestService {
             request.status =  RequestConstants.UNSERVED;
           }
 
+            //cacheinvalidation
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error("Error saving reopened the request", err);
@@ -788,6 +792,7 @@ class RequestService {
       // winston.debug("request_id", request_id);
       // winston.debug("transcript", transcript);
 
+        //cacheinvalidation
         return Request.findOneAndUpdate({request_id: request_id, id_project: id_project}, {transcript: transcript}, {new: true, upsert:false}, function(err, updatedRequest) {
             if (err) {
               winston.error(err);
@@ -848,6 +853,7 @@ class RequestService {
         
         request.waiting_time = undefined //reset waiting_time on reroute ????
 
+          //cacheinvalidation
         request.save(function(err, updatedRequest) {
           if (err) {
             winston.error("Error setParticipantsByRequestId", err);
@@ -932,6 +938,7 @@ class RequestService {
             request.status =  RequestConstants.UNSERVED;
           }
 // check error here
+  //cacheinvalidation
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error(err);
@@ -1014,7 +1021,7 @@ class RequestService {
         }
          
           // winston.debug(" request",  request);
-       
+         //cacheinvalidation
           request.save(function(err, savedRequest) {
 
             if (!err) {
@@ -1080,7 +1087,8 @@ class RequestService {
   
           // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
           request.markModified('attributes');
-  
+          
+          //cacheinvalidation
           request.save(function (err, savedRequest) {
             if (err) {
               winston.error("error saving request attributes",err)
@@ -1138,6 +1146,8 @@ class RequestService {
         if (request.participants.indexOf(tag)==-1){
           request.tags.push(tag);        
 // check error here
+
+          //cacheinvalidation
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error(err);
@@ -1205,6 +1215,8 @@ class RequestService {
           request.tags.splice(index, 1);
           // winston.debug(" request.participants",  request.participants);    
        
+
+          //cacheinvalidation
           request.save(function(err, savedRequest) {
 
             if (!err) {
