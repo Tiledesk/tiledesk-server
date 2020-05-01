@@ -396,7 +396,7 @@ class WebSocketServer {
       messageCreateKey = 'message.create.queue';
     }
     messageEvent.on(messageCreateKey, function (message) {
-      winston.debug('messageEvent websocket server: '+messageCreateKey, message);
+      winston.info('messageEvent websocket server: '+messageCreateKey, message);
         pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
     });
 
@@ -421,6 +421,7 @@ class WebSocketServer {
       if (requestEvent.queueEnabled) {
         requestUpdateKey = 'request.update.queue';
       }
+
       winston.info('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
         winston.info('requestEvent websocket server: '+requestUpdateKey, request);  
