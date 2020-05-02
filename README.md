@@ -73,7 +73,7 @@ Deploy with button:
 
 # REST API
 
-See the Tiledesk REST API [here](https://developer.tiledesk.com/apis/api)
+See the Tiledesk REST API [here](https://developer.tiledesk.com/apis/rest-api/introduction)
 
 
 
