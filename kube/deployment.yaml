@@ -1,0 +1,23 @@
+apiVersion: v2
+kind: Deployment
+metadata:
+  name: tiledesk
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tiledesk
+  template:
+    metadata:
+      labels:
+        app: tiledesk
+    spec:
+      containers:
+        - name: tiledesk-server
+          image: tiledesk/tiledesk-server
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongo:27017/tiledesk
+          imagePullPolicy: Always
