@@ -149,7 +149,8 @@ router.patch('/:requestid', function (req, res) {
   
   winston.info("Request patch update",update);
 
-  return Request.findOneAndUpdate({"request_id":req.params.requestid}, { $set: update }, { new: true, upsert: false })
+  //cacheinvalidation
+  return Request.findOneAndUpdate({"request_id":req.params.requestid, "id_project": req.projectid}, { $set: update }, { new: true, upsert: false })
   .populate('lead')
   .populate('department')
   .populate('participatingBots')
@@ -383,6 +384,7 @@ router.patch('/:requestid/attributes',  function (req, res) {
         // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
         request.markModified('attributes');
 
+          //cacheinvalidation
         request.save(function (err, savedRequest) {
           if (err) {
             winston.error("error saving request attributes",err)
@@ -404,6 +406,7 @@ router.post('/:requestid/notes',  function (req, res) {
   // note.id_project = req.projectid;
   note.createdBy = req.user.id;
 
+  //cacheinvalidation
   return Request.findOneAndUpdate({request_id:req.params.requestid, id_project:req.projectid},{ $push: { notes: note } } , { new: true, upsert: false })
     .populate('lead')
     .populate('department')
@@ -426,6 +429,7 @@ router.post('/:requestid/notes',  function (req, res) {
 
 router.delete('/:requestid/notes/:noteid',  function (req, res) {
   
+    //cacheinvalidation
   return Request.findOneAndUpdate({request_id: req.params.requestid, id_project:req.projectid},{ $pull: { notes: { "_id": req.params.noteid }  } } , { new: true, upsert: false })
     .populate('lead')
     .populate('department')
@@ -445,6 +449,12 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
 
 });
 
+
+// TODO delete request
+router.delete('/:requestid',  function (req, res) {
+  
+
+});
 
 // unused ?
 router.post('/:requestid/share/email', function (req, res) {
@@ -480,6 +490,8 @@ router.get('/', function (req, res, next) {
     limit = parseInt(req.query.limit);
   }
 
+
+
   var page = 0;
 
   if (req.query.page) {
@@ -499,11 +511,14 @@ router.get('/', function (req, res, next) {
 
 
   if (req.user instanceof Subscription) {
-//all request 
+      //all request 
   } else if (projectuser && projectuser.role == "owner" || projectuser.role == "admin") {
-//all request 
+      //all request 
+    if (req.query.mine) {
+      query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}];
+    }
   }else {  
-    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]
+    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}];
   }
 
   // console.log('REQUEST ROUTE - req ', req); 
@@ -637,8 +652,9 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+  winston.info('REQUEST ROUTE - REQUEST FIND ', query);
 
+  //cacheimportantehere
   var q1 = Request.find(query).
     skip(skip).limit(limit).
     populate('department').
@@ -647,6 +663,7 @@ router.get('/', function (req, res, next) {
     populate('lead').
     populate({path:'requester',populate:{path:'id_user'}}).
     sort(sortQuery).
+    // cache(120, "requests-"+projectId).
     exec();
 
 
