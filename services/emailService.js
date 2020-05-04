@@ -70,14 +70,9 @@ class EmailService {
 
 
 
+// TODO externalize template
 
-  sendNewAssignedRequestNotification(to, savedRequest, project) {
-       //  <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                    //    <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                    //      Requester: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.requester_fullname}</strong>
-                    //    </td>
-                    //  </tr>
-
+  sendNewAssignedRequestNotification(to, savedRequest, project) {      
 
     var html = `
      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
