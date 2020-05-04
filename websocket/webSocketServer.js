@@ -264,9 +264,9 @@ class WebSocketServer {
                   //cacheimportantehere
                   Request.find(query)
                   .populate('lead')
-                  .populate('department')
-                  .populate('participatingBots')
-                  .populate('participatingAgents')  
+                  // .populate('department')
+                  // .populate('participatingBots')
+                  // .populate('participatingAgents')  
                   .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
@@ -279,6 +279,7 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
+
                       return resolve({publishFunction:function() {                        
                         // handlePublishMessageToClientId (topic, message, clientId, method) {
                         pubSubServer.handlePublishMessageToClientId (topic, requests, clientId, "CREATE");
@@ -395,10 +396,10 @@ class WebSocketServer {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
-    winston.info('messageCreateKey: ' + messageCreateKey);
+    winston.debug('messageCreateKey: ' + messageCreateKey);
 
     messageEvent.on(messageCreateKey, function (message) {
-      winston.info('messageEvent websocket server: '+messageCreateKey, message);
+      winston.debug('messageEvent websocket server: '+messageCreateKey, message);
         pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
     });
 
@@ -407,9 +408,9 @@ class WebSocketServer {
     if (requestEvent.queueEnabled) {
       requestCreateKey = 'request.create.queue';
     }
-    winston.info('requestCreateKey: ' + requestCreateKey);
+    winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, function (request) {
-        winston.info('requestEvent websocket server: '+requestCreateKey, request);
+        winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
@@ -424,9 +425,9 @@ class WebSocketServer {
         requestUpdateKey = 'request.update.queue';
       }
 
-      winston.info('requestUpdateKey: ' + requestUpdateKey);
+      winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
-        winston.info('requestEvent websocket server: '+requestUpdateKey, request);  
+        winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
@@ -439,7 +440,7 @@ class WebSocketServer {
       if (authEvent.queueEnabled) {
         projectuserUpdateKey = 'project_user.update.queue';
       }
-      winston.info('projectuserUpdateKey: ' + projectuserUpdateKey);
+      winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
         winston.debug('pu', pu);
