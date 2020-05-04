@@ -17,6 +17,8 @@ var PendingInvitation = new Schema({
     type: String,
     // required: true
   },
+
+  // TODO initial status (available,unavailable) 
   createdBy: {
     type: String,
     required: true
