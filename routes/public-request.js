@@ -15,7 +15,7 @@ var winston = require('../config/winston');
   
     winston.debug(req.params);
     winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }
@@ -34,7 +34,7 @@ var winston = require('../config/winston');
   
     winston.debug(req.params);
     winston.debug("here");    
-    return Message.find({"recipient": req.params.requestid}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
       if (err) {
         return res.status(500).send({success: false, msg: 'Error getting object.'});
       }

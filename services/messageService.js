@@ -150,7 +150,7 @@ class MessageService {
     winston.debug("id_project", id_project);
     var that = this;
     return new Promise(function (resolve, reject) {
-        return Message.find({"recipient": requestid, id_project: id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) { 
+        return Message.find({"recipient": requestid, id_project: id_project}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
             if (err) {
                 winston.error("Error getting the transcript", err);
                 return reject(err);

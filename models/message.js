@@ -63,8 +63,10 @@ var MessageSchema = new Schema({
 );
 
 
-MessageSchema.index({ recipient: 1, updatedAt:1 }); // schema level
-MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 }); // schema level
+MessageSchema.index({ recipient: 1, createdAt:1 }); 
+MessageSchema.index({ id_project: 1, recipient:1, createdAt: 1 });
+MessageSchema.index({ recipient: 1, updatedAt:1 }); 
+MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 });
 
 MessageSchema.index({text: 'text'},
  {"name":"message_fulltext","default_language": "italian","language_override": "dummy"}); // schema level

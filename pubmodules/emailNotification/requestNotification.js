@@ -208,7 +208,7 @@ sendEmail(projectid, savedRequest) {
 
 
       return Message.find({"recipient": request_id, id_project : id_project})
-        .sort({updatedAt: 'asc'})
+        .sort({createdAt: 'asc'})
         .exec(function(err, messages) { 
         if (err) {
           return res.status(500).send({success: false, msg: 'Error getting messages.'});
