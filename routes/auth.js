@@ -28,6 +28,8 @@ var UserUtil = require('../utils/userUtil');
 router.post('/signup',
 [
   check('email').isEmail(),  
+  check('firstname').notEmpty(),  
+  check('lastname').notEmpty()
 ]
 , function (req, res) {
 
