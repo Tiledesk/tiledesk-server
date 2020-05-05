@@ -273,7 +273,7 @@ class WebSocketServer {
                   // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
-                  .lean()
+                  .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
                   // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
                   
@@ -283,6 +283,16 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
+                      if (requests && requests.length>0) {
+                        requests.forEach(request => {
+                          if (request.lead) {
+                            request.requester_id =  request.lead;
+                          }else {
+                            request.requester_id =  null;
+                          }
+                        });
+                      }
+
                       var endDate = new Date();
                      console.log('ws count', query, requests.length, startDate, endDate, endDate -  startDate )
                       return resolve({publishFunction:function() {                        
