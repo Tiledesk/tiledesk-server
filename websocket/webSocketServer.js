@@ -290,6 +290,19 @@ class WebSocketServer {
                           }else {
                             request.requester_id =  null;
                           }
+
+
+                          var project_users_available = request.agents.filter(function (projectUser) {
+                            if (projectUser.user_available == true) {
+                              return true;
+                            }
+                          });
+                      
+                          if (project_users_available && project_users_available.length>0){
+                            request.availableAgents = project_users_available;
+                          }else {
+                            request.availableAgents = [];
+                          }
                         });
                       }
 
