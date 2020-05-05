@@ -282,7 +282,7 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
-                     console.log('ws count', requests.length, started, new Date())
+                     console.log('ws count', query, requests.length, started, new Date())
                       return resolve({publishFunction:function() {                        
                         // handlePublishMessageToClientId (topic, message, clientId, method) {
                         pubSubServer.handlePublishMessageToClientId (topic, requests, clientId, "CREATE");
