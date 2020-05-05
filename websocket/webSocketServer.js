@@ -285,13 +285,25 @@ class WebSocketServer {
        
                       if (requests && requests.length>0) {
                         requests.forEach(request => {
-                          request.id = request._id;
+
+                          request.id = request._id; //importante
+
+
                           if (request.lead) {
                             request.requester_id =  request.lead;
                           }else {
                             request.requester_id =  null;
                           }
 
+                          if (requests.agents && requests.agents.length>0) {
+                            var agentsnew = [];
+                            requests.agents.forEach(a => {
+                              agentsnew.push({id_user: a.id_user})
+                            });
+                            requests.agents = agentsnew;
+
+                          }
+                         
 
                           // var project_users_available = request.agents.filter(function (projectUser) {
                           //   if (projectUser.user_available == true) {
