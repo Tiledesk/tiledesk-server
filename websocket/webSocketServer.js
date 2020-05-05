@@ -264,6 +264,7 @@ class WebSocketServer {
                   //cacheimportantehere
                 //  TODO  proviamo a fare esempio con 100 agenti tutti
                   // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
+                  var started = new Date();
                   Request.find(query)
                   // .populate('lead')
                   // .populate('department')
@@ -281,7 +282,7 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
-
+                     console.log('ws count', requests.length, started, new Date())
                       return resolve({publishFunction:function() {                        
                         // handlePublishMessageToClientId (topic, message, clientId, method) {
                         pubSubServer.handlePublishMessageToClientId (topic, requests, clientId, "CREATE");
