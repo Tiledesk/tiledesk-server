@@ -295,12 +295,12 @@ class WebSocketServer {
                             request.requester_id =  null;
                           }
 
-                          if (requests.agents && requests.agents.length>0) {
+                          if (request.agents && request.agents.length>0) {
                             var agentsnew = [];
-                            requests.agents.forEach(a => {
+                            request.agents.forEach(a => {
                               agentsnew.push({id_user: a.id_user})
                             });
-                            requests.agents = agentsnew;
+                            request.agents = agentsnew;
 
                           }
                          
