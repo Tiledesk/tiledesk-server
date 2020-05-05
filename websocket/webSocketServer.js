@@ -273,7 +273,7 @@ class WebSocketServer {
                   // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
-                  .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
+                  // .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
                   // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
                   
@@ -283,28 +283,28 @@ class WebSocketServer {
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
        
-                      if (requests && requests.length>0) {
-                        requests.forEach(request => {
-                          if (request.lead) {
-                            request.requester_id =  request.lead;
-                          }else {
-                            request.requester_id =  null;
-                          }
+                      // if (requests && requests.length>0) {
+                      //   requests.forEach(request => {
+                      //     if (request.lead) {
+                      //       request.requester_id =  request.lead;
+                      //     }else {
+                      //       request.requester_id =  null;
+                      //     }
 
 
-                          var project_users_available = request.agents.filter(function (projectUser) {
-                            if (projectUser.user_available == true) {
-                              return true;
-                            }
-                          });
+                      //     var project_users_available = request.agents.filter(function (projectUser) {
+                      //       if (projectUser.user_available == true) {
+                      //         return true;
+                      //       }
+                      //     });
                       
-                          if (project_users_available && project_users_available.length>0){
-                            request.availableAgents = project_users_available;
-                          }else {
-                            request.availableAgents = [];
-                          }
-                        });
-                      }
+                      //     if (project_users_available && project_users_available.length>0){
+                      //       request.availableAgents = project_users_available;
+                      //     }else {
+                      //       request.availableAgents = [];
+                      //     }
+                      //   });
+                      // }
 
                       var endDate = new Date();
                      console.log('ws count', query, requests.length, startDate, endDate, endDate -  startDate )
