@@ -262,12 +262,14 @@ class WebSocketServer {
                   }
 
                   //cacheimportantehere
+                //  TODO  proviamo a fare esempio con 100 agenti tutti
+                  // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
                   Request.find(query)
-                  .populate('lead')
+                  // .populate('lead')
                   // .populate('department')
                   // .populate('participatingBots')
                   // .populate('participatingAgents')  
-                  .populate({path:'requester',populate:{path:'id_user'}})
+                  // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
                   // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
