@@ -266,7 +266,7 @@ class WebSocketServer {
                   // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
                   var startDate = new Date();
                   Request.find(query)
-                  // .populate('lead')
+                  .populate('lead')
                   // .populate('department')
                   // .populate('participatingBots')
                   // .populate('participatingAgents')  
@@ -301,7 +301,6 @@ class WebSocketServer {
                               agentsnew.push({id_user: a.id_user})
                             });
                             request.agents = agentsnew;
-
                           }
                          
 
