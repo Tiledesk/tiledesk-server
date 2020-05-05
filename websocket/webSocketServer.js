@@ -273,6 +273,7 @@ class WebSocketServer {
                   // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(100)
+                  .lean()
                   // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
                   
