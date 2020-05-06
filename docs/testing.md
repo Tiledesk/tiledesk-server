@@ -20,3 +20,12 @@ mocha ./test/requestRoute.js    --grep 'RequestRoute.getbyidWithPartecipatingBot
 mocha trigger.js   --grep 'Trigger.EventEmitCreateRequest'
 
 
+mocha messageService.js   --grep 'messageService.createMessageMultiLanguage'
+
+
+
+mocha authentication.js   --grep 'signInAnonymously.signInAnonymouslyReLogin'
+
+
+
+

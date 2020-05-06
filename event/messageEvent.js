@@ -36,10 +36,10 @@ messageEvent.on('message.create', emitCompleteMessage);
 messageEvent.on('message.update', emitCompleteMessage);
 
 function populateMessageCreate(message) {
-  return populateMessageWithLastRequestMessages(message, 'message.create');
+  return populateMessageWithRequest(message, 'message.create');
 }
 function populateMessageUpdate(message) {
-  return populateMessageWithLastRequestMessages(message, 'message.update');
+  return populateMessageWithRequest(message, 'message.update');
 }
 
 function populateMessage(message, eventPrefix) {
@@ -202,6 +202,46 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
 
 }
 
+
+
+function populateMessageWithRequest(message, eventPrefix) {
+
+
+  winston.debug("Subscription.notify "+eventPrefix, message.toObject());
+  
+  Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+  populate('lead').
+  populate('department').  
+  populate('participatingBots').
+  populate('participatingAgents').       
+  populate({path:'requester',populate:{path:'id_user'}}).
+  exec(function (err, request) {
+
+    if (err) {
+      winston.error("Error getting request on messageEvent.populateMessage",err );
+      return messageEvent.emit(eventPrefix, message);
+    }
+
+  if (request) {
+
+      var messageJson = message.toJSON();
+      
+      var requestJson = request.toJSON();
+    
+         
+      messageJson.request = requestJson;
+      winston.debug("Subscription.emit",messageJson );
+      messageEvent.emit(eventPrefix, messageJson );   
+      
+      if (message.text === request.first_text){
+        messageEvent.emit(eventPrefix+'.first', messageJson );
+      }
+          
+  }
+   
+  });
+
+}
 
 messageEvent.on('message.create.simple', populateMessageCreate);
 messageEvent.on('message.update.simple', populateMessageUpdate);
