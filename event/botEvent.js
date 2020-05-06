@@ -70,6 +70,7 @@ messageEvent.on('message.create', function(message) {
 
     winston.debug("message", message);
 
+    // TODO usa meglio se attributes.reply_always=true
     if (message.sender === "system" && message.text!="\\start") {
         winston.debug("it s a message sent from system, exit");
         return null;
