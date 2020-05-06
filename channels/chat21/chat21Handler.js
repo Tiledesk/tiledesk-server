@@ -97,12 +97,15 @@ class Chat21Handler {
     listen() {
 
         var that = this;
+
+        if (!admin) {
+            winston.info("Chat21 channel disabled. Listener disabled");
+            return;
+        }
+       
         winston.info("Chat21Handler listener start ");
         
-        // POST https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/contacts
-        // PUT https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/contacts
-        // {"firstname":"Andrea","lastname":"Leo","email":"andrea.leo@frontiere21.it"}
-
+      
         // su projectUser create e update
         authEvent.on('user.signup', function(userData) {
             var firstName = userData.savedUser.firstname;
@@ -291,7 +294,7 @@ class Chat21Handler {
 
                         attributes['projectId'] = message.id_project; //TODO not used. used by ionic to open request detail ???
                         
-                        
+                       
 
 
                         winston.debug("Chat21Sender sending message.sending ",  message);
@@ -341,8 +344,8 @@ class Chat21Handler {
                                     attributes[key] = value
                                 }
                             }    
-                            */                        
-
+                            */   
+                           
                             chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
@@ -354,7 +357,9 @@ class Chat21Handler {
                                             chat21Event.emit('message.sent', data);
     
                                                 messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
-                                                    winston.info("Chat21 message sent ", upMessage.toObject());                                        
+                                                    winston.debug("Chat21 message sent ", upMessage.toObject());                                        
+                                                }).catch(function(err) {
+                                                    winston.error("Error Chat21 message sent with id: "+message._id, err);                                        
                                                 });
     
                                 }).catch(function(err) {
@@ -415,9 +420,6 @@ class Chat21Handler {
                     }
                 });
             });
-
-
-         
 
             requestEvent.on('request.create',  function(request) {          
 
