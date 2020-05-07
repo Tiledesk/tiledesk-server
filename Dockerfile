@@ -1,10 +1,6 @@
 FROM node:10
 
 RUN apt-get update
-RUN apt-get install nano
-
-
-RUN npm install -g nodemon
 
 # Create app directory
 WORKDIR /usr/src/app
