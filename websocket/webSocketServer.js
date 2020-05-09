@@ -18,6 +18,9 @@ const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
 var ProjectUserUtil = require("../utils/project_userUtil");
 
+var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
+winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
+
 class WebSocketServer {
 
   constructor() {
@@ -250,7 +253,7 @@ class WebSocketServer {
   
                   // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
                   
-                  var query = {"id_project":projectId, "status": { $lt: 1000 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
+                  var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
                    //  qui1000
                   // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
 
@@ -272,7 +275,7 @@ class WebSocketServer {
                   // .populate('participatingAgents')  
                   // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
-                  .limit(100)
+                  .limit(lastRequestsLimit) 
                   .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
                   // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
@@ -451,6 +454,7 @@ class WebSocketServer {
     }
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, function (request) {
+        // TODO setImmediate(() => {
         winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
@@ -468,6 +472,7 @@ class WebSocketServer {
 
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
+        // TODO setImmediate(() => {
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
