@@ -40,6 +40,8 @@ var SubscriptionSchema = new Schema({
   timestamps: true
 }
 );
+// Subscription.find({event:event, $or:[{id_project: id_project}, {global: true}]})
+SubscriptionSchema.index({ event: 1, id_project: 1, global: 1  }); 
 
 SubscriptionSchema.index({ id_project: 1, event: 1, target: 1  }, { unique: true }); 
 

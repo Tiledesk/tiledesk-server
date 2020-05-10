@@ -13,8 +13,6 @@ if (trialEnabled) {
 
 
 var ProjectSchema = new Schema({
-  _id: Schema.Types.ObjectId,
-
   name: {
     type: String,
     required: true
@@ -160,6 +158,6 @@ ProjectSchema.virtual('isActiveSubscription').get(function () {
 
 });
 
-
+ProjectSchema.index({ _id: 1, status: 1 }); // schema level
 
 module.exports = mongoose.model('project', ProjectSchema);

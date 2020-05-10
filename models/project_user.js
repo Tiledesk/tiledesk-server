@@ -151,5 +151,18 @@ var winston = require('../config/winston');
   // Project_userSchema.index({ id_project: 1, uuid_user: 1 }, { unique: true }); 
 
 
+
+  // var query = { id_project: req.params.projectid, id_user: req.user._id};
+  // if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
+  //   query = { id_project: req.params.projectid, uuid_user: req.user._id};
+  // }
+  Project_userSchema.index({ id_project: 1, id_user: 1 }); 
+  Project_userSchema.index({ id_project: 1, uuid_user: 1 }); 
+  
+  // Project_user.find({ id_project: projectid, role: { $in : role }
+  Project_userSchema.index({ id_project: 1, role: 1 }); 
+  // Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} })
+  Project_userSchema.index({ id_project: 1, id_user:1, role: 1 }); 
+
   module.exports = mongoose.model('project_user', Project_userSchema);;
 

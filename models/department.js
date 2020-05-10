@@ -80,6 +80,10 @@ DepartmentSchema.virtual('hasBot').get(function () {
   }
 });
 
+
+// query = { default: true, id_project: projectid };
+DepartmentSchema.index({ id_project: 1, default: 1 }); 
+
 var department = mongoose.model('department', DepartmentSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
