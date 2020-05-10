@@ -323,7 +323,7 @@ class WebSocketServer {
                       }
 
                       var endDate = new Date();
-                     console.log('ws count', query, requests.length, startDate, endDate, endDate -  startDate )
+                      winston.debug('ws count: ' + query +' '+ requests.length +' '+ startDate +' '+endDate +' '+ endDate -  startDate )
                       return resolve({publishFunction:function() {                        
                         // handlePublishMessageToClientId (topic, message, clientId, method) {
                         pubSubServer.handlePublishMessageToClientId (topic, requests, clientId, "CREATE");
