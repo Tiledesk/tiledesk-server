@@ -438,7 +438,7 @@ class WebSocketServer {
 
     var messageCreateKey = 'message.create';
     if (messageEvent.queueEnabled) {
-      messageCreateKey = 'message.create.queue';
+      messageCreateKey = 'message.create.queue.pubsub';
     }
     winston.debug('messageCreateKey: ' + messageCreateKey);
 
@@ -450,11 +450,11 @@ class WebSocketServer {
     // var reconnect = require('./reconnect');
     var requestCreateKey = 'request.create';
     if (requestEvent.queueEnabled) {
-      requestCreateKey = 'request.create.queue';
+      requestCreateKey = 'request.create.queue.pubsub';
     }
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, function (request) {
-        // TODO setImmediate(() => {
+        // TODO setImmediate(() => { 
         winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
@@ -467,12 +467,12 @@ class WebSocketServer {
 
       var requestUpdateKey = 'request.update';
       if (requestEvent.queueEnabled) {
-        requestUpdateKey = 'request.update.queue';
+        requestUpdateKey = 'request.update.queue.pubsub';
       }
 
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, function(request) {
-        // TODO setImmediate(() => {
+        // TODO setImmediate(() => { 
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
@@ -484,7 +484,7 @@ class WebSocketServer {
 
       var projectuserUpdateKey = 'project_user.update';
       if (authEvent.queueEnabled) {
-        projectuserUpdateKey = 'project_user.update.queue';
+        projectuserUpdateKey = 'project_user.update.queue.pubsub';
       }
       winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
