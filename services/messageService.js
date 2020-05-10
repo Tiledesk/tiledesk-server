@@ -23,6 +23,8 @@ class MessageService {
    }
   create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
 
+    winston.debug('message.create called');
+
     var that = this;
     return new Promise(function (resolve, reject) {
 

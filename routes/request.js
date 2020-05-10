@@ -31,10 +31,10 @@ router.post('/',
 ],
 function (req, res) {
 
-  winston.info("req.body", req.body);
+  winston.debug("req.body", req.body);
 
-  winston.info("req.projectid: " + req.projectid);
-  winston.info("req.user.id: " + req.user.id);                              
+  winston.debug("req.projectid: " + req.projectid);
+  winston.debug("req.user.id: " + req.user.id);                              
 
 
   const errors = validationResult(req);
@@ -76,6 +76,7 @@ function (req, res) {
 
                 // let message = savedMessage.toJSON();
                 // message.request = savedRequestWithIncrement;
+                winston.debug('res.json(savedRequestWithIncrement)'); 
                 return res.json(savedRequestWithIncrement);
               });
             });
