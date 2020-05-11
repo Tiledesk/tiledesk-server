@@ -46,17 +46,22 @@ class RequestService {
 
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
+
             status =  RequestConstants.SERVED; //served
+
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
+
             if (assigned_operator_idString.startsWith("bot_")) {            
              hasBot = true;
+
              var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
              participantsBots.push(assigned_operator_idStringBot);
             }else {
              participantsAgents.push(assigned_operator_idString);
              hasBot = false; //??
             }
+
             assigned_at = Date.now();            
           }
            winston.debug("routeInternal assigned_operator_id: "+ assigned_operator_id);
@@ -132,22 +137,24 @@ class RequestService {
                 winston.error('Error saving the request.',err);
                 return reject(err);
               }
+              
           
-              return Request       //to populate correctly i must re-exec the query
-              .findById(savedRequest.id)
-              .populate('lead')
-              .populate('department')
-              .populate('participatingBots')
-              .populate('participatingAgents')  
-              .populate({path:'requester',populate:{path:'id_user'}})
-              .exec( function(err, requestComplete) {
+              // return Request       //to populate correctly i must re-exec the query
+              // .findById(savedRequest.id)
+              // .populate('lead')
+              // .populate('department')
+              // .populate('participatingBots')
+              // .populate('participatingAgents')  
+              // .populate({path:'requester',populate:{path:'id_user'}})
+              // .exec( function(err, requestComplete) {
              
           
-                  if (err) {
-                    winston.error('Error populating the request.',err);
-                    return reject(err);
-                  }
-                  winston.info("Request routed",requestComplete.toObject());
+              //     if (err) {
+              //       winston.error('Error populating the request.',err);
+              //       return reject(err);
+              //     }
+
+              //     winston.info("Request routed",requestComplete.toObject());
                 
                   
 
@@ -155,7 +162,7 @@ class RequestService {
                   var oldParticipants = beforeParticipants;
                   winston.debug("oldParticipants ", oldParticipants);
 
-                  let newParticipants = requestComplete.participants;
+                  let newParticipants = savedRequest.participants;
                   winston.debug("newParticipants ", newParticipants);
 
                   var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
@@ -165,18 +172,20 @@ class RequestService {
                   winston.debug("addedParticipants ", addedParticipants);
 
                   
-                  requestEvent.emit('request.update',requestComplete);
-                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
+                  requestEvent.emit('request.update',savedRequest);
+                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:savedRequest});
                   // requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
                   requestEvent.emit('request.participants.update', {beforeRequest:request, 
                     removedParticipants:removedParticipants, 
                     addedParticipants:addedParticipants,
-                    request:requestComplete});
+                    request:savedRequest});
 
-                  requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
+                  requestEvent.emit('request.department.update',savedRequest); //se req ha bot manda messaggio \welcome
 
-                  return resolve(requestComplete);
-              });
+                  return resolve(savedRequest);
+              // });
+
+
               
             });
 
@@ -225,30 +234,30 @@ class RequestService {
                  return reject(err);
                }
            
-               return Request       //to populate correctly i must re-exec the query
-               .findById(savedRequest.id)
-               .populate('lead')
-               .populate('department')
-               .populate('participatingBots')
-               .populate('participatingAgents')  
-               .populate({path:'requester',populate:{path:'id_user'}})
-               .exec( function(err, requestComplete) {
+              //  return Request       //to populate correctly i must re-exec the query
+              //  .findById(savedRequest.id)
+              //  .populate('lead')
+              //  .populate('department')
+              //  .populate('participatingBots')
+              //  .populate('participatingAgents')  
+              //  .populate({path:'requester',populate:{path:'id_user'}})
+              //  .exec( function(err, requestComplete) {
                 
-                   if (err) {
-                     winston.error('Error populating the request.',err);
-                     return reject(err);
-                   }
-                   winston.info("Request routed",requestComplete.toObject());
+              //      if (err) {
+              //        winston.error('Error populating the request.',err);
+              //        return reject(err);
+              //      }
+              //      winston.info("Request routed",requestComplete.toObject());
                  
                    
                    
-                   requestEvent.emit('request.update',requestComplete);
-                   requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
+                   requestEvent.emit('request.update',savedRequest);
+                   requestEvent.emit("request.update.comment", {comment:"REROUTE",request:savedRequest});
 
 
                    winston.debug("oldParticipants ", oldParticipants);
  
-                   let newParticipants = requestComplete.participants;
+                   let newParticipants = savedRequest.participants;
                    winston.debug("newParticipants ", newParticipants);
  
                    var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
@@ -262,14 +271,14 @@ class RequestService {
                    requestEvent.emit('request.participants.update', {beforeRequest:request, 
                     removedParticipants:removedParticipants, 
                     addedParticipants:addedParticipants,
-                    request:requestComplete});
+                    request:savedRequest});
 
-                   requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
+                   requestEvent.emit('request.department.update',savedRequest); //se req ha bot manda messaggio \welcome
  
-                   return resolve(requestComplete);
+                   return resolve(savedRequest);
                });
                
-             });
+            //  });
  
            }).catch(function(err) {
              return reject(err);
@@ -455,10 +464,13 @@ class RequestService {
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
             status =  RequestConstants.SERVED;
+
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
+
             if (assigned_operator_idString.startsWith("bot_")) {
              hasBot = true;
+
              var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
              winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
              participantsBots.push(assigned_operator_idStringBot);
@@ -893,6 +905,28 @@ class RequestService {
         var oldParticipants = request.participants;
 
         request.participants = newparticipants;
+
+
+
+        if (newparticipants && newparticipants.length>0) {
+          var hasBot = false;
+          newparticipants.forEach(newparticipant => {
+            if (newparticipant.startsWith("bot_")) {   
+              hasBot = true;                         
+              var assigned_operator_idStringBot = newparticipant.replace("bot_","");
+              winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
+              request.participantsBots.push(assigned_operator_idStringBot);
+    
+            }else {
+              request.participantsAgents.push(newparticipant);
+            }
+          });
+          request.hasBot = hasBot;
+        }
+       
+       
+
+
 
         if (request.participants.length>0) { 
           request.status =  RequestConstants.SERVED; //served
