@@ -122,6 +122,12 @@ var RequestSchema = new Schema({
     index:true
   },
 
+  hasBot: {
+    type: Boolean,
+    default: false,
+    index:true
+  },
+
   // The admin the conversation is currently assigned to.
 // Note nobody_admin indicates the conversation is assigned to Nobody.
   assignee: {
@@ -154,6 +160,16 @@ var RequestSchema = new Schema({
     // }
   },
 
+  participantsAgents: {  
+    type: Array,
+    required: false,
+    index: true,
+  },
+  participantsBots: {  
+    type: Array,
+    required: false,
+    index: true,
+  },
   department: {
     type: Schema.Types.ObjectId,
     ref: 'department',
@@ -172,18 +188,21 @@ var RequestSchema = new Schema({
 
   //timestamp when the agent reply the first time to a visitor
   first_response_at: {
-    type: Date
+    type: Date,
+    index: true
   },
 
   //timestamp when the agent reply the first time to a visitor
   assigned_at: {
-    type: Date
+    type: Date,
+    index: true
   },
 
   // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served.
   // Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
   waiting_time: {
-    type: Number
+    type: Number,
+    index: true
   },
 
 
@@ -221,7 +240,9 @@ var RequestSchema = new Schema({
   // all the agents of the project or the department at the request creation time 
   // renameit
   agents: [ProjectUserSchema],
-  
+  // TODO select false???  ma serve alla dashboard
+
+
   // all the available agents of the project or the department at the request time
   // available_agents: [ProjectUserSchema],
 
@@ -299,39 +320,34 @@ RequestSchema.virtual('requester_id').get(function () {
   }
 });
 
-// chat21 message {"attributes":{"client":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Safari/605.1.15","departmentId":"5e8c59158b283d00170a3ce9","departmentName":"Default Department","projectId":"5e8c59158b283d00170a3ce7","requester_id":"lfsns7RRJTceE9ZqbIQy7IhfKN72","sourcePage":"https://widget-pre.tiledesk.com/v2/assets/test_widget_page/index.html?tiledesk_projectid=5e8c59158b283d00170a3ce7&project_name=Nonius%20Assistant&isOpen=true","userEmail":"afr@noniussoftware.com","userFullname":"Ana Ramos"},"channel_type":"group","language":"en-GB","metadata":"","recipient":"support-group-M4UBUDHZWEhiCkC0GG5","recipient_fullname":"Ana Ramos","sender":"lfsns7RRJTceE9ZqbIQy7IhfKN72","senderAuthInfo":{"authType":"USER","authVar":{"token":{"aud":"chat21-pre-01","auth_time":1586256437,"exp":1586527977,"firebase":{"sign_in_provider":"anonymous"},"iat":1586524377,"iss":"https://securetoken.google.com/chat21-pre-01","provider_id":"anonymous","sub":"lfsns7RRJTceE9ZqbIQy7IhfKN72","user_id":"lfsns7RRJTceE9ZqbIQy7IhfKN72"},"uid":"lfsns7RRJTceE9ZqbIQy7IhfKN72"}},"sender_fullname":"Ana Ramos","status":150,"text":"support","timestamp":1586526222674,"type":"text"}
-// TypeError: Cannot read property 'indexOf' of null
-// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at participants.forEach.participant (/app/models/request.js:301:27)
-// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at Array.forEach (<anonymous>)
-// 2020-04-10T13:43:43.450251+00:00 app[web.1]:     at Object.localField (/app/models/request.js:296:25)
+
 RequestSchema.virtual('participatingAgents', {
   ref: 'user', // The model to use
-  // localField: 'participants', // Find people where `localField`
-  // localField: 'participantsAgents',
-  localField: function() {
-    this.participantsAgents = [];
-    // console.log("this",this);
-    // console.log("this.participants",this.participants);
-    // console.log("this._id",this._id);
-    if (this.participants && this.participants.length>0) {
-      this.participants.forEach(participant => {      
-        // console.log("participant",participant);
-        // console.log(" typeof participant", typeof participant);
-        if (!participant) {
-          winston.error("participant is not defined for request with _id: " + this._id + " participant: "+participant);
-        }
-        //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
-          if (participant.indexOf("bot_") === -1) {
-            // console.log("participant added",participant);
-            this.participantsAgents.push(participant);
-            // console.log("this.participantsAgents",this.participantsAgents);
-          }
-      });     
-    }
-    // console.log("participantsAgents",this);
-    return "participantsAgents";
+  localField: 'participantsAgents',
+  // localField: function() {
+  //   this.participantsAgents = [];
+  //   // console.log("this",this);
+  //   // console.log("this.participants",this.participants);
+  //   // console.log("this._id",this._id);
+  //   if (this.participants && this.participants.length>0) {
+  //     this.participants.forEach(participant => {      
+  //       // console.log("participant",participant);
+  //       // console.log(" typeof participant", typeof participant);
+  //       if (!participant) {
+  //         winston.error("participant is not defined for request with _id: " + this._id + " participant: "+participant);
+  //       }
+  //       //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
+  //         if (participant.indexOf("bot_") === -1) {
+  //           // console.log("participant added",participant);
+  //           this.participantsAgents.push(participant);
+  //           // console.log("this.participantsAgents",this.participantsAgents);
+  //         }
+  //     });     
+  //   }
+  //   // console.log("participantsAgents",this);
+  //   return "participantsAgents";
   
-  },
+  // },
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
@@ -365,6 +381,24 @@ RequestSchema.virtual('participatingAgents', {
 
 
 // RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
+
+ // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
+ RequestSchema.virtual('availableAgentsCount').get(function () {
+  var project_users_available = this.agents.filter(function (projectUser) {
+    if (projectUser.user_available == true) {
+      return true;
+    }
+  });
+  winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
+
+  if (project_users_available && project_users_available.length>0){
+    return project_users_available.length;
+  }else {
+    return 0;
+  }
+
+});
+
 RequestSchema.virtual('availableAgents').get(function () {
     var project_users_available = this.agents.filter(function (projectUser) {
       if (projectUser.user_available == true) {
@@ -378,7 +412,7 @@ RequestSchema.virtual('availableAgents').get(function () {
     }else {
       return [];
     }
-  
+
 });
 
 // TODO FIND BOT
@@ -433,18 +467,18 @@ TODO UNCOMMET
 
 RequestSchema.virtual('participatingBots', {
   ref: 'faq_kb', // The model to use
-  // localField: "participantsBots",
-  localField: function() {
-    this.participantsBots = [];
-    if (this.participants && this.participants.length>0) {
-      this.participants.forEach(participant => {      
-        if (participant.indexOf("bot_")> -1) {
-          this.participantsBots.push(participant.replace("bot_",""));
-        }
-      });      
-    }
-    return "participantsBots";
-  },
+  localField: "participantsBots",
+  // localField: function() {
+  //   this.participantsBots = [];
+  //   if (this.participants && this.participants.length>0) {
+  //     this.participants.forEach(participant => {      
+  //       if (participant.indexOf("bot_")> -1) {
+  //         this.participantsBots.push(participant.replace("bot_",""));
+  //       }
+  //     });      
+  //   }
+  //   return "participantsBots";
+  // },
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
@@ -486,17 +520,31 @@ RequestSchema.method("getBotId", function () {
 
 });
 
-
-RequestSchema.index({ createdAt: 1, type: -1 }); // schema level
-RequestSchema.index({ id_project: 1, type: -1 }); // schema level
+// https://docs.mongodb.com/manual/indexes/
+// For a single-field index and sort operations, the sort order (i.e. ascending or descending) of the index key does not matter because MongoDB can traverse the index in either direction.
+RequestSchema.index({ createdAt: -1 }); // schema level
+RequestSchema.index({ updatedAt: -1 }); // schema level
+RequestSchema.index({ id_project: 1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
+RequestSchema.index({ id_project: 1, request_id: 1 }); // query for websocket
 
 // RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
 RequestSchema.index({transcript: 'text', rating_message: 'text'},
  {"name":"request_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
 
+//  let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
+RequestSchema.index({ id_project: 1, participants: 1}); 
 
-RequestSchema.index({ id_project: 1, status: 1, updatedAt: 1 }); // query for websocket
+//  https://docs.mongodb.com/manual/core/index-compound/ The order of the fields listed in a compound index is important. The index will contain references to documents sorted first by the values of the item field and, within each value of the item field, sorted by values of the stock field. See Sort Order for more information
+RequestSchema.index({ id_project: 1, status: 1, updatedAt: -1 }); // query for websocket
+RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); // query for websocket
+RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
+
+// RequestSchema.index({ id_project: 1, status: 1, preflight:1, agents.id_user:1, updatedAt: -1 }); // query for websocket
+// https://docs.mongodb.com/manual/core/index-multikey/#compound-multikey-indexes You cannot create a compound multikey index if more than one to-be-indexed field of a document is an array. For example, consider a collection that contains the following document:
+
+
+// Attention. https://docs.mongodb.com/manual/core/index-compound/ If you have a collection that has both a compound index and an index on its prefix (e.g. { a: 1, b: 1 } and { a: 1 }), if neither index has a sparse or unique constraint, then you can remove the index on the prefix (e.g. { a: 1 }). MongoDB will use the compound index in all of the situations that it would have used the prefix index.
 
  //
 //RequestSchema.index({name: 'transcript_fulltext', 'transcript': 'text'},);

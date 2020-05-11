@@ -75,6 +75,9 @@ Deploy with button:
 
 See the Tiledesk REST API [here](https://developer.tiledesk.com/apis/rest-api/introduction)
 
+# Upgrading 
+To see how to upgrade tiledesk-server see [here](./docs/upgrading.md) 
+
 
 
 

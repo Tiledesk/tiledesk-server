@@ -502,7 +502,8 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000}, $or:[ {preflight:false}, { preflight : { $exists: false } } ]};
+  // var query = { "id_project": req.projectid, "status": {$lt:1000}, $or:[ {preflight:false}, { preflight : { $exists: false } } ]};
+  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
 
   // qui1000
   // var query = { id_project: req.projectid, statusObj: {closed:false, preflight:false} };
@@ -851,7 +852,7 @@ router.get('/:requestid', function (req, res) {
 
   winston.info("get request by id ", req.params.requestid);
 
-  Request.findOne({"request_id":req.params.requestid})
+  Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
   .populate('lead')
   .populate('department')
   .populate('participatingBots')

@@ -64,6 +64,10 @@ describe('RequestRoute', () => {
                 expect(res.body.agents.length).to.equal(1);
                 expect(res.body.participants.length).to.equal(1);
 
+                expect(res.body.participantsAgents.length).to.equal(1);                
+                expect(res.body.participantsBots).to.have.lengthOf(0);
+                expect(res.body.hasBot).to.equal(false);           
+
                 res.body.should.have.property('department').not.eql(null);
                 // res.body.should.have.property('lead').eql(undefined);
                             
@@ -107,9 +111,18 @@ describe('RequestRoute', () => {
                 res.body.should.have.property('department').not.eql(null);
                 // res.body.should.have.property('lead').eql(null);
                 res.body.should.have.property('request_id').eql("request_requestroute-getbyid");                
-                res.body.should.have.property('requester').not.eql(null);        
+                res.body.should.have.property('requester').not.eql(null);    
+                
+                expect(res.body.participantsAgents.length).to.equal(1);                
+                expect(res.body.participantsBots).to.have.lengthOf(0);
+                expect(res.body.hasBot).to.equal(false);
+    
                 expect(res.body.participatingAgents.length).to.equal(1);        
                 expect(res.body.participatingBots.length).to.equal(0);        
+
+                expect(res.body.participatingAgents.length).to.equal(1);                
+                expect(res.body.participatingBots).to.have.lengthOf(0);
+                
                 expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
                done();
             });
@@ -170,8 +183,15 @@ it('getbyidWithPartecipatingBots', function (done) {
               res.body.should.have.property('request_id').eql("request_requestroute-getbyidWithPartecipatingBots");                
               res.body.should.have.property('requester').not.eql(null);                
               expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
+
               expect(res.body.participatingAgents.length).to.equal(0);        
               expect(res.body.participatingBots.length).to.equal(1);
+
+              expect(res.body.participantsAgents.length).to.equal(0);                
+              expect(res.body.participantsBots).to.have.lengthOf(1);
+              expect(res.body.hasBot).to.equal(true);
+
+            
               expect(res.body.department.hasBot).to.equal(true);
 
              done();
@@ -223,6 +243,10 @@ it('getbyidWithPartecipatingBots', function (done) {
                 expect(res.body.requests[0].requester).to.not.equal(null);
                 console.log("res.body.requests[0].requester",  res.body.requests[0].requester);
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
+
+                expect(res.body.requests[0].participantsAgents.length).to.equal(1);                
+                expect(res.body.requests[0].participantsBots).to.have.lengthOf(0);
+                expect(res.body.requests[0].hasBot).to.equal(false);
                 // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
                 // expect(res.body.requests[0].participatingBots.length).to.equal(0);
                done();

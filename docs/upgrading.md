@@ -1,4 +1,8 @@
-# Migrating from 2.0.X to 2.0.6
+# Upgrading
+
+Use this procedure to upgrade from a previous version of Tiledesk server. You must manually execute the following upgrades depending on the starting version:
+
+# Upgrading from 2.0.X to 2.0.6
 
 ## Add requests preflight field
 db.requests.update(
@@ -11,9 +15,6 @@ db.requests.update(
 # Migrating from 2.0.6 to 2.1.X
 
 ## Add requests participantsAgents, participantsBots and hasBot fields
-
-### MongoDB < 4.2
-
 
 db.requests.find( { participants: { $regex: /^bot_/ } } ).forEach(function(doc) {
   doc.participantsBots = [doc.participants[0].replace("bot_","")];
@@ -29,19 +30,3 @@ db.requests.find( { "participants": { "$not": /^bot_/ } }).forEach(function(doc)
   db.requests.save(doc);
 });
 
-
-### MongoDB > 4.2
-
-db.requests.update(
-  { participants: { $regex: /bot_/ } },
-  { $set: {"participantsBots": "$participants", "participantsAgents":[], "hasBot":true } },
-  false,
-  true
-)
-
-db.requests.update(
-  { participants: { $not: /^bot_/ } },
-  { $set: {"participantsAgents": $participants, "participantsBots":[], "hasBot":false } },
-  false,
-  true
-)

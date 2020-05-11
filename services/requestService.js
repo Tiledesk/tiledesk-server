@@ -40,18 +40,35 @@ class RequestService {
           var status = RequestConstants.UNSERVED; //unserved
           var assigned_operator_id;
           var participants = [];
-          
+          var participantsAgents = [];
+          var participantsBots = [];
+          var hasBot = false;
+
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
             status =  RequestConstants.SERVED; //served
-            participants.push(assigned_operator_id.toString());
+            var assigned_operator_idString = assigned_operator_id.toString();
+            participants.push(assigned_operator_idString);
+            if (assigned_operator_idString.startsWith("bot_")) {            
+             hasBot = true;
+             var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
+             participantsBots.push(assigned_operator_idStringBot);
+            }else {
+             participantsAgents.push(assigned_operator_idString);
+             hasBot = false; //??
+            }
             assigned_at = Date.now();            
           }
            winston.debug("routeInternal assigned_operator_id: "+ assigned_operator_id);
            winston.debug("routeInternal status: "+ status);
 
           request.status = status;
-          request.participants = participants;
+
+          request.participants = participants;          
+          request.participantsAgents = participantsAgents;
+          request.participantsBots = participantsBots;
+          request.hasBot = hasBot;
+
           request.department = result.department._id;
           request.agents = result.agents;
           request.assigned_at = assigned_at;
@@ -304,6 +321,9 @@ class RequestService {
            var assigned_at = undefined;          
            var assigned_operator_id;
            var participants = [];
+           var participantsAgents = [];
+           var participantsBots = [];
+           var hasBot = false;
           //  winston.debug("req status0", status);
 
            if (!status) {
@@ -312,7 +332,18 @@ class RequestService {
              if (result.operators && result.operators.length>0) {
                assigned_operator_id = result.operators[0].id_user;
                status =  RequestConstants.SERVED; //served
-               participants.push(assigned_operator_id.toString());
+               var assigned_operator_idString = assigned_operator_id.toString();
+               participants.push(assigned_operator_idString);
+               if (assigned_operator_idString.startsWith("bot_")) {
+                hasBot = true;
+                winston.debug("hasBot:"+hasBot);
+                var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
+                winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
+                participantsBots.push(assigned_operator_idStringBot);
+
+               }else {
+                participantsAgents.push(assigned_operator_idString);
+               }
                assigned_at = Date.now();
              }
            }
@@ -328,8 +359,10 @@ class RequestService {
                 subject: subject,
                 status: status,
                 participants: participants,
-                department: result.department._id,
-            
+                participantsAgents:participantsAgents,
+                participantsBots: participantsBots,
+                hasBot: hasBot,
+                department: result.department._id,            
                 agents: result.agents,
                 //availableAgents: result.available_agents,
 
@@ -414,12 +447,26 @@ class RequestService {
           var status =  RequestConstants.UNSERVED;
           var assigned_operator_id;
           var participants = [];
+          var participantsAgents = [];
+          var participantsBots = [];
+          var hasBot = false;
+
           var assigned_at = undefined;
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
             status =  RequestConstants.SERVED;
+            var assigned_operator_idString = assigned_operator_id.toString();
+            participants.push(assigned_operator_idString);
+            if (assigned_operator_idString.startsWith("bot_")) {
+             hasBot = true;
+             var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
+             winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
+             participantsBots.push(assigned_operator_idStringBot);
+
+            }else {
+             participantsAgents.push(assigned_operator_idString);
+            }
             assigned_at = Date.now();
-            participants.push(assigned_operator_id.toString());
           }
           // winston.debug("assigned_operator_id", assigned_operator_id);
           // winston.debug("status", status);
@@ -430,6 +477,9 @@ class RequestService {
                 first_text: first_text,
                 status: status,
                 participants: participants,
+                participantsAgents:participantsAgents,
+                participantsBots: participantsBots,
+                hasBot:hasBot,
                 department: result.department._id,                           
                 agents: result.agents,
                 //availableAgents: result.available_agents,
@@ -929,6 +979,18 @@ class RequestService {
         if (request.participants.indexOf(member)==-1){
           request.participants.push(member);
 
+          if (member.startsWith("bot_")) {
+            request.hasBot = true;
+
+
+            var assigned_operator_idStringBot = member.replace("bot_","");
+            winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);            
+            request.participantsBots.push(assigned_operator_idStringBot);
+           }else {
+            request.participantsAgents.push(member);
+            request.hasBot = false; //???
+           }
+
 
           if (request.participants.length>0) {          
             request.status =  RequestConstants.SERVED;
@@ -967,9 +1029,9 @@ class RequestService {
   }
 
   removeParticipantByRequestId(request_id, id_project, member) {
-    // winston.debug("request_id", request_id);
-    // winston.debug("id_project", id_project);
-    // winston.debug("member", member);
+    winston.debug("request_id", request_id);
+    winston.debug("id_project", id_project);
+    winston.info("member", member);
 
     return new Promise(function (resolve, reject) {
 
@@ -1008,6 +1070,18 @@ class RequestService {
           request.participants.splice(index, 1);
           // winston.debug(" request.participants",  request.participants);
 
+          if (member.startsWith("bot_")) {
+            request.hasBot = false;
+
+            var assigned_operator_idStringBot = member.replace("bot_","");
+            winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);            
+            
+            var indexParticipantsBots = request.participantsBots.indexOf(assigned_operator_idStringBot);
+            request.participantsBots.splice(indexParticipantsBots, 1);
+           }else {
+            var indexParticipantsAgents = request.participantsAgents.indexOf(member);
+            request.participantsAgents.splice(indexParticipantsAgents, 1);
+           }
 
 
           if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
