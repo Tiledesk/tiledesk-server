@@ -228,14 +228,38 @@ function populateMessageWithRequest(message, eventPrefix) {
       
       var requestJson = request.toJSON();
     
-         
-      messageJson.request = requestJson;
-      winston.debug("Subscription.emit",messageJson );
-      messageEvent.emit(eventPrefix, messageJson );   
-      
-      if (message.text === request.first_text){
-        messageEvent.emit(eventPrefix+'.first', messageJson );
-      }
+      if (request.department && request.department.id_bot) {
+        // if (request.department) {
+        Faq_kb.findById(request.department.id_bot, function(err, bot) {
+          winston.debug('bot', bot);
+          
+
+          requestJson.department.bot = bot
+          
+          messageJson.request = requestJson;
+          // winston.debug('messageJson', messageJson);
+          winston.debug("Subscription.emit",messageJson );
+          messageEvent.emit(eventPrefix,messageJson );
+
+          // if (messages && messages.length==1){
+          if (message.text === request.first_text){
+            messageEvent.emit(eventPrefix+'.first', messageJson );
+          }
+
+        });
+
+        
+      }else {
+        messageJson.request = requestJson;
+        winston.debug("Subscription.emit",messageJson );
+        messageEvent.emit(eventPrefix, messageJson );   
+        
+        // if (messages && messages.length==1){
+        if (message.text === request.first_text){
+          messageEvent.emit(eventPrefix+'.first', messageJson );
+        }
+
+      }   
           
   }
    

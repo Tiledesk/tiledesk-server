@@ -95,16 +95,13 @@ class RequestService {
    var that = this;
 
    return new Promise(function (resolve, reject) {
-     // winston.debug("request_id", request_id);
-     // winston.debug("newstatus", newstatus);
+     winston.debug("request_id:" + request_id);
+     winston.debug("departmentid:" + departmentid);
+     winston.debug("id_project:" + id_project);
+     winston.debug("nobot:"+ nobot);
 
         return Request       
-        .findOne({request_id: request_id, id_project: id_project})
-        .populate('lead')
-        .populate('department')
-        .populate('participatingBots')
-        .populate('participatingAgents')  
-        .populate({path:'requester',populate:{path:'id_user'}})
+        .findOne({request_id: request_id, id_project: id_project})          
         .exec( function(err, request) {
 
           if (err) {
@@ -118,15 +115,25 @@ class RequestService {
           var beforeParticipants = request.participants;
           // console.log("beforeParticipants ", beforeParticipants);
 
-          that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
+          return that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
+            winston.debug("after routeInternal");
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
 
 
             if (requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-              winston.debug("request " +request.request_id +" contains already the same participants. routed to the same participants");
-              return resolve(request);
+              winston.info("Request " +request.request_id +" contains already the same participants. routed to the same participants");
+
+              request
+              .populate('lead') 
+              .populate('department')
+              .populate('participatingBots')
+              .populate('participatingAgents')  
+              .populate({path:'requester',populate:{path:'id_user'}})
+              .execPopulate( function(err, requestComplete) {
+                return resolve(requestComplete);
+              });
             }
 
               //cacheinvalidation
@@ -138,7 +145,16 @@ class RequestService {
                 return reject(err);
               }
               
-          
+              winston.debug("after save");
+
+              return savedRequest
+              .populate('lead')
+              .populate('department')
+              .populate('participatingBots')
+              .populate('participatingAgents')  
+              .populate({path:'requester',populate:{path:'id_user'}})
+              .execPopulate( function(err, requestComplete) {
+
               // return Request       //to populate correctly i must re-exec the query
               // .findById(savedRequest.id)
               // .populate('lead')
@@ -149,41 +165,41 @@ class RequestService {
               // .exec( function(err, requestComplete) {
              
           
-              //     if (err) {
-              //       winston.error('Error populating the request.',err);
-              //       return reject(err);
-              //     }
+              if (err) {
+                winston.error('Error populating the request.',err);
+                return reject(err);
+              }
 
-              //     winston.info("Request routed",requestComplete.toObject());
-                
-                  
+              winston.info("Request routed",requestComplete.toObject());
+            
 
+              var oldParticipants = beforeParticipants;
+              winston.debug("oldParticipants ", oldParticipants);
 
-                  var oldParticipants = beforeParticipants;
-                  winston.debug("oldParticipants ", oldParticipants);
+              let newParticipants = requestComplete.participants;
+              winston.debug("newParticipants ", newParticipants);
 
-                  let newParticipants = savedRequest.participants;
-                  winston.debug("newParticipants ", newParticipants);
+              var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+              winston.debug("removedParticipants ", removedParticipants);
 
-                  var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                  winston.debug("removedParticipants ", removedParticipants);
+              var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+              winston.debug("addedParticipants ", addedParticipants);
 
-                  var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                  winston.debug("addedParticipants ", addedParticipants);
+              
+              requestEvent.emit('request.update',requestComplete);
+              requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
+              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+              requestEvent.emit('request.participants.update', {beforeRequest:request, 
+                removedParticipants:removedParticipants, 
+                addedParticipants:addedParticipants,
+                request:requestComplete});
 
-                  
-                  requestEvent.emit('request.update',savedRequest);
-                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:savedRequest});
-                  // requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
-                  requestEvent.emit('request.participants.update', {beforeRequest:request, 
-                    removedParticipants:removedParticipants, 
-                    addedParticipants:addedParticipants,
-                    request:savedRequest});
+              requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
 
-                  requestEvent.emit('request.department.update',savedRequest); //se req ha bot manda messaggio \welcome
+              winston.debug("here end");
 
-                  return resolve(savedRequest);
-              // });
+              return resolve(requestComplete);
+          });
 
 
               
@@ -199,7 +215,6 @@ class RequestService {
   }
 
 
-  // 2020-01-29T11:47:13.285411+00:00 app[web.1]: error: Error saving the request.No matching document found for id "5e317007a5ad430017a3eea1" version 6 modifiedPaths "participants, department, agents" {"name":"VersionError","version":6,"modifiedPaths":["participants","department","agents"],"stack":"VersionError: No matching document found for id \"5e317007a5ad430017a3eea1\" version 6 modifiedPaths \"participants, department, agents\"\n    at VersionError.MongooseError [as constructor] (/app/node_modules/mongoose/lib/error/mongooseError.js:10:11)\n    at new VersionError (/app/node_modules/mongoose/lib/error/version.js:18:17)\n    at generateVersionError (/app/node_modules/mongoose/lib/model.js:409:10)\n    at model.Model.save (/app/node_modules/mongoose/lib/model.js:463:28)\n    at /app/services/requestService.js:151:35\n    at processTicksAndRejections (internal/process/next_tick.js:81:5)"}
   reroute(request_id, id_project, nobot) {
     var that = this;
  
@@ -208,86 +223,111 @@ class RequestService {
       // winston.debug("newstatus", newstatus);
  
          return Request       
-         .findOne({request_id: request_id, id_project: id_project})
-         .populate('lead')
-         .populate('department')
-         .populate('participatingBots')
-         .populate('participatingAgents')  
-         .populate({path:'requester',populate:{path:'id_user'}})
+         .findOne({request_id: request_id, id_project: id_project})        
          .exec( function(err, request) {
  
            if (err) {
              winston.error(err);
              return reject(err);
            }
-                    
-           var oldParticipants = request.participants;
-
-           that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
- 
-              //cacheinvalidation
-             return routedRequest.save(function(err, savedRequest) {
-               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
-               //return routedRequest.update(function(err, savedRequest) {
-               if (err) {
-                 winston.error('Error saving the request.',err);
-                 return reject(err);
-               }
-           
-              //  return Request       //to populate correctly i must re-exec the query
-              //  .findById(savedRequest.id)
-              //  .populate('lead')
-              //  .populate('department')
-              //  .populate('participatingBots')
-              //  .populate('participatingAgents')  
-              //  .populate({path:'requester',populate:{path:'id_user'}})
-              //  .exec( function(err, requestComplete) {
-                
-              //      if (err) {
-              //        winston.error('Error populating the request.',err);
-              //        return reject(err);
-              //      }
-              //      winston.info("Request routed",requestComplete.toObject());
                  
-                   
-                   
-                   requestEvent.emit('request.update',savedRequest);
-                   requestEvent.emit("request.update.comment", {comment:"REROUTE",request:savedRequest});
-
-
-                   winston.debug("oldParticipants ", oldParticipants);
- 
-                   let newParticipants = savedRequest.participants;
-                   winston.debug("newParticipants ", newParticipants);
- 
-                   var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-                   winston.debug("removedParticipants ", removedParticipants);
- 
-                   var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-                   winston.debug("addedParticipants ", addedParticipants);
-
-
-                  //  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
-                   requestEvent.emit('request.participants.update', {beforeRequest:request, 
-                    removedParticipants:removedParticipants, 
-                    addedParticipants:addedParticipants,
-                    request:savedRequest});
-
-                   requestEvent.emit('request.department.update',savedRequest); //se req ha bot manda messaggio \welcome
- 
-                   return resolve(savedRequest);
-               });
-               
-            //  });
- 
+           winston.info("here reroute1 ");
+           return that.route(request_id, request.department.toString(), id_project, nobot).then(function(routedRequest){
+             return resolve(routedRequest);
            }).catch(function(err) {
-             return reject(err);
+            return reject(err);
            });
- 
              
            });
      });
    }
+
+  // reroute(request_id, id_project, nobot) {
+  //   var that = this;
+ 
+  //   return new Promise(function (resolve, reject) {
+  //     // winston.debug("request_id", request_id);
+  //     // winston.debug("newstatus", newstatus);
+ 
+  //        return Request       
+  //        .findOne({request_id: request_id, id_project: id_project})        
+  //        .exec( function(err, request) {
+ 
+  //          if (err) {
+  //            winston.error(err);
+  //            return reject(err);
+  //          }
+                    
+  //          var oldParticipants = request.participants;
+
+  //          that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
+ 
+  //             //cacheinvalidation
+  //            return routedRequest.save(function(err, savedRequest) {
+  //              // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
+  //              //return routedRequest.update(function(err, savedRequest) {
+  //              if (err) {
+  //                winston.error('Error saving the request.',err);
+  //                return reject(err);
+  //              }
+           
+  //             //  return Request       //to populate correctly i must re-exec the query
+  //             savedRequest
+  //             //  .findById(savedRequest.id)
+  //              .populate('lead')
+  //              .populate('department')
+  //              .populate('participatingBots')
+  //              .populate('participatingAgents')  
+  //              .populate({path:'requester',populate:{path:'id_user'}})
+  //              .execPopulate( function(err, requestComplete) {
+                
+  //                  if (err) {
+  //                    winston.error('Error populating the request.',err);
+  //                    return reject(err);
+  //                  }
+  //                  winston.info("Request routed",requestComplete.toObject());
+                 
+                   
+                   
+  //                  requestEvent.emit('request.update',requestComplete);
+  //                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
+
+
+  //                  winston.debug("oldParticipants ", oldParticipants);
+ 
+  //                  let newParticipants = requestComplete.participants;
+  //                  winston.debug("newParticipants ", newParticipants);
+ 
+  //                  var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+  //                  winston.debug("removedParticipants ", removedParticipants);
+ 
+  //                  var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+  //                  winston.debug("addedParticipants ", addedParticipants);
+
+
+  //                 //  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
+  //                  requestEvent.emit('request.participants.update', {beforeRequest:request, 
+  //                   removedParticipants:removedParticipants, 
+  //                   addedParticipants:addedParticipants,
+  //                   request:requestComplete});
+
+  //                  requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
+ 
+  //                  return resolve(requestComplete);
+  //              });
+               
+  //            });
+ 
+  //          }).catch(function(err) {
+  //            return reject(err);
+  //          });
+ 
+             
+  //          });
+  //    });
+  //  }
+
+
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
@@ -884,15 +924,16 @@ class RequestService {
     // validate if array of string newparticipants
     return new Promise(function (resolve, reject) {
       
+      var isArray = Array.isArray(newparticipants);
+
+      if(isArray==false) {
+        winston.error('setParticipantsByRequestId error  newparticipants is not an array for request_id '+ request_id + ' and id_project '+ id_project);
+        return reject('setParticipantsByRequestId error  newparticipants is not an array for request_id '+ request_id + ' and id_project '+ id_project);
+      }
 
       return Request
        
-      .findOne({request_id: request_id, id_project: id_project})
-      .populate('lead')
-      .populate('department')
-      .populate('participatingBots')
-      .populate('participatingAgents')  
-      .populate({path:'requester',populate:{path:'id_user'}})
+      .findOne({request_id: request_id, id_project: id_project})     
       .exec( function(err, request) {
         if (err) {
           winston.error("Error setParticipantsByRequestId", err);
@@ -943,33 +984,49 @@ class RequestService {
 
           //cacheinvalidation
         request.save(function(err, updatedRequest) {
+          // dopo save non aggiorna participating
           if (err) {
             winston.error("Error setParticipantsByRequestId", err);
             return reject(err);
           }
         
-           requestEvent.emit('request.update', updatedRequest);
-           requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:updatedRequest});
+          updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
 
 
-           winston.info("oldParticipants ", oldParticipants);
+            if (err) {
+              winston.error("Error getting setParticipantsByRequestId", err);
+              return reject(err);
+            }
 
-           let newParticipants = updatedRequest.participants;
-           winston.info("newParticipants ", newParticipants);
+            requestEvent.emit('request.update', requestComplete);
+            requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:requestComplete});
 
-           var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-           winston.info("removedParticipants ", removedParticipants);
 
-           var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-           winston.info("addedParticipants ", addedParticipants);
+            winston.debug("oldParticipants ", oldParticipants);
 
-           requestEvent.emit('request.participants.update', {beforeRequest:request, 
-                      removedParticipants:removedParticipants, 
-                      addedParticipants:addedParticipants,
-                      request:updatedRequest});
+            let newParticipants = requestComplete.participants;
+            winston.debug("newParticipants ", newParticipants);
 
-// TODO allora neanche qui participatingAgent è ok?
-          return resolve(updatedRequest);
+            var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
+            winston.debug("removedParticipants ", removedParticipants);
+
+            var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
+            winston.debug("addedParticipants ", addedParticipants);
+
+            requestEvent.emit('request.participants.update', {beforeRequest:request, 
+                        removedParticipants:removedParticipants, 
+                        addedParticipants:addedParticipants,
+                        request:requestComplete});
+
+  // TODO allora neanche qui participatingAgent è ok?
+            return resolve(requestComplete);
+           });
         });
        
       });
@@ -979,9 +1036,9 @@ class RequestService {
   }
 
   addParticipantByRequestId(request_id, id_project, member) {
-    // winston.debug("request_id", request_id);
-    // winston.debug("id_project", id_project);
-    // winston.debug("member", member);
+    winston.debug("request_id: " + request_id);
+    winston.debug("id_project: " + id_project);
+    winston.debug("addParticipantByRequestId member: " + member);
 
  
 
@@ -996,13 +1053,8 @@ class RequestService {
       }
 
       return Request       
-      .findOne({request_id: request_id, id_project: id_project})      
-      .populate('lead')
-        .populate('department')
-        .populate('participatingBots')
-        .populate('participatingAgents')  
-        .populate({path:'requester',populate:{path:'id_user'}})
-        .exec( function(err, request) {
+      .findOne({request_id: request_id, id_project: id_project})              
+      .exec( function(err, request) {
         if (err){
           winston.error("Error adding participant ", err);
           return reject(err);
@@ -1012,6 +1064,7 @@ class RequestService {
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
 
+        winston.debug("assigned_operator here1");
 
       // return Request.findById(id).then(function (request) {
         if (request.participants.indexOf(member)==-1){
@@ -1042,26 +1095,49 @@ class RequestService {
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error(err);
+              return reject(err);
             }
-            if (!err) {
-              requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_ADD",request:savedRequest});
-              requestEvent.emit('request.participants.join', {member:member, request: savedRequest});
-              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
-            }          
-            
-            // TODO allora neanche qui participatingAgent è ok?            return resolve(savedRequest);
-          });
 
+            winston.debug("saved", savedRequest);
+
+            savedRequest
+            .populate('lead')
+            .populate('department')
+            .populate('participatingBots')
+            .populate('participatingAgents')  
+            .populate({path:'requester',populate:{path:'id_user'}})
+            .execPopulate( function(err, requestComplete) {
+
+              if (err) {
+                winston.error("Error getting addParticipantByRequestId", err);
+                return reject(err);
+              }
+
+
+              winston.debug("populated", requestComplete);
+           
+              requestEvent.emit('request.update', requestComplete);
+              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_ADD",request:requestComplete});
+              requestEvent.emit('request.participants.join', {member:member, request: requestComplete});
+              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
+                       
+              return resolve(requestComplete);
+          });
+        });
           // qui assignetat
         } else {
           winston.debug('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
-          return resolve(request);
+          request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
         }
-
-         
-      
-          
+                       
       });
    });
   }
@@ -1083,12 +1159,7 @@ class RequestService {
 
     
       return Request        
-        .findOne({request_id: request_id, id_project: id_project})
-        .populate('lead')
-        .populate('department')
-        .populate('participatingBots')
-        .populate('participatingAgents')  
-        .populate({path:'requester',populate:{path:'id_user'}})
+        .findOne({request_id: request_id, id_project: id_project})       
         .exec( function(err, request) {
         
         if (err){
@@ -1135,29 +1206,50 @@ class RequestService {
           // winston.debug(" request",  request);
          //cacheinvalidation
           request.save(function(err, savedRequest) {
+            if (err){
+              winston.error("Error saving removed participant ", err);
+              return reject(err);
+            }
+            savedRequest
+            .populate('lead')
+            .populate('department')
+            .populate('participatingBots')
+            .populate('participatingAgents')  
+            .populate({path:'requester',populate:{path:'id_user'}})
+            .execPopulate( function(err, requestComplete) {
 
-            if (!err) {
-              requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_REMOVE",request:savedRequest});
-              requestEvent.emit('request.participants.leave', {member:member, request: savedRequest});
-              // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
+            if (err){
+              winston.error("Error getting removed participant ", err);
+              return reject(err);
             }
 
-          // TODO allora neanche qui participatingAgent è ok?
+            
+            requestEvent.emit('request.update', requestComplete);
+            requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_REMOVE",request:requestComplete});
+            requestEvent.emit('request.participants.leave', {member:member, request: requestComplete});
+            // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
+            
 
-            return resolve(savedRequest);
+            return resolve(requestComplete);
 
           });
+        });
 
 
         }else {
           winston.info('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
-          return resolve(request);
-        }
-        
 
-        
-          
+          request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
+        }
+                          
       });
     });
   }
@@ -1263,11 +1355,12 @@ class RequestService {
           request.save(function(err, savedRequest) {
             if (err) {
               winston.error(err);
+              return reject(err);
             }
-            if (!err) {
-              requestEvent.emit('request.update', savedRequest);      
-              requestEvent.emit("request.update.comment", {comment:"TAG_ADD",request:savedRequest});        
-            }          
+            
+            requestEvent.emit('request.update', savedRequest);      
+            requestEvent.emit("request.update.comment", {comment:"TAG_ADD",request:savedRequest});        
+            
             
             // allora neanche qui participatingAgent è ok?
             return resolve(savedRequest);
