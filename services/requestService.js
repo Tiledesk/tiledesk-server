@@ -905,7 +905,8 @@ class RequestService {
         var oldParticipants = request.participants;
 
         request.participants = newparticipants;
-
+        var newparticipantsAgents = [];
+        var newparticipantsBots = [];
 
 
         if (newparticipants && newparticipants.length>0) {
@@ -915,14 +916,17 @@ class RequestService {
               hasBot = true;                         
               var assigned_operator_idStringBot = newparticipant.replace("bot_","");
               winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
-              request.participantsBots.push(assigned_operator_idStringBot);
+              newparticipantsBots.push(assigned_operator_idStringBot);
     
             }else {
-              request.participantsAgents.push(newparticipant);
+              newparticipantsAgents.push(newparticipant);
             }
           });
           request.hasBot = hasBot;
         }
+
+        request.participantsAgents = newparticipantsAgents;
+        request.participantsBots = newparticipantsBots;
        
        
 
