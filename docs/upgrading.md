@@ -15,7 +15,7 @@ db.requests.update(
 )
 ```
 
-# Migrating from 2.0.6 to 2.1.X
+# Upgrading from 2.0.6 to 2.1.X
 
 ## Add requests participantsAgents, participantsBots and hasBot fields
 
@@ -35,3 +35,5 @@ db.requests.find( { "participants": { "$not": /^bot_/ } }).forEach(function(doc)
 });
 
 ```
+
+
