@@ -399,21 +399,21 @@ RequestSchema.virtual('participatingAgents', {
 
 });
 
-RequestSchema.virtual('availableAgents').get(function () {
-    var project_users_available = this.agents.filter(function (projectUser) {
-      if (projectUser.user_available == true) {
-        return true;
-      }
-    });
-    winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
+// RequestSchema.virtual('availableAgents').get(function () {
+//     var project_users_available = this.agents.filter(function (projectUser) {
+//       if (projectUser.user_available == true) {
+//         return true;
+//       }
+//     });
+//     winston.debug('++ AVAILABLE PROJECT USERS ', project_users_available)
 
-    if (project_users_available && project_users_available.length>0){
-      return project_users_available;
-    }else {
-      return [];
-    }
+//     if (project_users_available && project_users_available.length>0){
+//       return project_users_available;
+//     }else {
+//       return [];
+//     }
 
-});
+// });
 
 // TODO FIND BOT
 // RequestSchema.methods.findParticipantsObj = function(cb) {
