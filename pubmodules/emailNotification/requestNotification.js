@@ -47,10 +47,11 @@ listen() {
       setImmediate(() => {
         var id_project = request.id_project;
         var request_id  = request.request_id;
-        //send auto transcript
+ 
         try {                
-          Project.findOne({_id: id_project, status: 100}, function(err, project){                        
-            if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester) {
+          Project.findOne({_id: id_project, status: 100}, function(err, project){   
+                                 
+            if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester && (project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
 
               //send email to admin
               Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]} } ).populate('id_user')
