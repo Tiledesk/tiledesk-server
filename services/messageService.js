@@ -37,7 +37,7 @@ class MessageService {
              type:type, metadata:metadata,language:language};
 
           var messageToCreate = beforeMessage;
-
+          winston.debug('messageToCreate',messageToCreate);
         //   messageEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage});
 
        

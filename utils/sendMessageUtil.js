@@ -8,9 +8,11 @@ var User = require('../models/user');
 
 class SendMessageUtil {
 
-async send(sender, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
-      try {
-        var senderFullname = "";
+async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
+    // async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
+    console.log("here0") 
+    //   try {
+        // var senderFullname = "";
 
 
         if (sender === "system") {
@@ -29,10 +31,12 @@ async send(sender, recipient, text, id_project, createdBy, attributes, type, met
             senderFullname = user.fullName;
         }
         winston.info("senderFullname: "+senderFullname);
-        return messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
-      }catch(e) {
-          console.log(e)
-      }
+        // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
+        return messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes);
+        // return messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
+    //   }catch(e) {
+    //       console.log(e)
+    //   }
    }
 
 
