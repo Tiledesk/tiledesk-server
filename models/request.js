@@ -11,14 +11,11 @@ var RequestStatus = require("../models/requestStatus");
 
 var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
-// var Requester = require('../models/requester');
-// var MessageSchema = require("../models/message").schema;
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
 
 
-// var diffHistory = require('mongoose-diff-history/diffHistory');
 
 
 var RequestSchema = new Schema({
@@ -35,34 +32,6 @@ var RequestSchema = new Schema({
     required: false, //ENABLEIT,
     index: true
   },
-
-  // requester: {
-  //   type: Schema.Types.ObjectId,
-  //   // required: true,
-  //   required: false,
-  //   // Instead of a hardcoded model name in `ref`, `refPath` means Mongoose
-  //   // will look at the `onModel` property to find the right model.
-  //   refPath: 'requesterModel'
-  // },
-  // requesterModel: {
-  //   type: String,
-  //   // required: true,
-  //   required: false,
-
-  //   default: 'lead',
-  //   enum: ['user', 'lead']
-  // },
-
-
-
-  // requester: {
-  //   type: Requester.schema,
-  //   required: true,
-  //   // default: function() {
-  //   //   return new Requester({name: 'chat21'});
-  //   // }
-  // },
-
 
 
   // ==== REQUESTER_ID====
@@ -107,14 +76,6 @@ var RequestSchema = new Schema({
     index: true
   }, 
 
-  // statusObj: {
-  //   type: RequestStatus,
-  //   required: true,
-  //   default: function () {
-  //     return new RequestStatus();
-  //   },
-  //   index: true
-  // }, 
 
   preflight: {
     type: Boolean,
@@ -139,25 +100,6 @@ var RequestSchema = new Schema({
     type: Array,
     required: false,
     index: true,
-    // set: function(v) {
-    //   console.log("sdsadsadsadsadsadasda", v)
-    //   // console.log("sdsadsadsadsadsadasda2", this)
-    //   this.participantsAgents = [];
-    //   this.participantsBots = [];
-    //   if (v) {
-    //     v.forEach(participant =>  { 
-    //       console.log("sdsadsadsadsadsadasda participant ", participant)     
-    //       if (participant.indexOf("bot_")== -1) {
-    //         this.participantsAgents.push(participant);
-    //         console.log("sdsadsadsadsadsadasda participant2 ", participant) 
-    //       }else {
-    //         this.participantsBots.push(participant);
-    //       }
-    //     });  
-    //   }
-    //   console.log("sdsadsadsadsadsadasda return ", v)
-    //   return v;
-    // }
   },
 
   participantsAgents: {  
@@ -176,11 +118,6 @@ var RequestSchema = new Schema({
     index: true
     // required: true
   },
-
-
-
-  // first_message: MessageSchema,
-  // messages : [{ type: Schema.Types.ObjectId, ref: 'message' }],
 
   transcript: {
     type: String
@@ -220,11 +157,6 @@ var RequestSchema = new Schema({
 
   tags: [TagSchema],
 
-  // tags: {
-  //   type: Array,
-  //   required: false,
-  //   index: true
-  // },
   notes: [NoteSchema],
 
   rating: {
@@ -238,22 +170,10 @@ var RequestSchema = new Schema({
 
 
   // all the agents of the project or the department at the request creation time 
-  // renameit
+  // TODO renameit
   agents: [ProjectUserSchema],
   // TODO select false???  ma serve alla dashboard
 
-
-  // all the available agents of the project or the department at the request time
-  // available_agents: [ProjectUserSchema],
-
-  // assigned_operator_id: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'user'
-  //   // required: true
-  // },
-
-
-  // others
   sourcePage: {
     type: String,
     required: false
@@ -300,16 +220,6 @@ var RequestSchema = new Schema({
 
 );
 
-// // https://mongoosejs.com/docs/api.html#query_Query-populate
-// RequestSchema.virtual('lead', {
-//   ref: 'lead', // The model to use
-//   localField: 'requester_id', // Find people where `localField`
-//   foreignField: '_id', // is equal to `foreignField`
-//   justOne: true,
-//   // options: { getters: true }
-//   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
-// });
-
 
 // Backcompatibility
 RequestSchema.virtual('requester_id').get(function () {
@@ -324,30 +234,6 @@ RequestSchema.virtual('requester_id').get(function () {
 RequestSchema.virtual('participatingAgents', {
   ref: 'user', // The model to use
   localField: 'participantsAgents',
-  // localField: function() {
-  //   this.participantsAgents = [];
-  //   // console.log("this",this);
-  //   // console.log("this.participants",this.participants);
-  //   // console.log("this._id",this._id);
-  //   if (this.participants && this.participants.length>0) {
-  //     this.participants.forEach(participant => {      
-  //       // console.log("participant",participant);
-  //       // console.log(" typeof participant", typeof participant);
-  //       if (!participant) {
-  //         winston.error("participant is not defined for request with _id: " + this._id + " participant: "+participant);
-  //       }
-  //       //if (participant && participant.indexOf != undefined && participant.indexOf("bot_")== -1) {
-  //         if (participant.indexOf("bot_") === -1) {
-  //           // console.log("participant added",participant);
-  //           this.participantsAgents.push(participant);
-  //           // console.log("this.participantsAgents",this.participantsAgents);
-  //         }
-  //     });     
-  //   }
-  //   // console.log("participantsAgents",this);
-  //   return "participantsAgents";
-  
-  // },
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
@@ -370,17 +256,6 @@ RequestSchema.virtual('participatingAgents', {
 // });
 
 
-// TODO not used
-// RequestSchema.virtual('assignedOperatorId').get(function () {
-//   if (this.participants && this.participants.lenght>0) {
-//     return this.participants[0];
-//   }else {
-//     return null;
-//   }
-// });
-
-
-// RequestSchema.statics.filterAvailableOperators = function filterAvailableOperators(project_users) {
 
  // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
  RequestSchema.virtual('availableAgentsCount').get(function () {
@@ -425,16 +300,6 @@ RequestSchema.virtual('participatingAgents', {
 // };
 
 
-/*
-TODO UNCOMMET
-// RequestSchema.virtual('participatingBots').get(function () {
-//   return mongoose.model('faq_kb').find({_id: { $in : this.getBotId() } });
-// });
-
-
-
-*/
-
 // RequestSchema.virtual('botid').get(function () {
   
 //   if ( this.participants == null) {
@@ -467,28 +332,12 @@ TODO UNCOMMET
 
 RequestSchema.virtual('participatingBots', {
   ref: 'faq_kb', // The model to use
-  localField: "participantsBots",
-  // localField: function() {
-  //   this.participantsBots = [];
-  //   if (this.participants && this.participants.length>0) {
-  //     this.participants.forEach(participant => {      
-  //       if (participant.indexOf("bot_")> -1) {
-  //         this.participantsBots.push(participant.replace("bot_",""));
-  //       }
-  //     });      
-  //   }
-  //   return "participantsBots";
-  // },
+  localField: "participantsBots",  
   foreignField: '_id', // is equal to `foreignField`
   justOne: false,
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
-/*
-// RequestSchema.methods.getBot = function(cb) {
-//   return mongoose.model('faq_kb').find({_id: { $in : this.getBotId() } });
-// };
-*/
 
 RequestSchema.method("getBotId", function () {
       
@@ -539,7 +388,7 @@ RequestSchema.index({ id_project: 1, participants: 1});
 RequestSchema.index({ id_project: 1, status: 1, updatedAt: -1 }); // query for websocket
 RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); // query for websocket
 
-// cannot index parallel arrays [agents] [participants] {"driv
+//   cannot index parallel arrays [agents] [participants] {"driv
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
 
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, agents.id_user:1, updatedAt: -1 }); // query for websocket
@@ -548,10 +397,6 @@ RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); /
 
 // Attention. https://docs.mongodb.com/manual/core/index-compound/ If you have a collection that has both a compound index and an index on its prefix (e.g. { a: 1, b: 1 } and { a: 1 }), if neither index has a sparse or unique constraint, then you can remove the index on the prefix (e.g. { a: 1 }). MongoDB will use the compound index in all of the situations that it would have used the prefix index.
 
- //
-//RequestSchema.index({name: 'transcript_fulltext', 'transcript': 'text'},);
-
-// RequestSchema.plugin(diffHistory.plugin);
 
 var request =  mongoose.model('request', RequestSchema);
 if (process.env.MONGOOSE_SYNCINDEX) {
