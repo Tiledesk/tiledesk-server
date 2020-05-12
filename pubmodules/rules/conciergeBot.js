@@ -32,20 +32,26 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
             winston.debug(" ConciergeBot message create", message);
             //var botId = BotFromParticipant.getBotFromParticipants(message.request.participants);
 
-            if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
-                // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
-                // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
-            
-                winston.info("message send from lead with preflight on");
-                // changeFirstTextByRequestId(request_id, id_project, first_text) {
-                     requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
-                        requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
-                            // reroute(request_id, id_project, nobot)
-                            requestService.reroute(message.request.request_id, message.request.id_project, false );
-                        });
-                     });
+            setImmediate(() => {
+
+                if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                    // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                    // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
-            }       
+                    winston.info("message send from lead with preflight on");
+                    // changeFirstTextByRequestId(request_id, id_project, first_text) {
+                        // TODO arrivano due request.update su ws 
+                        requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
+                            requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
+                                // reroute(request_id, id_project, nobot)
+                                requestService.reroute(message.request.request_id, message.request.id_project, false );
+
+                                // TODO a aggiurna il lead della con i dati del messaggi mandato dall'utente
+                            });
+                        });
+                    
+                }
+            });       
 
         });
         
@@ -75,7 +81,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             requestEvent.on('request.create',  function(request) {   
                 setImmediate(() => {                  
-                    that.welcomeOnJoin(request);
+                    // that.welcomeOnJoin(request);
                     // that.welcomeAgentOnJoin(request);
                 });
             });
@@ -120,8 +126,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                       
                         winston.info("ConciergeBot send close bot message");     
                                             
-                        // return chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", "Chat closed", app_id, {subtype:"info/support","updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"} });
-
+                        // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) 
                             messageService.send(
                                 'system', 
                                 'Bot',                                     
@@ -129,7 +134,9 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 "Chat closed", 
                                 request.id_project,
                                 'system', 
-                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}}
+                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}},
+                                undefined,
+                                request.language
                             );
 
                            
@@ -158,7 +165,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 "Chat reopened", 
                                 request.id_project,
                                 'system', 
-                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_REOPENED"}}
+                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_REOPENED"}},
+                                undefined,
+                                request.language
+
                             );
 
                             
@@ -200,7 +210,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             request.id_project,
                             'system', 
                             //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                            {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+                            {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}},
+                            undefined,
+                            request.language
+                           
+
                         );
                     
                         
@@ -213,8 +227,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
                             request.id_project,
                             'system', 
-                            {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                            {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}},
                             // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+                            undefined,
+                            request.language
+
                         );
         
                        
@@ -254,8 +271,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
                             request.id_project,
                             'system',                             
-                            {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor,messagelabel: {key: "TOUCHING_OPERATOR"}}
-                            // updateconversation only for id utente per risolvere 
+                            {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor,messagelabel: {key: "TOUCHING_OPERATOR"}},
+                            undefined,
+                            request.language
+
                         );
                     
                                            
