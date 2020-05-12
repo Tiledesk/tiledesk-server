@@ -210,7 +210,7 @@ class Chat21Handler {
             setImmediate(() => {
                 winston.debug("Chat21Handler on lead.update ",  lead);
 
-                Request.find({lead: lead._id}, function(err, requests) {
+                Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
                     if (err) {
                         winston.error("Error getting request by lead", err);
