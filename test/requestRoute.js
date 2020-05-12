@@ -124,6 +124,7 @@ describe('RequestRoute', () => {
                 expect(res.body.participatingBots).to.have.lengthOf(0);
                 
                 expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
+                expect(res.body.requester.isAuthenticated).to.equal(true);
                done();
             });
             // .catch(function(err) {

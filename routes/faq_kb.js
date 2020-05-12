@@ -10,12 +10,6 @@ var winston = require('../config/winston');
 router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, type, description) {
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description).then(function(savedFaq_kb) {
-    if (savedFaq_kb.type==="internal") {      
-
-      // faqService.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
-    } else {
-      winston.debug('external bot: ', savedFaq_kb);
-    } 
     res.json(savedFaq_kb);
   });
 

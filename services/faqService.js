@@ -33,7 +33,13 @@ class FaqService {
       
           botEvent.emit('faqbot.create', savedFaq_kb);
           
-          that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
+          if (type==="internal") {      
+            that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project);
+          } else {
+            winston.debug('external bot: ', savedFaq_kb);
+          } 
+
+          
 
           return resolve(savedFaq_kb);
         });  
