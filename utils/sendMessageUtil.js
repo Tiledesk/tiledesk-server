@@ -10,7 +10,7 @@ class SendMessageUtil {
 
 async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
     // async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
-    console.log("here0") 
+        winston.debug("here0") 
     //   try {
         // var senderFullname = "";
 
@@ -19,15 +19,15 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             
         } else if (sender.startsWith("bot_")) {      
             var id = sender.replace("bot_","");
-            winston.info("bot: "+id);
-             var bot = await Faq_kb.findById(id).exec(); 
-             console.log(bot)                                       
-             senderFullname = bot.name;
+            winston.info("bot id: "+id);
+            var bot = await Faq_kb.findById(id).exec(); 
+            winston.info("bot",bot);                                       
+            senderFullname = bot.name;
            
         } else {
-            winston.info("user");
+            winston.info("user id: "+sender);
             var user = await User.findById(sender).exec()   
-            console.log(user)        
+            winston.info("user", user);        
             senderFullname = user.fullName;
         }
         winston.info("senderFullname: "+senderFullname);
