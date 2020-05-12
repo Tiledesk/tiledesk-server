@@ -17,6 +17,8 @@ mocha ./test/authenticationJwt.js    --grep 'AuthenticationJWT.signinJWt-Project
 
 mocha ./test/requestRoute.js    --grep 'RequestRoute.getbyidWithPartecipatingBots'
 
+mocha ./test/requestRoute.js    --grep 'RequestRoute.create'
+
 mocha trigger.js   --grep 'Trigger.EventEmitCreateRequest'
 
 
@@ -29,3 +31,7 @@ mocha authentication.js   --grep 'signInAnonymously.signInAnonymouslyReLogin'
 
 
 
+ mocha subscriptionRequest.js   --grep 'Subscription.request.update-removeparticipant:'
+
+
+ mocha requestService.js   --grep 'RequestService.addparticipant'
