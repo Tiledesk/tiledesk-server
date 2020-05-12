@@ -1,8 +1,11 @@
 # 2.1.0-beta2
-- request indexes improvement
+- added field participantsAgents, participantsBot and hasBot fields. Migration file updated
+- request, department, project, project_users, subscription indexes added
 - conciergeBot multilanguage improvement
-
-
+- trigger module updated
+- resthook module updated with minor fixes
+- added fanout pub sub to queue module and added support for *.queue.pubsub events
+- WS_HISTORY_REQUESTS_LIMIT env variable added
 
 # 2.1.0-beta1 
 - project rest api order fix by updatedAt
