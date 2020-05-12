@@ -538,7 +538,9 @@ RequestSchema.index({ id_project: 1, participants: 1});
 //  https://docs.mongodb.com/manual/core/index-compound/ The order of the fields listed in a compound index is important. The index will contain references to documents sorted first by the values of the item field and, within each value of the item field, sorted by values of the stock field. See Sort Order for more information
 RequestSchema.index({ id_project: 1, status: 1, updatedAt: -1 }); // query for websocket
 RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); // query for websocket
-RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
+
+// cannot index parallel arrays [agents] [participants] {"driv
+// RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
 
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, agents.id_user:1, updatedAt: -1 }); // query for websocket
 // https://docs.mongodb.com/manual/core/index-multikey/#compound-multikey-indexes You cannot create a compound multikey index if more than one to-be-indexed field of a document is an array. For example, consider a collection that contains the following document:
