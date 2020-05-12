@@ -11,7 +11,7 @@ class SendMessageUtil {
 async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
     // async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         winston.debug("here0") 
-    //   try {
+      try {
         // var senderFullname = "";
 
 
@@ -31,12 +31,14 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             senderFullname = user.fullName;
         }
         winston.info("senderFullname: "+senderFullname);
+          }catch(e) {
+            winston.error("errro getting fullname for SendMessageUtil", e);
+          }
+
         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         return messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes);
         // return messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
-    //   }catch(e) {
-    //       console.log(e)
-    //   }
+    
    }
 
 
