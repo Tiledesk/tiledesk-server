@@ -21,6 +21,11 @@ var ProjectUserUtil = require("../utils/project_userUtil");
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
 
+var websocketServerPath = process.env.WS_SERVER_PATH || '/';
+winston.debug('websocketServerPath:'+ websocketServerPath);
+
+
+
 class WebSocketServer {
 
   constructor() {
@@ -32,6 +37,8 @@ class WebSocketServer {
   // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
   init(server) {
     
+    winston.info('Starting websocket on path: '+ websocketServerPath);
+
     //var wss = new WebSocket.Server({ port: 40510 });
     //var wss = new WebSocket.Server({ port: 40510 , path: "/messages" });
     //var wss = new WebSocket.Server({  port: 80 ,path: "/messages" });
@@ -39,7 +46,7 @@ class WebSocketServer {
 
      var wss = new WebSocket.Server({  
        server: server, 
-       path: "/",
+       path: websocketServerPath,
         verifyClient: function (info, cb) {
           //console.log('info.req', info.req);
           // var token = info.req.headers.Authorization
@@ -252,8 +259,12 @@ class WebSocketServer {
                   winston.debug('projectuser', projectuser.toObject()); 
   
                   // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
+                  // pubblica dopo toni
+                  //var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, preflight:false};
+                  // add hasBot:false
                   
                   var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
+
                    //  qui1000
                   // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
 
