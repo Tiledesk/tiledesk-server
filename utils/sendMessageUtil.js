@@ -20,10 +20,10 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
         } else if (sender.startsWith("bot_")) {      
             var id = sender.replace("bot_","");
             winston.info("bot id: "+id);
-            var bot = await Faq_kb.findById(id).exec(); 
-            winston.info("bot",bot);                                       
-            senderFullname = bot.name;
-           
+            sender = id; //change sender removing bot_
+            var bot = await Faq_kb.findById(id).exec();
+            winston.info("bot",bot);                 
+            senderFullname = bot.name;           
         } else {
             winston.info("user id: "+sender);
             var user = await User.findById(sender).exec()   
