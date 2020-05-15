@@ -31,6 +31,9 @@ router.post('/',
 ],
 function (req, res) {
 
+  var startTimestamp = new Date();
+  winston.info("request create timestamp: " + startTimestamp);
+
   winston.debug("req.body", req.body);
 
   winston.debug("req.projectid: " + req.projectid);
@@ -77,6 +80,8 @@ function (req, res) {
                 // let message = savedMessage.toJSON();
                 // message.request = savedRequestWithIncrement;
                 winston.debug('res.json(savedRequestWithIncrement)'); 
+                var endTimestamp = new Date();
+                winston.info("request create end: " + (endTimestamp - startTimestamp));
                 return res.json(savedRequestWithIncrement);
               });
             });
