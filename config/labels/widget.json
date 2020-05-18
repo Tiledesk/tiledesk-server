@@ -63,7 +63,7 @@
         "LABEL_START_NW_CONV": "Nuova conversazione",
         "LABEL_FIRST_MSG": "Descrivi sinteticamente il tuo problema, ti metteremo in contatto con un operatore specializzato.",
         "LABEL_FIRST_MSG_NO_AGENTS": "🤔 Tutti gli operatori sono offline al momento.Puoi comunque descrivere il tuo problema. Sarà assegnato al team di supporto che ti risponderà appena possibile.",
-        "LABEL_FIRST_MSG_OPERATING_HOURS_CLOSED": "🤔 I nostri uffici sono chiusi.Puoi comunque descrivere il tuo problema. Sarà assegnato al team di supporto che ti risponderà appena possibile.",
+        "LABEL_FIRST_MSG_OPERATING_HOURS_CLOSED": "🤔 I nostri uffici sono chiusi. Puoi comunque descrivere il tuo problema. Sarà assegnato al team di supporto che ti risponderà appena possibile.",
         "LABEL_SELECT_TOPIC": "Seleziona un argomento",
         "LABEL_COMPLETE_FORM": "Completa il form per iniziare una conversazione con il prossimo agente disponibile.",
         "LABEL_FIELD_NAME": "Nome",
