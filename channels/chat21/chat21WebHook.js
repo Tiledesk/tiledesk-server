@@ -138,12 +138,15 @@ router.post('/', function(req, res) {
 
                       // message.sender is the project_user id created with firebase custom auth
 
+                      var project_user = message.sender;
+                      winston.info("project_user id: "+ project_user);
+
 
                       // return Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}, function (err, projectuser) {
 
                       // });
                     // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                      return requestService.createWithIdAndRequester(message.recipient, null, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
+                      return requestService.createWithIdAndRequester(message.recipient, project_user, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
                  
 
                         var messageId = undefined;
