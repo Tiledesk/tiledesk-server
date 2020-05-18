@@ -158,7 +158,6 @@ router.post('/', function (req, res) {
 
                       if (err) {
                         winston.error("Error getting the project_user_id", err);
-                        return res.status(500).send({success: false, msg: 'Error getting the project_user_id', err:err});
                       }
 
                       if (project_user) {
