@@ -141,6 +141,7 @@ router.post('/', function (req, res) {
                       var isObjectId = mongoose.Types.ObjectId.isValid('53cb6b9b4f4ddef1ad47f943');
                       winston.info("isObjectId", isObjectId);
 
+                      var queryProjectUser = {id_project:projectid};
                       // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
                       if (isObjectId) {
                         queryProjectUser.id_user = message.sender;
