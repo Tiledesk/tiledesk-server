@@ -138,9 +138,21 @@ router.post('/', function (req, res) {
 
                       // message.sender is the project_user id created with firebase custom auth
 
-                 
+                      var isObjectId = mongoose.Types.ObjectId.isValid('53cb6b9b4f4ddef1ad47f943');
+                      winston.info("isObjectId", isObjectId);
 
-                    return Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}, function (err, project_user) {
+                      // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+                      if (isObjectId) {
+                        queryProjectUser.id_user = message.sender;
+                      }else {
+                        queryProjectUser.uuid_user = message.sender;
+                      }
+                      winston.info("queryProjectUser", queryProjectUser);
+                      
+
+                   
+                    return Project_user.findOne(queryProjectUser, function (err, project_user) {
+
                       var project_user_id = null; 
 
                       if (err) {
