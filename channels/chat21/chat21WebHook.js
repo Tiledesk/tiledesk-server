@@ -20,7 +20,7 @@ var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
 
 
-router.post('/', async (req, res) => {
+router.post('/', function (req, res) {
 
 
    
@@ -138,21 +138,21 @@ router.post('/', async (req, res) => {
 
                       // message.sender is the project_user id created with firebase custom auth
 
-                    var project_user_id = null;
-                    try {
-                      winston.info("project_user message.sender: "+ message.sender);
-                      var project_userObj = await Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}).exec();
-                      winston.info("project_userObj found: ", project_userObj);
-                      if (project_userObj) {
-                        project_user_id = project_userObj.id;
-                        winston.info("project_user_id found: "+ project_user_id);
-                      }                      
-                    } catch(e) {
-                      winston.error("Error getting project_user", e);
-                    }
+                 
 
+                    return Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}, function (err, project_user) {
+                      var project_user_id = null; 
 
-                      // return Project_user.findOne({id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]}, function (err, projectuser) {
+                      if (err) {
+                        winston.error("Error getting the project_user_id", err);
+                        return res.status(500).send({success: false, msg: 'Error getting the project_user_id', err:err});
+                      }
+
+                      if (project_user) {
+                        winston.info("project_user", project_user);
+                        project_user_id = project_user.id;
+                        winston.info("project_user_id: " + project_user_id);
+                      }
 
                       // });
                     // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
