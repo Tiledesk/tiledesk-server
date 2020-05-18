@@ -170,7 +170,7 @@ function (req, res) {
 
   var id_project = req.body.id_project;
 
-  winston.debug("11111 req.user._id: " +req.user._id + " " + id_project);
+  winston.debug("req.user._id: " +req.user._id + " " + id_project);
 
 
   // evitare inserimenti multipli
@@ -180,7 +180,7 @@ function (req, res) {
     winston.error(err);
     return res.json({ success: true, token: req.headers["authorization"], user: req.user });
   }
-  winston.debug("11111 project_users ", project_users);
+  winston.debug("project_users ", project_users);
 
   if (!project_users) {
 

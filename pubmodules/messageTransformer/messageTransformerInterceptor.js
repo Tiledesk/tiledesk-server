@@ -29,7 +29,7 @@ class MessageTransformerInterceptor {
             var m = message.text.match(re);
             if (m != null) {
                 var messageExtracted = m[0].replace(re, '$1');
-                winston.info('messageExtracted: '+messageExtracted);
+                winston.debug('messageExtracted: '+messageExtracted);
 
                 var language = "EN";
 
@@ -59,7 +59,7 @@ class MessageTransformerInterceptor {
                 //     language  = message.attributes.language.toUpperCase();
                 // }
 
-                winston.info('language: '+language);
+                winston.debug('language: '+language);
 
             // if (message.text.indexOf("${")>-1) {
             

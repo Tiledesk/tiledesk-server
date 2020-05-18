@@ -19,18 +19,18 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             
         } else if (sender.startsWith("bot_")) {      
             var id = sender.replace("bot_","");
-            winston.info("bot id: "+id);
+            winston.debug("bot id: "+id);
             sender = id; //change sender removing bot_
             var bot = await Faq_kb.findById(id).exec();
-            winston.info("bot",bot);                 
+            winston.debug("bot",bot);                 
             senderFullname = bot.name;           
         } else {
-            winston.info("user id: "+sender);
+            winston.debug("user id: "+sender);
             var user = await User.findById(sender).exec()   
-            winston.info("user", user);        
+            winston.debug("user", user);        
             senderFullname = user.fullName;
         }
-        winston.info("senderFullname: "+senderFullname);
+        winston.debug("senderFullname: "+senderFullname);
           }catch(e) {
             winston.error("errro getting fullname for SendMessageUtil", e);
           }

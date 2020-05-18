@@ -231,7 +231,7 @@ class RequestService {
              return reject(err);
            }
                  
-           winston.info("here reroute1 ");
+           winston.debug("here reroute1 ");
            return that.route(request_id, request.department.toString(), id_project, nobot).then(function(routedRequest){
              return resolve(routedRequest);
            }).catch(function(err) {
