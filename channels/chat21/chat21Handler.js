@@ -120,7 +120,7 @@ class Chat21Handler {
 
                 // create: function(firstname, lastname, email, current_user){
                 chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {
-                    winston.info("Chat21 contact created: " + data);      
+                    winston.info("Chat21 contact created: " + JSON.stringify(data));      
                     chat21Event.emit('contact.create', data);                                          
                 }).catch(function(err) {
                     winston.error("Error creating chat21 contact ", err);
@@ -166,8 +166,8 @@ class Chat21Handler {
                 chat21.auth.setAdminToken(adminToken);
 
                 // create: function(firstname, lastname, email, current_user){
-                chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {
-                    winston.info("Chat21 contact created: " + data);      
+                chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {                    
+                    winston.info("Chat21 contact created: " + JSON.stringify(data));         
                     chat21Event.emit('contact.create', data);                                          
                 }).catch(function(err) {
                     winston.error("Error creating chat21 contact ", err);
@@ -460,7 +460,7 @@ class Chat21Handler {
                         if (request.lead) {
                             gAttributes['userFullname'] = request.lead.fullname; //used by ionic to open request detail 
                             gAttributes['userEmail'] = request.lead.email; //used by ionic to open request detail 
-                            // TOOD is it necessary?
+                            // TOOD is it necessary? 
                             gAttributes['senderAuthInfo'] = {authType: "USER", authVar: {uid:request.lead.lead_id}}; //used by ionic otherwise ionic dont show userFullname in the participants panel
                         }
                         // TODO ionic dont show attributes panel if attributes.client is empty. bug?
