@@ -85,7 +85,7 @@ class LeadService {
     update.email = email;
 
     
-      Lead.findByIdAndUpdate(lead_id, update, { new: true, upsert: true }, function (err, updatedLead) {
+      Lead.findOneAndUpdate({lead_id:lead_id}, update, { new: true, upsert: true }, function (err, updatedLead) {
         if (err) {
           winston.error('Error updating lead ', err);
           return reject(err);
