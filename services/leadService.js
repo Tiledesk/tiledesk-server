@@ -71,7 +71,33 @@ class LeadService {
     });
   }
 
-  
+  updateWitId(lead_id, fullname, email, id_project) {
+    winston.debug("lead_id: "+ lead_id);
+    winston.debug("fullname: "+ fullname);
+    winston.debug("email: "+ email);
+    winston.debug("id_project: "+ id_project);
+
+    return new Promise(function (resolve, reject) {
+
+    var update = {};
+
+    update.fullname = fullname;
+    update.email = email;
+
+    
+      Lead.findByIdAndUpdate(lead_id, update, { new: true, upsert: true }, function (err, updatedLead) {
+        if (err) {
+          winston.error('Error updating lead ', err);
+          return reject(err);
+        }
+
+      
+        leadEvent.emit('lead.update', updatedLead);
+        return resolve(updatedLead);
+      });
+    });
+  }
+
   createWitId(lead_id, fullname, email, id_project, createdBy, attributes) {
 
     if (!createdBy) {
