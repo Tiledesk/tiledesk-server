@@ -41,7 +41,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 
                     winston.debug("message send from lead with preflight on");
                     // changeFirstTextByRequestId(request_id, id_project, first_text) {
-                        // TODO  arrivano due request.update su ws 
+                        // TODO arrivano due request.update su ws 
 
 
                         requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
@@ -62,7 +62,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             var userEmail = message.attributes.userEmail;
                             winston.info("concierge userEmail", userEmail);
 
-                            leadService.updateWitId(message.sender, userFullname, userEmail, id_project).then(function (updatedLead) {
+                            leadService.updateWitId(message.sender, userFullname, userEmail, message.request.id_project).then(function (updatedLead) {
                                 winston.info("concierge updated lead", updatedLead);                            
                             });
                         
