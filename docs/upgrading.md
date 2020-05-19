@@ -35,5 +35,3 @@ db.requests.find( { "participants": { "$not": /^bot_/ } }).forEach(function(doc)
 });
 
 ```
-
-

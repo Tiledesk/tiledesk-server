@@ -23,9 +23,10 @@ router.patch('/:requestid/rating', function (req, res) {
   
   winston.info("Request user patch update",update);
 
-  var query = {"request_id":req.params.requestid};
-  // var query = {"request_id":req.params.requestid, "requester": req.projectuser.id};
+  // var query = {"request_id":req.params.requestid};
+  var query = {"request_id":req.params.requestid, "requester": req.projectuser.id};
 
+    //cacheinvalidation
   return Request.findOneAndUpdate(query, { $set: update }, { new: true, upsert: false })
   .populate('lead')
   .populate('department')
