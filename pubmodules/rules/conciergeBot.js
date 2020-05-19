@@ -3,6 +3,7 @@ const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
 var messageService = require('../../services/messageService');
 var requestService = require('../../services/requestService');
+var leadService = require('../../services/leadService');
 var MessageConstants = require("../../models/messageConstants");
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
@@ -38,18 +39,38 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
-                    winston.info("message send from lead with preflight on");
+                    winston.debug("message send from lead with preflight on");
                     // changeFirstTextByRequestId(request_id, id_project, first_text) {
-                        // TODO arrivano due request.update su ws 
+                        // TODO  arrivano due request.update su ws 
+
+
                         requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
                             requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
                                 // reroute(request_id, id_project, nobot)
-                                requestService.reroute(message.request.request_id, message.request.id_project, false );
-
-                                // TODO a aggiurna il lead della con i dati del messaggi mandato dall'utente
+                                requestService.reroute(message.request.request_id, message.request.id_project, false );                                
                             });
                         });
-                    
+
+                        if (message.attributes.userFullname) {
+                            var  userFullname = message.attributes.userFullname;
+                            winston.info("concierge userFullname", userFullname);
+
+                            if (!userFullname) {
+                                userFullname = message.sender_fullname;
+                            }
+
+                            var userEmail = message.attributes.userEmail;
+                            winston.info("concierge userEmail", userEmail);
+
+                            leadService.updateWitId(message.sender, userFullname, userEmail, id_project).then(function (updatedLead) {
+                                winston.info("concierge updated lead", updatedLead);                            
+                            });
+                        
+                        }else {
+                            winston.info("concierge message.attributes.userFullname null");
+                        }
+
+                        
                 }
             });       
 
