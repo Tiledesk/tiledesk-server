@@ -1,3 +1,8 @@
+# 2.1.0-beta4
+- added isAuthenticated field to project_user model
+- trigger update 
+- set requester to request create of the chat21 webhook
+
 # 2.1.0-beta2
 - added field participantsAgents, participantsBot and hasBot fields. Migration file updated
 - request, department, project, project_users, subscription indexes added
