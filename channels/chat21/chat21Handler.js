@@ -61,7 +61,7 @@ class Chat21Handler {
             app.use('/firebase/auth',  firebaseAuthDep);
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
-            winston.info("chat21WebHook not initialized ");
+            winston.info("Chat21WebHook not initialized ");
         }
         
     }

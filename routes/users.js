@@ -81,7 +81,10 @@ router.delete('/physical', function (req, res) {
       return res.status(500).send({ success: false, msg: err });
     }
 
-    winston.debug('deleted USER ', user);    
+    winston.debug('deleted USER ', user);  
+    
+    authEvent.emit("user.delete", {user: user, req: req}); 
+
     res.json({ success: true, user });
   });
 });

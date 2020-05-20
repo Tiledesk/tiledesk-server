@@ -290,7 +290,7 @@ router.post('/signinWithCustomToken', [
             return res.json({ success: true, token: req.headers["authorization"], user: req.user });
         });
       } else {
-        winston.info('project user already exists ');
+        winston.debug('project user already exists ');
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
 
@@ -416,10 +416,8 @@ router.post('/signinWithCustomToken', [
 
 router.post('/signin', function (req, res) {
   winston.debug("req.body.email", req.body.email);
-// authType
   User.findOne({
     email: req.body.email, status: 100
-    //authType: 'email_password'
   }, 'email firstname lastname password emailverified id', function (err, user) {
     if (err) {
       winston.error("Error signin", err);

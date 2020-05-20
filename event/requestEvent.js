@@ -19,22 +19,19 @@ requestEvent.on('request.create.simple', function(request) {
 
     // TODO setImmediate here?
     winston.debug('requestEvent here', request);
+    winston.debug('executin query populate on requestEvent');
 
-     // {path:'lead'}
-     // ,{path:'participantsObj'}   //rror: error getting requestCast to ObjectId failed for value "bot_5cb82e4a25143b3a573c8701" at path "_id" for model "User" {"name":"CastError","stringValue":"\"bot_5cb82e4a25143b3a573c8701\"","kind":"ObjectId","value":"bot_5cb82e4a25143b3a573c8701"
     request
-    // Request.findById(request.id)
         .populate(
             [           
             {path:'department'},
             {path:'lead'},
             {path:'participatingBots'},
-            {path:'participatingAgents'},          
-            // {path:'availableAgents'},                        
+            {path:'participatingAgents'},                                         
             {path:'requester',populate:{path:'id_user'}}
             ]
-        ).execPopulate( function(err, requestComplete) {
-        // ,function (err, requestComplete){
+        )
+        .execPopulate( function(err, requestComplete) {
 
             if (err){
                 winston.error('error getting request', err);
