@@ -4,6 +4,7 @@ const labelService = require('../../services/labelService');
 const Request = require('../../models/request');
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
+var cacheUtil = require('../../utils/cacheUtil');
 
 class MessageTransformerInterceptor {
 
@@ -33,13 +34,14 @@ class MessageTransformerInterceptor {
 
                 var language = "EN";
 
-
+                // cacherequest       // requestcachefarequi nocachepopulatereqired
                 var request = await Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
-                    populate('lead').
-                    populate('department').  
-                    populate('participatingBots').
-                    populate('participatingAgents').       
-                    populate({path:'requester',populate:{path:'id_user'}}).
+                    // populate('lead').
+                    // populate('department').  
+                    // populate('participatingBots').
+                    // populate('participatingAgents').       
+                    // populate({path:'requester',populate:{path:'id_user'}}).
+                    cache(cacheUtil.defaultTTL, "/"+message.id_project+"/requests/request_id/"+message.recipient).
                     exec();
               
                 winston.debug('request mti: ', request);

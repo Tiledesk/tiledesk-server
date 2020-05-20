@@ -5,7 +5,7 @@ var Message = require("../models/message");
 var Faq_kb = require("../models/faq_kb");
 var MessageConstants = require("../models/messageConstants");
 
-
+var cacheUtil = require('../utils/cacheUtil');
 
 
 
@@ -207,14 +207,18 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
 function populateMessageWithRequest(message, eventPrefix) {
 
 
-  winston.debug("Subscription.notify "+eventPrefix, message.toObject());
+  winston.debug("populateMessageWithRequest "+eventPrefix, message.toObject());
   
+    // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
+    
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
   populate('department').  
   populate('participatingBots').
   populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
+  cache(cacheUtil.defaultTTL, "/"+message.id_project+"/requests/request_id/"+message.recipient).
+  lean().
   exec(function (err, request) {
 
     if (err) {
@@ -226,7 +230,8 @@ function populateMessageWithRequest(message, eventPrefix) {
 
       var messageJson = message.toJSON();
       
-      var requestJson = request.toJSON();
+      // var requestJson = request.toJSON();
+      var requestJson = request;
     
       if (request.department && request.department.id_bot) {
         // if (request.department) {

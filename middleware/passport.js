@@ -17,6 +17,7 @@ var Subscription = require('../models/subscription');
 var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
+var cacheUtil = require('../utils/cacheUtil');
 
 
 var jwthistory = undefined;
@@ -115,7 +116,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         winston.debug("project: ", project );
-                        winston.info("project.jwtSecret: "+ project.jwtSecret );
+                        winston.debug("project.jwtSecret: "+ project.jwtSecret );
                         done(null, project.jwtSecret);
                       });
 
@@ -273,7 +274,9 @@ module.exports = function(passport) {
 
     } else {
       winston.debug("Passport JWT generic user");
-      User.findOne({_id: identifier, status: 100}, function(err, user) {
+      User.findOne({_id: identifier, status: 100})
+        .cache(cacheUtil.defaultTTL, "/users/"+identifier)
+        .exec(function(err, user) {
           if (err) {
             winston.error("Passport JWT generic err", err);
             return done(err, false);
@@ -296,14 +299,11 @@ module.exports = function(passport) {
 
 
   passport.use(new BasicStrategy(function(userid, password, done) {
-        // console.log("BasicStrategy");
-// authType
-      User.findOne({ email: userid, status: 100
-        // , authType:'email_password' 
-      }, 'email firstname lastname password emailverified id', function (err, user) {
-        // console.log("BasicStrategy user",user);
-        // console.log("BasicStrategy err",err);
-
+     
+      User.findOne({ email: userid, status: 100}, 'email firstname lastname password emailverified id')
+      .cache(cacheUtil.defaultTTL, "/users/email/"+userid)
+      .exec(function (err, user) {
+       
         if (err) {
             // console.log("BasicStrategy err.stop");
             return done(err); 

@@ -58,6 +58,9 @@ winston.info("DB AutoIndex: " + autoIndex);
 mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
   if (err) { return winston.error('Failed to connect to MongoDB on '+databaseUri);}
 });
+if (process.env.MONGOOSE_DEBUG==="true") {
+  mongoose.set('debug', true);
+}
 
 
 var auth = require('./routes/auth');
@@ -92,6 +95,9 @@ var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
 var cannedResponse = require("./routes/cannedResponse");
 var tag = require("./routes/tag");
+var cacheUtil = require("./utils/cacheUtil");
+
+require('./services/mongoose-cache-fn')(mongoose);
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -109,14 +115,11 @@ channelManager.listen();
 
 var modulesManager = undefined;
 try {
-  // modulesManager = require('@tiledesk-ent/tiledesk-server-modules').modulesManager;
   modulesManager = require('./services/modulesManager');
-  modulesManager.init();
+  modulesManager.init({mongoose:mongoose});
 } catch(err) {
   winston.info("ModulesManager not present");
 }
-
-
 
 
 
@@ -134,9 +137,9 @@ if (process.env.QUEQUE_ENABLED) {
   var queue = require('./modules/queue/reconnect');
 }
 
-if (process.env.CACHE_ENABLED) {
+if (process.env.CACHE_EXPRESS_ENABLED) {
   // https://github.com/rv-kip/express-redis-cache
-  var cache = require('express-redis-cache')();
+  var cacheRedisExpress = require('express-redis-cache')();
 }
 
 /*re-enable it
@@ -291,13 +294,14 @@ var projectIdSetter = function (req, res, next) {
 
 
 
-
 var projectSetter = function (req, res, next) {
   var projectid = req.params.projectid;
   winston.debug("projectSetter projectid:" + projectid);
 
   if (projectid) {
-    Project.findOne({_id: projectid, status: 100}, function(err, project){
+    Project.findOne({_id: projectid, status: 100})
+      .cache(cacheUtil.defaultTTL, "/projects/"+projectid)
+      .exec(function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid);
       }
@@ -318,6 +322,7 @@ var projectSetter = function (req, res, next) {
   
 
 }
+
 
 // app.use('/admin', admin);
 

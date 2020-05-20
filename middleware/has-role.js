@@ -3,6 +3,7 @@ var Faq_kb = require("../models/faq_kb");
 var Subscription = require("../models/subscription");
 var winston = require('../config/winston');
 
+var cacheUtil = require('../utils/cacheUtil');
 
 class RoleChecker {
     
@@ -152,8 +153,9 @@ class RoleChecker {
           }
           winston.debug("hasRoleOrType query " + JSON.stringify(query));
 
-          Project_user.find(query).
-            exec(function (err, project_user) {
+          Project_user.findOne(query)
+            .cache(cacheUtil.defaultTTL, "/"+req.params.projectid+"/project_users/"+req.user.id) 
+            .exec(function (err, project_user) {
               if (err) {
                 winston.error("Error getting project_user for hasrole",err);
                 return next(err);
@@ -162,20 +164,20 @@ class RoleChecker {
               
               
       
-              if (project_user && project_user.length>0) {
+              if (project_user) {
                 
-                req.projectuser = project_user[0];
-              // winston.debug("req.projectuser", req.projectuser);
+                req.projectuser = project_user;
+                winston.debug("req.projectuser", req.projectuser);
 
-                var userRole = project_user[0].role;
-                // winston.debug("userRole", userRole);
+                var userRole = project_user.role;
+                winston.debug("userRole", userRole);
       
                 if (!role) {
                   next();
                 }else {
       
                   var hierarchicalRoles = that.ROLES[userRole];
-                  // winston.debug("hierarchicalRoles", hierarchicalRoles);
+                  winston.debug("hierarchicalRoles", hierarchicalRoles);
       
                   if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
                     next();

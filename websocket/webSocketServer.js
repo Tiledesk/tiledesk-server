@@ -17,6 +17,7 @@ var roleChecker = require('../middleware/has-role');
 const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
 var ProjectUserUtil = require("../utils/project_userUtil");
+var cacheUtil = require('../utils/cacheUtil');
 
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
@@ -78,10 +79,10 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
-                          // autType?????
-                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id', function (err, user) {
-                            // console.log("BasicStrategy user",user);
-                            // console.log("BasicStrategy err",err);
+                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')
+                            .cache(cacheUtil.defaultTTL, "/users/"+identifier)
+                            .exec(function (err, user) {
+                           
                     
                             if (err) {
                                 // console.log("BasicStrategy err.stop");
@@ -180,7 +181,7 @@ class WebSocketServer {
                 // winston.debug(' req.: ',req);
               
               
-  
+                // qui fare cache
                 Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] }, function (err, projectuser) {
                   if (err) {
                      winston.error('error getting  Project_user', err);  
@@ -200,7 +201,7 @@ class WebSocketServer {
                     winston.debug('queryRequest agent: '+ JSON.stringify(queryRequest));
                   }
   
-  
+                // requestcachefarequi nocachepopulatereqired
                   Request.findOne(queryRequest)                
                   .exec(function(err, request) { 
                   
@@ -276,6 +277,8 @@ class WebSocketServer {
                   }
 
                   //cacheimportantehere
+                  // requestcachefarequi populaterequired
+
                 //  TODO  proviamo a fare esempio con 100 agenti tutti
                   // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
                   var startDate = new Date();
@@ -288,7 +291,7 @@ class WebSocketServer {
                   .sort({updatedAt: 'desc'})
                   .limit(lastRequestsLimit) 
                   .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
-                  // .cache(120, "/"+projectId+"/requests/"+req.user.id) 
+                  // .cache(cacheUtil.defaultTTL, "/"+projectId+"/requests/"+req.user.id) 
                   .exec(function(err, requests) { 
                   
                       if (err) {
@@ -405,6 +408,8 @@ class WebSocketServer {
                     winston.debug('query agent: '+ JSON.stringify(query));
                   }
                     
+                  // requestcachefarequi populaterequired
+
                     Request.findOne(query)
                     .populate('lead')
                     .populate('department')

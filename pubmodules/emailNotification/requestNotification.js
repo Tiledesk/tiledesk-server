@@ -12,6 +12,7 @@ var Message = require("../../models/message");
 const requestEvent = require('../../event/requestEvent');
 var winston = require('../../config/winston');
 var RoleConstants = require("../../models/roleConstants");
+var cacheUtil = require('../../utils/cacheUtil');
 
 class RequestNotification {
 
@@ -118,12 +119,15 @@ sendEmail(projectid, savedRequest) {
                    allAgents.forEach(project_user => {
                    //  winston.debug("project_user", project_user);
    
-                     User.findOne({_id: project_user.id_user, status: 100}, function (err, user) {
+                    var userid = project_user.id_user;
+                     User.findOne({_id: userid , status: 100})
+                      .cache(cacheUtil.defaultTTL, "/users/"+userid)
+                      .exec(function (err, user) {
                        if (err) {
                        //  winston.debug(err);
                        }
                        if (!user) {
-                         console.warn("User not found", project_user.id_user);
+                        winston.warn("User not found", userid);
                        } else {
                          winston.debug("Sending sendNewPooledRequestNotification to user with email", user.email);
                          if (user.emailverified) {
@@ -153,7 +157,9 @@ sendEmail(projectid, savedRequest) {
                       return ;
                     }
    
-                     User.findOne({_id: assignedId, status: 100}, function (err, user) {
+                     User.findOne({_id: assignedId, status: 100})
+                      .cache(cacheUtil.defaultTTL, "/users/"+assignedId)
+                      .exec(function (err, user) {
                        if (err) {
                          winston.error("Error sending email to " + savedRequest.participants[0], err);
                        }
@@ -196,6 +202,7 @@ sendEmail(projectid, savedRequest) {
     return new Promise(function (resolve, reject) {
       return Request.findOne({request_id: request_id, id_project: id_project})
       .populate('department')
+      // .cache(cacheUtil.defaultTTL, "/"+id_project+"/requests/request_id/populate/department/"+request_id)
       .exec(function(err, request) { 
       if (err){
         winston.error(err);
