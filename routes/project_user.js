@@ -312,7 +312,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
 // TODO fai servizio di patch degli attributi come request
-
+// TODO blocca cancellazione owner?
 router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
@@ -362,7 +362,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
  router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
    winston.debug("--> users USER ID ", req.params.user_id);
 
-   Project_user.find({ id_user: req.params.user_id, id_project: req.projectid }).
+   Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
 //TODO correct is an array
   // Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
    
@@ -377,7 +377,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       }
      
       // res.json(project_user);
-      var pu = project_user[0].toJSON();
+      var pu = project_user.toJSON();
 
 
     
