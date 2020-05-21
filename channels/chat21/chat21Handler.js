@@ -143,7 +143,7 @@ class Chat21Handler {
 
                 // update: function(firstname, lastname, current_user){
                 chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
-                    winston.info("Chat21 contact updated: " + data);      
+                    winston.info("Chat21 contact updated: " + JSON.stringify(data));      
                     chat21Event.emit('contact.update', data);                                          
                 }).catch(function(err) {
                     winston.error("Error updating chat21 contact ", err);
@@ -191,7 +191,7 @@ class Chat21Handler {
 
                // update: function(firstname, lastname, current_user){
                 chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
-                    winston.info("Chat21 contact updated: " + data);      
+                    winston.info("Chat21 contact updated: " + JSON.stringify(data));      
                     chat21Event.emit('contact.update', data);                                          
                 }).catch(function(err) {
                     winston.error("Error updating chat21 contact ", err);
@@ -206,7 +206,7 @@ class Chat21Handler {
 
          leadEvent.on('lead.update', function(lead) {
             setImmediate(() => {
-                winston.info("Chat21Handler on lead.update ",  lead);
+                winston.debug("Chat21Handler on lead.update ",  lead);
 
                 Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
@@ -232,7 +232,7 @@ class Chat21Handler {
                             }
                             // update: function(name, owner, attributes, group_id){
                             chat21.groups.update(groupName, undefined, undefined, request.request_id).then(function(data) {
-                                winston.info("Chat21 group updated: " + data);      
+                                winston.info("Chat21 group updated: " + JSON.stringify(data));      
                                 chat21Event.emit('group.update', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error updating chat21 group ", err);
@@ -520,7 +520,7 @@ class Chat21Handler {
 
                             chat21.conversations.archive(request.request_id, participant)
                                         .then(function(data){
-                                            winston.info("Chat21 conversation archived result "+ data);
+                                            winston.info("Chat21 conversation archived result "+ JSON.stringify(data));
                                     
                                             chat21Event.emit('conversation.archived', data);                                               
 
@@ -533,7 +533,7 @@ class Chat21Handler {
                     //    archive: function(recipient_id, user_id){
                        chat21.conversations.archive(request.request_id, "system")
                        .then(function(data){
-                           winston.info("Chat21 archived ", data);
+                           winston.info("Chat21 archived ", JSON.stringify(data));
                    
                            chat21Event.emit('conversation.archived', data);                                               
 
@@ -546,7 +546,7 @@ class Chat21Handler {
                         chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
 
                        .then(function(data){
-                           winston.info("Chat21 archived ", data);
+                           winston.info("Chat21 archived ", JSON.stringify(data));
                    
                            chat21Event.emit('conversation.archived', data);                                               
 
@@ -599,7 +599,7 @@ class Chat21Handler {
 
                          //setMembers: function(members, group_id){
                         chat21.groups.setMembers(members, groupId).then(function(data) {
-                                winston.info("Chat21 group set: " , data);      
+                                winston.info("Chat21 group set: " , JSON.stringify(data));      
                                 chat21Event.emit('group.join', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error joining chat21 group ", err);
@@ -624,7 +624,7 @@ class Chat21Handler {
                             // archive: function(recipient_id, user_id){
                             chat21.conversations.archive(request.request_id, removedParticipant)
                             .then(function(data){
-                                winston.info("Chat21 archived ", data);
+                                winston.info("Chat21 archived ", JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
         
@@ -699,7 +699,7 @@ class Chat21Handler {
 
                          //leave: function(member_id, group_id){
                         chat21.groups.leave(member, groupId).then(function(data) {
-                                winston.info("Chat21 group leaved: " + data);      
+                                winston.info("Chat21 group leaved: " + JSON.stringify(data));      
                                 chat21Event.emit('group.leave', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error leaving chat21 group ", err);
@@ -711,7 +711,7 @@ class Chat21Handler {
 
                             chat21.conversations.archive(request.request_id, member)
                             .then(function(data){
-                                winston.info("Chat21 archived ", data);
+                                winston.info("Chat21 archived ", JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
      
