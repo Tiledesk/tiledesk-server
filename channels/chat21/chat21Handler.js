@@ -204,11 +204,9 @@ class Chat21Handler {
 
     
 
-
-         // leadEvent.on('update')change group name wirth fullname)
          leadEvent.on('lead.update', function(lead) {
             setImmediate(() => {
-                winston.debug("Chat21Handler on lead.update ",  lead);
+                winston.info("Chat21Handler on lead.update ",  lead);
 
                 Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
