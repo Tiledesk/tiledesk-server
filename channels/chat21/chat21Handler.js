@@ -297,7 +297,7 @@ class Chat21Handler {
                        
 
 
-                        winston.debug("Chat21Sender sending message.sending ",  message);
+                        winston.info("Chat21Sender sending message.sending ",  message);
 
                         // chat21Util.getButtonFromText().then(function(messageData) {
                         //     message = messageData;
@@ -433,7 +433,7 @@ class Chat21Handler {
                         // let requestObj = request.toObject();
                         let requestObj = request.toJSON();
                         
-                        winston.debug("creating chat21 group for request with id: " + requestObj._id);
+                        winston.info("creating chat21 group for request with id: " + requestObj._id);
 
                         // winston.info("requestObj.participants: "+ Object.prototype.toString.call(requestObj.participants));
                         winston.debug("requestObj.participants: "+ JSON.stringify(requestObj.participants));
