@@ -1,4 +1,4 @@
 module.exports = {
-    defaultTTL: process.env.CACHE_DEFAULT_TTL || 120,    
+    defaultTTL: Number(process.env.CACHE_DEFAULT_TTL) || 120,    
   };
   

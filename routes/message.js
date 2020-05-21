@@ -11,6 +11,7 @@ var messageService = require('../services/messageService');
 var leadService = require('../services/leadService');
 var winston = require('../config/winston');
 var MessageConstants = require("../models/messageConstants");
+var cacheUtil = require('../utils/cacheUtil');
 
 const { check, validationResult } = require('express-validator');
 
@@ -35,11 +36,13 @@ function(req, res) {
   
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
-
-      // return Request.findOne({request_id: req.params.request_id}, function(err, request) {
-      return Request.findOne({request_id: req.params.request_id, id_project: req.projectid}, function(err, request) {
+      // cacherequest       // requestcachefarequi nocachepopulatereqired
+      return Request.findOne({request_id: req.params.request_id, id_project: req.projectid})
+        .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+req.params.request_id)
+        .exec(function(err, request) {
 
         if (err) {
+          winston.error('Error getting the request.', err);
           return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
         }
 
@@ -72,14 +75,15 @@ function(req, res) {
                     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
                     return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
                       req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
-                        // TODO remove increment
-                        return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+                        
+                        // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
                           let message = savedMessage.toJSON();
-                          message.request = savedRequestWithIncrement;
+                          message.request = savedRequest;
+                          // message.request = savedRequestWithIncrement;
                           return res.json(message);
                         });
-                      });
+                      // });
                     });                           
                       
                   });
@@ -98,10 +102,10 @@ function(req, res) {
                 request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){
 
                   // TOOD update also request attributes and sourcePage
-                  return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
+                  // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                     // console.log("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                      
-                    if (savedRequest.participants && savedRequest.participants.indexOf(req.body.sender) > -1) { //update waiitng time if write an  agent (member of participants)
+                    if (request.participants && request.participants.indexOf(req.body.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                       winston.debug("updateWaitingTimeByRequestId");
                       return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
                           let message = savedMessage.toJSON();
@@ -110,10 +114,10 @@ function(req, res) {
                       });
                     }else {
                       let message = savedMessage.toJSON();
-                      message.request = savedRequest;
+                      message.request = request;
                       return res.json(message);
                     }
-                  });
+                  // });
                 }).catch(function(err){
                   winston.error("Error creating message", err);
                   return res.status(500).send({success: false, msg: 'Error creating message', err:err });

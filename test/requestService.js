@@ -17,6 +17,7 @@ var winston = require('../config/winston');
 
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
+require('../services/mongoose-cache-fn')(mongoose);
 
 var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');

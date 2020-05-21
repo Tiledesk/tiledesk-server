@@ -9,6 +9,8 @@ var leadService = require('../../services/leadService');
 var eventService = require('../../pubmodules/events/eventService');
 var Project_user = require("../../models/project_user");
 
+var cacheUtil = require('../../utils/cacheUtil');
+
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
@@ -41,10 +43,12 @@ router.post('/', function (req, res) {
 
     var message = req.body.data;
  
-    winston.info("chat21 message", message);
+    winston.info("Chat21 message", message);
 
+        // requestcachefarequi nocachepopulatereqired
+        return Request.findOne({request_id: message.recipient})
 
-        return Request.findOne({request_id: message.recipient}, function(err, request) {
+          .exec(function(err, request) {
           // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
 
           if (err) {
@@ -151,7 +155,7 @@ router.post('/', function (req, res) {
                       winston.info("queryProjectUser", queryProjectUser);
                       
 
-                   
+                  //  TODO FAI CACHE
                     return Project_user.findOne(queryProjectUser, function (err, project_user) {
 
                       var project_user_id = null; 
@@ -306,6 +310,7 @@ router.post('/', function (req, res) {
               
               var query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
+              
               return Request.findOne(query, function(err, request) {
 
                 if (err) {
@@ -378,7 +383,8 @@ router.post('/', function (req, res) {
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
       winston.debug("id_project: " + id_project);
-
+      
+      // requestcachefarequi populaterequired
       return Request.findOne({request_id: request_id, id_project: id_project})
           .populate('lead')
           .exec(function(err, request) {
@@ -528,9 +534,9 @@ else if (req.body.event_type == "typing-start") {
     winston.debug("not a support conversation");
     return res.status(400).send({success: false, msg: "not a support conversation" });
   }
-
+  // requestcachefarequi nocachepopulatereqired
   return Request.findOne({request_id: recipient_id})
-  // .populate('lead')
+  .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+requestid)
   .exec(function(err, request) {
   if (err){
     winston.error(err);

@@ -13,6 +13,7 @@ var leadService = require('../services/leadService');
 var messageService = require('../services/messageService');
 const uuidv4 = require('uuid/v4');
 var MessageConstants = require("../models/messageConstants");
+var cacheUtil = require('../utils/cacheUtil');
 
 
 csv = require('csv-express');
@@ -74,17 +75,16 @@ function (req, res) {
           // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
           return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
             req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
-              // TODO remove increment
-              return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+              
+              // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
-                // let message = savedMessage.toJSON();
-                // message.request = savedRequestWithIncrement;
-                winston.debug('res.json(savedRequestWithIncrement)'); 
+            
+                winston.debug('res.json(savedRequest)'); 
                 var endTimestamp = new Date();
                 winston.info("request create end: " + (endTimestamp - startTimestamp));
-                return res.json(savedRequestWithIncrement);
+                return res.json(savedRequest);
               });
-            });
+            // });
           });                           
             
         
@@ -661,7 +661,7 @@ router.get('/', function (req, res, next) {
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
 
-  //cacheimportantehere
+  // requestcachefarequi populaterequired
   var q1 = Request.find(query).
     skip(skip).limit(limit).
     populate('department').
@@ -670,7 +670,7 @@ router.get('/', function (req, res, next) {
     populate('lead').
     populate({path:'requester',populate:{path:'id_user'}}).
     sort(sortQuery).
-    // cache(120, "requests-"+projectId).
+    // cache(cacheUtil.defaultTTL, "requests-"+projectId).
     exec();
 
 
@@ -812,6 +812,7 @@ router.get('/csv', function (req, res, next) {
     skip(skip).limit(limit).
         //populate('department', {'_id':-1, 'name':1}).     
         populate('department').
+        populate('lead').
         lean().
       // populate({
       //   path: 'department', 
@@ -855,16 +856,18 @@ router.get('/csv', function (req, res, next) {
 
 router.get('/:requestid', function (req, res) {
 
-  winston.info("get request by id ", req.params.requestid);
+  var requestid = req.params.requestid;
+  winston.debug("get request by id: "+requestid);
 
-  Request.findOne({request_id: req.params.requestid, id_project: req.projectid})
+  // cacherequest       // requestcachefarequi populaterequired
+  Request.findOne({request_id: requestid, id_project: req.projectid})
   .populate('lead')
   .populate('department')
   .populate('participatingBots')
   .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}})
+  // .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+requestid)
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
-  // .populate({path:'requester'})
   .exec(function(err, request) {  
     if (err) {
       winston.error("error getting request by id ", err);

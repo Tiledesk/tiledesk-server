@@ -18,6 +18,7 @@ var winston = require('../config/winston');
 
 var Department = require('../models/department');
 var faqService = require('../services/faqService');
+// require('../services/mongoose-cache-fn')(mongoose);
 
 // chai.config.includeStack = true;
 
@@ -57,7 +58,9 @@ describe('RequestRoute', () => {
                 res.body.should.have.property('first_text').eql('first_text');
                 res.body.should.have.property('id_project').eql(savedProject._id.toString());
                 res.body.should.have.property('createdBy').eql(savedUser._id.toString());
-                res.body.should.have.property('messages_count').gt(0);
+
+                // res.body.should.have.property('messages_count').gt(0);
+
                 res.body.should.have.property('status').eql(200);
                 
                 // res.body.should.have.property('agents').eql(savedUser._id);

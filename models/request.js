@@ -144,12 +144,13 @@ var RequestSchema = new Schema({
 
 
 
-  //messages_count Integer The number of conversation parts in this conversation.
-  //TODO delete this
-  messages_count: {
-    type: Number,
-    default: 0
-  },
+  //Integer The number of conversation parts in this conversation.
+
+  
+  // messages_count: {
+  //   type: Number,
+  //   default: 0
+  // },
 
   closed_at: {
     type: Date
@@ -171,7 +172,10 @@ var RequestSchema = new Schema({
 
   // all the agents of the project or the department at the request creation time 
   // TODO renameit
-  agents: [ProjectUserSchema],
+  agents:  {
+    type: [ProjectUserSchema],
+    select: true
+  },
   // TODO select false???  ma serve alla dashboard
 
   sourcePage: {
@@ -390,7 +394,7 @@ RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); /
 
 //   cannot index parallel arrays [agents] [participants] {"driv
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
-
+ 
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, agents.id_user:1, updatedAt: -1 }); // query for websocket
 // https://docs.mongodb.com/manual/core/index-multikey/#compound-multikey-indexes You cannot create a compound multikey index if more than one to-be-indexed field of a document is an array. For example, consider a collection that contains the following document:
 
