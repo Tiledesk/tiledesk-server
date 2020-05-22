@@ -35,13 +35,19 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
 
+                winston.info(" ConciergeBot message.request.preflight: "+message.request.preflight);
+                winston.info(" ConciergeBot message.sender: "+message.sender);
+                winston.info(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
+                winston.info(" ConciergeBot message.text: "+message.text);
+                winston.info(" ConciergeBot message.request.first_text: "+message.request.first_text);
+
                 if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
                     winston.debug("message send from lead with preflight on");
                     // changeFirstTextByRequestId(request_id, id_project, first_text) {
-                        // TODO arrivano due request.update su ws 
+                        //  TODO arrivano due request.update su ws 
 
 
                         requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
@@ -51,24 +57,29 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             });
                         });
 
-                        if (message.attributes.userFullname) {
-                            var  userFullname = message.attributes.userFullname;
-                            winston.info("concierge userFullname", userFullname);
 
-                            if (!userFullname) {
-                                userFullname = message.sender_fullname;
-                            }
+                        // do not update lead here: otherwise it override contact info of the console
 
-                            var userEmail = message.attributes.userEmail;
-                            winston.info("concierge userEmail", userEmail);
+                        // if (message.attributes.userFullname) {
+                        //     var  userFullname = message.attributes.userFullname;
+                        //     winston.info("concierge userFullname: "+ userFullname);
 
-                            leadService.updateWitId(message.sender, userFullname, userEmail, message.request.id_project).then(function (updatedLead) {
-                                winston.info("concierge updated lead", updatedLead);                            
-                            });
+                        //     if (!userFullname) {
+                        //         userFullname = message.sender_fullname;
+                        //     }
+
+                        //     var userEmail = message.attributes.userEmail;
+                        //     winston.info("concierge userEmail:" + userEmail);
+
+                        //     leadService.updateWitId(message.sender, userFullname, userEmail, message.request.id_project).then(function (updatedLead) {
+                        //         winston.info("concierge updated lead", updatedLead);                            
+                        //     });
                         
-                        }else {
-                            winston.info("concierge message.attributes.userFullname null");
-                        }
+                        // }else {
+                        //     winston.info("concierge message.attributes.userFullname null");
+                        // }
+
+
 
                         
                 }
