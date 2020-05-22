@@ -1,4 +1,3 @@
-const roundRobinOperator = require('./roundRobinOperator');
 const conciergeBot = require('./conciergeBot');
 
 var winston = require('../../config/winston');
