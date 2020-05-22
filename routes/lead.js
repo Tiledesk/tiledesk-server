@@ -217,7 +217,7 @@ router.get('/', function (req, res) {
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": {$lt: LeadConstants.DELETED}};
+  var query = { "id_project": req.projectid, "status": LeadConstants.NORMAL};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
