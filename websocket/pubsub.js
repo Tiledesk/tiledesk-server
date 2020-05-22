@@ -116,9 +116,9 @@ class PubSub {
   }
 
   ping(ws) {
-    winston.debug(' send a ping');
+    winston.debug('send a ping');
     if (ws.isAlive === false) {
-      winston.debug(' ws.isAlive is false terminating ws');
+      winston.debug('ws.isAlive is false terminating ws');
       return ws.terminate();
     }
     //ws.ping('coucou',{},true);
