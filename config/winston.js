@@ -1,10 +1,12 @@
 var appRoot = require('app-root-path');
 var winston = require('winston');
 
+var level = process.env.LOG_LEVEL || 'info'
+// console.log("level",level);
 
 var options = {
     file: {
-      level: 'info',
+      level:level ,
       filename: `${appRoot}/logs/app.log`,
       handleExceptions: true,
       json: false,
@@ -14,11 +16,12 @@ var options = {
       format: winston.format.simple()
     },
     console: {
-      level: 'info',
+      level: level,
       handleExceptions: true,
       json: true,
       colorize: true,
-      format: winston.format.simple()
+      // timestamp: true,
+      format: winston.format.simple()     
     },
   };
 
@@ -43,11 +46,10 @@ var options = {
 //     var logsDb = config.database;
 //   }
 
-  let logger = winston.createLogger({
+  let logger = winston.createLogger({    
     transports: [
      new (winston.transports.Console)(options.console),
-    //   new (winston.transports.File)(options.errorFile),
-      new (winston.transports.File)(options.file),
+     new (winston.transports.File)(options.file),
      // new (winston.transports.MongoDB)( {db: logsDb, collection: "logs"}) 
     ],
     exitOnError: false, // do not exit on handled exceptions
