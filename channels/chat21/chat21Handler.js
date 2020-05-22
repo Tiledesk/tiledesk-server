@@ -15,6 +15,7 @@ var chat21 = require('./chat21Client');
 
 
 
+
 var chat21Util = require('./chat21Util');
 var tiledeskUtil = require('./tiledesk-util');
 
@@ -344,7 +345,7 @@ class Chat21Handler {
                                 }
                             }    
                             */   
-                           
+                         
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){

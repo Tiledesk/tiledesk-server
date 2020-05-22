@@ -27,6 +27,8 @@ class PubModulesManager {
         var that = this;
         winston.debug("PubModulesManager using controllers");     
 
+
+        // dario riesce con jwt custom di progettto a a scrivere events di progetto b
         if (this.eventsRoute) {
             app.use('/:projectid/events', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('guest')], this.eventsRoute);
             winston.info("ModulesManager eventsRoute controller loaded");       
@@ -44,7 +46,7 @@ class PubModulesManager {
             winston.info("PubModulesManager init rules loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init rules module not found");
+                winston.info("PubModulesManager init rules module not found",err);
             }else {
                 winston.info("PubModulesManager error initializing init rules module", err);
             }
