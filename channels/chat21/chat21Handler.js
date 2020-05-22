@@ -268,7 +268,7 @@ class Chat21Handler {
 
         messageEvent.on('message.sending', function(message) {
 
-            // setImmediate(() => {
+            setImmediate(() => {
                     winston.info("Chat21Sender on message.sending ",  message);
 
 
@@ -370,7 +370,7 @@ class Chat21Handler {
                         
                         // });
                     }
-                // });
+                });
             });
 
 
@@ -422,7 +422,7 @@ class Chat21Handler {
 
             requestEvent.on('request.create',  function(request) {          
 
-                // setImmediate(() => {
+                setImmediate(() => {
                     if (request.channel.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
@@ -502,7 +502,7 @@ class Chat21Handler {
 
 
                     }
-                // });
+                });
             });
     
             requestEvent.on('request.close',  function(request) {          
