@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
-
+var LeadConstants = require('./leadConstants');
 /*
 Leads are useful for representing logged-out users of your application. 
 As soon as a visitor starts a conversation with you, or replies to a visitor auto message, they become a lead. 
@@ -76,7 +76,7 @@ var LeadSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: 100,
+    default: LeadConstants.NORMAL,  
     index: true
   }, 
 },{

@@ -5,6 +5,7 @@ var messageService = require('../../services/messageService');
 var requestService = require('../../services/requestService');
 var leadService = require('../../services/leadService');
 var MessageConstants = require("../../models/messageConstants");
+var LeadConstants = require("../../models/LeadConstants");
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 var BotFromParticipant = require("../../utils/botFromParticipant");
@@ -35,11 +36,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
 
-                winston.debug(" ConciergeBot message.request.preflight: "+message.request.preflight);
-                winston.debug(" ConciergeBot message.sender: "+message.sender);
-                winston.debug(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
-                winston.debug(" ConciergeBot message.text: "+message.text);
-                winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
+                // winston.debug(" ConciergeBot message.request.preflight: "+message.request.preflight);
+                // winston.debug(" ConciergeBot message.sender: "+message.sender);
+                // winston.debug(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
+                // winston.debug(" ConciergeBot message.text: "+message.text);
+                // winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
 
                 if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
@@ -53,7 +54,9 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                         requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
                             requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
                                 // reroute(request_id, id_project, nobot)
-                                requestService.reroute(message.request.request_id, message.request.id_project, false );                                
+                                requestService.reroute(message.request.request_id, message.request.id_project, false );     
+                                // updateStatusWitId(lead_id, id_project, status)
+                                leadService.updateStatusWitId(message.request.lead.lead_id, message.request.id_project, LeadConstants.NORMAL);
                             });
                         });
 

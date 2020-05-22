@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Lead = require("../models/lead");
+var LeadConstants = require("../models/leadConstants");
 var winston = require('../config/winston');
 var leadService = require("../services/leadService");
 csv = require('csv-express');
@@ -105,7 +106,7 @@ router.put('/:leadid', function (req, res) {
 router.delete('/:leadid', function (req, res) {
   winston.debug(req.body);
 
-  Lead.findByIdAndUpdate(req.params.leadid, {status: 1000}, { new: true, upsert: true }, function (err, updatedLead) {
+  Lead.findByIdAndUpdate(req.params.leadid, {status: LeadConstants.DELETED}, { new: true, upsert: true }, function (err, updatedLead) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -145,7 +146,7 @@ router.get('/csv', function (req, res, next) {
   var skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000}};
+  var query = { "id_project": req.projectid, "status": {$lt: LeadConstants.DELETED}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
@@ -216,7 +217,7 @@ router.get('/', function (req, res) {
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000}};
+  var query = { "id_project": req.projectid, "status": {$lt: LeadConstants.DELETED}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
