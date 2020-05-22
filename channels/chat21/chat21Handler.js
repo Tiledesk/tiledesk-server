@@ -205,6 +205,7 @@ class Chat21Handler {
     
 
          leadEvent.on('lead.update', function(lead) {
+            //  non sembra funzionare chiedi a Dario dove prende le info
             setImmediate(() => {
                 winston.debug("Chat21Handler on lead.update ",  lead);
 
@@ -281,7 +282,7 @@ class Chat21Handler {
 
 
                         //chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
-                        that.typing(message,new Date() ).then(function() {
+                        return that.typing(message,new Date() ).then(function() {
                        
 
                         let attributes = message.attributes;
@@ -344,7 +345,7 @@ class Chat21Handler {
                             }    
                             */   
                            
-                            chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
+                           return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
                                             winston.info("Chat21 sendToGroup sent: "+ JSON.stringify(data));
@@ -491,7 +492,7 @@ class Chat21Handler {
                             group_name = request.subject;
                         }
 
-                        chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
+                        return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.info("Chat21 group created: " + JSON.stringify(data));      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {

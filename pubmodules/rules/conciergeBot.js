@@ -35,11 +35,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
 
-                winston.info(" ConciergeBot message.request.preflight: "+message.request.preflight);
-                winston.info(" ConciergeBot message.sender: "+message.sender);
-                winston.info(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
-                winston.info(" ConciergeBot message.text: "+message.text);
-                winston.info(" ConciergeBot message.request.first_text: "+message.request.first_text);
+                winston.debug(" ConciergeBot message.request.preflight: "+message.request.preflight);
+                winston.debug(" ConciergeBot message.sender: "+message.sender);
+                winston.debug(" ConciergeBot message.request.lead.lead_id: "+message.request.lead.lead_id);
+                winston.debug(" ConciergeBot message.text: "+message.text);
+                winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
 
                 if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
