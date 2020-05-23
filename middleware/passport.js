@@ -107,7 +107,7 @@ module.exports = function(passport) {
 
                       winston.debug("project id: "+ AudienceId );
                       Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
-                      .cache(cacheUtil.defaultTTL, "/projects/query/id:id-status:100-select:+jwtSecret/"+AudienceId)
+                      .cache(cacheUtil.queryTTL, "/projects/query/id:id-status:100-select:+jwtSecret/"+AudienceId)
                       .exec(function (err, project){
                         if (err) {
                           winston.error("auth Project err: ", err );
