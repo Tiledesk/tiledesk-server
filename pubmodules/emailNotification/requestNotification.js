@@ -121,7 +121,7 @@ sendEmail(projectid, savedRequest) {
    
                     var userid = project_user.id_user;
                      User.findOne({_id: userid , status: 100})
-                      .cache(cacheUtil.defaultTTL, "/users/"+userid)
+                      .cache(cacheUtil.defaultTTL, "/users/id/"+userid)
                       .exec(function (err, user) {
                        if (err) {
                        //  winston.debug(err);
@@ -158,7 +158,7 @@ sendEmail(projectid, savedRequest) {
                     }
    
                      User.findOne({_id: assignedId, status: 100})
-                      .cache(cacheUtil.defaultTTL, "/users/"+assignedId)
+                      .cache(cacheUtil.defaultTTL, "/users/id/"+assignedId)
                       .exec(function (err, user) {
                        if (err) {
                          winston.error("Error sending email to " + savedRequest.participants[0], err);

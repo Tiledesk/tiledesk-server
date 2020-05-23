@@ -61,6 +61,10 @@ mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex 
 if (process.env.MONGOOSE_DEBUG==="true") {
   mongoose.set('debug', true);
 }
+mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true); 
+
 
 
 var auth = require('./routes/auth');
@@ -300,7 +304,7 @@ var projectSetter = function (req, res, next) {
 
   if (projectid) {
     Project.findOne({_id: projectid, status: 100})
-      .cache(cacheUtil.defaultTTL, "/projects/"+projectid)
+      .cache(cacheUtil.defaultTTL, "/projects/id/"+projectid)
       .exec(function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid);

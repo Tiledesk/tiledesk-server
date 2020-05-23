@@ -154,7 +154,7 @@ class RoleChecker {
           winston.debug("hasRoleOrType query " + JSON.stringify(query));
 
           Project_user.findOne(query)
-            .cache(cacheUtil.defaultTTL, "/"+req.params.projectid+"/project_users/"+req.user.id) 
+            .cache(cacheUtil.defaultTTL, "/"+req.params.projectid+"/project_users/id/"+req.user.id) 
             .exec(function (err, project_user) {
               if (err) {
                 winston.error("Error getting project_user for hasrole",err);

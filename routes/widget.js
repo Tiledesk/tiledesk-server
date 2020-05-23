@@ -76,10 +76,14 @@ router.get('/', function(req, res) {
 
 // TOOD add labels
     Promise.all([
-      Project.findOne({_id: req.projectid, status: 100}).select('-settings'),
-      availableUsers(),
-      Department.find({ "id_project": req.projectid, "status": 1 }),
-      waiting()
+        Project.findOne({_id: req.projectid, status: 100}).select('-settings')
+        .cache(cacheUtil.queryTTL, "/projects/query/id:id-status:100-select:-settings/"+AudienceId)
+      ,
+        availableUsers()
+      ,
+        Department.find({ "id_project": req.projectid, "status": 1 })
+      ,
+        waiting()
      
 
     ]).then(function(all) {

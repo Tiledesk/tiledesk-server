@@ -24,7 +24,9 @@ router.post('/createtoken', validtoken, function (req, res) {
     //     res.status(400).send({ success: false, msg: "project_id parameter is required" });
     // }
 
-    return Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret',function(err, project) {
+    return Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret')
+    .cache(cacheUtil.queryTTL, "/projects/query/id:id-status:100-select:+jwtSecret/"+req.projectid)
+    .exec(function(err, project) {
         if (err) {
           winston.error('Error finding project', err);
           return res.status(500).send({ success: false, msg: 'Error finding project.' });

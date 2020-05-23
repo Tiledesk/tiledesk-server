@@ -106,7 +106,9 @@ module.exports = function(passport) {
                       }
 
                       winston.debug("project id: "+ AudienceId );
-                      Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret').exec(function (err, project){
+                      Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
+                      .cache(cacheUtil.defaultTTL, "/projects/query/id:id-status:100-select:+jwtSecret/"+AudienceId)
+                      .exec(function (err, project){
                         if (err) {
                           winston.error("auth Project err: ", err );
                           return done(null, null);
@@ -275,7 +277,7 @@ module.exports = function(passport) {
     } else {
       winston.debug("Passport JWT generic user");
       User.findOne({_id: identifier, status: 100})
-        .cache(cacheUtil.defaultTTL, "/users/"+identifier)
+        .cache(cacheUtil.defaultTTL, "/users/id/"+identifier)
         .exec(function(err, user) {
           if (err) {
             winston.error("Passport JWT generic err", err);

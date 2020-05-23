@@ -235,7 +235,9 @@ function populateMessageWithRequest(message, eventPrefix) {
     
       if (request.department && request.department.id_bot) {
         // if (request.department) {
-        Faq_kb.findById(request.department.id_bot, function(err, bot) {
+        Faq_kb.findById(request.department.id_bot)
+        .cache(cacheUtil.defaultTTL, "/"+message.id_project+"/faq_kbs/id/"+request.department.id_bot)
+        .exec(function(err, bot) {
           winston.debug('bot', bot);
           
 
