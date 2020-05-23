@@ -31,14 +31,14 @@
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.3",
     "@tiledesk-ent/tiledesk-server-analytics": "^1.1.5",
     "@tiledesk-ent/tiledesk-server-activities": "^1.1.14",
-    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.37",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.59",
+    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.38",
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.60",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.5",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.1.6",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.4",
     "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.7",
     "@tiledesk-ent/tiledesk-server-queue": "^1.1.8",
-    "@tiledesk-ent/tiledesk-server-cache": "^1.1.2"
+    "@tiledesk-ent/tiledesk-server-cache": "^1.1.3"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
