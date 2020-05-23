@@ -160,7 +160,7 @@ class ModulesManager {
             winston.info("ModulesManager init resthook loaded");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init resthookRoute module not found");
+                winston.info("ModulesManager init resthookRoute module not found",err);
             }else {
                 winston.error("ModulesManager error initializing init resthook module", err);
             }
