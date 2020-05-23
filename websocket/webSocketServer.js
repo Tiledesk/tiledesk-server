@@ -162,7 +162,9 @@ class WebSocketServer {
             winston.debug('projectId: '+projectId);
 
 
-            return Project.findOne({ _id: projectId, status: 100}).exec(function(err, project) {
+            return Project.findOne({ _id: projectId, status: 100})
+            .cache(cacheUtil.defaultTTL, "/projects/"+projectId)
+            .exec(function(err, project) {
               if (err) {
                 winston.error('Error getting  Project', err);  
                 return reject(err);
@@ -181,8 +183,9 @@ class WebSocketServer {
                 // winston.debug(' req.: ',req);
               
               
-                // qui fare cache
-                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] }, function (err, projectuser) {
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] })
+                .cache(cacheUtil.defaultTTL, "/"+projectId+"/project_users/role/teammate/"+req.user._id)
+                .exec(function (err, projectuser) {
                   if (err) {
                      winston.error('error getting  Project_user', err);  
                      return reject(err);
@@ -202,7 +205,7 @@ class WebSocketServer {
                   }
   
                 // requestcachefarequi nocachepopulatereqired
-                  Request.findOne(queryRequest)                
+                  Request.findOne(queryRequest)     
                   .exec(function(err, request) { 
                   
                       if (err) {
@@ -248,7 +251,9 @@ class WebSocketServer {
                 winston.debug('find project_user');
               
   
-                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  }, function (err, projectuser) {
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  })
+                .cache(cacheUtil.defaultTTL, "/"+projectId+"/project_users/role/teammate/"+req.user._id)
+                .exec(function (err, projectuser) {
                   if (err) {
                      winston.error('error getting  Project_user', err);  
                      return reject(err);
@@ -269,11 +274,14 @@ class WebSocketServer {
                    //  qui1000
                   // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
 
+                  var cacheUserId;
                   if (projectuser.role == "owner" || projectuser.role == "admin") {
                     winston.debug('query admin: '+ JSON.stringify(query));
+                    cacheUserId = "/admin-owner";
                   }else {
                     query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
                     winston.debug('query agent: '+ JSON.stringify(query));
+                    cacheUserId = "/agent/"+req.user.id;
                   }
 
                   //cacheimportantehere
@@ -291,7 +299,7 @@ class WebSocketServer {
                   .sort({updatedAt: 'desc'})
                   .limit(lastRequestsLimit) 
                   .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
-                  // .cache(cacheUtil.defaultTTL, "/"+projectId+"/requests/"+req.user.id) 
+                  .cache(cacheUtil.defaultTTL, "/"+projectId+"/requests/status/50-1000/preflight/false"+cacheUserId) 
                   .exec(function(err, requests) { 
                   
                       if (err) {
@@ -307,6 +315,7 @@ class WebSocketServer {
 
 
                           if (request.lead) {
+                            // request.requester_id =  request.lead._id; //parla con NICO di questo
                             request.requester_id =  request.lead;
                           }else {
                             request.requester_id =  null;
@@ -315,7 +324,7 @@ class WebSocketServer {
                           if (request.agents && request.agents.length>0) {
                             var agentsnew = [];
                             request.agents.forEach(a => {
-                              agentsnew.push({id_user: a.id_user})
+                              agentsnew.push({id_user: a.id_user})  //remove unnecessary request.agents[].project_user fields. keep only id_user
                             });
                             request.agents = agentsnew;
                           }
@@ -358,7 +367,9 @@ class WebSocketServer {
             var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
             winston.debug(' query: ',query);
   
-            Project_user.findOne(query, function (err, projectuser) {
+            Project_user.findOne(query)
+            .cache(cacheUtil.defaultTTL, "/"+projectId+"/project_users/role/teammate/"+req.user._id)
+            .exec(function (err, projectuser) {
               if (err) {
                  winston.error('error getting  Project_user', err);  
                  return reject(err);
@@ -388,7 +399,9 @@ class WebSocketServer {
                   var recipientId = urlSub[3];
                   winston.debug('recipientId: '+recipientId);
   
-                  Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] }, function (err, projectuser) {
+                  Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] })
+                  .cache(cacheUtil.defaultTTL, "/"+projectId+"/project_users/role/teammate/"+req.user._id)
+                  .exec(function (err, projectuser) {
                     if (err) {
                        winston.error('error getting  Project_user', err);  
                        return reject(err);
