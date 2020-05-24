@@ -7,6 +7,7 @@ var operatingHoursService = require("../services/operatingHoursService");
 var AnalyticResult = require("../models/analyticResult");
 var Department = require("../models/department");
 var RoleConstants = require("../models/roleConstants");
+var cacheUtil = require('../utils/cacheUtil');
 
 
 router.get('/load', function(req, res) {
@@ -77,7 +78,7 @@ router.get('/', function(req, res) {
 // TOOD add labels
     Promise.all([
         Project.findOne({_id: req.projectid, status: 100}).select('-settings')
-        .cache(cacheUtil.queryTTL, "/projects/query/id:id-status:100-select:-settings/"+AudienceId)
+        .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")        
       ,
         availableUsers()
       ,
