@@ -38,7 +38,7 @@ function(req, res) {
   winston.debug('messageStatus: ' + messageStatus);
       // cacherequest       // requestcachefarequi nocachepopulatereqired
       return Request.findOne({request_id: req.params.request_id, id_project: req.projectid})
-        .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+req.params.request_id)
+        .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id)
         .exec(function(err, request) {
 
         if (err) {

@@ -304,7 +304,7 @@ var projectSetter = function (req, res, next) {
 
   if (projectid) {
     Project.findOne({_id: projectid, status: 100})
-      .cache(cacheUtil.defaultTTL, "/projects/id/"+projectid)
+      .cache(cacheUtil.defaultTTL, "projects:id:"+projectid)
       .exec(function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid);

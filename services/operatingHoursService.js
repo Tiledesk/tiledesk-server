@@ -12,7 +12,7 @@ class OperatingHoursService {
 
     // winston.debug('O ---> [ OHS ] -> PROJECT ID ', projectId)
     Project.findOne({_id: projectId, status: 100})
-    .cache(cacheUtil.defaultTTL, "/projects/id/"+projectId)
+    .cache(cacheUtil.defaultTTL, "projects:id:"+projectId)
     .exec(function (err, project) {
       // winston.debug("XXXXXXXX project", project);
       if (err) {

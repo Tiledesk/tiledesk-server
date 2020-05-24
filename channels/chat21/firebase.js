@@ -25,7 +25,7 @@ router.post('/createtoken', validtoken, function (req, res) {
     // }
 
     return Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret')
-    .cache(cacheUtil.queryTTL, "/projects/query/id:id-status:100-select:+jwtSecret/"+req.projectid)
+    .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:+jwtSecret")
     .exec(function(err, project) {
         if (err) {
           winston.error('Error finding project', err);

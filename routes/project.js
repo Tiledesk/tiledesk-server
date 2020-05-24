@@ -17,7 +17,8 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var RoleConstants = require("../models/roleConstants");
 
-
+// TODO move to enterprise module
+//TODO hide signup page and autocreate admin/admin
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   // winston.debug(req.body, 'USER ID ',req.user.id );
   var newProject = new Project({
@@ -231,7 +232,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
   
  
-  winston.info('UPDATE PROJECT REQ BODY ', update);
+  winston.debug('UPDATE PROJECT REQ BODY ', update);
 
   Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
@@ -287,7 +288,9 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
-  Project.findOne({_id: req.params.projectid, status:100}, function (err, project) {
+  Project.findOne({_id: req.params.projectid, status:100})
+  .cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)
+  .exec(function (err, project) {
     if (err) {
       winston.error('Error getting project ', err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
