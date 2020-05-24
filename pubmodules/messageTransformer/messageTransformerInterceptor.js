@@ -41,7 +41,7 @@ class MessageTransformerInterceptor {
                     // populate('participatingBots').
                     // populate('participatingAgents').       
                     // populate({path:'requester',populate:{path:'id_user'}}).
-                    cache(cacheUtil.defaultTTL, "/"+message.id_project+"/requests/request_id/"+message.recipient).
+                    cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
                     exec();
               
                 winston.debug('request mti: ', request);
