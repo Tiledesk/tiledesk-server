@@ -16,6 +16,8 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var RoleConstants = require("../models/roleConstants");
+var cacheUtil = require('../utils/cacheUtil');
+
 
 // TODO move to enterprise module
 //TODO hide signup page and autocreate admin/admin
