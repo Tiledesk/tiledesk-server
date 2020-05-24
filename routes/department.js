@@ -199,7 +199,7 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
     winston.debug("## GET ALL DEPTS QUERY (1)", query)
     // return Department.find({ "id_project": req.projectid }, function (err, departments) {
     return Department.find(query)
-    .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/departments/query/allstatus")
+    .cache(cacheUtil.defaultTTL, req.projectid+":departments:query:allstatus")
     .exec(function (err, departments) {
       if (err) {
         winston.error('Error getting the departments.', err);
