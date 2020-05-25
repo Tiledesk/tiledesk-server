@@ -3,6 +3,7 @@ var router = express.Router();
 var AnalyticResult = require("../models/analyticResult");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
+var cacheUtil = require('../utils/cacheUtil');
 
 
   router.get('/waiting/current', function(req, res) {
@@ -10,7 +11,6 @@ var winston = require('../config/winston');
     //winston.debug(req.params);
     //winston.debug("req.projectid",  req.projectid);    
    
-      
     AnalyticResult.aggregate([
         //last 4
         { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
@@ -21,6 +21,7 @@ var winston = require('../config/winston');
       },
       
     ])
+      .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
       .exec(function(err, result) {
 
           if (err) {
