@@ -6,7 +6,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role')
-
+var labelService = require("../services/labelService");
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema,
@@ -256,50 +256,54 @@ router.get('/', function (req, res) {
 
 router.get('/:lang', function (req, res) {
  
-  
-  var query = { "id_project": req.projectid};
-
-  winston.debug("query /", query);
-
-
-  return Label.findOne(query).lean().exec(function (err, labels) {
-
-      if (err) {
-        winston.error('Label ROUTE - REQUEST FIND ERR ', err)
-        return res.status(500).send({ success: false, msg: 'Error getting object.' });
-      }
-      winston.debug("here /", labels);
-      let returnval;
-      if (!labels) {
-        winston.debug("here  no labels");
-
-        returnval = {data: req.labels};
-      } else {
-        returnval = labels;
-        // var dataAsObj = {...req.labels, ...labels.data }
-        // var data = Object.values(dataAsObj);
-        req.labels.forEach(elementDef => {
-          var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
-          if (!pickedLang) {
-            returnval.data.push(elementDef);
-          }
-        });
-      
-      }
-
-      winston.debug("returnval",returnval);
-
-      var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
-      //var pickedLang = returnval.data[req.params.lang];
-
-      if (!pickedLang) {
-        return res.status(404).send({ success: false, msg: 'object not found.' });
-      }
-
-      return res.json(pickedLang);
-      
-    });
+  var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
+  return res.json(labels);
 });
+//   var query = { "id_project": req.projectid};
+
+//   winston.debug("query /", query);
+
+
+//   return Label.findOne(query)
+  
+//   .lean().exec(function (err, labels) {
+
+//       if (err) {
+//         winston.error('Label ROUTE - REQUEST FIND ERR ', err)
+//         return res.status(500).send({ success: false, msg: 'Error getting object.' });
+//       }
+//       winston.debug("here /", labels);
+//       let returnval;
+//       if (!labels) {
+//         winston.debug("here  no labels");
+
+//         returnval = {data: req.labels};
+//       } else {
+//         returnval = labels;
+//         // var dataAsObj = {...req.labels, ...labels.data }
+//         // var data = Object.values(dataAsObj);
+//         req.labels.forEach(elementDef => {
+//           var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
+//           if (!pickedLang) {
+//             returnval.data.push(elementDef);
+//           }
+//         });
+      
+//       }
+
+//       winston.debug("returnval",returnval);
+
+//       var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
+//       //var pickedLang = returnval.data[req.params.lang];
+
+//       if (!pickedLang) {
+//         return res.status(404).send({ success: false, msg: 'object not found.' });
+//       }
+
+//       return res.json(pickedLang);
+      
+//     });
+// });
 
 
 

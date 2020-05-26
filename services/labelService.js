@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require('path');
 var labelsDir = __dirname+"/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
+var cacheUtil = require('../utils/cacheUtil');
 
 class LabelService {
 
@@ -83,8 +84,9 @@ getAll(id_project) {
             winston.debug("query /", query);
         
         
-            return Label.findOne(query).lean().exec(function (err, labels) {
-        
+            return Label.findOne(query).lean()
+            .cache(cacheUtil.longTTL, id_project+":labels:query:all:")
+            .exec(function (err, labels) {
                 if (err) {
                     winston.error('Label ROUTE - REQUEST FIND ERR ', err)
                     return reject({ msg: 'Error getting object.' });
