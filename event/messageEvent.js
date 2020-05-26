@@ -211,6 +211,8 @@ function populateMessageWithRequest(message, eventPrefix) {
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
     
+  winston.info("populateMessageWithRequest");
+
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
   populate('department').  

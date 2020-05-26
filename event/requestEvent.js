@@ -21,6 +21,8 @@ requestEvent.on('request.create.simple', function(request) {
     winston.debug('requestEvent here', request);
     winston.debug('executin query populate on requestEvent');
 
+    winston.info("request.create.simple");
+    //no cache required here. because is always new (empty)
     request
         .populate(
             [           
