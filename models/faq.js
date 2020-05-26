@@ -70,6 +70,7 @@ FaqSchema.virtual('faq_kb', {
   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 });
 
+FaqSchema.index({ id_project: 1, id_faq_kb: 1, question: -1 }); 
 
 FaqSchema.index({question: 'text', answer: 'text'},
  {"name":"faq_fulltext","default_language": "italian","language_override": "language", weights: {question: 10,answer: 1}}); // schema level
