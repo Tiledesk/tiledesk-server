@@ -4,6 +4,7 @@ var Lead = require("../models/lead");
 const uuidv4 = require('uuid/v4');
 const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
+var cacheUtil = require('../utils/cacheUtil');
 
 
 class LeadService {
@@ -12,7 +13,9 @@ class LeadService {
   findByEmail(email, id_project) {
     var that = this;
     return new Promise(function (resolve, reject) {
-      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
+      return Lead.findOne({email: email, id_project: id_project})
+      .cache(cacheUtil.defaultTTL, id_project+":leads:email:"+email)
+      .exec(function(err, lead)  {
           if (err) {
             return reject(err);
           }
@@ -31,16 +34,16 @@ class LeadService {
   createIfNotExists(fullname, email, id_project, createdBy, attributes, status) {
     var that = this;
     return new Promise(function (resolve, reject) {
-      return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {
-          if (err) {
-            return resolve(that.create(fullname, email, id_project, createdBy, attributes, status));
-          }
+      that.findByEmail(email, id_project).then(function(lead) {
+      // return Lead.findOne({email: email, id_project: id_project}, function(err, lead)  {         
           if (!lead) {
             return resolve(that.create(fullname, email, id_project, createdBy, attributes, status));
           }
           return resolve(lead);
       
-      });
+      }).catch(function(err) {
+        return resolve(that.create(fullname, email, id_project, createdBy, attributes, status));
+      })
     });
   }
 
@@ -54,7 +57,9 @@ class LeadService {
   createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes, status) {
     var that = this;
     return new Promise(function (resolve, reject) {
-      return Lead.findOne({lead_id: lead_id, id_project: id_project}, function(err, lead)  {
+      return Lead.findOne({lead_id: lead_id, id_project: id_project})
+        .cache(cacheUtil.defaultTTL, id_project+":leads:lead_id:"+lead_id)
+        .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status));
