@@ -7,6 +7,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role')
 var labelService = require("../services/labelService");
+var labelEvent = require("../event/labelEvent");
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema,
@@ -67,6 +68,8 @@ router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }        
           
+          labelEvent.emit('label.clone', savedLabel);
+
           // express forward          
           req.url =  '/';
           winston.debug('--- > req.url'+req.url);
@@ -134,7 +137,9 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
           if (err) {
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
-          }          
+          }      
+          labelEvent.emit('label.create', savedLabel);
+
            // express forward          
            req.url =  '/'+lang;
            winston.debug('--- > req.url'+req.url);
@@ -159,6 +164,9 @@ router.delete('/',  [passport.authenticate(['basic', 'jwt'], { session: false })
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+
+    labelEvent.emit('label.delete', label);
+
 
     res.json(label);
   });
@@ -197,6 +205,9 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
             winston.error('--- > ERROR ', err);
             return res.status(500).send({ success: false, msg: 'Error saving object.' });
           }
+
+          labelEvent.emit('label.delete', savedLabel);
+
          
            req.url =  '/'+lang;
            winston.debug('--- > req.url'+req.url);
