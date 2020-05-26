@@ -7,6 +7,7 @@ var MessageConstants = require("../models/messageConstants");
 var winston = require('../config/winston');
 var faqBotSupport = require('../services/faqBotSupport');
 var BotFromParticipant = require("../utils/botFromParticipant");
+var cacheUtil = require('../utils/cacheUtil');
 
 class FaqBotHandler {
  
@@ -26,7 +27,9 @@ class FaqBotHandler {
            winston.debug("message.text "+ message.text);
          
 
-           Faq_kb.findById(botId).exec(function(err, faq_kb) {
+           Faq_kb.findById(botId)
+           .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
+           .exec(function(err, faq_kb) {
             if (err) {
               return res.status(500).send({ success: false, msg: 'Error getting object.' });
             }
