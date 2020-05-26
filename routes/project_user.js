@@ -312,7 +312,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
 // TODO fai servizio di patch degli attributi come request
-// TODO blocca cancellazione owner?
+// TODO  blocca cancellazione owner?
 router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
@@ -337,7 +337,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
   Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
-    populate('id_user').
+    populate('id_user'). //qui cache importante ma populatevirtual
     exec(function (err, project_user) {
       if (err) {
         winston.error("Error gettting project_user for get", err);
@@ -366,7 +366,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 //TODO correct is an array
   // Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
    
-    populate('id_user').
+    populate('id_user'). //qui cache importante ma populatevirtual
      exec(function (err, project_user) {
       if (err) {
         winston.error("Error gettting project_user for get users", err);
@@ -381,7 +381,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
     
-      pu.isBusy = ProjectUserUtil.isBusy(project_user[0], req.project.settings && req.project.settings.max_agent_served_chat);
+      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
       res.json([pu]);
 
      });
