@@ -254,7 +254,7 @@ router.get('/', function (req, res) {
 
 
 
-router.get('/:lang', function (req, res) {
+router.get('/:lang', async (req, res) => {
  
   var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
   return res.json(labels);
