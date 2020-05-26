@@ -4,6 +4,7 @@ var Faq_kb = require('../models/faq_kb');
 var MessageConstants = require('../models/messageConstants');
 var winston = require('../config/winston');
 var User = require('../models/user');
+var cacheUtil = require('../utils/cacheUtil');
 
 
 class SendMessageUtil {
@@ -21,12 +22,16 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             var id = sender.replace("bot_","");
             winston.debug("bot id: "+id);
             sender = id; //change sender removing bot_
-            var bot = await Faq_kb.findById(id).exec();
+            var bot = await Faq_kb.findById(id)
+                    .cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id)
+                    .exec();
             winston.debug("bot",bot);                 
             senderFullname = bot.name;           
         } else {
             winston.debug("user id: "+sender);
-            var user = await User.findById(sender).exec()   
+            var user = await User.findById(sender)
+              .cache(cacheUtil.defaultTTL, "users:id:"+sender)
+              .exec()   
             winston.debug("user", user);        
             senderFullname = user.fullName;
         }
