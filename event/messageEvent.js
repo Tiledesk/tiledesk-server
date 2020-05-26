@@ -206,7 +206,7 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
 
 function populateMessageWithRequest(message, eventPrefix) {
 
-
+  
   winston.debug("populateMessageWithRequest "+eventPrefix, message.toObject());
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
@@ -219,8 +219,8 @@ function populateMessageWithRequest(message, eventPrefix) {
   populate('participatingBots').
   populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
-  cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
   lean().
+  cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
   exec(function (err, request) {
 
     if (err) {
