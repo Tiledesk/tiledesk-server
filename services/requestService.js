@@ -16,6 +16,8 @@ var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
+var cacheUtil = require("../utils/cacheUtil");
+
 //var Activity = require("../models/activity");
 //const activityEvent = require('../event/activityEvent');
 
@@ -90,6 +92,7 @@ class RequestService {
     });
   }
   
+  // TODO changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   
   route(request_id, departmentid, id_project, nobot) {
    var that = this;
@@ -101,7 +104,8 @@ class RequestService {
      winston.debug("nobot:"+ nobot);
 
         return Request       
-        .findOne({request_id: request_id, id_project: id_project})          
+        .findOne({request_id: request_id, id_project: id_project})     
+        .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
         .exec( function(err, request) {
 
           if (err) {
@@ -223,7 +227,8 @@ class RequestService {
       // winston.debug("newstatus", newstatus);
  
          return Request       
-         .findOne({request_id: request_id, id_project: id_project})        
+         .findOne({request_id: request_id, id_project: id_project})
+         .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)
          .exec( function(err, request) {
  
            if (err) {
@@ -242,90 +247,6 @@ class RequestService {
      });
    }
 
-  // reroute(request_id, id_project, nobot) {
-  //   var that = this;
- 
-  //   return new Promise(function (resolve, reject) {
-  //     // winston.debug("request_id", request_id);
-  //     // winston.debug("newstatus", newstatus);
- 
-  //        return Request       
-  //        .findOne({request_id: request_id, id_project: id_project})        
-  //        .exec( function(err, request) {
- 
-  //          if (err) {
-  //            winston.error(err);
-  //            return reject(err);
-  //          }
-                    
-  //          var oldParticipants = request.participants;
-
-  //          that.routeInternal(request,request.department.id, id_project, nobot ).then(function(routedRequest){
- 
-  //             //cacheinvalidation
-  //            return routedRequest.save(function(err, savedRequest) {
-  //              // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
-  //              //return routedRequest.update(function(err, savedRequest) {
-  //              if (err) {
-  //                winston.error('Error saving the request.',err);
-  //                return reject(err);
-  //              }
-           
-  //             //  return Request       //to populate correctly i must re-exec the query
-  //             savedRequest
-  //             //  .findById(savedRequest.id)
-  //              .populate('lead')
-  //              .populate('department')
-  //              .populate('participatingBots')
-  //              .populate('participatingAgents')  
-  //              .populate({path:'requester',populate:{path:'id_user'}})
-  //              .execPopulate( function(err, requestComplete) {
-                
-  //                  if (err) {
-  //                    winston.error('Error populating the request.',err);
-  //                    return reject(err);
-  //                  }
-  //                  winston.info("Request routed",requestComplete.toObject());
-                 
-                   
-                   
-  //                  requestEvent.emit('request.update',requestComplete);
-  //                  requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
-
-
-  //                  winston.debug("oldParticipants ", oldParticipants);
- 
-  //                  let newParticipants = requestComplete.participants;
-  //                  winston.debug("newParticipants ", newParticipants);
- 
-  //                  var removedParticipants = oldParticipants.filter(d => !newParticipants.includes(d));
-  //                  winston.debug("removedParticipants ", removedParticipants);
- 
-  //                  var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
-  //                  winston.debug("addedParticipants ", addedParticipants);
-
-
-  //                 //  requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
-  //                  requestEvent.emit('request.participants.update', {beforeRequest:request, 
-  //                   removedParticipants:removedParticipants, 
-  //                   addedParticipants:addedParticipants,
-  //                   request:requestComplete});
-
-  //                  requestEvent.emit('request.department.update',requestComplete); //se req ha bot manda messaggio \welcome
- 
-  //                  return resolve(requestComplete);
-  //              });
-               
-  //            });
- 
-  //          }).catch(function(err) {
-  //            return reject(err);
-  //          });
- 
-             
-  //          });
-  //    });
-  //  }
 
 
 
@@ -354,7 +275,7 @@ class RequestService {
     
     var that = this;
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(async (resolve, reject) => {
 
         var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
@@ -363,9 +284,8 @@ class RequestService {
           winston.debug("context",context);
 
           // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
-        return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
+        // return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
 
-           // winston.debug("getOperators", result);
            
            var assigned_at = undefined;          
            var assigned_operator_id;
@@ -373,9 +293,20 @@ class RequestService {
            var participantsAgents = [];
            var participantsBots = [];
            var hasBot = false;
+           var dep_id = departmentid;
+           var agents = [];
+
           //  winston.debug("req status0", status);
 
            if (!status) {
+
+            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+            winston.info("getOperators", result);
+
+
+            dep_id = result.department._id;
+            agents = result.agents;
+
             //  winston.debug("req status check", status);
              status = RequestConstants.UNSERVED; //unserved
              if (result.operators && result.operators.length>0) {
@@ -390,7 +321,7 @@ class RequestService {
                 winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
                 participantsBots.push(assigned_operator_idStringBot);
 
-               }else {
+               } else {
                 participantsAgents.push(assigned_operator_idString);
                }
                assigned_at = Date.now();
@@ -411,8 +342,8 @@ class RequestService {
                 participantsAgents:participantsAgents,
                 participantsBots: participantsBots,
                 hasBot: hasBot,
-                department: result.department._id,            
-                agents: result.agents,
+                department: dep_id,          
+                agents: agents,
                 //availableAgents: result.available_agents,
 
                 // assigned_operator_id:  result.assigned_operator_id,
@@ -452,9 +383,9 @@ class RequestService {
                   return resolve(savedRequest);
                   
                 });
-            }).catch(function(err){
-              return reject(err);
-            });
+            // }).catch(function(err){
+            //   return reject(err);
+            // });
 
 
     });
@@ -700,6 +631,7 @@ class RequestService {
 
   }
 
+  // unused
   incrementMessagesCountByRequestId(request_id, id_project) {
 
     return new Promise(function (resolve, reject) {
@@ -726,7 +658,9 @@ class RequestService {
      // winston.debug("newstatus", newstatus);
 
       return Request       
-      .findOne({request_id: request_id, id_project: id_project}, function(err, request) {
+      .findOne({request_id: request_id, id_project: id_project})
+      .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
+      .exec(function(err, request) {
         if (err) {
           winston.error(err);
           return reject(err);
@@ -934,6 +868,7 @@ class RequestService {
       return Request
        
       .findOne({request_id: request_id, id_project: id_project})     
+      // qui cache ok
       .exec( function(err, request) {
         if (err) {
           winston.error("Error setParticipantsByRequestId", err);
@@ -1053,7 +988,8 @@ class RequestService {
       }
 
       return Request       
-      .findOne({request_id: request_id, id_project: id_project})              
+      .findOne({request_id: request_id, id_project: id_project})     
+      // qui cache         
       .exec( function(err, request) {
         if (err){
           winston.error("Error adding participant ", err);
@@ -1159,7 +1095,8 @@ class RequestService {
 
     
       return Request        
-        .findOne({request_id: request_id, id_project: id_project})       
+        .findOne({request_id: request_id, id_project: id_project})   
+        // qui cache    
         .exec( function(err, request) {
         
         if (err){
