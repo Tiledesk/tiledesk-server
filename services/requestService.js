@@ -104,7 +104,8 @@ class RequestService {
                    
 
           //it is important to clone here
-          var requestBeforeRoute = Object.assign({}, request);
+          var requestBeforeRoute = Object.assign({}, request.toObject());
+          winston.info("requestBeforeRoute",requestBeforeRoute);
 
           var beforeParticipants = requestBeforeRoute.participants;
           winston.info("beforeParticipants: ", beforeParticipants);
