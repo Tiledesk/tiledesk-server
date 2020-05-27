@@ -47,17 +47,19 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
                     winston.debug("message send from lead with preflight on");
-                    // changeFirstTextByRequestId(request_id, id_project, first_text) {
-                        //  TODO arrivano due request.update su ws 
+
+                        // changeFirstTextAndPreflightByRequestId(request_id, id_project, first_text, preflight) {
+                        requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, message.text, false).then(function (reqChanged) {
+                        
+                            // requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
+                            // requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
 
 
-                        requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
-                            requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
                                 // reroute(request_id, id_project, nobot)
                                 requestService.reroute(message.request.request_id, message.request.id_project, false );     
                                 // updateStatusWitId(lead_id, id_project, status)
                                 leadService.updateStatusWitId(message.request.lead.lead_id, message.request.id_project, LeadConstants.NORMAL);
-                            });
+                            // });
                         });
 
 

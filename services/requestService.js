@@ -115,8 +115,8 @@ class RequestService {
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
 
 
-            if (requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-              winston.info("Request " +request.request_id +" contains already the same participants. routed to the same participants");
+            if (request.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+              winston.info("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
               return request
               .populate('lead') 
@@ -527,6 +527,35 @@ class RequestService {
             }
             requestEvent.emit('request.update',updatedRequest);
             requestEvent.emit("request.update.comment", {comment:"STATUS_CHANGE",request:updatedRequest});
+            //TODO emit request.clone or reopen also 
+
+            return resolve(updatedRequest);
+          });
+    });
+
+  }
+
+  changeFirstTextAndPreflightByRequestId(request_id, id_project, first_text, preflight) {
+
+    return new Promise(function (resolve, reject) {
+     // winston.debug("request_id", request_id);
+     // winston.debug("newstatus", newstatus);
+
+        return Request       
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {first_text: first_text, preflight: preflight}, {new: true, upsert:false})
+        .populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}})
+        .exec( function(err, updatedRequest) {
+
+            if (err) {
+              winston.error(err);
+              return reject(err);
+            }
+            requestEvent.emit('request.update',updatedRequest);
+            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_PREFLIGHT_CHANGE",request:updatedRequest});
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
