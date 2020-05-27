@@ -118,7 +118,7 @@ class RequestService {
             if (requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
               winston.info("Request " +request.request_id +" contains already the same participants. routed to the same participants");
 
-              request
+              return request
               .populate('lead') 
               .populate('department')
               .populate('participatingBots')
@@ -874,10 +874,10 @@ class RequestService {
         winston.info('oldParticipants', oldParticipants);
         winston.info('newparticipants', newparticipants);
         
-        if (arrayUtil.arraysEqual(oldParticipants, newparticipants)){
+        if (requestUtil.arraysEqual(oldParticipants, newparticipants)){
         //if (oldParticipants === newparticipants) {
           winston.info('Request members '+ oldParticipants+ ' already equal to ' + newparticipants + ' for request_id '+ request_id + ' and id_project '+ id_project);
-          request
+          return request
           .populate('lead')
           .populate('department')
           .populate('participatingBots')
@@ -928,14 +928,14 @@ class RequestService {
         request.waiting_time = undefined //reset waiting_time on reroute ????
 
           //cacheinvalidation
-        request.save(function(err, updatedRequest) {
+        return request.save(function(err, updatedRequest) {
           // dopo save non aggiorna participating
           if (err) {
             winston.error("Error setParticipantsByRequestId", err);
             return reject(err);
           }
         
-          updatedRequest
+         return updatedRequest
           .populate('lead')
           .populate('department')
           .populate('participatingBots')
@@ -1046,7 +1046,7 @@ class RequestService {
 
             winston.debug("saved", savedRequest);
 
-            savedRequest
+            return savedRequest
             .populate('lead')
             .populate('department')
             .populate('participatingBots')
@@ -1073,7 +1073,7 @@ class RequestService {
           // qui assignetat
         } else {
           winston.debug('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
-          request
+          return request
           .populate('lead')
           .populate('department')
           .populate('participatingBots')
@@ -1152,12 +1152,13 @@ class RequestService {
          
           // winston.debug(" request",  request);
          //cacheinvalidation
-          request.save(function(err, savedRequest) {
+         return request.save(function(err, savedRequest) {
             if (err){
               winston.error("Error saving removed participant ", err);
               return reject(err);
             }
-            savedRequest
+            
+            return savedRequest
             .populate('lead')
             .populate('department')
             .populate('participatingBots')
@@ -1186,7 +1187,7 @@ class RequestService {
         }else {
           winston.info('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
 
-          request
+          return request
           .populate('lead')
           .populate('department')
           .populate('participatingBots')
@@ -1240,7 +1241,7 @@ class RequestService {
           request.markModified('attributes');
           
           //cacheinvalidation
-          request.save(function (err, savedRequest) {
+          return request.save(function (err, savedRequest) {
             if (err) {
               winston.error("error saving request attributes",err)
               return reject({msg:"Error saving request attributes",err:err});
