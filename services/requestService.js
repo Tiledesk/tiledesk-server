@@ -2,25 +2,14 @@
 
 var departmentService = require('../services/departmentService');
 var Request = require("../models/request");
-var emailService = require("../services/emailService");
-var Project = require("../models/project");
-var User = require("../models/user");
-var Message = require("../models/message");
-// var mongoose = require('mongoose');
 var messageService = require('../services/messageService');
-// var leadService = require('../services/leadService');
-var Lead = require('../models/lead');
 const requestEvent = require('../event/requestEvent');
-var Project_user = require("../models/project_user");
 var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
 var cacheUtil = require("../utils/cacheUtil");
-
-//var Activity = require("../models/activity");
-//const activityEvent = require('../event/activityEvent');
-
+var arrayUtil = require("../utils/arrayUtil");
 
 class RequestService {
 
@@ -92,7 +81,7 @@ class RequestService {
     });
   }
   
-  // TODO changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
+  // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   
   route(request_id, departmentid, id_project, nobot) {
    var that = this;
@@ -852,6 +841,9 @@ class RequestService {
     });
   }
 
+
+
+
   setParticipantsByRequestId(request_id, id_project, newparticipants) {
     
     //TODO validate participants
@@ -879,8 +871,26 @@ class RequestService {
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
         var oldParticipants = request.participants;
+        winston.info('oldParticipants', oldParticipants);
+        winston.info('newparticipants', newparticipants);
+        
+        if (arrayUtil.arraysEqual(oldParticipants, newparticipants)){
+        //if (oldParticipants === newparticipants) {
+          winston.info('Request members '+ oldParticipants+ ' already equal to ' + newparticipants + ' for request_id '+ request_id + ' and id_project '+ id_project);
+          request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
+
+        }
 
         request.participants = newparticipants;
+
         var newparticipantsAgents = [];
         var newparticipantsBots = [];
 
