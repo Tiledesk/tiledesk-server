@@ -61,7 +61,7 @@ router.get('/', function(req, res) {
       },
       
     ])
-    .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
+    // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
     .exec(function(err, result) {
           return resolve(result);
     });
