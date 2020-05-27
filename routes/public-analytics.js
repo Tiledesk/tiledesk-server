@@ -3,7 +3,7 @@ var router = express.Router();
 var AnalyticResult = require("../models/analyticResult");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
-var cacheUtil = require('../utils/cacheUtil');
+// var cacheUtil = require('../utils/cacheUtil');
 
 
   router.get('/waiting/current', function(req, res) {
@@ -21,7 +21,7 @@ var cacheUtil = require('../utils/cacheUtil');
       },
       
     ])
-      .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
+      // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
       .exec(function(err, result) {
 
           if (err) {
