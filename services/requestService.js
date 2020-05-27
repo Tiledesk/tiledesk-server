@@ -113,6 +113,8 @@ class RequestService {
             winston.debug("after routeInternal");
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
+            winston.info("request.status:"+request.status);
+            winston.info("routedRequest.status:"+routedRequest.status);
 
 
             if (request.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
