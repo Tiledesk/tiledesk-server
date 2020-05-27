@@ -103,21 +103,22 @@ class RequestService {
           }
                    
 
-          
-          // var requestBeforeRoute = Object.assign({}, request);
-          var beforeParticipants = request.participants;
-          // console.log("beforeParticipants ", beforeParticipants);
+          //it is important to clone here
+          var requestBeforeRoute = Object.assign({}, request);
+
+          var beforeParticipants = requestBeforeRoute.participants;
+          winston.info("beforeParticipants: ", beforeParticipants);
 
           return that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
             winston.debug("after routeInternal");
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
-            winston.info("request.status:"+request.status);
-            winston.info("routedRequest.status:"+routedRequest.status);
+            winston.info("request.status:" + requestBeforeRoute.status);
+            winston.info("routedRequest.status:" + routedRequest.status);
 
 
-            if (request.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+            if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
               winston.info("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
               return request
