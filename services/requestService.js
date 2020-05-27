@@ -105,18 +105,18 @@ class RequestService {
 
           //it is important to clone here
           var requestBeforeRoute = Object.assign({}, request.toObject());
-          winston.info("requestBeforeRoute",requestBeforeRoute);
+          winston.debug("requestBeforeRoute",requestBeforeRoute);
 
           var beforeParticipants = requestBeforeRoute.participants;
-          winston.info("beforeParticipants: ", beforeParticipants);
+          winston.debug("beforeParticipants: ", beforeParticipants);
 
           return that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
             winston.debug("after routeInternal");
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
-            winston.info("request.status:" + requestBeforeRoute.status);
-            winston.info("routedRequest.status:" + routedRequest.status);
+            winston.debug("request.status:" + requestBeforeRoute.status);
+            winston.debug("routedRequest.status:" + routedRequest.status);
 
 
             if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
