@@ -269,7 +269,10 @@ router.get('/:lang', async (req, res) => {
  
   var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
   return res.json(labels);
+
 });
+
+
 //   var query = { "id_project": req.projectid};
 
 //   winston.debug("query /", query);

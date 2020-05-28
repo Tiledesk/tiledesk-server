@@ -32,7 +32,7 @@ async get(id_project, language, key) {
 
    if (ret) {
        return ret;
-   } else {
+   } else { 
        return this.getByLanguageAndKey(id_project, "EN", key);
    }
 
@@ -42,7 +42,7 @@ getByLanguageAndKey(id_project, language, key) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
-        that.getAllByLanguage(id_project,language).then(function(returnval) {
+        that.getAllByLanguageNoPivot(id_project,language).then(function(returnval) {
             winston.debug("getByLanguageAndKey returnval",returnval);
             if (returnval) {
                 var value = returnval.data[key];
@@ -56,21 +56,34 @@ getByLanguageAndKey(id_project, language, key) {
     });
 }
 
-getAllByLanguage(id_project, language) {
+
+async getAllByLanguage(id_project, language) {
+    var ret = await this.getAllByLanguageNoPivot(id_project, language);
+ 
+    if (ret) {
+        return ret;
+    } else { 
+        return this.getAllByLanguageNoPivot(id_project, "EN");
+    }
+ 
+ }
+
+getAllByLanguageNoPivot(id_project, language) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
         that.getAll(id_project).then(function(returnval) {
-            winston.debug("getAllByLanguage returnval",returnval);
+            winston.debug("getAllByLanguageNoPivot returnval",returnval);
 
             var pickedLang = returnval.data.find(l => l.lang === language);
             //var pickedLang = returnval.data[req.params.lang];           
 
-            winston.debug("getAllByLanguage pickedLang",pickedLang);
+            winston.debug("getAllByLanguageNoPivot pickedLang",pickedLang);
             return resolve(pickedLang); 
         });
     });
 }
+
 
 getAll(id_project) {
  
@@ -79,13 +92,13 @@ getAll(id_project) {
         
         return that.fetchDefault().then(function(defaults) {
 
-            var query = { "id_project": id_project};
+            var query = {"id_project": id_project};
         
             winston.debug("query /", query);
         
         
             return Label.findOne(query).lean()
-            .cache(cacheUtil.longTTL, id_project+":labels:query:all:")
+            .cache(cacheUtil.longTTL, id_project+":labels:query:all")
             .exec(function (err, labels) {
                 if (err) {
                     winston.error('Label ROUTE - REQUEST FIND ERR ', err)
@@ -95,7 +108,7 @@ getAll(id_project) {
                 winston.debug("here /", labels);
                 let returnval;
                 if (!labels) {
-                    winston.debug("here  no labels");        
+                    winston.debug("here no labels");        
                     returnval = {data: defaults};
                 } else {
                     returnval = labels;
@@ -106,8 +119,7 @@ getAll(id_project) {
                         if (!pickedLang) {
                         returnval.data.push(elementDef);
                         }
-                    });
-                
+                    });                
                 }
                 
                 winston.debug("getAll returnval",returnval);
