@@ -279,7 +279,7 @@ class RequestService {
           // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
         // return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
 
-           
+        
            var assigned_at = undefined;          
            var assigned_operator_id;
            var participants = [];
@@ -289,17 +289,21 @@ class RequestService {
            var dep_id = departmentid;
            var agents = [];
 
+
+           var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+           winston.info("getOperators", result);
+ 
+           // for preflight it is important to save agents in req for trigger
+           dep_id = result.department._id;
+           agents = result.agents;
+
+
           //  winston.debug("req status0", status);
 
            if (!status) {
+        
 
-            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-            winston.info("getOperators", result);
-
-
-            dep_id = result.department._id;
-            agents = result.agents;
-
+           
             //  winston.debug("req status check", status);
              status = RequestConstants.UNSERVED; //unserved
              if (result.operators && result.operators.length>0) {
