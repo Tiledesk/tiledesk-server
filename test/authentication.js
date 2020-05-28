@@ -650,7 +650,7 @@ it('signinWithCustomTokenOkTwoSigninWithCT', (done) => {
             });
         });
             
-});
+}).timeout(20000);
 
 
 
