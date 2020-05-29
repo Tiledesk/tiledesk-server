@@ -1,3 +1,14 @@
+# 2.1.0-beta7
+- Activities, Jwt History and Rest Hook update
+
+# 2.1.0-beta6
+- Widget language pivoting fix
+
+# 2.1.0-beta5
+- Support for cache
+- Removed message_count of request model
+- Concierge bot now update lead after preflight
+
 # 2.1.0-beta4
 - added isAuthenticated field to project_user model
 - trigger update 
