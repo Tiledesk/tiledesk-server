@@ -40,10 +40,9 @@ class EventService {
 
   // }
 
-  emit(name, attributes, id_project, project_user, createdBy) {
+  emit(name, attributes, id_project, project_user, createdBy, user) {
 
     return new Promise(function (resolve, reject) {
-
   
       var newEvent = new Event({
         name: name,
@@ -59,12 +58,14 @@ class EventService {
           winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
           return reject(err);
         }
-        savedEvent.populate({path:'project_user',populate:{path:'id_user'}},function (err, savedEventPopulated){
-        // savedEvent.populate('project_user',function (err, savedEventPopulated){
-          eventEvent.emit('event.emit', savedEventPopulated);
-          eventEvent.emit('event.emit.'+name, savedEventPopulated);
+        savedEvent.populate({path:'project_user', populate:{path:'id_user'}},function (err, savedEventPopulated) {
+          var savedEventPopulatedJson = savedEventPopulated.toObject();
+          savedEventPopulatedJson.user = user;
+          winston.info("savedEventPopulatedJson", savedEventPopulatedJson);
+          eventEvent.emit('event.emit', savedEventPopulatedJson);
+          eventEvent.emit('event.emit.'+name, savedEventPopulatedJson);
           
-          event2Event.emit(name, savedEventPopulated);
+          event2Event.emit(name, savedEventPopulatedJson);
         });
        
         return resolve(savedEvent);
