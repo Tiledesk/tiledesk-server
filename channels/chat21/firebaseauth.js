@@ -9,8 +9,8 @@ var winston = require('../../config/winston');
 
 
 router.post('/createCustomToken', function (req, res) {
-            //   ???? sicurooooo                     
-        var uid = req.projectid + '-' + req.user.id;
+        // var uid = req.projectid + '-' + req.user.id;
+        var uid = req.user.id;
         winston.debug("uid",uid);
 
         firebaseService.createCustomToken(uid).then(customAuthToken => {
