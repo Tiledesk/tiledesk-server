@@ -456,9 +456,24 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
 });
 
 
-// TODO delete request
 router.delete('/:requestid',  function (req, res) {
   
+  var projectuser = req.projectuser;
+
+
+  if (projectuser.role != "owner" ) {
+    return res.status(403).send({ success: false, msg: 'Unauthorized.' });
+  }
+  Request.remove({ requestid: req.params.requestid }, function (err, request) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+    }
+
+  
+    requestEvent.emit('request.delete', request);
+
+    res.json(request);
 
 });
 
