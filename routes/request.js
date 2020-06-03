@@ -245,18 +245,18 @@ error: uncaughtException: Cannot set property 'participants' of null
 2020-03-08T12:53:35.793661+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4779:16
 */
 router.put('/:requestid/participants', function (req, res) {
-  winston.info("req.body", req.body);
+  winston.debug("req.body", req.body);
 
   var participants = [];
   req.body.forEach(function(participant,index) {
     participants.push(participant);
   });
-  winston.info("var participants", participants);
+  winston.debug("var participants", participants);
   
   //setParticipantsByRequestId(request_id, id_project, participants)
   return requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants ).then(function(updatedRequest) {
 
-      winston.info("participant set", updatedRequest);
+      winston.debug("participant set", updatedRequest);
 
       return res.json(updatedRequest);
   });
@@ -521,6 +521,7 @@ router.get('/', function (req, res, next) {
       //all request 
   } else if (projectuser && projectuser.role == "owner" || projectuser.role == "admin") {
       //all request 
+      // per uni mostrare solo quelle priprio quindi solo participants
     if (req.query.mine) {
       query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}];
     }
@@ -575,7 +576,7 @@ router.get('/', function (req, res, next) {
    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
    */
-  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if (req.project && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
 
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
@@ -834,6 +835,8 @@ router.get('/csv', function (req, res, next) {
             }
             delete element.department;
             element.department = depName;
+
+            // TODO print also lead. use a library to flattize
           });
 
           winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);

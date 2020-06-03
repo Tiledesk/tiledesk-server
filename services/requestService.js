@@ -293,7 +293,7 @@ class RequestService {
            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
            winston.info("getOperators", result);
  
-           // for preflight it is important to save agents in req for trigger
+           // for preflight it is important to save agents in req for trigger. try to optimize it
            dep_id = result.department._id;
            agents = result.agents;
 
@@ -562,6 +562,9 @@ class RequestService {
               winston.error(err);
               return reject(err);
             }
+
+           
+            requestEvent.emit('request.update.preflight',updatedRequest); //archive to audit log
             requestEvent.emit('request.update',updatedRequest);
             requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_PREFLIGHT_CHANGE",request:updatedRequest});
             //TODO emit request.clone or reopen also 
@@ -908,8 +911,8 @@ class RequestService {
           return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
         }
         var oldParticipants = request.participants;
-        winston.info('oldParticipants', oldParticipants);
-        winston.info('newparticipants', newparticipants);
+        winston.debug('oldParticipants', oldParticipants);
+        winston.debug('newparticipants', newparticipants);
         
         if (requestUtil.arraysEqual(oldParticipants, newparticipants)){
         //if (oldParticipants === newparticipants) {
