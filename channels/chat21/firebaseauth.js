@@ -1,10 +1,7 @@
 
 'use strict';
 
-// Modules imports
-// const rp = require('request-promise');
 const express = require('express');
-// const bodyParser = require('body-parser');
 var router = express.Router();
 var firebaseService = require("./firebaseService");
 var winston = require('../../config/winston');
@@ -12,9 +9,8 @@ var winston = require('../../config/winston');
 
 
 router.post('/createCustomToken', function (req, res) {
-                    
-              
-        var uid = req.user.id;
+            //   ???? sicurooooo                     
+        var uid = req.projectid + '-' + req.user.id;
         winston.debug("uid",uid);
 
         firebaseService.createCustomToken(uid).then(customAuthToken => {

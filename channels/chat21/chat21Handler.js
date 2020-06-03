@@ -4,7 +4,6 @@ const authEvent = require('../../event/authEvent');
 const botEvent = require('../../event/botEvent');
 const requestEvent = require('../../event/requestEvent');
 var messageService = require('../../services/messageService');
-//var chatUtil = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
 var winston = require('../../config/winston');
@@ -38,14 +37,12 @@ var admin = require('./firebaseConnector');
 var firestore;
 var chat21WebHook;
 var firebaseAuth;
-var firebaseAuthDep;
 
 if (admin) {
     firestore = admin.firestore();
     chat21WebHook = require('./chat21WebHook');
     chat21ConfigRoute = require('./configRoute');
     firebaseAuth = require('./firebaseauth');
-    firebaseAuthDep = require('./firebaseauthDEP');
     firebase = require('./firebase');
 }
 
@@ -58,8 +55,6 @@ class Chat21Handler {
             app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
             app.use('/chat21/config',  chat21ConfigRoute);
 
-            // TODO serve +?
-            app.use('/firebase/auth',  firebaseAuthDep);
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
             winston.info("Chat21WebHook not initialized ");
@@ -70,7 +65,7 @@ class Chat21Handler {
     useUnderProjects(app) {
         
         if (admin){          
-            app.use('/:projectid/firebase', firebase); 
+            app.use('/:projectid/firebase_TODELETE', firebase); 
             // winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
             // winston.info("chat21WebHook not initialized ");
@@ -203,7 +198,7 @@ class Chat21Handler {
         });
 
 
-    
+    // quando passa da lead temp a default aggiorna tutti va bene?
 
          leadEvent.on('lead.update', function(lead) {
             //  non sembra funzionare chiedi a Dario dove prende le info
@@ -351,7 +346,7 @@ class Chat21Handler {
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
-                                            winston.info("Chat21 sendToGroup sent: "+ JSON.stringify(data));
+                                            winston.info("Chat21Sender sendToGroup sent: "+ JSON.stringify(data));
                                     
 
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);

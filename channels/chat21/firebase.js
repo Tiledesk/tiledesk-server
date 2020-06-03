@@ -1,28 +1,20 @@
 
 'use strict';
 
-// Modules imports
 const express = require('express');
 var router = express.Router();
 var firebaseService = require("./firebaseService");
-// var config = require('../config/database'); 
 var jwt = require('jsonwebtoken');
 var validtoken = require('../../middleware/valid-token');
-// var secret = process.env.SECRET || config.secret;
 var requestUtil = require('../../utils/requestUtil');
 var Project = require('../../models/project');
 var winston = require('../../config/winston');
 
+
+
+// DEPRECATED'????? remove
 router.post('/createtoken', validtoken, function (req, res) {
 
-    // var project_id = req.query.project_id;
-
-    // console.log("project_id", project_id);
-
-    // if (!project_id) {
-    //     winston.error("project_id parameter is required");
-    //     res.status(400).send({ success: false, msg: "project_id parameter is required" });
-    // }
 
     return Project.findOne({_id: req.projectid, status: 100}, '+jwtSecret')
     .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:+jwtSecret")
@@ -71,13 +63,7 @@ router.post('/createtoken', validtoken, function (req, res) {
                 }
 
 
-               
-
-                // //iat is in second
-                // if(decoded.iat  && decoded.iat + 300 > new Date()) {                  
-                //     console.log("token.exp is null and token.iat +300 is expired");
-                //     return res.status(401).send({ success: false, msg: 'Authentication failed. Token expired', err: err });
-                // }
+             
 
                 
 
