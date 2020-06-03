@@ -58,15 +58,20 @@ class EventService {
           winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
           return reject(err);
         }
-        savedEvent.populate({path:'project_user', populate:{path:'id_user'}},function (err, savedEventPopulated) {
-          var savedEventPopulatedJson = savedEventPopulated.toObject();
+        savedEvent.populate({path:'project_user', 
+          populate:{path:'id_user'}                
+        },function (err, savedEventPopulated) {
+          
+          var savedEventPopulatedJson = savedEventPopulated.toJSON();
           savedEventPopulatedJson.user = user;
+          savedEventPopulatedJson.id = savedEventPopulatedJson._id;
           winston.info("savedEventPopulatedJson", savedEventPopulatedJson);
           eventEvent.emit('event.emit', savedEventPopulatedJson);
           eventEvent.emit('event.emit.'+name, savedEventPopulatedJson);
           
           event2Event.emit(name, savedEventPopulatedJson);
         });
+
        
         return resolve(savedEvent);
       });
