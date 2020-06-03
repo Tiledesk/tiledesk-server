@@ -475,6 +475,7 @@ router.delete('/:requestid',  function (req, res) {
 
     res.json(request);
 
+  });
 });
 
 // unused ?
