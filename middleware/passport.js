@@ -250,9 +250,25 @@ module.exports = function(passport) {
     
      
         if (jwt_payload) {
-          winston.debug("Passport JWT userexternal", jwt_payload);
+
+          const audUrl  = new URL(jwt_payload.aud);
+          winston.info("audUrl: "+ audUrl );
+
+          const path = audUrl.pathname;
+          winston.info("audUrl path: " + path );
+          
+          const AudienceType = path.split("/")[1];
+          winston.info("audUrl AudienceType: " + AudienceType );
+
+          const AudienceId = path.split("/")[2];
+          winston.info("audUrl AudienceId: " + AudienceId );
+
+          jwt_payload._id = AudienceId + "-" + jwt_payload._id;
+          
+          winston.info("Passport JWT userexternal", jwt_payload);
           var userM = UserUtil.decorateUser(jwt_payload);
-          winston.debug("Passport JWT userexternal userM", userM);
+          winston.info("Passport JWT userexternal userM", userM);
+          
           return done(null, userM );
         }  else {
           var err = {msg: "No jwt_payload passed. Its required"};
