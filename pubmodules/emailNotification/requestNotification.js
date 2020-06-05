@@ -81,6 +81,8 @@ listen() {
               });
               //end send email to lead
 
+            } else {
+              winston.info("sendTranscriptByEmail disabled for project with id: "+ id_project);
             }
           });
         }catch(e) {
