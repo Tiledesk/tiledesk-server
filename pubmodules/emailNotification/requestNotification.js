@@ -53,7 +53,15 @@ listen() {
           Project.findOne({_id: id_project, status: 100}, function(err, project){   
             winston.info("sendTranscriptByEmail", project);
 
-            if (project && project.settings && project.settings.email &&  project.settings.email.autoSendTranscriptToRequester &&  project.settings.email.autoSendTranscriptToRequester === true && (project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
+            if (project && project.settings && project.settings.email && 
+              project.settings.email.autoSendTranscriptToRequester &&  
+              project.settings.email.autoSendTranscriptToRequester === true && 
+              (
+                (project.profile.type === 'free' && project.trialExpired === false) || 
+                (project.profile.type === 'payment' && project.isActiveSubscription === true)
+              )
+            ) 
+              {
 
               //send email to admin
               Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]} } ).populate('id_user')
