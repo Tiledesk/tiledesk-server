@@ -1,11 +1,8 @@
-# 2.1.0-beta13
-- Send transcript fix
-
 # 2.1.0-beta12
-- request physical deletion
-
+- Send transcript fix
 # 2.1.0-beta11
 - Activity archiver fix for preflight request
+- request physical deletion
 
 # 2.1.0-beta10
 - Minor bugfix for events
