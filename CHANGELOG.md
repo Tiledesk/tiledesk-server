@@ -1,3 +1,18 @@
+# 2.1.0-beta13
+- Send transcript fix
+
+# 2.1.0-beta12
+- request physical deletion
+
+# 2.1.0-beta11
+- Activity archiver fix for preflight request
+
+# 2.1.0-beta10
+- Minor bugfix for events
+
+# 2.1.0-beta9
+- Trigger fix for custom authentication
+
 # 2.1.0-beta7
 - Activities, Jwt History and Rest Hook update
 
