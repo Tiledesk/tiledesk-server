@@ -201,7 +201,13 @@ router.get('/', function (req, res) {
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, faq_kb) {
+  var query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  if (req.query.all!="true") {
+    query.type = { $ne: "identity" }
+  }
+  winston.info("query", query);
+
+  Faq_kb.find(query, function (err, faq_kb) {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return (err);
