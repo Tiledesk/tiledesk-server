@@ -27,6 +27,8 @@ class ModulesManager {
         this.routingQueue = undefined;
         this.queue = undefined;
         this.cache = undefined;
+        this.cannedResponseRoute = undefined;
+        this.tagRoute = undefined;
     }
 
     injectBefore(app) {
@@ -107,6 +109,18 @@ class ModulesManager {
             app.use('/:projectid/requests/:request_id/history', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['subscription'])] , this.requestHistoryRoute);
             winston.info("ModulesManager requestHistory controller loaded"); 
         }
+
+
+        if (this.cannedResponseRoute) {            
+            app.use('/:projectid/canned', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.cannedResponseRoute);
+            winston.info("ModulesManager canned controller loaded");       
+        }
+
+        if (this.tagRoute) {     
+            app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.tagRoute);
+            winston.info("ModulesManager tag controller loaded");       
+        }
+
 
         // if (this.facebookRoute) {
         //     app.use('/modules/facebook', this.facebookRoute);
@@ -312,7 +326,29 @@ class ModulesManager {
             }
         }
 
-        
+        try {
+            this.cannedResponseRoute = require('@tiledesk-ent/tiledesk-server-canned').cannedResponseRoute;
+            winston.debug("this.cannedResponseRoute:"+ this.cannedResponseRoute);        
+            winston.info("ModulesManager init cannedResponseRoute loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init canned module not found");
+            }else {
+                winston.error("ModulesManager error initializing init canned module", err);
+            }
+        }
+
+        try {
+            this.tagRoute = require('@tiledesk-ent/tiledesk-server-tags').tagRoute;
+            winston.debug("this.tagRoute:"+ this.tagRoute);        
+            winston.info("ModulesManager init tagRoute loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init tag module not found");
+            }else {
+                winston.error("ModulesManager error initializing init tag module", err);
+            }
+        }
 
 
         
