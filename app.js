@@ -80,9 +80,6 @@ var project = require('./routes/project');
 var project_user = require('./routes/project_user');
 var request = require('./routes/request');
 // var setting = require('./routes/setting');
-
-var group = require('./routes/group');
-
 var users = require('./routes/users');
 var publicRequest = require('./routes/public-request');
 var userRequest = require('./routes/user-request');
@@ -412,7 +409,6 @@ app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], request);
 
 
-app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
 app.use('/:projectid/publicanalytics', publicAnalytics);
 
 app.use('/:projectid/keys', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], key);
