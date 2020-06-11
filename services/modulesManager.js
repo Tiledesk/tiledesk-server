@@ -29,6 +29,7 @@ class ModulesManager {
         this.cache = undefined;
         this.cannedResponseRoute = undefined;
         this.tagRoute = undefined;
+        this.groupsRoute = undefined;
     }
 
     injectBefore(app) {
@@ -120,6 +121,13 @@ class ModulesManager {
             app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.tagRoute);
             winston.info("ModulesManager tag controller loaded");       
         }
+
+        if (this.groupsRoute) {     
+            app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.groupsRoute);
+            winston.info("ModulesManager group controller loaded");       
+        }
+
+
 
 
         // if (this.facebookRoute) {
@@ -349,6 +357,20 @@ class ModulesManager {
                 winston.error("ModulesManager error initializing init tag module", err);
             }
         }
+
+        try {
+            this.groupsRoute = require('@tiledesk-ent/tiledesk-server-tags').groupsRoute;
+            winston.debug("this.groupsRoute:"+ this.groupsRoute);        
+            winston.info("ModulesManager init groupsRoute loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init group module not found");
+            }else {
+                winston.error("ModulesManager error initializing init group module", err);
+            }
+        }
+
+
 
 
         
