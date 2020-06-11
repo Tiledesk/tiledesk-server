@@ -7,6 +7,10 @@ var winston = require('../config/winston');
 var dbUrl = process.env.MONGODB_LOGS_URI || config.databaselogs || process.env.MONGODB_URI;
 winston.info('VisitorCounterSchema dbUrl: '+dbUrl);
 
+// mongoose.set('useFindAndModify', false); //??
+// mongoose.set('useCreateIndex', true);
+// mongoose.set('useUnifiedTopology', true); 
+
 var conn      = mongoose.createConnection(dbUrl, { "autoIndex": true });	
 // var conn      = mongoose.connect(dbUrl, { "useNewUrlParser": true, "autoIndex": true });
 

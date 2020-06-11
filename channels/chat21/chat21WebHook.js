@@ -48,8 +48,8 @@ router.post('/', function (req, res) {
     winston.info("Chat21 message", message);
 
         // requestcachefarequi nocachepopulatereqired
-        return Request.findOne({request_id: message.recipient})
-
+        return Request.findOne({request_id: message.recipient})      
+          // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) project_id not available
           .exec(function(err, request) {
           // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
 
@@ -157,8 +157,9 @@ router.post('/', function (req, res) {
                       winston.info("queryProjectUser", queryProjectUser);
                       
 
-                  //  TODO FAI CACHE
-                    return Project_user.findOne(queryProjectUser, function (err, project_user) {
+                    return Project_user.findOne(queryProjectUser)
+                    // .cache(cacheUtil.defaultTTL, projectid+":project_users:request_id:"+requestid)
+                    .exec(function (err, project_user) {
 
                       var project_user_id = null; 
 
@@ -313,7 +314,9 @@ router.post('/', function (req, res) {
               var query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
               
-              return Request.findOne(query, function(err, request) {
+              return Request.findOne(query)
+              .cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id)
+              .exec(function(err, request) {
 
                 if (err) {
                   winston.error("Error finding request with query ", query);
@@ -333,12 +336,9 @@ router.post('/', function (req, res) {
                       // manca id
 
                       return requestService.closeRequestByRequestId(recipient_id, projectId).then(function(updatedStatusRequest) {
-                        // if (req.project && req.project.settings && req.project.settings.email &&  req.project.settings.email.autoSendTranscriptToRequester) {
-                        //   requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid);
-                        // }
+                        
                         winston.debug('updatedStatusRequest', updatedStatusRequest.toObject());
-                        return res.json(updatedStatusRequest);
-                      // });
+                        return res.json(updatedStatusRequest);                      
                     }).catch(function(err){
                       winston.error("Error closing request", err);
                       return res.status(500).send({success: false, msg: 'Error closing request', err:err });
