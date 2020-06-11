@@ -97,8 +97,6 @@ var widgetsLoader = require('./routes/widgetLoader');
 var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
-var cannedResponse = require("./routes/cannedResponse");
-var tag = require("./routes/tag");
 var cacheUtil = require("./utils/cacheUtil");
 
 require('./services/mongoose-cache-fn')(mongoose);
@@ -425,8 +423,6 @@ app.use('/:projectid/jwt', jwtroute);
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 app.use('/:projectid/labels', [fetchLabels],labels);
-app.use('/:projectid/canned', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], cannedResponse);
-app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], tag);
 
 
 
