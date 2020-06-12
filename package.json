@@ -41,8 +41,7 @@
     "@tiledesk-ent/tiledesk-server-cache": "^1.1.8",
     "@tiledesk-ent/tiledesk-server-canned": "^1.1.0",
     "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
-    "@tiledesk-ent/tiledesk-server-groups": "^1.1.2",
-    "@tiledesk-ent/tiledesk-server-departments": "^1.1.0"
+    "@tiledesk-ent/tiledesk-server-groups": "^1.1.2"
   },
   "dependencies": {
     "@godaddy/terminus": "^4.3.1",
