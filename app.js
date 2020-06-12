@@ -115,7 +115,7 @@ channelManager.listen();
 var modulesManager = undefined;
 try {
   modulesManager = require('./services/modulesManager');
-  modulesManager.init({mongoose:mongoose});
+  modulesManager.init({mongoose:mongoose, passport:passport, routes: {departmentsRoute: department} });
 } catch(err) {
   winston.info("ModulesManager not present");
 }

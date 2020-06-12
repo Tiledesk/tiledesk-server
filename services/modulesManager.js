@@ -30,6 +30,7 @@ class ModulesManager {
         this.cannedResponseRoute = undefined;
         this.tagRoute = undefined;
         this.groupsRoute = undefined;
+        // this.departmentsRoute = undefined;
     }
 
     injectBefore(app) {
@@ -127,6 +128,12 @@ class ModulesManager {
             winston.info("ModulesManager group controller loaded");       
         }
 
+        // if (this.departmentsRoute) {     
+        //     app.use('/:projectid/departments', this.departmentsRoute);
+        //     winston.info("ModulesManager departments controller loaded");       
+        // }
+
+        
 
 
 
@@ -359,7 +366,7 @@ class ModulesManager {
         }
 
         try {
-            this.groupsRoute = require('@tiledesk-ent/tiledesk-server-tags').groupsRoute;
+            this.groupsRoute = require('@tiledesk-ent/tiledesk-server-groups').groupsRoute;
             winston.debug("this.groupsRoute:"+ this.groupsRoute);        
             winston.info("ModulesManager init groupsRoute loaded");
         } catch(err) {
@@ -369,6 +376,24 @@ class ModulesManager {
                 winston.error("ModulesManager error initializing init group module", err);
             }
         }
+
+
+          
+        if (config && config.routes && config.routes.departmentsRoute) {
+            try {                          
+                require('@tiledesk-ent/tiledesk-server-departments').ext(config.routes.departmentsRoute, config.passport);
+                // console.log("aaaaaaaaaaaaasdsadsadsadsda",JSON.config.routes.departmentsRoute )   
+                winston.info("ModulesManager init departmentsRoute loaded");
+            } catch(err) {
+                if (err.code == 'MODULE_NOT_FOUND') {
+                    winston.info("ModulesManager init departments module not found");
+                }else {
+                    winston.error("ModulesManager error initializing init departments module", err);
+                }
+            }
+        }
+            
+      
 
 
 

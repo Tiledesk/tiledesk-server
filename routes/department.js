@@ -1,11 +1,7 @@
 var express = require('express');
 var router = express.Router({mergeParams: true});
 var Department = require("../models/department");
-var Request = require("../models/request");
 var departmentService = require("../services/departmentService");
-var departmentEvent = require("../event/departmentEvent");
-
-var Group = require("../models/group");
 
 var passport = require('passport');
 require('../middleware/passport')(passport);
@@ -14,127 +10,6 @@ var roleChecker = require('../middleware/has-role');
 
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
-
-// attento qui
-
-router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-
-  winston.debug("DEPT REQ BODY ", req.body);
-  var newDepartment = new Department({
-    routing: req.body.routing,
-    name: req.body.name,
-    description: req.body.description,
-    default: req.body.default,
-    status: req.body.status,
-    id_group: req.body.id_group,
-    id_project: req.projectid,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
-
-  if (req.body.id_bot) {
-    newDepartment.id_bot = req.body.id_bot;
-    newDepartment.bot_only = req.body.bot_only;
-  }
-
-
-  newDepartment.save(function (err, savedDepartment) {
-    if (err) {
-      winston.error('Error creating the department ', err);
-      return res.status(500).send({ success: false, msg: 'Error saving object.' });
-    }
-    winston.debug('NEW DEPT SAVED ', savedDepartment);
-    departmentEvent.emit('department.create', savedDepartment);
-    res.json(savedDepartment);
-  });
-});
-
-router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-
-  winston.debug(req.body);
-
-  var update = {};
-
-// qui errore su visibile invisible
-  // if (req.body.id_bot!=undefined) {
-    update.id_bot = req.body.id_bot;
-  // }
-  if (req.body.bot_only!=undefined) {
-    update.bot_only = req.body.bot_only;
-  }
-  if (req.body.routing!=undefined) {
-    update.routing = req.body.routing;
-  }
-  if (req.body.name!=undefined) {
-    update.name = req.body.name;
-  }
-  if (req.body.description!=undefined) {
-    update.description = req.body.description;
-  }  
-  // if (req.body.id_group!=undefined) {
-    update.id_group = req.body.id_group;
-  // }
-  if (req.body.online_msg!=undefined) {
-    update.online_msg = req.body.online_msg;
-  }
-  if (req.body.status!=undefined) {
-    update.status = req.body.status;
-  }
-  
-
-
-  Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
-    if (err) {
-      winston.error('Error putting the department ', err);
-      return res.status(500).send({ success: false, msg: 'Error updating object.' });
-    }
-    departmentEvent.emit('department.update', updatedDepartment);
-    res.json(updatedDepartment);
-  });
-});
-
-// router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-
-//   winston.debug(req.body);
-
-//   var update = {};
-//     update.id_bot = req.body.id_bot;
-//     update.bot_only = req.body.bot_only;
-//     update.routing = req.body.routing;
-//     update.name = req.body.name;
-//     update.id_group = req.body.id_group;
-//     update.online_msg = req.body.online_msg;
-//     update.status = req.body.status;
-  
-
-
-//   Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
-//     if (err) {
-//       winston.error('Error putting the department ', err);
-//       return res.status(500).send({ success: false, msg: 'Error updating object.' });
-//     }
-//     departmentEvent.emit('department.update', updatedDepartment);
-//     res.json(updatedDepartment);
-//   });
-// });
-
-router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-
-  winston.debug(req.body);
-  winston.debug("req.params.departmentid: "+req.params.departmentid);
-
-  Department.findOneAndRemove({_id: req.params.departmentid}, function (err, department) {
-  // Department.remove({ _id: req.params.departmentid }, function (err, department) {
-    
-    if (err) {
-      winston.error('Error deleting the department ', err);
-      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
-    }
-    // nn funziuona perchje nn c'è id_project
-    departmentEvent.emit('department.delete', department);
-    res.json(department);
-  });
-});
 
 
 // TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
