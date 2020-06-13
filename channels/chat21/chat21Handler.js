@@ -34,7 +34,8 @@ var admin = require('./firebaseConnector');
 var chat21WebHook;
 var firebaseAuth;
 
-var nativeAuth = require('./nativeAuth');
+var nativeAuth = require('./nativeauth');
+
 
 if (admin) {
     chat21WebHook = require('./chat21WebHook');
