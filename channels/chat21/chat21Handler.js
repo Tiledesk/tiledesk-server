@@ -20,30 +20,24 @@ var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 winston.info('Chat21Handler adminToken: '+ adminToken);
-// var merge = require('lodash.merge');
-
 
 const chat21Event = require('./chat21Event');
 
 
 var validtoken = require('../../middleware/valid-token');
-var roleChecker = require('../../middleware/has-role');
 var passport = require('passport');
 require('../../middleware/passport')(passport);
 
 const leadEvent = require('../../event/leadEvent');
 
 var admin = require('./firebaseConnector');
-var firestore;
 var chat21WebHook;
 var firebaseAuth;
 
 if (admin) {
-    firestore = admin.firestore();
     chat21WebHook = require('./chat21WebHook');
     chat21ConfigRoute = require('./configRoute');
     firebaseAuth = require('./firebaseauth');
-    firebase = require('./firebase');
 }
 
 class Chat21Handler {
@@ -65,7 +59,6 @@ class Chat21Handler {
     useUnderProjects(app) {
         
         if (admin){          
-            app.use('/:projectid/firebase_TODELETE', firebase); 
             // winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
         }else {
             // winston.info("chat21WebHook not initialized ");
@@ -198,7 +191,7 @@ class Chat21Handler {
         });
 
 
-    // quando passa da lead temp a default aggiorna tutti va bene?
+    // quando passa da lead temp a default aggiorna tutti va bene?        
 
          leadEvent.on('lead.update', function(lead) {
             //  non sembra funzionare chiedi a Dario dove prende le info
