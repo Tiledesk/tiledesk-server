@@ -34,6 +34,8 @@ var admin = require('./firebaseConnector');
 var chat21WebHook;
 var firebaseAuth;
 
+var nativeAuth = require('./nativeAuth');
+
 if (admin) {
     chat21WebHook = require('./chat21WebHook');
     chat21ConfigRoute = require('./configRoute');
@@ -47,6 +49,7 @@ class Chat21Handler {
         if (admin){
             app.use('/chat21/requests',  chat21WebHook);
             app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
+            app.use('/chat21/native/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], nativeAuth);
             app.use('/chat21/config',  chat21ConfigRoute);
 
             winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
