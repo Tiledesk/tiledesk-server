@@ -229,6 +229,10 @@ router.get('/', function (req, res) {
     query.email = req.query.email;
   }
 
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
+
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
