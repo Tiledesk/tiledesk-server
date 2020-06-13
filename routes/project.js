@@ -6,7 +6,6 @@ var Project_user = require("../models/project_user");
 var Department = require("../models/department");
 var mongoose = require('mongoose');
 var operatingHoursService = require("../services/operatingHoursService");
-var getTimezoneOffset = require("get-timezone-offset")
 
 var winston = require('../config/winston');
 var roleChecker = require('../middleware/has-role');
@@ -19,7 +18,6 @@ var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
 
 
-// TODO move to enterprise module
 //TODO hide signup page and autocreate admin/admin
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   // winston.debug(req.body, 'USER ID ',req.user.id );

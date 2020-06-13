@@ -14,7 +14,6 @@ class ProjectService {
 
     
       var newProject = new Project({
-          _id: new mongoose.Types.ObjectId(),
           name: name,
           activeOperatingHours: false,
           settings: settings,

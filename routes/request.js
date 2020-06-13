@@ -478,26 +478,6 @@ router.delete('/:requestid',  function (req, res) {
   });
 });
 
-// unused ?
-router.post('/:requestid/share/email', function (req, res) {
-
-  winston.debug("req.params.requestid", req.params.requestid);
-  winston.debug("req projectid", req.projectid);
-  winston.debug("req.user.id", req.user.id);
-  
-  const sendTo = req.query.to;
-  winston.debug("sendTo", sendTo);
-
-
-  return requestService.sendTranscriptByEmail(sendTo, req.params.requestid, req.projectid).then(function(result) {
-    return res.json({'success':true});
-  }).catch(function (err) {
-    winston.error("err", err);
-    return res.status(500).send({ success: false, msg: 'Error sharing the request.',err:err });
-  });
-
-
-});
 
 
 router.get('/', function (req, res, next) {
@@ -523,8 +503,9 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  // var query = { "id_project": req.projectid, "status": {$lt:1000}, $or:[ {preflight:false}, { preflight : { $exists: false } } ]};
-  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
+  var query = { "id_project": req.projectid, preflight:false};
+  // uni what all requests. it's better?
+  // var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
 
   // qui1000
   // var query = { id_project: req.projectid, statusObj: {closed:false, preflight:false} };
