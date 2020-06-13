@@ -464,7 +464,7 @@ router.delete('/:requestid',  function (req, res) {
   if (projectuser.role != "owner" ) {
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
-  Request.remove({ requestid: req.params.requestid }, function (err, request) {
+  Request.remove({ request_id: req.params.requestid }, function (err, request) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
