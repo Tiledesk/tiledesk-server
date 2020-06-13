@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken")
 const jwtKey = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
 
 
+
 router.post('/createCustomToken', function (req, res) {
 
         var userid = req.user.id;
