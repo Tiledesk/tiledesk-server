@@ -31,7 +31,7 @@ router.post('/createCustomToken', function (req, res) {
         const exp = now + 60 * 60 * 24 * 30;
 
         var payload = {
-            "jti": uuid(),
+            "jti": uuidv4(),
             "sub": user._id,
             scope: scope,
             "client_id": user._id, //"rabbit_client", SEMBRA SIA QUESTO LO USER-ID
