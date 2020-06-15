@@ -15,7 +15,6 @@ require('dotenv').config({ path: dotenvPath});
 
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
 // var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -29,12 +28,10 @@ var config = require('./config/database');
 var cors = require('cors');
 var Project = require("./models/project");
 var validtoken = require('./middleware/valid-token');
-var noentitycheck = require('./middleware/noentitycheck');
 var roleChecker = require('./middleware/has-role');
 
 var winston = require('./config/winston');
 
-//bin start
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
@@ -115,47 +112,27 @@ channelManager.listen();
 var modulesManager = undefined;
 try {
   modulesManager = require('./services/modulesManager');
-  modulesManager.init({mongoose:mongoose, passport:passport, routes: {departmentsRoute: department} });
+  modulesManager.init({express:express, mongoose:mongoose, passport:passport, routes: {departmentsRoute: department, projectsRoute: project, widgetsRoute: widgets} });
 } catch(err) {
   winston.info("ModulesManager not present");
 }
 
 
 
+// if (process.env.CREATE_INITIAL_DATA!=false) {
 
+    // userService.signup("admin@tiledesk.com", process.env.ADMIN_PASSWORD || "admin", "Administrator", " ", true)
+    //   .then(function (savedUser) {
+    //     winston.info("Created initial user");
+    //   }).catch(function(err) {
+    //     if (err.code == 11000) {
+    //       winston.info("Initial user already exists");
+    //     }else {
+    //       winston.error("Error creating initial data ", err);
+    //     }
+    //  }); 
+// }
 
-if (process.env.ReqLog_ENABLED) {
-  var ReqLog = require("./models/reqlog");
-}
-
-if (process.env.VisitorCounter_ENABLED) {
-  var VisitorCounter = require("./models/visitorCounter");
-}
-
-if (process.env.QUEQUE_ENABLED) {
-  var queue = require('./modules/queue/reconnect');
-}
-
-if (process.env.CACHE_EXPRESS_ENABLED) {
-  // https://github.com/rv-kip/express-redis-cache
-  var cacheRedisExpress = require('express-redis-cache')();
-}
-
-/*re-enable it
-if (process.env.CREATE_INITIAL_DATA!=false) {
-    userService.signup("superadmin@td.com", process.env.SUPER_PASSWORD || "superadmin", "Superadmin name", "Superadmin surname", true)
-      .then(function (savedUser) {
-        winston.info("Created initial user");
-      }).catch(function(err) {
-        if (err.code == 11000) {
-          winston.info("Initial user already exists");
-        }else {
-          winston.error("Error creating initial data ", err);
-        }
-        
-      }); 
-}
-*/
 
 
 
@@ -210,64 +187,7 @@ app.use(passport.initialize());
 
 app.use(cors());
 
-// unused
-var reqLogger = function (req, res, next) {
-  if (process.env.ReqLog_ENABLED) {
-      var projectid = req.params.projectid;
-      winston.debug("projectIdSetter projectid", projectid);
 
-      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-      winston.debug("fullUrl", fullUrl);
-
-      var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      winston.debug("ip", ip);
-
-      var reqlog = new ReqLog({
-        path: req.originalUrl,
-        host: req.host,
-        origin: req.get('origin'),
-        ip: ip,
-        id_project: projectid,
-      });
-
-      reqlog.save(function (err, reqlogSaved) {
-        if (err) {
-          winston.error('Error saving reqlog ', err)
-        }
-        winston.debug('Reqlog saved ', reqlogSaved)
-      });
-
-      next()
-  }else {
-    next();
-  }
-}
-
-var visitorCounter = function (req, res, next) {
-  if (process.env.VisitorCounter_ENABLED) {
-      try {
-        var projectid = req.projectid;
-        winston.debug("visitorCounter projectIdSetter projectid:" + projectid);
-
-      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-      winston.debug("fullUrl:"+ fullUrl);
-      winston.debug("req.get('origin'):" + req.get('origin'));
-
-      VisitorCounter.findOneAndUpdate({ origin: req.get('origin'),id_project:  projectid}, 
-      { path: req.originalUrl,origin: req.get('origin'),  id_project:  projectid, $inc: { totalViews: 1 } }, {new: true, upsert:true },function(err, VisitorCounterSaved) {
-        if (err) {
-          winston.error('Error saving reqlog ', err)
-        }
-        winston.debug("visitorCounter saved "+ VisitorCounterSaved);
-      });
-
-      next()
-      }
-      catch(e){}
-  }else {
-    next();
-  }
-}
 
 
 
@@ -370,8 +290,6 @@ app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['ba
 
 // department internal auth check
 app.use('/:projectid/departments', department);
-//app.use('/:projectid/departments', visitorCounter, department);
-// app.use('/:projectid/departments', reqLogger, department);
 
 
 
@@ -389,13 +307,7 @@ app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session
 
 // app.use('/settings',setting);
 
-app.use('/:projectid/widgets', visitorCounter, widgets);
-
-if (process.env.VisitorCounter_ENABLED) {
-  var visitor_Counter = require('./routes/visitorCounter');
-  // TODO add check permissions
-  app.use('/:projectid/visitorcounter', visitor_Counter);
-}
+app.use('/:projectid/widgets', widgets);
 
 // non mettere ad admin perchà la dashboard  richiama il servizio router.get('/:user_id/:project_id') spesso
 // TOOD security issues. internal route check 

@@ -9,13 +9,15 @@ var Department = require("../models/department");
 var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
 
-
-router.get('/load', function(req, res) {
+router.get('/load', function(req, res, next) {
   winston.debug(req.projectid);
+  
+  // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
+  next();      // <=== call next for following middleware 
   // redirect to widget
 });
 
-router.get('/', function(req, res) {
+router.get('/', function(req, res, next) {
     winston.debug(req.projectid);
 
 
@@ -91,7 +93,12 @@ router.get('/', function(req, res) {
     ]).then(function(all) {
       let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3]};
       res.json(result);
+      // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
+      next();      // <=== call next for following middleware 
+
     });
+
+
   });
 
 

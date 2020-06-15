@@ -30,7 +30,9 @@ class ModulesManager {
         this.cannedResponseRoute = undefined;
         this.tagRoute = undefined;
         this.groupsRoute = undefined;
-        // this.departmentsRoute = undefined;
+        this.visitorCounterRoute = undefined;
+        this.visitorCounterMiddleware = undefined;
+        this.widgetsRoute = undefined;
     }
 
     injectBefore(app) {
@@ -128,20 +130,19 @@ class ModulesManager {
             winston.info("ModulesManager group controller loaded");       
         }
 
-        // if (this.departmentsRoute) {     
-        //     app.use('/:projectid/departments', this.departmentsRoute);
-        //     winston.info("ModulesManager departments controller loaded");       
-        // }
-
-        
 
 
+        if (this.visitorCounterRoute) {     
+            app.use('/:projectid/visitorcounter', this.visitorCounterRoute);
+            winston.info("ModulesManager visitorcounter controller loaded");       
+        }
+        // app.use( '/:projectid/widgets', require('@tiledesk-ent/tiledesk-server-visitorcounter').visitorCounterMiddleware);
 
-        // if (this.facebookRoute) {
-        //     app.use('/modules/facebook', this.facebookRoute);
-        //     winston.info("ModulesManager facebook controller loaded");       
-        // }
-      
+        if (this.widgetsRoute) {
+            this.widgetsRoute.use(this.visitorCounterMiddleware);
+            winston.info("ModulesManager visitorCounterMiddleware  loaded");       
+            // console.log("8888",this.visitorCounterMiddleware, this.widgetsRoute.stack)
+        }
       
 
         
@@ -156,9 +157,7 @@ class ModulesManager {
             this.trigger = require('@tiledesk-ent/tiledesk-server-triggers').start;
             winston.debug("this.trigger:"+ this.trigger);
             this.triggerRoute = require('@tiledesk-ent/tiledesk-server-triggers').triggerRoute;
-            winston.debug("this.triggerRoute:"+ this.triggerRoute);
-            // this.trigger = require('../modules/trigger/start');
-            // this.triggerRoute = require('../modules/trigger/triggerRoute');
+            winston.debug("this.triggerRoute:"+ this.triggerRoute);       
             winston.info("ModulesManager init trigger loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
@@ -170,7 +169,6 @@ class ModulesManager {
 
 
         try {
-            // this.stripe = require('../modules/payments/stripe/index');
             this.stripe = require('@tiledesk-ent/tiledesk-server-payments').stripeRoute;
             winston.info("ModulesManager init stripe loaded");
         } catch(err) {
@@ -207,21 +205,6 @@ class ModulesManager {
                 winston.error("ModulesManager error initializing init analytics module", err);
             }
         }
-
-/*
-        try {
-            this.elasticIndexer = require('@tiledesk-ent/tiledesk-server-elasticsearch').elasticIndexer;
-            this.elasticIndexer.listen();
-            winston.debug("this.elasticIndexer:"+ this.elasticIndexer);        
-            winston.info("ModulesManager init elasticIndexer loaded");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init elasticIndexer module not found");
-            }else {
-                winston.info("ModulesManager error initializing init elasticIndexer module", err);
-            }
-        }
-*/
 
 
         try {
@@ -382,7 +365,6 @@ class ModulesManager {
         if (config && config.routes && config.routes.departmentsRoute) {
             try {                          
                 require('@tiledesk-ent/tiledesk-server-departments').ext(config.routes.departmentsRoute, config.passport);
-                // console.log("aaaaaaaaaaaaasdsadsadsadsda",JSON.config.routes.departmentsRoute )   
                 winston.info("ModulesManager init departmentsRoute loaded");
             } catch(err) {
                 if (err.code == 'MODULE_NOT_FOUND') {
@@ -393,7 +375,35 @@ class ModulesManager {
             }
         }
             
-      
+        if (config && config.routes && config.routes.projectsRoute) {
+            try {                          
+                require('@tiledesk-ent/tiledesk-server-mt').ext(config.routes.projectsRoute, config.passport);
+                winston.info("ModulesManager init mt loaded");
+            } catch(err) {
+                if (err.code == 'MODULE_NOT_FOUND') {
+                    winston.info("ModulesManager init mt module not found");
+                }else {
+                    winston.error("ModulesManager error initializing init mt module", err);
+                }
+            }
+        }
+            
+        try {
+            this.visitorCounterRoute = require('@tiledesk-ent/tiledesk-server-visitorcounter').add(config.express);
+            winston.debug("this.visitorCounterRoute:"+ this.visitorCounterRoute);        
+            this.visitorCounterMiddleware = require('@tiledesk-ent/tiledesk-server-visitorcounter').visitorCounterMiddleware;
+            winston.debug("this.visitorCounterMiddleware:"+ this.visitorCounterMiddleware);        
+            this.widgetsRoute = config.routes.widgetsRoute;
+            winston.debug(" this.widgetsRoute:"+  this.widgetsRoute);        
+
+            winston.info("ModulesManager init visitorCounter loaded");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init visitorCounter module not found");
+            }else {
+                winston.error("ModulesManager error initializing init visitorCounter module", err);
+            }
+        }
 
 
 
