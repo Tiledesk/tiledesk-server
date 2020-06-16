@@ -12,7 +12,7 @@ class BootDataLoader {
   create() {
     var that = this;
       var email = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
-      var password = process.env.ADMIN_PASSWORD || "admin";
+      var password = process.env.ADMIN_PASSWORD || "adminadmin";
       userService.signup(email, password, "Administrator", " ", true)
       .then(function (savedUser) {
         winston.info("Created admin user with email "+ email + " and password "+ password);
