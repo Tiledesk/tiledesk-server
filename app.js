@@ -93,6 +93,8 @@ var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
 var cacheUtil = require("./utils/cacheUtil");
 
+var bootDataLoader = require('./services/bootDataLoader');
+
 require('./services/mongoose-cache-fn')(mongoose);
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
@@ -119,19 +121,9 @@ try {
 
 
 
-// if (process.env.CREATE_INITIAL_DATA!=false) {
-
-    // userService.signup("admin@tiledesk.com", process.env.ADMIN_PASSWORD || "admin", "Administrator", " ", true)
-    //   .then(function (savedUser) {
-    //     winston.info("Created initial user");
-    //   }).catch(function(err) {
-    //     if (err.code == 11000) {
-    //       winston.info("Initial user already exists");
-    //     }else {
-    //       winston.error("Error creating initial data ", err);
-    //     }
-    //  }); 
-// }
+if (process.env.CREATE_INITIAL_DATA !== "false") {
+   bootDataLoader.create();
+}
 
 
 
