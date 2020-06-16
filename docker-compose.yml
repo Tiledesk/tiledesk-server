@@ -36,10 +36,12 @@ services:
   #           aliases:
   #               - dashboard
   webwidget:
-   image: chat21/chat21-web-widget:latest-remoteconfig
-   container_name: chat21-web-widget
+   image: chat21/chat21-web-widget:latest
+   container_name: chat21-web-widget  
    ports: 
       - "4200:80" # specify port forewarding
+   env_file: 
+      - .env
    environment: 
       - FIREBASE_APIKEY
       - FIREBASE_AUTHDOMAIN
@@ -47,8 +49,11 @@ services:
       - FIREBASE_PROJECT_ID
       - FIREBASE_STORAGEBUCKET
       - FIREBASE_MESSAGINGSENDERID
+      - API_URL
    depends_on:
       - proxy
+   #links:
+    # - proxy
   #  networks:
   #       frontend:
   #           aliases:
@@ -64,7 +69,7 @@ services:
       - DASHBOARD_URL=/dashboard/
       - CHAT_SEND_BY_EMAIL_LINK=mailto:?subject=Transcript Chat Conversation&body=Hi,%0D%0A%0D%0Ahere the transcript:%0D%0A%0D%0Ahttps://api.tiledesk.com/v1/public/requests/
       - FIREBASESTORAGE_BASE_URL_IMAGE=https://firebasestorage.googleapis.com/v0/b/
-      - CHAT21_URL
+      - SERVER_BASE_URL=/api/
       - FIREBASE_APIKEY
       - FIREBASE_AUTHDOMAIN
       - FIREBASE_DATABASEURL
@@ -87,7 +92,7 @@ services:
     depends_on:
       - server
       - dashboard
-      # - webwidget
+      #- webwidget
     # networks:
     #     frontend:
     #         aliases:
