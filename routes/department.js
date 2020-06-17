@@ -12,7 +12,54 @@ var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
 
 
-// TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
+
+router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+  winston.debug(req.body);
+
+  var update = {};
+
+  // qui errore su visibile invisible
+  // if (req.body.id_bot!=undefined) {
+      update.id_bot = req.body.id_bot;
+  // }
+  if (req.body.bot_only!=undefined) {
+      update.bot_only = req.body.bot_only;
+  }
+  if (req.body.routing!=undefined) {
+      update.routing = req.body.routing;
+  }
+  if (req.body.name!=undefined) {
+      update.name = req.body.name;
+  }
+  if (req.body.description!=undefined) {
+      update.description = req.body.description;
+  }  
+  // if (req.body.id_group!=undefined) {
+      update.id_group = req.body.id_group;
+  // }
+  if (req.body.online_msg!=undefined) {
+      update.online_msg = req.body.online_msg;
+  }
+  if (req.body.status!=undefined) {
+      update.status = req.body.status;
+  }
+  
+
+
+  Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
+      if (err) {
+      winston.error('Error putting the department ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
+      departmentEvent.emit('department.update', updatedDepartment);
+      res.json(updatedDepartment);
+  });
+  });
+
+
+  // TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
+
 
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
