@@ -8,6 +8,7 @@ const uuidv4 = require('uuid/v4');
 const jwt = require("jsonwebtoken")
 
 const jwtKey = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
+winston.debug("Native jwtKey: "+ jwtKey);
 
 
 
