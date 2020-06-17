@@ -21,8 +21,8 @@ services:
       - CHAT_BASE_URL=/chat/
       - WS_URL
       - WS_URL_RELATIVE=/ws/
-      - WIDGET_LOCATION
-      - WIDGET_TEST_LOCATION
+      - WIDGET_LOCATION=/widget/launch.js
+      - WIDGET_TEST_LOCATION=/widget/assets/twp/index.html
       - FIREBASE_APIKEY
       - FIREBASE_AUTHDOMAIN
       - FIREBASE_DATABASEURL
@@ -49,9 +49,7 @@ services:
       - FIREBASE_PROJECT_ID
       - FIREBASE_STORAGEBUCKET
       - FIREBASE_MESSAGINGSENDERID
-      - API_URL
-   depends_on:
-      - proxy
+      - API_URL=/api/
    #links:
     # - proxy
   #  networks:
@@ -92,7 +90,7 @@ services:
     depends_on:
       - server
       - dashboard
-      #- webwidget
+      - webwidget
     # networks:
     #     frontend:
     #         aliases:
