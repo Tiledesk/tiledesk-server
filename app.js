@@ -53,7 +53,10 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 winston.info("DB AutoIndex: " + autoIndex);
 
 mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
-  if (err) { return winston.error('Failed to connect to MongoDB on '+databaseUri);}
+  if (err) { 
+    winston.error('Failed to connect to MongoDB on '+databaseUri +" ", err);
+    process.exit(1);
+  }
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
   mongoose.set('debug', true);
