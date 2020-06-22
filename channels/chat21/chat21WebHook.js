@@ -526,9 +526,11 @@ else if (req.body.event_type == "typing-start") {
     winston.debug("not a support conversation");
     return res.status(400).send({success: false, msg: "not a support conversation" });
   }
+
+  
   // requestcachefarequi nocachepopulatereqired
   return Request.findOne({request_id: recipient_id})
-  .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid)
+  .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)
   .exec(function(err, request) {
   if (err){
     winston.error(err);

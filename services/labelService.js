@@ -8,7 +8,20 @@ var cacheUtil = require('../utils/cacheUtil');
 
 class LabelService {
 
+// fetch pivot default language
+fetchPivotDefault() {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        that.fetchDefault().then(function (def) {
+            // console.log("def", def)
+            var pivot = def.find(l => l.lang === "EN");
+            return resolve(pivot);        
+        });
+    });
+   
+}
 
+// fetch all widget.json languages
 fetchDefault() {
      
     var that = this;
@@ -27,6 +40,7 @@ fetchDefault() {
     });
 }
 
+// get a specific key of a project language merged with default (widget.json) but if not found return Pivot
 async get(id_project, language, key) {
    var ret = await this.getByLanguageAndKey(id_project, language, key);
 
@@ -38,6 +52,7 @@ async get(id_project, language, key) {
 
 }
 
+// get a specific key of a project language merged with default (widget.json) with NO Pivot
 getByLanguageAndKey(id_project, language, key) {
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -56,7 +71,7 @@ getByLanguageAndKey(id_project, language, key) {
     });
 }
 
-
+ // get a specific project language merged with default (widget.json) but if not found return Pivot
 async getAllByLanguage(id_project, language) {
     var ret = await this.getAllByLanguageNoPivot(id_project, language);
  
@@ -68,6 +83,7 @@ async getAllByLanguage(id_project, language) {
  
  }
 
+ // get a specific project language merged with default (widget.json) Not Pivot
 getAllByLanguageNoPivot(id_project, language) {
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -84,8 +100,9 @@ getAllByLanguageNoPivot(id_project, language) {
     });
 }
 
-
-getAll(id_project) {
+// get all project languages merged with default (widget.json)
+//UNused
+getAllMerged(id_project) {
  
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -112,8 +129,6 @@ getAll(id_project) {
                     returnval = {data: defaults};
                 } else {
                     returnval = labels;
-                    // var dataAsObj = {...req.labels, ...labels.data }
-                    // var data = Object.values(dataAsObj);
                     defaults.forEach(elementDef => {
                         var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
                         if (!pickedLang) {
@@ -130,6 +145,46 @@ getAll(id_project) {
         });
     });
 }
+
+
+getAll(id_project) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        
+        return that.fetchPivotDefault().then(function(def) {
+
+
+                var query = {"id_project": id_project};
+                    
+                winston.debug("query /", query);
+
+
+                return Label.findOne(query).lean()
+                .cache(cacheUtil.longTTL, id_project+":labels:query:all")
+                .exec(function (err, labels) {
+                    if (err) {
+                        winston.error('Label ROUTE - REQUEST FIND ERR ', err)
+                        return reject({ msg: 'Error getting object.' });
+                    }
+
+                    winston.debug("here /", labels);
+                    let returnval;
+                    if (!labels) {
+                        winston.debug("here no labels");        
+                        returnval = {data: [def]};
+                    } else {
+                        returnval = labels;                       
+                    }
+                    
+                    winston.debug("getAll returnval",returnval);
+                
+                    return resolve(returnval);
+                    
+                });
+        });
+    });
+}
+
   
 
 }

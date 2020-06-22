@@ -40,6 +40,26 @@ describe('labelService', function () {
 
 
 
+  it('getDefaultLanguageButNotPresentInProject', function (done) {
+    var userid = "5badfe5d553d1844ad654072";
+
+    projectService.create("test1", userid).then(function(savedProject) {
+    
+      // get(id_project, language, key) {
+     labelService.get(savedProject._id, "IT", "LABEL_PLACEHOLDER").then(function(label) {
+        
+         expect(label).to.equal("type your message..");
+
+        done();
+    }).catch(function(err) {
+        winston.error("test reject", err);
+        assert.isNotOk(err,'Promise error');
+        done();
+    });
+  });
+  });
+
+
   it('getWrongLanguage', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 

@@ -10,6 +10,9 @@ var labelService = require("../services/labelService");
 var labelEvent = require("../event/labelEvent");
 var mongoose = require('mongoose');
 
+const { check, validationResult } = require('express-validator');
+
+
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
@@ -22,7 +25,19 @@ router.get('/default', function (req, res) {
 });
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels/default/clone
 
-router.post('/default/clone', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
+router.post('/default/clone', 
+[passport.authenticate(['basic', 'jwt'], { session: false }), 
+validtoken, 
+roleChecker.hasRole('admin'),
+check('lang').notEmpty(),  
+],function (req, res, next) {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+
   var lang = req.body.lang;
   winston.debug("lang: " + lang);
   
@@ -221,7 +236,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
 });
 
 
-
+// return all the project labels merging db with widget.json
 router.get('/', function (req, res) {
  
   var query = { "id_project": req.projectid};
@@ -266,60 +281,11 @@ router.get('/', function (req, res) {
 
 
 router.get('/:lang', async (req, res) => {
- 
+  // get a specific project language merged with default (widget.json) but if not found return Pivot
   var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
   return res.json(labels);
 
 });
-
-
-//   var query = { "id_project": req.projectid};
-
-//   winston.debug("query /", query);
-
-
-//   return Label.findOne(query)
-  
-//   .lean().exec(function (err, labels) {
-
-//       if (err) {
-//         winston.error('Label ROUTE - REQUEST FIND ERR ', err)
-//         return res.status(500).send({ success: false, msg: 'Error getting object.' });
-//       }
-//       winston.debug("here /", labels);
-//       let returnval;
-//       if (!labels) {
-//         winston.debug("here  no labels");
-
-//         returnval = {data: req.labels};
-//       } else {
-//         returnval = labels;
-//         // var dataAsObj = {...req.labels, ...labels.data }
-//         // var data = Object.values(dataAsObj);
-//         req.labels.forEach(elementDef => {
-//           var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
-//           if (!pickedLang) {
-//             returnval.data.push(elementDef);
-//           }
-//         });
-      
-//       }
-
-//       winston.debug("returnval",returnval);
-
-//       var pickedLang = returnval.data.find(l => l.lang === req.params.lang);
-//       //var pickedLang = returnval.data[req.params.lang];
-
-//       if (!pickedLang) {
-//         return res.status(404).send({ success: false, msg: 'object not found.' });
-//       }
-
-//       return res.json(pickedLang);
-      
-//     });
-// });
-
-
 
 
 module.exports = router;
