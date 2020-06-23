@@ -42,7 +42,7 @@
     "@tiledesk-ent/tiledesk-server-canned": "^1.1.1",
     "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
     "@tiledesk-ent/tiledesk-server-groups": "^1.1.2",
-    "@tiledesk-ent/tiledesk-server-departments": "^1.1.1",
+    "@tiledesk-ent/tiledesk-server-departments": "^1.1.2",
     "@tiledesk-ent/tiledesk-server-mt": "^1.1.1",
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
