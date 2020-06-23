@@ -11,6 +11,7 @@
 - removed reqLog feature
 - typing webhook fix
 - label fix with no pivoting to default languages
+- removed terminus
 
 # 2.1.0-beta12
 - Send transcript fix
