@@ -11,6 +11,7 @@ var roleChecker = require('../middleware/has-role');
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
 
+var departmentEvent = require("../event/departmentEvent");
 
 
 router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
