@@ -1,5 +1,7 @@
-# 2.1.0-beta13
+# 2.1.0-beta14
 - filter identity bot. use all=true to get all bot. Require Dashboard 2.0.49
+
+# 2.1.0-beta13
 - add canned responses and tag library
 - add groups and departments modules
 - cache, routing, resthook deps update
