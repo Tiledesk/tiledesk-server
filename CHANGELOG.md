@@ -1,5 +1,18 @@
+# 2.1.0-beta13
+- filter identity bot. use all=true to get all bot. Require Dashboard 2.0.49
+- add canned responses and tag library
+- add groups and departments modules
+- cache, routing, resthook deps update
+- added request.status all for rest api
+- request and lead physical deletion
+- add mt and visitor counter modules
+- removed reqLog feature
+- typing webhook fix
+- label fix with no pivoting to default languages
+
 # 2.1.0-beta12
 - Send transcript fix
+
 # 2.1.0-beta11
 - Activity archiver fix for preflight request
 - request physical deletion
@@ -62,5 +75,3 @@
 - Added kubernetes sample config file
 - Added required firstname and lastname to signup endpoint
 - Removed message.request.messages and message.request.department.bot for message.create event  
-
-# 2.0.6 
