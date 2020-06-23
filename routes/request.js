@@ -503,13 +503,8 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, preflight:false};
-  // uni what all requests. it's better?
-  // var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
 
-  // qui1000
-  // var query = { id_project: req.projectid, statusObj: {closed:false, preflight:false} };
-  
+  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
 
   var projectuser = req.projectuser;
 
@@ -543,6 +538,10 @@ router.get('/', function (req, res, next) {
   if (req.query.status) {
     winston.debug('req.query.status', req.query.status);
     query.status = req.query.status;
+
+    if (req.query.status==="all") {
+      delete query.status;
+    }
   }
 
   if (req.query.lead) {
@@ -657,7 +656,7 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+  winston.info('REQUEST ROUTE - REQUEST FIND ', query);
 
   // requestcachefarequi populaterequired
   var q1 = Request.find(query).
