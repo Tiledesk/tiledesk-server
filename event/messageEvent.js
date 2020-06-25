@@ -249,11 +249,14 @@ function populateMessageWithRequest(message, eventPrefix) {
           winston.debug("message.emit",messageJson );
           messageEvent.emit(eventPrefix,messageJson );
 
-          // if (messages && messages.length==1){
           if (message.text === request.first_text){
             messageEvent.emit(eventPrefix+'.first', messageJson );
           }
 
+          if (message.sender === request.request.lead._id) {
+            messageEvent.emit(eventPrefix+'.from.requester', messageJson );
+          }
+          
         });
 
         
@@ -262,10 +265,14 @@ function populateMessageWithRequest(message, eventPrefix) {
         winston.info("message.emit",messageJson );
         messageEvent.emit(eventPrefix, messageJson );   
         
-        // if (messages && messages.length==1){
-        if (message.text === request.first_text){
+        if (message.text === request.first_text) {
           messageEvent.emit(eventPrefix+'.first', messageJson );
         }
+
+        if (message.sender === request.request.lead._id) {
+          messageEvent.emit(eventPrefix+'.from.requester', messageJson );
+        }
+
 
       }   
           
