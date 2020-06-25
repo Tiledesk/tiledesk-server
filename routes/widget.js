@@ -105,7 +105,7 @@ router.get('/', function(req, res, next) {
      
 
     ]).then(function(all) {
-      let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3]};
+      let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3], ip: all[4]};
       res.json(result);
       // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
       next();      // <=== call next for following middleware 
