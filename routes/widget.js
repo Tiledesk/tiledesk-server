@@ -70,6 +70,18 @@ router.get('/', function(req, res, next) {
   });
   };
 
+  var getIp = function() {
+    return new Promise(function (resolve, reject) {
+    //  var ip = req.ip;
+    var ip = req.headers['x-forwarded-for'] || 
+     req.connection.remoteAddress || 
+     req.socket.remoteAddress ||
+     (req.connection.socket ? req.connection.socket.remoteAddress : null);
+      winston.info("ip:"+ ip);
+      return resolve(ip);
+  });
+  };
+
 
 
   // var departments = function() {
@@ -88,6 +100,8 @@ router.get('/', function(req, res, next) {
         Department.find({ "id_project": req.projectid, "status": 1 })
       ,
         waiting()
+      , 
+        getIp()
      
 
     ]).then(function(all) {
