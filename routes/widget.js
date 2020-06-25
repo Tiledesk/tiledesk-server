@@ -77,7 +77,7 @@ router.get('/', function(req, res, next) {
      req.connection.remoteAddress || 
      req.socket.remoteAddress ||
      (req.connection.socket ? req.connection.socket.remoteAddress : null);
-      winston.info("ip:"+ ip);
+      winston.debug("ip:"+ ip);
       return resolve(ip);
   });
   };
