@@ -89,7 +89,7 @@ function populateMessage(message, eventPrefix) {
                 
                 messageJson.request = requestJson;
                 // winston.debug('messageJson', messageJson);
-                winston.debug("Subscription.emit",messageJson );
+                winston.debug("message.emit",messageJson );
                 messageEvent.emit(eventPrefix,messageJson );
 
                 // if (messages && messages.length==1){
@@ -102,7 +102,7 @@ function populateMessage(message, eventPrefix) {
               
             }else {
               messageJson.request = requestJson;
-              winston.debug("Subscription.emit",messageJson );
+              winston.debug("message.emit",messageJson );
               messageEvent.emit(eventPrefix, messageJson );   
               
               // if (messages && messages.length==1){
@@ -171,7 +171,7 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
                 
                 messageJson.request = requestJson;
                 // winston.debug('messageJson', messageJson);
-                winston.debug("Subscription.emit",messageJson );
+                winston.debug("message.emit",messageJson );
                 messageEvent.emit(eventPrefix,messageJson );
 
                 // if (messages && messages.length==1){
@@ -184,7 +184,7 @@ function populateMessageWithLastRequestMessages(message, eventPrefix) {
               
             }else {
               messageJson.request = requestJson;
-              winston.debug("Subscription.emit",messageJson );
+              winston.debug("message.emit",messageJson );
               messageEvent.emit(eventPrefix, messageJson );   
               
               // if (messages && messages.length==1){
@@ -211,7 +211,7 @@ function populateMessageWithRequest(message, eventPrefix) {
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
     
-  winston.info("populateMessageWithRequest");
+  winston.info("populateMessageWithRequest " +eventPrefix);
 
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
@@ -246,7 +246,7 @@ function populateMessageWithRequest(message, eventPrefix) {
           
           messageJson.request = requestJson;
           // winston.debug('messageJson', messageJson);
-          winston.debug("Subscription.emit",messageJson );
+          winston.debug("message.emit",messageJson );
           messageEvent.emit(eventPrefix,messageJson );
 
           // if (messages && messages.length==1){
@@ -259,7 +259,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         
       }else {
         messageJson.request = requestJson;
-        winston.info("Subscription.emit",messageJson );
+        winston.info("message.emit",messageJson );
         messageEvent.emit(eventPrefix, messageJson );   
         
         // if (messages && messages.length==1){
