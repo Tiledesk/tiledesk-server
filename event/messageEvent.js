@@ -229,6 +229,7 @@ function populateMessageWithRequest(message, eventPrefix) {
     }
 
   if (request) {
+      winston.info("request is defined in messageEvent" );
 
       var messageJson = message.toJSON();
       
@@ -241,8 +242,6 @@ function populateMessageWithRequest(message, eventPrefix) {
         .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+request.department.id_bot)
         .exec(function(err, bot) {
           winston.debug('bot', bot);
-          
-
           requestJson.department.bot = bot
           
           messageJson.request = requestJson;
@@ -260,7 +259,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         
       }else {
         messageJson.request = requestJson;
-        winston.debug("Subscription.emit",messageJson );
+        winston.info("Subscription.emit",messageJson );
         messageEvent.emit(eventPrefix, messageJson );   
         
         // if (messages && messages.length==1){
@@ -270,6 +269,8 @@ function populateMessageWithRequest(message, eventPrefix) {
 
       }   
           
+  } else {
+    winston.error("request is undefined in messageEvent" );
   }
    
   });
