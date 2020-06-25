@@ -47,7 +47,7 @@
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-chat21-app": "^1.1.1",
+    "@tiledesk/tiledesk-chat21-app": "^1.1.2",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.19.0",
