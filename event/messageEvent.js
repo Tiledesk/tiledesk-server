@@ -253,7 +253,7 @@ function populateMessageWithRequest(message, eventPrefix) {
             messageEvent.emit(eventPrefix+'.first', messageJson );
           }
 
-          if (message.sender === request.request.lead._id) {
+          if (message.sender === request.lead._id) {
             messageEvent.emit(eventPrefix+'.from.requester', messageJson );
           }
 
@@ -269,7 +269,7 @@ function populateMessageWithRequest(message, eventPrefix) {
           messageEvent.emit(eventPrefix+'.first', messageJson );
         }
 
-        if (message.sender === request.request.lead._id) {
+        if (message.sender === request.lead._id) {
           winston.info("message.create.from.requester",messageJson );
           messageEvent.emit(eventPrefix+'.from.requester', messageJson );
         }
