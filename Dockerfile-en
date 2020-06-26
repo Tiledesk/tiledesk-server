@@ -1,0 +1,26 @@
+FROM node:10
+
+RUN apt-get update
+
+# Create app directory
+WORKDIR /usr/src/app
+
+ARG NPM_TOKEN
+COPY .npmrc_ .npmrc
+
+# Install app dependencies
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# where available (npm@5+)
+COPY package*.json ./
+
+RUN npm install
+
+RUN rm -f .npmrc
+
+# Bundle app source
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+
