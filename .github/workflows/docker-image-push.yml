@@ -1,10 +1,9 @@
 name: Publish Docker image
 
 on:
-  release:
-    types: # This configuration does not affect the page_build event above
-      - created
-
+  push:
+    tags:
+      - '**'           # Push events to every tag including hierarchical tags like
 jobs:
 
   push_to_registry:
