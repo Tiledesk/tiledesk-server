@@ -1,30 +1,24 @@
-name: Docker Image CI	name: Publish Docker image
+name: Docker Image CI
 
-
-on:	on:
-  push:	  release:
-    branches: [ master ]	    types: [published]
+on:	
+  push:	 
+    branches: [ master ]
   pull_request:	
     branches: [ master ]	
 
-
-jobs:	jobs:
-
-
-  build:	  push_to_registry:
-
+jobs:
+  push_to_registry:
     name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest	    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-    steps:	    steps:
-    - uses: actions/checkout@v2	     - name: Check out the repo
-    - uses: docker/build-push-action@v1	       uses: actions/checkout@v2
-      with:	     - name: Push to Docker Hub
-       uses: docker/build-push-action@v1
-       with:
-        username: ${{ secrets.DOCKER_USERNAME }}	        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}	        password: ${{ secrets.DOCKER_PASSWORD }}
-        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}	        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-        dockerfile: Dockerfile-en	        dockerfile: Dockerfile-en
-        repository: tiledeskrepo/tiledesk-server-enterprise	        repository: tiledeskrepo/tiledesk-server-enterprise
+    steps:
+    - uses: actions/checkout@v2	     
+      name: Check out the repo
+    - uses: docker/build-push-action@v1
+      with:	    
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+        dockerfile: Dockerfile-en
+        repository: tiledeskrepo/tiledesk-server-enterprise
         tags: latest
