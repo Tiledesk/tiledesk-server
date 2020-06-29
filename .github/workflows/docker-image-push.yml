@@ -22,3 +22,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: tiledeskrepo/tiledesk-server-enterprise
         tags: latest
+
