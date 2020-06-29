@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile-en --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} --no-cache --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile-en --build-arg NPM_TOKEN=${{ secrets.NPM_TOKEN }} --no-cache --tag tiledesk-server-enterprise:$(date +%s)
     - uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
