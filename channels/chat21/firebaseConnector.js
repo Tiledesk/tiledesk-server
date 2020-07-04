@@ -39,7 +39,7 @@ if (chat21Enabled && chat21Enabled == "true"){
       // winston.info('firebaseConnector private_key:'+ private_key_masked);// <-- TODO obscure it
       
       var client_email = process.env.FIREBASE_CLIENT_EMAIL;
-      const maskedclient_email = MaskData.maskEmail(client_email, maskOptions);
+      const maskedclient_email = MaskData.maskEmail2(client_email, maskOptions);
 
       winston.info('FirebaseConnector client_email: '+ maskedclient_email);
 
