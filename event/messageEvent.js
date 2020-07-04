@@ -211,8 +211,6 @@ function populateMessageWithRequest(message, eventPrefix) {
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
     
-  winston.info("populateMessageWithRequest " +eventPrefix);
-
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
   populate('department').  
@@ -229,7 +227,7 @@ function populateMessageWithRequest(message, eventPrefix) {
     }
 
   if (request) {
-      winston.info("request is defined in messageEvent" );
+      winston.debug("request is defined in messageEvent" );
 
       var messageJson = message.toJSON();
       
@@ -262,7 +260,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         
       }else {
         messageJson.request = requestJson;
-        winston.info("message.emit",messageJson );
+        winston.debug("message.emit",messageJson );
         messageEvent.emit(eventPrefix, messageJson );   
         
         if (message.text === request.first_text) {
@@ -270,7 +268,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         }
 
         if (message.sender === request.lead.lead_id) {
-          winston.info("message.create.from.requester",messageJson );
+          winston.debug("message.create.from.requester",messageJson );
           messageEvent.emit(eventPrefix+'.from.requester', messageJson );
         }
 
