@@ -65,7 +65,7 @@ class EventService {
           var savedEventPopulatedJson = savedEventPopulated.toJSON();
           savedEventPopulatedJson.user = user;
           savedEventPopulatedJson.id = savedEventPopulatedJson._id;
-          winston.info("savedEventPopulatedJson", savedEventPopulatedJson);
+          winston.debug("savedEventPopulatedJson", savedEventPopulatedJson);
           eventEvent.emit('event.emit', savedEventPopulatedJson);
           eventEvent.emit('event.emit.'+name, savedEventPopulatedJson);
           
