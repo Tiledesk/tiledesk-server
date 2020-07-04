@@ -2,6 +2,20 @@
 
 var winston = require('../../config/winston');
 
+const MaskData = require("maskdata");
+
+const maskOptions = {
+  // Character to mask the data. default value is '*'
+  maskWith : "*",
+  // If the starting 'n' digits needs to be unmasked
+  // Default value is 4
+  unmaskedStartDigits : 3, //Should be positive Integer
+  //If the ending 'n' digits needs to be unmasked
+  // Default value is 1
+  unmaskedEndDigits : 3 // Should be positive Integer
+  };
+
+
 var chat21Enabled = process.env.CHAT21_ENABLED;
 winston.debug("chat21Enabled: "+chat21Enabled);
 
@@ -17,12 +31,19 @@ if (chat21Enabled && chat21Enabled == "true"){
       winston.info('FirebaseConnector firebaseConfig.databaseURL: '+ firebaseConfig.databaseUrl);
 
       var private_key = process.env.FIREBASE_PRIVATE_KEY;
-      winston.info('FirebaseConnector private_key: '+ private_key);
+
+      const maskedprivate_key = MaskData.maskPhone(private_key, maskOptions);
+
+      winston.info('FirebaseConnector private_key: '+ maskedprivate_key);
       // var private_key_masked = private_key.replace(/\d(?=\d{4})/g, "*");
       // winston.info('firebaseConnector private_key:'+ private_key_masked);// <-- TODO obscure it
       
       var client_email = process.env.FIREBASE_CLIENT_EMAIL;
-      winston.info('FirebaseConnector client_email: '+ client_email);
+      const maskedclient_email = MaskData.maskEmail(client_email, maskOptions);
+
+      winston.info('FirebaseConnector client_email: '+ maskedclient_email);
+
+
       var firebase_project_id = process.env.FIREBASE_PROJECT_ID;
       winston.info('FirebaseConnector firebase_project_id: '+ firebase_project_id);
 

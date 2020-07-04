@@ -1,8 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var Request = require("../../models/request");
-var Message = require("../../models/message");
-var Lead = require("../../models/lead");
 var requestService = require('../../services/requestService');
 var messageService = require('../../services/messageService');
 var leadService = require('../../services/leadService');
@@ -12,12 +10,6 @@ var Project_user = require("../../models/project_user");
 var cacheUtil = require('../../utils/cacheUtil');
 
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema,
-   ObjectId = Schema.ObjectId;
-
-var admin = require('../../channels/chat21/firebaseConnector');
-const firestore = admin.firestore();
-
 var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
 
@@ -111,11 +103,11 @@ router.post('/', function (req, res) {
                 
             
                 if (!projectid) {
-                  winston.debug("projectid is null. Not a support message");
+                  winston.warn("projectid is null. Not a support message");
                   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
                 }
                 if (!message.recipient.startsWith("support-group")) {
-                  winston.debug("recipient not starts wiht support-group. Not a support message");
+                  winston.warn("recipient not starts wiht support-group. Not a support message");
                   return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
                 }
             
@@ -145,7 +137,7 @@ router.post('/', function (req, res) {
                       // message.sender is the project_user id created with firebase custom auth
 
                       var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
-                      winston.info("isObjectId:"+ isObjectId);
+                      winston.debug("isObjectId:"+ isObjectId);
 
                       var queryProjectUser = {id_project:projectid};
                       // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};

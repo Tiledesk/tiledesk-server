@@ -11,6 +11,21 @@ var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
 
+const MaskData = require("maskdata");
+
+const maskPasswordOptions = {
+    // Character to mask the data. default value is '*'
+    maskWith : "*",
+    //Should be positive Integer
+    // If the starting 'n' digits needs to be unmasked
+    // Default value is 4
+    unmaskedStartDigits: 3, 
+    
+    // Should be positive Integer
+    //If the ending 'n' digits needs to be unmasked
+    // Default value is 1
+    unmaskedEndDigits: 2
+  };
 
 
 
@@ -19,7 +34,11 @@ var chat21Util = require('./chat21Util');
 var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
-winston.info('Chat21Handler adminToken: '+ adminToken);
+
+const masked_adminToken = MaskData.maskPhone(adminToken, maskPasswordOptions);
+
+
+winston.info('Chat21Handler adminToken: '+ masked_adminToken);
 
 const chat21Event = require('./chat21Event');
 

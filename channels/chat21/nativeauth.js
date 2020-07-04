@@ -7,8 +7,26 @@ var winston = require('../../config/winston');
 const uuidv4 = require('uuid/v4');
 const jwt = require("jsonwebtoken")
 
+const MaskData = require("maskdata");
+
+const maskPhoneOptions = {
+  // Character to mask the data. default value is '*'
+  maskWith : "*",
+  // If the starting 'n' digits needs to be unmasked
+  // Default value is 4
+  unmaskedStartDigits : 3, //Should be positive Integer
+  //If the ending 'n' digits needs to be unmasked
+  // Default value is 1
+  unmaskedEndDigits : 3 // Should be positive Integer
+  };
+
+
 const jwtKey = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
-winston.debug("Native jwtKey: "+ jwtKey);
+
+const masked_jwtKey = MaskData.maskPhone(jwtKey, maskPhoneOptions);
+
+
+winston.info("Native jwtKey: "+ masked_jwtKey);
 
 
 

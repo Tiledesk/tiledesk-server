@@ -67,6 +67,7 @@
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
+    "maskdata": "^1.1.1",
     "mix-hash": "^1.0.5",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",
