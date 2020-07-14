@@ -33,16 +33,12 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   sortQuery[sortField] = direction;
 
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
-    populate({
-      path: 'id_project',
-      // match: { status: 100 }, //not filter only not populate
-    }).
+  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).    
     exec(); 
 
     var projectsArray = [];
     projects.forEach(project => {
-      projectsArray.push(project.id_project._id);
+      projectsArray.push(project.id_project);
     });
     
     var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}};
