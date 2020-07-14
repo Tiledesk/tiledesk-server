@@ -575,7 +575,7 @@ else if (req.body.event_type == "presence-change") {
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.info("isObjectId:"+ isObjectId);
 
-  var queryProjectUser = {id_project:projectid};
+  var queryProjectUser = {};
   // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
   if (isObjectId) {
     queryProjectUser.id_user = user_id;
