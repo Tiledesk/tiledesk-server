@@ -13,6 +13,7 @@ var mongoose = require('mongoose');
 var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
 var ProjectUserUtil = require("../../utils/project_userUtil");
+const authEvent = require('../../event/authEvent');
 
 
 router.post('/', function (req, res) {
@@ -564,10 +565,10 @@ else if (req.body.event_type == "presence-change") {
   winston.info("data", data);
   
   var user_id = req.body.user_id;
-  winston.info("user_id", user_id);
+  winston.info("user_id: "+ user_id);
 
   var presence = req.body.presence;
-  winston.info("presence", presence);
+  winston.info("presence: "+  presence);
 
   var update = {};
   update.online_status = presence;
