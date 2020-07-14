@@ -12,6 +12,7 @@ var cacheUtil = require('../../utils/cacheUtil');
 var mongoose = require('mongoose');
 var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
+var ProjectUserUtil = require("../../utils/project_userUtil");
 
 
 router.post('/', function (req, res) {
@@ -552,9 +553,64 @@ else if (req.body.event_type == "typing-start") {
 
 }
 
-    else {
-      res.json("Not implemented");
+else if (req.body.event_type == "presence-change") {
+
+  winston.info("event_type","presence-change");
+
+  winston.info("req.body", req.body);
+  
+
+  var data = req.body.data;
+  winston.info("data", data);
+  
+  var user_id = req.body.user_id;
+  winston.info("user_id", user_id);
+
+  var presence = req.body.presence;
+  winston.info("presence", presence);
+
+  var update = {};
+  update.online_status = presence;
+
+  var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
+  winston.info("isObjectId:"+ isObjectId);
+
+  var queryProjectUser = {id_project:projectid};
+  // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+  if (isObjectId) {
+    queryProjectUser.id_user = user_id;
+  }else {
+    queryProjectUser.uuid_user = user_id;
+  }
+  winston.info("queryProjectUser:", queryProjectUser);
+
+
+  Project_user.findOneAndUpdate(queryProjectUser, update, { new: true, upsert: true }, function (err, updatedProject_user) {
+    if (err) {
+      winston.error("Error gettting project_user for update", err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
+      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+        if (err) {
+          winston.error("Error gettting updatedProject_userPopulated for update", err);
+        }            
+        var pu = updatedProject_userPopulated.toJSON();
+        // var pu = updatedProject_userPopulated.toJSON();
+        // pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+      });
+ 
+
+
+  });
+  
+
+}
+
+else {
+  res.json("Not implemented");
+}
 
   
 
