@@ -584,6 +584,7 @@ else if (req.body.event_type == "presence-change") {
   }
   winston.info("queryProjectUser:", queryProjectUser);
 
+          return res.json({ok:true});
 
   // Project_user.updateMany(queryProjectUser, update, function (err, updatedProject_user) {
   //   if (err) {
