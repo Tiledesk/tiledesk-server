@@ -61,7 +61,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         contact.lastname = teammate.id_user.lastname;
 
         if (teammate.id_project) {
-          contact.description = "Project: " + teammate.id_project.name;
+          contact.description =  teammate.id_project.name;
         }
 
         // if (teammate.id_user.createdAt) {
