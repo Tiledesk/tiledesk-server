@@ -35,6 +35,11 @@ var RoleConstants = require('./roleConstants');
       index: true
       // required: true
     },
+    online_status: {
+      type: String,
+      index: true,
+      default: 'offline'
+    },
     attributes: {
       type: Object,
     },
