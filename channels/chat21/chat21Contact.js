@@ -42,7 +42,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     });
     
     var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}};
-    winston.info("query: ", query);
+    winston.debug("query: ", query);
 
     var teammates = await Project_user.find(query).
     populate('id_project').
@@ -71,18 +71,18 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         // winston.info("teammate: "+ JSON.stringify(teammate));
 
         var contactFound = result.filter(c => c.uid === contact.uid );
-        winston.info("contactFound: "+ JSON.stringify(contactFound));
+        winston.debug("contactFound: "+ JSON.stringify(contactFound));
 
         // var index = result.indexOf(contactFound);
         let index = result.findIndex(c => c.uid === contact.uid );
 
-        winston.info("index: "+ index);
+        winston.debug("index: "+ index);
 
         if (contactFound.length==0) {
-          winston.info("not found");
+          winston.debug("not found");
           result.push(contact);
         }else {
-          winston.info("found",contactFound);
+          winston.debug("found",contactFound);
           // contactFound[0].description = "sssss";
           contactFound[0].description= contactFound[0].description + ", "+teammate.id_project.name;
           result[index] = contactFound[0];
@@ -92,7 +92,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       
 
     });
-    winston.info("send");
+    winston.debug("send");
     res.json(result);
     
   
