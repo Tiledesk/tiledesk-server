@@ -2,6 +2,7 @@
 var winston = require('../config/winston');
 
 var chat21Handler = require('../channels/chat21/chat21Handler');
+var chat21Contact = require('../channels/chat21/chat21Contact');
 // var chat21Handler = require('@tiledesk/tiledesk-chat21-app').chat21Handler;
 
 
@@ -11,6 +12,7 @@ class ChannelManager {
         var that = this;
         winston.debug("ChannelManager using controllers");
         chat21Handler.use(app);
+        app.use('/chat21/contacts',  chat21Contact);
     }
 
     useUnderProjects(app) {

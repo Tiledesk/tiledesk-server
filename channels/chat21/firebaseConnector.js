@@ -32,15 +32,25 @@ if (chat21Enabled && chat21Enabled == "true"){
 
       var private_key = process.env.FIREBASE_PRIVATE_KEY;
 
-      const maskedprivate_key = MaskData.maskPhone(private_key, maskOptions);
+      var maskedprivate_key;
+      if (private_key) {
+        maskedprivate_key = MaskData.maskPhone(private_key, maskOptions);
+      }else {
+        maskedprivate_key = private_key;
+      }
 
       winston.info('FirebaseConnector private_key: '+ maskedprivate_key);
       // var private_key_masked = private_key.replace(/\d(?=\d{4})/g, "*");
       // winston.info('firebaseConnector private_key:'+ private_key_masked);// <-- TODO obscure it
       
       var client_email = process.env.FIREBASE_CLIENT_EMAIL;
-      const maskedclient_email = MaskData.maskEmail2(client_email, maskOptions);
 
+      var maskedclient_email;
+      if (client_email) {
+        maskedclient_email = MaskData.maskEmail2(client_email, maskOptions);
+      }else {
+        maskedclient_email= client_email;
+      }
       winston.info('FirebaseConnector client_email: '+ maskedclient_email);
 
 
