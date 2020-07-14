@@ -59,9 +59,22 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
     var result = [];
     teammates.forEach(teammate => {
-      result.push({uid: teammate.id_user._id, email: teammate.id_user.email, 
-        firstname: teammate.id_user.firstname, lastname: teammate.id_user.lastname,
-        timestamp: teammate.id_user.createdAt.getTime() });
+      
+      var contact = {};
+      if (teammate.id_user) {
+        contact.uid = teammate.id_user._id;
+        contact.email = teammate.id_user.email;
+        contact.firstname = teammate.id_user.firstname;
+        contact.lastname = teammate.id_user.lastname;
+
+        if (teammate.id_user.createdAt) {
+          contact.timestamp = teammate.id_user.createdAt.getTime();
+        }
+        
+        result.push(contact);
+      }
+      
+
     });
     res.json(result);
     
