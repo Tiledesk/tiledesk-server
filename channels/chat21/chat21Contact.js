@@ -69,7 +69,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         
         winston.info("teammate: "+ JSON.stringify(teammate));
 
-        var contactFound = result.filter(c => c.id_user && c.id_user._id === contact.uid );
+        var contactFound = result.filter(c => c.uid === contact.uid );
         winston.info("contactFound: "+ JSON.stringify(contactFound));
 
         if (contactFound.length==0) {
