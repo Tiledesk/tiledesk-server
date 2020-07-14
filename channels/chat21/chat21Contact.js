@@ -44,9 +44,9 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}};
     winston.info("query: ", query);
 
-    var teammates = await Project_user.find().
+    var teammates = await Project_user.find(query).
     populate({
-      // path: 'id_project',
+      path: 'id_project',
       path: 'id_user',
     }).
     sort(sortQuery).
@@ -61,7 +61,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         contact.email = teammate.id_user.email;
         contact.firstname = teammate.id_user.firstname;
         contact.lastname = teammate.id_user.lastname;
-        // contact.description = teammate.id_project.name;
+        contact.description = teammate.id_project.name;
 
         if (teammate.id_user.createdAt) {
           contact.timestamp = teammate.id_user.createdAt.getTime();
@@ -77,7 +77,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
           result.push(contact);
         }else {
           winston.info("found");
-          // contactFound.description=contactFound.description+" ,"+teammate.id_project.name;
+          contactFound.description=contactFound.description+" ,"+teammate.id_project.name;
         }
       }
       
