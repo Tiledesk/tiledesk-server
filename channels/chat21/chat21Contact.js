@@ -45,10 +45,8 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.info("query: ", query);
 
     var teammates = await Project_user.find(query).
-    populate({
-      path: 'id_project',
-      path: 'id_user',
-    }).
+    populate('id_project').
+    populate('id_user').
     sort(sortQuery).
     exec(); 
 
@@ -61,28 +59,40 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         contact.email = teammate.id_user.email;
         contact.firstname = teammate.id_user.firstname;
         contact.lastname = teammate.id_user.lastname;
-        contact.description = teammate.id_project.name;
 
-        if (teammate.id_user.createdAt) {
-          contact.timestamp = teammate.id_user.createdAt.getTime();
+        if (teammate.id_project) {
+          contact.description = "Project: " + teammate.id_project.name;
         }
+
+        // if (teammate.id_user.createdAt) {
+        //   contact.timestamp = teammate.id_user.createdAt.getTime();
+        // }
         
-        winston.info("teammate: "+ JSON.stringify(teammate));
+        // winston.info("teammate: "+ JSON.stringify(teammate));
 
         var contactFound = result.filter(c => c.uid === contact.uid );
         winston.info("contactFound: "+ JSON.stringify(contactFound));
+
+        // var index = result.indexOf(contactFound);
+        let index = result.findIndex(c => c.uid === contact.uid );
+
+        winston.info("index: "+ index);
 
         if (contactFound.length==0) {
           winston.info("not found");
           result.push(contact);
         }else {
-          winston.info("found");
-          contactFound.description=contactFound.description+" ,"+teammate.id_project.name;
+          winston.info("found",contactFound);
+          // contactFound[0].description = "sssss";
+          contactFound[0].description= contactFound[0].description + ", "+teammate.id_project.name;
+          result[index] = contactFound[0];
+          
         }
       }
       
 
     });
+    winston.info("send");
     res.json(result);
     
   
