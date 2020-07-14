@@ -66,12 +66,24 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         contact.email = teammate.id_user.email;
         contact.firstname = teammate.id_user.firstname;
         contact.lastname = teammate.id_user.lastname;
+        contact.description = teammate.id_project.name;
 
         if (teammate.id_user.createdAt) {
           contact.timestamp = teammate.id_user.createdAt.getTime();
         }
         
-        result.push(contact);
+        winston.info("teammate: "+ JSON.stringify(teammate));
+
+        var contactFound = result.filter(c => c.id_user && c.id_user._id === contact.uid );
+        winston.info("contactFound: "+ JSON.stringify(contactFound));
+
+        if (contactFound.length==0) {
+          winston.info("not found");
+          result.push(contact);
+        }else {
+          winston.info("found");
+          contactFound.description=contactFound.description+" ,"+teammate.id_project.name;
+        }
       }
       
 
