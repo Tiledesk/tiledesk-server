@@ -600,6 +600,8 @@ else if (req.body.event_type == "presence-change") {
         // pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
         
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+
+          return res.json(pu);
       });
  
 
