@@ -34,7 +34,7 @@ listen() {
      requestEvent.on("request.participants.update", function(data) {
 
       winston.info("requestEvent request.participants.update");
-      
+
       var request = data.request;
       
       setImmediate(() => {
@@ -154,7 +154,7 @@ sendEmail(projectid, savedRequest) {
                        if (!user) {
                         winston.warn("User not found", userid);
                        } else {
-                         winston.debug("Sending sendNewPooledRequestNotification to user with email", user.email);
+                         winston.debug("Sending sendNewPooledRequestNotification to user with email: "+ user.email);
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
