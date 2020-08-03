@@ -52,14 +52,14 @@ class EmailService {
       //text: 'Hello world?', // plain text body
       html: html
     };
-    // winston.debug('mailOptions', mailOptions);
+    winston.debug('mailOptions', mailOptions);
 
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
       if (error) {
         return winston.error("Error sending email ", error);
       }
-      winston.debug('Message sent: %s', info.messageId);
+      winston.debug('Message sent: %s', info);
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
