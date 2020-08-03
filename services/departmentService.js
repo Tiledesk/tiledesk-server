@@ -4,7 +4,6 @@ var Project_user = require("../models/project_user");
 var Project = require("../models/project");
 var Group = require("../models/group");
 var operatingHoursService = require("./operatingHoursService");
-var mongoose = require('mongoose');
 var winston = require('../config/winston');
 const departmentEvent = require('../event/departmentEvent');
 const Request = require('../models/request');
@@ -25,8 +24,6 @@ class DepartmentService {
     var that = this;
     return new Promise(function (resolve, reject) {
         var newDepartment = new Department({
-          _id: new mongoose.Types.ObjectId(),
-          // id_bot: 'undefined',
           routing: routing,
           name: name,
           id_project: id_project,
@@ -86,6 +83,7 @@ roundRobin(operatorSelectedEvent) {
       winston.debug('query', query);            
 
       // let lastRequests = await 
+      // requestcachefarequi nocachepopulatereqired
       Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {
           if (err) {
               winston.error('Error getting request for RoundRobinOperator', err); 
@@ -180,6 +178,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
       // if not defined
+      // TODO questo lo abiliterei solo esplicitamete se si flagga opzione su progetto per performance
       if (disableWebHookCall==undefined) {
               //if pro enabled disableWebHookCall = false
         if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {

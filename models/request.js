@@ -124,6 +124,7 @@ var RequestSchema = new Schema({
   },
 
   //timestamp when the agent reply the first time to a visitor
+  // documenta
   first_response_at: {
     type: Date,
     index: true

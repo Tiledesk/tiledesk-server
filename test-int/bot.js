@@ -99,14 +99,7 @@ describe('bot', () => {
                                                 expect(req.body.payload.text).to.equal("answer");
                                                 done();;
                                                 
-                                                // if (messageReceived==1) {
-                                                //     expect(req.body.payload.text).to.equal("answer");
-                                                // }
-                                                // if (messageReceived==2) {
-                                                    
-                                                //     expect(req.body.payload.text).to.equal(faqBotSupport.LABELS.EN.DEFAULT_CLOSING_SENTENCE_REPLY_MESSAGE);
-                                                //     done();
-                                                // }
+                                               
                                                 
                                                                     
                                             });
@@ -290,15 +283,7 @@ describe('bot', () => {
                                                         expect(req.body.payload.text).to.equal("answer https://www.tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png");
                                                         done();;
                                                         
-                                                        // if (messageReceived==1) {
-                                                        //     expect(req.body.payload.text).to.equal("answer");
-                                                        // }
-                                                        // if (messageReceived==2) {
-                                                            
-                                                        //     expect(req.body.payload.text).to.equal(faqBotSupport.LABELS.EN.DEFAULT_CLOSING_SENTENCE_REPLY_MESSAGE);
-                                                        //     done();
-                                                        // }
-                                                        
+                                                      
                                                                             
                                                     });
                                                     var listener = serverClient.listen(3008, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});

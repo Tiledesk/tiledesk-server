@@ -4,12 +4,10 @@ var routingConstants = require('../models/routingConstants');
 var winston = require('../config/winston');
 
 var DepartmentSchema = new Schema({
-  // _id: Schema.Types.ObjectId,
   id_bot: {
     type: String,
-    // required: true
   },
-  bot_only: {
+  bot_only: { //deprecated
     type: Boolean,
     // required: true
   },

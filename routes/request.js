@@ -631,7 +631,13 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
+    var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
+    if (req.query.filterRangeField) {
+      query[req.query.filterRangeField] = range;
+    }else {
+      query.createdAt = range;
+    }
+    
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
   // }

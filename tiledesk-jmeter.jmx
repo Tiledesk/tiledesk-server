@@ -17,12 +17,12 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">5</stringProp>
+        <stringProp name="ThreadGroup.num_threads">50</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
         <longProp name="ThreadGroup.start_time">1373789594000</longProp>
         <longProp name="ThreadGroup.end_time">1373789594000</longProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">60</stringProp>
+        <stringProp name="ThreadGroup.duration">300</stringProp>
         <stringProp name="ThreadGroup.delay">5</stringProp>
         <stringProp name="TestPlan.comments">Virtual Users Running Scenario 1. 
 Make test last 1 minute (see Scheduler)</stringProp>
@@ -33,9 +33,9 @@ Make test last 1 minute (see Scheduler)</stringProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">192.168.99.100</stringProp>
-          <stringProp name="HTTPSampler.port">30269</stringProp>
-          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">3000</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path"></stringProp>
           <stringProp name="TestPlan.comments">Notice Timeouts:
@@ -172,7 +172,7 @@ Connect to 5s</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/5eae1d2c92306e001d5bd7a6/requests</stringProp>
+          <stringProp name="HTTPSampler.path">/5ea800091147f28c72b90c5e/requests</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -220,7 +220,7 @@ Connect to 5s</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>

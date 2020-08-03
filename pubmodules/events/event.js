@@ -13,6 +13,7 @@ var EventSchema = new Schema({
   attributes: {
     type: Object,
   },
+  // TODO FALLO EMBED per performance
   project_user: {
     type: Schema.Types.ObjectId,
     ref: 'project_user',

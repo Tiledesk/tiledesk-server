@@ -94,6 +94,7 @@ class MessageActionsInterceptor {
                     winston.debug("removeParticipantByRequestId: ", removedRequest);
   
                     // route(request_id, departmentid, id_project, nobot) {
+                        // se \agent ma nessuno opertore online non toglie il bot 
                         requestService.route(request.request_id, request.department, request.id_project, true ).then(function(routedRequest) {
                             winston.debug("routedRequest: ", routedRequest);
 

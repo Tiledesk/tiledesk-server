@@ -1,5 +1,15 @@
-# 2.1.0-beta14
+# 2.1.0-beta21
 - filter identity bot. use all=true to get all bot. Require Dashboard 2.0.49
+- GDPR trigger
+- Chat21 Contacts
+- Online status 
+- CORS error fix
+- Widget i8n
+- Send email fix
+
+
+# 2.1.0-beta14 # 2.1.0-beta15 # 2.1.0-beta16 # 2.1.0-beta..20
+- Docker tag
 
 # 2.1.0-beta13
 - add canned responses and tag library

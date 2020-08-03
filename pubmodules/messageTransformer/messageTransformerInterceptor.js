@@ -66,6 +66,7 @@ class MessageTransformerInterceptor {
             // if (message.text.indexOf("${")>-1) {
             
                 winston.debug('MessageTransformerInterceptor enter');
+                // get a specific key of a project language merged with default (widget.json) but if not found return Pivot
                 var label = await labelService.get(message.id_project,language, messageExtracted);
                 if (label) {
                     message.text=label;  
