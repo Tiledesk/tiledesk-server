@@ -1,7 +1,6 @@
-# 2.1.0-beta21
+# 2.1.0-beta21 NOT IN PROD
 - filter identity bot. use all=true to get all bot. Require Dashboard 2.0.49
-- GDPR trigger
-- Chat21 Contacts
+- Chat21 Contacts for web chat recipients list
 - Online status 
 - CORS error fix
 - Widget i8n
