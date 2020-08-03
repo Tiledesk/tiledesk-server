@@ -41,6 +41,16 @@ listen() {
       });
      });
 
+     requestEvent.on("request.update.preflight", function(request) {
+      
+      setImmediate(() => {
+   
+         that.sendEmail(request.id_project, request);
+      });
+     });
+
+
+     
 
     //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 

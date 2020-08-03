@@ -203,11 +203,11 @@ router.get('/', function (req, res) {
    */
   var query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
 
-  // if (req.query.all!="true") {
-  //   query.type = { $ne: "identity" }
-  // }
-
-  winston.info("query", query);
+  if (req.query.all!="true") {
+    query.type = { $ne: "identity" }
+  }
+  
+  winston.debug("query", query);
 
   Faq_kb.find(query, function (err, faq_kb) {
     if (err) {

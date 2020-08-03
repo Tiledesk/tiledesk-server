@@ -84,7 +84,6 @@
     "request-promise": "^4.2.5",
     "retry-request": "^4.1.1",
     "serve-favicon": "~2.5.0",
-    "socket.io": "^2.3.0",
     "uniqid": "^5.2.0",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
