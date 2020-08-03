@@ -606,13 +606,17 @@ else if (req.body.event_type == "presence-change") {
         winston.info('project_user saved ', savedProjectUser);
 
 
-        savedProjectUser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+        savedProjectUser
+          .populate({path:'id_user', select:{'firstname':1, 'lastname':1}})
+          .populate({path:'id_project', select:{'settings':1}})
+          .exec(function (err, updatedProject_userPopulated){    
           if (err) {
             return winston.error("Error gettting updatedProject_userPopulated for update", err);
           }            
           winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
           var pu = updatedProject_userPopulated.toJSON();
-          //pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
+          pu.id_project =  updatedProject_userPopulated.id_project._id;
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
           
           winston.info("pu:", pu);
   
