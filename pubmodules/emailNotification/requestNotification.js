@@ -33,6 +33,8 @@ listen() {
 
      requestEvent.on("request.participants.update", function(data) {
 
+      winston.info("requestEvent request.participants.update");
+      
       var request = data.request;
       
       setImmediate(() => {
@@ -41,15 +43,15 @@ listen() {
       });
      });
 
-     requestEvent.on("request.update.preflight", function(request) {
+    //  requestEvent.on("request.update.preflight", function(request) {
       
-      winston.info("requestEvent request.update.preflight");
-      
-      setImmediate(() => {
+    //   winston.info("requestEvent request.update.preflight");
+
+    //   setImmediate(() => {
    
-         that.sendEmail(request.id_project, request);
-      });
-     });
+    //      that.sendEmail(request.id_project, request);
+    //   });
+    //  });
 
 
      
