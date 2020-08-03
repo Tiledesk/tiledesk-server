@@ -617,8 +617,9 @@ else if (req.body.event_type == "presence-change") {
           winston.info("pu:", pu);
   
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+          winston.info("after pu:");
   
-          return res.json(pu);
+          
 
 
       });
@@ -631,7 +632,7 @@ else if (req.body.event_type == "presence-change") {
     
     });
  
-
+    winston.info("return");
     return res.json({ok:true});
 
 
