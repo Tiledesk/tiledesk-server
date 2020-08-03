@@ -43,6 +43,8 @@ listen() {
 
      requestEvent.on("request.update.preflight", function(request) {
       
+      winston.info("requestEvent request.update.preflight");
+      
       setImmediate(() => {
    
          that.sendEmail(request.id_project, request);
