@@ -554,6 +554,9 @@ else if (req.body.event_type == "typing-start") {
 
 }
 
+// curl -X POST -H 'Content-Type:application/json'  -d '{"event_type":"presence-change","presence":"online","createdAt":1596448898776,"app_id":"tilechat","user_id":"a9109ed4-ceda-4118-b934-c9b83c2eaf12","data":true}' http://localhost:3000/chat21/requests
+
+
 else if (req.body.event_type == "presence-change") {
 
   winston.info("event_type","presence-change");
@@ -607,20 +610,22 @@ else if (req.body.event_type == "presence-change") {
 
 
         savedProjectUser
-          .populate({path:'id_user', select:{'firstname':1, 'lastname':1}})
-          .populate({path:'id_project', select:{'settings':1}})
-          .exec(function (err, updatedProject_userPopulated){    
+          // .populate({path:'id_user', select:{'firstname':1, 'lastname':1}})
+          // .populate({path:'id_project', select:{'settings':1}})
+          .populate([{path:'id_user', select:{'firstname':1, 'lastname':1}}, {path:'id_project'}])
+          // .populate('id_user id_project')
+          .execPopulate(function (err, updatedProject_userPopulated){    
           if (err) {
             return winston.error("Error gettting updatedProject_userPopulated for update", err);
           }            
           winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
           var pu = updatedProject_userPopulated.toJSON();
           pu.id_project =  updatedProject_userPopulated.id_project._id;
-          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
           
           winston.info("pu:", pu);
   
-          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
           winston.info("after pu:");
   
           
