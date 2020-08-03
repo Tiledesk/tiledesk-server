@@ -570,7 +570,7 @@ else if (req.body.event_type == "presence-change") {
   var presence = req.body.presence;
   winston.info("presence: "+  presence);
 
-  var update = {"$set":{online_status: presence}};
+  // var update = {"$set":{online_status: presence}};
 
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.info("isObjectId:"+ isObjectId);
@@ -584,34 +584,58 @@ else if (req.body.event_type == "presence-change") {
   }
   winston.info("queryProjectUser:", queryProjectUser);
 
-          return res.json({ok:true});
 
-  // Project_user.updateMany(queryProjectUser, update, function (err, updatedProject_user) {
-  //   if (err) {
-  //     winston.error("Error gettting project_user for update", err);
-  //     return res.status(500).send({ success: false, msg: 'Error updating object.' });
-  //   }
-  //   winston.info("updatedProject_user:", updatedProject_user);
 
-  //     updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
-  //       if (err) {
-  //         winston.error("Error gettting updatedProject_userPopulated for update", err);
-  //       }            
-  //       winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
-  //       var pu = updatedProject_userPopulated.toJSON();
-  //       // var pu = updatedProject_userPopulated.toJSON();
-  //       // pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
-        
-  //       winston.info("pu:", pu);
+  Project_user.find(queryProjectUser, function (err, project_users) {
+    // Project_user.updateMany(queryProjectUser, update, function (err, updatedProject_user) {
+    if (err) {
+      winston.error("Error gettting project_user", err);
+      return res.status(500).send({ success: false, msg: 'Error getting objects.' });
+    }
+    winston.info("project_users:", project_users);
 
-  //         authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
 
-  //         return res.json(pu);
-  //     });
+    project_users.forEach(project_user => { 
+      winston.info("project_user:", project_user);
+      project_user.online_status = presence;
+
+      project_user.save(function (err, savedProjectUser) {
+        if (err) {
+         return winston.error('Error saving project_user ', err)
+        }
+        winston.info('project_user saved ', savedProjectUser);
+
+
+        savedProjectUser.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
+          if (err) {
+            return winston.error("Error gettting updatedProject_userPopulated for update", err);
+          }            
+          winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
+          var pu = updatedProject_userPopulated.toJSON();
+          //pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
+          
+          winston.info("pu:", pu);
+  
+          authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+  
+          return res.json(pu);
+
+
+      });
+
+
+
+    }); 
+
+
+    
+    });
  
 
+    return res.json({ok:true});
 
-  // });
+
+  });
   
 
 }
