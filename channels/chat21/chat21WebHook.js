@@ -621,6 +621,7 @@ else if (req.body.event_type == "presence-change") {
           winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
           var pu = updatedProject_userPopulated.toJSON();
           pu.id_project =  updatedProject_userPopulated.id_project._id;
+          pu.id_user =  updatedProject_userPopulated.id_user._id;
           pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
           
           winston.info("pu:", pu);
