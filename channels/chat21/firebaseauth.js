@@ -19,7 +19,8 @@ router.post('/createCustomToken', function (req, res) {
         })
         .catch(err => {
             const ret = {
-                error_message: 'Authentication error: Cannot verify access token.'
+                error_message: 'Authentication error: Cannot verify access token.',
+                err: err
             };
                 return res.status(403).send(ret);
         });
