@@ -90,8 +90,8 @@ class MessageActionsInterceptor {
                    // removeParticipantByRequestId(request_id, id_project, member) 
                    //TODO USE FINALLY?
                    //TODO you can use reroute?
-                   requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(removedRequest){
-                    winston.debug("removeParticipantByRequestId: ", removedRequest);
+                //    requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).then(function(removedRequest){
+                //     winston.debug("removeParticipantByRequestId: ", removedRequest);
   
                     // route(request_id, departmentid, id_project, nobot) {
                         // se \agent ma nessuno opertore online non toglie il bot 
@@ -109,7 +109,7 @@ class MessageActionsInterceptor {
                                 // );
 
                         });
-                   });
+                //    });
                }   else {
                 //route(request_id, departmentid, id_project) {      
                     //TODO USE FINALLY?
