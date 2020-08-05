@@ -1,10 +1,11 @@
-# 2.1.0-beta21 NOT IN PROD
+# 2.1.0-beta23
+- Email fix for pooled request caming from bot
+
+# 2.1.0-beta22 
 - filter identity bot. use all=true to get all bot. Require Dashboard 2.0.49
 - Chat21 Contacts for web chat recipients list
-- Online status 
-- CORS error fix
+- Chat21 Presence webhook 
 - Widget i8n
-- Send email fix
 
 
 # 2.1.0-beta14 # 2.1.0-beta15 # 2.1.0-beta16 # 2.1.0-beta..20
