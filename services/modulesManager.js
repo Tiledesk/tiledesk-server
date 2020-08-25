@@ -5,6 +5,8 @@ var roleChecker = require('../middleware/has-role');
 var passport = require('passport');
 require('../middleware/passport')(passport);
 
+var licenseKey = process.env.LICENSE_KEY;
+console.log("licenseKey", licenseKey);
 
 class ModulesManager {
 
