@@ -74,11 +74,18 @@ getByLanguageAndKey(id_project, language, key) {
  // get a specific project language merged with default (widget.json) but if not found return Pivot
 async getAllByLanguage(id_project, language) {
     var ret = await this.getAllByLanguageNoPivot(id_project, language);
- 
+    winston.debug("getAllByLanguage ret",ret);
     if (ret) {
         return ret;
     } else { 
-        return this.getAllByLanguageNoPivot(id_project, "EN");
+        var retEn = await this.getAllByLanguageNoPivot(id_project, "EN");
+        if (retEn) {
+            return retEn;
+        } else { 
+            var retPiv = await this.fetchPivotDefault();
+            winston.debug("retPiv",retPiv);
+            return retPiv;
+        }
     }
  
  }
@@ -89,12 +96,12 @@ getAllByLanguageNoPivot(id_project, language) {
     return new Promise(function (resolve, reject) {
 
         that.getAll(id_project).then(function(returnval) {
-            winston.debug("getAllByLanguageNoPivot returnval",returnval);
+            winston.debug("getAllByLanguageNoPivot returnval: ",returnval);
 
             var pickedLang = returnval.data.find(l => l.lang === language);
             //var pickedLang = returnval.data[req.params.lang];           
 
-            winston.debug("getAllByLanguageNoPivot pickedLang",pickedLang);
+            winston.debug("getAllByLanguageNoPivot pickedLang"+  language,pickedLang);
             return resolve(pickedLang); 
         });
     });

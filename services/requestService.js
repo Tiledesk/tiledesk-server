@@ -764,7 +764,7 @@ class RequestService {
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
-                    winston.info("Request closed with id", updatedRequest.id);
+                    winston.info("Request closed with id: " + updatedRequest.id);
                     winston.debug("Request closed ", updatedRequest);
                     //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
