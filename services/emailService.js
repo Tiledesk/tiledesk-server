@@ -21,16 +21,24 @@ class EmailService {
   
     // var emailPassword = "";
     var emailPassword = process.env.EMAIL_PASSWORD;
+    var host = process.env.EMAIL_HOST || config.host;
+    var secureEmail  = process.env.EMAIL_SECURE || false;
+    var user  = process.env.EMAIL_USERNAME || config.username;
+    var port  = process.env.EMAIL_PORT;
 
-    // winston.debug('emailPassword ', emailPassword);
+    winston.debug('emailPassword: ' + emailPassword);
+    winston.debug('host: ' + host);
+    winston.debug('secureEmail: ' + secureEmail);
+    winston.debug('username: ' + user);
+    winston.debug('port: ' + port);
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: config.host,
-      //port: 587,
-      secure: false, // true for 465, false for other ports
+      host: host,
+      port: port, // defaults to 587 if is secure is false or 465 if true
+      secure: secureEmail, 
       auth: {
-        user: config.username,
+        user: user,
         pass: emailPassword
       }
     });
