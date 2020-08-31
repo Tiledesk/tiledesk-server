@@ -62,6 +62,7 @@
     "express-session": "^1.17.0",
     "express-validator": "^6.3.1",
     "fast-csv": "^3.4.0",
+    "handlebars": "^4.7.6",
     "http": "0.0.0",
     "immutable": "^4.0.0-rc.12",
     "jade": "~1.11.0",

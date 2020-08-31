@@ -3,43 +3,99 @@
 const nodemailer = require('nodemailer');
 var config = require('../config/email');
 var winston = require('../config/winston');
+var handlebars = require('handlebars');
+
+// handlebars.registerHelper('ifCond', function(v1, v2, options) {
+//   if(v1 === v2) {
+//     return options.fn(this);
+//   }
+//   return options.inverse(this);
+// });
+
+
+var fs = require('fs');
+var appRoot = require('app-root-path');
+
+const MaskData = require("maskdata");
+
+const maskOptions = {
+  // Character to mask the data. default value is '*'
+  maskWith : "*",
+  // If the starting 'n' digits needs to be unmasked
+  // Default value is 4
+  unmaskedStartDigits : 3, //Should be positive Integer
+  //If the ending 'n' digits needs to be unmasked
+  // Default value is 1
+  unmaskedEndDigits : 3 // Should be positive Integer
+  };
+
 
 class EmailService {
 
   constructor() {
-    this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
-    winston.info('EmailService baseUrl '+ this.baseUrl);
-
 
     this.enabled = process.env.EMAIL_ENABLED || false;
-    winston.info('EmailService enabled '+ this.enabled);
+    winston.info('EmailService enabled: '+ this.enabled);
+
+    this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
+    winston.info('EmailService baseUrl: '+ this.baseUrl);
+
+    this.from = process.env.EMAIL_FROM_ADDRESS || config.from;
+    winston.info('EmailService from email: '+ this.from);
+
+    this.bcc = process.env.EMAIL_BCC || config.bcc;
+    winston.info('EmailService bcc address: '+ this.bcc);
+
+    this.emailPassword = process.env.EMAIL_PASSWORD;
+
+    var maskedemailPassword;
+    if (this.emailPassword) {
+      maskedemailPassword = MaskData.maskPhone(this.emailPassword, maskOptions);
+    }else {
+      maskedemailPassword = this.emailPassword;
+    }
+
+    winston.info('EmailService emailPassword: ' + maskedemailPassword);
+
+    this.host = process.env.EMAIL_HOST || config.host;
+    winston.info('EmailService host: ' + this.host);
+
+    this.secureEmail  = process.env.EMAIL_SECURE || false;
+    winston.info('EmailService secureEmail: ' + this.secureEmail);
+
+    this.user  = process.env.EMAIL_USERNAME || config.username;
+    winston.info('EmailService username: ' + this.user);
+
+    this.port  = process.env.EMAIL_PORT;
+    winston.info('EmailService port: ' + this.port);
+
   }
+
+
+  readHTMLFile(templateName, callback) {
+    fs.readFile(appRoot + '/template/email/'+templateName, {encoding: 'utf-8'}, function (err, html) {
+        if (err) {
+            throw err;
+            callback(err);
+        }
+        else {
+            callback(null, html);
+        }
+    });
+};
 
 
   getTransport() {
 
-  
-    // var emailPassword = "";
-    var emailPassword = process.env.EMAIL_PASSWORD;
-    var host = process.env.EMAIL_HOST || config.host;
-    var secureEmail  = process.env.EMAIL_SECURE || false;
-    var user  = process.env.EMAIL_USERNAME || config.username;
-    var port  = process.env.EMAIL_PORT;
-
-    winston.debug('emailPassword: ' + emailPassword);
-    winston.debug('host: ' + host);
-    winston.debug('secureEmail: ' + secureEmail);
-    winston.debug('username: ' + user);
-    winston.debug('port: ' + port);
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: host,
-      port: port, // defaults to 587 if is secure is false or 465 if true
-      secure: secureEmail, 
+      host: this.host,
+      port: this.port, // defaults to 587 if is secure is false or 465 if true
+      secure: this.secureEmail, 
       auth: {
-        user: user,
-        pass: emailPassword
+        user: this.user,
+        pass: this.emailPassword
       }
     });
     return transporter;
@@ -53,7 +109,7 @@ class EmailService {
     }
 
     let mailOptions = {
-      from: config.from, // sender address
+      from: this.from, // sender address
       to: to,
       // bcc: config.bcc,
       subject: subject, // Subject line
@@ -77,184 +133,57 @@ class EmailService {
   }
 
 
+  sendTest(to) {      
+
+    var that = this;
+
+    this.readHTMLFile('test.html', function(err, html) {
+
+      var template = handlebars.compile(html);
+
+      var replacements = {        
+        name: "andrea",
+        enabled: true   
+      };
+
+      var html = template(replacements);
+
+      that.send(to, `TileDesk test email`, html);
+
+      that.send(that.bcc, `TileDesk test email`, html);
+
+    });
+   
+
+    
+  }
+
 
 // TODO externalize template
 
   sendNewAssignedRequestNotification(to, savedRequest, project) {      
 
-    var html = `
-     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-     <html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-     
-       <head>
-         <meta name="viewport" content="width=device-width" />
-         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-         <title>New request from TileDesk</title>
-     
-         <style type="text/css">
-           img {
-             max-width: 100%;
-             margin-left:16px;
-             margin-bottom:16px;
-             text-align:center !important;
-           }
-           body {
-             -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;
-           }
-           body {
-             background-color: #f6f6f6;
-           }
-     
-           @media only screen and (max-width: 640px) {
-             body {
-               padding: 0 !important;
-             }
-             h1 {
-               font-weight: 800 !important; margin: 20px 0 5px !important;
-               text-align:center !important;
-             }
-             h2 {
-               font-weight: 800 !important; margin: 20px 0 5px !important;
-             }
-             h3 {
-               font-weight: 800 !important; margin: 20px 0 5px !important;
-             }
-             h4 {
-               font-weight: 800 !important; margin: 20px 0 5px !important;
-             }
-             h1 {
-               font-size: 22px !important;
-             }
-             h2 {
-               font-size: 18px !important;
-             }
-             h3 {
-               font-size: 16px !important;
-             }
-             .container {
-               padding: 0 !important; width: 100% !important;
-             }
-             .content {
-               padding: 0 !important;
-             }
-             .content-wrap {
-               padding: 10px !important;
-             }
-             .invoice {
-               width: 100% !important;
-             }
-           }
-         </style>
-       </head>
-     
-       <body itemscope itemtype="http://schema.org/EmailMessage" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
-     
-         <table class="body-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
-           <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-             <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
-             <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
-               <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
-                 <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
-                 
-                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+    var that = this;
 
-                 <div style="text-align:center">
-                   <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                     <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
-                   </a>
-                 </div>
-                 </tr>
+    this.readHTMLFile('test.html', function(err, html) {
 
-                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-     
-                     <td class="alert alert-warning" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; margin: 0;" align="center"  valign="top">
-                       <div>
-                         <h2>New Request assigned to you</h2>
-                       </div>
-     
-                     </td>
-                   </tr>
-                   
-                   <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
-                       <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-     
-                    <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                       <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                         Message: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.first_text}</strong>
-                       </td>
-                     </tr>
+      var template = handlebars.compile(html);
 
-                                     
+      var replacements = {        
+        savedRequest: savedRequest,
+        project: project,
+        this: that    
+      };
+
+      var html = template(replacements);
 
 
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Project name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${project ? project.name : '-'}</strong>
-                     </td>
-                     </tr>
-                                       
+      this.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
 
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Department name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.department ? savedRequest.department.name : '-'}</strong>
-                     </td>
-                     </tr>
+      this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
 
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Source page : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.sourcePage ? savedRequest.sourcePage : '-'}</strong>
-                     </td>
-                     </tr>
-
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Contact name : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">${savedRequest.lead ? savedRequest.lead.fullname : '-'}</strong>
-                     </td>
-                     </tr>
-
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                       <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                       Click <a href="${this.baseUrl}/#/project/${savedRequest.id_project}/wsrequest/${savedRequest.request_id}/messages">here</a> to open the dashboard.
-                         
-                       </td>
-                     </tr>
-                   
-
-                 
-     
-                       
-                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                           <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                           </td>
-                         </tr>
-                       </table>
-                     </td>
-                   </tr>
-                 </table>
-                 <div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">
-                   <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                       <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                         <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
-                        <!-- <br><span>Powered by <a href="http://www.frontiere21.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Frontiere21</a></span> -->
-                         <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
-                      </td>
-                     </tr>
-                   </table>
-                 </div>
-               </div>
-             </td>
-             <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
-           </tr>
-         </table>
-       </body>
-     </html>
-     `;
-
-    this.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
-
-    this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
+    });
+    
   }
 
   sendNewPooledRequestNotification(to, savedRequest, project) {
@@ -342,7 +271,7 @@ class EmailService {
 
                           <div style="text-align:center">
                             <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                              <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
+                              <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
                             </a>
                           </div>
                           </tr>
@@ -522,7 +451,7 @@ class EmailService {
 
                         <div style="text-align:center">
                           <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
+                            <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
                           </a>
                         </div>
 
@@ -592,7 +521,7 @@ class EmailService {
 
 
     this.send(to, '[TileDesk] Password reset request', html);
-    this.send(config.bcc, '[TileDesk] Password reset request', html);
+    this.send(this.bcc, '[TileDesk] Password reset request', html);
   }
 
   /**
@@ -676,7 +605,7 @@ class EmailService {
 
                           <div style="text-align:center">
                             <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
+                            <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
                           </a>
                         </div>
                         <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
@@ -738,7 +667,7 @@ class EmailService {
 
 
     this.send(to, '[TileDesk] Your password has been changed', html);
-    this.send(config.bcc, '[TileDesk] Your password has been changed', html);
+    this.send(this.bcc, '[TileDesk] Your password has been changed', html);
   }
 
 
@@ -824,7 +753,7 @@ class EmailService {
 
                           <div style="text-align:center">
                             <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
+                            <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
                           </a>
                         </div>
                         <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
@@ -892,7 +821,7 @@ class EmailService {
 
 
     this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-    this.send(config.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+    this.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
   }
 
   /**
@@ -976,7 +905,7 @@ class EmailService {
 
                           <div style="text-align:center">
                             <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                            <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
+                            <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;" class="CToWUd">
                           </a>
                         </div>
                         <table class="main" width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
@@ -1046,7 +975,7 @@ class EmailService {
             `;
 
     this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-    this.send(config.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+    this.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
   }
 
   sendVerifyEmailAddress(to, savedUser) {
@@ -1129,7 +1058,7 @@ class EmailService {
 
                     <div style="text-align:center">
                       <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                        <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
+                        <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
                       </a>
                    </div>
                 </tr>
@@ -1190,7 +1119,7 @@ class EmailService {
     `;
 
     this.send(to, `[TileDesk] Verify your email address`, html);
-    this.send(config.bcc, `[TileDesk] Verify your email address `+to, html);
+    this.send(this.bcc, `[TileDesk] Verify your email address `+to, html);
   }
 
 
@@ -1286,7 +1215,7 @@ messages.forEach(message => {
 
               <div style="text-align:center">
                 <a href="http://www.tiledesk.com" style="color:#2daae1;font-weight:bold;text-decoration:none;word-break:break-word" target="_blank">
-                  <img src="http://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
+                  <img src="https://tiledesk.com/tiledesk-logo.png" style="width:50%;outline:none;text-decoration:none;border:none;min-height:36px" class="CToWUd">
                 </a>
               </div>
               </tr>
@@ -1413,7 +1342,7 @@ messages.forEach(message => {
   `;
 
  this.send(to, '[TileDesk] Transcript', html);
- this.send(config.bcc, '[TileDesk] Transcript', html);
+ this.send(this.bcc, '[TileDesk] Transcript', html);
 }
 
 
@@ -1424,6 +1353,7 @@ messages.forEach(message => {
 
 var emailService = new EmailService();
 
+emailService.sendTest("andrea.leo83@gmail.com");
 // chatApi.CHAT_MESSAGE_STATUS = {
 //             FAILED : -100,
 //             SENDING : 0,
