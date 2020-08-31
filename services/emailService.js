@@ -167,6 +167,16 @@ class EmailService {
 
     this.readHTMLFile('test.html', function(err, html) {
 
+
+      var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
+      winston.info("envTemplate: " + envTemplate);
+
+      if (envTemplate) {
+          html = envTemplate;
+      }
+
+      winston.info("html: " + html);
+
       var template = handlebars.compile(html);
 
       var replacements = {        
@@ -178,9 +188,9 @@ class EmailService {
       var html = template(replacements);
 
 
-      this.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
+      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
 
-      this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
+      that.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
 
     });
     
@@ -1353,7 +1363,8 @@ messages.forEach(message => {
 
 var emailService = new EmailService();
 
-emailService.sendTest("andrea.leo83@gmail.com");
+// emailService.sendTest("andrea.leo83@gmail.com");
+
 // chatApi.CHAT_MESSAGE_STATUS = {
 //             FAILED : -100,
 //             SENDING : 0,
