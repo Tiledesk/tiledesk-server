@@ -315,8 +315,8 @@ class EmailService {
       var html = template(replacements);
 
 
-    this.send(to, '[TileDesk] Your password has been changed', html);
-    this.send(this.bcc, '[TileDesk] Your password has been changed', html);
+      that.send(to, '[TileDesk] Your password has been changed', html);
+      that.send(this.bcc, '[TileDesk] Your password has been changed', html);
 
     });
 
@@ -334,7 +334,7 @@ class EmailService {
     this.readHTMLFile('beenInvitedExistingUser.html', function(err, html) {
 
 
-      var envTemplate = process.env.EMAIL_BEEN_INVITED_EXUSER_HTML_TEMPLATE;
+      var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
       winston.info("envTemplate: " + envTemplate);
 
       if (envTemplate) {
@@ -363,8 +363,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      this.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
 
     });
   }
@@ -380,7 +380,7 @@ class EmailService {
     this.readHTMLFile('beenInvitedNewUser.html', function(err, html) {
 
 
-      var envTemplate = process.env.EMAIL_BEEN_INVITED_NEWUSER_HTML_TEMPLATE;
+      var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
       winston.info("envTemplate: " + envTemplate);
 
       if (envTemplate) {
@@ -407,8 +407,8 @@ class EmailService {
 
       var html = template(replacements);
 
-      this.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      this.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(this.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
 
     });
   }
@@ -444,8 +444,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      this.send(to, `[TileDesk] Verify your email address`, html);
-      this.send(this.bcc, `[TileDesk] Verify your email address `+to, html);
+      that.send(to, `[TileDesk] Verify your email address`, html);
+      that.send(this.bcc, `[TileDesk] Verify your email address `+to, html);
 
     });
   }
@@ -497,8 +497,8 @@ class EmailService {
 
 
 
-    this.send(to, '[TileDesk] Transcript', html);
-    this.send(this.bcc, '[TileDesk] Transcript', html);
+      that.send(to, '[TileDesk] Transcript', html);
+      that.send(this.bcc, '[TileDesk] Transcript', html);
 
 
     });
