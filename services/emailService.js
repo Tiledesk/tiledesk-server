@@ -462,7 +462,7 @@ class EmailService {
 
   sendRequestTranscript(to, messages, request) {
 
-    var transcriptAsHtml = "";
+    var transcriptAsHtml = ""; //https://handlebarsjs.com/guide/expressions.html#html-escaping
     messages.forEach(message => {
       transcriptAsHtml = transcriptAsHtml + '['+ message.createdAt.toLocaleTimeString('en', { timeZone: 'UTC' }) +'] ' + message.senderFullname + ': ' + message.text + '<br>';
     });
