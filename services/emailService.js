@@ -278,7 +278,7 @@ class EmailService {
     });
   }
 
-  
+  // ok
   sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
 
     var that = this;
@@ -319,7 +319,9 @@ class EmailService {
   }
 
 
-  
+    // ok
+
+
   /**
    *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ***
    */
@@ -364,6 +366,9 @@ class EmailService {
 
     });
   }
+
+    // ok
+
 
   /**
    *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT (USER NOT REGISTERED) ***
@@ -453,15 +458,16 @@ class EmailService {
 
 
 
-
+// riprova
 
   sendRequestTranscript(to, messages, request) {
 
     var transcriptAsHtml = "";
     messages.forEach(message => {
-      transcriptAsHtml = transcriptAsHtml + '['+ message.createdAt.toLocaleTimeString('it', { timeZone: 'UTC' }) +'] ' + message.senderFullname + ': ' + message.text + '<br>';
+      transcriptAsHtml = transcriptAsHtml + '['+ message.createdAt.toLocaleTimeString('en', { timeZone: 'UTC' }) +'] ' + message.senderFullname + ': ' + message.text + '<br>';
     });
 
+    
    
       
     var that = this;
@@ -487,6 +493,7 @@ class EmailService {
       var replacements = {        
         messages: messages,    
         request: request.toJSON(),  
+        formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
         baseScope: baseScope    
       };
 
