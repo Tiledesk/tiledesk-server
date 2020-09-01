@@ -159,8 +159,7 @@ class EmailService {
   }
 
 
-// TODO externalize template
-
+// ok
   sendNewAssignedRequestNotification(to, savedRequest, project) {      
 
     var that = this;
@@ -202,6 +201,7 @@ class EmailService {
     
   }
 
+  // ok
   sendNewPooledRequestNotification(to, savedRequest, project) {
 
     var that = this;
@@ -239,9 +239,7 @@ class EmailService {
     });
   }
 
-  /**
-   *! *** EMAIL: PASSWORD RESET REQUEST ***
-   */
+  // ok
   sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
 
     var that = this;
@@ -280,9 +278,7 @@ class EmailService {
     });
   }
 
-  /**
-   * ********  EMAIL: YOUR PASSWORD HAS BEEN CHANGED ********
-   */
+  
   sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
 
     var that = this;
@@ -413,6 +409,7 @@ class EmailService {
     });
   }
 
+  // ok
   sendVerifyEmailAddress(to, savedUser) {
 
    
@@ -488,7 +485,7 @@ class EmailService {
 
 
       var replacements = {        
-        messages: messages.toJSON(),    
+        messages: messages,    
         request: request.toJSON(),  
         baseScope: baseScope    
       };
