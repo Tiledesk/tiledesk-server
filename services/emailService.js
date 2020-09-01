@@ -458,7 +458,7 @@ class EmailService {
 
 
 
-// riprova
+// ok
 
   sendRequestTranscript(to, messages, request) {
 
@@ -466,7 +466,7 @@ class EmailService {
     messages.forEach(message => {
       transcriptAsHtml = transcriptAsHtml + '['+ message.createdAt.toLocaleTimeString('en', { timeZone: 'UTC' }) +'] ' + message.senderFullname + ': ' + message.text + '<br>';
     });
-    winston.info("transcriptAsHtml: " + transcriptAsHtml);
+    winston.debug("transcriptAsHtml: " + transcriptAsHtml);
     
    
       
