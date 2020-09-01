@@ -1,3 +1,27 @@
+# 2.1.5
+- Email template externalization with handlebars under /template/email folder. 
+ You can override the email template using EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE, EMAIL_POOLED_REQUEST_HTML_TEMPLATE,
+ EMAIL_RESET_PASSWORD_HTML_TEMPLATE, EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE, EMAIL_EXUSER_INVITED_HTML_TEMPLATE,
+ EMAIL_NEWUSER_INVITED_HTML_TEMPLATE, EMAIL_VERIFY_HTML_TEMPLATE, EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE env variables
+
+# 2.1.4
+- Email config parameters fix
+
+# 2.1.3
+- Language pivot fix
+
+# 2.1.2
+- License fix
+
+# 2.1.1
+- Minor bug fix
+
+# 2.1.0
+- Release
+
+# 2.1.0-beta24
+- Minor bug fix
+
 # 2.1.0-beta23
 - Email fix for pooled request caming from bot
 
