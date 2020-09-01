@@ -168,7 +168,7 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
@@ -210,7 +210,7 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
@@ -248,13 +248,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
@@ -287,13 +287,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
@@ -333,13 +333,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
@@ -382,13 +382,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
@@ -424,13 +424,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
@@ -466,7 +466,7 @@ class EmailService {
     messages.forEach(message => {
       transcriptAsHtml = transcriptAsHtml + '['+ message.createdAt.toLocaleTimeString('en', { timeZone: 'UTC' }) +'] ' + message.senderFullname + ': ' + message.text + '<br>';
     });
-
+    winston.info("transcriptAsHtml: " + transcriptAsHtml);
     
    
       
@@ -476,13 +476,13 @@ class EmailService {
 
 
       var envTemplate = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
-      winston.info("envTemplate: " + envTemplate);
+       winston.debug("envTemplate: " + envTemplate);
 
       if (envTemplate) {
           html = envTemplate;
       }
 
-      winston.info("html: " + html);
+       winston.debug("html: " + html);
 
       var template = handlebars.compile(html);
 
