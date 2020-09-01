@@ -494,6 +494,7 @@ class EmailService {
         messages: messages,    
         request: request.toJSON(),  
         formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
+        transcriptAsHtml: transcriptAsHtml,
         baseScope: baseScope    
       };
 
