@@ -291,7 +291,7 @@ class RequestService {
 
 
            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-           winston.info("getOperators", result);
+           winston.debug("getOperators", result);
  
            // for preflight it is important to save agents in req for trigger. try to optimize it
            dep_id = result.department._id;
