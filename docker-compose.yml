@@ -74,6 +74,7 @@ services:
       - FIREBASE_PROJECT_ID
       - FIREBASE_STORAGEBUCKET
       - FIREBASE_MESSAGINGSENDERID
+      - FIREBASE_APP_ID
   #  networks:
   #     frontend: 
   #           aliases:
