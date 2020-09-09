@@ -1,3 +1,6 @@
+# 2.1.6 
+- Push notification fix for the first support message and for group joining.
+
 # 2.1.5
 - Email template externalization with handlebars under /template/email folder. 
  You can override the email template using EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE, EMAIL_POOLED_REQUEST_HTML_TEMPLATE,
