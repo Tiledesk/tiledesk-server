@@ -308,7 +308,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS), 
                             request.id_project,
                             'system',                             
-                            {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor,messagelabel: {key: "TOUCHING_OPERATOR"}},
+                            {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor, forcenotification: true,  messagelabel: {key: "TOUCHING_OPERATOR"}},
                             undefined,
                             request.language
 
