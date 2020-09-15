@@ -1,3 +1,6 @@
+# 2.1.9
+- Widget departments fix
+
 # 2.1.8
 - SigninWithCustomToken fix for different audience types
 
