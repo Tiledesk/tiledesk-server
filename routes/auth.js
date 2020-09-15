@@ -241,7 +241,11 @@ router.post('/signinWithCustomToken', [
     winston.debug("audUrl path: " + path );
     
     const AudienceType = path.split("/")[1];
-    winston.debug("audUrl AudienceType: " + AudienceType );
+    winston.info("audUrl AudienceType: " + AudienceType );
+
+    if (AudienceType!="projects") {
+      return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+    }
 
     const AudienceId = path.split("/")[2];
     winston.debug("audUrl AudienceId: " + AudienceId );
