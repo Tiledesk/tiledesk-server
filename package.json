@@ -88,24 +88,7 @@
     "uniqid": "^5.2.0",
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
-    "ws": "^7.2.0",
-    "@tiledesk-ent/tiledesk-server-payments": "^1.1.3",
-    "@tiledesk-ent/tiledesk-server-analytics": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-activities": "^1.1.17",
-    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.46",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.65",
-    "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.8",
-    "@tiledesk-ent/tiledesk-server-dialogflow": "^1.1.6",
-    "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.10",
-    "@tiledesk-ent/tiledesk-server-queue": "^1.1.9",
-    "@tiledesk-ent/tiledesk-server-cache": "^1.1.10",
-    "@tiledesk-ent/tiledesk-server-canned": "^1.1.1",
-    "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
-    "@tiledesk-ent/tiledesk-server-groups": "^1.1.2",
-    "@tiledesk-ent/tiledesk-server-departments": "^1.1.2",
-    "@tiledesk-ent/tiledesk-server-mt": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
@@ -125,5 +108,10 @@
     "doc": "docs",
     "test": "test"
   },
-  "keywords": ["livechat", "chatbot", "widget", "messenger"]
+  "keywords": [
+    "livechat",
+    "chatbot",
+    "widget",
+    "messenger"
+  ]
 }
