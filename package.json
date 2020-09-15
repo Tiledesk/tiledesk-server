@@ -22,7 +22,7 @@
   },
   "engines": {
     "node": "11.10.0",
-    "npm": "6.8.0"
+    "npm": "6.14.8"
   },
   "bin": {
     "tiledesk-server": "./bin/www"
