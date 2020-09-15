@@ -90,13 +90,13 @@ router.get('/', function(req, res, next) {
 
       var query = { "id_project": req.projectid, "status": 1 };
 
-      console.log(req.project, req.project.trialExpired)
+      //console.log(req.project, req.project.trialExpired)
       if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
         query.default = true;
       }
 
-      winston.info("query2:", query);
+      winston.debug("query:", query);
 
       Department.find(query).exec(function(err, result) {
             return resolve(result);
