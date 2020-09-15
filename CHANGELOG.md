@@ -1,5 +1,8 @@
-# 2.1.7
+# 2.1.8
 - SigninWithCustomToken fix for different audience types
+
+# 2.1.7
+- Minor fix
 
 # 2.1.6 
 - Push notification fix for the first support message and for group joining.
