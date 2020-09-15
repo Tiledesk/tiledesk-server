@@ -70,6 +70,7 @@ router.get('/', function(req, res, next) {
   });
   };
 
+  
   var getIp = function() {
     return new Promise(function (resolve, reject) {
     //  var ip = req.ip;
@@ -82,13 +83,28 @@ router.get('/', function(req, res, next) {
   });
   };
 
-
-
-  // var departments = function() {
-    
-  //     return Department.find({ "id_project": req.projectid, "status": 1 }).exec(
-  // };
   
+  var getDepartments = function(req) {
+
+    return new Promise(function (resolve, reject) {
+
+      var query = { "id_project": req.projectid, "status": 1 };
+
+      console.log(req.project, req.project.trialExpired)
+      if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+
+        query.default = true;
+      }
+
+      winston.info("query2:", query);
+
+      Department.find(query).exec(function(err, result) {
+            return resolve(result);
+      });
+
+    });
+
+  }
 
 // TOOD add labels
     Promise.all([
@@ -97,7 +113,7 @@ router.get('/', function(req, res, next) {
       ,
         availableUsers()
       ,
-        Department.find({ "id_project": req.projectid, "status": 1 })
+        getDepartments(req)
       ,
         waiting()
       , 
