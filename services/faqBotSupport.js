@@ -111,6 +111,7 @@ class FaqBotSupport {
                         if (err) {
                             bot_answer.text = err +' '+ response.text;
                             bot_answer.type = "text";
+                            winston.error("Error from webhook reply of getButtonFromText", err);
                             return resolve(bot_answer);
                         }
                         // if (response.statusCode >= 400) {                  
@@ -120,7 +121,7 @@ class FaqBotSupport {
 
                         var text = undefined;
                         if(response && response.text===undefined) {
-                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id;
+                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + response;
                         }else {
                             text = response.text;
                         }
