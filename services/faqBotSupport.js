@@ -120,10 +120,10 @@ class FaqBotSupport {
                         winston.debug("webhookurl repl_message ", response);
 
                         var text = undefined;
-                        if(response && response.text===undefined) {
+                        if(json && json.text===undefined) {
                             text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
                         }else {
-                            text = response.text;
+                            text = json.text;
                         }
                         that.getButtonFromText(text,message, bot, faq).then(function(bot_answer) {
                             return resolve(bot_answer);
