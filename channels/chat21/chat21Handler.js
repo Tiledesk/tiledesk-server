@@ -3,6 +3,7 @@ const messageEvent = require('../../event/messageEvent');
 const authEvent = require('../../event/authEvent');
 const botEvent = require('../../event/botEvent');
 const requestEvent = require('../../event/requestEvent');
+const groupEvent = require('../../event/groupEvent');
 var messageService = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
@@ -616,10 +617,10 @@ class Chat21Handler {
                          //setMembers: function(members, group_id){
                         chat21.groups.setMembers(members, groupId).then(function(data) {
                                 winston.info("Chat21 group set: " , JSON.stringify(data));      
-                                chat21Event.emit('group.join', data);                                          
+                                chat21Event.emit('group.setMembers', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error joining chat21 group ", err);
-                                chat21Event.emit('group.join.error', err);
+                                chat21Event.emit('group.setMembers.error', err);
                             });
 
 
@@ -746,7 +747,109 @@ class Chat21Handler {
 
 
 
-        }
+
+            groupEvent.on('group.create',  function(group) {                       
+
+                if (process.env.SYNC_CHAT21_GROUPS !=="true") {
+                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    return;
+                }
+
+                winston.info("Creating chat21 group", group);
+                
+                setImmediate(() => {
+
+                    chat21.auth.setAdminToken(adminToken);
+
+
+                    var groupMembers = group.members;
+                    winston.info("groupMembers ", groupMembers); 
+                    
+                    return chat21.groups.create(group.name, groupMembers, undefined, group._id).then(function(data) {
+                        winston.info("Chat21 group created: " + JSON.stringify(data));      
+                        chat21Event.emit('group.create', data);                                          
+                    }).catch(function(err) {
+                        winston.error("Error creating chat21 group ", err);
+                        chat21Event.emit('group.create.error', err);
+                    });
+
+                });
+
+             });
+
+
+             groupEvent.on('group.update',  function(group) {                       
+
+                if (process.env.SYNC_CHAT21_GROUPS !=="true") {
+                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    return;
+                }
+
+                winston.info("Updating chat21 group", group);
+                
+                setImmediate(() => {
+
+                    chat21.auth.setAdminToken(adminToken);
+
+
+                    var groupMembers = group.members;
+                    winston.info("groupMembers ", groupMembers); 
+                    
+                    // chat21.groups.update(groupName, undefined, undefined, request.request_id).then(function(data) {
+
+                        // setMembers: function(members, group_id){
+                            // update: function(name, owner, attributes, group_id){
+                    return chat21.groups.update(group.name, undefined, undefined, group._id).then(function(data) {
+                        winston.info("Chat21 group updated: " + JSON.stringify(data));      
+                        chat21Event.emit('group.update', data);     
+                        return chat21.groups.setMembers(groupMembers, group._id).then(function(data) {      
+                            winston.info("Chat21 group set: " , JSON.stringify(data));      
+                            chat21Event.emit('group.setMembers', data);          
+                        }).catch(function(err) {
+                            winston.error("Error setMembers chat21 group ", err);
+                            chat21Event.emit('group.setMembers.error', err);
+                        });                             
+                    }).catch(function(err) {
+                        winston.error("Error creating chat21 group ", err);
+                        chat21Event.emit('group.update.error', err);
+                    });
+
+                });
+
+             });
+
+
+
+
+
+             groupEvent.on('group.delete',  function(group) {                       
+
+                if (process.env.SYNC_CHAT21_GROUPS !=="true") {
+                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    return;
+                }
+
+                winston.info("Deleting chat21 group", group);
+                
+                setImmediate(() => {
+
+                    chat21.auth.setAdminToken(adminToken);
+                  
+                    //Remove members but group remains.
+
+                    return chat21.groups.setMembers(["system"], group._id).then(function(data) {      
+                        winston.info("Chat21 group set: " , JSON.stringify(data));      
+                        chat21Event.emit('group.setMembers', data);          
+                    }).catch(function(err) {
+                        winston.error("Error setMembers chat21 group ", err);
+                        chat21Event.emit('group.setMembers.error', err);
+                    });           
+
+                });
+
+             });
+
+    }
 
     
 }
