@@ -419,9 +419,10 @@ router.post('/signinWithCustomToken', [
 // TODO aggiungere logout? con user.logout event?
 
 router.post('/signin', function (req, res) {
-  winston.debug("req.body.email", req.body.email);
+  var email = req.body.email;
+  winston.debug("email", email);
   User.findOne({
-    email: req.body.email, status: 100
+    email: email, status: 100
   }, 'email firstname lastname password emailverified id', function (err, user) {
     if (err) {
       winston.error("Error signin", err);
@@ -503,10 +504,15 @@ router.post('/signin', function (req, res) {
              
               authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
               
-               
+              var returnObject = { success: true, token: 'JWT ' + token, user: userJson };
+
+              var adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
+              if (email === adminEmail) {
+                returnObject.role = "admin";
+              }
 
               // return the information including token as JSON
-              res.json({ success: true, token: 'JWT ' + token, user: userJson });
+              res.json(returnObject);
             } else {
               winston.warn('Authentication failed. Wrong password.' );
               res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
