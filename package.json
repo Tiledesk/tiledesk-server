@@ -10,6 +10,7 @@
     "test:int": "mocha ./test-int/*.js  ./pubmodules/**/test-int/*.js ./modules/**/test-int/*.js ./channels/**/test-int/*.js --exit",
     "posttest": "mongodb-runner stop",
     "preinstall": "if [ $ENABLE_ENTERPRISE_MODULE ]; then npm run enable-ent; fi",
+    "heroku-prebuild": "if [ $ENABLE_ENTERPRISE_MODULE ]; then npm run enable-ent; fi",
     "enable-ent": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc"
   },
   "private": false,
