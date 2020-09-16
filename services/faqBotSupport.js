@@ -121,7 +121,7 @@ class FaqBotSupport {
 
                         var text = undefined;
                         if(response && response.text===undefined) {
-                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + response;
+                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
                         }else {
                             text = response.text;
                         }
