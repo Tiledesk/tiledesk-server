@@ -51,8 +51,6 @@ class FaqBotSupport {
             winston.debug("getButtonFromText ******",text);
             var repl_message = {};
 
-
-
             // cerca i bottoni eventualmente definiti
             var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
             var text_buttons = text.match(button_pattern);
