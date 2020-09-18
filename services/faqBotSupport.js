@@ -50,6 +50,9 @@ class FaqBotSupport {
         return new Promise(function(resolve, reject) {
             winston.debug("getButtonFromText ******",text);
             var repl_message = {};
+
+
+
             // cerca i bottoni eventualmente definiti
             var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
             var text_buttons = text.match(button_pattern);
@@ -147,7 +150,7 @@ class FaqBotSupport {
   
               winston.debug('botAnswer', botAnswer);
                 // var found = false;
-                var bot_answer={defaultFallback : true};
+                var bot_answer={};
   
                       if (!botAnswer ) {                          
   
@@ -169,15 +172,19 @@ class FaqBotSupport {
 
                                 bot_answer.text=faqs[0].answer;   
                                 
-
+                                winston.debug("bot_answer exact", bot_answer);  
                                 // found = true;
                                 // return resolve(bot_answer);
                                 that.getButtonFromText(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {
+                                    
+                                    bot_answerres.defaultFallback=true;
+
                                     return resolve(bot_answerres);
                                 });
                            } else {
                                 var message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
-                                bot_answer.text = that.getMessage(message_key, message.language, faqBotSupport.LABELS);                        
+                                bot_answer.text = that.getMessage(message_key, message.language, faqBotSupport.LABELS);  
+                                bot_answer.defaultFallback = true;
                                 // console.log("bot_answer ", bot_answer)
                                 return resolve(bot_answer);
                            }
