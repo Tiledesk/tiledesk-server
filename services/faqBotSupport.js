@@ -147,13 +147,14 @@ class FaqBotSupport {
   
               winston.debug('botAnswer', botAnswer);
                 // var found = false;
-                var bot_answer={};
+                var bot_answer={defaultFallback : true};
   
                       if (!botAnswer ) {                          
   
                         var query = { "id_project": projectid, "id_faq_kb": bot._id, "question": "defaultFallback"};
                         winston.debug('query', query);
 
+                       
                         Faq.find(query) 
                         .lean().             //fai cache  
                          exec(function (err, faqs) {
@@ -166,7 +167,9 @@ class FaqBotSupport {
                            if (faqs && faqs.length>0) {
                                 winston.debug("faqs exact", faqs);  
 
-                                bot_answer.text=faqs[0].answer;
+                                bot_answer.text=faqs[0].answer;   
+                                
+
                                 // found = true;
                                 // return resolve(bot_answer);
                                 that.getButtonFromText(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {

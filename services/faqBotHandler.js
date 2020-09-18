@@ -8,6 +8,7 @@ var winston = require('../config/winston');
 var faqBotSupport = require('../services/faqBotSupport');
 var BotFromParticipant = require("../utils/botFromParticipant");
 var cacheUtil = require('../utils/cacheUtil');
+var eventService = require('../pubmodules/events/eventService');
 
 class FaqBotHandler {
  
@@ -73,7 +74,7 @@ class FaqBotHandler {
                            
                             messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                 message.id_project, sender, bot_answer.attributes, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
-                                    winston.debug("faqbot message botAns " ,savedMessage.toObject());  
+                                    winston.debug("faqbot message botAns ", savedMessage.toObject());  
                             });
                         
                            /* messageService.send(sender, botName, message.recipient, answerObj.answer, 
@@ -132,12 +133,21 @@ class FaqBotHandler {
         
                     }
                     
-                
-                        faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
+                        var threshold = 1.2;
+
+                        faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, threshold).then(function(botAns){
                     // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
+
+                            if (botAns.defaultFallback === true) {
+                                winston.info("defaultFallback event");  
+                                // emit(name, attributes, id_project, project_user, createdBy, user) {
+                                eventService.emit("faqbot.answer_not_found", {botAnswer:answerObj, bot: faq_kb, message:message, threshold:threshold}, message.id_project, "system");
+                            }
+                            
+
                             // let attributes = {bot_reponse_template: botAns.template};
 
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
