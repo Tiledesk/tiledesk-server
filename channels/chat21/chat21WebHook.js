@@ -630,10 +630,10 @@ else if (req.body.event_type == "presence-change") {
           
           pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
           
-          winston.info("pu:", pu);
+          // winston.info("pu:", pu);
   
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
-          winston.info("after pu:");
+          // winston.info("after pu:");
   
           
 
