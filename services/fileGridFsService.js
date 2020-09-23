@@ -5,6 +5,7 @@
 const mongoose = require("mongoose");
 const GridFsStorage = require("multer-gridfs-storage");
 const uuidv4 = require('uuid/v4');
+var config = require('../config/database');
 
 const FileService = require("./fileService");
 
@@ -15,7 +16,8 @@ class FileGridFsService extends FileService {
     constructor(bucketName) {
         super();
         // DB
-        this.mongoURI = "mongodb://localhost:27017/tiledesk";
+        this.mongoURI = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+
 
         // // connection
         this.conn = mongoose.createConnection(this.mongoURI, {
