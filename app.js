@@ -95,6 +95,8 @@ var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
 var cacheUtil = require("./utils/cacheUtil");
+var images = require('./routes/images');
+var files = require('./routes/files');
 
 var bootDataLoader = require('./services/bootDataLoader');
 
@@ -121,6 +123,7 @@ try {
 } catch(err) {
   winston.info("ModulesManager not present");
 }
+
 
 
 
@@ -175,6 +178,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 //app.use(morgan('dev'));
 
@@ -254,7 +258,8 @@ app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
 
 app.use('/widgets', widgetsLoader);
-
+app.use('/images', images);
+app.use('/files', files);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 
 // TODO security issues
