@@ -3,6 +3,7 @@ const multer  = require('multer');
 var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
+var winston = require('../config/winston');
 
 
 var router = express.Router();
@@ -59,7 +60,7 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 
 
 router.get("/", (req, res) => {
-  console.log('path', req.query.path);
+  winston.debug('path', req.query.path);
   // if (path.indexOf("/users/"))
   fileService.getFileDataAsStream(req.query.path).pipe(res);
   // const file = gfs
