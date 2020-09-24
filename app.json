@@ -2,7 +2,7 @@
   "name": "Tiledesk Server",
   "description": "Tildesk server",
   "repository": "https://github.com/Tiledesk/tiledesk-server/new/master",
-  "logo": "https://tiledesk.com/wp-content/uploads/2018/03/tiledesk-logo.png",
+  "logo": "https://tiledesk.com/tiledesk-logo.png",
   "keywords": ["node", "express", "tiledesk", "live chat"],
   "env": {
     "FIREBASE_APIKEY": {
