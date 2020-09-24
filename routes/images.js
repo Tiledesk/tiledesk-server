@@ -3,6 +3,7 @@ const multer  = require('multer');
 var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
+var winston = require('../config/winston');
 
 
 var router = express.Router();
@@ -46,30 +47,26 @@ curl -u andrea.leo@f21.it:123456 \
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
   try {
     var uuidv4_storage = req.uuidv4_storage || "error";
-     console.log("uuidv4_storage",uuidv4_storage);
+    winston.debug("uuidv4_storage",uuidv4_storage);
 
-     var writeTo = 'uploads/users/' + req.user.id + "/images/" + uuidv4_storage +"/"+'thumbnails-' + req.file.originalname;
-     console.log("writeTo",writeTo);
+     var destinationFolder = 'uploads/users/' + req.user.id + "/images/" + uuidv4_storage +"/";
+     winston.debug("destinationFolder",destinationFolder);
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
       sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+        if (err) { winston.error("Error generating thumbnail", err); }
+        var filename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
+        fileService.createFile ( filename, resizeImage, undefined, undefined);
+      });
 
-          if (err) {
-              console.log(err);
-          } else {
-              // console.log(resizeImage);
-          }
-
-          fileService.createFile ( writeTo, resizeImage, undefined, undefined);
-      })
       return res.status(201).json({
           message: 'File uploded successfully',
           filename: req.file.filename
       });
     });
   } catch (error) {
-      console.error(error);
+    winston.error(error);
   }
 });
 
@@ -84,29 +81,24 @@ curl \
 
 router.post('/public', upload.single('file'), (req, res, next) => {
   try {
-    console.log("req",req);
+     console.log("req",req);
      var uuidv4_storage = req.uuidv4_storage || "error";
      console.log("uuidv4_storage",uuidv4_storage);
 
-     var writeTo = "uploads/public/images/" + uuidv4_storage +"/"+'thumbnails-' + req.file.originalname;
-     console.log("writeTo",writeTo);
+     var destinationFolder = "uploads/public/images/" + uuidv4_storage +"/";
+     console.log("destinationFolder",destinationFolder);
 
      console.log("req.file.filename",req.file.filename);
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
-        sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
-        
-        
-        // (writeTo, (err, resizeImage) => {
-          // sharp(buffer).resize(200, 200).toFile(writeTo, (err, resizeImage) => {
-            if (err) {
-                console.log(err);
-            } else {
-                // console.log(resizeImage);
-            }
 
-            fileService.createFile ( writeTo, resizeImage, undefined, undefined);
+        sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+            if (err) { winston.error("Error generating thumbnail", err); }
+            var filename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
+            fileService.createFile ( filename, resizeImage, undefined, undefined);
         });
+
+
         return res.status(201).json({
             message: 'File uploded successfully',
             filename: req.file.filename
