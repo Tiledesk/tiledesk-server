@@ -1,5 +1,9 @@
+# 2.1.11
+- Mongo support for Winston with: WRITE_LOG_TO_MONGODB=true 
+- Logfix
+
 # 2.1.10
-- Tiledesk Chat21 groups syncronizer
+- Tiledesk Chat21 groups syncronizer. Enable with SYNC_CHAT21_GROUPS="true"
 - Built-in faq updated  and chatbot webhook example changed
 - Return role: admin if the admin sign-in with email and password
 - Default fallback event emitting
