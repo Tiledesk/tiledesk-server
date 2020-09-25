@@ -1,3 +1,10 @@
+# 2.1.10
+- Tiledesk Chat21 groups syncronizer
+- Built-in faq updated  and chatbot webhook example changed
+- Return role: admin if the admin sign-in with email and password
+- Default fallback event emitting
+- Files and images storage services
+
 # 2.1.9
 - Widget departments fix
 
