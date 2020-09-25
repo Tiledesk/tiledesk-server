@@ -1,5 +1,6 @@
 var appRoot = require('app-root-path');
 var winston = require('winston');
+var config = require('./database');
 
 var level = process.env.LOG_LEVEL || 'info'
 // console.log("level",level);
@@ -38,22 +39,29 @@ var options = {
 
 
 
-//   require('winston-mongodb');
+require('winston-mongodb');
 
-//   if (process.env.NODE_ENV == 'test')  {
-//     var logsDb = config.databasetest;
-//   }else {
-//     var logsDb = config.database;
-//   }
+  if (process.env.NODE_ENV == 'test')  {
+    var logsDb = config.databasetest;
+  }else {
+    var logsDb = config.database;
+  }
 
   let logger = winston.createLogger({    
     transports: [
      new (winston.transports.Console)(options.console),
      new (winston.transports.File)(options.file),
-     // new (winston.transports.MongoDB)( {db: logsDb, collection: "logs"}) 
+     //new (winston.transports.MongoDB)( {db: logsDb, collection: "logs"}) 
     ],
     exitOnError: false, // do not exit on handled exceptions
   });
+
+  if (process.env.WRITE_LOG_TO_MONGODB=="true") {
+    console.log("Added winston MongoDB transport");
+    winston.add(new winston.transports.MongoDB({db: logsDb, collection: "logs"}));
+  }
+    
+
 
   logger.stream = {
     write: function(message, encoding) {
