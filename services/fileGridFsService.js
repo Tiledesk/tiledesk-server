@@ -29,7 +29,7 @@ class FileGridFsService extends FileService {
         // init gfs
         
         this.conn.once("open", () => {
-            console.log("mongoURI connected")
+            // console.log("mongoURI connected")
         // init stream
             this.gfs = new mongoose.mongo.GridFSBucket(this.conn.db, {
                 bucketName: bucketName
