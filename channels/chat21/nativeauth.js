@@ -21,12 +21,12 @@ const maskPhoneOptions = {
   };
 
 
-const jwtKey = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
+const jwtSecret = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
 
-const masked_jwtKey = MaskData.maskPhone(jwtKey, maskPhoneOptions);
+const masked_jwtSecret = MaskData.maskPhone(jwtSecret, maskPhoneOptions);
 
 
-winston.info("Native jwtKey: "+ masked_jwtKey);
+winston.info("Chat21 native jwtSecret: "+ masked_jwtSecret);
 
 
 
@@ -79,7 +79,7 @@ router.post('/createCustomToken', function (req, res) {
         console.log("payload:\n", payload)
         var token = jwt.sign(
             payload,
-            jwtKey,
+            masked_jwtSecret,
             {
                 "algorithm": "HS256"
             }
