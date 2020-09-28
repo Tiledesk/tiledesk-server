@@ -19,11 +19,13 @@ const maskOptions = {
 var chat21Enabled = process.env.CHAT21_ENABLED;
 winston.debug("chat21Enabled: "+chat21Enabled);
 
-if (chat21Enabled && chat21Enabled == "true"){
-  // if (chat21Enabled){
+var engine = process.env.CHAT21_ENGINE || "firebase";
+winston.debug("chat21 engine: "+engine);
 
-      //firestore
-      winston.info("Chat21 channel enabled"); 
+if (chat21Enabled && chat21Enabled == "true" && engine && engine=="firebase"){
+
+    
+      winston.info("Chat21 firebase channel enabled"); 
       var firebaseConfig = require('./firebaseConfig');
 
       var firebaseConfigFilePath = process.env.FIREBASE_CONFIG_FILE || '../../.firebasekey.json';
@@ -48,7 +50,7 @@ if (chat21Enabled && chat21Enabled == "true"){
       var maskedclient_email;
       if (client_email) {
         maskedclient_email = MaskData.maskEmail2(client_email, maskOptions);
-      }else {
+      } else {
         maskedclient_email= client_email;
       }
       winston.info('FirebaseConnector client_email: '+ maskedclient_email);
@@ -75,10 +77,11 @@ if (chat21Enabled && chat21Enabled == "true"){
       const admin = require('firebase-admin');
       // admin.initializeApp(functions.config().firebase);
 
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: firebaseConfig.databaseURL
-      });
+    
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+          databaseURL: firebaseConfig.databaseURL
+        });     
 
       //var firestore = admin.firestore();
       //end firestore
@@ -89,6 +92,6 @@ if (chat21Enabled && chat21Enabled == "true"){
 
           
 }else { 
-  winston.info("Chat21 channel disabled. ATTENTION you must configure and enable it"); 
+  winston.info("Chat21 firebase channel disabled. ATTENTION you must configure and enable it"); 
   module.exports = undefined;
 }
