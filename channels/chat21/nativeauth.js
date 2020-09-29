@@ -79,7 +79,7 @@ router.post('/createCustomToken', function (req, res) {
         console.log("payload:\n", payload)
         var token = jwt.sign(
             payload,
-            masked_jwtSecret,
+            jwtSecret,
             {
                 "algorithm": "HS256"
             }
