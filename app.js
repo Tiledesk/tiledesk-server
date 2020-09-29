@@ -43,7 +43,7 @@ if (process.env.NODE_ENV == 'test')  {
   databaseUri = config.databasetest;
 }
 
-winston.info("databaseUri: " + databaseUri);
+winston.info("DatabaseUri: " + databaseUri);
 
 var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
