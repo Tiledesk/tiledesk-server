@@ -26,7 +26,7 @@ const jwtSecret = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
 const masked_jwtSecret = MaskData.maskPhone(jwtSecret, maskPhoneOptions);
 
 
-winston.info("Chat21 native jwtSecret: "+ masked_jwtSecret);
+winston.info("Chat21 Native channel jwtSecret: "+ masked_jwtSecret);
 
 
 
