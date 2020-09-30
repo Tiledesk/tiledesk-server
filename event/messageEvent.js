@@ -227,7 +227,7 @@ function populateMessageWithRequest(message, eventPrefix) {
     }
 
   if (request) {
-      winston.debug("request is defined in messageEvent" );
+      winston.debug("request is defined in messageEvent",request );
 
       var messageJson = message.toJSON();
       
@@ -251,7 +251,8 @@ function populateMessageWithRequest(message, eventPrefix) {
             messageEvent.emit(eventPrefix+'.first', messageJson );
           }
 
-          if (message.sender === request.lead.lead_id) {
+          //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
+          if (request.lead && message.sender === request.lead.lead_id) {
             messageEvent.emit(eventPrefix+'.from.requester', messageJson );
           }
 
@@ -267,7 +268,9 @@ function populateMessageWithRequest(message, eventPrefix) {
           messageEvent.emit(eventPrefix+'.first', messageJson );
         }
 
-        if (message.sender === request.lead.lead_id) {
+        //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
+        if (request.lead && message.sender === request.lead.lead_id) {
+        // if (message.sender === request.lead.lead_id) {
           winston.debug("message.create.from.requester",messageJson );
           messageEvent.emit(eventPrefix+'.from.requester', messageJson );
         }

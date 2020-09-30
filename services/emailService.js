@@ -107,6 +107,9 @@ class EmailService {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
     }
+    if (process.env.NODE_ENV == 'test')  {	
+      return winston.warn("EmailService not sending email for testing");
+    }
 
     let mailOptions = {
       from: this.from, // sender address

@@ -517,20 +517,22 @@ class Chat21Handler {
                             chat21Event.emit('conversation.archived.error', err);
                         });
 
-                        // archive: function(recipient_id, user_id){
-                        chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
+                        
+                        //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
+                        if (request.lead) {
+                            chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
 
-                       .then(function(data){
-                           winston.info("Chat21 archived ", JSON.stringify(data));
-                   
-                           chat21Event.emit('conversation.archived', data);                                               
-
-                        }).catch(function(err) {
-                            winston.error("Chat21 archived err", err);
-                            chat21Event.emit('conversation.archived.error', err);
-                        });
-
-
+                            .then(function(data){
+                                winston.info("Chat21 archived ", JSON.stringify(data));
+                        
+                                chat21Event.emit('conversation.archived', data);                                               
+     
+                             }).catch(function(err) {
+                                 winston.error("Chat21 archived err", err);
+                                 chat21Event.emit('conversation.archived.error', err);
+                             });
+                        }
+                        
                     }
                 });
             });

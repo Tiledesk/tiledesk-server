@@ -216,7 +216,7 @@ it('getbyidWithPartecipatingBots', function (done) {
 
 
 
-  it('getall', function (done) {
+  it('getallSimple', function (done) {
     // this.timeout(10000);
 
     var email = "test-signup-" + Date.now() + "@email.com";

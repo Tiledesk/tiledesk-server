@@ -60,6 +60,10 @@ class ChannelManager {
     listen() {
         var that = this;
 
+        if (process.env.NODE_ENV == 'test')  {	
+            winston.info("ChannelManager listener disabled for testing");
+        }
+        
         if (chat21Enabled && chat21Enabled == "true") {   
             var chat21Handler = require('../channels/chat21/chat21Handler');         
             chat21Handler.listen();
