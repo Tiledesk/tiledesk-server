@@ -4,6 +4,9 @@ const authEvent = require('../../event/authEvent');
 const botEvent = require('../../event/botEvent');
 const requestEvent = require('../../event/requestEvent');
 const groupEvent = require('../../event/groupEvent');
+const chat21Event = require('./chat21Event');
+const leadEvent = require('../../event/leadEvent');
+
 var messageService = require('../../services/messageService');
 var MessageConstants = require("../../models/messageConstants");
 var ChannelConstants = require("../../models/channelConstants");
@@ -11,6 +14,10 @@ var winston = require('../../config/winston');
 var Request = require("../../models/request");
 var chat21Config = require('./chat21Config');
 var chat21 = require('./chat21Client');
+
+
+
+
 
 const MaskData = require("maskdata");
 
@@ -31,65 +38,21 @@ const maskPasswordOptions = {
 
 
 
-var chat21Util = require('./chat21Util');
-var tiledeskUtil = require('./tiledesk-util');
+// var chat21Util = require('./chat21Util');
+// var tiledeskUtil = require('./tiledesk-util');
 
 var adminToken =  process.env.CHAT21_ADMIN_TOKEN || chat21Config.adminToken;
 
 const masked_adminToken = MaskData.maskPhone(adminToken, maskPasswordOptions);
 
-
 winston.info('Chat21Handler adminToken: '+ masked_adminToken);
 
-const chat21Event = require('./chat21Event');
 
 
-var validtoken = require('../../middleware/valid-token');
-var passport = require('passport');
-require('../../middleware/passport')(passport);
-
-const leadEvent = require('../../event/leadEvent');
-
-var admin = require('./firebaseConnector');
-var chat21WebHook;
-var firebaseAuth;
-
-var nativeAuth = require('./nativeauth');
-
-
-if (admin) {
-    chat21WebHook = require('./chat21WebHook');
-    chat21ConfigRoute = require('./configRoute');
-    firebaseAuth = require('./firebaseauth');
-}
 
 class Chat21Handler {
 
-    use(app) {
-        
-        if (admin){
-            app.use('/chat21/requests',  chat21WebHook);
-            app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
-            app.use('/chat21/native/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], nativeAuth);
-            app.use('/chat21/config',  chat21ConfigRoute);
-
-            winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
-        }else {
-            winston.info("Chat21WebHook not initialized ");
-        }
-        
-    }
-
-    useUnderProjects(app) {
-        
-        if (admin){          
-            // winston.info("Chat21Handler using controller chat21WebHook and FirebaseAuth and chat21ConfigRoute");
-        }else {
-            // winston.info("chat21WebHook not initialized ");
-        }
-        
-    }
-
+ 
     typing(message, timestamp) {
         return new Promise(function (resolve, reject) {
 
@@ -109,14 +72,9 @@ class Chat21Handler {
 
     listen() {
 
-        var that = this;
-
-        if (!admin) {
-            winston.info("Chat21 channel disabled. Listener disabled");
-            return;
-        }
+        var that = this;       
        
-        winston.info("Chat21Handler listener start ");
+        winston.debug("Chat21Handler listener start ");
         
       
         // su projectUser create e update
