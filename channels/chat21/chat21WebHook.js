@@ -631,8 +631,7 @@ else if (req.body.event_type == "presence-change") {
           pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
           
           // winston.info("pu:", pu);
-  
-          winston.info("Presence changed for user_id : "+  user_id + " and presence "+ presence +". Updated " + project_users.length + " project users");
+
 
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
           // winston.info("after pu:");
@@ -650,7 +649,11 @@ else if (req.body.event_type == "presence-change") {
     
     });
  
-    winston.info("return");
+    if (project_users && project_users.length>0) {
+      winston.info("Presence changed for user_id : "+  user_id + " and presence "+ presence +". Updated " + project_users.length + " project users");
+    }
+    
+
     return res.json({ok:true});
 
 
