@@ -561,22 +561,22 @@ else if (req.body.event_type == "presence-change") {
 
   winston.info("event_type","presence-change");
 
-  winston.info("req.body", req.body);
+  winston.debug("req.body", req.body);
   
 
   var data = req.body.data;
-  winston.info("data", data);
+  winston.debug("data", data);
   
   var user_id = req.body.user_id;
-  winston.info("user_id: "+ user_id);
+  winston.debug("user_id: "+ user_id);
 
   var presence = req.body.presence;
-  winston.info("presence: "+  presence);
+  winston.debug("presence: "+  presence);
 
   // var update = {"$set":{online_status: presence}};
 
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
-  winston.info("isObjectId:"+ isObjectId);
+  winston.debug("isObjectId:"+ isObjectId);
 
   var queryProjectUser = {};
   // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
@@ -585,7 +585,7 @@ else if (req.body.event_type == "presence-change") {
   }else {
     queryProjectUser.uuid_user = user_id;
   }
-  winston.info("queryProjectUser:", queryProjectUser);
+  winston.debug("queryProjectUser:", queryProjectUser);
 
 
 
@@ -595,18 +595,18 @@ else if (req.body.event_type == "presence-change") {
       winston.error("Error gettting project_user", err);
       return res.status(500).send({ success: false, msg: 'Error getting objects.' });
     }
-    winston.info("project_users:", project_users);
+    winston.debug("project_users:", project_users);
 
 
     project_users.forEach(project_user => { 
-      winston.info("project_user:", project_user);
+      winston.debug("project_user:", project_user);
       project_user.online_status = presence;
 
       project_user.save(function (err, savedProjectUser) {
         if (err) {
          return winston.error('Error saving project_user ', err)
         }
-        winston.info('project_user saved ', savedProjectUser);
+        winston.debug('project_user saved ', savedProjectUser);
 
 
         savedProjectUser
@@ -618,7 +618,7 @@ else if (req.body.event_type == "presence-change") {
           if (err) {
             return winston.error("Error gettting updatedProject_userPopulated for update", err);
           }            
-          winston.info("updatedProject_userPopulated:", updatedProject_userPopulated);
+          winston.debug("updatedProject_userPopulated:", updatedProject_userPopulated);
           var pu = updatedProject_userPopulated.toJSON();
           pu.id_project =  updatedProject_userPopulated.id_project._id;
 
@@ -632,6 +632,8 @@ else if (req.body.event_type == "presence-change") {
           
           // winston.info("pu:", pu);
   
+          winston.info("Presence changed for user_id : "+  user_id + " and presence "+ presence +". Updated " + project_users.length + " project users");
+
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
           // winston.info("after pu:");
   
