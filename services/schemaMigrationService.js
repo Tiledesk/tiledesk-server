@@ -29,7 +29,7 @@ class SchamaMigrationService {
       var 
       //  migrationsDir = '/path/to/migrations/',
       // templatePath,
-      dbUrl = config.database,
+      dbUrl = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database,
       collectionName = 'schemaMigrations',
       autosync = true;
       
