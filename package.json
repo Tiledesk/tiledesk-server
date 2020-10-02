@@ -70,6 +70,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.20",
     "maskdata": "^1.1.1",
+    "migrate-mongoose": "^4.0.0",
     "mix-hash": "^1.0.5",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.27",

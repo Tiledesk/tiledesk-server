@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var RoleConstants = require('./roleConstants');
+var PresenceSchema = require('./presence');
 
 
 
@@ -31,15 +32,11 @@ var RoleConstants = require('./roleConstants');
     },
     user_available: {
       type: Boolean,
-      default: true,
+      default: true, 
       index: true
       // required: true
     },
-    online_status: {
-      type: String,
-      index: true,
-      default: 'offline'
-    },
+    presence: PresenceSchema,
     attributes: {
       type: Object,
     },
@@ -53,6 +50,10 @@ var RoleConstants = require('./roleConstants');
     },
     last_ip: {
         type: String,
+    },
+    last_login_at: {
+      type: Date,
+      default: new Date(),
     },
     createdBy: {
       type: String,

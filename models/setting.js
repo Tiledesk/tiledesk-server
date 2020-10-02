@@ -1,62 +1,36 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-// var firebaseSettingSchema = require('../models/firebaseSetting').Schema;
 var winston = require('../config/winston');
+var config = require('../config/database');
 
-var FirebaseSettingSchema = new Schema({
-  
-
-  private_key: {
-    type: String,
-    required: true,
-    select: false
-  },
-  client_email: {
-    type: String,
-    required: true,
-    select: false
-  },
-  project_id: {
-    type: String,
-    required: true,
-    select: false
-  },
-  apiKey: {
-    type: String,
-    required: false,
-  },
-  authDomain: {
-    type: String,
-    required: false,
-  },
-  databaseURL: {
-    type: String,
-    required: false,
-  },
-  storageBucket: {
-    type: String,
-    required: false,
-  },
-  messagingSenderId: {
-    type: String,
-    required: false,
-  },
-  
-}
-// ,{
-//   timestamps: true
-// }
-);
+var pjson = require('../package.json');
+// console.log(pjson.version);
 
 var SettingSchema = new Schema({
   
-
-  firebase: FirebaseSettingSchema
+  identifier: {
+    type: String,
+    unique: true,//remove unique on db
+    required: true,
+    default: "1",
+    index: true
+  },  
+  databaseSchemaVersion: {
+    type: Number,
+    required: true,
+    default: config.schemaVersion
+  }, 
+  installationVersion: {
+    type: String,
+    required: false,
+    default: pjson.version
+  }
 }
-// ,{
-//   timestamps: true
-// }
+,{
+  timestamps: true
+}
 );
+
 
 
 var setting =  mongoose.model('Setting', SettingSchema);

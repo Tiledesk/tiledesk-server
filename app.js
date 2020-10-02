@@ -99,6 +99,9 @@ var images = require('./routes/images');
 var files = require('./routes/files');
 
 var bootDataLoader = require('./services/bootDataLoader');
+var settingDataLoader = require('./services/settingDataLoader');
+var schemaMigrationService = require('./services/schemaMigrationService');
+
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -126,6 +129,8 @@ try {
 
 
 
+settingDataLoader.save();
+schemaMigrationService.checkSchemaMigration();
 
 if (process.env.CREATE_INITIAL_DATA !== "false") {
    bootDataLoader.create();

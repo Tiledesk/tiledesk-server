@@ -573,7 +573,6 @@ else if (req.body.event_type == "presence-change") {
   var presence = req.body.presence;
   winston.debug("presence: "+  presence);
 
-  // var update = {"$set":{online_status: presence}};
 
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.debug("isObjectId:"+ isObjectId);
@@ -600,7 +599,7 @@ else if (req.body.event_type == "presence-change") {
 
     project_users.forEach(project_user => { 
       winston.debug("project_user:", project_user);
-      project_user.online_status = presence;
+      project_user.presence = presence;
 
       project_user.save(function (err, savedProjectUser) {
         if (err) {
