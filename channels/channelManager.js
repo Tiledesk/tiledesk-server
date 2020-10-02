@@ -41,7 +41,7 @@ class ChannelManager {
             if (engine && engine=="firebase") {
                 var firebaseAuth = require('../channels/chat21/firebaseauth');
                 app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
-            }else if (engine && engine=="native") {
+            } else { //if (engine && engine=="native") {
                 var nativeAuth = require('../channels/chat21/nativeauth');
                 app.use('/chat21/native/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], nativeAuth);
             }
