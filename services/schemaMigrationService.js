@@ -23,6 +23,8 @@ class SchamaMigrationService {
         return;
       }
       
+      winston.info("SchemaMigration checking for schema updates.");
+
       // Define all your variables
       var 
       //  migrationsDir = '/path/to/migrations/',
