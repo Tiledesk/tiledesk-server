@@ -599,7 +599,11 @@ else if (req.body.event_type == "presence-change") {
 
     project_users.forEach(project_user => { 
       winston.debug("project_user:", project_user);
-      project_user.presence = presence;
+      var update = {status:presence};
+      // if (presence === "offline") {
+      //   update.lastOnlineAt = new Date();
+      // }
+      project_user.presence = update
 
       project_user.save(function (err, savedProjectUser) {
         if (err) {
