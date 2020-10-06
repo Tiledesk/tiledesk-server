@@ -2,6 +2,7 @@ var Message = require("../models/message");
 var User = require("../models/user");
 var Project_user = require("../models/project_user");
 var Project = require("../models/project");
+var EventModel = require("../pubmodules/events/event");
 var Request = require("../models/request");
 var Message = require("../models/message");
 const WebSocket = require('ws');
@@ -393,6 +394,30 @@ class WebSocketServer {
               }});        
   
             });
+          } else if (topic.indexOf('/events/') > -1) {        
+                
+            var puId = urlSub[3];
+            winston.debug('puId: '+puId);
+  
+            var query = { project_user: puId, id_project: projectId };
+            winston.debug(' query: ',query);
+  
+            EventModel.find(query)
+            .cache(cacheUtil.defaultTTL, projectId+":events:"+puId)
+            .exec(function (err, events) {
+              if (err) {
+                 winston.error('error getting  events', err);  
+                 return reject(err);
+              }            
+        
+  
+              return resolve({publishFunction:function() {
+              // handlePublishMessageToClientId (topic, message, clientId, method) {
+                pubSubServer.handlePublishMessageToClientId (topic, events, clientId, "CREATE");
+              }});        
+  
+            });
+          
           } else {
   
               //request/id
