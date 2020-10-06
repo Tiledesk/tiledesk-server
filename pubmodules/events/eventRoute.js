@@ -3,11 +3,18 @@ var router = express.Router();
 var Event = require("./event");
 var winston = require('../../config/winston');
 const eventEvent = require('./eventEvent');
+var validtoken = require('../../middleware/valid-token');
 const eventService = require('./eventService');
 const { check, validationResult } = require('express-validator');
-
+var passport = require('passport');
+require('../../middleware/passport')(passport);
+var roleChecker = require('../../middleware/has-role');
 
 router.post('/', [
+  passport.authenticate(['basic', 'jwt'], 
+  { session: false }), 
+  validtoken, 
+  roleChecker.hasRole('guest'),
   check('name').notEmpty(),  
 ],function (req, res) {
 
@@ -49,7 +56,13 @@ router.post('/', [
 
 
 
-router.get('/:eventid', function (req, res) {
+router.get('/:eventid', 
+  [passport.authenticate(['basic', 'jwt'], 
+  { session: false }), 
+  validtoken, 
+  roleChecker.hasRole('agent')],
+  function (req, res) {
+
   winston.debug(req.body);
 
   Event.findById(req.params.eventid, function (err, event) {
@@ -65,7 +78,11 @@ router.get('/:eventid', function (req, res) {
 
 
 
-router.get('/', function (req, res) {
+router.get('/',   [passport.authenticate(['basic', 'jwt'], 
+  { session: false }), 
+  validtoken, 
+  roleChecker.hasRole('agent')],
+  function (req, res) {
   var limit = 40; // Number of leads per page
   var page = 0;
 
@@ -83,7 +100,7 @@ router.get('/', function (req, res) {
     var project_user = req.query.project_user;
     query.project_user = project_user;
   }
-  
+
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;

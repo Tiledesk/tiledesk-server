@@ -1,9 +1,9 @@
 
 var winston = require('../config/winston');
-var validtoken = require('../middleware/valid-token');
-var roleChecker = require('../middleware/has-role');
-var passport = require('passport');
-require('../middleware/passport')(passport);
+// var validtoken = require('../middleware/valid-token');
+// var roleChecker = require('../middleware/has-role');
+// var passport = require('passport');
+// require('../middleware/passport')(passport);
 
 
 class PubModulesManager {
@@ -30,7 +30,8 @@ class PubModulesManager {
 
         //  dario riesce con jwt custom di progettto a a scrivere events di progetto b
         if (this.eventsRoute) {
-            app.use('/:projectid/events', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('guest')], this.eventsRoute);
+            app.use('/:projectid/events', this.eventsRoute);
+            // app.use('/:projectid/events', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('guest')], this.eventsRoute);
             winston.info("ModulesManager eventsRoute controller loaded");       
         }
         
