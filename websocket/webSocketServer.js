@@ -9,6 +9,7 @@ var url = require('url');
 var validtoken = require('../middleware/valid-token');
 var message2Event = require("../event/message2Event");
 var messageEvent = require("../event/messageEvent");
+var eventEvent = require("../pubmodules/events/eventEvent");
 var requestEvent = require("../event/requestEvent");
 var jwt = require('jsonwebtoken');
 var config = require('../config/database'); // get db config file
@@ -18,6 +19,8 @@ const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
 var ProjectUserUtil = require("../utils/project_userUtil");
 var cacheUtil = require('../utils/cacheUtil');
+
+
 
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
@@ -523,6 +526,18 @@ class WebSocketServer {
 
       });
       
+
+
+      var eventEmitKey = 'event.emit';
+      if (eventEvent.queueEnabled) {
+        eventEmitKey = 'event.emit.queue.pubsub';
+      }
+      winston.info('eventEmitKey: ' + eventEmitKey);
+      eventEvent.on(eventEmitKey,function(event) {
+        winston.info('event', event);
+        pubSubServer.handlePublishMessage ('/'+eventEmitKey.id_project+'/events/'+eventEmitKey.project_user._id, event, undefined, true, "CREATE");
+      });
+
 
     // https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js
 
