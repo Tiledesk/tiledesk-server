@@ -79,6 +79,11 @@ router.get('/', function (req, res) {
 
   var query = { "id_project": req.projectid};
 
+  if (req.query.project_user) {
+    var project_user = req.query.project_user;
+    query.project_user = project_user;
+  }
+  
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
