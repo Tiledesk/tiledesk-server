@@ -373,7 +373,7 @@ class WebSocketServer {
             winston.debug(' query: ',query);
   
             Project_user.findOne(query)
-            .cache(cacheUtil.defaultTTL, projectId+":project_users:"+req.user._id)
+            .cache(cacheUtil.defaultTTL, projectId+":project_users:"+puId)
             .exec(function (err, projectuser) {
               if (err) {
                  winston.error('error getting  Project_user', err);  
@@ -395,7 +395,41 @@ class WebSocketServer {
               }});        
   
             });
-          } else if (topic.indexOf('/events/') > -1) {        
+          
+        } else if (topic.indexOf('/project_users/users/') > -1) {        
+                
+          var userId = urlSub[4];
+          winston.debug('userId: '+userId);
+
+          var query = { id_project: projectId,  $or:[ {uuid_user: userId}, {id_user:  userId }]};        
+          winston.debug(' query: ',query);
+
+          Project_user.findOne(query)
+          .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
+          .exec(function (err, projectuser) {
+            if (err) {
+               winston.error('error getting  Project_user', err);  
+               return reject(err);
+            }
+            if (!projectuser) {
+               winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
+               return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
+            }
+
+
+            var pu = projectuser.toJSON();
+            pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+            
+
+            return resolve({publishFunction:function() {
+            // handlePublishMessageToClientId (topic, message, clientId, method) {
+              pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
+            }});        
+
+          });
+        }
+          
+          else if (topic.indexOf('/events/') > -1) {        
                 
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
