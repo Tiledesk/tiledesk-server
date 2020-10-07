@@ -360,7 +360,41 @@ class WebSocketServer {
                   });
   
                 });
+          
+
+              } else if (topic.indexOf('/project_users/users/') > -1) {        
                 
+                var userId = urlSub[4];
+                winston.debug('userId: '+userId);
+      
+                var query = { id_project: projectId,  $or:[ {uuid_user: userId}, {id_user:  userId }]};        
+                winston.debug(' query: ',query);
+      
+                Project_user.findOne(query)
+                .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
+                .exec(function (err, projectuser) {
+                  if (err) {
+                     winston.error('error getting  Project_user', err);  
+                     return reject(err);
+                  }
+                  if (!projectuser) {
+                     winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
+                     return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
+                  }
+      
+      
+                  var pu = projectuser.toJSON();
+                  pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+                  
+      
+                  return resolve({publishFunction:function() {
+                  // handlePublishMessageToClientId (topic, message, clientId, method) {
+                    pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
+                  }});        
+      
+                });
+              
+
                 // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/5e71139f61dd040bc9594cee/project_users/5e71139f61dd040bc9594cef"}}')
                 //curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e71139f61dd040bc9594cee/project_users/
           } else if (topic.indexOf('/project_users/') > -1) {        
@@ -395,39 +429,7 @@ class WebSocketServer {
               }});        
   
             });
-          
-        } else if (topic.indexOf('/project_users/users/') > -1) {        
-                
-          var userId = urlSub[4];
-          winston.debug('userId: '+userId);
-
-          var query = { id_project: projectId,  $or:[ {uuid_user: userId}, {id_user:  userId }]};        
-          winston.debug(' query: ',query);
-
-          Project_user.findOne(query)
-          .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
-          .exec(function (err, projectuser) {
-            if (err) {
-               winston.error('error getting  Project_user', err);  
-               return reject(err);
-            }
-            if (!projectuser) {
-               winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
-               return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
-            }
-
-
-            var pu = projectuser.toJSON();
-            pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
-            
-
-            return resolve({publishFunction:function() {
-            // handlePublishMessageToClientId (topic, message, clientId, method) {
-              pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
-            }});        
-
-          });
-        }
+          }      
           
           else if (topic.indexOf('/events/') > -1) {        
                 
