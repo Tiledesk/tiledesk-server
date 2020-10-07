@@ -368,19 +368,20 @@ class WebSocketServer {
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
   
-            var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
+            var query = { _id: puId, id_project: projectId};
+            // var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
             winston.debug(' query: ',query);
   
             Project_user.findOne(query)
-            .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+            .cache(cacheUtil.defaultTTL, projectId+":project_users:"+req.user._id)
             .exec(function (err, projectuser) {
               if (err) {
                  winston.error('error getting  Project_user', err);  
                  return reject(err);
               }
               if (!projectuser) {
-                 winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
-                 return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
+                 winston.error('Project_user not found with project_user id '+ puId + ' and projectid ' + projectId);  
+                 return reject({err:'Project_user not found with project_user id '+ puId + ' and projectid ' + projectId});
               }
   
   
