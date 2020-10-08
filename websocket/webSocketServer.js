@@ -20,6 +20,7 @@ const PubSub = require('./pubsub');
 const authEvent = require('../event/authEvent');
 var ProjectUserUtil = require("../utils/project_userUtil");
 var cacheUtil = require('../utils/cacheUtil');
+var mongoose = require('mongoose');
 
 
 
@@ -374,9 +375,9 @@ class WebSocketServer {
                 winston.debug(' query: ',query);
       
                 if (isObjectId) {
-                  query.id_user = user_id;
+                  query.id_user = userId;
                 }else {
-                  query.uuid_user = user_id;
+                  query.uuid_user = userId;
                 }
 
                 Project_user.findOne(query)
@@ -411,8 +412,8 @@ class WebSocketServer {
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
   
-            var query = { _id: puId, id_project: projectId};
-            // var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
+            //var query = { _id: puId, id_project: projectId};
+            var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
             winston.debug(' query: ',query);
   
             Project_user.findOne(query)
