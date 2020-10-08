@@ -368,42 +368,62 @@ class WebSocketServer {
                 var userId = urlSub[4];
                 winston.debug('userId: '+userId);
       
-                var isObjectId = mongoose.Types.ObjectId.isValid(userId);
-                winston.debug("isObjectId:"+ isObjectId);                             
-
-                var query = { id_project: projectId};        
-                winston.debug(' query: ',query);
-      
-                if (isObjectId) {
-                  query.id_user = userId;
-                }else {
-                  query.uuid_user = userId;
-                }
-
-                Project_user.findOne(query)
-                .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
-                .exec(function (err, projectuser) {
+                //check if current user can see the data
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  })
+                .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+                .exec(function (err, currentProjectuser) {
                   if (err) {
                      winston.error('error getting  Project_user', err);  
                      return reject(err);
                   }
-                  if (!projectuser) {
-                     winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
-                     return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
+                  if (!currentProjectuser) {
+                     winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
-      
-      
-                  var pu = projectuser.toJSON();
-                  pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+                  winston.debug('currentProjectuser', currentProjectuser.toObject()); 
+            
+
+                    var isObjectId = mongoose.Types.ObjectId.isValid(userId);
+                    winston.debug("isObjectId:"+ isObjectId);                             
+
+                    var query = { id_project: projectId};        
+                    winston.debug(' query: ',query);
+          
+                    if (isObjectId) {
+                      query.id_user = userId;
+                    }else {
+                      query.uuid_user = userId;
+                    }
+
+                    Project_user.findOne(query)
+                    .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
+                    .exec(function (err, projectuser) {
+                      if (err) {
+                        winston.error('error getting  Project_user', err);  
+                        return reject(err);
+                      }
+                      if (!projectuser) {
+                        winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
+                        return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
+                      }
+          
+          
+                      var pu = projectuser.toJSON();
+                      pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+                      
+          
+                      return resolve({publishFunction:function() {
+                      // handlePublishMessageToClientId (topic, message, clientId, method) {
+                        pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
+                      }});        
+          
+                    });
                   
-      
-                  return resolve({publishFunction:function() {
-                  // handlePublishMessageToClientId (topic, message, clientId, method) {
-                    pubSubServer.handlePublishMessageToClientId (topic, pu, clientId, "CREATE");
-                  }});        
-      
+
+
+
                 });
-              
+                
 
                 // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/5e71139f61dd040bc9594cee/project_users/5e71139f61dd040bc9594cef"}}')
                 //curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e71139f61dd040bc9594cee/project_users/
