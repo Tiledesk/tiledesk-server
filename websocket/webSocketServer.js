@@ -367,9 +367,18 @@ class WebSocketServer {
                 var userId = urlSub[4];
                 winston.debug('userId: '+userId);
       
-                var query = { id_project: projectId,  $or:[ {uuid_user: userId}, {id_user:  userId }]};        
+                var isObjectId = mongoose.Types.ObjectId.isValid(userId);
+                winston.debug("isObjectId:"+ isObjectId);                             
+
+                var query = { id_project: projectId};        
                 winston.debug(' query: ',query);
       
+                if (isObjectId) {
+                  query.id_user = user_id;
+                }else {
+                  query.uuid_user = user_id;
+                }
+
                 Project_user.findOne(query)
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
                 .exec(function (err, projectuser) {
