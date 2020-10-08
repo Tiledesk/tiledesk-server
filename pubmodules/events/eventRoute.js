@@ -1,5 +1,5 @@
 var express = require('express');
-var router = express.Router();
+var router = express.Router({mergeParams: true});
 var Event = require("./event");
 var winston = require('../../config/winston');
 const eventEvent = require('./eventEvent');
