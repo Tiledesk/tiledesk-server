@@ -143,7 +143,7 @@ class FaqBotHandler {
 
                             if (botAns.defaultFallback === true) {
                                 winston.info("defaultFallback event");  
-                                // emit(name, attributes, id_project, project_user, createdBy, user) {
+                                //           emit(name,                     attributes,                                                                id_project,         project_user, createdBy, user) {
                                 eventService.emit("faqbot.answer_not_found", {botAnswer:answerObj, bot: faq_kb, message:message, threshold:threshold}, message.id_project, undefined,  "system", undefined);
                             }
                             
