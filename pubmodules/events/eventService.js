@@ -40,7 +40,8 @@ class EventService {
 
   // }
 
-  emit(name, attributes, id_project, project_user, createdBy, user) {
+  emit(name, attributes, id_project, project_user, createdBy) {
+    // emit(name, attributes, id_project, project_user, createdBy, user) {
 
     return new Promise(function (resolve, reject) {
   
@@ -63,11 +64,12 @@ class EventService {
         },function (err, savedEventPopulated) {
           
           var savedEventPopulatedJson = savedEventPopulated.toJSON();
-          if (user) {
-            savedEventPopulatedJson.user = user;
-          }else {
-            winston.warn("Attention eventService emit user is empty");
-          }
+
+          // if (user) {
+          //   savedEventPopulatedJson.user = user;
+          // }else {
+          //   winston.warn("Attention eventService emit user is empty");
+          // }
           
           savedEventPopulatedJson.id = savedEventPopulatedJson._id;
           winston.debug("savedEventPopulatedJson", savedEventPopulatedJson);
