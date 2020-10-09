@@ -534,8 +534,18 @@ else if (req.body.event_type == "typing-start") {
     return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
   }
 
+  var isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
+  winston.debug("isObjectId:"+ isObjectId);
 
-  return Project_user.findOne({id_user: writer_id, id_project: request.id_project}, function(err, pu){
+  var queryProjectUser = {id_project: request.id_project};
+  // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+  if (isObjectId) {
+    queryProjectUser.id_user = writer_id;
+  }else {
+    queryProjectUser.uuid_user = writer_id;
+  }
+
+  return Project_user.findOne(queryProjectUser, function(err, pu){
     if (err){
       winston.error(err);
       return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
