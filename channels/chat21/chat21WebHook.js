@@ -552,7 +552,7 @@ else if (req.body.event_type == "typing-start") {
     }
     winston.debug("typing pu", pu);
 
-    if (pu === undefined) {
+    if (!pu) {
       return winston.warn("Project_user for typing not found", queryProjectUser);
     }
     var attr = {recipient_id: recipient_id, writer_id:writer_id, data: data};
