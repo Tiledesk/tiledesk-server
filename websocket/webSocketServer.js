@@ -627,7 +627,7 @@ class WebSocketServer {
       winston.info('eventEmitKey: ' + eventEmitKey);
       eventEvent.on(eventEmitKey,function(event) {
         winston.info('event', event);
-        if (!event.project_user) {
+        if (event.project_user === undefined) {
           winston.info('not sending with ws event with project_user undefined', event);
           return ;
         }
