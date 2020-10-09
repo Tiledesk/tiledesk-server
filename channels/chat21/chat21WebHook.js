@@ -550,8 +550,13 @@ else if (req.body.event_type == "typing-start") {
       winston.error(err);
       return res.status(500).send({success: false, msg: 'Error finding pu', err:err });
     }
-    winston.info("typing pu", pu);
+    winston.debug("typing pu", pu);
+
+    if (pu === undefined) {
+      return winston.warn("Project_user for typing not found", queryProjectUser);
+    }
     var attr = {recipient_id: recipient_id, writer_id:writer_id, data: data};
+
 
     //           emit(name,         attr,  id_project,        project_user, createdBy)    
     eventService.emit("typing.start", attr, request.id_project, pu._id, writer_id).then(function (data) {
