@@ -616,6 +616,14 @@ class WebSocketServer {
         winston.debug('pu', pu);
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/'+pu.id, pu, undefined, true, "CREATE");
 
+        var userId;
+        if (pu.uuid_user) {
+          userId = pu.uuid_user;
+        }else {
+          userId = pu.id_user;
+        }
+        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "CREATE");
+
       });
       
 
