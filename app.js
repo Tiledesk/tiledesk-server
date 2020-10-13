@@ -195,6 +195,7 @@ app.use(passport.initialize());
 
 app.use(cors());
 
+
 // https://www.npmjs.com/package/cors
 // app.options('*', cors()) // include before other routes
 
@@ -230,7 +231,7 @@ var projectSetter = function (req, res, next) {
       .cache(cacheUtil.defaultTTL, "projects:id:"+projectid)
       .exec(function(err, project){
       if (err) {
-        winston.warn("Problem getting project with id: " + projectid);
+        winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }
   
       winston.debug("projectSetter project:" + project);
