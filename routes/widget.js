@@ -58,7 +58,7 @@ router.get('/', function(req, res, next) {
         { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
         { "$group": { 
           "_id": "$id_project", 
-        "waiting_time_avg":{"$avg": "$waiting_time"}
+          "waiting_time_avg":{"$avg": "$waiting_time"}
         }
       },
       
@@ -90,7 +90,8 @@ router.get('/', function(req, res, next) {
 
       var query = { "id_project": req.projectid, "status": 1 };
 
-      //console.log(req.project, req.project.trialExpired)
+      winston.info("req.project:", req.project);
+      
       if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
         query.default = true;
