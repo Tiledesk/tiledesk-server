@@ -98,12 +98,12 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
-    "mocha": "^6.2.2",
+    "loadtest": "*",
+    "mocha": "^8.1.3",
+    "mongodb-runner": "4.7.5",
     "nodemon": "^2.0.1",
     "sinon": "^7.5.0",
-    "sinon-mongoose": "^2.3.0",
-    "mongodb-runner": "4.7.5",
-    "loadtest": "*"
+    "sinon-mongoose": "^2.3.0"
   },
   "bugs": {
     "url": "https://github.com/Tiledesk/tiledesk-server/issues"
