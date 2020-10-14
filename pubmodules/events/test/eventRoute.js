@@ -29,7 +29,7 @@ describe('EventRoute', () => {
     it('create', (done) => {
 
         
-       var email = "test-signup-EventRoute" + Date.now() + "@email.com";
+       var email = "test-signup-eventroute" + Date.now() + "@email.com";
        var pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {

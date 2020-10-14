@@ -106,7 +106,7 @@ describe('/signup', () => {
         
     //   this.timeout();
 
-       var email = "test-signuoOk-" + Date.now() + "@email.com";
+       var email = "test-signuook-" + Date.now() + "@email.com";
        var pwd = "pwd";
 
           
@@ -128,6 +128,35 @@ describe('/signup', () => {
              
                 
     });
+
+
+    it('signupUpperCaseEmail', (done) => {
+
+        
+        //   this.timeout();
+            var now = Date.now();
+           var email = "test-signupUpperCaseEmail-" + now + "@email.com";
+           var pwd = "pwd";
+    
+              
+                        chai.request(server)
+                            .post('/auth/signup' )
+                            .send({email:email, password:pwd, lastname:"lastname", firstname: "firstname", disableEmail: true})
+                            .end((err, res) => {
+                                //console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+                                expect(res.body.success).to.equal(true);                                                                                                                     
+                                expect(res.body.user.email).to.equal("test-signupuppercaseemail-" + now + "@email.com");                                               
+                                expect(res.body.user.password).to.equal(undefined);                                               
+                            
+                                done();
+                            });
+    
+                 
+                    
+        });
 
 
     it('signupkOWrongEmail', (done) => {
@@ -319,7 +348,7 @@ describe('/signinWithCustomToken', () => {
     it('signinWithCustomTokenOk', (done) => {
 
         
-        var email = "test-signinWithCustomToken-" + Date.now() + "@email.com";
+        var email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
         var pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
@@ -390,7 +419,7 @@ describe('/signinWithCustomToken', () => {
     it('signinWithCustomTokenKO', (done) => {
 
         
-        var email = "test-signinWithCustomToken-" + Date.now() + "@email.com";
+        var email = "test-signinwithcustomtoken-" + Date.now() + "@email.com";
         var pwd = "pwd";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
@@ -450,7 +479,7 @@ describe('/signinWithCustomToken', () => {
 it('signinWithCustomTokenKONoID', (done) => {
 
         
-    var email = "test-signinWithCustomTokenKONoID-" + Date.now() + "@email.com";
+    var email = "test-signinwithcustomtokenkonoid-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
@@ -509,7 +538,7 @@ it('signinWithCustomTokenKONoID', (done) => {
 it('signinWithCustomTokenKONoAud', (done) => {
 
         
-    var email = "test-signinWithCustomTokenKOWrongAud-" + Date.now() + "@email.com";
+    var email = "test-signinwithcustomtokenkowrongaud-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
@@ -568,7 +597,7 @@ it('signinWithCustomTokenKONoAud', (done) => {
 it('signinWithCustomTokenOkTwoSigninWithCT', (done) => {
 
         
-    var email = "test-signinWithCustomTokenOkTwoSigninWithCT-" + Date.now() + "@email.com";
+    var email = "test-signinwithcustomtokenoktwosigninwithct-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {

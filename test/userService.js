@@ -34,7 +34,7 @@ describe('UserService()', function () {
 
   it('signup', function (done) {
 
-    var email = "test-UserService-signup-" + Date.now() + "@email.com";
+    var email = "test-userservice-signup-" + Date.now() + "@email.com";
 
     userService.signup( email ,"pwd", "Test Firstname", "Test lastname").then(function(savedUser) {
         console.log("savedUser resolve");
@@ -48,6 +48,26 @@ describe('UserService()', function () {
         done();
     });
   });
+
+
+  it('signupUpperCase', function (done) {
+
+    var now = Date.now();
+    var email = "test-UserService-signup-" + now + "@email.com";
+
+    userService.signup( email ,"pwd", "Test Firstname", "Test lastname").then(function(savedUser) {
+        console.log("savedUser resolve");
+         expect(savedUser.email).to.equal("test-userservice-signup-" + now + "@email.com");
+         expect(savedUser.firstname).to.equal( "Test Firstname");
+         expect(savedUser.lastname).to.equal("Test lastname");
+        done();
+    }).catch(function(err) {
+        winston.error("test reject", err);
+        assert.isNotOk(err,'Promise error');
+        done();
+    });
+  });
+
 
   // it('discriminator', function (done) {
 

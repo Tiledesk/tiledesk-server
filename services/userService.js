@@ -8,11 +8,16 @@ class UserService {
     signup ( email, password, firstname, lastname, emailverified) {
         return new Promise(function (resolve, reject) {
                 
-            email = email.toLowerCase();
+            // winston.info("email: " + email);
+            // var emailLowerCase = email;
+            
+            // if (email) {
+            var   emailLowerCase = email.toLowerCase();
+            // }
 
             var newUser = new User({
                 _id: new mongoose.Types.ObjectId(),
-                email: email,
+                email: emailLowerCase,
                 password: password,
                 firstname: firstname,
                 lastname: lastname,

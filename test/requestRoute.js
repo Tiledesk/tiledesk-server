@@ -82,6 +82,63 @@ describe('RequestRoute', () => {
 });
 
 
+
+
+
+it('createUpperCaseEmail', function (done) {
+  // this.timeout(10000);
+
+  var now = Date.now();
+  var email = "test-REQUEST-create-" + now + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.create("request-create", savedUser._id).then(function(savedProject) {
+   
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/')
+          .auth("test-request-create-" + now + "@email.com", pwd)
+          .set('content-type', 'application/json')
+          .send({"text":"first_text"})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              
+              expect(res.body.agents.length).to.equal(1);
+              // res.body.should.have.property('request_id').eql('request_id');
+              // res.body.should.have.property('requester_id').eql('requester_id');
+              res.body.should.have.property('first_text').eql('first_text');
+              res.body.should.have.property('id_project').eql(savedProject._id.toString());
+              res.body.should.have.property('createdBy').eql(savedUser._id.toString());
+
+              // res.body.should.have.property('messages_count').gt(0);
+
+              res.body.should.have.property('status').eql(200);
+              
+              // res.body.should.have.property('agents').eql(savedUser._id);
+              expect(res.body.agents.length).to.equal(1);
+              expect(res.body.participants.length).to.equal(1);
+
+              expect(res.body.participantsAgents.length).to.equal(1);                
+              expect(res.body.participantsBots).to.have.lengthOf(0);
+              expect(res.body.hasBot).to.equal(false);           
+
+              res.body.should.have.property('department').not.eql(null);
+              // res.body.should.have.property('lead').eql(undefined);
+                          
+        
+             done();
+          });
+  });
+});
+});
+
+
+
+
   it('getbyid', function (done) {
     // this.timeout(10000);
 

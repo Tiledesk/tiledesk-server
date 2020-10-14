@@ -152,7 +152,7 @@ describe('/SendMessageSigninWithCustomToken', () => {
   it('sendMessageSigninWithCustomTokenOk', (done) => {
 
       
-      var email = "test-sendMessageSigninWithCustomTokenOk-" + Date.now() + "@email.com";
+      var email = "test-sendmessagesigninwithcustomtokenok-" + Date.now() + "@email.com";
       var pwd = "pwd";
 
       userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
@@ -279,7 +279,7 @@ describe('/SendMessageSigninAnonym', () => {
   it('sendMessageSigninAnonym', (done) => {
 
       
-      var email = "test-sendMessageSigninAnonym-" + Date.now() + "@email.com";
+      var email = "test-sendmessagesigninanonym-" + Date.now() + "@email.com";
       var pwd = "pwd";
 
       userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
