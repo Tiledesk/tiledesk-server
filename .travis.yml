@@ -1,7 +1,7 @@
 language: node_js
-dist: trusty
+dist: bionic
 node_js:
-- '11.6'
+- '11.15.0'
 services: mongodb
 sudo: required
 cache:
