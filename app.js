@@ -196,6 +196,7 @@ app.use(passport.initialize());
 app.use(cors());
 
 
+
 // https://www.npmjs.com/package/cors
 // app.options('*', cors()) // include before other routes
 
@@ -290,7 +291,7 @@ if (modulesManager) {
 }
 
 
-app.use('/:projectid', [projectIdSetter, projectSetter]);
+app.use('/:projectid/', [projectIdSetter, projectSetter]);
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);

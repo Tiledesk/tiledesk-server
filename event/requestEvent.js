@@ -8,6 +8,7 @@ class RequestEvent extends EventEmitter {
     constructor() {
         super();
         this.queueEnabled = false;
+        this.setMaxListeners(11);
       }
 }
 
