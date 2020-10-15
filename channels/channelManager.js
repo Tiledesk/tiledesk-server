@@ -61,7 +61,7 @@ class ChannelManager {
         var that = this;
 
         if (process.env.NODE_ENV == 'test')  {	
-            winston.info("ChannelManager listener disabled for testing");
+            return winston.info("ChannelManager listener disabled for testing");
         }
         
         if (chat21Enabled && chat21Enabled == "true") {   
