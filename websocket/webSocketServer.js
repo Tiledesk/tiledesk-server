@@ -632,9 +632,9 @@ class WebSocketServer {
       if (eventEvent.queueEnabled) {
         eventEmitKey = 'event.emit.queue.pubsub';
       }
-      winston.info('eventEmitKey: ' + eventEmitKey);
+      winston.debug('eventEmitKey: ' + eventEmitKey);
       eventEvent.on(eventEmitKey,function(event) {
-        winston.info('event', event);
+        winston.debug('event', event);
         if (event.project_user === undefined) {
           winston.warn('not sending with ws event with project_user undefined', event);
           return ;

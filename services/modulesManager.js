@@ -5,8 +5,26 @@ var roleChecker = require('../middleware/has-role');
 var passport = require('passport');
 require('../middleware/passport')(passport);
 
+const MaskData = require("maskdata");
+
+const maskOptions = {
+  // Character to mask the data. default value is '*'
+  maskWith : "*",
+  // If the starting 'n' digits needs to be unmasked
+  // Default value is 4
+  unmaskedStartDigits : 40, //Should be positive Integer
+  //If the ending 'n' digits needs to be unmasked
+  // Default value is 1
+  unmaskedEndDigits : 40 // Should be positive Integer
+  };
+
+
 var licenseKey = process.env.LICENSE_KEY;
-console.log("licenseKey", licenseKey);
+
+if (licenseKey) {
+    var maskedLicenseKey = MaskData.maskPhone(licenseKey, maskOptions);
+    winston.info("LicenseKey: " + maskedLicenseKey);    
+}
 
 class ModulesManager {
 
