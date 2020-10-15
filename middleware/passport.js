@@ -20,6 +20,28 @@ const url = require('url');
 var cacheUtil = require('../utils/cacheUtil');
 
 
+const MaskData = require("maskdata");
+
+const maskOptions = {
+  // Character to mask the data. default value is '*'
+  maskWith : "*",
+  // If the starting 'n' digits needs to be unmasked
+  // Default value is 4
+  unmaskedStartDigits : 3, //Should be positive Integer
+  //If the ending 'n' digits needs to be unmasked
+  // Default value is 1
+  unmaskedEndDigits : 3 // Should be positive Integer
+  };
+
+
+var configSecret = process.env.GLOBAL_SECRET || config.secret;
+
+var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
+winston.info('Authentication Global Secret : ' + maskedconfigSecret);
+
+
+
+
 var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
@@ -44,7 +66,7 @@ module.exports = function(passport) {
             jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt"),
             //this will help you to pass request body to passport
             passReqToCallback: true, //https://stackoverflow.com/questions/55163015/how-to-bind-or-pass-req-parameter-to-passport-js-jwt-strategy
-            // secretOrKey: config.secret,
+            // secretOrKey: configSecret,
             secretOrKeyProvider: function(request, rawJwtToken, done) {
               // winston.info("secretOrKeyProvider ", request );
 
@@ -147,18 +169,18 @@ module.exports = function(passport) {
                     }             
 
                     else if (decoded.aud == "https://tiledesk.com") {                
-                      winston.debug("config.jwtSecret: "+ config.secret );
-                      done(null, config.secret);
+                      winston.debug("configSecret: "+ maskedconfigSecret );
+                      done(null, configSecret);
                     }
 
                     else {                
-                      winston.debug("config.jwtSecret: "+ config.secret );
-                      done(null, config.secret);
+                      winston.debug("configSecret: "+ maskedconfigSecret );
+                      done(null, configSecret);
                     }
               }
               else {
-                winston.debug("config.jwtSecret: "+ config.secret );
-                done(null, config.secret);
+                winston.debug("configSecret: "+ maskedconfigSecret );
+                done(null, configSecret);
               }             
             }
        }
