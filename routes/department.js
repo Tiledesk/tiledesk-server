@@ -93,12 +93,15 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
 
   winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
   winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
-  winston.debug("## GET ALL DEPTS eq.project.profile.type ", req.project.profile.type)
+
+  if (req.project.profile) {
+    winston.debug("## GET ALL DEPTS eq.project.profile.type ", req.project.profile.type);
+  }
 
   winston.debug("## GET ALL DEPTS req.project ", req.project)
 
   var query = { "id_project": req.projectid };
-  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
     query.default = true;
   }
@@ -186,12 +189,14 @@ router.get('/', function (req, res) {
 
   var query = { "id_project": req.projectid, "status": 1 };
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.projectid ', req.projectid);
-  winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ', req.project.profile.type);
+  if (req.project.profile) {
+    winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ', req.project.profile.type);
+  }
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ',  req.project.trialExpired);
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.isActiveSubscription ',  req.project.isActiveSubscription);
   
 
-  if ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
     query.default = true;
   }

@@ -181,7 +181,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
       // TODO questo lo abiliterei solo esplicitamete se si flagga opzione su progetto per performance
       if (disableWebHookCall==undefined) {
               //if pro enabled disableWebHookCall = false
-        if ((project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
+        if (project.profile && (project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
           // winston.info('disableWebHookCall pro');
           disableWebHookCall = false;
         } else {

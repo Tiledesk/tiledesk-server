@@ -70,6 +70,7 @@ listen() {
             if (project && project.settings && project.settings.email && 
               project.settings.email.autoSendTranscriptToRequester &&  
               project.settings.email.autoSendTranscriptToRequester === true && 
+              project.profile && 
               (
                 (project.profile.type === 'free' && project.trialExpired === false) || 
                 (project.profile.type === 'payment' && project.isActiveSubscription === true)

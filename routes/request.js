@@ -572,7 +572,7 @@ router.get('/', function (req, res, next) {
    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
    */
-  if (req.project && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
 
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
