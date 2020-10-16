@@ -17,6 +17,7 @@ const uuidv4 = require('uuid/v4');
 
 
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"ciao", "leadid":"5f8972c82db41c003473cb03"}' https://tiledesk-server-pre.herokuapp.com/5f86c201189063003453a045/campaigns/
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"ciao", "leadid":"5f8972c82db41c003473cb03", "request_id":"group-123456789112233"}' https://tiledesk-server-pre.herokuapp.com/5f86c201189063003453a045/campaigns/
 
 router.post('/', function (req, res) {
 
@@ -27,7 +28,7 @@ router.post('/', function (req, res) {
   var request_id = req.body.request_id || 'support-group-'+uuidv4();
   
   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
-  return requestService.createWithIdAndRequester(request_id, req.bodyreq.projectuser._id, req.body.leadid, req.projectid, 
+  return requestService.createWithIdAndRequester(request_id, req.projectuser._id, req.body.leadid, req.projectid, 
     req.body.text, req.body.departmentid, req.body.sourcePage, 
     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, true).then(function (savedRequest) {
 
