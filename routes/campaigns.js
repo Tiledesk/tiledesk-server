@@ -14,18 +14,21 @@ var MessageConstants = require("../models/messageConstants");
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"text":"ciao"}' http://localhost:3000/5f897142c9e7ad9602a744c9/campaigns/
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"text":"ciao", "leadid":"213213221"}' http://localhost:3000/5f897142c9e7ad9602a744c9/campaigns/
 
+
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"ciao", "leadid":"5f8972c82db41c003473cb03"}' https://tiledesk-server-pre.herokuapp.com/5f86c201189063003453a045/campaigns/
+
 router.post('/', function (req, res) {
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
 
-  
+
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
   // createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
   return requestService.createWithRequester(req.projectuser._id, req.body.leadid, req.projectid, 
     req.body.text, req.body.departmentid, req.body.sourcePage, 
-    req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
+    req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, true).then(function (savedRequest) {
 
       winston.info("savedRequest", savedRequest);
 
