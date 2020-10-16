@@ -7,6 +7,7 @@ var leadService = require("../services/leadService");
 var requestService = require("../services/requestService");
 var messageService = require("../services/messageService");
 var MessageConstants = require("../models/messageConstants");
+const uuidv4 = require('uuid/v4');
 
 
 
@@ -21,12 +22,12 @@ router.post('/', function (req, res) {
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
 
-
   winston.debug(req.body);
   winston.debug("req.user", req.user);
-
-  // createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
-  return requestService.createWithRequester(req.projectuser._id, req.body.leadid, req.projectid, 
+  var request_id = req.body.request_id || 'support-group-'+uuidv4();
+  
+  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
+  return requestService.createWithIdAndRequester(request_id, req.bodyreq.projectuser._id, req.body.leadid, req.projectid, 
     req.body.text, req.body.departmentid, req.body.sourcePage, 
     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, true).then(function (savedRequest) {
 
