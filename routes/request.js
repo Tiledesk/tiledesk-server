@@ -751,6 +751,11 @@ router.get('/csv', function (req, res, next) {
     query.participants = req.query.participant;
   }
 
+  if (req.query.hasbot) {
+    winston.debug('req.query.hasbot', req.query.hasbot);
+    query.hasBot = req.query.hasbot;
+  }
+
   /**
    * DATE RANGE  */
   if (req.query.start_date && req.query.end_date) {
