@@ -92,6 +92,17 @@ class FaqBotSupport {
                 repl_message.type = "image";
             }
 
+            var frame_pattern = /^\\frame:.*/mg; 
+            var frametext = text.match(frame_pattern);
+            if (frametext && frametext.length>0) {
+                var frameurl = frametext[0].replace("\\frame:","").trim();
+                winston.debug("frameurl ", frameurl)
+                // var text_with_removed_image = text.replace(frame_pattern,"").trim();
+                // repl_message.text = text_with_removed_image + " " + imageurl
+                repl_message.metadata = {src: frameurl};
+                repl_message.type = "frame";
+            }
+
 
             var webhook_pattern = /^\\webhook:.*/mg; 
             var webhooktext = text.match(webhook_pattern);
