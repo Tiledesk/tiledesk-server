@@ -209,6 +209,9 @@ function populateMessageWithRequest(message, eventPrefix) {
   
   winston.debug("populateMessageWithRequest "+eventPrefix, message.toObject());
   
+  var messageJson = message.toJSON();
+
+  
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
     
   Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
@@ -228,8 +231,6 @@ function populateMessageWithRequest(message, eventPrefix) {
 
   if (request) {
       winston.debug("request is defined in messageEvent",request );
-
-      var messageJson = message.toJSON();
       
       // var requestJson = request.toJSON();
       var requestJson = request;
@@ -279,7 +280,8 @@ function populateMessageWithRequest(message, eventPrefix) {
       }   
           
   } else {
-    winston.error("request is undefined in messageEvent" );
+    winston.warn("request is undefined in messageEvent. Is it a direct message ?" );
+    messageEvent.emit(eventPrefix,messageJson );
   }
    
   });
