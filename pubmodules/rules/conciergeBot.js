@@ -42,7 +42,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 // winston.debug(" ConciergeBot message.text: "+message.text);
                 // winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
 
-                if (message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
