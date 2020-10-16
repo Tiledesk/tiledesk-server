@@ -97,6 +97,7 @@ var fetchLabels = require('./middleware/fetchLabels');
 var cacheUtil = require("./utils/cacheUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
+var campaigns = require('./routes/campaigns');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -343,6 +344,8 @@ app.use('/:projectid/jwt', jwtroute);
 
 app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], pendinginvitation);
 app.use('/:projectid/labels', [fetchLabels],labels);
+
+app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], campaigns);
 
 
 
