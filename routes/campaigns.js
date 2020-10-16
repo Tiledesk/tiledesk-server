@@ -43,6 +43,24 @@ router.post('/', function (req, res) {
   });
 });
 
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 -d '{"text":"ciao", "recipient":"5f8972c82db41c003473cb03"}' https://tiledesk-server-pre.herokuapp.com/5f86c201189063003453a045/campaigns/direct
+router.post('/direct', function (req, res) {
+
+  let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
+
+  winston.debug(req.body);
+  winston.debug("req.user", req.user);
+  
+
+  // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+  return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.body.recipient, req.body.text,
+    req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
+      res.json(savedMessage);
+    });
+
+  
+});
+
 
 
 
