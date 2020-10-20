@@ -1,3 +1,20 @@
+# Next
+- Campaign REST API (test it)
+
+# 2.1.12
+- Chat21 engine selection with CHAT21_ENGINE=[native|firebase]
+- Schema migration tool with mongoose-migrate. Added env property DISABLE_AUTO_SHEMA_MIGRATION
+- #TD-250 Added emoji callout
+- Cors fix. Removed alternative cors response header.
+- Channel manager refactoring
+- Event route fix and ws event endpoint
+- WS projectì_user endpoint is now usable by other teammate
+- Message text required only for type text messages
+- #TD-251 Email lower case fix
+- Updated Node default engine to 11.15.0
+- Added hasBot query filter to retrive conversations with or without a bot
+- Chatbot \frame action command supported
+
 # 2.1.11
 - Mongo support for Winston with: WRITE_LOG_TO_MONGODB=true 
 - Logfix
