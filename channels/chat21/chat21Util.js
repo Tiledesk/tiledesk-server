@@ -1,4 +1,7 @@
 
+
+
+// ***** UNUSED
 class Chat21Util {
     
     getButtonFromText(message, bot, qna) { 
