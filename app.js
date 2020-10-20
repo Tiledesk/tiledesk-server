@@ -149,15 +149,19 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 
+if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
+  app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
+    // var request_cors_header = req.headers[""]
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-xsrf-token");
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+    next();
+  });
 
-// app.use(function (req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
-//   var request_cors_header = req.headers[""]
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, , x-xsrf-token");
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-//   next();
-// });
-// serve?
+  winston.info("Enabled alternative cors middleware");
+} else {
+  winston.info("Used standard cors middleware");
+}
 
 
 // uncomment after placing your favicon in /public
@@ -196,6 +200,7 @@ if (process.env.ENABLE_ACCESSLOG) {
 app.use(passport.initialize());
 
 app.use(cors());
+
 
 
 
