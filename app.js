@@ -150,12 +150,13 @@ app.set('view engine', 'jade');
 
 
 
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-XSRF-Token");
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
-  next();
-});
+// app.use(function (req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
+//   var request_cors_header = req.headers[""]
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, , x-xsrf-token");
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+//   next();
+// });
 // serve?
 
 
