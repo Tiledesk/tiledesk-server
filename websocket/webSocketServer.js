@@ -568,7 +568,10 @@ class WebSocketServer {
 
     messageEvent.on(messageCreateKey, function (message) {
       winston.debug('messageEvent websocket server: '+messageCreateKey, message);
-        pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
+        if (message.request) {
+          pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
+        }
+        
     });
 
     // var reconnect = require('./reconnect');
