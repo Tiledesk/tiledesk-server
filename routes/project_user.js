@@ -40,7 +40,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, req.body.email, req.body.role, req.user._id, req.user.firstname, req.user.lastname)
         .then(function (savedPendingInvitation) {      
            
-            authEvent.emit('project_user.invite.pending', {req: req, savedPendingInvitation: savedPendingInvitation});
+            var eventData = {req: req, savedPendingInvitation: savedPendingInvitation};
+            winston.info("eventData",eventData);
+            authEvent.emit('project_user.invite.pending', eventData);
      
           return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
         })
