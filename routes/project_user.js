@@ -163,7 +163,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
         
                 
                   var eventData = {req:req, savedProject_userPopulated: pu};
-                  winston.info("eventData",eventData);
+                  winston.debug("eventData",eventData);
                   authEvent.emit('project_user.invite', eventData);
               });
             // } catch(e) {winston.error('Error emitting activity');}
