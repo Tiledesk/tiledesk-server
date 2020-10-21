@@ -41,7 +41,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
         .then(function (savedPendingInvitation) {      
            
             var eventData = {req: req, savedPendingInvitation: savedPendingInvitation};
-            winston.info("eventData",eventData);
+            winston.debug("eventData",eventData);
             authEvent.emit('project_user.invite.pending', eventData);
      
           return res.json({ msg: "User not found, save invite in pending ", pendingInvitation: savedPendingInvitation });
@@ -162,7 +162,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
                 pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_served_chat);
         
                 
-                   authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: pu});
+                  var eventData = {req:req, savedProject_userPopulated: pu};
+                  winston.info("eventData",eventData);
+                  authEvent.emit('project_user.invite', eventData);
               });
             // } catch(e) {winston.error('Error emitting activity');}
             
