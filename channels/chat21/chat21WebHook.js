@@ -577,7 +577,7 @@ else if (req.body.event_type == "typing-start") {
 
 else if (req.body.event_type == "presence-change") {
 
-  winston.info("event_type","presence-change");
+  winston.debug("event_type","presence-change");
 
   winston.debug("req.body", req.body);
   
