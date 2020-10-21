@@ -65,7 +65,7 @@ listen() {
  
         try {                
           Project.findOne({_id: id_project, status: 100}, function(err, project){   
-            winston.info("sendTranscriptByEmail", project);
+            winston.debug("sendTranscriptByEmail", project);
 
             if (project && project.settings && project.settings.email && 
               project.settings.email.autoSendTranscriptToRequester &&  
