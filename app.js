@@ -203,9 +203,8 @@ app.use(cors());
 
 
 
-
 // https://www.npmjs.com/package/cors
-// app.options('*', cors()) // include before other routes
+app.options('*', cors()) // include before other routes
 
 
 
