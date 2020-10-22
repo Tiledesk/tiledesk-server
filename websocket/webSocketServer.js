@@ -468,8 +468,14 @@ class WebSocketServer {
                 
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
-  
+    
+            var eventName = urlSub[4];
+            winston.debug('eventName: '+eventName);
+            
             var query = { project_user: puId, id_project: projectId };
+            if (eventName) {
+              query.name = eventName;
+            }
             winston.debug(' query: ',query);
   
             EventModel.find(query)
