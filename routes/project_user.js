@@ -73,7 +73,8 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-      return Project_user.find({ id_project: req.projectid, role: { $in : role }  }, function (err, projectuser) {
+      return Project_user.find({ id_project: req.projectid, role: { $in : role }}, function (err, projectuser) {
+      // RESTORE return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
           winston.error("Error gettting project_user for invite", err);
@@ -413,13 +414,24 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
  */
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+
   var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
+
   if (req.query.role) {
     role = req.query.role;
   }
   winston.debug("role", role);
 
-  Project_user.find({ id_project: req.projectid, role: { $in : role } }).
+  var query =  {id_project: req.projectid, role: { $in : role } };
+
+  if (req.query.presencestatus) {
+    var presence = {status: req.query.presencestatus};
+    query.presence = presence;
+  }
+
+  winston.debug("query", query);
+
+  Project_user.find(query).
     populate('id_user').
     // lean().                   
     exec(function (err, project_users) {
