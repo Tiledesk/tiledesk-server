@@ -27,6 +27,9 @@ var mongoose = require('mongoose');
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
 
+var lastEventsLimit = process.env.WS_HISTORY_EVENTS_LIMIT || 20;
+winston.debug('lastEventsLimit:'+ lastEventsLimit);
+
 var websocketServerPath = process.env.WS_SERVER_PATH || '/';
 winston.debug('websocketServerPath:'+ websocketServerPath);
 
@@ -471,7 +474,9 @@ class WebSocketServer {
   
             EventModel.find(query)
             .cache(cacheUtil.defaultTTL, projectId+":events:"+puId)
-            .exec(function (err, events) {
+            .sort({createdAt: 'desc'})
+            .limit(lastEventsLimit)
+            .exec(function(err, events) {     
               if (err) {
                  winston.error('error getting  events', err);  
                  return reject(err);
