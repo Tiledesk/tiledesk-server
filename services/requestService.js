@@ -367,7 +367,7 @@ class RequestService {
               //cacheinvalidation
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
-                    winston.error('Error createWithId the request.',err);
+                    winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
                     return reject(err);
                   }
               
@@ -486,7 +486,7 @@ class RequestService {
               //cacheinvalidation
               return newRequest.save(function(err, savedRequest) {
                   if (err) {
-                    winston.error('Error createWithId the request.',err);
+                    winston.error('RequestService error for method createWithId for newRequest' + JSON.stringify(newRequest), err);
                     return reject(err);
                   }
               
