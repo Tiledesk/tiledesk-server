@@ -22,7 +22,7 @@ class OperatingHoursService {
         return;
       }
       if (!project) {
-        winston.error("O ---> [ OHS ] -> PROJECT NOT FOUND");
+        winston.error("OperatingHoursService projectIsOpenNow Project not found");
         // throw error
         callback(null, { errorCode: 1010, msg: 'project not found for id', projectId });
         return;
