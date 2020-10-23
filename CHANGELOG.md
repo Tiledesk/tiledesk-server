@@ -1,6 +1,11 @@
 # Next
 - Campaign REST API (test it)
 
+# 2.1.14
+- Renamed field presence.lastOnlineAt to changedAt
+- Added filter presencestatus for project_users endpoint
+- Websocket events updated with filters
+
 # 2.1.13
 - Added Cors options pre-flight with 
 - Fix TD218 Audit log for user invitation already registered
@@ -18,6 +23,7 @@
 - Updated Node default engine to 11.15.0
 - Added hasBot query filter to retrive conversations with or without a bot
 - Chatbot \frame action command supported
+- Supported components: tiledesk-dashboard:2.0.73+ chat21-webwidget:4.0.75+ chat21-ionic:2.0.12
 
 # 2.1.11
 - Mongo support for Winston with: WRITE_LOG_TO_MONGODB=true 
@@ -29,6 +35,7 @@
 - Return role: admin if the admin sign-in with email and password
 - Default fallback event emitting
 - Files and images storage services
+- Supported components: tiledesk-dashboard:2.0.70 chat21-webwidget:4.0.73 chat21-ionic:2.0.12
 
 # 2.1.9
 - Widget departments fix
