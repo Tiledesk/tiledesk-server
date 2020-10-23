@@ -9,7 +9,7 @@ var PresenceSchema = new Schema({
     required: true,
     index: true
   },
-  lastOnlineAt: {
+  changedAt: {
     type: Date,
     default: new Date()
   },

@@ -141,8 +141,9 @@ router.post('/', function (req, res) {
                       var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
                       winston.debug("isObjectId:"+ isObjectId);
 
+                      // RESTORE var queryProjectUser = {id_project:projectid, status: "active" };
                       var queryProjectUser = {id_project:projectid};
-                      // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+
                       if (isObjectId) {
                         queryProjectUser.id_user = message.sender;
                       }else {
@@ -537,8 +538,9 @@ else if (req.body.event_type == "typing-start") {
   var isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
   winston.debug("isObjectId:"+ isObjectId);
 
+  // RESTORE var queryProjectUser = {id_project: request.id_project, status: "active"};
   var queryProjectUser = {id_project: request.id_project};
-  // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+
   if (isObjectId) {
     queryProjectUser.id_user = writer_id;
   }else {
@@ -595,8 +597,9 @@ else if (req.body.event_type == "presence-change") {
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.debug("isObjectId:"+ isObjectId);
 
+  // RESTORE var queryProjectUser = {status: "active"};
   var queryProjectUser = {};
-  // var queryProjectUser = {id_project:projectid,  $or:[ {uuid_user: message.sender}, {id_user:  message.sender }]};
+
   if (isObjectId) {
     queryProjectUser.id_user = user_id;
   }else {
@@ -618,9 +621,8 @@ else if (req.body.event_type == "presence-change") {
     project_users.forEach(project_user => { 
       winston.debug("project_user:", project_user);
       var update = {status:presence};
-      if (presence === "offline") {
-        update.lastOnlineAt = new Date();
-      }
+      update.changedAt = new Date();
+
       project_user.presence = update
 
       project_user.save(function (err, savedProjectUser) {

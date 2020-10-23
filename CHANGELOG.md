@@ -1,6 +1,10 @@
 # Next
 - Campaign REST API (test it)
 
+# 2.1.13
+- Added Cors options pre-flight with 
+- Fix TD218 Audit log for user invitation already registered
+
 # 2.1.12
 - Chat21 engine selection with CHAT21_ENGINE=[native|firebase]
 - Schema migration tool with mongoose-migrate. Added env property DISABLE_AUTO_SHEMA_MIGRATION
@@ -19,7 +23,7 @@
 - Mongo support for Winston with: WRITE_LOG_TO_MONGODB=true 
 - Logfix
 
-# 2.1.10
+# 2.1.10 -> P
 - Tiledesk Chat21 groups syncronizer. Enable with SYNC_CHAT21_GROUPS="true"
 - Built-in faq updated  and chatbot webhook example changed
 - Return role: admin if the admin sign-in with email and password
