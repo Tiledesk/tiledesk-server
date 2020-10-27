@@ -47,7 +47,7 @@ describe('EventRoute', () => {
                             expect(res.body.name).to.equal("event1");                                                                              
                             expect(res.body.attributes.attr1).to.equal("val1");                                                                              
                         
-                            Project_user.findOne({ id_user:  savedUser.id } )
+                            Project_user.findOne({ id_user:  savedUser.id, status: "active"} )
                             .populate('events')
                             .exec(function (err, project_user) {
                                 console.log("project_user",  project_user.toJSON());

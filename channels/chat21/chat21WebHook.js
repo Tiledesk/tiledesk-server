@@ -141,8 +141,7 @@ router.post('/', function (req, res) {
                       var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
                       winston.debug("isObjectId:"+ isObjectId);
 
-                      // RESTORE var queryProjectUser = {id_project:projectid, status: "active" };
-                      var queryProjectUser = {id_project:projectid};
+                       var queryProjectUser = {id_project:projectid, status: "active" };
 
                       if (isObjectId) {
                         queryProjectUser.id_user = message.sender;
@@ -163,9 +162,9 @@ router.post('/', function (req, res) {
                       }
 
                       if (project_user) {
-                        winston.info("project_user", project_user);
+                        winston.debug("project_user", project_user);
                         project_user_id = project_user.id;
-                        winston.info("project_user_id: " + project_user_id);
+                        winston.debug("project_user_id: " + project_user_id);
                       }
 
                       // });
@@ -538,8 +537,7 @@ else if (req.body.event_type == "typing-start") {
   var isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
   winston.debug("isObjectId:"+ isObjectId);
 
-  // RESTORE var queryProjectUser = {id_project: request.id_project, status: "active"};
-  var queryProjectUser = {id_project: request.id_project};
+  var queryProjectUser = {id_project: request.id_project, status: "active"};
 
   if (isObjectId) {
     queryProjectUser.id_user = writer_id;
@@ -562,7 +560,7 @@ else if (req.body.event_type == "typing-start") {
 
     //           emit(name,         attr,  id_project,        project_user, createdBy)    
     eventService.emit("typing.start", attr, request.id_project, pu._id, writer_id).then(function (data) {
-      // eventService.emit("typing.start", attr, request.id_project, null, "system").then(function (data) {
+      // eventService.emit("typing.start", attr, request.id_project, pu._id, writer_id, "volatile").then(function (data) {      
       return res.json(data);
     });
   });
@@ -597,8 +595,7 @@ else if (req.body.event_type == "presence-change") {
   var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.debug("isObjectId:"+ isObjectId);
 
-  // RESTORE var queryProjectUser = {status: "active"};
-  var queryProjectUser = {};
+  var queryProjectUser = {status: "active"};
 
   if (isObjectId) {
     queryProjectUser.id_user = user_id;

@@ -149,6 +149,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 
+// TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*"); //qui dice cequens attento
@@ -199,12 +200,13 @@ if (process.env.ENABLE_ACCESSLOG) {
 
 app.use(passport.initialize());
 
+
+//ATTENTION. If you use AWS Api Gateway you need also to configure the cors policy https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors-console.html
 app.use(cors());
+app.options('*', cors());
 
-
-
-// https://www.npmjs.com/package/cors
-app.options('*', cors()) // include before other routes
+// const customRedisRateLimiter = require("./rateLimiter").customRedisRateLimiter;
+// app.use(customRedisRateLimiter);
 
 
 

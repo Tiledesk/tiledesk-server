@@ -152,70 +152,72 @@ function (req, res) {
  
 });
 
-router.post('/resigninAnonymously', 
-[
-  check('id_project').notEmpty(),  
-  noentitycheck,
-  passport.authenticate(['jwt'], { session: false }), 
 
-],
-function (req, res) {
+// //UNUSED REMOVE IT NEXT RELEASE
+// router.post('/resigninAnonymously', 
+// [
+//   check('id_project').notEmpty(),  
+//   noentitycheck,
+//   passport.authenticate(['jwt'], { session: false }), 
+
+// ],
+// function (req, res) {
  
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
-  }
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(422).json({ errors: errors.array() });
+//   }
   
-// TODO remove email.sec?
+// // TODO remove email.sec?
 
-  var id_project = req.body.id_project;
+//   var id_project = req.body.id_project;
 
-  winston.debug("req.user._id: " +req.user._id + " " + id_project);
+//   winston.debug("req.user._id: " +req.user._id + " " + id_project);
 
 
-  // evitare inserimenti multipli
-  Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.GUEST}).              
-  exec(function (err, project_users) {
-  if (err) {
-    winston.error(err);
-    return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-  }
-  winston.debug("project_users ", project_users);
+//   // evitare inserimenti multipli
+//   Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.GUEST}).              
+//   exec(function (err, project_users) {
+//   if (err) {
+//     winston.error(err);
+//     return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+//   }
+//   winston.debug("project_users ", project_users);
 
-  if (!project_users) {
+//   if (!project_users) {
 
-    var newProject_user = new Project_user({
-      id_project: req.body.id_project, //attentoqui
-      uuid_user: req.user._id,
-      role: RoleConstants.GUEST,
-      user_available: true,
-      createdBy: req.user._id,
-      updatedBy: req.user._id
-    });
+//     var newProject_user = new Project_user({
+//       id_project: req.body.id_project, //attentoqui
+//       uuid_user: req.user._id,
+//       role: RoleConstants.GUEST,
+//       user_available: true,
+//       createdBy: req.user._id,
+//       updatedBy: req.user._id
+//     });
 
-        return newProject_user.save(function (err, savedProject_user) {
-          if (err) {
-            winston.error('Error saving object.', err)
-            return res.status(500).send({ success: false, msg: 'Error saving object.' });
-          }
+//         return newProject_user.save(function (err, savedProject_user) {
+//           if (err) {
+//             winston.error('Error saving object.', err)
+//             return res.status(500).send({ success: false, msg: 'Error saving object.' });
+//           }
 
-          // controlla se già esiste su llo stesso progetto
+//           // controlla se già esiste su llo stesso progetto
                   
           
           
-          authEvent.emit("projectuser.create", savedProject_user);         
+//           authEvent.emit("projectuser.create", savedProject_user);         
 
-          winston.info('project user created ', savedProject_user.toObject());
+//           winston.info('project user created ', savedProject_user.toObject());
 
-          return res.json({ success: true, token: 'JWT ' + req.headers["authorization"], user: req.user });
-      });
-    }else {
-      // return res.json({ success: true, token: 'JWT ' + token, user: req.user });
-      return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-    }
-  });
+//           return res.json({ success: true, token: 'JWT ' + req.headers["authorization"], user: req.user });
+//       });
+//     }else {
+//       // return res.json({ success: true, token: 'JWT ' + token, user: req.user });
+//       return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+//     }
+//   });
  
-});
+// });
 
 
 
@@ -241,7 +243,7 @@ router.post('/signinWithCustomToken', [
     winston.debug("audUrl path: " + path );
     
     const AudienceType = path.split("/")[1];
-    winston.info("audUrl AudienceType: " + AudienceType );
+    winston.debug("audUrl AudienceType: " + AudienceType );
 
     if (AudienceType!="projects") {
       return res.json({ success: true, token: req.headers["authorization"], user: req.user });
@@ -257,12 +259,12 @@ router.post('/signinWithCustomToken', [
   
 // evitare inserimenti multipli
     Project_user.findOne({ id_project: AudienceId, uuid_user: req.user._id,  role: RoleConstants.USER}).              
-      exec(function (err, project_users) {
+      exec(function (err, project_user) {
       if (err) {
         winston.error(err);
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
-      if (!project_users) {
+      if (!project_user) {
           var newProject_user = new Project_user({
 
             // id_project: req.body.id_project, //attentoqui
@@ -295,7 +297,13 @@ router.post('/signinWithCustomToken', [
         });
       } else {
         winston.debug('project user already exists ');
-        return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+
+        if (project_user.status==="active") {
+          return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+        }else {
+          return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not found.' });
+        }
+        
       }
 
            

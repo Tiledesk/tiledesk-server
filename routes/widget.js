@@ -27,7 +27,7 @@ router.get('/', function(req, res, next) {
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
           if (isOpen) {            
-            Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).
+            Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" }).
               populate('id_user').
               exec(function (err, project_users) {
                 winston.debug('project_users:'+ project_users);
@@ -90,9 +90,9 @@ router.get('/', function(req, res, next) {
 
       var query = { "id_project": req.projectid, "status": 1 };
 
-      winston.info("req.project:", req.project);
+      winston.debug("req.project:", req.project);
       
-      if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+      if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
         query.default = true;
       }

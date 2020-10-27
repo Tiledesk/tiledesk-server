@@ -147,7 +147,8 @@ class RoleChecker {
           // project_user_qui_importante
 
           // JWT_HERE
-          var query = { id_project: req.params.projectid, id_user: req.user._id};
+          var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
+
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id};
           }
@@ -206,7 +207,7 @@ class RoleChecker {
           // project_user_qui_importante
 
            // JWT_HERE
-          var query = { id_project: req.params.projectid, id_user: req.user._id};
+          var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id};
           }

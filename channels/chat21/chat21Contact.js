@@ -33,7 +33,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   sortQuery[sortField] = direction;
 
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).    
+  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" }).    
     exec(); 
 
     var projectsArray = [];
@@ -41,7 +41,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       projectsArray.push(project.id_project);
     });
     
-    var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}};
+    var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" };
     winston.debug("query: ", query);
 
     var teammates = await Project_user.find(query).

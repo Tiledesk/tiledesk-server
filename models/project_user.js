@@ -58,7 +58,13 @@ var PresenceSchema = require('./presence');
     createdBy: {
       type: String,
       required: true
-    }
+    },
+    status: {
+      type: String,
+      default: "active",
+      index: true,
+      required: true
+    },
   }, {
       timestamps: true,
       toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html

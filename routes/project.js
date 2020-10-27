@@ -218,7 +218,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   sortQuery[sortField] = direction;
 
 
-  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
+  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
       path: 'id_project',

@@ -191,7 +191,7 @@ class WebSocketServer {
                 // winston.debug(' req.: ',req);
               
               
-                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] })
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}], status: "active" })
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, projectuser) {
                   if (err) {
@@ -259,7 +259,7 @@ class WebSocketServer {
                 winston.debug('find project_user');
               
   
-                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  })
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}], status: "active"})
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, projectuser) {
                   if (err) {
@@ -372,7 +372,7 @@ class WebSocketServer {
                 winston.debug('userId: '+userId);
       
                 //check if current user can see the data
-                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}]  })
+                Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}], status: "active"})
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, currentProjectuser) {
                   if (err) {
@@ -389,7 +389,7 @@ class WebSocketServer {
                     var isObjectId = mongoose.Types.ObjectId.isValid(userId);
                     winston.debug("isObjectId:"+ isObjectId);                             
 
-                    var query = { id_project: projectId};        
+                    var query = { id_project: projectId, status: "active"};        
                     winston.debug(' query: ',query);
           
                     if (isObjectId) {
@@ -432,11 +432,14 @@ class WebSocketServer {
                 //curl -v -X PUT -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"user_available":false}' http://localhost:3000/5e71139f61dd040bc9594cee/project_users/
           } else if (topic.indexOf('/project_users/') > -1) {        
                 
+
+            // TODO aggiungere tutti i prject users
+
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
   
             //var query = { _id: puId, id_project: projectId};
-            var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] };
+            var query = { _id: puId, id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}], status: "active" };
             winston.debug(' query: ',query);
   
             Project_user.findOne(query)
@@ -468,7 +471,7 @@ class WebSocketServer {
                 
             var puId = urlSub[3];
             winston.debug('puId: '+puId);
-    
+  
             var eventName = urlSub[4];
             winston.debug('eventName: '+eventName);
             
@@ -476,13 +479,14 @@ class WebSocketServer {
             if (eventName) {
               query.name = eventName;
             }
+            //TODO esclude status volatile events
             winston.debug(' query: ',query);
   
             EventModel.find(query)
             .cache(cacheUtil.defaultTTL, projectId+":events:"+puId)
             .sort({createdAt: 'desc'})
             .limit(lastEventsLimit)
-            .exec(function(err, events) {     
+            .exec(function(err, events) {             
               if (err) {
                  winston.error('error getting  events', err);  
                  return reject(err);
@@ -505,7 +509,7 @@ class WebSocketServer {
                   var recipientId = urlSub[3];
                   winston.debug('recipientId: '+recipientId);
   
-                  Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}] })
+                  Project_user.findOne({ id_project: projectId, id_user:  req.user._id, $or:[ {"role": "agent"}, {"role": "admin"}, {"role": "owner"}], status: "active" })
                   .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                   .exec(function (err, projectuser) {
                     if (err) {
@@ -628,7 +632,10 @@ class WebSocketServer {
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
         winston.debug('pu', pu);
-        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/'+pu.id, pu, undefined, true, "CREATE");
+        
+        //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
+
+        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/'+pu.id, pu, undefined, true, "UPDATE");
 
         var userId;
         if (pu.uuid_user) {
@@ -636,7 +643,7 @@ class WebSocketServer {
         }else {
           userId = pu.id_user;
         }
-        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "CREATE");
+        pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "UPDATE");
 
       });
       

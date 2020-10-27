@@ -79,7 +79,7 @@ listen() {
               {
 
               //send email to admin
-              Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]} } ).populate('id_user')
+              Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]}, status: "active"} ).populate('id_user')
               .exec(function (err, project_users) {
 
                 if (project_users && project_users.length>0) {

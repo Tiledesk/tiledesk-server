@@ -241,7 +241,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           // console.log('OPERATORS - »»»» nobot ', nobot)
           var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
 // attento indice
-          return Project_user.find({ id_project: projectid, role: { $in : role } }).exec(function (err, project_users) {
+          return Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" }).exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
               return reject(err);
@@ -334,7 +334,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
         // riprodurre su v2
-         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {          
+         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {          
           // uni error round robin
         //return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {
 
@@ -398,7 +398,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   return new Promise(function (resolve, reject) {
 
     var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.AGENT];
-    return Project_user.find({ id_project: projectid , role: { $in : role } }).exec(function (err, project_users) {
+    return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
