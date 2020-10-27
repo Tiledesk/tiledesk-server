@@ -150,7 +150,7 @@ class RoleChecker {
           var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
 
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
-            query = { id_project: req.params.projectid, uuid_user: req.user._id};
+            query = { id_project: req.params.projectid, uuid_user: req.user._id, status: "active"};
           }
           winston.debug("hasRoleOrType query " + JSON.stringify(query));
 
