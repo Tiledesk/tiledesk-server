@@ -59,6 +59,30 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
   });
 
 
+  router.patch('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+    winston.debug(req.body);
+  
+    var update = {};
+  
+   
+    if (req.body.status!=undefined) {
+        update.status = req.body.status;
+    }
+    
+  
+  
+    Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
+        if (err) {
+        winston.error('Error patching the department ', err);
+        return res.status(500).send({ success: false, msg: 'Error patching object.' });
+        }
+        departmentEvent.emit('department.update', updatedDepartment);
+        res.json(updatedDepartment);
+    });
+    });
+
+
   // TODO aggiungere altro endpoint qui che calcola busy status come calculate di tiledesk-queue
 
 
