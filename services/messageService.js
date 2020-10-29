@@ -21,7 +21,7 @@ class MessageService {
             return this.changeStatus(id, status);
        }
    }
-  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
 
     winston.debug('message.create called');
 
@@ -34,7 +34,7 @@ class MessageService {
     
           var beforeMessage = {sender:sender, senderFullname:senderFullname, recipient:recipient
             , text:text, id_project:id_project, createdBy:createdBy, status:status, attributes:attributes,
-             type:type, metadata:metadata,language:language};
+             type:type, metadata:metadata, language:language, channel_type: channel_type, channel: channel};
 
           var messageToCreate = beforeMessage;
           winston.debug('messageToCreate',messageToCreate);
@@ -64,7 +64,9 @@ class MessageService {
                         status : messageToCreate.status,
                         metadata: messageToCreate.metadata,
                         attributes: messageToCreate.attributes,
-                        language: messageToCreate.language
+                        language: messageToCreate.language,
+                        channel_type: messageToCreate.channel_type,
+                        channel: messageToCreate.channel
                     });
                     
                     // winston.debug("create new message", newMessage);

@@ -226,115 +226,119 @@ describe('/signInAnonymously', () => {
 
 
 
-    it('signInAnonymouslyReLoginSameProject', (done) => {
+    // it('signInAnonymouslyReLoginSameProject', (done) => {
 
         
-        var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+    //     var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
+    //     var pwd = "pwd";
 
-        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-            // create(name, createdBy, settings)
-            projectService.create("test-signInAnonymouslyReLogin", savedUser._id).then(function(savedProject) {     
+    //     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    //         // create(name, createdBy, settings)
+    //         projectService.create("test-signInAnonymouslyReLogin", savedUser._id).then(function(savedProject) {     
           
-                    chai.request(server)
-                        .post('/auth/signinAnonymously' )
-                        .send({ id_project: savedProject._id, email: "email@email.com"})
-                        .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body",  res.body);
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.success).to.equal(true);                                                                                                                     
-                            expect(res.body.user.email).to.equal("email@email.com");                                               
-                            expect(res.body.token).to.not.equal(undefined);                                               
-                            expect(res.body.user._id).to.not.equal(undefined);                                               
+    //                 chai.request(server)
+    //                     .post('/auth/signinAnonymously' )
+    //                     .send({ id_project: savedProject._id, email: "email@email.com"})
+    //                     .end((err, res) => {
+    //                         //console.log("res",  res);
+    //                         console.log("res.body",  res.body);
+    //                         res.should.have.status(200);
+    //                         res.body.should.be.a('object');
+    //                         expect(res.body.success).to.equal(true);                                                                                                                     
+    //                         expect(res.body.user.email).to.equal("email@email.com");                                               
+    //                         expect(res.body.token).to.not.equal(undefined);                                               
+    //                         expect(res.body.user._id).to.not.equal(undefined);                                               
 
-                            var uuid = res.body.user._id.toString();
-                            console.log("uuid", uuid);
+    //                         var uuid = res.body.user._id.toString();
+    //                         console.log("uuid", uuid);
 
-                            var token = res.body.token;
-                            console.log("token", token);
+    //                         var token = res.body.token;
+    //                         console.log("token", token);
 
-                            chai.request(server)
-                                .post('/auth/resigninAnonymously' )
-                                .set('Authorization', token)
-                                .send({ id_project: savedProject._id, email: "email@email.com"})
-                                .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body",  res.body);
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    expect(res.body.success).to.equal(true);                                                                                                                     
-                                    expect(res.body.user.email).to.equal("email@email.com");                                               
-                                    expect(res.body.token).to.not.equal(undefined);                                               
-                                    expect(res.body.user._id.toString()).to.equal(uuid.toString());                                               
+    //                         chai.request(server)
+    //                             .post('/auth/resigninAnonymously' )
+    //                             .set('Authorization', token)
+    //                             .send({ id_project: savedProject._id, email: "email@email.com"})
+    //                             .end((err, res) => {
+    //                                 //console.log("res",  res);
+    //                                 console.log("res.body",  res.body);
+    //                                 res.should.have.status(200);
+    //                                 res.body.should.be.a('object');
+    //                                 expect(res.body.success).to.equal(true);                                                                                                                     
+    //                                 expect(res.body.user.email).to.equal("email@email.com");                                               
+    //                                 expect(res.body.token).to.not.equal(undefined);                                               
+    //                                 expect(res.body.user._id.toString()).to.equal(uuid.toString());                                               
 
-                                    done();
-                                });
-                        });
-                    }); 
-                });
+    //                                 done();
+    //                             });
+    //                     });
+    //                 }); 
+    //             });
              
                 
-    });
+    // });
 
 
 
 
 
-    it('signInAnonymouslyReLoginDifferentProject', (done) => {
+    // it('signInAnonymouslyReLoginDifferentProject', (done) => {
 
         
-        var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
-        var pwd = "pwd";
+    //     var email = "test-signInAnonymouslyReLogin-" + Date.now() + "@email.com";
+    //     var pwd = "pwd";
 
-        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-            // create(name, createdBy, settings)
-            projectService.create("test-signInAnonymouslyReLogin", savedUser._id).then(function(savedProject) {     
+    //     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    //         // create(name, createdBy, settings)
+    //         projectService.create("test-signInAnonymouslyReLogin", savedUser._id).then(function(savedProject) {     
 
-                projectService.create("test-signInAnonymouslyReLoginDifferent", savedUser._id).then(function(savedProjectDifferent) {     
+    //             projectService.create("test-signInAnonymouslyReLoginDifferent", savedUser._id).then(function(savedProjectDifferent) {     
           
-                    chai.request(server)
-                        .post('/auth/signinAnonymously' )
-                        .send({ id_project: savedProject._id, email: "email@email.com"})
-                        .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body",  res.body);
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.success).to.equal(true);                                                                                                                     
-                            expect(res.body.user.email).to.equal("email@email.com");                                               
-                            expect(res.body.token).to.not.equal(undefined);                                               
-                            expect(res.body.user._id).to.not.equal(undefined);                                               
+    //                 chai.request(server)
+    //                     .post('/auth/signinAnonymously' )
+    //                     .send({ id_project: savedProject._id, email: "email@email.com"})
+    //                     .end((err, res) => {
+    //                         //console.log("res",  res);
+    //                         console.log("res.body",  res.body);
+    //                         res.should.have.status(200);
+    //                         res.body.should.be.a('object');
+    //                         expect(res.body.success).to.equal(true);                                                                                                                     
+    //                         expect(res.body.user.email).to.equal("email@email.com");                                               
+    //                         expect(res.body.token).to.not.equal(undefined);                                               
+    //                         expect(res.body.user._id).to.not.equal(undefined);                                               
 
-                            var uuid = res.body.user._id.toString();
-                            console.log("uuid", uuid);
+    //                         var uuid = res.body.user._id.toString();
+    //                         console.log("uuid", uuid);
 
-                            var token = res.body.token;
-                            console.log("token", token);
+    //                         var token = res.body.token;
+    //                         console.log("token", token);
 
-                            chai.request(server)
-                                .post('/auth/resigninAnonymously' )
-                                .set('Authorization', token)
-                                .send({ id_project: savedProjectDifferent._id, email: "email@email.com"})
-                                .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body",  res.body);
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    expect(res.body.success).to.equal(true);                                                                                                                     
-                                    expect(res.body.user.email).to.equal("email@email.com");                                               
-                                    expect(res.body.token).to.not.equal(undefined);                                               
-                                    expect(res.body.user._id.toString()).to.equal(uuid.toString());                                               
+    //                         chai.request(server)
+    //                             .post('/auth/resigninAnonymously' )
+    //                             .set('Authorization', token)
+    //                             .send({ id_project: savedProjectDifferent._id, email: "email@email.com"})
+    //                             .end((err, res) => {
+    //                                 //console.log("res",  res);
+    //                                 console.log("res.body",  res.body);
+    //                                 res.should.have.status(200);
+    //                                 res.body.should.be.a('object');
+    //                                 expect(res.body.success).to.equal(true);                                                                                                                     
+    //                                 expect(res.body.user.email).to.equal("email@email.com");                                               
+    //                                 expect(res.body.token).to.not.equal(undefined);                                               
+    //                                 expect(res.body.user._id.toString()).to.equal(uuid.toString());                                               
 
-                                    done();
-                                });
-                        });
-                    }); 
-                });
-            });
+    //                                 done();
+    //                             });
+    //                     });
+    //                 }); 
+    //             });
+    //         });
                 
-    });
+    // });
+
+
+
+
 });
 
 

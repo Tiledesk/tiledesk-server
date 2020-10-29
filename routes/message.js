@@ -60,10 +60,10 @@ function(req, res) {
               return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
 
-                  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+                // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel) {
                 return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
                   req.body.text, req.body.departmentid, req.body.sourcePage, 
-                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
+                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined,req.body.channel ).then(function (savedRequest) {
 
 
                 // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
@@ -71,10 +71,10 @@ function(req, res) {
                   //     req.body.text, req.body.departmentid, req.body.sourcePage, 
                   //     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
 
-
-                    // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+                    
+                    // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
                     return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
-                      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
+                      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
                         
                         // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
 
@@ -96,10 +96,10 @@ function(req, res) {
 
           winston.debug("request  exists", request.toObject());
       
-          // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes) {
-                          
+         
+               // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
               return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
-                request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){
+                request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){
 
                   // TOOD update also request attributes and sourcePage
                   // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {

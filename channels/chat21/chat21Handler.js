@@ -194,7 +194,7 @@ class Chat21Handler {
                     chat21.auth.setAdminToken(adminToken);
 
                     requests.forEach(function(request) {
-                        if (request.channel.name === ChannelConstants.CHAT21) {
+                        if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                             winston.info("Chat21Handler  lead.update for request ",  request);
                             
@@ -244,9 +244,11 @@ class Chat21Handler {
 
                     winston.info("Chat21Sender on message.sending ",  message);
 
-
-                   if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && message.request && message.request.channel.name === ChannelConstants.CHAT21) {
-                    // if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+                   
+                   if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
+                    message.channelType ===  MessageConstants.CHANNEL_TYPE.GROUP &&
+                    message.request && 
+                    message.request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                     
                         chat21.auth.setAdminToken(adminToken);
@@ -286,6 +288,7 @@ class Chat21Handler {
                             }
 
                             var recipient_fullname = "Guest"; 
+                            // TODO qui va message.recipient_fullname ma nn c'è
                             if (message.request && message.request.lead && message.request.lead.fullname) {
                                 recipient_fullname = message.request.lead.fullname;
                             }
@@ -343,6 +346,14 @@ class Chat21Handler {
                         
                         // });
                     }
+                    else if (message &&
+                         message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && 
+                         message.channelType ===  MessageConstants.CHANNEL_TYPE.DIRECT &&
+                         message.channel.name === ChannelConstants.CHAT21) {
+                        
+                    } else {
+                        
+                    }
                 // });
             });
 
@@ -350,7 +361,7 @@ class Chat21Handler {
             requestEvent.on('request.attributes.update',  function(request) {          
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -374,7 +385,7 @@ class Chat21Handler {
             requestEvent.on('request.update',  function(request) {          
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -397,7 +408,7 @@ class Chat21Handler {
 
                 // setImmediate(() => {
 
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -482,7 +493,7 @@ class Chat21Handler {
             requestEvent.on('request.close',  function(request) {          
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);                      
 
@@ -545,7 +556,7 @@ class Chat21Handler {
                 
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -625,7 +636,7 @@ class Chat21Handler {
                    let member = data.member;
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 
@@ -660,7 +671,7 @@ class Chat21Handler {
                    let member = data.member;
 
                 setImmediate(() => {
-                    if (request.channel.name === ChannelConstants.CHAT21) {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
                         chat21.auth.setAdminToken(adminToken);
 

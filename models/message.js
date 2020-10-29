@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
+var Channel = require('../models/channel');
+var MessageConstants = require('../models/messageConstants');
 
 var MessageSchema = new Schema({
   sender: {
@@ -10,7 +12,8 @@ var MessageSchema = new Schema({
   },
   senderFullname: {
     type: String,
-    required: false
+    required: false,
+    default: "Guest"
   },
   recipient: {
     type: String,
@@ -27,6 +30,12 @@ var MessageSchema = new Schema({
     default: 'text',
     index: true
   },
+  channel_type: {
+    type: String,
+    required: true,
+    default: MessageConstants.CHANNEL_TYPE.GROUP,
+    index: true
+  },
   text: {
     type: String,
     required: function() {
@@ -41,6 +50,12 @@ var MessageSchema = new Schema({
     type: String,
     required: false,
     index:true
+  },
+  channel: {
+    type: Channel.schema,
+    default: function() {
+      return new Channel({name: 'chat21'});
+    }
   },
   id_project: {
     type: String,

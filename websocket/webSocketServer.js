@@ -8,7 +8,6 @@ var Message = require("../models/message");
 const WebSocket = require('ws');
 var url = require('url');
 var validtoken = require('../middleware/valid-token');
-var message2Event = require("../event/message2Event");
 var messageEvent = require("../event/messageEvent");
 var eventEvent = require("../pubmodules/events/eventEvent");
 var requestEvent = require("../event/requestEvent");

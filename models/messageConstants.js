@@ -9,6 +9,10 @@ module.exports = {
         SEEN : 300 //seen
 
     },
+    CHANNEL_TYPE : {
+        GROUP : "group",
+        DIRECT : "direct",    
+    },
 
 
     LABELS : {

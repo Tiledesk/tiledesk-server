@@ -194,7 +194,13 @@ var RequestSchema = new Schema({
 
 
   
-  channel: {
+  channel: { //inbound
+    type: Channel.schema,
+    default: function() {
+      return new Channel({name: 'chat21'});
+    }
+  },
+  channelOutbound: { //??
     type: Channel.schema,
     default: function() {
       return new Channel({name: 'chat21'});

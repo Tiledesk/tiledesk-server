@@ -251,7 +251,7 @@ class RequestService {
     return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
   }
 
-  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
+  createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel) {
 
     if (!departmentid) {
       departmentid ='default';
@@ -272,7 +272,7 @@ class RequestService {
 
         var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
-          createdBy:createdBy, attributes:attributes, subject:subject}};
+          createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel}};
 
           winston.debug("context",context);
 
@@ -356,7 +356,8 @@ class RequestService {
                 id_project: id_project,
                 createdBy: createdBy,
                 updatedBy: createdBy,
-                preflight: preflight
+                preflight: preflight,
+                channel: channel
               });
                     
 

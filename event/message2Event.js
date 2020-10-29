@@ -1,6 +1,6 @@
 var winston = require('../config/winston');
 var MessageConstants = require("../models/messageConstants");
-var messageEvent = require("../event/messageEvent");
+// var messageEvent = require("../event/messageEvent");
 
 
 
@@ -20,23 +20,45 @@ const message2Event = new Message2Event({
 winston.debug("message2Event init");
 
 
-//TODO CHANGEIT
-messageEvent.on('message.create.simple', function(message) {
 
-  winston.debug("message2Event message.create", message);
+// messageEvent.on('message.create', function(message) {
 
-  message2Event.emit(message.id_project+'.message.create', message);
+//   winston.debug("message2Event message.create", message);
 
-  if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
-    winston.debug("message2Event.emit message.received", message);
-    message2Event.emit(message.id_project+'.message.received', message);
-  }
+//   message2Event.emit('message.create', message);
 
-  if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
-    winston.debug("message2Event.emit message.sending", message);
-    message2Event.emit(message.id_project+'.message.sending', message);
-  }
-});
+//   if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
+//     winston.debug("message2Event.emit message.received", message);
+//     message2Event.emit('message.received', message);
+//   }
+
+//   if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
+//     winston.debug("message2Event.emit message.sending", message);
+//     message2Event.emit('message.sending', message);
+//   }
+// });
+
+// messageEvent.on('message.create.first', function(message) {
+//   winston.debug("message2Event.emit message.create.first", message);
+//   message2Event.emit('message.create.first', message);
+// });
+
+// messageEvent.on('message.create.from.requester', function(message) {
+//   winston.debug("message2Event.emit message.create.from.requester", message);
+//   message2Event.emit('message.create.from.requester', message);
+// });
+
+
+
+
+
+// messageEvent.on('message.update', function(message) {
+
+//   winston.debug("message2Event message.update", message);
+
+//   message2Event.emit('message.update', message);
+
+// });
 
 
 module.exports = message2Event;

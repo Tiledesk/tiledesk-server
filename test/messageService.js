@@ -42,6 +42,8 @@ describe('messageService', function () {
           expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
           expect(savedMessage.language).to.equal("it");
           expect(savedMessage.attributes.a1).to.equal("a1");
+          expect(savedMessage.channel_type).to.equal("group");
+          expect(savedMessage.channel.name).to.equal("chat21");
           done();
 
         }).catch(function(err){
