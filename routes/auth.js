@@ -3,6 +3,7 @@ var express = require('express');
 var jwt = require('jsonwebtoken');
 var router = express.Router();
 var User = require("../models/user");
+var Subscription = require("../models/subscription");
 var Project_user = require("../models/project_user");
 var RoleConstants = require("../models/roleConstants");
 var uniqid = require('uniqid');
@@ -225,7 +226,7 @@ router.post('/signinWithCustomToken', [
   // function(req,res,next) {req.disablePassportEntityCheck = true;winston.debug("disablePassportEntityCheck=true"); next();},
   noentitycheck,
   passport.authenticate(['jwt'], { session: false }), 
-  validtoken], function (req, res) {
+  validtoken], async (req, res) => {
 
     winston.debug("signinWithCustomToken req: ", req );
 
@@ -245,66 +246,85 @@ router.post('/signinWithCustomToken', [
     const AudienceType = path.split("/")[1];
     winston.debug("audUrl AudienceType: " + AudienceType );
 
-    if (AudienceType!="projects") {
+    var id_project;
+
+    //problema wp da testare
+    if (AudienceType === "subscriptions") {
+
+      const AudienceId = path.split("/")[2];
+      winston.debug("audUrl AudienceId: " + AudienceId );
+
+      if (!AudienceId) {
+        return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType subscriptions' });
+      }
+
+      var subscription = await Subscription.findById(AudienceId).exec();
+      winston.debug("signinWithCustomToken subscription: ", subscription );
+      id_project = subscription.id_project;
+      winston.debug("signinWithCustomToken subscription req.user._id: "+ req.user._id );
+      winston.debug("signinWithCustomToken subscription.id_project:"+ id_project );
+
+    } else if (AudienceType==="projects") {
+
+      const AudienceId = path.split("/")[2];
+      winston.debug("audUrl AudienceId: " + AudienceId );
+
+      if (!AudienceId) {
+        return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType projects' });
+      }
+
+      id_project = AudienceId;
+    } else {
+      // When happen?
       return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-    }
-
-    const AudienceId = path.split("/")[2];
-    winston.debug("audUrl AudienceId: " + AudienceId );
-    
-    if (!AudienceId) {
-      return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required' });
-    }
-
+    }    
   
-// evitare inserimenti multipli
-    Project_user.findOne({ id_project: AudienceId, uuid_user: req.user._id,  role: RoleConstants.USER}).              
+      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.USER}).              
       exec(function (err, project_user) {
-      if (err) {
-        winston.error(err);
-        return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-      }
-      if (!project_user) {
-          var newProject_user = new Project_user({
-
-            // id_project: req.body.id_project, //attentoqui
-            id_project: AudienceId,
-            uuid_user: req.user._id,
-            // id_user: req.user._id,
-            role: RoleConstants.USER,
-            user_available: true,
-            createdBy: req.user._id, //oppure req.user.id attento problema
-            updatedBy: req.user._id
-          });
-
-          return newProject_user.save(function (err, savedProject_user) {
-            if (err) {
-              winston.error('Error saving object.', err)
-              // return res.status(500).send({ success: false, msg: 'Error saving object.' });
-              return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-            }
-
-          
-            authEvent.emit("projectuser.create", savedProject_user);         
-
-            authEvent.emit("user.signin", {user:req.user, req:req, token: req.headers["authorization"]});      
-
-            winston.info('project user created ', savedProject_user.toObject());
-
-              
-
-            return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-        });
-      } else {
-        winston.debug('project user already exists ');
-
-        if (project_user.status==="active") {
+        if (err) {
+          winston.error(err);
           return res.json({ success: true, token: req.headers["authorization"], user: req.user });
-        }else {
-          return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not found.' });
         }
-        
-      }
+        if (!project_user) {
+            var newProject_user = new Project_user({
+
+              id_project: id_project,
+              uuid_user: req.user._id,
+              // id_user: req.user._id,
+              role: RoleConstants.USER,
+              user_available: true,
+              createdBy: req.user._id, //oppure req.user.id attento problema
+              updatedBy: req.user._id
+            });
+
+            return newProject_user.save(function (err, savedProject_user) {
+              if (err) {
+                winston.error('Error saving object.', err)
+                // return res.status(500).send({ success: false, msg: 'Error saving object.' });
+                return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+              }
+
+            
+              authEvent.emit("projectuser.create", savedProject_user);         
+
+              authEvent.emit("user.signin", {user:req.user, req:req, token: req.headers["authorization"]});      
+
+              winston.info('project user created ', savedProject_user.toObject());
+
+                
+
+              return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+          });
+        } else {
+          winston.debug('project user already exists ');
+
+          if (project_user.status==="active") {
+            return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+          } else {
+            return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not active.' });
+          }
+          
+        }
 
            
       });

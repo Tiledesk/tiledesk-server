@@ -256,7 +256,7 @@ module.exports = function(passport) {
     
       Subscription.findOne({_id: identifier}, function(err, subscription) {
         if (err) {
-          winston.info("Passport JWT subscription err", err);
+          winston.error("Passport JWT subscription err", err);
           return done(err, false);
         }
         if (subscription) {
@@ -289,9 +289,9 @@ module.exports = function(passport) {
           
 
 
-          winston.info("Passport JWT userexternal", jwt_payload);
+          winston.debug("Passport JWT userexternal", jwt_payload);
           var userM = UserUtil.decorateUser(jwt_payload);
-          winston.info("Passport JWT userexternal userM", userM);
+          winston.debug("Passport JWT userexternal userM", userM);
 
           return done(null, userM );
         }  else {
@@ -320,11 +320,11 @@ module.exports = function(passport) {
         .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
         .exec(function(err, user) {
           if (err) {
-            winston.error("Passport JWT generic err", err);
+            winston.error("Passport JWT generic err ", err);
             return done(err, false);
           }
           if (user) {
-            winston.debug("Passport JWT generic user", user);
+            winston.debug("Passport JWT generic user ", user);
             return done(null, user);
           } else {
             winston.debug("Passport JWT generic not user");
@@ -378,6 +378,7 @@ module.exports = function(passport) {
   ));
 
 
+  // var OidcStrategy = require('passport-openidconnect').Strategy;
 
 
   
