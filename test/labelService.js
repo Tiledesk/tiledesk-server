@@ -19,7 +19,7 @@ describe('labelService', function () {
   
 
 
-  it('get', function (done) {
+  it('getWithoutClonedLabel', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function(savedProject) {
@@ -40,7 +40,7 @@ describe('labelService', function () {
 
 
 
-  it('getDefaultLanguageButNotPresentInProject', function (done) {
+  it('getITLanguageButNotPresentInProject', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function(savedProject) {
@@ -82,13 +82,13 @@ describe('labelService', function () {
 
 
 
-  it('getAllByLanguage', function (done) {
+  it('getLanguage', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function(savedProject) {
     
-      // getAllByLanguage(id_project, language) {
-     labelService.getAllByLanguage(savedProject._id, "EN").then(function(labels) {
+      // getLanguage(id_project, language) {
+     labelService.getLanguage(savedProject._id, "EN").then(function(labels) {
   
          expect(labels.data.LABEL_PLACEHOLDER).to.equal("type your message..");
 
@@ -104,13 +104,13 @@ describe('labelService', function () {
 
 
 
-  it('getAllByLanguageWrongLang', function (done) {
+  it('getLanguageWrongLang', function (done) {
     var userid = "5badfe5d553d1844ad654072";
 
     projectService.create("test1", userid).then(function(savedProject) {
     
-      // getAllByLanguage(id_project, language) {
-     labelService.getAllByLanguage(savedProject._id, "XX").then(function(labels) {
+      // getLanguage(id_project, language) {
+     labelService.getLanguage(savedProject._id, "XX").then(function(labels) {
   
          expect(labels.data.LABEL_PLACEHOLDER).to.equal("type your message..");
 

@@ -13,6 +13,8 @@ var mongoose = require('mongoose');
 const { check, validationResult } = require('express-validator');
 
 
+winston.debug("  labelService.FALLBACK_LANGUAGE: " +   labelService.FALLBACK_LANGUAGE  );
+
 var Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
@@ -26,11 +28,13 @@ router.get('/default', function (req, res) {
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels/default/clone
 
 router.post('/default/clone', 
-[passport.authenticate(['basic', 'jwt'], { session: false }), 
-validtoken, 
-roleChecker.hasRole('admin'),
-check('lang').notEmpty(),  
-],function (req, res, next) {
+  [
+    passport.authenticate(['basic', 'jwt'], { session: false }), 
+    validtoken, 
+    roleChecker.hasRole('admin'),
+    check('lang').notEmpty(),  
+  ],
+  function (req, res, next) {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -44,7 +48,8 @@ check('lang').notEmpty(),
   var pickedLang = req.labels.find(l => l.lang === lang);
 
   if (!pickedLang){
-    var pickedLangPivot = req.labels.find(l => l.lang === "EN");
+      // FALLBACK_LANGUAGE IMP
+    var pickedLangPivot = req.labels.find(l => l.lang === labelService.FALLBACK_LANGUAGE);
     pickedLangPivot.lang = lang;
     pickedLang = pickedLangPivot;
   }
@@ -56,6 +61,10 @@ check('lang').notEmpty(),
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     } else {
       if (!label) {
+
+        // auto make default the new lang
+        newLabel.default = true;
+
         label = new Label({          
           id_project: req.projectid,
           createdBy: req.user.id,
@@ -108,18 +117,86 @@ router.get('/default/:lang', function (req, res) {
   res.json(pickedLang);
 });
 
+// Update labels
+// curl -v -X PATCH -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels/EN/default
+router.patch('/:lang/default',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
 
+  var lang = req.params.lang;
+  winston.debug("lang: " + lang);
 
+  Label.findOne({id_project:req.projectid}, function(err, label) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    } else {
+      if (!label) {
+        winston.error('Lang not found');
+        return res.status(404).send({ success: false, msg: 'Lang not found' });
+      }else {
+
+        var foundDefaultIndex = -1;
+        label.data.forEach(function(l, index){
+            if (l.default === true ) {
+              foundDefaultIndex = index;
+            }
+        });
+
+        winston.debug("foundDefaultIndex: " + foundDefaultIndex);
+        if (foundDefaultIndex>-1) {
+          label.data[foundDefaultIndex].default = false;
+          winston.debug("label.data[foundDefaultIndex]: ", label.data[foundDefaultIndex]);
+        }
+        
+
+        var foundIndex = -1;
+        label.data.forEach(function(l, index){
+            if (l.lang == lang ) {
+              foundIndex = index;
+            }
+        });
+        winston.debug("foundIndex: " + foundIndex);
+        if (foundIndex>-1) {
+          label.data[foundIndex].default = true;
+        }
+
+        
+      
+      
+        winston.debug("saving label ", label);
+
+        label.save(function (err, savedLabel) {
+          if (err) {
+            winston.error('--- > ERROR ', err);
+            return res.status(500).send({ success: false, msg: 'Error saving object.' });
+          }      
+          labelEvent.emit('label.update', savedLabel);
+
+           // express forward          
+           req.url =  '/'+lang;
+           winston.debug('--- > req.url'+req.url);
+ 
+           req.method = 'GET';  
+ 
+           return router.handle(req, res, next);
+        });
+      }
+
+    }
+  });
+  
+
+});
+
+// Update labels
 // curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"FR", "data":{"a":"b","c":"d"}}' http://localhost:3000/4321/labels/
-
 router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
  
   var lang = req.body.lang;
   winston.debug("lang: " + lang);
 
+  var defaultValue =  req.body.default;
+  winston.debug("defaultValue: " + defaultValue);
 
-
-  var newLabel = {lang: lang, data: req.body.data};
+  var newLabel = {lang: lang, data: req.body.data, default: defaultValue};
   winston.debug("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
@@ -127,6 +204,10 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     } else {
       if (!label) {
+
+        // auto make default the new lang
+        newLabel.default = true;
+
         label = new Label({          
           id_project: req.projectid,
           createdBy: req.user.id,
@@ -134,6 +215,24 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
           data: [newLabel]
         });
       }else {
+        //remove existing default
+
+        if (defaultValue===true) {
+          winston.debug("defaultValue: " + defaultValue);
+          var foundDefaultIndex = -1;
+          label.data.forEach(function(l, index){
+              if (l.default === true ) {
+                foundDefaultIndex = index;
+              }
+          });
+
+          winston.debug("foundDefaultIndex: " + foundDefaultIndex);
+          if (foundDefaultIndex>-1) {
+            label.data[foundDefaultIndex].default = false;
+            winston.debug("label.data[foundDefaultIndex]: ", label.data[foundDefaultIndex]);
+          }
+        }
+
         var foundIndex = -1;
         label.data.forEach(function(l, index){
             if (l.lang == lang ) {
@@ -146,8 +245,12 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
         }else {
           label.data.push(newLabel);
         }
+
+        
       }
       
+      winston.debug("saving label ", label);
+
         label.save(function (err, savedLabel) {
           if (err) {
             winston.error('--- > ERROR ', err);
@@ -208,7 +311,11 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
         });
         winston.debug("foundIndex: " + foundIndex);
         if (foundIndex>-1) {
-          var idData = label.data[foundIndex]._id;
+          var labelFound = label.data[foundIndex];
+          if (labelFound.default === true) {
+            return res.status(400).send({ success: false, msg: 'You can\'t delete the default language.' });
+          }
+          var idData = labelFound._id;
           label.data.id(idData).remove();
         }else {
           return res.status(404).send({ success: false, msg: 'Object not found.' });
@@ -236,44 +343,18 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
 });
 
 
-// return all the project labels merging db with widget.json
-router.get('/', function (req, res) {
+// return all the project labels
+router.get('/', async (req, res)  => {
  
-  var query = { "id_project": req.projectid};
 
-  winston.debug("query /", query);
+  winston.debug("projectid", req.projectid);
 
 
-  return Label.findOne(query).lean().exec(function (err, labels) {
-
-      if (err) {
-        winston.error('Label ROUTE - REQUEST FIND ERR ', err)
-        return res.status(500).send({ success: false, msg: 'Error getting object.' });
-      }
-      winston.debug("here /", labels);
-      let returnval;
-      if (!labels) {
-        winston.debug("here  no labels");
-
-        returnval = {data: req.labels};
-      } else {
-        returnval = labels;
-        // var dataAsObj = {...req.labels, ...labels.data }
-        // var data = Object.values(dataAsObj);
-        req.labels.forEach(elementDef => {
-          var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
-          if (!pickedLang) {
-            returnval.data.push(elementDef);
-          }
-        });
-      
-      }
-      
-      winston.debug("returnval",returnval);
+   var labels = await labelService.getAll(req.projectid);
+   winston.debug("labels",labels);
     
-        return res.json(returnval);
-      
-    });
+  return res.json(labels);
+          
 });
 
 
@@ -281,8 +362,8 @@ router.get('/', function (req, res) {
 
 
 router.get('/:lang', async (req, res) => {
-  // get a specific project language merged with default (widget.json) but if not found return Pivot
-  var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
+  // get a specific project language but if not found return Pivot
+  var labels = await labelService.getLanguage(req.projectid, req.params.lang);
   return res.json(labels);
 
 });

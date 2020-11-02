@@ -293,6 +293,11 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.attributes = req.body.attributes;
   }
 
+  if (req.body.status!=undefined) {
+    update.status = req.body.status;
+  }
+
+
   winston.debug("project_userid update", update);
 
   Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {

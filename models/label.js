@@ -18,6 +18,21 @@ var LabelEntrySchema = new Schema({
     required: false,
     index: true
   },
+  default: {   
+    type: Boolean,
+    // required: false,
+    // get: v => {
+    //   console.log("v",v)
+    //   if (v) {
+    //     return v;
+    //   } else {
+    //     return false;
+    //   }
+    // },
+    required: true,
+    default: false,
+    index: true
+  },
 });
 
 var LabelSchema = new Schema({
