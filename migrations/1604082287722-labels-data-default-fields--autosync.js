@@ -7,10 +7,7 @@ var winston = require('../config/winston');
  */
 async function up () {
   await new Promise((resolve, reject) => {
-    Label.updateMany({$where: "this.data.length > 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
-      winston.info("Schema updated for " + updates.nModified + " label with multiple data to default field")
-       return resolve('ok'); 
-    });  
+   
     // Label.updateMany({$where: "this.data.length == 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
     Label.updateMany({$where: "this.data.length == 1"}, {"$set": {"data.$.default": true}}, function (err, updates) {
       winston.info("Schema updated for " + updates.nModified + " label with single data to default field")
@@ -22,7 +19,13 @@ async function up () {
       Label.updateMany({$where: "this.data.length > 1", "data":  { $elemMatch: {"lang": {  $ne: "EN" }}}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
      
       winston.info("Schema updated for " + updates.nModified + " label to default false field")
-          return resolve('ok');    
+
+      Label.updateMany({$where: "this.data.length > 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
+        winston.info("Schema updated for " + updates.nModified + " label with multiple data to default field")
+         return resolve('ok'); 
+      });  
+
+          // return resolve('ok');    
     });  
 
     // Lang not in english 
