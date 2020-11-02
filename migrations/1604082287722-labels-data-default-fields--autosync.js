@@ -11,15 +11,25 @@ async function up () {
       winston.info("Schema updated for " + updates.nModified + " label with multiple data to default field")
        return resolve('ok'); 
     });  
-    Label.updateMany({$where: "this.data.length == 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
+    // Label.updateMany({$where: "this.data.length == 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
+    Label.updateMany({$where: "this.data.length == 1"}, {"$set": {"data.$.default": true}}, function (err, updates) {
       winston.info("Schema updated for " + updates.nModified + " label with single data to default field")
-          return resolve('ok'); 
-    });
+          return resolve('ok');  
+    });  
     // {"data": { $elemMatch: {"lang": {  $ne: "EN" }}}}  
-    Label.updateMany({"data":  { $elemMatch: {"lang": {  $ne: "EN" }}}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
+    // Label.updateMany({$where: "this.data.length > 1", 'data.lang': {$ne: "EN"}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
+    // Label.updateMany({$where: "this.data.length > 1", 'data.lang': {$nin: ["EN"]}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
+      Label.updateMany({$where: "this.data.length > 1", "data":  { $elemMatch: {"lang": {  $ne: "EN" }}}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
+     
       winston.info("Schema updated for " + updates.nModified + " label to default false field")
           return resolve('ok');    
     });  
+
+    // Lang not in english 
+    // db.getCollection('labels').find({'data.lang': {$nin: ["EN"]}})
+
+    // default not exists
+    // db.getCollection('labels').find({'data.default': { $exists: false }}) 
 
        
   });
