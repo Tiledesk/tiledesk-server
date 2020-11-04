@@ -29,7 +29,7 @@ class ChannelManager {
         if (chat21Enabled && chat21Enabled == "true") {
 
             var chat21WebHook = require('../channels/chat21/chat21WebHook');
-            app.use('/chat21/requests',  chat21WebHook);
+            app.use('/chat21/requests',  chat21WebHook); //<- TODO cambiare /request in /webhook
 
             var chat21Contact = require('../channels/chat21/chat21Contact');
             app.use('/chat21/contacts',  chat21Contact);
@@ -39,9 +39,11 @@ class ChannelManager {
 
             
             if (engine && engine=="firebase") {
+                winston.info("ChannelManager - Chat21 channel engine is firebase");
                 var firebaseAuth = require('../channels/chat21/firebaseauth');
                 app.use('/chat21/firebase/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], firebaseAuth);
             } else { //if (engine && engine=="native") {
+                winston.info("ChannelManager - Chat21 channel engine is native");
                 var nativeAuth = require('../channels/chat21/nativeauth');
                 app.use('/chat21/native/auth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], nativeAuth);
             }
