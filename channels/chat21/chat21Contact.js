@@ -43,7 +43,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
     query.uuid_user = contact_id;
   }
 
-  winston.debug("query: ", query);
+  winston.info("query: ", query);
 
   var teammates = await Project_user.findOne(query).
   populate('id_project').
@@ -94,7 +94,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
 
     });
   }
-  
+
   winston.debug("send");
   res.json(result);
     
