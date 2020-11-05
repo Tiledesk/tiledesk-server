@@ -74,7 +74,7 @@ class WebSocketServer {
             token = token.replace('JWT ', '');            
               jwt.verify(token, config.secret, function (err, decoded) {
                   if (err) {
-                     winston.error('error websocket', err);
+                     winston.error('error verifing websocket jwt token ', err);
                      return cb(false, 401, 'Unauthorized');
                   } else {
                      // uncomment it
@@ -93,7 +93,7 @@ class WebSocketServer {
                     
                             if (err) {
                                 // console.log("BasicStrategy err.stop");
-                                return winston.error('error websocket', err);
+                                return winston.error('error verifing websocket jwt token. User find error ', err);
                             }
                             if (!user) {   
                               winston.debug('websocket user not found with id : '+identifier);                             
