@@ -27,7 +27,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
 
   var projectsArray = [];
   projects.forEach(project => {
-    projectsArray.push(project.id_project);
+    projectsArray.push(mongoose.Types.ObjectId(project.id_project));
   });
     
 
