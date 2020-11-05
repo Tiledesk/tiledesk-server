@@ -27,7 +27,8 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
 
   var projectsArray = [];
   projects.forEach(project => {
-    projectsArray.push(mongoose.Types.ObjectId(project.id_project));
+    projectsArray.push(project.id_project);
+    // projectsArray.push(mongoose.Types.ObjectId(project.id_project));
   });
     
 
@@ -38,14 +39,15 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   winston.debug(' query: ',query);
 
   if (isObjectId) {
-    query.id_user = mongoose.Types.ObjectId(contact_id);
+    query.id_user = contact_id;
+    // query.id_user = mongoose.Types.ObjectId(contact_id);
   }else {
     query.uuid_user = contact_id;
   }
 
-  winston.info("query: ", query);
+  winston.debug("query: ", query);
 
-  var teammates = await Project_user.findOne(query).
+  var teammates = await Project_user.find(query).
   populate('id_project').
   populate('id_user').
   exec(); 
@@ -96,7 +98,13 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   }
 
   winston.debug("send");
-  res.json(result);
+
+  if (result && result.length>0) {
+    res.json(result[0]);
+  }else {
+    res.json({});
+  }
+  
     
   
 });
