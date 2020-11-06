@@ -243,10 +243,10 @@ class Chat21Handler {
 
 
                     winston.info("Chat21Sender on message.sending ",  message);
-
                    
-                   if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
-                    message.channelType ==  MessageConstants.CHANNEL_TYPE.GROUP &&
+                   if (message && 
+                    message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
+                    message.channel_type ==  MessageConstants.CHANNEL_TYPE.GROUP &&
                     message.request && 
                     message.request.channelOutbound.name == ChannelConstants.CHAT21) {
 
@@ -348,7 +348,7 @@ class Chat21Handler {
                     }
                     else if (message &&
                          message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && 
-                         message.channelType ==  MessageConstants.CHANNEL_TYPE.DIRECT &&
+                         message.channel_type ==  MessageConstants.CHANNEL_TYPE.DIRECT &&
                          message.channel.name == ChannelConstants.CHAT21) {
                         
                             winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
