@@ -246,9 +246,9 @@ class Chat21Handler {
 
                    
                    if (message && message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
-                    message.channelType ===  MessageConstants.CHANNEL_TYPE.GROUP &&
+                    message.channelType ==  MessageConstants.CHANNEL_TYPE.GROUP &&
                     message.request && 
-                    message.request.channelOutbound.name === ChannelConstants.CHAT21) {
+                    message.request.channelOutbound.name == ChannelConstants.CHAT21) {
 
                     
                         chat21.auth.setAdminToken(adminToken);
@@ -348,8 +348,8 @@ class Chat21Handler {
                     }
                     else if (message &&
                          message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && 
-                         message.channelType ===  MessageConstants.CHANNEL_TYPE.DIRECT &&
-                         message.channel.name === ChannelConstants.CHAT21) {
+                         message.channelType ==  MessageConstants.CHANNEL_TYPE.DIRECT &&
+                         message.channel.name == ChannelConstants.CHAT21) {
                         
                             winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
                             return;
