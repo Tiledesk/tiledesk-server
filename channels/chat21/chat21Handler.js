@@ -351,8 +351,12 @@ class Chat21Handler {
                          message.channelType ===  MessageConstants.CHANNEL_TYPE.DIRECT &&
                          message.channel.name === ChannelConstants.CHAT21) {
                         
+                            winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
+                            return;
+
                     } else {
-                        
+                        winston.error("Chat21Sender this is not a group o direct message", message);
+                        return;
                     }
                 // });
             });
