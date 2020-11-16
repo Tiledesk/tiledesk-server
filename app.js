@@ -52,9 +52,9 @@ if (process.env.MONGOOSE_AUTOINDEX) {
 
 winston.info("DB AutoIndex: " + autoIndex);
 
-mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
+var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoIndex": autoIndex }, function(err) {
   if (err) { 
-    winston.error('Failed to connect to MongoDB on '+databaseUri +" ", err);
+    winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
   }
 });
@@ -110,6 +110,9 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
  
 
+var geoService = require('./services/geoService');
+geoService.listen();
+
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
@@ -136,6 +139,7 @@ schemaMigrationService.checkSchemaMigration();
 if (process.env.CREATE_INITIAL_DATA !== "false") {
    bootDataLoader.create();
 }
+
 
 
 

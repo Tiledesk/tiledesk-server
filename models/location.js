@@ -34,7 +34,7 @@ var LocationSchema = new Schema({
     index: true
   },
   // https://mongoosejs.com/docs/geojson.html
-  location: {
+  geometry: {
     type: {
       type: String, // Don't do `{ location: { type: String } }`
       enum: ['Point'], // 'location.type' must be 'Point'

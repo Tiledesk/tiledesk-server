@@ -101,7 +101,7 @@ it('createWithLocation', function (done) {
           .post('/'+ savedProject._id + '/requests/req-createWithLocation/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
-          .send({text:"text", location: {country: "Italy", streetAddress: "Via Roma, 767b", ipAddress: "192.168.1.1", location: {type: "Point", coordinates: [-109, 41]}  } })
+          .send({text:"text", location: {country: "Italy", streetAddress: "Via Roma, 767b", ipAddress: "192.168.1.1", geometry: {type: "Point", coordinates: [-109, 41]}  } })
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
@@ -124,10 +124,9 @@ it('createWithLocation', function (done) {
               expect(res.body.request.location.country).to.equal("Italy");
               expect(res.body.request.location.streetAddress).to.equal("Via Roma, 767b");
               expect(res.body.request.location.ipAddress).to.equal("192.168.1.1");
-              expect(res.body.request.location.location.type).to.equal("Point");
-              expect(res.body.request.location.location.coordinates[0]).to.equal(-109);
-              expect(res.body.request.location.location.coordinates[1]).to.equal(41);
-            
+              expect(res.body.request.location.geometry.type).to.equal("Point");
+              expect(res.body.request.location.geometry.coordinates[0]).to.equal(-109);
+              expect(res.body.request.location.geometry.coordinates[1]).to.equal(41);
         
               done();
           });
