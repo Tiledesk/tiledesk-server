@@ -46,7 +46,7 @@ var LocationSchema = new Schema({
     },    
     // index: '2dsphere' // Create a special 2dsphere index on `City.location`
   }  
-}
+},{ _id : false }
 );
 
 
