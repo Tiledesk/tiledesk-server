@@ -25,7 +25,7 @@ router.post('/',
 // 
 function(req, res) {
 
-  winston.debug('req.body', req.body);
+  winston.debug('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
@@ -60,10 +60,11 @@ function(req, res) {
               return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
 
-                // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel) {
+                // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
+                  //  createdBy, attributes, subject, preflight, channel, location) {
                 return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
                   req.body.text, req.body.departmentid, req.body.sourcePage, 
-                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined,req.body.channel ).then(function (savedRequest) {
+                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
 
 
                 // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {

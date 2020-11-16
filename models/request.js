@@ -11,6 +11,8 @@ var RequestStatus = require("../models/requestStatus");
 
 var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
+var LocationSchema = require("../models/location");
+// var autoIncrement = require('mongoose-auto-increment');
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
@@ -211,7 +213,7 @@ var RequestSchema = new Schema({
     type: Object,
     required: false
   },
-
+  location: LocationSchema,
   id_project: {
     type: String,
     required: true,

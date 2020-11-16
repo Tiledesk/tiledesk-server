@@ -151,6 +151,10 @@ router.patch('/:requestid', function (req, res) {
     update.subject = req.body.subject;
   }
 
+  if (req.body.location) {
+    update.location = req.body.location;
+  }
+
 
   
   winston.info("Request patch update",update);
@@ -558,6 +562,10 @@ router.get('/', function (req, res, next) {
   if (req.query.tags) {
     winston.debug('req.query.tags', req.query.tags);
     query.tags = req.query.tags;
+  }
+
+  if (req.query.location) {
+    query.location = req.query.location;
   }
 
   // if (req.query.request_id) {

@@ -47,7 +47,7 @@ router.post('/default/clone',
   
   var pickedLang = req.labels.find(l => l.lang === lang);
 
-  if (!pickedLang){
+  if (!pickedLang) {
       // FALLBACK_LANGUAGE IMP
     var pickedLangPivot = req.labels.find(l => l.lang === labelService.FALLBACK_LANGUAGE);
     pickedLangPivot.lang = lang;

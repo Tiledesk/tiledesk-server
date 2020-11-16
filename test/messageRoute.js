@@ -84,6 +84,59 @@ describe('MessageRoute', () => {
 
 
 
+
+// mocha test/messageRoute.js  --grep 'createWithLocation'
+it('createWithLocation', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/req-createWithLocation/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({text:"text", location: {country: "Italy", streetAddress: "Via Roma, 767b", ipAddress: "192.168.1.1", location: {type: "Point", coordinates: [-109, 41]}  } })
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');                          
+
+              expect(res.body.sender).to.equal(savedUser._id.toString());
+              // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
+              // expect(res.body.senderFullname).to.equal("senderFullname");
+              expect(res.body.recipient).to.equal("req-createWithLocation");
+              expect(res.body.text).to.equal("text");
+              expect(res.body.id_project).to.equal(savedProject._id.toString());    
+
+              expect(res.body.request.request_id).to.equal("req-createWithLocation");
+              // expect(res.body.request.requester_id).to.equal("sender");
+              expect(res.body.request.first_text).to.equal("text");
+              expect(res.body.request.id_project).to.equal(savedProject._id.toString());
+              
+              
+              expect(res.body.request.location.country).to.equal("Italy");
+              expect(res.body.request.location.streetAddress).to.equal("Via Roma, 767b");
+              expect(res.body.request.location.ipAddress).to.equal("192.168.1.1");
+              expect(res.body.request.location.location.type).to.equal("Point");
+              expect(res.body.request.location.location.coordinates[0]).to.equal(-109);
+              expect(res.body.request.location.location.coordinates[1]).to.equal(41);
+            
+        
+              done();
+          });
+  });
+});
+});
+
+
+
 it('createDifferentChannel', function (done) {
   // this.timeout(10000);
 
