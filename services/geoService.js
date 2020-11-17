@@ -9,8 +9,14 @@ var geoip = require('geoip-lite');
 class GeoService {
 
 
+
+  // https://medium.com/@rossbulat/node-js-client-ip-location-with-geoip-lite-fallback-c25833c94a76
+  // https://www.npmjs.com/package/geoip-lite
+  // https://www.npmjs.com/package/geoip-country
+
   listen() {
     
+    winston.info("GeoService listener started");
 
 
  
