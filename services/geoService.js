@@ -1,7 +1,7 @@
 'use strict';
 
 var requestEvent = require("./../event/requestEvent");
-// var Request = require("./../models/request");
+var Location = require("./../models/location");
 
 var winston = require('../config/winston');
 var geoip = require('geoip-lite');
@@ -44,10 +44,15 @@ class GeoService {
     winston.debug("ip" + ip);
     if (ip) {
         var geo = geoip.lookup(ip);  
-        winston.debug("geo", geo);
+        winston.info("Geo result", geo);
 
-        var update = {};
+        // var update = {};
         if (geo) {
+
+            if (!request.location) {
+                request.location = {};
+            }
+
             if (geo.country && !request.location.country) {
                 winston.debug("geo.country:"+ geo.country);
                 request.location.country = geo.country;
@@ -65,6 +70,12 @@ class GeoService {
                 // update["location.city"] = geo.city;
             }
 
+            if (!request.location.ipAddress) {
+                winston.debug("request.location.ipAddress: " + request.location.ipAddress);
+                request.location.ipAddress = ip;
+                // update["location.city"] = geo.city;
+            }
+
             // console.log(request.location.toString());
             
 
@@ -74,7 +85,14 @@ class GeoService {
             //     locFound = true;
             // } catch (e) {locFound = false;}
             
-            if (geo.ll && !request.location.geometry) {
+            winston.debug("geo.ll: " + geo.ll);
+            winston.debug("request.location: " + request.location);
+            winston.debug("request.location.geometry: " + request.location.geometry);
+            
+            
+            if (geo.ll && (!request.location.geometry || 
+                    (request.location.geometry && request.location.geometry.coordinates && request.location.geometry.coordinates.length==0) 
+                ) ) {
                 // if (geo.ll && request.location.geometry != undefined) {
                 winston.debug("geo.ll: " + geo.ll);
                 request.location.geometry = {type: "Point", coordinates: geo.ll};
@@ -84,7 +102,9 @@ class GeoService {
             
             // var setObj = { $set: {location: update} }        
             // winston.info("setObj", setObj);
-            winston.debug("update", update);
+            // winston.info("update", update);
+
+            winston.debug("geo request saving", request);
 
             request.markModified('location');
             request.save(function(err, reqL) {            

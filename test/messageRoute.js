@@ -25,6 +25,7 @@ chai.use(chaiHttp);
 describe('MessageRoute', () => {
 
 
+// mocha test/messageRoute.js  --grep 'create'
 
   it('create', function (done) {
     // this.timeout(10000);
@@ -74,6 +75,10 @@ describe('MessageRoute', () => {
                 expect(res.body.channel_type).to.equal("group");
                 expect(res.body.channel.name).to.equal("chat21");
                 expect(res.body.request.channel.name).to.equal("chat21");
+
+
+                expect(res.body.request.location).to.equal(undefined);
+               
           
                done();
             });
@@ -135,6 +140,69 @@ it('createWithLocation', function (done) {
 });
 
 
+
+
+// mocha test/messageRoute.js  --grep 'createWithLocationAsAttributes'
+it('createWithLocationAsAttributes', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/req-createWithLocationAsAttributes/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({text:"text", attributes: {ipAddress: "95.255.73.34"} })
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');                          
+
+              expect(res.body.sender).to.equal(savedUser._id.toString());
+              // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
+              // expect(res.body.senderFullname).to.equal("senderFullname");
+              expect(res.body.recipient).to.equal("req-createWithLocationAsAttributes");
+              expect(res.body.text).to.equal("text");
+              expect(res.body.id_project).to.equal(savedProject._id.toString());    
+
+              expect(res.body.request.request_id).to.equal("req-createWithLocationAsAttributes");
+              // expect(res.body.request.requester_id).to.equal("sender");
+              expect(res.body.request.first_text).to.equal("text");
+              expect(res.body.request.id_project).to.equal(savedProject._id.toString());
+              
+
+              chai.request(server)
+              .get('/'+ savedProject._id + '/requests/req-createWithLocationAsAttributes')
+              .auth(email, pwd)
+              .set('content-type', 'application/json')
+              .send()
+              .end(function(err, res) {
+                  //console.log("res",  res);
+                  console.log("res.body",  res.body);
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');                 
+
+                  expect(res.body.request_id).to.equal("req-createWithLocationAsAttributes");
+
+                  expect(res.body.location.country).to.equal("IT");
+                  expect(res.body.location.ipAddress).to.equal("95.255.73.34");
+                  expect(res.body.location.geometry.type).to.equal("Point");
+                  expect(res.body.location.geometry.coordinates[0]).to.equal(42.6716);
+                  expect(res.body.location.geometry.coordinates[1]).to.equal(14.0148);
+          
+                  done();
+              });
+          });
+  });
+});
+});
 
 it('createDifferentChannel', function (done) {
   // this.timeout(10000);
