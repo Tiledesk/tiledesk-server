@@ -52,17 +52,21 @@ router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false 
      var destinationFolder = 'uploads/users/' + req.user.id + "/images/" + uuidv4_storage +"/";
      winston.debug("destinationFolder",destinationFolder);
 
+     var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
+
+
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
       sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+        //in prod nn genera thumb
         if (err) { winston.error("Error generating thumbnail", err); }
-        var filename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
-        fileService.createFile ( filename, resizeImage, undefined, undefined);
+        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
       });
 
       return res.status(201).json({
-          message: 'File uploded successfully',
-          filename: req.file.filename
+          message: 'Image uploded successfully',
+          filename: req.file.filename,
+          thumbnail: thumFilename
       });
     });
   } catch (error) {
@@ -79,29 +83,87 @@ curl \
 
   */
 
+  
+/*
+{% api-method method="post" host="https://api.tiledesk.com" path="/v2/images/public" %}
+{% api-method-summary %}
+Upload a public image
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Allows to upload an image without autentication
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-path-parameters %}
+{% endapi-method-path-parameters %}
+
+{% api-method-headers %}
+
+{% api-method-parameter name="Content-Type" type="string" required=true %}
+use "multipart/form-data" value
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="file" type="binary" required=true %}
+the image binary file
+{% endapi-method-parameter %}
+
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+
+{% endapi-method-response-example-description %}
+
+```text
+  {
+    "message":"File uploded successfully",
+    "filename":"uploads/public/images/a96e1fc5-a331-4d3d-bb03-2244cbf71640/test.jpg"
+  }
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+Example:
+
+```text
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://api.tiledesk.com/v2/images/public
+```
+*/
+
 router.post('/public', upload.single('file'), (req, res, next) => {
   try {
-     console.log("req",req);
+     winston.debug("req",req);
      var uuidv4_storage = req.uuidv4_storage || "error";
-     console.log("uuidv4_storage",uuidv4_storage);
+     winston.debug("uuidv4_storage",uuidv4_storage);
 
      var destinationFolder = "uploads/public/images/" + uuidv4_storage +"/";
-     console.log("destinationFolder",destinationFolder);
+     winston.debug("destinationFolder",destinationFolder);
 
-     console.log("req.file.filename",req.file.filename);
+     winston.debug("req.file.filename",req.file.filename);
+
+     var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
+
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
         sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
             if (err) { winston.error("Error generating thumbnail", err); }
-            var filename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
-            fileService.createFile ( filename, resizeImage, undefined, undefined);
+            fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
         });
 
 
         return res.status(201).json({
-            message: 'File uploded successfully',
-            filename: req.file.filename
+            message: 'Image uploded successfully',
+            filename: req.file.filename,
+            thumbnail: thumFilename
         });
       });
       
@@ -115,9 +177,9 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 
 // router.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 // router.use('/uploads', function timeLog(req, res, next) {
-//   console.log('Time: ', Date.now());
+//   winston.debug('Time: ', Date.now());
 //   var a = express.static(path.join(__dirname, '/uploads'))
-//   console.log('Time2: ', a);
+//   winston.debug('Time2: ', a);
 //   return a;
 // }, express.static(path.join(__dirname, '/uploads')));
 
@@ -146,7 +208,7 @@ router.get('/thumbnails', (req, res) => {
 
 
 router.get("/", (req, res) => {
-  console.log('path', req.query.path);
+  winston.debug('path', req.query.path);
   fileService.getFileDataAsStream(req.query.path).pipe(res);
   // const file = gfs
   //   .find({
