@@ -30,7 +30,7 @@
   },
   "optionalDependencies": {
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.3",
-    "@tiledesk-ent/tiledesk-server-analytics": "^1.1.6",
+    "@tiledesk-ent/tiledesk-server-analytics": "^1.1.7",
     "@tiledesk-ent/tiledesk-server-activities": "^1.1.18",
     "@tiledesk-ent/tiledesk-server-resthook": "^1.1.46",
     "@tiledesk-ent/tiledesk-server-triggers": "^1.1.68",
