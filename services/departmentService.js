@@ -37,7 +37,7 @@ class DepartmentService {
             winston.error('--- > ERROR ', err);
             reject(err);
           }
-          winston.info('Default Department created', savedDepartment.toObject());
+          winston.verbose('Default Department created', savedDepartment.toObject());
           return resolve(savedDepartment);
         });
       });
@@ -94,7 +94,7 @@ roundRobin(operatorSelectedEvent) {
           winston.debug('lastRequests',lastRequests); 
 
           if (lastRequests.length==0) {
-              winston.info('roundRobin lastRequest not found. fall back to random'); 
+              winston.verbose('roundRobin lastRequest not found. fall back to random'); 
               //first request use default random algoritm
               // return 0;
               return resolve(operatorSelectedEvent);
@@ -255,8 +255,13 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
               // console.log("D -> [ OPERATORS - BOT IS DEFINED ] -> AVAILABLE PROJECT-USERS: ", _available_agents);
 
-              // here subscription notifier??
-              return resolve ({ department: department, available_agents: _available_agents, agents: project_users, id_bot:department.id_bot, project: project, operators: [{ id_user: 'bot_' + department.id_bot }] });
+              // here subscription notifier??              
+              return resolve ({ 
+                              department: department, available_agents: _available_agents, agents: project_users, 
+                              id_bot:department.id_bot, project: project,
+                              // botprefix
+                              operators: [{ id_user: 'bot_' + department.id_bot }] 
+                             });
             }).catch(function (error) {
 
               // winston.error("Write failed: ", error);

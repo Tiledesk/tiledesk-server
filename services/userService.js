@@ -29,7 +29,7 @@ class UserService {
                     return reject(err);
                 }
 
-                winston.info('User created', savedUser.toObject());
+                winston.verbose('User created', savedUser.toObject());
                 return resolve(savedUser);
             });
         });

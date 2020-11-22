@@ -13,7 +13,7 @@ class BotSubscriptionNotifier {
   
   notify(bot,botWithSecret, payload) {
   
-      winston.info("BotSubscriptionNotifier bot", bot.toObject(), 'payload', payload );
+      winston.verbose("BotSubscriptionNotifier bot", bot.toObject(), 'payload', payload );
 
       var url = bot.url;
 
@@ -47,7 +47,7 @@ class BotSubscriptionNotifier {
             method: 'POST'
 
           }, function(err, result, json){            
-            winston.info("SENT notify for bot with url " + url +  " with err " + err);
+            winston.verbose("SENT notify for bot with url " + url +  " with err " + err);
             if (err) {
               winston.error("Error sending notify for bot with url " + url + " with err " + err);
               // next(err, json);

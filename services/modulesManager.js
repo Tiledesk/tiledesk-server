@@ -56,7 +56,7 @@ class ModulesManager {
     }
 
     injectBefore(app) {
-        winston.info("ModulesManager injectBefore");
+        winston.verbose("ModulesManager injectBefore");
         var res;
         try {
             // this.graphql = require('../../../modules/graphql/apollo-express');   
@@ -77,7 +77,7 @@ class ModulesManager {
     }
 
     injectAfter(httpServer,app,port) {
-        winston.info("ModulesManager inject");
+        winston.verbose("ModulesManager inject");
         try {          
             return this.graphql.injectAfter(httpServer,app,port);    
             winston.info("ModulesManager injectAfter graphql loaded");

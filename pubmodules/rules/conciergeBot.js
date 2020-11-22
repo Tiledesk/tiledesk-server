@@ -42,6 +42,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 // winston.debug(" ConciergeBot message.text: "+message.text);
                 // winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
 
+                // lead_id used. Change it?
                 if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
@@ -58,6 +59,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 // reroute(request_id, id_project, nobot)
                                 requestService.reroute(message.request.request_id, message.request.id_project, false );     
                                 // updateStatusWitId(lead_id, id_project, status)
+                                // lead_id used. Change it?
                                 leadService.updateStatusWitId(message.request.lead.lead_id, message.request.id_project, LeadConstants.NORMAL);
                             // });
                         });
@@ -102,11 +104,13 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
                 setImmediate(() => {
                     winston.debug("ConciergeBot member: " + member);
+                    // botprefix
                     if (member.indexOf("bot_")==-1) {
                         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
                         if (botId) {
                             winston.debug("removing botId: " + botId);
                             
+                            // botprefix
                             // removeParticipantByRequestId(request_id, id_project, member) 
                             requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId );
                         }      
@@ -161,7 +165,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
                                       
-                        winston.info("ConciergeBot send close bot message");     
+                        winston.debug("ConciergeBot send close bot message");     
                                             
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) 
                             messageService.send(
@@ -191,7 +195,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
                                         
-                        winston.info("ConciergeBot send reopen bot message");     
+                        winston.debug("ConciergeBot send reopen bot message");     
                                             
                         // return chatApi.sendGroupMessage("system", "Bot", group_id, "Support Group", "Chat closed", app_id, {subtype:"info/support","updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"} });
 
@@ -224,7 +228,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
 
-
+    // unused
     welcomeOnJoin(request) {
         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
         if (!botId) {                        

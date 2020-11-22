@@ -22,7 +22,7 @@ class RoleChecker {
       
     isType(type) {        
       var that = this;   
-      // winston.info("isType",isType);
+        winston.debug("isType",isType);
         return function(req, res, next) {
           if (that.isTypeAsFunction(type)) {
             return next();
@@ -33,25 +33,6 @@ class RoleChecker {
         }
       }
 
-    // isType(type) {           
-    //   // winston.info("isType",isType);
-    //     return function(req, res, next) {
-    //       winston.info("isType:"+type);
-    //       winston.info("req.user", req.user);
-    //       // winston.info(" req.user instanceof"+ req.user instanceof Faq_kb);
-         
-    //       if (type=='subscription' && req.user instanceof Faq_kb){
-
-    //       } else if (type=='bot' && req.user instanceof Faq_kb){
-    //         winston.info("is bot");
-    //         return next();
-    //       } else {
-    //         // res.status(403).send({success: false, msg: 'type not supported.'});
-    //         winston.error('isType type not supported.');
-    //         return next({success: false, msg: 'type not supported.'});
-    //       }
-    //     }
-    //   }
 
 
       isTypeAsFunction(type, user) {                 

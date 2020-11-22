@@ -39,7 +39,7 @@ router.post('/', function (req, res) {
 
     var message = req.body.data;
  
-    winston.info("Chat21 message", message);
+    winston.debug("Chat21 message", message);
 
         // requestcachefarequi nocachepopulatereqired
         return Request.findOne({request_id: message.recipient})      
@@ -53,7 +53,7 @@ router.post('/', function (req, res) {
 
           if (!request) { //the request doen't exists create it
 
-                winston.info("request not exists with request_id: " + message.recipient);
+                winston.debug("request not exists with request_id: " + message.recipient);
                 
                 var departmentid = "default";
 
@@ -148,7 +148,7 @@ router.post('/', function (req, res) {
                       }else {
                         queryProjectUser.uuid_user = message.sender;
                       }
-                      winston.info("queryProjectUser", queryProjectUser);
+                      winston.debug("queryProjectUser", queryProjectUser);
                       
 
                     return Project_user.findOne(queryProjectUser)
@@ -395,7 +395,7 @@ router.post('/', function (req, res) {
 
           winston.debug("request",request.toObject());
           
-         
+         // lead_id used. Change it?
           if (request.lead.lead_id==new_member) {            
             winston.debug("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });

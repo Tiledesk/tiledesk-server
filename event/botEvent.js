@@ -14,10 +14,13 @@ function getBotFromParticipants(participants) {
   
     if (participants) {
       participants.forEach(function(participant) { 
-        //winston.debug("participant", participant);
+        winston.debug("participant", participant);
+        
+        // botprefix
         if (participant.indexOf("bot_")> -1) {
+            // botprefix
           botIdTmp = participant.replace("bot_","");
-          //winston.debug("botIdTmp", botIdTmp);
+          winston.debug("botIdTmp", botIdTmp);
           //break;        
         }
       });
@@ -40,7 +43,9 @@ function getBotId(message) {
     var recipient = message.recipient;
     winston.debug("recipient", recipient);
  
+    // botprefix
     if (recipient.startsWith('bot_')) {
+        // botprefix
         return recipient.replace('bot_','');
     }
     // var text = message.text;
@@ -91,7 +96,8 @@ messageEvent.on('message.create', function(message) {
    if (!botId) {
         return null;
     }else {
-                                                //loop fix for messages sent from external bot             
+                                                //loop fix for messages sent from external bot    
+        // botprefix         
         if (message.sender === 'bot_'+botId || message.sender === botId) {
             winston.debug("it s a message sent from bot, exit");
             return null;        
@@ -108,7 +114,7 @@ messageEvent.on('message.create', function(message) {
           return 0;
         }
         if (!bot) {
-            winston.info('Bot not found');
+            winston.error('Bot not found with id '+botId);
         }
 
         winston.debug("bot", bot);

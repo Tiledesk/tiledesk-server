@@ -33,7 +33,7 @@ router.post('/',
 function (req, res) {
 
   var startTimestamp = new Date();
-  winston.info("request create timestamp: " + startTimestamp);
+  winston.debug("request create timestamp: " + startTimestamp);
 
   winston.debug("req.body", req.body);
 
@@ -81,7 +81,7 @@ function (req, res) {
             
                 winston.debug('res.json(savedRequest)'); 
                 var endTimestamp = new Date();
-                winston.info("request create end: " + (endTimestamp - startTimestamp));
+                winston.verbose("request create end: " + (endTimestamp - startTimestamp));
                 return res.json(savedRequest);
               });
             // });
@@ -157,7 +157,7 @@ router.patch('/:requestid', function (req, res) {
 
 
   
-  winston.info("Request patch update",update);
+  winston.verbose("Request patch update",update);
 
   //cacheinvalidation
   return Request.findOneAndUpdate({"request_id":req.params.requestid, "id_project": req.projectid}, { $set: update }, { new: true, upsert: false })
@@ -191,7 +191,7 @@ router.put('/:requestid/close', function (req, res) {
   // closeRequestByRequestId(request_id, id_project)
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid).then(function(closedRequest) {
 
-      winston.info("request closed", closedRequest);
+      winston.verbose("request closed", closedRequest);
 
       return res.json(closedRequest);
   });
@@ -204,7 +204,7 @@ router.put('/:requestid/reopen', function (req, res) {
   // reopenRequestByRequestId(request_id, id_project) {
   return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function(reopenRequest) {
 
-    winston.info("request reopen", reopenRequest);
+    winston.verbose("request reopen", reopenRequest);
 
     return res.json(reopenRequest);
 });
@@ -235,7 +235,7 @@ function (req, res) {
   //addParticipantByRequestId(request_id, id_project, member)
   return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
 
-      winston.info("participant added", updatedRequest);
+      winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
   });
@@ -274,7 +274,7 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
    //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid ).then(function(updatedRequest) {
 
-      winston.info("participant removed", updatedRequest);
+      winston.verbose("participant removed", updatedRequest);
 
       return res.json(updatedRequest);
   });
@@ -377,19 +377,19 @@ router.patch('/:requestid/attributes',  function (req, res) {
 
       
       if (!request.attributes) {
-        winston.info("empty attributes")
+        winston.debug("empty attributes")
         request.attributes = {};
       }
 
-      winston.info(" req attributes", request.attributes)
+      winston.debug(" req attributes", request.attributes)
         
         Object.keys(data).forEach(function(key) {
           var val = data[key];
-          winston.info("data attributes "+key+" " +val)
+          winston.debug("data attributes "+key+" " +val)
           request.attributes[key] = val;
         });     
         
-        winston.info(" req attributes", request.attributes)
+        winston.debug(" req attributes", request.attributes)
 
         // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
         request.markModified('attributes');
@@ -400,7 +400,7 @@ router.patch('/:requestid/attributes',  function (req, res) {
             winston.error("error saving request attributes",err)
             return res.status(500).send({ success: false, msg: 'Error getting object.' });
           }
-          winston.info(" saved request attributes",savedRequest.toObject())
+          winston.verbose(" saved request attributes",savedRequest.toObject())
           requestEvent.emit("request.update", savedRequest);
           requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_PATCH",request:savedRequest});
           requestEvent.emit("request.attributes.update", savedRequest);

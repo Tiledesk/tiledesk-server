@@ -334,7 +334,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
-    winston.info("Removed project_user", project_user);
+    winston.debug("Removed project_user", project_user);
 
     project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){   
       authEvent.emit('project_user.delete', {req: req, project_userPopulated: project_userPopulated});

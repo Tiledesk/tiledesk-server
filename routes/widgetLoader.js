@@ -9,7 +9,7 @@ var url = require('url');
 
 router.get('/load', function(req, res) {
   var query = url.parse(req.url).query;
-  winston.info(query);
+  winston.debug(query);
   // TODO chech if query is null
   res.redirect(widgetLocation+'?'+query);
 });

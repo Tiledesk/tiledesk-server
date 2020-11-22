@@ -76,7 +76,7 @@ class MessageService {
                             winston.error(err);
                             return reject(err);
                         }
-                        winston.info("Message created", savedMessage.toObject());
+                        winston.verbose("Message created", savedMessage.toObject());
         
                         messageEvent.emit('message.create.simple', savedMessage);
         

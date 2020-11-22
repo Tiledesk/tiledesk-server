@@ -33,7 +33,7 @@ listen() {
 
      requestEvent.on("request.participants.update", function(data) {
 
-      winston.info("requestEvent request.participants.update");
+      winston.debug("requestEvent request.participants.update");
 
       var request = data.request;
       
@@ -105,7 +105,7 @@ listen() {
               //end send email to lead
 
             } else {
-              winston.info("sendTranscriptByEmail disabled for project with id: "+ id_project);
+              winston.verbose("sendTranscriptByEmail disabled for project with id: "+ id_project);
             }
           });
         }catch(e) {
@@ -159,7 +159,7 @@ sendEmail(projectid, savedRequest) {
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
-                           winston.info("User email not verified", user.email);
+                           winston.verbose("User email not verified", user.email);
                          }
                        }
                      });
@@ -179,6 +179,7 @@ sendEmail(projectid, savedRequest) {
                     //    console.log("attention90", savedRequest);
                     //  }
 
+                    // botprefix
                     if (assignedId.startsWith("bot_")) {
                       return ;
                     }

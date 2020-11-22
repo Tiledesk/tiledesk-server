@@ -76,6 +76,13 @@ class Chat21Handler {
        
         winston.debug("Chat21Handler listener start ");
         
+
+        if (process.env.SYNC_CHAT21_GROUPS !=="true") {
+            winston.info("Sync Tiledesk to Chat21 groups disabled");
+            return;
+        }
+
+        
       
         // su projectUser create e update
         authEvent.on('user.signup', function(userData) {
@@ -91,7 +98,7 @@ class Chat21Handler {
 
                 // create: function(firstname, lastname, email, current_user){
                 chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {
-                    winston.info("Chat21 contact created: " + JSON.stringify(data));      
+                    winston.verbose("Chat21 contact created: " + JSON.stringify(data));      
                     chat21Event.emit('contact.create', data);                                          
                 }).catch(function(err) {
                     winston.error("Error creating chat21 contact ", err);
@@ -114,7 +121,7 @@ class Chat21Handler {
 
                 // update: function(firstname, lastname, current_user){
                 chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
-                    winston.info("Chat21 contact updated: " + JSON.stringify(data));      
+                    winston.verbose("Chat21 contact updated: " + JSON.stringify(data));      
                     chat21Event.emit('contact.update', data);                                          
                 }).catch(function(err) {
                     winston.error("Error updating chat21 contact ", err);
@@ -129,6 +136,7 @@ class Chat21Handler {
             var firstName = bot.name;
             var lastName = "";
             var email = "";
+            // botprefix
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
@@ -138,7 +146,7 @@ class Chat21Handler {
 
                 // create: function(firstname, lastname, email, current_user){
                 chat21.contacts.create(firstName, lastName, email, current_user).then(function(data) {                    
-                    winston.info("Chat21 contact created: " + JSON.stringify(data));         
+                    winston.verbose("Chat21 contact created: " + JSON.stringify(data));         
                     chat21Event.emit('contact.create', data);                                          
                 }).catch(function(err) {
                     winston.error("Error creating chat21 contact ", err);
@@ -153,6 +161,7 @@ class Chat21Handler {
         botEvent.on('faqbot.update', function(bot) {
             var firstName = bot.name;
             var lastName = "";
+            // botprefix
             var current_user = "bot_"+bot.id;
 
             setImmediate(() => {
@@ -162,7 +171,7 @@ class Chat21Handler {
 
                // update: function(firstname, lastname, current_user){
                 chat21.contacts.update(firstName, lastName, current_user).then(function(data) {
-                    winston.info("Chat21 contact updated: " + JSON.stringify(data));      
+                    winston.verbose("Chat21 contact updated: " + JSON.stringify(data));      
                     chat21Event.emit('contact.update', data);                                          
                 }).catch(function(err) {
                     winston.error("Error updating chat21 contact ", err);
@@ -187,7 +196,7 @@ class Chat21Handler {
                         return 0;
                     }
                     if (!requests || (requests && requests.length==0)) {
-                        winston.info("No request found for lead id " +lead._id );
+                        winston.warn("No request found for lead id " +lead._id );
                         return 0;
                     }
                     
@@ -196,7 +205,7 @@ class Chat21Handler {
                     requests.forEach(function(request) {
                         if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
-                            winston.info("Chat21Handler  lead.update for request ",  request);
+                            winston.verbose("Chat21Handler  lead.update for request ",  request);
                             
                             var groupName = lead.fullname;
                             if (request.subject) {
@@ -204,7 +213,7 @@ class Chat21Handler {
                             }
                             // update: function(name, owner, attributes, group_id){
                             chat21.groups.update(groupName, undefined, undefined, request.request_id).then(function(data) {
-                                winston.info("Chat21 group updated: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group updated: " + JSON.stringify(data));      
                                 chat21Event.emit('group.update', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error updating chat21 group ", err);
@@ -215,7 +224,7 @@ class Chat21Handler {
                                  var gattributes = {userFullname:lead.fullname, userEmail: lead.email }
                                 //  qui1
                             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                                winston.info("Chat21 group gattributes updated: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group gattributes updated: " + JSON.stringify(data));      
                                 chat21Event.emit('group.update', data);        
                                 chat21Event.emit('group.attributes.update', data);                                          
                             }).catch(function(err) {
@@ -242,7 +251,7 @@ class Chat21Handler {
             // setImmediate(() => {
 
 
-                    winston.info("Chat21Sender on message.sending ",  message);
+                    winston.verbose("Chat21Sender on message.sending ",  message);
                    
                    if (message && 
                     message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
@@ -271,7 +280,7 @@ class Chat21Handler {
                        
 
 
-                        winston.info("Chat21Sender sending message.sending ",  message);
+                        winston.verbose("Chat21Sender sending message.sending ",  message);
 
                         // chat21Util.getButtonFromText().then(function(messageData) {
                         //     message = messageData;
@@ -324,7 +333,7 @@ class Chat21Handler {
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
-                                            winston.info("Chat21Sender sendToGroup sent: "+ JSON.stringify(data));
+                                            winston.verbose("Chat21Sender sendToGroup sent: "+ JSON.stringify(data));
                                     
 
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);
@@ -372,7 +381,7 @@ class Chat21Handler {
                         var gattributes = request.attributes;
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                            winston.info("Chat21 group gattributes updated: " + JSON.stringify(data));      
+                            winston.verbose("Chat21 group gattributes updated: " + JSON.stringify(data));      
                             chat21Event.emit('group.update', data);        
                             chat21Event.emit('group.attributes.update', data);                                          
                         }).catch(function(err) {
@@ -396,7 +405,7 @@ class Chat21Handler {
                         var gattributes = { "_request":request};
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                            winston.info("Chat21 group gattributes updated: " +  JSON.stringify(data));      
+                            winston.verbose("Chat21 group gattributes updated: " +  JSON.stringify(data));      
                             chat21Event.emit('group.update', data);        
                             chat21Event.emit('group.attributes.update', data);                                          
                         }).catch(function(err) {
@@ -421,7 +430,7 @@ class Chat21Handler {
                         // let requestObj = request.toObject();
                         let requestObj = request.toJSON();
                         
-                        winston.info("creating chat21 group for request with id: " + requestObj._id);
+                        winston.verbose("creating chat21 group for request with id: " + requestObj._id);
 
                         // winston.info("requestObj.participants: "+ Object.prototype.toString.call(requestObj.participants));
                         winston.debug("requestObj.participants: "+ JSON.stringify(requestObj.participants));
@@ -431,6 +440,7 @@ class Chat21Handler {
 
                         members.push("system");
                         if (request.lead) {
+                            // lead_id used. Change it?
                             members.push(request.lead.lead_id);
                         }
                         
@@ -449,6 +459,7 @@ class Chat21Handler {
                             gAttributes['userFullname'] = request.lead.fullname; //used by ionic to open request detail 
                             gAttributes['userEmail'] = request.lead.email; //used by ionic to open request detail 
                             // TOOD is it necessary? 
+                            // lead_id used. Change it?
                             gAttributes['senderAuthInfo'] = {authType: "USER", authVar: {uid:request.lead.lead_id}}; //used by ionic otherwise ionic dont show userFullname in the participants panel
                         }
                         // TODO ionic dont show attributes panel if attributes.client is empty. bug?
@@ -482,7 +493,7 @@ class Chat21Handler {
                         }
 
                         return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
-                                winston.info("Chat21 group created: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group created: " + JSON.stringify(data));      
                                 chat21Event.emit('group.create', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
@@ -501,16 +512,16 @@ class Chat21Handler {
 
                         chat21.auth.setAdminToken(adminToken);                      
 
-                        winston.info("Chat21Sender archiving conversations for ",request.participants);
+                        winston.verbose("Chat21Sender archiving conversations for ",request.participants);
 
                        //iterate request.participant and archive conversation
                        request.participants.forEach(function(participant,index) {
 
-                        winston.info("Chat21Sender archiving conversation: " + request.request_id + "for " + participant);
+                        winston.verbose("Chat21Sender archiving conversation: " + request.request_id + "for " + participant);
 
                             chat21.conversations.archive(request.request_id, participant)
                                         .then(function(data){
-                                            winston.info("Chat21 conversation archived result "+ JSON.stringify(data));
+                                            winston.verbose("Chat21 conversation archived result "+ JSON.stringify(data));
                                     
                                             chat21Event.emit('conversation.archived', data);                                               
 
@@ -523,7 +534,7 @@ class Chat21Handler {
                     //    archive: function(recipient_id, user_id){
                        chat21.conversations.archive(request.request_id, "system")
                        .then(function(data){
-                           winston.info("Chat21 archived ", JSON.stringify(data));
+                           winston.verbose("Chat21 archived ", JSON.stringify(data));
                    
                            chat21Event.emit('conversation.archived', data);                                               
 
@@ -535,10 +546,11 @@ class Chat21Handler {
                         
                         //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
                         if (request.lead) {
+                            // lead_id used. Change it?
                             chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
 
                             .then(function(data){
-                                winston.info("Chat21 archived ", JSON.stringify(data));
+                                winston.verbose("Chat21 archived ", JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
      
@@ -569,7 +581,7 @@ class Chat21Handler {
                      
                         let requestObj = request.toJSON();
                         
-                        winston.info("joining chat21 group for request with id: " + requestObj._id);
+                        winston.verbose("joining chat21 group for request with id: " + requestObj._id);
                     
                         var groupId = request.request_id;
 
@@ -585,13 +597,14 @@ class Chat21Handler {
                         // var members = reqParticipantArray;
 
                         if (request.lead) {
+                            // lead_id used. Change it?
                             members.push(request.lead.lead_id);
                         }
-                        winston.info("Chat21 group with members: " , members);  
+                        winston.verbose("Chat21 group with members: " , members);  
 
                          //setMembers: function(members, group_id){
                         chat21.groups.setMembers(members, groupId).then(function(data) {
-                                winston.info("Chat21 group set: " , JSON.stringify(data));      
+                                winston.verbose("Chat21 group set: " , JSON.stringify(data));      
                                 chat21Event.emit('group.setMembers', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error joining chat21 group ", err);
@@ -611,12 +624,12 @@ class Chat21Handler {
                        
 
                         removedParticipants.forEach(function(removedParticipant) {
-                            winston.info("removedParticipant ", removedParticipant);
+                            winston.debug("removedParticipant ", removedParticipant);
 
                             // archive: function(recipient_id, user_id){
                             chat21.conversations.archive(request.request_id, removedParticipant)
                             .then(function(data){
-                                winston.info("Chat21 archived ", JSON.stringify(data));
+                                winston.verbose("Chat21 archived ", JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
         
@@ -651,12 +664,12 @@ class Chat21Handler {
                         
                         var groupId = request.request_id;
 
-                        winston.info("joining member " + member +" for chat21 group with request : " + groupId);
+                        winston.verbose("joining member " + member +" for chat21 group with request : " + groupId);
                                             
 
                          //join: function(member_id, group_id){
                         chat21.groups.join(member, groupId).then(function(data) {
-                                winston.info("Chat21 group joined: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group joined: " + JSON.stringify(data));      
                                 chat21Event.emit('group.join', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error joining chat21 group ", err);
@@ -686,12 +699,12 @@ class Chat21Handler {
                         
                         var groupId = request.request_id;
 
-                        winston.info("leaving " + member +" for chat21 group for request with id: " + groupId);
+                        winston.verbose("leaving " + member +" for chat21 group for request with id: " + groupId);
                                    
 
                          //leave: function(member_id, group_id){
                         chat21.groups.leave(member, groupId).then(function(data) {
-                                winston.info("Chat21 group leaved: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group leaved: " + JSON.stringify(data));      
                                 chat21Event.emit('group.leave', data);                                          
                             }).catch(function(err) {
                                 winston.error("Error leaving chat21 group ", err);
@@ -703,7 +716,7 @@ class Chat21Handler {
 
                             chat21.conversations.archive(request.request_id, member)
                             .then(function(data){
-                                winston.info("Chat21 archived ", JSON.stringify(data));
+                                winston.verbose("Chat21 archived ", JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
      
@@ -726,11 +739,11 @@ class Chat21Handler {
             groupEvent.on('group.create',  function(group) {                       
 
                 if (process.env.SYNC_CHAT21_GROUPS !=="true") {
-                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    winston.debug("Sync Tiledesk to Chat21 groups disabled");
                     return;
                 }
 
-                winston.info("Creating chat21 group", group);
+                winston.verbose("Creating chat21 group", group);
                 
                 setImmediate(() => {
 
@@ -738,10 +751,10 @@ class Chat21Handler {
 
 
                     var groupMembers = group.members;
-                    winston.info("groupMembers ", groupMembers); 
+                    winston.debug("groupMembers ", groupMembers); 
                     
                     return chat21.groups.create(group.name, groupMembers, undefined, group._id).then(function(data) {
-                        winston.info("Chat21 group created: " + JSON.stringify(data));      
+                        winston.verbose("Chat21 group created: " + JSON.stringify(data));      
                         chat21Event.emit('group.create', data);                                          
                     }).catch(function(err) {
                         winston.error("Error creating chat21 group ", err);
@@ -756,11 +769,11 @@ class Chat21Handler {
              groupEvent.on('group.update',  function(group) {                       
 
                 if (process.env.SYNC_CHAT21_GROUPS !=="true") {
-                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    winston.debug("Sync Tiledesk to Chat21 groups disabled");
                     return;
                 }
 
-                winston.info("Updating chat21 group", group);
+                winston.verbose("Updating chat21 group", group);
                 
                 setImmediate(() => {
 
@@ -768,17 +781,17 @@ class Chat21Handler {
 
 
                     var groupMembers = group.members;
-                    winston.info("groupMembers ", groupMembers); 
+                    winston.debug("groupMembers ", groupMembers); 
                     
                     // chat21.groups.update(groupName, undefined, undefined, request.request_id).then(function(data) {
 
                         // setMembers: function(members, group_id){
                             // update: function(name, owner, attributes, group_id){
                     return chat21.groups.update(group.name, undefined, undefined, group._id).then(function(data) {
-                        winston.info("Chat21 group updated: " + JSON.stringify(data));      
+                        winston.verbose("Chat21 group updated: " + JSON.stringify(data));      
                         chat21Event.emit('group.update', data);     
                         return chat21.groups.setMembers(groupMembers, group._id).then(function(data) {      
-                            winston.info("Chat21 group set: " , JSON.stringify(data));      
+                            winston.verbose("Chat21 group set: " , JSON.stringify(data));      
                             chat21Event.emit('group.setMembers', data);          
                         }).catch(function(err) {
                             winston.error("Error setMembers chat21 group ", err);
@@ -800,11 +813,11 @@ class Chat21Handler {
              groupEvent.on('group.delete',  function(group) {                       
 
                 if (process.env.SYNC_CHAT21_GROUPS !=="true") {
-                    winston.info("Sync Tiledesk to Chat21 groups disabled");
+                    winston.debug("Sync Tiledesk to Chat21 groups disabled");
                     return;
                 }
 
-                winston.info("Deleting chat21 group", group);
+                winston.verbose("Deleting chat21 group", group);
                 
                 setImmediate(() => {
 
@@ -813,7 +826,7 @@ class Chat21Handler {
                     //Remove members but group remains.
 
                     return chat21.groups.setMembers(["system"], group._id).then(function(data) {      
-                        winston.info("Chat21 group set: " , JSON.stringify(data));      
+                        winston.verbose("Chat21 group set: " , JSON.stringify(data));      
                         chat21Event.emit('group.setMembers', data);          
                     }).catch(function(err) {
                         winston.error("Error setMembers chat21 group ", err);

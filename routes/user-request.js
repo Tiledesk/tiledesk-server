@@ -21,7 +21,7 @@ router.patch('/:requestid/rating', function (req, res) {
 
 
   
-  winston.info("Request user patch update",update);
+  winston.debug("Request user patch update",update);
 
   // var query = {"request_id":req.params.requestid};
   var query = {"request_id":req.params.requestid, "requester": req.projectuser.id};

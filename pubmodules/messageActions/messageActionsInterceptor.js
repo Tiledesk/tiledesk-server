@@ -31,7 +31,7 @@ class MessageActionsInterceptor {
                              var end = message.text.length;
                              
                              var action = message.text.substring(start+1, end);
-                             winston.info("message text contains action: "+ action);
+                             winston.debug("message text contains action: "+ action);
                              messageActionEvent.emit(action, message);
                              
                              //messageActionEvent.emit("message.create", message);
@@ -74,7 +74,7 @@ class MessageActionsInterceptor {
 
         messageActionEvent.on("agent", function(message) {
             
-             winston.info("called \\agent action");
+             winston.debug("called \\agent action");
              
              var request = message.request;
              
@@ -85,7 +85,7 @@ class MessageActionsInterceptor {
                 winston.debug("botId: " + botId);
             
                 if (botId) {
-                    winston.info("removing botId: bot_" + botId);
+                    winston.debug("removing botId: bot_" + botId);
                     
                     // removeParticipantByRequestId(request_id, id_project, member) 
                     //TODO USE FINALLY?

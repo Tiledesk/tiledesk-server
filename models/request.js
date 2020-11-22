@@ -303,45 +303,6 @@ RequestSchema.virtual('participatingAgents', {
 
 // });
 
-// TODO FIND BOT
-// RequestSchema.methods.findParticipantsObj = function(cb) {
-//   return new Promise(function (resolve, reject) {
-//     return Promise.all([mongoose.model('user').find({_id: { $in : this.participants } }), mongoose.model('faq_kb').find({_id: { $in : this.participants } })]).then(function(results){
-//       return resolve(results);
-//     });
-//   });
-// };
-
-
-// RequestSchema.virtual('botid').get(function () {
-  
-//   if ( this.participants == null) {
-//     return null;
-// }
-
-// var participants = this.participants;
-// winston.debug("participants", participants);
-
-// var botIdTmp;
-
-// if (participants) {
-//   participants.forEach(function(participant) { 
-//     //winston.debug("participant", participant);
-//     // bot_HERE
-//     if (participant.indexOf("bot_")> -1) {
-//       botIdTmp = participant.replace("bot_","");
-//       //winston.debug("botIdTmp", botIdTmp);
-//       //break;        
-//     }
-//   });
-//   winston.info("botIdTmp:"+ botIdTmp);
-//   return botIdTmp;
-// }else {
-//   return null;
-// }
-// });
-
-
 
 RequestSchema.virtual('participatingBots', {
   ref: 'faq_kb', // The model to use
@@ -368,7 +329,9 @@ RequestSchema.method("getBotId", function () {
     participants.forEach(function(participant) { 
       //winston.debug("participant", participant);
       // bot_HERE
+      // botprefix
       if (participant.indexOf("bot_")> -1) {
+        // botprefix
         botIdTmp = participant.replace("bot_","");
         //winston.debug("botIdTmp", botIdTmp);
         //break;        

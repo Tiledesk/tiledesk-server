@@ -157,7 +157,7 @@ class LeadService {
                 winston.error('Error saving the lead '+ JSON.stringify(newLead), err)
                 return reject(err);
               }            
-              winston.info('Lead created ', newLead.toJSON());
+              winston.verbose('Lead created ', newLead.toJSON());
 
               leadEvent.emit('lead.create', newLead);
               return resolve(savedLead);

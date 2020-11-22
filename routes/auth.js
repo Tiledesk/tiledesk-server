@@ -145,7 +145,7 @@ function (req, res) {
           
           authEvent.emit("projectuser.create", savedProject_user);         
 
-          winston.info('project user created ', savedProject_user.toObject());
+          winston.debug('project user created ', savedProject_user.toObject());
 
           res.json({ success: true, token: 'JWT ' + token, user: userAnonym });
       });
@@ -309,7 +309,7 @@ router.post('/signinWithCustomToken', [
 
               authEvent.emit("user.signin", {user:req.user, req:req, token: req.headers["authorization"]});      
 
-              winston.info('project user created ', savedProject_user.toObject());
+              winston.debug('project user created ', savedProject_user.toObject());
 
                 
 

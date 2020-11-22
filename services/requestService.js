@@ -43,9 +43,11 @@ class RequestService {
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
 
+            // botprefix
             if (assigned_operator_idString.startsWith("bot_")) {            
              hasBot = true;
 
+             // botprefix
              var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
              participantsBots.push(assigned_operator_idStringBot);
             }else {
@@ -167,7 +169,7 @@ class RequestService {
                 return reject(err);
               }
 
-              winston.info("Request routed",requestComplete.toObject());
+              winston.verbose("Request routed",requestComplete.toObject());
             
 
               var oldParticipants = beforeParticipants;
@@ -311,9 +313,11 @@ class RequestService {
                status =  RequestConstants.SERVED; //served
                var assigned_operator_idString = assigned_operator_id.toString();
                participants.push(assigned_operator_idString);
+               // botprefix
                if (assigned_operator_idString.startsWith("bot_")) {
                 hasBot = true;
                 winston.debug("hasBot:"+hasBot);
+                // botprefix
                 var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
                 winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
                 participantsBots.push(assigned_operator_idStringBot);
@@ -373,7 +377,7 @@ class RequestService {
                   }
               
               
-                  winston.info("Request created",savedRequest.toObject());
+                  winston.verbose("Request created",savedRequest.toObject());
                                     
                   
                   requestEvent.emit('request.create.simple', savedRequest);
@@ -437,9 +441,11 @@ class RequestService {
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
 
+            // botprefix
             if (assigned_operator_idString.startsWith("bot_")) {
              hasBot = true;
 
+             // botprefix
              var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
              winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
              participantsBots.push(assigned_operator_idStringBot);
@@ -492,7 +498,7 @@ class RequestService {
                   }
               
               
-                  winston.info("Request created",savedRequest.toObject());
+                  winston.verbose("Request created",savedRequest.toObject());
                                 
                   
                   requestEvent.emit('request.create.simple',savedRequest);
@@ -765,7 +771,7 @@ class RequestService {
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
-                    winston.info("Request closed with id: " + updatedRequest.id);
+                    winston.verbose("Request closed with id: " + updatedRequest.id);
                     winston.debug("Request closed ", updatedRequest);
                     //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
@@ -832,7 +838,7 @@ class RequestService {
             requestEvent.emit("request.update.comment", {comment:"REOPEN",request:savedRequest});
             requestEvent.emit('request.reopen', savedRequest);
 
-            winston.info("Request reopened", savedRequest);
+            winston.verbose("Request reopened", savedRequest);
 
             // TODO allora neanche qui participatingAgent è ok? 
 
@@ -939,8 +945,10 @@ class RequestService {
         if (newparticipants && newparticipants.length>0) {
           var hasBot = false;
           newparticipants.forEach(newparticipant => {
+            // botprefix
             if (newparticipant.startsWith("bot_")) {   
-              hasBot = true;                         
+              hasBot = true;               
+              // botprefix          
               var assigned_operator_idStringBot = newparticipant.replace("bot_","");
               winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
               newparticipantsBots.push(assigned_operator_idStringBot);
@@ -1057,10 +1065,11 @@ class RequestService {
         if (request.participants.indexOf(member)==-1){
           request.participants.push(member);
 
+          // botprefix
           if (member.startsWith("bot_")) {
             request.hasBot = true;
 
-
+          // botprefix
             var assigned_operator_idStringBot = member.replace("bot_","");
             winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);            
             request.participantsBots.push(assigned_operator_idStringBot);
@@ -1132,7 +1141,7 @@ class RequestService {
   removeParticipantByRequestId(request_id, id_project, member) {
     winston.debug("request_id", request_id);
     winston.debug("id_project", id_project);
-    winston.info("member", member);
+    winston.debug("member", member);
 
     return new Promise(function (resolve, reject) {
 
@@ -1167,9 +1176,10 @@ class RequestService {
           request.participants.splice(index, 1);
           // winston.debug(" request.participants",  request.participants);
 
+          // botprefix
           if (member.startsWith("bot_")) {
             request.hasBot = false;
-
+            // botprefix
             var assigned_operator_idStringBot = member.replace("bot_","");
             winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);            
             
@@ -1264,19 +1274,19 @@ class RequestService {
   
         
         if (!request.attributes) {
-          winston.info("empty attributes")
+          winston.debug("empty attributes")
           request.attributes = {};
         }
   
-        winston.info(" req attributes", request.attributes)
+        winston.debug(" req attributes", request.attributes)
           
           Object.keys(data).forEach(function(key) {
             var val = data[key];
-            winston.info("data attributes "+key+" " +val)
+            winston.debug("data attributes "+key+" " +val)
             request.attributes[key] = val;
           });     
           
-          winston.info(" req attributes", request.attributes)
+          winston.debug(" req attributes", request.attributes)
   
           // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
           request.markModified('attributes');
@@ -1287,7 +1297,7 @@ class RequestService {
               winston.error("error saving request attributes",err)
               return reject({msg:"Error saving request attributes",err:err});
             }
-            winston.info(" saved request attributes",savedRequest.toObject())
+            winston.verbose(" saved request attributes",savedRequest.toObject())
             requestEvent.emit("request.update", savedRequest);
             requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_UPDATE",request:savedRequest});
             requestEvent.emit("request.attributes.update", savedRequest);
@@ -1403,7 +1413,7 @@ class RequestService {
         // var index = request.tags.indexOf(tag);
         var index = request.tags.findIndex(t => t.tag === tag);
 
-        winston.info("index", index);
+        winston.debug("index", index);
 
         if (index > -1) {
           request.tags.splice(index, 1);
