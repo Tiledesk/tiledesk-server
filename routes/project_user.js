@@ -222,7 +222,13 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
   }
+  if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
+    update["settings.email.notification.conversation.assigned.toyou"] = req.body["settings.email.notification.conversation.assigned.toyou"];
+  }
 
+  if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
+    update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
+  }
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
@@ -291,7 +297,14 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
   }
+  if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
+    update["settings.email.notification.conversation.assigned.toyou"] = req.body["settings.email.notification.conversation.assigned.toyou"];
+  }
 
+  if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
+    update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
+  }
+  
   winston.debug("project_userid update", update);
 
   Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {

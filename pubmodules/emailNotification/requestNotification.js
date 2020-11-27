@@ -26,20 +26,20 @@ listen() {
 
       setImmediate(() => {
    
-         that.sendEmail(request.id_project, request);
+         that.sendAgentEmail(request.id_project, request);
       });
      });
 
 
      requestEvent.on("request.participants.update", function(data) {
 
-      winston.info("requestEvent request.participants.update");
+      winston.debug("requestEvent request.participants.update");
 
       var request = data.request;
       
       setImmediate(() => {
    
-         that.sendEmail(request.id_project, request);
+         that.sendAgentEmail(request.id_project, request);
       });
      });
 
@@ -49,7 +49,7 @@ listen() {
 
     //   setImmediate(() => {
    
-    //      that.sendEmail(request.id_project, request);
+    //      that.sendAgentEmail(request.id_project, request);
     //   });
     //  });
 
@@ -105,7 +105,7 @@ listen() {
               //end send email to lead
 
             } else {
-              winston.info("sendTranscriptByEmail disabled for project with id: "+ id_project);
+              winston.verbose("sendTranscriptByEmail disabled for project with id: "+ id_project);
             }
           });
         }catch(e) {
@@ -116,7 +116,7 @@ listen() {
   });
 }
 
-sendEmail(projectid, savedRequest) {
+sendAgentEmail(projectid, savedRequest) {
   //  console.log("savedRequest23", savedRequest);
     // send email
     try {
@@ -132,19 +132,30 @@ sendEmail(projectid, savedRequest) {
         return console.warn("Project not found", projectid);
        } else {
          
-         // winston.debug("Project", project);
+          winston.debug("project", project);
    
-
+          winston.info("savedRequest", savedRequest);
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNSERVED) { //POOLED
                  // throw "ciao";
+
+
                    var allAgents = savedRequest.agents;
-                  // winston.debug("allAgents", allAgents);
+                   winston.debug("allAgents", allAgents);
    
+
+                  if (!allAgents || (allAgents && allAgents.length==0)) {
+                    return winston.warn("no agents in the request", allAgents);
+                  }
+
                    allAgents.forEach(project_user => {
-                   //  winston.debug("project_user", project_user);
+                  //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
    
+
+                   if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.pooled == false ) {
+                     return winston.info("RequestNotification email notification for the user for the pooled conversation is disabled");
+                   }
                     var userid = project_user.id_user;
                      User.findOne({_id: userid , status: 100})
                       .cache(cacheUtil.defaultTTL, "users:id:"+userid)
@@ -159,7 +170,7 @@ sendEmail(projectid, savedRequest) {
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
-                           winston.info("User email not verified", user.email);
+                           winston.verbose("User email not verified", user.email);
                          }
                        }
                      });
@@ -179,25 +190,41 @@ sendEmail(projectid, savedRequest) {
                     //    console.log("attention90", savedRequest);
                     //  }
 
+
+                    // botprefix
                     if (assignedId.startsWith("bot_")) {
                       return ;
                     }
-   
-                     User.findOne({_id: assignedId, status: 100})
-                      .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
-                      .exec(function (err, user) {
-                       if (err) {
-                         winston.error("Error sending email to " + savedRequest.participants[0], err);
-                       }
-                       if (!user) {
-                         console.warn("User not found",  savedRequest.participants[0]);
-                       } else {
-                         winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                        //  if (user.emailverified) {    enable it?                    
-                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
-                        //  }
-                       }
-                     });
+
+                    
+                    Project_user.findOne( { id_user:assignedId, id_project: projectid}) //attento in 2.1.14.2
+                    .exec(function (err, project_user) {
+                      
+                        winston.info("project_user notification", project_user);
+                        if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.assigned &&  project_user.settings.email.notification.conversation.assigned.toyou == false ) {
+                          return winston.info("RequestNotification email notification for the user for the pooled conversation is disabled");
+                        }
+
+                     
+      
+                        User.findOne({_id: assignedId, status: 100})
+                          .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                          .exec(function (err, user) {
+                          if (err) {
+                            winston.error("Error sending email to " + savedRequest.participants[0], err);
+                          }
+                          if (!user) {
+                            console.warn("User not found",  savedRequest.participants[0]);
+                          } else {
+                            winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                            //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                
+                              emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                            //  }
+                          }
+                        });
+
+                      });
+
                    }
 
 
@@ -213,7 +240,7 @@ sendEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     winston.debug("Errore sending email", e);
+     winston.warn("Error sending email", e);
    }
    //end send email
    

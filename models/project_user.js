@@ -55,10 +55,13 @@ var PresenceSchema = require('./presence');
       type: Date,
       default: new Date(),
     },
+    settings: {
+      type: Object,
+    },
     createdBy: {
       type: String,
       required: true
-    }
+    }    
   }, {
       timestamps: true,
       toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
