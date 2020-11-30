@@ -15,8 +15,11 @@ constructor() {
   this.cronExp = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION || '*/30 * * * *'; //every 30 minutes
   this.queryAfterTimeout = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT) || 5 * 24 * 60 * 60 * 1000; //five days ago // 86400000 a day
   this.queryLimit = parseInt(process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT) || 10;
+  this.queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
 
- 
+  if (this.queryProject) {
+    winston.info("CloseAgentUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
+  }
   
   // var stringQuery = process.env.CLOSE_UNRESPONSIVE_REQUESTS_QUERY;
   // if (stringQuery) {
@@ -38,7 +41,7 @@ run() {
 
 scheduleUnresponsiveRequests() {
   var that = this;
-  winston.info("CloseAgentUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with closeAfter : " + this.queryAfterTimeout + " milliseconds cron expression: " + this.cronExp);
+  winston.info("CloseAgentUnresponsiveRequestTask task scheduleUnresponsiveRequests launched with closeAfter : " + this.queryAfterTimeout + " milliseconds, cron expression: " + this.cronExp + " and query limit: " +this.queryLimit);
   // if (this.queryProject) {
   //   winston.info("CloseAgentUnresponsiveRequestTask query altered: "+ JSON.stringify(this.query));
   // }
@@ -59,11 +62,10 @@ findUnresponsiveRequests() {
     //RETEST IT
     var query = {hasBot:false, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
-    var queryProject = process.env.CLOSE_AGENT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT;
-    if (queryProject) {
-      query.id_project = queryProject;
+    if (this.queryProject) {
+      query.id_project = this.queryProject;
     }
-    winston.info("CloseAgentUnresponsiveRequestTask query",query);
+    winston.debug("CloseAgentUnresponsiveRequestTask query",query);
     
     Request.find(query).limit(this.queryLimit).exec(function(err, requests) {
       //it is limited to 1000 results but after same days it all ok
