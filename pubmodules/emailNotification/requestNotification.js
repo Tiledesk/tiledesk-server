@@ -134,7 +134,7 @@ sendAgentEmail(projectid, savedRequest) {
          
           winston.debug("project", project);
    
-          winston.info("savedRequest", savedRequest);
+          winston.debug("savedRequest", savedRequest);
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNSERVED) { //POOLED
@@ -200,7 +200,7 @@ sendAgentEmail(projectid, savedRequest) {
                     Project_user.findOne( { id_user:assignedId, id_project: projectid}) //attento in 2.1.14.2
                     .exec(function (err, project_user) {
                       
-                        winston.info("project_user notification", project_user);
+                        winston.debug("project_user notification", project_user);
                         if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.assigned &&  project_user.settings.email.notification.conversation.assigned.toyou == false ) {
                           return winston.info("RequestNotification email notification for the user for the pooled conversation is disabled");
                         }
