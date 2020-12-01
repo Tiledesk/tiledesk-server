@@ -52,13 +52,6 @@ winston.info('Chat21Handler adminToken: '+ masked_adminToken);
 
 class Chat21Handler {
 
-    sleep(time, callback) {
-        var stop = new Date().getTime();
-        while(new Date().getTime() < stop + time) {
-            ;
-        }
-        callback();
-    }
  
     typing(message, timestamp) {
         return new Promise(function (resolve, reject) {
@@ -473,9 +466,10 @@ class Chat21Handler {
                             group_name = request.subject;
                         }
 
-                        winston.info("sleep 1");
-                        that.sleep(10000, function() {
-                            winston.info("sleep 2");
+                        console.log("setTimeout0")
+                        setTimeout(function() {
+                            console.log("setTimeout1");
+
                             return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.info("Chat21 group created: " + JSON.stringify(data));      
                                 chat21Event.emit('group.create', data);                                          
@@ -483,8 +477,8 @@ class Chat21Handler {
                                 winston.error("Error creating chat21 group ", err);
                                 chat21Event.emit('group.create.error', err);
                             });
-                         });
-
+                            
+                        }, 20000);
                        
 
 
