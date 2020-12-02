@@ -466,27 +466,22 @@ class Chat21Handler {
                             group_name = request.subject;
                         }
 
-                        console.log("setTimeout0")
-                        setTimeout(function() {
-                            console.log("setTimeout1");
-                                //racecondition
-                            return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
-                                winston.info("Chat21 group created: " + JSON.stringify(data));      
-                                
-                                requestEvent.emit('request.support_group.created', request);
+                            //racecondition
+                        return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
+                            winston.info("Chat21 group created: " + JSON.stringify(data));      
+                            
+                            requestEvent.emit('request.support_group.created', request);
 
-                                chat21Event.emit('group.create', data);                                          
-                                //chat21Event.emit('group.create.'+groupId, data);                                          
-                            }).catch(function(err) {
-                                winston.error("Error creating chat21 group ", err);
+                            chat21Event.emit('group.create', data);                                          
+                            //chat21Event.emit('group.create.'+groupId, data);                                          
+                        }).catch(function(err) {
+                            winston.error("Error creating chat21 group ", err);
 
-                                requestEvent.emit('request.support_group.created.error', request);
+                            requestEvent.emit('request.support_group.created.error', request);
 
-                                chat21Event.emit('group.create.error', err);
-                                //chat21Event.emit('group.create.error.'+groupId, err);  
-                            });
-
-                        }, 20000);
+                            chat21Event.emit('group.create.error', err);
+                            //chat21Event.emit('group.create.error.'+groupId, err);  
+                        });
                        
 
 
