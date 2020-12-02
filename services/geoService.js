@@ -44,7 +44,7 @@ class GeoService {
     winston.debug("ip" + ip);
     if (ip) {
         var geo = geoip.lookup(ip);  
-        winston.info("Geo result", geo);
+        winston.verbose("Geo result", geo);
 
         // var update = {};
         if (geo) {

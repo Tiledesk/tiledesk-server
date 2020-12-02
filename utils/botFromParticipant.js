@@ -10,7 +10,9 @@ class BotFromParticipant {
     if (participants) {
       participants.forEach(function(participant) { 
         //winston.debug("participant", participant);
+        // botprefix
         if (participant.indexOf("bot_")> -1) {
+          // botprefix
           botIdTmp = participant.replace("bot_","");
           //winston.debug("botIdTmp", botIdTmp);
           //break;        
@@ -35,7 +37,9 @@ class BotFromParticipant {
     var recipient = message.recipient;
     winston.debug("recipient", recipient);
  
+    // botprefix
     if (recipient.startsWith('bot_')) {
+      // botprefix
         return recipient.replace('bot_','');
     }
     // var text = message.text;

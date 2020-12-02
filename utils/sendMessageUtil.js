@@ -18,8 +18,8 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
 
         if (sender === "system") {
             
-        } else if (sender.startsWith("bot_")) {      
-            var id = sender.replace("bot_","");
+        } else if (sender.startsWith("bot_")) {      // botprefix
+            var id = sender.replace("bot_","");     // botprefix
             winston.debug("bot id: "+id);
             sender = id; //change sender removing bot_
             var bot = await Faq_kb.findById(id)
@@ -47,35 +47,6 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
    }
 
 
-//    send(sender, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
-//     var that = this;
-//     return new Promise(function (resolve, reject) {
-//         console.log("0", sender);
-//         var senderFullname = "";
-//         if (sender === "system") {
-//             console.log("1");
-//             return resolve (this.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language));
-//         } else if (sender.startsWith("bot_")) {
-//             console.log("2");
-//             var id = sender.replace("bot_","");
-//             Faq_kb.findById(id, function(err, bot){
-//                 senderFullname = bot.name;
-//                 return resolve (this.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language));
-//             })
-           
-//         } else {
-//             console.log("3");
-//             User.findById(sender, function(err, user){                
-//                 console.log(err,user);
-//                 senderFullname = user.fullname;
-//                 console.log("user",user)
-//                 return resolve (this.send(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language));
-//             })
-//         }
-        
-//     });
-//    }
-
 }
 
 
@@ -84,18 +55,6 @@ var sendMessageUtil = new SendMessageUtil();
 
 module.exports = sendMessageUtil;
 
-
-
-
-// (async () => {
-//     try {
-//        var res = await sendMessageUtil.send("5e79e711ecb9230ac1f5b49f","123","ciao","5ebac3685704c9377c359675");
-//         console.log("qui")
-// } catch (e) {
-//     console.log(e);
-//       }
-     
-//     })();
 
 
 

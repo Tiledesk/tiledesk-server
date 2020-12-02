@@ -9,10 +9,10 @@ const maskOptions = {
   maskWith : "*",
   // If the starting 'n' digits needs to be unmasked
   // Default value is 4
-  unmaskedStartDigits : 3, //Should be positive Integer
+  unmaskedStartDigits : 30, //Should be positive Integer
   //If the ending 'n' digits needs to be unmasked
   // Default value is 1
-  unmaskedEndDigits : 3 // Should be positive Integer
+  unmaskedEndDigits : 30 // Should be positive Integer
   };
 
 

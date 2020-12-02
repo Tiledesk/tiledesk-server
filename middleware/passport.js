@@ -239,14 +239,14 @@ module.exports = function(passport) {
       winston.debug("Passport JWT bot");
       Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
           if (err) {
-            winston.info("Passport JWT bot err", err);
+            winston.error("Passport JWT bot err", err);
             return done(err, false);
           }
           if (faq_kb) {
             winston.debug("Passport JWT bot user", faq_kb);
             return done(null, faq_kb);
           } else {
-            winston.info("Passport JWT bot not user");
+            winston.warn("Passport JWT bot not user");
             return done(null, false);
           }
       });
@@ -263,7 +263,7 @@ module.exports = function(passport) {
           winston.debug("Passport JWT subscription user", subscription);
           return done(null, subscription);
         } else {
-          winston.info("Passport JWT subscription not user");
+          winston.warn("Passport JWT subscription not user");
           return done(null, false);
         }
       });              
@@ -386,6 +386,16 @@ module.exports = function(passport) {
 
   // passport.use(new AnonymousStrategy());
 
+
+
+// link utili
+// https://codeburst.io/how-to-implement-openid-authentication-with-openid-client-and-passport-in-node-js-43d020121e87?gi=4bb439e255a7
+  // https://developer.wordpress.com/docs/oauth2/
+
+
+
+  // openidconnect
+  // https://docs.simplelogin.io/docs/passport/
 
 
 

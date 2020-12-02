@@ -108,7 +108,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     if (member.indexOf("bot_")==-1) {
                         var botId = BotFromParticipant.getBotFromParticipants(request.participants);
                         if (botId) {
-                            winston.debug("removing botId: " + botId);
+                            winston.verbose("ConciergeBot: removing bot with id: " + botId + " from the request with request_id: " + request.request_id + " from the project with id: " + request.id_project);
                             
                             // botprefix
                             // removeParticipantByRequestId(request_id, id_project, member) 

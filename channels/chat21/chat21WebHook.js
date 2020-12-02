@@ -394,8 +394,7 @@ router.post('/', function (req, res) {
 
 
           winston.debug("request",request.toObject());
-          
-         // lead_id used. Change it?
+                   // lead_id used. Change it?
           if (request.lead.lead_id==new_member) {            
             winston.debug("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
@@ -437,10 +436,12 @@ router.post('/', function (req, res) {
     var id_project;
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
-      }else {
+      } else {
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
       winston.debug("id_project", id_project);
+
+    winston.verbose("Chat21WebHook: leaving member : " + new_member +" from the request with request_id: " + request_id +" from the project with id: " + id_project);
 
     return requestService.removeParticipantByRequestId(request_id, id_project, new_member).then(function(updatedRequest) {
       winston.debug("Leave memeber ok");

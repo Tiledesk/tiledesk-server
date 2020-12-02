@@ -75,7 +75,7 @@ class Pending_Invitation {
           return reject({ msg: 'Error getting pending invitation' });
         }
         if (!pendinginvitations.length) {
-          winston.debug('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
+          winston.warn('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
           return resolve({ msg: 'New user email not found in pending invitation' });
         }
 
@@ -98,7 +98,7 @@ class Pending_Invitation {
 
           return newProject_user.save(function (err, savedProject_user) {
             if (err) {
-              winston.debug('--- > ERROR ', err)
+              winston.warn('--- > ERROR ', err)
               return reject({ msg: 'Error saving project user.' });
 
             }

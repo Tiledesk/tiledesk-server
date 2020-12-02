@@ -101,8 +101,6 @@ router.post('/', function (req, res) {
   });
 });
 
-//TODO RIFATTORIZZA IN MODALITA' REST CHIEDI LEO
-
 
 router.put('/:faqid', function (req, res) {
 

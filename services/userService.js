@@ -26,6 +26,7 @@ class UserService {
             // save the user
             newUser.save(function (err, savedUser) {
                 if (err) {
+                    winston.error('Error creating the user', err);
                     return reject(err);
                 }
 
