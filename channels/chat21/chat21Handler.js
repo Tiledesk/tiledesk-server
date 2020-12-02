@@ -469,15 +469,23 @@ class Chat21Handler {
                         console.log("setTimeout0")
                         setTimeout(function() {
                             console.log("setTimeout1");
-
+                                //racecondition
                             return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.info("Chat21 group created: " + JSON.stringify(data));      
+                                
+                                requestEvent.emit('request.support_group.created', request);
+
                                 chat21Event.emit('group.create', data);                                          
+                                //chat21Event.emit('group.create.'+groupId, data);                                          
                             }).catch(function(err) {
                                 winston.error("Error creating chat21 group ", err);
+
+                                requestEvent.emit('request.support_group.created.error', request);
+
                                 chat21Event.emit('group.create.error', err);
+                                //chat21Event.emit('group.create.error.'+groupId, err);  
                             });
-                            
+
                         }, 20000);
                        
 
@@ -582,6 +590,8 @@ class Chat21Handler {
                         winston.info("Chat21 group with members: " , members);  
 
                          //setMembers: function(members, group_id){
+                             //racecondition                                             
+
                         chat21.groups.setMembers(members, groupId).then(function(data) {
                                 winston.info("Chat21 group set: " , JSON.stringify(data));      
                                 chat21Event.emit('group.setMembers', data);                                          
@@ -606,6 +616,7 @@ class Chat21Handler {
                             winston.info("removedParticipant ", removedParticipant);
 
                             // archive: function(recipient_id, user_id){
+                                //racecondition?low it's not dangerous archive a conversation that doen't exist
                             chat21.conversations.archive(request.request_id, removedParticipant)
                             .then(function(data){
                                 winston.info("Chat21 archived ", JSON.stringify(data));
@@ -647,6 +658,7 @@ class Chat21Handler {
                                             
 
                          //join: function(member_id, group_id){
+                             //racecondition?
                         chat21.groups.join(member, groupId).then(function(data) {
                                 winston.info("Chat21 group joined: " + JSON.stringify(data));      
                                 chat21Event.emit('group.join', data);                                          
@@ -682,6 +694,7 @@ class Chat21Handler {
                                    
 
                          //leave: function(member_id, group_id){
+                             //racecondition?
                         chat21.groups.leave(member, groupId).then(function(data) {
                                 winston.info("Chat21 group leaved: " + JSON.stringify(data));      
                                 chat21Event.emit('group.leave', data);                                          
@@ -692,7 +705,7 @@ class Chat21Handler {
 
 
                             // anche devi archiviare la conversazione per utente corrente 
-
+                            //racecondition?
                             chat21.conversations.archive(request.request_id, member)
                             .then(function(data){
                                 winston.info("Chat21 archived ", JSON.stringify(data));
