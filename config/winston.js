@@ -52,9 +52,9 @@ var options = {
     // require('../utils/winston-mongodb/winston-mongodb');
 
     if (process.env.NODE_ENV == 'test')  {
-      var logsDb = config.databasetest;
+      var logsDb = process.env.DATABASE_LOG_URI || process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
     }else {
-      var logsDb = config.database;
+      var logsDb = process.env.DATABASE_LOG_URI || process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
     }
 
     console.log("Added winston MongoDB transport");
