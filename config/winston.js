@@ -37,16 +37,6 @@ var options = {
 
 
 
-
-
-require('winston-mongodb');
-
-  if (process.env.NODE_ENV == 'test')  {
-    var logsDb = config.databasetest;
-  }else {
-    var logsDb = config.database;
-  }
-
   let logger = winston.createLogger({    
     transports: [
      new (winston.transports.Console)(options.console),
@@ -56,11 +46,20 @@ require('winston-mongodb');
     exitOnError: false, // do not exit on handled exceptions
   });
 
-  if (process.env.WRITE_LOG_TO_MONGODB=="true") {
-    console.log("Added winston MongoDB transport");
-    winston.add(new winston.transports.MongoDB({db: logsDb, collection: "logs"}));
-  }
     
+  if (process.env.WRITE_LOG_TO_MONGODB=="true") {
+    require('winston-mongodb');
+    // require('../utils/winston-mongodb/winston-mongodb');
+
+    if (process.env.NODE_ENV == 'test')  {
+      var logsDb = config.databasetest;
+    }else {
+      var logsDb = config.database;
+    }
+
+    console.log("Added winston MongoDB transport");
+    logger.add(new winston.transports.MongoDB({db: logsDb, level: process.env.LOG_MONGODB_LEVEL || 'info', collection: "logs"}));
+  }
 
 
   logger.stream = {
