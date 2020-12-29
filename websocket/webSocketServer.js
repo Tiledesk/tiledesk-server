@@ -74,7 +74,7 @@ class WebSocketServer {
             token = token.replace('JWT ', '');            
               jwt.verify(token, config.secret, function (err, decoded) {
                   if (err) {
-                     winston.error('error verifing websocket jwt token ', err);
+                     winston.error('WebSocket error verifing websocket jwt token ', err);
                      return cb(false, 401, 'Unauthorized');
                   } else {
                      // uncomment it
@@ -96,7 +96,7 @@ class WebSocketServer {
                                 return winston.error('error verifing websocket jwt token. User find error ', err);
                             }
                             if (!user) {   
-                              winston.debug('websocket user not found with id : '+identifier);                             
+                              winston.warn('websocket user not found with id : '+identifier);                             
                               return cb(false, 401, 'Unauthorized');
                             }
 
@@ -173,12 +173,12 @@ class WebSocketServer {
             .cache(cacheUtil.defaultTTL, "projects:id:"+projectId)
             .exec(function(err, project) {
               if (err) {
-                winston.error('Error getting  Project', err);  
+                winston.error('WebSocket - Error getting  Project', err);  
                 return reject(err);
              }
 
               if (!project) {
-                winston.error('Project not found for projectid ' + projectId);  
+                winston.warn('WebSocket project not found for projectid ' + projectId);  
                 return reject({err:'Project_user not found for projectid ' + projectId});
               }
 
@@ -194,11 +194,11 @@ class WebSocketServer {
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, projectuser) {
                   if (err) {
-                     winston.error('error getting  Project_user', err);  
+                     winston.error('WebSocket error getting Project_user', err);  
                      return reject(err);
                   }
                   if (!projectuser) {
-                     winston.error('Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.warn('WebSocket project_user not found for user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId});
                   }
   
@@ -216,11 +216,11 @@ class WebSocketServer {
                   .exec(function(err, request) { 
                   
                       if (err) {
-                        winston.error('Error finding request for onSubscribeCallback', err);  
+                        winston.error('WebSocket Error finding request for onSubscribeCallback', err);  
                         return reject(err);
                       }
                       if (!request) {
-                         winston.error('Request query not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                         winston.warn('WebSocket Request query not found for user id '+ req.user._id + ' and projectid ' + projectId);  
                          return reject({err:'Request query not found for user id '+ req.user._id + ' and projectid ' + projectId});
                       }
   
@@ -234,7 +234,7 @@ class WebSocketServer {
                         Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
                         
                             if (err) {
-                              winston.error('Error finding message for onSubscribeCallback', err);  
+                              winston.error('WebSocket Error finding message for onSubscribeCallback', err);  
                               return reject(err);
                             }
                             winston.debug('onSubscribeCallback find', messages);  
@@ -262,11 +262,11 @@ class WebSocketServer {
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, projectuser) {
                   if (err) {
-                     winston.error('error getting  Project_user', err);  
+                     winston.error('WebSocket error getting Project_user', err);  
                      return reject(err);
                   }
                   if (!projectuser) {
-                     winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
                   winston.debug('projectuser', projectuser.toObject()); 
@@ -310,7 +310,7 @@ class WebSocketServer {
                   .exec(function(err, requests) { 
                   
                       if (err) {
-                        winston.error('Error finding request for onSubscribeCallback', err);  
+                        winston.error('WebSocket Error finding request for onSubscribeCallback', err);  
                         return reject(err);
                       }
                       winston.debug('found requests for onSubscribeCallback', requests);  
@@ -375,11 +375,11 @@ class WebSocketServer {
                 .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                 .exec(function (err, currentProjectuser) {
                   if (err) {
-                     winston.error('error getting  Project_user', err);  
+                     winston.error('WebSocket error getting  Project_user', err);  
                      return reject(err);
                   }
                   if (!currentProjectuser) {
-                     winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
                   winston.debug('currentProjectuser', currentProjectuser.toObject()); 
@@ -401,11 +401,11 @@ class WebSocketServer {
                     .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
                     .exec(function (err, projectuser) {
                       if (err) {
-                        winston.error('error getting  Project_user', err);  
+                        winston.error('WebSocket error getting  Project_user', err);  
                         return reject(err);
                       }
                       if (!projectuser) {
-                        winston.error('Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
+                        winston.warn('WebSocket Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
                         return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
                       }
           
@@ -445,11 +445,11 @@ class WebSocketServer {
             .cache(cacheUtil.defaultTTL, projectId+":project_users:"+puId)
             .exec(function (err, projectuser) {
               if (err) {
-                 winston.error('error getting  Project_user', err);  
+                 winston.error('WebSocket error getting  Project_user', err);  
                  return reject(err);
               }
               if (!projectuser) {
-                 winston.error('Project_user not found with project_user id '+ puId + ' and projectid ' + projectId);  
+                 winston.warn('WebSocket Project_user not found with project_user id '+ puId + ' and projectid ' + projectId);  
                  return reject({err:'Project_user not found with project_user id '+ puId + ' and projectid ' + projectId});
               }
   
@@ -487,7 +487,7 @@ class WebSocketServer {
             .limit(lastEventsLimit)
             .exec(function(err, events) {             
               if (err) {
-                 winston.error('error getting  events', err);  
+                 winston.error('WebSocket error getting  events', err);  
                  return reject(err);
               }            
         
@@ -512,11 +512,11 @@ class WebSocketServer {
                   .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
                   .exec(function (err, projectuser) {
                     if (err) {
-                       winston.error('error getting  Project_user', err);  
+                       winston.error('WebSocket error getting Project_user', err);  
                        return reject(err);
                     }
                     if (!projectuser) {
-                       winston.error('Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                       winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                        return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                     }
   
@@ -541,7 +541,7 @@ class WebSocketServer {
                     .sort({updatedAt: 'asc'}).exec(function(err, request) { 
                     
                         if (err) {
-                          winston.error('Error finding request for onSubscribeCallback', err);  
+                          winston.error('WebSocket Error finding request for onSubscribeCallback', err);  
                           return reject(err);
                         }
                         winston.debug('onSubscribeCallback find', request);  
@@ -621,6 +621,11 @@ class WebSocketServer {
         }
      
       });
+
+
+
+
+      // TODO request.close is missing?
 
 
       var projectuserUpdateKey = 'project_user.update';
