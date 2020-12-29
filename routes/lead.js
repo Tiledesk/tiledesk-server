@@ -65,6 +65,11 @@ router.put('/:leadid', function (req, res) {
       update.country = req.body.country;
     }  
 
+    if (req.body.tags) {
+      update.tags = req.body.tags;
+    }
+    
+
   
   Lead.findByIdAndUpdate(req.params.leadid, update, { new: true, upsert: true }, function (err, updatedLead) {
     if (err) {
@@ -229,6 +234,11 @@ router.get('/', function (req, res) {
     query.email = req.query.email;
   }
 
+  // if (req.query.withemail) {  //for zapier to retrieve only lead with an email
+  //   winston.debug('LEAD ROUTE req.query.withemail', req.query.withemail);
+  //   query.email = { "$$exists": true };
+  // }
+
   if (req.query.status) {
     query.status = req.query.status;
   }
@@ -257,6 +267,8 @@ router.get('/', function (req, res) {
         return (err);
       }
 
+      // blocked to 1000 TODO increases it
+      //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
       return Lead.count(query, function (err, totalRowCount) {
 
         var objectToReturn = {
