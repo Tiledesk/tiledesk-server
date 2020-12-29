@@ -3,6 +3,7 @@ module.exports = {
         OWNER : 'owner',
         ADMIN : 'admin',
         AGENT : 'agent',       
+        TEAMMATE : 'teammate',
         USER : 'user',            
         GUEST : 'guest',            
 }
