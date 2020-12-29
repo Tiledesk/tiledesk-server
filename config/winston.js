@@ -15,6 +15,10 @@ var options = {
       maxFiles: 5,
       colorize: false,
       format: winston.format.simple()
+      // format: winston.format.combine( //https://github.com/winstonjs/winston#string-interpolation
+      //   winston.format.splat(),
+      //   winston.format.simple()
+      // ),
     },
     console: {
       level: level,
@@ -22,7 +26,11 @@ var options = {
       json: true,
       colorize: true,
       // timestamp: true,
-      format: winston.format.simple()     
+      format: winston.format.simple() 
+      // format: winston.format.combine(
+      //   winston.format.splat(),
+      //   winston.format.simple()
+      // ),
     },
   };
 
@@ -37,16 +45,6 @@ var options = {
 
 
 
-
-
-require('winston-mongodb');
-
-  if (process.env.NODE_ENV == 'test')  {
-    var logsDb = config.databasetest;
-  }else {
-    var logsDb = config.database;
-  }
-
   let logger = winston.createLogger({    
     transports: [
      new (winston.transports.Console)(options.console),
@@ -56,14 +54,39 @@ require('winston-mongodb');
     exitOnError: false, // do not exit on handled exceptions
   });
 
+
+
+
   if (process.env.WRITE_LOG_TO_MONGODB=="true") {
+    //require('winston-mongodb');
+    require('../utils/winston-mongodb/winston-mongodb');
+
+    if (process.env.NODE_ENV == 'test')  {
+      var logsDb = process.env.DATABASE_LOG_URI || process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
+    }else {
+      var logsDb = process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+    }
+
     console.log("Added winston MongoDB transport");
-    winston.add(new winston.transports.MongoDB({db: logsDb, collection: "logs"}));
+    logger.add(new winston.transports.MongoDB({db: logsDb, level: process.env.LOG_MONGODB_LEVEL || 'info', collection: "logs"}));
   }
     
+  if (process.env.WRITE_LOG_MT_TO_MONGODB=="true") {
+    //require('winston-mongodb');
+    require('../utils/winston-mongodb/winston-mongodb');
+
+    if (process.env.NODE_ENV == 'test')  {
+      var logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.databasetest;
+    }else {
+      var logsDb = process.env.DATABASE_LOG_MT_URI || process.env.DATABASE_LOG_URI ||  process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
+    }
+
+    console.log("Added winston MongoDB MT transport");
+    logger.add(new winston.transports.MongoDB({db: logsDb, labelRequired:true,  level: process.env.LOG_MT_MONGODB_LEVEL || 'verbose', collection: "logsmt"}));
+  } 
 
 
-  logger.stream = {
+  logger.stream = { 
     write: function(message, encoding) {
       logger.info(message);
     },
@@ -74,19 +97,6 @@ require('winston-mongodb');
   //     format: winston.format.simple()
   //   }));
   // }
-
-    /**
-   * Requiring `winston-mongodb` will expose
-   * `winston.transports.MongoDB`
-   */
-  // require('winston-mongodb');
-  // winston.add(winston.transports.MongoDB, 
-  //     {
-  //      // db: config.databasetest,
-  //       db: 'mongodb://localhost/tiledesk-test',
-  //       collection: "logs"
-  //     }
-  // );
 
 
   module.exports = logger;
