@@ -108,7 +108,7 @@ function (req, res) {
  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    winston.error("SigninAnonymously validation error", errors);
+    winston.error("SigninAnonymously validation error", {errors: errors, reqBody: req.body, reqUrl: req.url });
     return res.status(422).json({ errors: errors.array() });
   }
   var firstname = req.body.firstname || "Guest";
