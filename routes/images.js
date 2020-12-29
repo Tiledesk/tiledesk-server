@@ -42,6 +42,13 @@ curl -u andrea.leo@f21.it:123456 \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
   http://localhost:3000/images/users/
 
+
+  curl -u andrea.leo@frontiere21.it:258456td \
+  -F "userid=1" \
+  -F "filecomment=This is an image file" \
+  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
+  https://tiledesk-server-pre.herokuapp.com/images/users/
+
   */
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
