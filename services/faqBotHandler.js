@@ -135,14 +135,14 @@ class FaqBotHandler {
                     
                         var threshold = 1.2;
 
-                        faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, threshold).then(function(botAns){
+                        faqBotSupport.getBotMessage(answerObj, message.id_project, faq_kb, message, threshold).then(function(botAns){
                     // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
 
                             if (botAns.defaultFallback === true) {
-                                winston.info("defaultFallback event");  
+                                winston.debug("defaultFallback event");  
                                 //           emit(name,                     attributes,                                                                id_project,         project_user, createdBy, user) {
                                 eventService.emit("faqbot.answer_not_found", {botAnswer:answerObj, bot: faq_kb, message:message, threshold:threshold}, message.id_project, undefined,  "system", undefined);
                             }

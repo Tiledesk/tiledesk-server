@@ -153,7 +153,7 @@ class FaqBotSupport {
     }
 
 
-    getBotMessageNew(botAnswer, projectid, bot, message, threshold) {
+    getBotMessage(botAnswer, projectid, bot, message, threshold) {
         var that = this;
           return new Promise(function(resolve, reject) {
   
