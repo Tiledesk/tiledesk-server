@@ -15,6 +15,7 @@ var requestService = require('../services/requestService');
 var routingConstants = require('../models/routingConstants');
 
 mongoose.connect(config.databasetest);
+require('../services/mongoose-cache-fn')(mongoose);
 
 var projectService = require('../services/projectService');
 
