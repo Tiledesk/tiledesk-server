@@ -3,6 +3,9 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Profile = require('../models/profile');
 var Channel = require('../models/channel');
+var pjson = require('../package.json');
+
+
 
 var trialEnabled = process.env.TRIAL_MODE_ENABLED || false;
 winston.debug("trial mode enabled: "+trialEnabled );
@@ -56,13 +59,28 @@ var ProjectSchema = new Schema({
   },
   versions: {
     type: Number,
-    default: 200
+    default: function() {
+      // try {
+      //   var version = pjson.version;
+      //   var versionNumber = parseInt(version.split(".").join(""));
+      //   //console.log("versionNumber",versionNumber);
+      //   return versionNumber;
+      // } catch(e) {
+        return 200;
+      // }    
+    }
   },
   channels: {
     type: [Channel.schema],
     default: function () {
       return [new Channel({ name: 'chat21' })];
     }
+  },
+  defaultLanguage: {
+    type: String,
+    required: true,
+    default: "EN",
+    index: true
   },
   createdBy: {
     type: String,

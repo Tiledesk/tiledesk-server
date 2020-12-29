@@ -42,7 +42,13 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.autoSendTranscriptToRequester"] = req.body["settings.email.autoSendTranscriptToRequester"];
   }
 
+  if (req.body["settings.email.notification.conversation.assigned"]!=undefined) {
+    update["settings.email.notification.conversation.assigned"] = req.body["settings.email.notification.conversation.assigned"];
+  }
 
+  if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
+    update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
+  }
 
   if (req.body["settings.chat_limit_on"]!=undefined) {
     update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
@@ -83,7 +89,11 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update.channels = req.body.channels; 
   }
   
+  // if (req.body.defaultLanguage!=undefined) {
+  //   update.defaultLanguage = req.body.defaultLanguage; 
+  // }
 
+  
   winston.debug('UPDATE PROJECT REQ BODY ', update);
 
 
@@ -124,6 +134,15 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
+  if (req.body["settings.email.notification.conversation.assigned"]!=undefined) {
+    update["settings.email.notification.conversation.assigned"] = req.body["settings.email.notification.conversation.assigned"];
+  }
+
+  if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
+    update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
+  }
+
+
   if (req.body["settings.chat_limit_on"]!=undefined) {
     update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
   }
@@ -165,6 +184,11 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update.channels = req.body.channels; 
   }
   
+    
+  // if (req.body.defaultLanguage!=undefined) {
+  //   update.defaultLanguage = req.body.defaultLanguage; 
+  // }
+
  
   winston.debug('UPDATE PROJECT REQ BODY ', update);
 

@@ -55,6 +55,9 @@ var PresenceSchema = require('./presence');
       type: Date,
       default: new Date(),
     },
+    settings: {
+      type: Object,
+    },
     createdBy: {
       type: String,
       required: true
