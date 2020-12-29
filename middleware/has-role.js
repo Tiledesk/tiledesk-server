@@ -170,7 +170,7 @@ class RoleChecker {
               } else {
               
                 // if (req.user) equals super admin next()
-                res.status(403).send({success: false, msg: 'you dont belongs to the project.'});
+                res.status(403).send({success: false, msg: 'you dont belong to the project.'});
               }
       
           });
@@ -224,7 +224,7 @@ class RoleChecker {
               } else {
               
                 // if (req.user) equals super admin next()
-                reject({success: false, msg: 'you dont belongs to the project.'});
+                reject({success: false, msg: 'you dont belong to the project.'});
               }
       
           });
