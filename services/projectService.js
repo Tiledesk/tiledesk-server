@@ -45,7 +45,7 @@ class ProjectService {
 
 
             return departmentService.createDefault(savedProject._id, createdBy).then(function(createdDepartment){
-              winston.info("Project created", savedProject.toObject() );
+              winston.verbose("Project created", savedProject.toObject() );
 
               projectEvent.emit('project.create', savedProject );
               
