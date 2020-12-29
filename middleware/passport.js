@@ -111,7 +111,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         if (!faq_kb) {
-                          winston.error("faq_kb not found with id: " +  AudienceId);
+                          winston.warn("faq_kb not found with id: " +  AudienceId);
                           return done(null, null);
                         }
 
@@ -136,7 +136,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         if (!project) {
-                          winston.error("Project not found with id: " +  AudienceId);
+                          winston.warn("Project not found with id: " +  AudienceId);
                           return done(null, null);
                         }
                         winston.debug("project: ", project );
@@ -159,7 +159,7 @@ module.exports = function(passport) {
                           return done(null, null);
                         }
                         if (!subscription) {
-                          winston.error("subscription not found with id: " +  AudienceId);
+                          winston.warn("subscription not found with id: " +  AudienceId);
                           return done(null, null);
                         }
                         winston.debug("subscription: ", subscription );
