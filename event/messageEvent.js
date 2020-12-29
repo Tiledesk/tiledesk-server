@@ -256,6 +256,7 @@ function populateMessageWithRequest(message, eventPrefix) {
           }
 
           //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
+          // TODO lead_id used. Change it?
           if (request.lead && message.sender === request.lead.lead_id) {
             messageEvent.emit(eventPrefix+'.from.requester', messageJson );
           }
@@ -277,6 +278,7 @@ function populateMessageWithRequest(message, eventPrefix) {
         }
 
         //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
+        // TODO lead_id used. Change it?
         if (request.lead && message.sender === request.lead.lead_id) {
         // if (message.sender === request.lead.lead_id) {
           winston.debug("message.create.from.requester",messageJson );
