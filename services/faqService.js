@@ -55,7 +55,7 @@ class FaqService {
         { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
         { 'question': 'Who are you?', 'answer': 'Hi, I\'m a bot 🤖. You can find more about me [here](https://tiledesk.com/chatbot-for-customer-service).', 'topic': 'greetings' },   
         { 'question': '👨🏻‍🦰 I want an agent', 'answer': '\\agent', 'topic': 'internal' },
-        // { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' }, 
+        //TODO RIABILITARE? { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' }, 
         { 'question': '\\start', 'answer': 'Hello 👋. I\'m a bot 🤖.\n\nChoose one of the options below or write a message to reach our staff.\n* Who are you?\n* 👨🏻‍🦰 I want an agent', 'topic': 'internal' },    
         { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* 👨🏻‍🦰 I want an agent', 'topic': 'internal' }, //TODO se metto spazio n * nn va
         { 'question': 'sampleimage', 'answer': '\\image:https://tiledesk.com/tiledesk-logo-x1.png', 'topic': 'sample' },    
