@@ -16,6 +16,8 @@ class PubModulesManager {
         this.eventsRoute = undefined;
         this.entityEraser = undefined;
         this.messageTransformer = undefined;
+
+        this.scheduler = undefined;
     }
 
   
@@ -118,6 +120,21 @@ class PubModulesManager {
                 winston.info("PubModulesManager init entityEraser module not found");
             }else {
                 winston.info("PubModulesManager error initializing init entityEraser module", err);
+            }
+        }
+
+
+
+        try {
+            this.scheduler = require('./scheduler');
+            winston.debug("this.scheduler:"+ this.scheduler);    
+            this.scheduler.taskRunner.start();        
+            winston.info("PubModulesManager init scheduler loaded.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init scheduler module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init scheduler module", err);
             }
         }
 
