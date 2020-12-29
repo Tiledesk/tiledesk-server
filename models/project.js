@@ -76,12 +76,12 @@ var ProjectSchema = new Schema({
       return [new Channel({ name: 'chat21' })];
     }
   },
-  defaultLanguage: {
-    type: String,
-    required: true,
-    default: "EN",
-    index: true
-  },
+  // defaultLanguage: {
+  //   type: String,
+  //   required: true,
+  //   default: "EN",
+  //   index: true
+  // },
   createdBy: {
     type: String,
     required: true
