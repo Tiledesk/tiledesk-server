@@ -76,12 +76,12 @@ messageEvent.on('message.create', function(message) {
     winston.debug("message", message);
 
     // TODO usa meglio se attributes.reply_always=true
-    if (message.text && ( message.text.indexOf("\\agent") > -1 || message.text.indexOf("\\close") > -1) ) { //not reply to a message containing \\agent
+    if (message.sender === "system" && message.text && message.text!="\\start") {
         winston.debug("it s a message sent from system, exit");
         return null;
     }
     
-    if (message.text && message.text.indexOf("\\agent") > -1) { //not reply to a message containing \\agent
+    if (message.text && ( message.text.indexOf("\\agent") > -1 || message.text.indexOf("\\close") > -1)) { //not reply to a message containing \\agent
         return 0;
     }
 
