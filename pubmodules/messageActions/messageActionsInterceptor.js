@@ -134,6 +134,21 @@ class MessageActionsInterceptor {
                                 
                                 
         });
+
+
+
+        messageActionEvent.on("close", function(message) {
+            
+            winston.info("called \\close action");
+            
+            var request = message.request;
+            
+            if (request) {
+                // closeRequestByRequestId(request_id, id_project, notify) {
+                requestService.closeRequestByRequestId(request.request_id, request.id_project );
+            }
+                                                                                                                                                        
+       });
         
         
 
