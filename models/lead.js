@@ -2,6 +2,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var LeadConstants = require('./leadConstants');
+var TagSchema = require("../models/tag");
+var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+
+
 /*
 Leads are useful for representing logged-out users of your application. 
 As soon as a visitor starts a conversation with you, or replies to a visitor auto message, they become a lead. 
@@ -56,6 +60,8 @@ var LeadSchema = new Schema({
     type: String,
     required: false
   },
+  tags: [TagSchema],
+  // aggiungi location e togli flat fields
   attributes: {
     type: Object,
   },
@@ -84,8 +90,11 @@ var LeadSchema = new Schema({
 }
 );
 
+// https://docs.mongodb.com/manual/core/index-text/
+// https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/
+// https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
 LeadSchema.index({fullname: 'text', email: 'text'},
- {"name":"lead_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+ {"name":"lead_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
 
  var lead = mongoose.model('lead', LeadSchema);

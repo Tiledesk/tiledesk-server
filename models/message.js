@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var Channel = require('../models/channel');
 var MessageConstants = require('../models/messageConstants');
+var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var MessageSchema = new Schema({
   sender: {
@@ -89,8 +90,12 @@ MessageSchema.index({ id_project: 1, recipient:1, createdAt: 1 });
 MessageSchema.index({ recipient: 1, updatedAt:1 }); 
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 });
 
+// https://docs.mongodb.com/manual/core/index-text/
+// https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/
+// https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
+//TODO cambiare dummy con language? attento che il codice deve essere compatibile
 MessageSchema.index({text: 'text'},
- {"name":"message_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+ {"name":"message_fulltext","default_language": defaultFullTextLanguage, "language_override": "dummy"}); // schema level
 
 
 var message = mongoose.model('message', MessageSchema);

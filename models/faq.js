@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
+var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var FaqSchema = new Schema({
   id_faq_kb: {
@@ -72,8 +73,11 @@ FaqSchema.virtual('faq_kb', {
 
 FaqSchema.index({ id_project: 1, id_faq_kb: 1, question: 1 }); 
 
+// https://docs.mongodb.com/manual/core/index-text/
+// https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/
+// https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
 FaqSchema.index({question: 'text', answer: 'text'},
- {"name":"faq_fulltext","default_language": "italian","language_override": "language", weights: {question: 10,answer: 1}}); // schema level
+ {"name":"faq_fulltext","default_language": defaultFullTextLanguage,"language_override": "language", weights: {question: 10,answer: 1}}); // schema level
 
  var faq = mongoose.model('faq', FaqSchema);
 

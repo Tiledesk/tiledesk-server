@@ -8,10 +8,12 @@ var RequestConstants = require("../models/requestConstants");
 
 var ProjectUserSchema = require("../models/project_user").schema;
 var RequestStatus = require("../models/requestStatus");
-
+var LeadSchema = require("../models/lead").schema; //it's not used but i you run test like (mocha departmentService.js) it throws this not blocking exception: error: error getting requestSchema hasn't been registered for model "lead".
 var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
+var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+
 // var autoIncrement = require('mongoose-auto-increment');
 
 //https://github.com/Automattic/mongoose/issues/5924
@@ -272,18 +274,24 @@ RequestSchema.virtual('participatingAgents', {
 
  // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
  RequestSchema.virtual('availableAgentsCount').get(function () {
-  var project_users_available = this.agents.filter(function (projectUser) {
-    if (projectUser.user_available == true) {
-      return true;
-    }
-  });
-  winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
+  // if (this.agents && this.agents.length>0  // I uncomment  winston.debug("project_user", project_user); of the requestNotification.js row 252 this.agents doesn't have .filter method??
+  //   // &&  this.agents.filter
+  //   ) {
+    var project_users_available = this.agents.filter(function (projectUser) {
+      if (projectUser.user_available == true) {
+        return true;
+      }
+    });
+    winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
 
-  if (project_users_available && project_users_available.length>0){
-    return project_users_available.length;
-  }else {
-    return 0;
-  }
+    if (project_users_available && project_users_available.length>0){
+      return project_users_available.length;
+    }else {
+      return 0;
+    }
+  // } else {
+  //   return 0;  
+  // }
 
 });
 
@@ -353,9 +361,14 @@ RequestSchema.index({ id_project: 1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
 RequestSchema.index({ id_project: 1, request_id: 1 }); // query for websocket
 
-// RequestSchema.index({ requester_fullname: 'text', transcript: 'text', rating_message: 'text'},
+
+// https://docs.mongodb.com/manual/core/index-text/
+// https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/
+// https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
+
+//TODO cambiare dummy con language? attento che il codice deve essere compatibile
 RequestSchema.index({transcript: 'text', rating_message: 'text'},
- {"name":"request_fulltext","default_language": "italian","language_override": "dummy"}); // schema level
+ {"name":"request_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
 //  let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
 RequestSchema.index({ id_project: 1, participants: 1}); 
