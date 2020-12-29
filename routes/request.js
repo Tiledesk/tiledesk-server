@@ -26,6 +26,8 @@ const { check, validationResult } = require('express-validator');
 
 
 // undocumented
+
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.post('/', 
 [
   check('text').notEmpty(),  
@@ -103,7 +105,7 @@ function (req, res) {
 
 
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.patch('/:requestid', function (req, res) {
   winston.debug(req.body);
   // const update = _.assign({ "updatedAt": new Date() }, req.body);
@@ -184,7 +186,7 @@ router.patch('/:requestid', function (req, res) {
 
 });
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/close', function (req, res) {
   winston.debug(req.body);
   
@@ -198,7 +200,7 @@ router.put('/:requestid/close', function (req, res) {
 
 
 });
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
   winston.debug(req.body);
   // reopenRequestByRequestId(request_id, id_project) {
@@ -213,13 +215,13 @@ router.put('/:requestid/reopen', function (req, res) {
 });
 
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/assignee', function (req, res) {
   winston.debug(req.body);
   //TODO change assignee
 });
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.post('/:requestid/participants', 
 [
   check('member').notEmpty(),  
@@ -242,6 +244,7 @@ function (req, res) {
   
 });
 
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 /*
 error: uncaughtException: Cannot set property 'participants' of null
 2020-03-08T12:53:35.793660+00:00 app[web.1]: TypeError: Cannot set property 'participants' of null
@@ -267,7 +270,7 @@ router.put('/:requestid/participants', function (req, res) {
   
 });
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
   winston.debug(req.body);
   
@@ -297,6 +300,7 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
   
 // });
 
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
    //route(request_id, departmentid, id_project) {      
@@ -459,7 +463,7 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
 
 });
 
-
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid',  function (req, res) {
   
   var projectuser = req.projectuser;
