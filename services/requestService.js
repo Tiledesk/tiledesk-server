@@ -139,8 +139,8 @@ class RequestService {
             return routedRequest.save(function(err, savedRequest) {
               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
               //return routedRequest.update(function(err, savedRequest) {
-              if (err) {
-                winston.error('Error saving the request.',err);
+              if (err) {                
+                winston.error('Error saving the request. ',err);
                 return reject(err);
               }
               
@@ -726,7 +726,7 @@ class RequestService {
   }
 
 
-  closeRequestByRequestId(request_id, id_project) {
+  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -769,14 +769,31 @@ class RequestService {
             return messageService.getTranscriptByRequestId(request_id, id_project).then(function(transcript) {
              // winston.debug("transcript", transcript);
               return that.updateTrascriptByRequestId(request_id, id_project, transcript).then(function(updatedRequest) {
+
+
+                if (skipStatsUpdate) {
+                  // TODO test it
+                  winston.verbose("Request closed with skipStatsUpdate and with id: " + updatedRequest.id);
+                  winston.debug("Request closed ", updatedRequest);
+                  //TODO ?? requestEvent.emit('request.update', updatedRequest);
+                  requestEvent.emit('request.close', updatedRequest);
+                  requestEvent.emit('request.close.extended', {request: updatedRequest, notify: notify});
+                  return resolve(updatedRequest);
+                }
+                
                 return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
                   
                     winston.verbose("Request closed with id: " + updatedRequest.id);
                     winston.debug("Request closed ", updatedRequest);
                     //TODO ?? requestEvent.emit('request.update', updatedRequest);
                     requestEvent.emit('request.close', updatedRequest);
+                    requestEvent.emit('request.close.extended', {request: updatedRequest, notify: notify});
+
                   return resolve(updatedRequest);
                 });
+
+
+
               });
             });
           }).catch(function(err)  {

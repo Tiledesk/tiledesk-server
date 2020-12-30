@@ -84,7 +84,7 @@ findUnresponsiveRequests() {
       requests.forEach(request => {
         winston.debug("********unresponsive request ", request);
 
-        return requestService.closeRequestByRequestId(request.request_id, request.id_project).then(function(updatedStatusRequest) {
+        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {
           winston.info("CloseAgentUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {

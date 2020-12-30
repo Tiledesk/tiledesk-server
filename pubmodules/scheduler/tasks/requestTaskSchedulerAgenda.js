@@ -82,7 +82,7 @@ findUnresponsiveRequests() {
       requests.forEach(request => {
         winston.info("********unresponsive request ", request);
 
-        return requestService.closeRequestByRequestId(request.request_id, request.id_project).then(function(updatedStatusRequest) {
+        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {
           winston.info("Request closed");
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
