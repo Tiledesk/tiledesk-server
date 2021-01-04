@@ -14,6 +14,13 @@ var winston = require('../../config/winston');
 var RoleConstants = require("../../models/roleConstants");
 var cacheUtil = require('../../utils/cacheUtil');
 
+const messageEvent = require('../../event/messageEvent');
+var mongoose = require('mongoose');
+var jwt = require('jsonwebtoken');
+const uuidv4 = require('uuid/v4');
+var config = require('../../config/database');
+
+
 class RequestNotification {
 
 
@@ -21,12 +28,20 @@ listen() {
     var that = this;
     
 
+// TODO RESTORE IT
+    // messageEvent.on("message.create", function(message) {
+
+    //   setImmediate(() => {
+   
+    //      that.sendUserEmail(message.id_project, message);
+    //   });
+    //  });
 
      requestEvent.on("request.create", function(request) {
 
       setImmediate(() => {
    
-         that.sendEmail(request.id_project, request);
+         that.sendAgentEmail(request.id_project, request);
       });
      });
 
@@ -39,7 +54,7 @@ listen() {
       
       setImmediate(() => {
    
-         that.sendEmail(request.id_project, request);
+         that.sendAgentEmail(request.id_project, request);
       });
      });
 
@@ -49,7 +64,7 @@ listen() {
 
     //   setImmediate(() => {
    
-    //      that.sendEmail(request.id_project, request);
+    //      that.sendAgentEmail(request.id_project, request);
     //   });
     //  });
 
@@ -58,8 +73,14 @@ listen() {
 
     //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 
-     requestEvent.on("request.close", function(request) {
+    requestEvent.on("request.close.extended", function(data) {
       setImmediate(() => {
+        var request = data.request;
+        var notify = data.notify;
+        if (notify && notify==false) {
+          winston.debug("sendTranscriptByEmail notify disabled", request);
+          return;
+        }
         var id_project = request.id_project;
         var request_id  = request.request_id;
  
@@ -116,7 +137,103 @@ listen() {
   });
 }
 
-sendEmail(projectid, savedRequest) {
+sendUserEmail(projectid, message) {
+  try {
+
+    if (!message.request) {
+      return winston.debug("This is a direct message");
+    }
+
+    if (!message.request.lead || !message.request.lead.email) {
+      return winston.debug("The lead object is undefined or has empty email");
+    }
+
+    Project.findOne({_id: projectid, status: 100}, function(err, project){
+      if (err) {
+        return winston.error(err);
+      }
+  
+      if (!project) {
+       //  console.warn("Project not found", req.projectid);
+       return console.warn("Project not found", projectid);
+      } 
+
+        var recipient = message.request.lead.lead_id;
+        winston.debug("recipient:"+ recipient);
+
+        var isObjectId = mongoose.Types.ObjectId.isValid(recipient);
+        winston.debug("isObjectId:"+ isObjectId);
+
+        var queryProjectUser ={ id_project: projectid, status: "active"};
+
+        
+        if (isObjectId) {          
+          queryProjectUser.id_user = recipient
+        }else {
+          queryProjectUser.uuid_user = recipient
+        }
+        winston.debug("queryProjectUser", queryProjectUser);
+
+        
+        Project_user.findOne( queryProjectUser)
+        .exec(function (err, project_user) {
+
+          winston.info("project_user", project_user);
+
+          if (!project_user) {
+            return winston.warn("Project_user not found with query ", queryProjectUser);
+          }
+         
+          if (!project_user.presence || (project_user.presence && project_user.presence.status === "offline")) {
+
+             //send email to lead
+            return Lead.findOne({lead_id: recipient}, function(err, lead){
+              winston.debug("lead", lead);
+              if (lead && lead.email) {
+                  winston.info("send user email to  "+ lead.email);
+
+                  var signOptions = {
+                    issuer:  'https://tiledesk.com',
+                    subject:  'guest',
+                    audience:  'https://tiledesk.com',
+                    jwtid: uuidv4()        
+                  };
+
+                  let userAnonym = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
+                  winston.info("userAnonym  ",userAnonym);
+
+        
+                  var token = jwt.sign(userAnonym, config.secret, signOptions);
+                  winston.info("token  "+token);
+
+                  var sourcePage = message.request.sourcePage;
+                  winston.info("sourcePage  "+sourcePage);
+
+                  var tokenQueryString;
+                  if(sourcePage && sourcePage.indexOf('?')>-1) {
+                    tokenQueryString =  "&jwt="+token
+                  }else {
+                    tokenQueryString =  "?jwt="+token
+                  }
+
+                  emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString);
+              } 
+                
+            });
+
+          }
+
+        });       
+
+
+    });
+
+  } catch(e) {
+    winston.debug("Error sending email", e);
+  }
+}
+
+sendAgentEmail(projectid, savedRequest) {
   //  console.log("savedRequest23", savedRequest);
     // send email
     try {
@@ -132,20 +249,34 @@ sendEmail(projectid, savedRequest) {
         return console.warn("Project not found", projectid);
        } else {
          
-         // winston.debug("Project", project);
-   
+          winston.debug("project", project);            
 
+          if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.blocked == true ) {
+            return winston.info("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
+          }
+
+          winston.debug("savedRequest", savedRequest);
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNSERVED) { //POOLED
-                 // throw "ciao";
+
+                  if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.pooled == false ) {
+                    return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
+                  }
+
                    var allAgents = savedRequest.agents;
                   // winston.debug("allAgents", allAgents);
    
                    allAgents.forEach(project_user => {
-                   //  winston.debug("project_user", project_user);
+                  //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
    
-                    var userid = project_user.id_user;
+
+                  var userid = project_user.id_user;
+                  
+                   if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.pooled == false ) {
+                     return winston.info("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation is disabled");
+                   }                  
+                    
                      User.findOne({_id: userid , status: 100})
                       .cache(cacheUtil.defaultTTL, "users:id:"+userid)
                       .exec(function (err, user) {
@@ -171,6 +302,12 @@ sendEmail(projectid, savedRequest) {
 
                    // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                    else if (savedRequest.status==RequestConstants.SERVED) { //ASSIGNED
+
+                    if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.assigned == false ) {
+                      return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation is disabled");
+                    }
+
+
                     var assignedId = savedRequest.participants[0];
 
                     //  winston.info("assignedId1:"+ assignedId);
@@ -179,26 +316,39 @@ sendEmail(projectid, savedRequest) {
                     //    console.log("attention90", savedRequest);
                     //  }
 
-                    // botprefix
-                    if (assignedId.startsWith("bot_")) {
-                      return ;
-                    }
-   
-                     User.findOne({_id: assignedId, status: 100})
-                      .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
-                      .exec(function (err, user) {
-                       if (err) {
-                         winston.error("Error sending email to " + savedRequest.participants[0], err);
-                       }
-                       if (!user) {
-                         console.warn("User not found",  savedRequest.participants[0]);
-                       } else {
-                         winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                        //  if (user.emailverified) {    enable it?                    
-                          emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
-                        //  }
-                       }
-                     });
+
+                    
+                    Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) //attento in 2.1.14.2
+                    .exec(function (err, project_user) {
+                      
+                        winston.debug("project_user notification", project_user);
+                        if (project_user && project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.assigned &&  project_user.settings.email.notification.conversation.assigned.toyou == false ) {
+                          return winston.info("RequestNotification email notification for the user with id : " + assignedId + " for the pooled conversation is disabled");
+                        }
+
+                        // botprefix
+                        if (assignedId.startsWith("bot_")) {
+                          return ;
+                        }
+      
+                        User.findOne({_id: assignedId, status: 100})
+                          .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                          .exec(function (err, user) {
+                          if (err) {
+                            winston.error("Error sending email to " + savedRequest.participants[0], err);
+                          }
+                          if (!user) {
+                            console.warn("User not found",  savedRequest.participants[0]);
+                          } else {
+                            winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                            //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                
+                              emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                            //  }
+                          }
+                        });
+
+                      });
+
                    }
 
 
@@ -214,7 +364,7 @@ sendEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     winston.debug("Errore sending email", e);
+     winston.warn("Error sending email", e); //it's better to view error email at this stage
    }
    //end send email
    
