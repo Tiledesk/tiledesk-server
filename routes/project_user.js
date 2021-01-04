@@ -74,8 +74,9 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
 
-        return Project_user.find({ id_project: req.projectid, role: { $in : role }}, function (err, projectuser) {
-      // RESTORE return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
+        return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
+
+      
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
         if (err) {
           winston.error("Error gettting project_user for invite", err);
