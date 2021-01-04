@@ -395,7 +395,7 @@ router.post('/', function (req, res) {
 
           winston.debug("request",request.toObject());
                    // lead_id used. Change it?
-          if (request.lead.lead_id==new_member) {            
+          if (request.lead && request.lead.lead_id==new_member) {            
             winston.debug("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
           }else {
