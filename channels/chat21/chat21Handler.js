@@ -395,36 +395,35 @@ class Chat21Handler {
                 });
             });
 
+            
+            //   not used now. Before used by ionic
+            // requestEvent.on('request.update',  function(request) {          
 
-            // new qui
-            requestEvent.on('request.update',  function(request) {          
+            //     setImmediate(() => {
+            //         if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
-                setImmediate(() => {
-                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
+            //             chat21.auth.setAdminToken(adminToken);
 
-                        chat21.auth.setAdminToken(adminToken);
+            //               // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610                        
+            //             //   var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+            //             //     if (v === undefined) { return null; } return v; 
+            //             //  }));
 
-                          // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610
-                        //   not used now. Before used by ionic
-                        //   var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
-                        //     if (v === undefined) { return null; } return v; 
-                        //  }));
+            //             // var gattributes = { "_request":requestWithoutUndefined};
 
-                        // var gattributes = { "_request":requestWithoutUndefined};
+            //             // qui1
+            //             chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
+            //                 winston.verbose("Chat21 group gattributes for request.update updated: " +  JSON.stringify(data));      
+            //                 chat21Event.emit('group.update', data);        
+            //                 chat21Event.emit('group.attributes.update', data);                                          
+            //             }).catch(function(err) {
+            //                 winston.error("Error updating chat21 gattributes for request.update group ", err);
+            //                 chat21Event.emit('group.attributes.update.error', err);
+            //             });
 
-                        // qui1
-                        chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
-                            winston.verbose("Chat21 group gattributes for request.update updated: " +  JSON.stringify(data));      
-                            chat21Event.emit('group.update', data);        
-                            chat21Event.emit('group.attributes.update', data);                                          
-                        }).catch(function(err) {
-                            winston.error("Error updating chat21 gattributes for request.update group ", err);
-                            chat21Event.emit('group.attributes.update.error', err);
-                        });
-
-                    }
-                });
-            });
+            //         }
+            //     });
+            // });
 
             requestEvent.on('request.create',  function(request) {          
 
