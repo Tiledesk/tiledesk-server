@@ -405,11 +405,12 @@ class Chat21Handler {
                         chat21.auth.setAdminToken(adminToken);
 
                           // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610
-                          var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
-                            if (v === undefined) { return null; } return v; 
-                         }));
+                        //   not used now. Before used by ionic
+                        //   var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+                        //     if (v === undefined) { return null; } return v; 
+                        //  }));
 
-                        var gattributes = { "_request":requestWithoutUndefined};
+                        // var gattributes = { "_request":requestWithoutUndefined};
 
                         // qui1
                         chat21.groups.updateAttributes(gattributes, request.request_id).then(function(data) {
@@ -478,10 +479,12 @@ class Chat21Handler {
 
                         
                         // https://stackoverflow.com/questions/42310950/handling-undefined-values-with-firebase/42315610
-                        var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
-                            if (v === undefined) { return null; } return v; 
-                         }));
-                         gAttributes['_request'] = requestWithoutUndefined; //used by ionic to open request detail 
+
+                        //   not used now. Before used by ionic
+                        // var requestWithoutUndefined = JSON.parse(JSON.stringify(request, function(k, v) {
+                        //     if (v === undefined) { return null; } return v; 
+                        //  }));
+                        //  gAttributes['_request'] = requestWithoutUndefined; //used by ionic to open request detail 
                         
                         
 
