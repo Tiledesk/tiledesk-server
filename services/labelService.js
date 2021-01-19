@@ -28,7 +28,7 @@ async get(id_project, language, key) {
     var returnval = await that.getAll(id_project);
     winston.debug("getLanguage returnval: ",returnval);
 
-    if (!returnval || (returnval && returnval.length==0)) {
+    if (!returnval) {
         var retPiv = await that.fetchPivotDefault();
         winston.debug("retPiv",retPiv);
         return retPiv;
@@ -82,10 +82,10 @@ getAll(id_project) {
                     }
 
                     winston.debug("here /", labels);
-                    let returnval=[];
-                    if (labels) {
+                    let returnval;
+                    // if (labels) {
                         returnval = labels;
-                    }                    
+                    // }                    
                     winston.debug("getAll returnval",returnval);
                 
                     return resolve(returnval);

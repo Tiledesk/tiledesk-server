@@ -353,6 +353,11 @@ router.get('/', async (req, res)  => {
    var labels = await labelService.getAll(req.projectid);
    winston.debug("labels",labels);
     
+   if (!labels) {
+    winston.warn('Label not found ');
+    return res.json({});
+  }
+
   return res.json(labels);
           
 });
