@@ -165,6 +165,9 @@ router.post('/', function (req, res) {
                         winston.debug("project_user", project_user);
                         project_user_id = project_user.id;
                         winston.debug("project_user_id: " + project_user_id);
+                      }else {
+                        // error->utente bloccato oppure non autenticator request.requester sarà nulll...⁄
+                        return winston.error("project_user not found with query:", query);                        
                       }
 
                       // });
