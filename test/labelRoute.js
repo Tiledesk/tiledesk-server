@@ -810,7 +810,7 @@ describe('/delete', () => {
                                             console.log("err",  err);
                                             console.log("res.body",  res.body);
                                             res.should.have.status(200);
-                                            expect(res.body).to.equal(null);    
+                                            expect(res.body.length).to.equal(0);    
                                             
                                             
                                             done();                                      
