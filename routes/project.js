@@ -242,7 +242,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   sortQuery[sortField] = direction;
 
 
-  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active"}).
+  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
       path: 'id_project',
@@ -289,7 +289,7 @@ router.get('/:projectid/users/availables', function (req, res) {
       return res.status(500).send({ success: false, msg: err });
     } else if (isOpen) {
 
-      Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}}).
+      Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
         populate('id_user').
         exec(function (err, project_users) {
           if (err) {

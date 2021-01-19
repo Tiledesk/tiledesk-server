@@ -12,11 +12,13 @@ class RoleChecker {
     constructor() {
 
         this.ROLES =  {
-            "guest": ["guest"],
-            "user":  ["guest","user"],
-            "agent": ["guest","user","agent"],
-            "admin": ["guest","user","agent", "admin",],
-            "owner": ["guest","user","agent", "admin", "owner"],
+            "guest":        ["guest"],
+            "user":         ["guest","user"],
+            "teammate":     ["guest","user","teammate"],
+            "agent":        ["guest","user","teammate","agent"],
+            "supervisor":   ["guest","user","teammate","agent","supervisor"],
+            "admin":        ["guest","user","teammate","agent", "supervisor", "admin"],
+            "owner":        ["guest","user","teammate","agent", "supervisor", "admin", "owner"],
         }
     }
       

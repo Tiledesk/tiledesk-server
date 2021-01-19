@@ -22,7 +22,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   winston.debug('contact_id: '+ contact_id);
   
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" }).    
+  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).    
     exec(); 
 
   var projectsArray = [];
@@ -35,7 +35,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   var isObjectId = mongoose.Types.ObjectId.isValid(contact_id);
   winston.debug("isObjectId:"+ isObjectId);                             
 
-  var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" };
+  var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
   winston.debug(' query: ',query);
 
   if (isObjectId) {
@@ -131,7 +131,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   sortQuery[sortField] = direction;
 
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" }).    
+  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).    
     exec(); 
 
     var projectsArray = [];
@@ -139,7 +139,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       projectsArray.push(project.id_project);
     });
     
-    var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]}, status: "active" };
+    var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
     winston.debug("query: ", query);
 
     var teammates = await Project_user.find(query).

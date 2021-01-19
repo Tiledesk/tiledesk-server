@@ -69,7 +69,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
 
-      var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT];     
+      var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];     
       winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
@@ -387,7 +387,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
  */
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT];
+  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
   if (req.query.role) {
     role = req.query.role;
