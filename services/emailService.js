@@ -279,8 +279,8 @@ class EmailService {
       winston.debug("html: " + html);
 
 
-      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Message`, html);
-      that.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Message`, html);
+      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html);
+      that.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html);
 
     });
   }
