@@ -131,6 +131,7 @@ function populateMessageWithRequest(message, eventPrefix) {
   } else {
     winston.warn("request is undefined in messageEvent. Is it a direct message ?" );
     messageEvent.emit(eventPrefix,messageJson );
+    message2Event.emit(eventPrefix+'.channel.' + message.channel.name, messageJson );
   }
    
   });
