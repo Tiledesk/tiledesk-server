@@ -20,6 +20,7 @@ var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 var config = require('../../config/database');
 
+var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
 
 class RequestNotification {
 
@@ -29,13 +30,13 @@ listen() {
     
 
 // TODO RESTORE IT
-    // messageEvent.on("message.create", function(message) {
+    messageEvent.on("message.create", function(message) {
 
-    //   setImmediate(() => {
+      setImmediate(() => {
    
-    //      that.sendUserEmail(message.id_project, message);
-    //   });
-    //  });
+         that.sendUserEmail(message.id_project, message);
+      });
+     });
 
      requestEvent.on("request.create", function(request) {
 
@@ -206,7 +207,13 @@ sendUserEmail(projectid, message) {
                   var token = jwt.sign(userAnonym, config.secret, signOptions);
                   winston.info("token  "+token);
 
-                  var sourcePage = message.request.sourcePage;
+                  var sourcePage = widgetTestLocation;
+
+
+                  if (message.request.sourcePage) {
+                    sourcePage = message.request.sourcePage;
+                  }
+                  
                   winston.info("sourcePage  "+sourcePage);
 
                   var tokenQueryString;
