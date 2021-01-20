@@ -184,6 +184,9 @@ class EmailService {
       var baseScope = JSON.parse(JSON.stringify(that));
       delete baseScope.emailPassword;
 
+      // passa anche tutti i messages in modo da stampare tutto
+// Stampa anche contact.email
+
       var replacements = {        
         savedRequest: savedRequest.toJSON(),
         project: project.toJSON(),
@@ -226,7 +229,8 @@ class EmailService {
       var baseScope = JSON.parse(JSON.stringify(that));
       delete baseScope.emailPassword;
 
-
+// passa anche tutti i messages in modo da stampare tutto
+// Stampa anche contact.email
       var replacements = {        
         savedRequest: savedRequest.toJSON(),
         project: project.toJSON(),
@@ -241,6 +245,47 @@ class EmailService {
 
     });
   }
+
+
+  sendNewMessageNotification(to, message, project, tokenQueryString) {
+
+    var that = this;
+
+    this.readHTMLFile('newMessage.html', function(err, html) {
+
+
+      var envTemplate = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
+       winston.debug("envTemplate: " + envTemplate);
+
+      if (envTemplate) {
+          html = envTemplate;
+      }
+
+      winston.debug("html: " + html);
+
+      var template = handlebars.compile(html);
+
+      var baseScope = JSON.parse(JSON.stringify(that));
+      delete baseScope.emailPassword;
+
+      var replacements = {        
+        message: message,
+        project: project.toJSON(),
+        tokenQueryString: tokenQueryString,
+        baseScope: baseScope    
+      };
+
+      var html = template(replacements);
+      winston.debug("html: " + html);
+
+
+      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Message`, html);
+      that.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Message`, html);
+
+    });
+  }
+
+
 
   // ok
   sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
