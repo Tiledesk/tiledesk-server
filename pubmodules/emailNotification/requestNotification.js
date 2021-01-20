@@ -30,10 +30,11 @@ listen() {
     
 
 // TODO RESTORE IT
+// commenta
     messageEvent.on("message.create", function(message) {
 
       setImmediate(() => {
-   
+        winston.info("sendUserEmail", message);
          that.sendUserEmail(message.id_project, message);
       });
      });
