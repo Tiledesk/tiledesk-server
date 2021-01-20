@@ -259,12 +259,10 @@ class Chat21Handler {
                     message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
                     message.channel_type ==  MessageConstants.CHANNEL_TYPE.GROUP &&
                     message.request && 
-                    message.request.channelOutbound.name == ChannelConstants.CHAT21) {
+                    message.request.channelOutbound.name == ChannelConstants.CHAT21) { //here only request.channelOutbound is important because chat21handler is for outgoing messages( from Tiledesk to agents clients)
 
                     
                         chat21.auth.setAdminToken(adminToken);
-
-                        //'https://us-central1-chat21-pre-01.cloudfunctions.net/api/tilechat/typings/support-group-LvtMo6VMxX1j3xV3b-X?token=chat21-secret-orgAa,',
 
 
                         //chat21.conversations.typing(message.recipient, message.sender, message.text, new Date()).finally(function() {
