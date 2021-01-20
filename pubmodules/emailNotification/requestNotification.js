@@ -20,7 +20,7 @@ var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 var config = require('../../config/database');
 
-var widgetConfig = require('../config/widget');
+var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
 
 class RequestNotification {
