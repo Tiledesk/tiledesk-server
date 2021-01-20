@@ -35,7 +35,7 @@ listen() {
     messageEvent.on("message.create", function(message) {
 
       setImmediate(() => {
-        winston.info("sendUserEmail", message);
+        winston.debug("sendUserEmail", message);
          that.sendUserEmail(message.id_project, message);
       });
      });
@@ -181,7 +181,7 @@ sendUserEmail(projectid, message) {
         Project_user.findOne( queryProjectUser)
         .exec(function (err, project_user) {
 
-          winston.info("project_user", project_user);
+          winston.debug("project_user", project_user);
 
           if (!project_user) {
             return winston.warn("Project_user not found with query ", queryProjectUser);
@@ -193,7 +193,7 @@ sendUserEmail(projectid, message) {
             return Lead.findOne({lead_id: recipient}, function(err, lead){
               winston.debug("lead", lead);
               if (lead && lead.email) {
-                  winston.info("send user email to  "+ lead.email);
+                  winston.info("sending user email to  "+ lead.email);
 
                   var signOptions = {
                     issuer:  'https://tiledesk.com',
