@@ -82,8 +82,10 @@ class FaqBotHandler {
                                 attr = {};
                             }
                            // attr._answer = that.getCircularReplacer(answerObj);
-                            attr._answerid = answerObj._id;
-                           
+                            if (answerObj && answerObj._id) {
+                                attr._answerid = answerObj._id.toString();
+                            }
+                                                       
                             winston.debug("answerObj", answerObj);
                             // winston.info("that.getCircularReplacer(answerObj)",  that.getCircularReplacer(answerObj));
                             winston.debug("attr", attr);
@@ -145,7 +147,10 @@ class FaqBotHandler {
                                 attr = {};
                             }
                             // attr._answer = that.getCircularReplacer(answerObj);
-                            attr._answerid = answerObj._id;
+                            if (answerObj && answerObj._id) {
+                                attr._answerid = answerObj._id.toString();
+                            }
+                            
                             winston.debug("attr", attr);
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
@@ -193,10 +198,12 @@ class FaqBotHandler {
                             // winston.info("********clonedBotAns: "+ JSON.stringify(clonedBotAns));
 
                             // attr._answer = clonedBotAns;
+                            if (botAns._id) {
+                                attr._answerid = botAns._id.toString();
+                            }
                             
-                            attr._answerid = botAns._id;
 
-                            winston.info("attr", attr);
+                            winston.debug("attr", attr);
 
 
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
