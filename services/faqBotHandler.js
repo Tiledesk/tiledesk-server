@@ -12,8 +12,11 @@ var eventService = require('../pubmodules/events/eventService');
 
 class FaqBotHandler {
  
+
+      
     listen() {
 
+        var that = this;
         //modify to async
         botEvent.on('bot.message.received.notify.internal', function(message) {
                            
@@ -58,6 +61,7 @@ class FaqBotHandler {
         
                     winston.debug("faqs", faqs);              
 
+                    // botprefix
                     let sender = 'bot_' + botId;
                     winston.debug("sender", sender);          
                 
@@ -72,8 +76,20 @@ class FaqBotHandler {
                         faqBotSupport.getButtonFromText(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
                            
+
+                            var attr = bot_answer.attributes;                            
+                            if (!attr) {
+                                attr = {};
+                            }
+                           // attr._answer = that.getCircularReplacer(answerObj);
+                            attr._answerid = answerObj._id;
+                           
+                            winston.debug("answerObj", answerObj);
+                            // winston.info("that.getCircularReplacer(answerObj)",  that.getCircularReplacer(answerObj));
+                            winston.debug("attr", attr);
+
                             messageService.send(sender, botName, message.recipient, bot_answer.text, 
-                                message.id_project, sender, bot_answer.attributes, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
+                                message.id_project, sender, attr, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
                                     winston.debug("faqbot message botAns ", savedMessage.toObject());  
                             });
                         
@@ -113,6 +129,7 @@ class FaqBotHandler {
                 exec(function (err, faqs) {
                     winston.debug("faqs", faqs);              
 
+                    // botprefix
                     let sender = 'bot_' + botId;
                     winston.debug("sender", sender);          
                 
@@ -122,9 +139,17 @@ class FaqBotHandler {
                         answerObj = faqs[0];                
 
                         faqBotSupport.getButtonFromText(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
+
+                            var attr = bot_answer.attributes;                            
+                            if (!attr) {
+                                attr = {};
+                            }
+                            // attr._answer = that.getCircularReplacer(answerObj);
+                            attr._answerid = answerObj._id;
+                            winston.debug("attr", attr);
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
-                                    message.id_project, sender, bot_answer.attributes, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
+                                    message.id_project, sender, attr, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
 
                                         winston.debug("faqbot message sending ", savedMessage.toObject());  
                                 });
@@ -144,15 +169,39 @@ class FaqBotHandler {
                             if (botAns.defaultFallback === true) {
                                 winston.debug("defaultFallback event");  
                                 //           emit(name,                     attributes,                                                                id_project,         project_user, createdBy, user) {
-                                eventService.emit("faqbot.answer_not_found", {botAnswer:answerObj, bot: faq_kb, message:message, threshold:threshold}, message.id_project, undefined,  "system", undefined);
+                                eventService.emit("faqbot.answer_not_found", 
+                                          // optional. TODO fare solo text
+                                        { botAnswer:answerObj, 
+                                            bot: faq_kb, message:message},
+                                        //threshold:threshold}, 
+                                        message.id_project, undefined,  "system", undefined);
                             }
                             
 
-                            // let attributes = {bot_reponse_template: botAns.template};
+                            var attr = botAns.attributes;                            
+                            if (!attr) {
+                                attr = {};
+                            }
+
+                     
+                            winston.debug("botAns", botAns);
+
+
+                            //Mongoose error to save botAns
+                            // let clonedBotAns = Object.assign({}, botAns);
+                            // delete clonedBotAns.attributes;
+                            // winston.info("********clonedBotAns: "+ JSON.stringify(clonedBotAns));
+
+                            // attr._answer = clonedBotAns;
+                            
+                            attr._answerid = botAns._id;
+
+                            winston.info("attr", attr);
+
 
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
                             messageService.send(sender, botName, message.recipient, botAns.text, 
-                                message.id_project, sender, botAns.attributes, botAns.type, botAns.metadata).then(function(savedMessage){
+                                message.id_project, sender, attr, botAns.type, botAns.metadata).then(function(savedMessage){
                                     winston.debug("faqbot message botAns " ,savedMessage.toObject());  
                             });
                         }
