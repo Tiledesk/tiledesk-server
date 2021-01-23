@@ -622,7 +622,7 @@ it('removeparticipant', function (done) {
         //savedRequest is assigned -> 200
         expect(savedRequest.status).to.equal(200);
 
-        //savedRequestParticipant is unserved -> 100
+        //savedRequestParticipant is UNASSIGNED -> 100
         expect(savedRequestParticipant.request_id).to.equal("request_id1");
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
@@ -674,7 +674,7 @@ it('reroute', function (done) {
         //savedRequest is assigned -> 200
         expect(savedRequest.status).to.equal(200);
 
-        //savedRequestParticipant is unserved -> 100
+        //savedRequestParticipant is UNASSIGNED -> 100
         expect(savedRequestParticipant.request_id).to.equal("request_id1-reroute");
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
