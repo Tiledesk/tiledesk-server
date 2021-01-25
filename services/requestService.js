@@ -28,7 +28,7 @@ class RequestService {
 
           var assigned_at = undefined;          
             
-          var status = RequestConstants.UNSERVED; //unserved
+          var status = RequestConstants.UNASSIGNED; 
           var assigned_operator_id;
           var participants = [];
           var participantsAgents = [];
@@ -38,7 +38,7 @@ class RequestService {
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
 
-            status =  RequestConstants.SERVED; //served
+            status =  RequestConstants.ASSIGNED;
 
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
@@ -307,10 +307,10 @@ class RequestService {
 
            
             //  winston.debug("req status check", status);
-             status = RequestConstants.UNSERVED; //unserved
+             status = RequestConstants.UNASSIGNED; 
              if (result.operators && result.operators.length>0) {
                assigned_operator_id = result.operators[0].id_user;
-               status =  RequestConstants.SERVED; //served
+               status =  RequestConstants.ASSIGNED;
                var assigned_operator_idString = assigned_operator_id.toString();
                participants.push(assigned_operator_idString);
                // botprefix
@@ -426,7 +426,7 @@ class RequestService {
 
           // winston.debug("getOperators", result);
 
-          var status =  RequestConstants.UNSERVED;
+          var status =  RequestConstants.UNASSIGNED;
           var assigned_operator_id;
           var participants = [];
           var participantsAgents = [];
@@ -436,7 +436,7 @@ class RequestService {
           var assigned_at = undefined;
           if (result.operators && result.operators.length>0) {
             assigned_operator_id = result.operators[0].id_user;
-            status =  RequestConstants.SERVED;
+            status =  RequestConstants.ASSIGNED;
 
             var assigned_operator_idString = assigned_operator_id.toString();
             participants.push(assigned_operator_idString);
@@ -709,6 +709,8 @@ class RequestService {
   
          
           request.waiting_time = waitingTime;
+          // TODO REENABLE SERVED
+          // request.status = RequestConstants.SERVED;
           request.first_response_at = now;
 
             // winston.debug(" request",  request);
@@ -832,17 +834,22 @@ class RequestService {
             return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
           }
 
-          if (request.status == RequestConstants.SERVED || request.status == RequestConstants.UNSERVED) {
+          if (request.status == RequestConstants.ASSIGNED || request.status == RequestConstants.UNASSIGNED 
+            // TODO REENABLE SERVED
+            // || request.status == RequestConstants.SERVED
+            ) {
             winston.debug("request already open"); 
             return resolve(request);
           }
 
           if (request.participants.length>0) {
-            request.status =  RequestConstants.SERVED;
+            request.status =  RequestConstants.ASSIGNED;
             // assigned_at?
           } else {
-            request.status =  RequestConstants.UNSERVED;
+            request.status =  RequestConstants.UNASSIGNED;
           }
+          // TODO REENABLE SERVED
+          // attento served qui????forse no
 
             //cacheinvalidation
           request.save(function(err, savedRequest) {
@@ -985,13 +992,15 @@ class RequestService {
 
 
         if (request.participants.length>0) { 
-          request.status =  RequestConstants.SERVED; //served
+          request.status =  RequestConstants.ASSIGNED; 
           // assigned_at?
         } else {
-          request.status =  RequestConstants.UNSERVED; //unserved
+          request.status =  RequestConstants.UNASSIGNED;
         }
         
         request.waiting_time = undefined //reset waiting_time on reroute ????
+        // TODO REENABLE SERVED
+        // qui potrebbe essere che la richiesta era served con i vecchi agenti e poi facendo setParticipants si riporta ad assigned o unassigned perdendo l'informazione di served
 
           //cacheinvalidation
         return request.save(function(err, updatedRequest) {
@@ -1097,11 +1106,11 @@ class RequestService {
 
 
           if (request.participants.length>0) {          
-            request.status =  RequestConstants.SERVED;
+            request.status =  RequestConstants.ASSIGNED;
             var assigned_at = Date.now();
             request.assigned_at = assigned_at;
           } else {
-            request.status =  RequestConstants.UNSERVED;
+            request.status =  RequestConstants.UNASSIGNED;
           }
 // check error here
   //cacheinvalidation
@@ -1210,11 +1219,11 @@ class RequestService {
 
           if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed
                 // qui1000 ????
-          if (request.participants.length>0) { 
-            request.status =  RequestConstants.SERVED;
+          if (request.participants.length>0) {             
+            request.status =  RequestConstants.ASSIGNED;
             // assignet_at?
           } else {
-            request.status =  RequestConstants.UNSERVED;
+            request.status =  RequestConstants.UNASSIGNED;
           }
         }
          

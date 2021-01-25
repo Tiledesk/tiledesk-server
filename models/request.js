@@ -76,7 +76,7 @@ var RequestSchema = new Schema({
   status: {
     type: Number,
     required: false,
-    default: RequestConstants.UNSERVED,
+    default: RequestConstants.UNASSIGNED,
     index: true
   }, 
 

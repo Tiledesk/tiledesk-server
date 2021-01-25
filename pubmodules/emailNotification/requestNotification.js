@@ -34,7 +34,8 @@ listen() {
 // commenta
     messageEvent.on("message.create", function(message) {
 
-      setImmediate(() => {
+      setImmediate(() => {      
+        // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
          that.sendUserEmail(message.id_project, message);
       });
@@ -267,7 +268,7 @@ sendAgentEmail(projectid, savedRequest) {
           winston.debug("savedRequest", savedRequest);
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
-                 if (savedRequest.status==RequestConstants.UNSERVED) { //POOLED
+                 if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
 
                   if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.pooled == false ) {
                     return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
@@ -310,7 +311,7 @@ sendAgentEmail(projectid, savedRequest) {
                    }
 
                    // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
-                   else if (savedRequest.status==RequestConstants.SERVED) { //ASSIGNED
+                   else if (savedRequest.status==RequestConstants.ASSIGNED) { //ASSIGNED
 
                     if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.assigned == false ) {
                       return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation is disabled");
@@ -363,7 +364,7 @@ sendAgentEmail(projectid, savedRequest) {
 
 
                    else {
-   
+                    return winston.info("Other states");
                    }
    
    
