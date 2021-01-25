@@ -10,7 +10,11 @@ async function up () {
     // setTimeout(()=> { resolve('ok'); }, 3000);
 
     //https://github.com/Automattic/mongoose/issues/3171
-    return Project_user.collection.updateMany({}, { $rename: { "max_served_chat": "max_assigned_chat" } } , function (err, updates) {
+    return Project_user.collection.updateMany({"max_served_chat":{$exists:true}}, { $rename: { "max_served_chat": "max_assigned_chat" } } , function (err, updates) {
+      if (err) {
+        winston.error("Schema updated project_user max_assigned_chat  error ",err);
+        return reject(err);
+      }
       winston.info("Schema updated for " + updates.nModified + " project_user max_assigned_chat field")
        return resolve('ok'); 
     });  
