@@ -40,7 +40,7 @@ var PresenceSchema = require('./presence');
     attributes: {
       type: Object,
     },
-    max_served_chat: {
+    max_assigned_chat: {
       type: Number,
     },
     number_assigned_requests: {
@@ -91,26 +91,6 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
     return true;
   }
 });
-
-// Project_userSchema.statics.busy = function(project_max_served_chat) {
-
-//   var maxServedChat=undefined;
-//   if (project_max_served_chat && project_max_served_chat> -1) {
-//     maxServedChat = project_max_served_chat;
-//   }
-
-//   if (this.max_served_chat && this.max_served_chat>-1 && this.max_served_chat > maxServedChat) {
-//     maxServedChat = this.max_served_chat;
-//   }
-
-//   winston.info("maxServedChat: "+maxServedChat);
-
-//   if (maxServedChat && this.number_assigned_requests >= maxServedChat) {
-//     return true;
-//   }else {
-//     return false;
-//   }
-// }
 
 
 

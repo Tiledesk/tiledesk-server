@@ -37,7 +37,7 @@
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.9",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.1.6",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.10",
+    "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.11",
     "@tiledesk-ent/tiledesk-server-queue": "^1.1.10",
     "@tiledesk-ent/tiledesk-server-cache": "^1.1.10",
     "@tiledesk-ent/tiledesk-server-canned": "^1.1.1",

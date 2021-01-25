@@ -411,7 +411,7 @@ class WebSocketServer {
           
           
                       var pu = projectuser.toJSON();
-                      pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+                      pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
                       
           
                       return resolve({publishFunction:function() {
@@ -455,7 +455,7 @@ class WebSocketServer {
   
   
               var pu = projectuser.toJSON();
-              pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_served_chat);
+              pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
               
   
               return resolve({publishFunction:function() {

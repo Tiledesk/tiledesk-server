@@ -162,7 +162,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
               //test it
               savedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, savedProject_userPopulated){
                 var pu = savedProject_userPopulated.toJSON();
-                pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_served_chat);
+                pu.isBusy = ProjectUserUtil.isBusy(savedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
         
                 
                   var eventData = {req:req, savedProject_userPopulated: pu};
@@ -193,8 +193,8 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     update.user_available = req.body.user_available;
   }
   
-  if (req.body.max_served_chat!=undefined) {
-    update.max_served_chat = req.body.max_served_chat;
+  if (req.body.max_assigned_chat!=undefined) {
+    update.max_assigned_chat = req.body.max_assigned_chat;
   }
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
@@ -217,7 +217,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
       updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
 
         var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
         
         authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
@@ -242,8 +242,8 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.user_available = req.body.user_available;
   }
 
-  if (req.body.max_served_chat!=undefined) {
-    update.max_served_chat = req.body.max_served_chat;
+  if (req.body.max_assigned_chat!=undefined) {
+    update.max_assigned_chat = req.body.max_assigned_chat;
   }
 
   if (req.body.attributes!=undefined) {
@@ -276,7 +276,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
           winston.error("Error gettting updatedProject_userPopulated for update", err);
         }            
         var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
         
           authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
       });
@@ -325,7 +325,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
       }
       // res.json(project_user);
       var pu = project_user.toJSON();
-      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
       res.json(pu);
     });
 
@@ -358,7 +358,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
     
-      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_served_chat);
+      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
       res.json([pu]);
 
      });
@@ -415,7 +415,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
       project_users.forEach(function(project_user) {
         var pu = project_user.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project && req.project.settings && req.project.settings.max_agent_served_chat);
+        pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project && req.project.settings && req.project.settings.max_agent_assigned_chat);
         ret.push(pu);
       });
 

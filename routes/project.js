@@ -54,8 +54,8 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
   }
 
-  if (req.body["settings.max_agent_served_chat"]!=undefined) {
-    update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
+  if (req.body["settings.max_agent_assigned_chat"]!=undefined) {
+    update["settings.max_agent_assigned_chat"] = req.body["settings.max_agent_assigned_chat"];
   }
 
 
@@ -147,8 +147,8 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
   }
 
-  if (req.body["settings.max_agent_served_chat"]!=undefined) {
-    update["settings.max_agent_served_chat"] = req.body["settings.max_agent_served_chat"];
+  if (req.body["settings.max_agent_assigned_chat"]!=undefined) {
+    update["settings.max_agent_assigned_chat"] = req.body["settings.max_agent_assigned_chat"];
   }
 
 
