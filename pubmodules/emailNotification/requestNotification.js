@@ -30,14 +30,12 @@ listen() {
     var that = this;
     
 
-// TODO RESTORE IT
-// commenta
     messageEvent.on("message.create", function(message) {
 
       setImmediate(() => {      
         // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
-         that.sendUserEmail(message.id_project, message);
+        //  that.sendUserEmail(message.id_project, message);
       });
      });
 
@@ -161,6 +159,17 @@ sendUserEmail(projectid, message) {
        //  console.warn("Project not found", req.projectid);
        return console.warn("Project not found", projectid);
       } 
+
+      if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
+        return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for  the conversations is blocked");
+      }
+  
+
+      if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
+        return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
+      }
+
+
 
         var recipient = message.request.lead.lead_id;
         winston.debug("recipient:"+ recipient);
