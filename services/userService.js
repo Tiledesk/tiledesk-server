@@ -27,7 +27,7 @@ class UserService {
             newUser.save(function (err, savedUser) {
                 if (err) {
                     if (err.code === 11000) { //error for dupes
-                        winston.warn('Error creating the user email already present', err);
+                        winston.warn('Error creating the user email already present');
                         return reject(err);
                     } else {
                         winston.error('Error creating the user', err);
