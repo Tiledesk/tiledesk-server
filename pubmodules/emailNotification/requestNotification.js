@@ -79,7 +79,7 @@ listen() {
       setImmediate(() => {
         var request = data.request;
         var notify = data.notify;
-        if (notify && notify==false) {
+        if (notify==false) {
           winston.debug("sendTranscriptByEmail notify disabled", request);
           return;
         }
