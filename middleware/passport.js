@@ -263,7 +263,7 @@ module.exports = function(passport) {
           winston.debug("Passport JWT subscription user", subscription);
           return done(null, subscription);
         } else {
-          winston.warn("Passport JWT subscription not user");
+          winston.warn("Passport JWT subscription not user", subscription);
           return done(null, false);
         }
       });              
