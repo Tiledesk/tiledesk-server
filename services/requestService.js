@@ -122,7 +122,7 @@ class RequestService {
 
 
             if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
-              winston.info("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+              winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
               return request
               .populate('lead') 
@@ -947,7 +947,7 @@ class RequestService {
         
         if (requestUtil.arraysEqual(oldParticipants, newparticipants)){
         //if (oldParticipants === newparticipants) {
-          winston.info('Request members '+ oldParticipants+ ' already equal to ' + newparticipants + ' for request_id '+ request_id + ' and id_project '+ id_project);
+          winston.verbose('Request members '+ oldParticipants+ ' already equal to ' + newparticipants + ' for request_id '+ request_id + ' and id_project '+ id_project);
           return request
           .populate('lead')
           .populate('department')
