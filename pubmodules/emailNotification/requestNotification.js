@@ -35,7 +35,7 @@ listen() {
       setImmediate(() => {      
         // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
-        //  that.sendUserEmail(message.id_project, message);
+         that.sendUserEmail(message.id_project, message);
       });
      });
 
