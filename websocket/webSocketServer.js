@@ -20,6 +20,7 @@ const authEvent = require('../event/authEvent');
 var ProjectUserUtil = require("../utils/project_userUtil");
 var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
+const requestConstants = require("../models/requestConstants");
 
 
 
@@ -615,7 +616,7 @@ class WebSocketServer {
       requestEvent.on(requestUpdateKey, function(request) {
         // TODO setImmediate(() => { 
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
-        if (request.preflight===false) {     
+        if (request.preflight===false && request.status > requestConstants.TEMP) {     
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
         }
