@@ -373,7 +373,7 @@ sendAgentEmail(projectid, savedRequest) {
 
 
                    else {
-                    return winston.info("Other states");
+                    return winston.debug("Other states");
                    }
    
    
