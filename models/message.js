@@ -89,6 +89,7 @@ MessageSchema.index({ recipient: 1, createdAt:1 });
 MessageSchema.index({ id_project: 1, recipient:1, createdAt: 1 });
 MessageSchema.index({ recipient: 1, updatedAt:1 }); 
 MessageSchema.index({ id_project: 1, recipient:1, updatedAt: 1 });
+MessageSchema.index({ id_project: 1, "attributes._answerid": 1 });
 
 // https://docs.mongodb.com/manual/core/index-text/
 // https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/
