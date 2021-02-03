@@ -51,7 +51,7 @@
         "START_A_CONVERSATION": "Start a conversation",
         "NO_CONVERSATION": "No conversation",
         "SEE_PREVIOUS": "see previous",
-        "WAITING_TIME_FOUND": "The team typically replies in ",
+        "WAITING_TIME_FOUND": "The team typically replies in $reply_time",
         "WAITING_TIME_NOT_FOUND": "The team will reply as soon as possible",
         "CLOSED": "CLOSED"
     }
@@ -108,7 +108,7 @@
         "START_A_CONVERSATION": "Inizia una conversazione",
         "NO_CONVERSATION": "Nessuna conversazione attiva",
         "SEE_PREVIOUS": "vedi precedenti",
-        "WAITING_TIME_FOUND": "Il team tipicamente risponde in ",
+        "WAITING_TIME_FOUND": "Il team tipicamente risponde in $reply_time",
         "WAITING_TIME_NOT_FOUND": "Vi risponderemo appena possibile",
         "CLOSED": "CHIUSA"
     }
@@ -165,7 +165,7 @@
         "START_A_CONVERSATION": "Démarrer une conversation",
         "NO_CONVERSATION": "Aucune conversation active",
         "SEE_PREVIOUS": "voir les conversations précédentes",
-        "WAITING_TIME_FOUND": "L'équipe répond généralement en ",
+        "WAITING_TIME_FOUND": "L'équipe répond généralement en $reply_time",
         "WAITING_TIME_NOT_FOUND": "Nous vous répondrons dans les plus brefs délais",
         "CLOSED": "FERMÉ"
     }
@@ -222,7 +222,7 @@
         "START_A_CONVERSATION":"Iniciar una conversación",
         "NO_CONVERSATION":"Sin conversación",
         "SEE_PREVIOUS":"Ver anterior",
-        "WAITING_TIME_FOUND":"El equipo típicamente responde en",
+        "WAITING_TIME_FOUND":"El equipo típicamente responde en $reply_time",
         "WAITING_TIME_NOT_FOUND":"El equipo responderá lo antes posible.",
         "CLOSED":"CERRADO"
     }
@@ -279,7 +279,7 @@
         "START_A_CONVERSATION":"Eine Konversation beginnen",
         "NO_CONVERSATION":"keine Gespräche",
         "SEE_PREVIOUS":"siehe vorher",
-        "WAITING_TIME_FOUND":"Das Team antwortet normalerweise in",
+        "WAITING_TIME_FOUND":"Das Team antwortet normalerweise in $reply_time",
         "WAITING_TIME_NOT_FOUND":"Das Team wird so schnell wie möglich antworten",
         "CLOSED":"GESCHLOSSEN"
     }
@@ -336,7 +336,7 @@
         "START_A_CONVERSATION":"Iniciar uma conversa",
         "NO_CONVERSATION":"Nenhuma conversa",
         "SEE_PREVIOUS":"ver anterior",
-        "WAITING_TIME_FOUND":"A equipe normalmente responde em",
+        "WAITING_TIME_FOUND":"A equipe normalmente responde em $reply_time",
         "WAITING_TIME_NOT_FOUND":"A equipe responderá o mais breve possível",
         "CLOSED":"FECHADO"
     }
@@ -393,7 +393,7 @@
         "START_A_CONVERSATION":"Начать разговор",
         "NO_CONVERSATION":"Нет разговоров",
         "SEE_PREVIOUS":"смотри предыдущий",
-        "WAITING_TIME_FOUND":"Команда обычно отвечает в",
+        "WAITING_TIME_FOUND":"Команда обычно отвечает в $reply_time",
         "WAITING_TIME_NOT_FOUND":"Команда ответит как можно скорее",
         "CLOSED":"ЗАКРЫТО"
     }
@@ -450,7 +450,7 @@
         "START_A_CONVERSATION":"Bir konuşma başlatın",
         "NO_CONVERSATION":"Konuşma yok",
         "SEE_PREVIOUS":"Öncekine bak",
-        "WAITING_TIME_FOUND":"Ekip genellikle …… içerisinde cevaplar",
+        "WAITING_TIME_FOUND":"Ekip genellikle …… içerisinde cevaplar $reply_time",
         "WAITING_TIME_NOT_FOUND":"Ekip en kısa süre içerisinde cevap verecektir.",
         "CLOSED":"KAPALI"
     }
