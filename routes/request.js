@@ -478,6 +478,10 @@ router.delete('/:requestid',  function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    
   
     requestEvent.emit('request.delete', request);
 
@@ -848,12 +852,45 @@ router.get('/csv', function (req, res, next) {
         
 
          requests.forEach(function(element) {
-            var depName = "";
+
+            var channel_name = "";
+            if (element.channel && element.channel.name) {
+              channel_name = element.channel.name;
+            }
+            delete element.channel;
+            element.channel_name = channel_name;
+
+            var department_name = "";
             if (element.department && element.department.name) {
-              depName = element.department.name;
+              department_name = element.department.name;
             }
             delete element.department;
-            element.department = depName;
+            element.department_name = department_name;
+
+            var lead_fullname = "";
+            if (element.lead.fullname) {
+              lead_fullname = element.lead.fullname
+            }
+            element.lead_fullname = lead_fullname;
+
+
+            var lead_email = "";
+            if (element.lead.email) {
+              lead_email = element.lead.email
+            }
+            
+            element.lead_email = lead_email;
+
+            delete element.lead;
+
+            delete element.attributes;
+
+            delete element.notes;
+
+            delete element.tags;
+
+            delete element.channelOutbound;
+            
 
             // TODO print also lead. use a library to flattize
           });
