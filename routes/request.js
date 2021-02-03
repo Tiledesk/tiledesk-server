@@ -890,6 +890,8 @@ router.get('/csv', function (req, res, next) {
             delete element.tags;
 
             delete element.channelOutbound;
+
+            delete element.location;
             
 
             // TODO print also lead. use a library to flattize
