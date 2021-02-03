@@ -28,6 +28,9 @@ var ProjectSchema = new Schema({
   },
   settings: {
     type: Object,
+    default: function () {
+      return {settings: {chat_limit_on: true}};
+    }
   },
   widget: {
     type: Object,
@@ -66,7 +69,7 @@ var ProjectSchema = new Schema({
       //   //console.log("versionNumber",versionNumber);
       //   return versionNumber;
       // } catch(e) {
-        return 200;
+        return 20115; //2.01.15
       // }    
     }
   },
