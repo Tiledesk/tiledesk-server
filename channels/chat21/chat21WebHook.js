@@ -652,8 +652,8 @@ else if (req.body.event_type == "presence-change") {
             // it's uuid_user user
           }
           
-          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_served_chat);
-          
+          pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_assigned_chat);
+
           // winston.info("pu:", pu);
 
 
