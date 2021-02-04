@@ -354,7 +354,7 @@ router.get('/', async (req, res)  => {
    winston.debug("labels",labels);
     
    if (!labels) {
-    winston.warn('Label not found ');
+    winston.warn('Label not found for projectid: ' + req.projectid);
     return res.json({});
   }
 
