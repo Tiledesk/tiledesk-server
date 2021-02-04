@@ -10,6 +10,7 @@ var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');
 var leadService = require('../services/leadService');
 var winston = require('../config/winston');
+
 var MessageConstants = require("../models/messageConstants");
 var cacheUtil = require('../utils/cacheUtil');
 
@@ -42,7 +43,12 @@ function(req, res) {
         .exec(function(err, request) {
 
         if (err) {
-          winston.error('Error getting the request.', err);
+          winston.log({
+              level: 'error',
+              message: 'Error getting the request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+              label: req.projectid
+            });
+          // winston.error('Error getting the request.', err);
           return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
         }
 
@@ -120,7 +126,12 @@ function(req, res) {
                     }
                   // });
                 }).catch(function(err){
-                  winston.error("Error creating message", err);
+                  winston.log({
+                    level: 'error',
+                    message: 'Error creating message: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+                    label: req.projectid
+                  });
+                  // winston.error("Error creating message", err);
                   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
                 });
 
