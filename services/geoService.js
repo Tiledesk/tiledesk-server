@@ -112,7 +112,7 @@ class GeoService {
                 if (err) {
                     return winston.error("Error saving location metadata for request with id " + request._id, err);
                 }
-                return winston.info("Saved location metadata for request with id " + request._id);
+                return winston.verbose("Saved location metadata for request with id " + request._id);
             }); 
                
         }

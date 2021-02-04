@@ -674,7 +674,7 @@ else if (req.body.event_type == "presence-change") {
     });
  
     if (project_users && project_users.length>0) {
-      winston.info("Presence changed for user_id : "+  user_id + " and presence "+ presence +". Updated " + project_users.length + " project users");
+      winston.verbose("Presence changed for user_id : "+  user_id + " and presence "+ presence +". Updated " + project_users.length + " project users");
     }
     
 
