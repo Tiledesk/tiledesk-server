@@ -868,14 +868,14 @@ router.get('/csv', function (req, res, next) {
             element.department_name = department_name;
 
             var lead_fullname = "";
-            if (element.lead.fullname) {
+            if (element.lead && element.lead.fullname) {
               lead_fullname = element.lead.fullname
             }
             element.lead_fullname = lead_fullname;
 
 
             var lead_email = "";
-            if (element.lead.email) {
+            if (element.lead && element.lead.email) {
               lead_email = element.lead.email
             }
             
