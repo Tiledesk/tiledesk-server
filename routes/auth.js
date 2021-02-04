@@ -212,6 +212,15 @@ router.post('/signinWithCustomToken', [
       }
 
       id_project = AudienceId;
+
+
+      // if (req.project.version>200) {
+      //   if (req.user._id.indexOf(id_project+"_")==-1) {
+      //     // Error
+      //     // aggiorna docs ed esempio:
+      //   }
+      // }
+
     } else {
       // When happen?
       return res.json({ success: true, token: req.headers["authorization"], user: req.user });
@@ -287,14 +296,10 @@ router.post('/signin', function (req, res) {
       throw err;
     } 
 
-    if (!user) {
-     
-      
-    
+    if (!user) {               
       authEvent.emit("user.signin.error", {req: req});        
 
-
-      winston.warn('Authentication failed. User not found.');
+      winston.warn('Authentication failed. User not found.', {email:email});
       res.status(401).send({ success: false, msg: 'Authentication failed. User not found.' });
     } else {
       // check if password matches
@@ -379,7 +384,7 @@ router.post('/signin', function (req, res) {
 
         }
       } else {
-        winston.warn('Authentication failed.  Password is required.');
+        winston.warn('Authentication failed.  Password is required.', {body: req.body});
         res.status(401).send({ success: false, msg: 'Authentication failed.  Password is required.' });
       }
 
