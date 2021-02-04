@@ -14,6 +14,13 @@ if (trialEnabled) {
   winston.info("Trial mode enabled");
 }
 
+var ChatLimitOn = process.env.SMART_ASSIGNMENT_CHAT_LIMIT_ON_DEFAULT_PROJECT || false;
+winston.debug("ChatLimitOn: "+ChatLimitOn );
+
+
+if (ChatLimitOn) {
+  winston.info("Smart Assignment Chat Limit On as default value for projects");
+}
 
 var ProjectSchema = new Schema({
   name: {
@@ -29,7 +36,13 @@ var ProjectSchema = new Schema({
   settings: {
     type: Object,
     default: function () {
-      return {settings: {chat_limit_on: true}};
+      var defaultValue = {};
+
+      if (ChatLimitOn) {
+        defaultValue.chat_limit_on = true;
+      }
+      
+      return defaultValue; 
     }
   },
   widget: {

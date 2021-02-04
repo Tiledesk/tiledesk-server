@@ -367,7 +367,7 @@ router.post('/', function (req, res) {
       winston.debug("new_member: " + new_member);
 
       if (new_member=="system") {
-        winston.warn("new_member "+ new_member+ " not added to participants");
+        winston.verbose("new_member "+ new_member+ " not added to participants");
         return res.status(400).send({success: false, msg: "new_member "+ new_member+ " not added to participants" });
       }
 
@@ -517,6 +517,10 @@ else if (req.body.event_type == "typing-start") {
   winston.debug("writer_id",writer_id);
   
 
+  if (writer_id=="system") {
+    winston.debug("not saving system typings");
+    return res.status(400).send({success: false, msg: "not saving system typings" });
+  }
   var data = req.body.data;
   winston.debug("data",data);
 
@@ -646,6 +650,7 @@ else if (req.body.event_type == "presence-change") {
           var pu = updatedProject_userPopulated.toJSON();
           pu.id_project =  updatedProject_userPopulated.id_project._id;
 
+   
           if (updatedProject_userPopulated.id_user) {
             pu.id_user = updatedProject_userPopulated.id_user._id;
           }else {
