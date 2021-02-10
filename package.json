@@ -93,7 +93,7 @@
     "serve-favicon": "~2.5.0",
     "sharp": "^0.27.1",
     "uniqid": "^5.2.0",
-    "uuid": "^8.3.2",
+    "uuid": "^3.3.3",
     "winston": "^3.3.3",
     "winston-mongodb": "^5.0.5",
     "ws": "^7.4.3"
