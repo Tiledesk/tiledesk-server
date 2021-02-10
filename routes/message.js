@@ -72,7 +72,7 @@ function(req, res) {
                   first_text: req.body.text, departmentid: req.body.departmentid, sourcePage:req.body.sourcePage, 
                   language: req.body.language, userAgent:req.body.userAgent, status:null, createdBy: req.user._id,
                   attributes: req.body.attributes, subject: req.body.subject, preflight:undefined, channel: req.body.channel, location: req.body.location,
-                  snapshot: {lead: createdLead, requester: req.projectuser } 
+                  lead: createdLead, requester: req.projectuser 
                 };
   
                 return requestService.create(new_request).then(function (savedRequest) {

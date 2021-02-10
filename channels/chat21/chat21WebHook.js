@@ -175,7 +175,7 @@ router.post('/', function (req, res) {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
-                        snapshot: {lead:createdLead, requester:project_user } 
+                        lead:createdLead, requester:project_user
                       };
     
                       winston.debug("new_request", new_request);
