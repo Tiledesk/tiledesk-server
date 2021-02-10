@@ -271,23 +271,44 @@ it('getbyidWithPartecipatingBots', function (done) {
 });
 
 
-
+// mocha test/requestRoute.js  --grep 'getallSimple'
 
   it('getallSimple', function (done) {
     // this.timeout(10000);
 
-    var email = "test-signup-" + Date.now() + "@email.com";
+    var email = "test-getallsimple-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
-    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-     projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function(savedProjectAndPU) {
-      var savedProject = savedProjectAndPU.project;
+    userService.signup( email, pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
-      
-      // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+    console.log("savedUser", savedUser);
+
+    projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function(savedProjectAndPU) {
+
+    var savedProject = savedProjectAndPU.project;
+
+    console.log("savedProjectAndPU", savedProjectAndPU);
+
+    leadService.createIfNotExists("leadfullname", "email-getallSimple@email.com", savedProject._id).then(function(createdLead) {
+
+    console.log("createdLead", createdLead);
+
+
+    var new_request = {
+      request_id: "request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+      id_project:savedProject._id, first_text: "first_text",
+      lead:createdLead, requester: savedProjectAndPU.project_user 
+    };
+  
+  
+        
+    requestService.create(new_request).then(function(savedRequest) {
+
+      console.log("savedRequest", savedRequest);
+
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
       //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-        requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null,savedProject._id, "first_text").then(function(savedRequest) {
+        // requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null,savedProject._id, "first_text").then(function(savedRequest) {
 
           winston.debug("resolve", savedRequest.toObject());
          
@@ -300,14 +321,21 @@ it('getbyidWithPartecipatingBots', function (done) {
                 console.log("res.body",  res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
+
                 expect(res.body.requests[0].department).to.not.equal(null);
                 expect(res.body.requests[0].requester).to.not.equal(null);
                 console.log("res.body.requests[0].requester",  res.body.requests[0].requester);
+
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
                 expect(res.body.requests[0].participantsAgents.length).to.equal(1);                
                 expect(res.body.requests[0].participantsBots).to.have.lengthOf(0);
                 expect(res.body.requests[0].hasBot).to.equal(false);
+                expect(res.body.requests[0].snapshot).to.not.equal(undefined);
+                expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
+                expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+                expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
+                expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
                 // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
                 // expect(res.body.requests[0].participatingBots.length).to.equal(0);
                done();
@@ -317,11 +345,86 @@ it('getbyidWithPartecipatingBots', function (done) {
             //     assert.isNotOk(err,'Promise error');
             //     done();
             // });
-    // });
+    });
   });
 });
     });
 });
+
+
+
+  // mocha test/requestRoute.js  --grep 'getallNoPopulate'
+
+it('getallNoPopulate', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-signup-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("createWithId-getallNoPopulate", savedUser._id).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+
+    
+    leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+    //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+
+      var request = {
+        request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+        id_project:savedProject._id, first_text: "first_text",
+        lead:createdLead, requester: savedProjectAndPU.project_user };
+
+
+      
+      requestService.create(request).then(function(savedRequest) {
+  
+      // requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null,savedProject._id, "first_text").then(function(savedRequest) {
+
+        winston.debug("resolve", savedRequest.toObject());
+       
+
+        chai.request(server)
+          .get('/'+ savedProject._id + '/requests/?no_polutate=true')
+          .auth(email, pwd)
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              // assert.isString(res.body.requests[0].department, 'order placed');
+
+              expect(res.body.requests[0].department).to.be.a('string');
+              expect(res.body.requests[0].requester).to.be.a('string');
+              // console.log("res.body.requests[0].requester",  res.body.requests[0].requester);
+              // expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
+
+              console.log("res.body.requests[0].participantsAgents", res.body.requests[0].participantsAgents);
+              expect(res.body.requests[0].participantsAgents).to.have.lengthOf(1);
+              expect(res.body.requests[0].participantsAgents[0]).to.equal(savedUser._id.toString());
+              expect(res.body.requests[0].participantsBots).to.have.lengthOf(0);
+              expect(res.body.requests[0].hasBot).to.equal(false);
+              
+              expect(res.body.requests[0].snapshot).to.not.equal(undefined);
+              expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
+              expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              // expect(res.body.requests[0].test).to.not.equal(undefined);
+              // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
+              // expect(res.body.requests[0].participatingBots.length).to.equal(0);
+             done();
+          });
+          // .catch(function(err) {
+          //     console.log("test reject", err);
+          //     assert.isNotOk(err,'Promise error');
+          //     done();
+          // });
+  // });
+        });
+});
+});
+  });
+});
+
 
 
 

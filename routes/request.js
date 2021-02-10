@@ -62,6 +62,7 @@ function (req, res) {
     return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
     .then(function(createdLead) {
 
+      // TODO USE NEW .create()
         // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
       return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
         req.body.text, req.body.departmentid, req.body.sourcePage, 
@@ -682,16 +683,34 @@ router.get('/', function (req, res, next) {
 
   // requestcachefarequi populaterequired
   var q1 = Request.find(query).
-    skip(skip).limit(limit).
-    populate('department').
-    populate('participatingBots').
-    populate('participatingAgents').
-    populate('lead').
-    populate({path:'requester',populate:{path:'id_user'}}).
-    sort(sortQuery).
-    // cache(cacheUtil.defaultTTL, "requests-"+projectId).
-    exec();
+    skip(skip).limit(limit);
 
+   
+
+
+    if (!req.query.no_polutate) {
+      q1.populate('department').
+      populate('participatingBots').
+      populate('participatingAgents').
+      populate('lead').
+      populate({path:'requester',populate:{path:'id_user'}});
+    }
+        
+    // cache(cacheUtil.defaultTTL, "requests-"+projectId).    
+
+
+    // if (req.query.select_snapshot) {
+    //   winston.info('select_snapshot');
+    //   q1.select("+snapshot");
+    //   // q1.select({ "snapshot": 1});
+    // }
+
+    q1.sort(sortQuery);
+
+    // winston.info('q1',q1);
+
+
+    q1.exec();
 
     // TODO if ?onlycount=true do not perform find query but only 
     // set q1 to undefined; to skip query

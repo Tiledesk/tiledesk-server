@@ -66,18 +66,26 @@ function(req, res) {
               return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
 
-                // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
+              
+                var new_request = {
+                  request_id: req.params.request_id, project_user_id: req.projectuser._id, lead_id: createdLead._id, id_project:req.projectid,
+                  first_text: req.body.text, departmentid: req.body.departmentid, sourcePage:req.body.sourcePage, 
+                  language: req.body.language, userAgent:req.body.userAgent, status:null, createdBy: req.user._id,
+                  attributes: req.body.attributes, subject: req.body.subject, preflight:undefined, channel: req.body.channel, location: req.body.location,
+                  snapshot: {lead: createdLead, requester: req.projectuser } 
+                };
+  
+                return requestService.create(new_request).then(function (savedRequest) {
+
+                  // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
                   //  createdBy, attributes, subject, preflight, channel, location) {
-                return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
-                  req.body.text, req.body.departmentid, req.body.sourcePage, 
-                  req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
+                    
+                // return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
+                //   req.body.text, req.body.departmentid, req.body.sourcePage, 
+                //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
 
 
-                // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                  // return requestService.createWithId(req.params.request_id, req.body.sender, req.projectid, 
-                  //     req.body.text, req.body.departmentid, req.body.sourcePage, 
-                  //     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
-
+             
                     
                     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
                     return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,

@@ -71,7 +71,12 @@ class RequestService {
           request.agents = result.agents;
           request.assigned_at = assigned_at;
           request.waiting_time = undefined //reset waiting_time on reroute
-                  
+          
+          if (!request.snapshot) { //if used other methods than .create
+            request.snapshot = {}
+          }
+          request.snapshot.department = result.department;
+
               return resolve(request);
                   
                
@@ -241,8 +246,7 @@ class RequestService {
            });
      });
    }
-
-
+   
 
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
@@ -254,6 +258,35 @@ class RequestService {
   }
 
   createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
+    
+    var request = {
+                    request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project,first_text:first_text,
+                    departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, createdBy:createdBy,
+                    attributes:attributes, subject:subject, preflight:preflight, channel:channel, location:location 
+                  };
+
+    return this.create(request);
+  };  
+
+  create(request) {
+
+    var request_id = request.request_id;
+    var project_user_id = request.project_user_id;
+    var lead_id = request.lead_id;
+    var id_project = request.id_project;
+    var first_text = request.first_text;
+    var departmentid = request.departmentid;
+    var sourcePage = request.sourcePage;
+    var language = request.language;
+    var userAgent = request.userAgent;
+    var status = request.status;
+    var createdBy = request.createdBy;
+    var attributes = request.attributes;
+    var subject = request.subject;
+    var preflight = request.preflight;
+    var channel = request.channel;
+    var location = request.location;
+    
 
     if (!departmentid) {
       departmentid ='default';
@@ -290,7 +323,7 @@ class RequestService {
            var hasBot = false;
            var dep_id = departmentid;
            var agents = [];
-
+           var snapshot = {};
 
            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
            winston.debug("getOperators", result);
@@ -329,6 +362,15 @@ class RequestService {
              }
            }
            
+          snapshot.department = result.department;
+          snapshot.agents = agents;
+          if (request.requester) {
+            snapshot.requester = request.requester;
+          }
+          if (request.lead) {
+            snapshot.lead = request.lead;
+          }          
+
            // winston.debug("assigned_operator_id", assigned_operator_id);
             // winston.debug("req status", status);
 
@@ -362,7 +404,8 @@ class RequestService {
                 updatedBy: createdBy,
                 preflight: preflight,
                 channel: channel,
-                location: location
+                location: location,
+                snapshot: snapshot
               });
                     
 
@@ -394,11 +437,10 @@ class RequestService {
   }
 
 
-  create(requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-    return this.createWithId(null, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes);
-};
 
 
+
+  //DEPRECATED. USED ONLY IN SAME TESTS
   createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
 
     // winston.debug("request_id", request_id);

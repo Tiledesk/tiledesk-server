@@ -35,6 +35,69 @@ describe('RequestService', function () {
 
   // var userid = "5badfe5d553d1844ad654072";
 
+  // mocha test/requestService.js  --grep 'createObj'
+
+  it('createObj', function (done) {
+    // this.timeout(10000);
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+     projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+
+      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+        
+        var request = {
+                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      id_project:savedProject._id, first_text: "first_text",
+                      lead:createdLead, requester: savedProjectAndPU.project_user };
+
+       requestService.create(request).then(function(savedRequest) {
+          winston.debug("resolve", savedRequest.toObject());
+          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+          expect(savedRequest.first_text).to.equal("first_text");
+          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.status).to.equal(200);
+          expect(savedRequest.participants).to.have.lengthOf(1);
+          expect(savedRequest.participants).to.contains(userid);
+          expect(savedRequest.participantsAgents).to.contains(userid);
+          expect(savedRequest.participantsBots).to.have.lengthOf(0);
+          expect(savedRequest.hasBot).to.equal(false);
+          console.log("savedRequest.participants[0]", savedRequest.participants[0]);
+          expect(savedRequest.participants[0].toString()).to.equal(userid);
+          expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
+          expect(savedRequest.assigned_at).to.not.equal(null);
+
+          expect(savedRequest.snapshot.department.name).to.not.equal(null);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+          expect(savedRequest.snapshot.requester.role).to.equal("owner");
+          // expect(savedRequest.snapshot.requester.role).to.equal("owner");
+          
+          expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
+
+          // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
+          // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
+
+          expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+          // aiuto
+          // expect(savedRequest.department).to.equal("requester_id1");
+          done();
+        }).catch(function(err) {
+            console.log("test reject",err);
+            assert.isNotOk(err,'Promise error');
+            done();
+        });
+    });
+  });
+    });
+  });
+
+
   it('createWithIdAndCreateNewLead', function (done) {
     // this.timeout(10000);
     var email = "test-request-create-" + Date.now() + "@email.com";
@@ -62,6 +125,9 @@ describe('RequestService', function () {
           expect(savedRequest.participants[0].toString()).to.equal(userid);
           expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
           expect(savedRequest.assigned_at).to.not.equal(null);
+
+          expect(savedRequest.snapshot.department.name).to.not.equal(null);
+          expect(savedRequest.snapshot.agents).to.not.equal(null);
           
           expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
@@ -278,7 +344,7 @@ describe('RequestService', function () {
   });
 
  
-  it('updageWaitingTimeRequest', function (done) {
+  it('updateWaitingTimeRequest', function (done) {
     this.timeout(1000);
     var email = "test-request-create-" + Date.now() + "@email.com";
     var pwd = "pwd";

@@ -170,9 +170,21 @@ router.post('/', function (req, res) {
                         return winston.error("project_user not found with query:", query);                        
                       }
 
-                      // });
-                    // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                      return requestService.createWithIdAndRequester(message.recipient, project_user_id, createdLead._id, projectid, message.text, departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
+                      
+                      var new_request = {
+                        request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
+                        departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
+                        attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
+                        snapshot: {lead:createdLead, requester:project_user } 
+                      };
+    
+                      winston.debug("new_request", new_request);
+                      
+                      return requestService.create(new_request).then(function (savedRequest) {
+
+                    
+                      //return requestService.createWithIdAndRequester(message.recipient, project_user_id, createdLead._id, projectid, message.text, 
+                      // departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
                  
 
                         var messageId = undefined;

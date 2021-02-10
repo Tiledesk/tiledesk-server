@@ -12,6 +12,8 @@ var LeadSchema = require("../models/lead").schema; //it's not used but i you run
 var NoteSchema = require("../models/note").schema;
 var TagSchema = require("../models/tag");
 var LocationSchema = require("../models/location");
+var RequestSnapshotSchema = require("../models/requestSnapshot");
+
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 // var autoIncrement = require('mongoose-auto-increment');
@@ -172,6 +174,11 @@ var RequestSchema = new Schema({
   rating_message: {
     type: String,
     required: false,
+  }, 
+  snapshot: {
+    type: RequestSnapshotSchema,
+    select: true
+    // select: false
   }, 
 
 
