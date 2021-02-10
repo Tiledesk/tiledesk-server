@@ -661,6 +661,26 @@ router.get('/', function (req, res, next) {
 
 
 
+  if (req.query.snap_department_routing) {
+    query["snapshot.department.routing"] = req.query.snap_department_routing;
+    winston.debug('REQUEST ROUTE - QUERY snap_department_routing', query.snap_department_routing);
+  }
+
+  if (req.query.snap_department_default) {
+    query["snapshot.department.default"] = req.query.snap_department_default;
+    winston.debug('REQUEST ROUTE - QUERY snap_department_default', query.snap_department_default);
+  }
+
+
+  if (req.query.snap_department_id_bot) {
+    query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
+    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot', query.snap_department_id_bot);
+  }
+
+  if (req.query.snap_department_id_bot_exists) {
+    query["snapshot.department.id_bot"] = {"$exists": req.query.snap_department_id_bot_exists}
+    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
+  }
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
