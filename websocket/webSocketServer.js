@@ -633,10 +633,10 @@ class WebSocketServer {
       if (authEvent.queueEnabled) {
         projectuserUpdateKey = 'project_user.update.queue.pubsub';
       }
-      winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
+      winston.info('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
-        winston.debug('pu', pu);
+        winston.info('pu', pu);
         
         //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
 
@@ -648,6 +648,7 @@ class WebSocketServer {
         }else {
           userId = pu.id_user;
         }
+        winston.info('userId', userId);
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "UPDATE");
 
       });
@@ -662,6 +663,7 @@ class WebSocketServer {
       eventEvent.on(eventEmitKey,function(event) {
         winston.debug('event', event);
         if (event.project_user === undefined) {
+          //with "faqbot.answer_not_found" project_user is undefined but it's ok 
           winston.warn('not sending with ws event with project_user undefined', event);
           return ;
         }
