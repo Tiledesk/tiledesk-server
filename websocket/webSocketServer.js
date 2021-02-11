@@ -633,10 +633,10 @@ class WebSocketServer {
       if (authEvent.queueEnabled) {
         projectuserUpdateKey = 'project_user.update.queue.pubsub';
       }
-      winston.info('projectuserUpdateKey: ' + projectuserUpdateKey);
+      winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
-        winston.info('pu', pu);
+        winston.debug('pu', pu);
         
         //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
 
@@ -648,7 +648,7 @@ class WebSocketServer {
         }else {
           userId = pu.id_user._id;
         }
-        winston.info('userId:'+ userId);
+        winston.debug('userId:'+ userId);
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "UPDATE");
 
       });
