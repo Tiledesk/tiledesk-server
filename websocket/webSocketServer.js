@@ -646,9 +646,9 @@ class WebSocketServer {
         if (pu.uuid_user) {
           userId = pu.uuid_user;
         }else {
-          userId = pu.id_user;
+          userId = pu.id_user._id;
         }
-        winston.info('userId', userId);
+        winston.info('userId:'+ userId);
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "UPDATE");
 
       });
