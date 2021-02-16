@@ -196,7 +196,7 @@ describe('RequestService', function () {
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.agents).to.have.lengthOf(1);
-          expect(savedRequest.department).to.not.equal(null);
+          expect(savedRequest.department).to.not.equal(undefined);
           expect(savedRequest.status).to.equal(50);
           expect(savedRequest.participants).to.have.lengthOf(0);
           expect(savedRequest.participantsAgents).to.have.lengthOf(0);

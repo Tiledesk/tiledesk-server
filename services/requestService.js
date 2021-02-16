@@ -89,7 +89,6 @@ class RequestService {
   }
   
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
-  
   route(request_id, departmentid, id_project, nobot, no_populate) {
    var that = this;
 
@@ -389,6 +388,9 @@ class RequestService {
 
           if (status == 50) {
                 // skip assignment
+                if (participants.length == 0 ) {
+                  dep_id = result.department._id;
+                }
           } else {
          
             if (participants.length == 0 ) {
