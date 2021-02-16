@@ -6,6 +6,7 @@ const departmentService = require('../services/departmentService');
 const Faq = require('../models/faq');
 var winston = require('../config/winston');
 
+const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
 var request = require('retry-request', {
     request: require('request')
@@ -42,13 +43,27 @@ class FaqBotSupport {
         return label;
      
     }
+// usa api di sponziello parseReply: https://github.com/Tiledesk/tiledesk-nodejs-libs/blob/master/tiledesk-chatbot-util/index.js 
 
+    parseMicrolanguage(text, message, bot, faq) { 
+        return new Promise(function(resolve, reject) {
+            var reply = TiledeskChatbotUtil.parseReply(text);
+            winston.info('parseReply: ' + JSON.stringify(reply) );
+            var messageReply = reply.message;
+            return resolve(messageReply);
+        });
+    }
 
-    getButtonFromText(text, message, bot, faq) { 
+    getParsedMessage(text, message, bot, faq) { 
+        // return this.parseMicrolanguage(text, message, bot, faq);
+        return this.parseMicrolanguageOld(text, message, bot, faq);
+    }
+
+    parseMicrolanguageOld(text, message, bot, faq) { 
         var that = this;
         // text = "*"
         return new Promise(function(resolve, reject) {
-            winston.debug("getButtonFromText ******",text);
+            winston.debug("getParsedMessage ******",text);
             var repl_message = {};
 
             // cerca i bottoni eventualmente definiti
@@ -123,7 +138,7 @@ class FaqBotSupport {
                         if (err) {
                             bot_answer.text = err +' '+ response.text;
                             bot_answer.type = "text";
-                            winston.error("Error from webhook reply of getButtonFromText", err);
+                            winston.error("Error from webhook reply of getParsedMessage", err);
                             return resolve(bot_answer);
                         }
                         // if (response.statusCode >= 400) {                  
@@ -137,7 +152,7 @@ class FaqBotSupport {
                         }else {
                             text = json.text;
                         }
-                        that.getButtonFromText(text,message, bot, faq).then(function(bot_answer) {
+                        that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
@@ -184,12 +199,20 @@ class FaqBotSupport {
                                 winston.debug("bot_answer exact", bot_answer);  
                                 // found = true;
                                 // return resolve(bot_answer);
-                                that.getButtonFromText(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {
-                                    
-                                    bot_answerres.defaultFallback=true;
 
-                                    return resolve(bot_answerres);
-                                });
+                                if (message.channel.name == "chat21") {
+
+                                    that.getParsedMessage(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {
+                                    
+                                        bot_answerres.defaultFallback=true;
+    
+                                        return resolve(bot_answerres);
+                                    });
+
+                                } else {
+                                    return resolve(bot_answer);
+                                }
+                                
                            } else {
                                 var message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
                                 bot_answer.text = that.getMessage(message_key, message.language, faqBotSupport.LABELS);  
