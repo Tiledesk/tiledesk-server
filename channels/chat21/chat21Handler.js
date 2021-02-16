@@ -282,7 +282,7 @@ class Chat21Handler {
 
                         winston.verbose("Chat21Sender sending message.sending ",  message);
 
-                        // chat21Util.getButtonFromText().then(function(messageData) {
+                        // chat21Util.getParsedMessage().then(function(messageData) {
                         //     message = messageData;
 
                             // doent'work must merge older field with new message = chat21Util.parseReply(message.text);
