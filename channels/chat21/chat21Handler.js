@@ -470,7 +470,9 @@ class Chat21Handler {
                         }
                         // TODO ionic dont show attributes panel if attributes.client is empty. bug?
                         gAttributes['client'] = request.userAgent || 'n.d.'; //used by ionic to open request detail 
-                        gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
+                        if (request.department) {
+                            gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
+                        }                        
                         gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
 
