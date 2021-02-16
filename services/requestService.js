@@ -90,7 +90,7 @@ class RequestService {
   
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
   
-  route(request_id, departmentid, id_project, nobot) {
+  route(request_id, departmentid, id_project, nobot, no_populate) {
    var that = this;
 
    return new Promise(function (resolve, reject) {
@@ -110,6 +110,8 @@ class RequestService {
           }
                    
 
+          // cambia var in let
+
           //it is important to clone here
           var requestBeforeRoute = Object.assign({}, request.toObject());
           winston.debug("requestBeforeRoute",requestBeforeRoute);
@@ -128,6 +130,10 @@ class RequestService {
 
             if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+
+              if (no_populate) {
+                return resolve(request);
+              }
 
               return request
               .populate('lead') 
@@ -286,7 +292,7 @@ class RequestService {
     var preflight = request.preflight;
     var channel = request.channel;
     var location = request.location;
-    
+    var participants = request.participants || [];
 
     if (!departmentid) {
       departmentid ='default';
@@ -307,7 +313,8 @@ class RequestService {
 
         var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
-          createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location}};
+          createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location,
+          participants:participants}};
 
           winston.debug("context",context);
 
@@ -315,53 +322,120 @@ class RequestService {
         // return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
 
         
-           var assigned_at = undefined;          
-           var assigned_operator_id;
-           var participants = [];
+          //  var assigned_operator_id;
+          //  var participants = [];
            var participantsAgents = [];
            var participantsBots = [];
            var hasBot = false;
-           var dep_id = departmentid;
+
+          //  var dep_id = departmentid;
+          var dep_id = undefined;
+
+           var assigned_at = undefined;          
+          
            var agents = [];
+
            var snapshot = {};
 
+          //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
            var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
            winston.debug("getOperators", result);
  
-           // for preflight it is important to save agents in req for trigger. try to optimize it
-           dep_id = result.department._id;
+          
            agents = result.agents;
 
 
           //  winston.debug("req status0", status);
 
-           if (!status) {
+          //  if (!status) {
         
 
            
-            //  winston.debug("req status check", status);
-             status = RequestConstants.UNASSIGNED; 
-             if (result.operators && result.operators.length>0) {
-               assigned_operator_id = result.operators[0].id_user;
-               status =  RequestConstants.ASSIGNED;
-               var assigned_operator_idString = assigned_operator_id.toString();
-               participants.push(assigned_operator_idString);
-               // botprefix
-               if (assigned_operator_idString.startsWith("bot_")) {
+          //   //  winston.debug("req status check", status);
+          //    status = RequestConstants.UNASSIGNED; 
+
+          //    if (result.operators && result.operators.length>0) {
+
+          //      status =  RequestConstants.ASSIGNED;
+
+
+          //     //  assigned_operator_id = result.operators[0].id_user;
+
+          //      var assigned_operator_idString = result.operators[0].id_user.toString();
+
+          //      participants.push(assigned_operator_idString);
+
+          //      // botprefix
+          //      if (assigned_operator_idString.startsWith("bot_")) {
+
+          //       hasBot = true;
+          //       winston.debug("hasBot:"+hasBot);
+
+          //       // botprefix
+          //       var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
+          //       winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
+
+          //       participantsBots.push(assigned_operator_idStringBot);
+
+          //      } else {
+          //       participantsAgents.push(assigned_operator_idString);
+          //      }
+
+          //      assigned_at = Date.now();
+          //    }
+          //  }
+           
+          
+
+          if (status == 50) {
+                // skip assignment
+          } else {
+         
+            if (participants.length == 0 ) {
+              if (result.operators && result.operators.length>0) {            
+                participants.push(result.operators[0].id_user.toString());
+              }
+              // for preflight it is important to save agents in req for trigger. try to optimize it
+              dep_id = result.department._id;
+
+            }
+
+            if (participants.length > 0) {
+            
+              status =  RequestConstants.ASSIGNED;
+  
+              // botprefix
+              if (participants[0].startsWith("bot_")) {
+  
                 hasBot = true;
                 winston.debug("hasBot:"+hasBot);
+  
                 // botprefix
                 var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
                 winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
+  
                 participantsBots.push(assigned_operator_idStringBot);
-
+  
                } else {
-                participantsAgents.push(assigned_operator_idString);
+
+                participantsAgents.push(participants[0]);
+
                }
+  
                assigned_at = Date.now();
-             }
-           }
+
+            } else {
+
+               status = RequestConstants.UNASSIGNED; 
+
+            }
+
+          }
+
+        
            
+
+
           snapshot.department = result.department;
           snapshot.agents = agents;
           if (request.requester) {
@@ -737,6 +811,11 @@ class RequestService {
 
       return Request       
       .findOne({request_id: request_id, id_project: id_project})
+      .populate('lead')
+      .populate('department')
+      .populate('participatingBots')
+      .populate('participatingAgents')  
+      .populate({path:'requester',populate:{path:'id_user'}})
       .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
       .exec(function(err, request) {
         if (err) {

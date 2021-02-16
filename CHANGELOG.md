@@ -1,5 +1,69 @@
-# Next
-- Campaign REST API (test it)
+
+
+# 2.1.17
+- Log fix
+
+# 2.1.16
+- CSV export fix
+
+# 2.1.15
+
+
+- Automatically close unresponsive bot conversation  (also in 2.1.14.4). You may configure CLOSE_BOT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION, etc.
+- Added _answerid field to the messages replies send from the chatbot under attributes field.
+- Added fulltext indexes for request.notes request.tags and request.subject.. 
+- Added default language field for pivoting. We disabled pre traslation for EN, IT, FR. So only pivot language is taken into account. Included database migration script:  1604082287722-labels-data-default-fields--autosync.js
+- Added status field to project_user collection. Included database migration script: 1603797978971-project_users-status-field-added--autosync.js
+- Added channel_type (group or direct) and channel (chat21, whatsapp, etc..) fields to the message model. Included database migration script: 1602847963299-message-channel_type-and-channel-fields-added--autosync.js
+- Added posfix $reply_time to WAITING_TIME_FOUND label. Included database migration script: 1604082288723-labels-waiting_time-added_suffix_reply_time--autosync.js
+- Added channelOutbound (chat21, whatsapp, etc..) fields to indentify the outboud channel to the request model. Included database migration script: 1603955232377-requests-channel-outbound-fields--autosync.js
+- Renamed request field UNSERVED (100) to UNASSIGNED (100) and SERVED (200) to ASSIGNED (200)
+- Renamed property max_agent_served_chat to max_agent_assigned_chat of the project.settings object.Included database migration script: project-settings-max_agent_assigned_renamed--autosync
+- Renamed property max_served_chat to max_assigned_chat of the project_user object. Included database migration script: project_user-max_assigned_chat-renamed--autosync
+- SourcePage and bot answer stats with tiledesk-ent/tiledesk-server-analytics: 1.1.9
+- Fix Conversation export to CSV
+- Bots statistics with tiledesk-ent/tiledesk-server-analytics: 1.1.8
+- Added support to channel selection for resthook module @tiledesk-ent/tiledesk-server-resthook: 1.1.47
+- Added supervisor role
+- BugFix: Updated jwthistory and queue module with listen function fix (also in 2.1.14.1)
+- Department patch method added (also in 2.1.14.2)
+- BugFix: Now you can signupWithCustomToken using subject=userexternal and subscription type audience (https://tiledesk.com/subscriptions/subid). It's used by Whatsapp and Facebook Messenger apps (also in 2.1.14.2)
+- Chat21 contact detail endpoint
+- Added tags field for the lead model
+- Added location field to the request model. Auto populate location field from ip
+- Update all dependencies to last version
+- Image endpoint now return also thumbnail filename
+- Added analytics endpoint for messages (also in 2.1.14.2)
+- New websocket return also events model (beta)
+- Log fix for signup and signin endpoint (also in 2.1.14.2)
+- Added email notification setting for each teammate (also in 2.1.14.3)
+- Added email notification setting for each project
+- Bugfix (@tiledesk-ent/tiledesk-server-triggers":1.1.69) for chatbot invitation race condition with Chat21 createGroup and setMembers method. Now the trigger listens to requestEvent.on("request.support_group.created",..) event and not to requestEvent.on("request.create",..) event. This doen't require data migration for old triggers (also in 2.1.14.4).
+- Added plugin to save log to MongoDB (also in 2.1.14.4) with WRITE_LOG_TO_MONGODB=true, LOG_MONGODB_LEVEL, DATABASE_LOG_URI
+- Added plugin to save multi-tenant log to MongoDB with WRITE_LOG_MT_TO_MONGODB=true, LOG_MT_MONGODB_LEVEL
+- Added DEFAULT_FULLTEXT_INDEX_LANGUAGE env parameter for Faq, Lead, message and requests. Before the index language was Italian.
+- Added support to \close action
+- Disabled send trascript email for autoclosed conversations #413
+
+# 2.1.14.5 -> Cloud Production
+- Winston MongoDB Log fix
+
+# 2.1.14.4
+- Automatically close unresponsive bot conversation. You may configure CLOSE_BOT_UNRESPONSIVE_REQUESTS_CRON_EXPRESSION, etc.
+- Bugfix (@tiledesk-ent/tiledesk-server-triggers":1.1.69) for chatbot invitation race condition with Chat21 createGroup and setMembers method. Now the trigger listens to requestEvent.on("request.support_group.created",..) event and not to requestEvent.on("request.create",..) event. This doen't require data migration for old triggers.
+- Added plugin to save log to MongoDB 
+
+# 2.1.14.3
+Added email notification setting for each teammate (also in 2.1.14.3)
+
+# 2.1.14.2
+- Department patch method added (ok)
+- BugFix: Now you can signupWithCustomToken using subject=userexternal and subscription type audience (https://tiledesk.com/subscriptions/subid). It's used by Whatsapp and Facebook Messenger apps . UNISALENTO TEST
+- Added analytics endpoint for messages 
+- Log fix for signup and signin endpoint.
+
+# 2.1.14.1
+- Updated queue module with listen function fix
 
 # 2.1.14
 - Renamed field presence.lastOnlineAt to changedAt
@@ -29,7 +93,7 @@
 - Mongo support for Winston with: WRITE_LOG_TO_MONGODB=true 
 - Logfix
 
-# 2.1.10 -> P
+# 2.1.10
 - Tiledesk Chat21 groups syncronizer. Enable with SYNC_CHAT21_GROUPS="true"
 - Built-in faq updated  and chatbot webhook example changed
 - Return role: admin if the admin sign-in with email and password
