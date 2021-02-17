@@ -36,10 +36,10 @@ class FaqBotHandler {
            .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
            .exec(function(err, faq_kb) {
             if (err) {
-              return res.status(500).send({ success: false, msg: 'Error getting object.' });
+              return winston.error("Error getting bot object.",err);
             }
             if (!faq_kb) {
-              return res.status(404).send({ success: false, msg: 'Object not found.' });
+                return winston.error("Bot not found with id: "+botId);              
             }
             winston.debug('faq_kb ', faq_kb.toJSON());
             winston.debug('faq_kb.type :'+ faq_kb.type);
@@ -51,17 +51,17 @@ class FaqBotHandler {
             var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
             if (message.attributes && message.attributes.action) {
-                var id = mongoose.Types.ObjectId(message.attributes.action);
-                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": id};
+                // var id = mongoose.Types.ObjectId(message.attributes.action);
+                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": message.attributes.action};
                 winston.info("query message.attributes.action ", query);
             }
-            //testa
+
 
             Faq.find(query) 
             .lean().               
              exec(function (err, faqs) {
                if (err) {
-                 return res.status(500).send({ success: false, msg: 'Error getting object.' });
+                return winston.error("Error getting faq object.",err);                
                }
 
                if (faqs && faqs.length>0) {
