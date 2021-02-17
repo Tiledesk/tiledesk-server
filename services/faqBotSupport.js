@@ -54,11 +54,11 @@ class FaqBotSupport {
             
             var msg_attributes = {"_raw_message": text};
 
-            if (message && message.attributes) {
-                for(const [key, value] of Object.entries(message.attributes)) {
-                  msg_attributes[key] = value
-                }
-            }
+            // if (message && message.attributes) {
+            //     for(const [key, value] of Object.entries(message.attributes)) {
+            //       msg_attributes[key] = value
+            //     }
+            // }
 
             if (messageReply && messageReply.attributes) {
                 for(const [key, value] of Object.entries(messageReply.attributes)) {
