@@ -46,10 +46,107 @@ class FaqBotSupport {
 // usa api di sponziello parseReply: https://github.com/Tiledesk/tiledesk-nodejs-libs/blob/master/tiledesk-chatbot-util/index.js 
 
     parseMicrolanguage(text, message, bot, faq) { 
+        var that = this;
         return new Promise(function(resolve, reject) {
             var reply = TiledeskChatbotUtil.parseReply(text);
-            winston.info('parseReply: ' + JSON.stringify(reply) );
+            winston.debug('parseReply: ' + JSON.stringify(reply) );
             var messageReply = reply.message;
+            
+            var msg_attributes = {"_raw_message": text};
+
+            if (message && message.attributes) {
+                for(const [key, value] of Object.entries(message.attributes)) {
+                  msg_attributes[key] = value
+                }
+            }
+
+            if (messageReply && messageReply.attributes) {
+                for(const [key, value] of Object.entries(messageReply.attributes)) {
+                  msg_attributes[key] = value
+                }
+            }
+
+            messageReply.attributes = msg_attributes;
+              
+/*
+            // TEMPORARY: search for handoff to agent command (\agent)
+            const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(parsed_message);
+            console.log('handoff_parsed?', handoff_parsed);
+            if (handoff_parsed.agent_handoff) {
+                console.log("agent_handoff command found");
+                let handoff_msg = {
+                'text': handoff_parsed.agent_handoff,
+                'type': 'text',
+                'attributes': {
+                    'subtype': 'info' // hidden to users
+                }
+                }
+                cbclient.sendMessage(handoff_msg, function (err) {
+                console.log("agent_handoff message sent:", JSON.stringify(handoff_msg));
+                if (err) {
+                    console.log("agent_handoff Message sending error:", err);
+                }
+                });
+            }
+
+            // PATCH: Chat clients (i.e. web widget) remove messages with text = null
+            // handoff_parsed.text contains the eventual text before the \agent command
+            // or 'all the message text' if \agent was not found
+            let message_text = handoff_parsed.text? handoff_parsed.text : '';
+            
+        let msg = {
+                "text": message_text,
+                "type": parsed_message.type,
+                "attributes": msg_attributes,
+                "metadata": parsed_message.metadata,
+                // attributes._answerid=<INTENT NAME>
+                // "senderFullname": tdclient.botName
+            }
+*/
+
+            if (reply.webhook) {
+
+                var webhookurl = reply.webhook;
+
+                if (webhookurl === true) {
+                    //testa 
+                    webhookurl = bot.url;
+                }
+                winston.debug("webhookurl "+ webhookurl)
+
+                return request({                        
+                    uri :  webhookurl,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    json: true,
+                    body: {payload:{text: text, bot: bot, message: message, faq: faq}},
+                    // }).then(response => {
+                    }, function(err, response, json){
+                        if (err) {
+                            bot_answer.text = err +' '+ response.text;
+                            bot_answer.type = "text";
+                            winston.error("Error from webhook reply of getParsedMessage", err);
+                            return resolve(bot_answer);
+                        }
+                        // if (response.statusCode >= 400) {                  
+                        //     return reject(`HTTP Error: ${response.statusCode}`);
+                        // }
+                        winston.debug("webhookurl repl_message ", response);
+
+                        var text = undefined;
+                        if(json && json.text===undefined) {
+                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
+                        }else {
+                            text = json.text;
+                        }
+                        that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
+                            return resolve(bot_answer);
+                        });
+                    });
+            }
+
             return resolve(messageReply);
         });
     }
