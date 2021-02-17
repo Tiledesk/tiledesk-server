@@ -55,8 +55,8 @@ class FaqBotSupport {
     }
 
     getParsedMessage(text, message, bot, faq) { 
-        // return this.parseMicrolanguage(text, message, bot, faq);
-        return this.parseMicrolanguageOld(text, message, bot, faq);
+        return this.parseMicrolanguage(text, message, bot, faq);
+        // return this.parseMicrolanguageOld(text, message, bot, faq);
     }
 
     parseMicrolanguageOld(text, message, bot, faq) { 
