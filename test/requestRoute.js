@@ -197,6 +197,7 @@ it('createUpperCaseEmail', function (done) {
 });
     });
 });
+// mocha test/requestRoute.js  --grep 'getbyidWithPartecipatingBots'
 
 
 it('getbyidWithPartecipatingBots', function (done) {

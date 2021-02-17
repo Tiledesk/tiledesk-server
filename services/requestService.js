@@ -89,6 +89,7 @@ class RequestService {
   }
   
   // TODO  changePreflightByRequestId se un agente entra in request freflight true disabilitare add agente e reassing ma mettere un bottone removePreflight???
+  // usalo no_populate
   route(request_id, departmentid, id_project, nobot, no_populate) {
    var that = this;
 
@@ -413,7 +414,7 @@ class RequestService {
                 winston.debug("hasBot:"+hasBot);
   
                 // botprefix
-                var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
+                var assigned_operator_idStringBot = participants[0].replace("bot_","");
                 winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
   
                 participantsBots.push(assigned_operator_idStringBot);
