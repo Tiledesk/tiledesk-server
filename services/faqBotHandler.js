@@ -9,6 +9,7 @@ var faqBotSupport = require('../services/faqBotSupport');
 var BotFromParticipant = require("../utils/botFromParticipant");
 var cacheUtil = require('../utils/cacheUtil');
 var eventService = require('../pubmodules/events/eventService');
+var mongoose = require('mongoose');
 
 class FaqBotHandler {
  
@@ -50,10 +51,11 @@ class FaqBotHandler {
             var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
             if (message.attributes && message.attributes.action) {
-                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": message.attributes.action};
+                var id = mongoose.Types.ObjectId(message.attributes.action);
+                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": id};
                 winston.info("query message.attributes.action ", query);
             }
-
+            //testa
 
             Faq.find(query) 
             .lean().               
