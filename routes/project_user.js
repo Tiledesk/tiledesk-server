@@ -10,6 +10,7 @@ const authEvent = require('../event/authEvent');
 var winston = require('../config/winston');
 var RoleConstants = require("../models/roleConstants");
 var ProjectUserUtil = require("../utils/project_userUtil");
+const uuidv4 = require('uuid/v4');
 
 
 var passport = require('passport');
@@ -182,6 +183,25 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
   });
 });
 
+router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+
+  var newProject_user = new Project_user({
+    id_project: req.projectid, //il fullname????
+    uuid_user: uuidv4(),
+    role: RoleConstants.USER,         
+    user_available: false, 
+    createdBy: req.user.id,
+    updatedBy: req.user.id
+  });
+
+  return newProject_user.save(function (err, savedProject_user) {
+    if (err) {
+      winston.error('--- > ERROR ', err)
+      return res.status(500).send({ success: false, msg: 'Error saving object.' });
+    }
+    return res.json(savedProject_user);
+  });
+})
 
 router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
 
