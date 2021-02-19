@@ -301,11 +301,14 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
   
 // });
 
+
+
+
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
    //route(request_id, departmentid, id_project) {      
-    requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot).then(function(updatedRequest) {
+    requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function(updatedRequest) {
       
       winston.debug("department changed", updatedRequest);
 

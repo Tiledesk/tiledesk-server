@@ -75,7 +75,9 @@ class RequestService {
           if (!request.snapshot) { //if used other methods than .create
             request.snapshot = {}
           }
+
           request.snapshot.department = result.department;
+          request.snapshot.agents = result.agents;
 
               return resolve(request);
                   
