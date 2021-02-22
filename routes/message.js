@@ -5,6 +5,7 @@ var router = express.Router({mergeParams: true});
 
 var Message = require("../models/message");
 var Request = require("../models/request");
+var Lead = require("../models/lead");
 
 var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');
@@ -81,7 +82,7 @@ async (req, res)  => {
               if (sender) {
 
                 var isObjectId = mongoose.Types.ObjectId.isValid(sender);
-                winston.debug("isObjectId:"+ isObjectId);
+                winston.info("isObjectId:"+ isObjectId);
             
                  var queryProjectUser = {id_project:req.projectid, status: "active" };
             
@@ -91,7 +92,7 @@ async (req, res)  => {
                   queryProjectUser.uuid_user = sender;
                 }
             
-                winston.debug("queryProjectUser", queryProjectUser);
+                winston.info("queryProjectUser", queryProjectUser);
                 
                 project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
                 winston.info("queryProjectUser", queryProjectUser);
@@ -100,10 +101,27 @@ async (req, res)  => {
                   return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
                 }
 
-                fullname = project_user.id_user.fullName;
-                winston.info("pu fullname: "+ fullname);
-                email = project_user.id_user.email;
-                winston.info("pu email: "+ email);
+                if ( project_user.id_user) {
+                  fullname = project_user.id_user.fullName;
+                  winston.debug("pu fullname: "+ fullname);
+                  email = project_user.id_user.email;
+                  winston.debug("pu email: "+ email);
+                } else if (project_user.uuid_user) {
+                  var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
+                  winston.info("lead: ",lead);
+                  if (lead) {
+                    fullname = lead.fullname;
+                    winston.info("lead fullname: "+ fullname);
+                    email = lead.email;
+                    winston.info("lead email: "+ email);
+                  }else {
+                    winston.warn("lead not found");
+                  }
+                  
+                } else {
+                  winston.info("pu fullname and email empty");
+                }
+                
               }
 
               // prende fullname e email da quello loggato
