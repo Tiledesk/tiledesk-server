@@ -44,7 +44,8 @@ async (req, res)  => {
   
   var project_user = req.projectuser;
   var sender = req.body.sender;
-
+  var fullname = req.body.senderFullname || req.user.fullName;
+  var email = req.body.email || req.user.email;
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
@@ -90,20 +91,25 @@ async (req, res)  => {
                   queryProjectUser.uuid_user = sender;
                 }
             
-                winston.info("queryProjectUser", queryProjectUser);
+                winston.debug("queryProjectUser", queryProjectUser);
                 
-                project_user = await Project_user.findOne(queryProjectUser);
+                project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
                 winston.info("queryProjectUser", queryProjectUser);
             
                 if (!project_user) {
                   return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
                 }
+
+                fullname = project_user.id_user.fullName;
+                winston.info("pu fullname: "+ fullname);
+                email = project_user.id_user.email;
+                winston.info("pu email: "+ email);
               }
 
-              
+              // prende fullname e email da quello loggato
 
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
-              return leadService.createIfNotExistsWithLeadId(sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
+              return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
 
               
@@ -129,7 +135,7 @@ async (req, res)  => {
              
                     
                     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
-                    return messageService.create(sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
+                    return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
                       req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
                         
                         // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
@@ -167,7 +173,7 @@ async (req, res)  => {
       
          
                // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
-              return messageService.create(sender || req.user._id, req.body.senderFullname || req.user.fullName, req.params.request_id, req.body.text,
+              return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
                 request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){
 
                   // TOOD update also request attributes and sourcePage

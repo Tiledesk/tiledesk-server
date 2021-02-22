@@ -7,6 +7,8 @@ var requestService = require('../services/requestService');
 var userService = require('../services/userService');
 var leadService = require('../services/leadService');
 var messageService = require('../services/messageService');
+var Project_user = require("../models/project_user");
+var roleConstants = require('../models/roleConstants');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -103,62 +105,79 @@ it('createWithSender', function (done) {
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
 
-    // var email2 = "test-message-createwithsender-" + Date.now() + "@email.com";
-    // var pwd2 = "pwd";
+    var email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
+    var pwd2 = "pwd";
   
-    // userService.signup( email2 ,pwd2, "Test Firstname", "Test lastname").then(function(savedUser2) {
+    userService.signup( email2 ,pwd2, "Test Firstname22", "Test lastname22").then(function(savedUser2) {
 
-   projectService.createAndReturnProjectAndProjectUser("message-createwithsender", savedUser._id).then(function(savedProjectAndPU) {
-   
-    var savedProject = savedProjectAndPU.project;
-
-        chai.request(server)
-          .post('/'+ savedProject._id + '/requests/req123-createwithsender/messages')
-          .auth(email, pwd)
-          .set('content-type', 'application/json')
-          .send({"text":"text", "sender": savedUser._id.toString(), "senderFullname": "Sender Custom Fullname"})
-          .end(function(err, res) {
-              //console.log("res",  res);
-              console.log("res.body",  res.body);
-              res.should.have.status(200);
-              res.body.should.be.a('object');                          
-
-              expect(res.body.sender).to.equal(savedUser._id.toString());
-              // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
-              // expect(res.body.senderFullname).to.equal("senderFullname");
-              expect(res.body.recipient).to.equal("req123-createwithsender");
-              expect(res.body.text).to.equal("text");
-              expect(res.body.id_project).to.equal(savedProject._id.toString());
-              expect(res.body.createdBy).to.equal(savedUser._id.toString());
-              expect(res.body.status).to.equal(0);
-
-              expect(res.body.request.request_id).to.equal("req123-createwithsender");
-              expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
-              // expect(res.body.request.requester_id).to.equal("sender");
-              expect(res.body.request.first_text).to.equal("text");
-              expect(res.body.request.id_project).to.equal(savedProject._id.toString());
-              expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
-
-              // expect(res.body.request.messages_count).to.equal(1);
-
-              expect(res.body.request.status).to.equal(200);                                
-              expect(res.body.request.agents.length).to.equal(1);
-              expect(res.body.request.participants.length).to.equal(1);
-              expect(res.body.request.department).to.not.equal(null);
-              expect(res.body.request.lead).to.not.equal(null);               
-                          
-              expect(res.body.channel_type).to.equal("group");
-              expect(res.body.channel.name).to.equal("chat21");
-              expect(res.body.request.channel.name).to.equal("chat21");
-
-
-              expect(res.body.request.location).to.equal(undefined);
-             
+        projectService.createAndReturnProjectAndProjectUser("message-createwithsender", savedUser._id).then(function(savedProjectAndPU) {
         
-             done();
-          });
-        // });
-  });
+          var savedProject = savedProjectAndPU.project;
+
+
+            var pu2 = new Project_user({
+              // _id: new mongoose.Types.ObjectId(),
+              id_project: savedProject._id,
+              id_user: savedUser2._id,
+              role: roleConstants.AGENT,
+              user_available: true,
+              createdBy: savedUser2._id,
+              updatedBy: savedUser2._id,
+            });
+            pu2.save(function (err, savedProject_user2) {
+
+              chai.request(server)
+                .post('/'+ savedProject._id + '/requests/req123-createwithsender/messages')
+                .auth(email, pwd)
+                .set('content-type', 'application/json')
+                .send({"text":"text", "sender": savedUser2._id.toString()})
+                .end(function(err, res) {
+                    //console.log("res",  res);
+                    console.log("res.body",  res.body);
+                    res.should.have.status(200);
+                    res.body.should.be.a('object');                          
+
+                    expect(res.body.sender).to.equal(savedUser2._id.toString());
+                    // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
+                    expect(res.body.senderFullname).to.equal("Test Firstname22 Test lastname22");
+                    expect(res.body.recipient).to.equal("req123-createwithsender");
+                    expect(res.body.text).to.equal("text");
+                    expect(res.body.id_project).to.equal(savedProject._id.toString());
+                    expect(res.body.createdBy).to.equal(savedUser._id.toString());
+                    expect(res.body.status).to.equal(0);
+
+                    expect(res.body.request.request_id).to.equal("req123-createwithsender");
+                    expect(res.body.request.requester._id).to.equal(savedProject_user2._id.toString());
+                    expect(res.body.request.requester.id_user.email).to.equal(email2);
+                    expect(res.body.request.requester.id_user.firstname).to.equal("Test Firstname22");
+                    expect(res.body.request.requester.id_user.lastname).to.equal("Test lastname22");
+                    // expect(res.body.request.requester._id).to.equal(savedProject_user2._id.toString());
+                    // expect(res.body.request.requester_id).to.equal("sender");
+                    expect(res.body.request.first_text).to.equal("text");
+                    expect(res.body.request.id_project).to.equal(savedProject._id.toString());
+                    expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
+
+                    // expect(res.body.request.messages_count).to.equal(1);
+
+                    expect(res.body.request.status).to.equal(200);                                
+                    expect(res.body.request.agents.length).to.equal(2);
+                    expect(res.body.request.participants.length).to.equal(1);
+                    expect(res.body.request.department).to.not.equal(null);
+                    expect(res.body.request.lead).to.not.equal(null);               
+                                
+                    expect(res.body.channel_type).to.equal("group");
+                    expect(res.body.channel.name).to.equal("chat21");
+                    expect(res.body.request.channel.name).to.equal("chat21");
+
+
+                    expect(res.body.request.location).to.equal(undefined);
+                  
+              
+                  done();
+                });
+              });
+              });
+        });
 });
 });
 
