@@ -214,8 +214,9 @@ router.get('/', function (req, res) {
 
   var limit = 40; // Number of request per page
 
-  if (req.query.limit) {
+  if (req.query.limit) {    
     limit = parseInt(req.query.limit);
+    winston.info('LEAD ROUTE - limit: '+limit);
   }
 
   var page = 0;
