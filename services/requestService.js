@@ -133,7 +133,8 @@ class RequestService {
             if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
-              if (no_populate) {
+              if (no_populate==="true" || no_populate===true) {
+                winston.info("no_populate is true");
                 return resolve(request);
               }
 
