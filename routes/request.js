@@ -302,7 +302,6 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 // });
 
 
-
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
   winston.debug(req.body);
@@ -710,8 +709,8 @@ router.get('/', function (req, res, next) {
    
 
 
-    if (!req.query.no_polutate) {
-      winston.info('REQUEST ROUTE - no_polutate truew ');
+    if (req.query.no_polutate != "true") {
+      winston.info('REQUEST ROUTE - no_polutate false ');
       q1.populate('department').
       populate('participatingBots').
       populate('participatingAgents').
