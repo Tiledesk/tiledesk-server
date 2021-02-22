@@ -472,8 +472,8 @@ class Chat21Handler {
                         gAttributes['client'] = request.userAgent || 'n.d.'; //used by ionic to open request detail 
                         if (request.department) {
                             gAttributes['departmentId'] = request.department._id; //used by ionic to open request detail 
+                            gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         }                        
-                        gAttributes['departmentName'] = request.department.name; //used by ionic to open request detail 
                         gAttributes['sourcePage'] = request.sourcePage; //used by ionic to open request detail 
 
                         
