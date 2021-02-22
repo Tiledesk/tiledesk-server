@@ -14,6 +14,7 @@ var messageService = require('../services/messageService');
 const uuidv4 = require('uuid/v4');
 var MessageConstants = require("../models/messageConstants");
 var cacheUtil = require('../utils/cacheUtil');
+var RequestConstants = require("../models/requestConstants");
 
 
 csv = require('csv-express');
@@ -302,6 +303,41 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 // });
 
 
+// router.put('/queue/:requestid/assign', function (req, res) { //fai altro route file
+//   winston.debug(req.body);
+// });
+
+router.put('/:requestid/assign', function (req, res) {
+  winston.debug(req.body);
+  
+  // leggi la request se già assegnata o già chiusa (1000) esci 
+
+    //cacheinvalidation
+    return Request.findOne({"request_id":req.params.requestid, "id_project": req.projectid})
+    .exec( function(err, request) {
+         
+      if (err) {
+        winston.error('Error patching request.', err);
+        return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
+  
+      if (!request) {
+        return res.status(404).send({ success: false, msg: 'Request not found' });
+      }
+
+      if (request.status === RequestConstants.ASSIGNED  ||request.status === RequestConstants.SERVED ||request.status === RequestConstants.CLOSED ) {
+        winston.info('Request already assigned');
+        return res.json(request);
+      }
+   //route(request_id, departmentid, id_project) {      
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function(updatedRequest) {
+        
+        winston.debug("department changed", updatedRequest);
+
+        return res.json(updatedRequest);
+      });
+  });
+});
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/departments', function (req, res) {
