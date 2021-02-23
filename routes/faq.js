@@ -44,7 +44,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
 
         newFaq.save(function (err, savedFaq) {
           if (err) {
-            winston.debug('--- > ERROR ', err)
+            winston.error('--- > ERROR uploadcsv', err)
 
             // return res.status(500).send({ success: false, msg: 'Error saving object.' }); // ADDED 24 APR
           }
@@ -62,7 +62,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
         res.json({ success: true, msg: 'CSV Parsed' });
       })
       .on("error", function (err) {
-        winston.debug("PARSE ERROR ", err);
+        winston.error("PARSE ERROR uploadcsv", err);
         res.json({ success: false, msg: 'Parsing error' });
       });
   // });
