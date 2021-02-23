@@ -108,18 +108,18 @@ async (req, res)  => {
                   winston.debug("pu email: "+ email);
                 } else if (project_user.uuid_user) {
                   var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
-                  winston.info("lead: ",lead);
+                  winston.debug("lead: ",lead);
                   if (lead) {
                     fullname = lead.fullname;
-                    winston.info("lead fullname: "+ fullname);
+                    winston.debug("lead fullname: "+ fullname);
                     email = lead.email;
-                    winston.info("lead email: "+ email);
+                    winston.debug("lead email: "+ email);
                   }else {
                     winston.warn("lead not found");
                   }
                   
                 } else {
-                  winston.info("pu fullname and email empty");
+                  winston.warn("pu fullname and email empty");
                 }
                 
               }
