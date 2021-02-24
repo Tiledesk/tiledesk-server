@@ -243,12 +243,12 @@ router.get('/', function (req, res) {
 
   if (req.query.with_email) {  //for internal request and zapier to retrieve only lead with an email
     winston.debug('LEAD ROUTE req.query.withemail', req.query.withemail);
-    query.email = { "$$exists": true };
+    query.email = { "$exists": true };
   }
 
   if (req.query.with_fullname) {  //or internal request to retrieve only lead with an email
     winston.debug('LEAD ROUTE req.query.withfullname', req.query.with_fullname);
-    query.fullname = { "$$exists": true };
+    query.fullname = { "$exists": true };
   }
 
   if (req.query.status) {
