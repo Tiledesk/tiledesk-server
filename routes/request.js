@@ -520,7 +520,6 @@ router.delete('/:requestid',  function (req, res) {
     if (!request) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
-    
   
     requestEvent.emit('request.delete', request);
 
@@ -608,7 +607,7 @@ router.get('/', function (req, res, next) {
 
   if (req.query.tags) {
     winston.debug('req.query.tags', req.query.tags);
-    query.tags = req.query.tags;
+    query["tags.tag"] = req.query.tags;
   }
 
   if (req.query.location) {
