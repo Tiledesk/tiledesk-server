@@ -216,7 +216,7 @@ router.get('/', function (req, res) {
 
   if (req.query.limit) {    
     limit = parseInt(req.query.limit);
-    winston.info('LEAD ROUTE - limit: '+limit);
+    winston.debug('LEAD ROUTE - limit: '+limit);
   }
 
   var page = 0;
@@ -241,10 +241,15 @@ router.get('/', function (req, res) {
     query.email = req.query.email;
   }
 
-  // if (req.query.withemail) {  //for zapier to retrieve only lead with an email
-  //   winston.debug('LEAD ROUTE req.query.withemail', req.query.withemail);
-  //   query.email = { "$$exists": true };
-  // }
+  if (req.query.with_email) {  //for internal request and zapier to retrieve only lead with an email
+    winston.debug('LEAD ROUTE req.query.withemail', req.query.withemail);
+    query.email = { "$$exists": true };
+  }
+
+  if (req.query.with_fullname) {  //or internal request to retrieve only lead with an email
+    winston.debug('LEAD ROUTE req.query.withfullname', req.query.with_fullname);
+    query.fullname = { "$$exists": true };
+  }
 
   if (req.query.status) {
     query.status = req.query.status;
