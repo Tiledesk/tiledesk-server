@@ -27,7 +27,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
 
   // getFaqKbKeyById(req.body.id_faq_kb, function (remote_faqkb_key) {
 
-    parsecsv.fromString(CSV_STRING, { headers: false, delimiter: req.body.delimiter })
+    parsecsv.parseString(CSV_STRING, { headers: false, delimiter: req.body.delimiter })
       .on("data", function (data) {
         // winston.debug('PARSED CSV ', data);
 
