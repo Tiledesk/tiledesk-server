@@ -17,26 +17,35 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
   winston.debug(' -> DELIMITER ', req.body.delimiter);
   winston.debug(' -> FILE ', req.file);
 
+  var id_faq_kb = req.body.id_faq_kb;
+  winston.debug('id_faq_kb: '+id_faq_kb);
+
+  var delimiter = req.body.delimiter || ";";
+  winston.debug('delimiter: '+delimiter);
+
   var csv = req.file.buffer.toString('utf8');
   // winston.debug(' -> CSV STRING ', csv);
 
   // res.json({ success: true, msg: 'Importing CSV...' });
 
   // PARSE CSV
-  var CSV_STRING = csv;
+ 
 
   // getFaqKbKeyById(req.body.id_faq_kb, function (remote_faqkb_key) {
 
-    parsecsv.parseString(CSV_STRING, { headers: false, delimiter: req.body.delimiter })
+    parsecsv.parseString(csv, { headers: false, delimiter: delimiter })
       .on("data", function (data) {
-        // winston.debug('PARSED CSV ', data);
+        winston.debug('PARSED CSV ', data);
 
         var question = data[0]
         var answer = data[1]
+        var intent_display_name = data[2];
+
         var newFaq = new Faq({
-          id_faq_kb: req.body.id_faq_kb,
+          id_faq_kb: id_faq_kb,
           question: question,
           answer: answer,
+          intent_display_name: intent_display_name,
           id_project: req.projectid,
           createdBy: req.user.id,
           updatedBy: req.user.id
@@ -78,6 +87,7 @@ router.post('/', function (req, res) {
     answer: req.body.answer,
     id_project: req.projectid,
     topic: req.body.topic,
+    intent_display_name: req.body.intent_display_name,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
@@ -126,6 +136,10 @@ router.put('/:faqid', function (req, res) {
   if (req.body.language!=undefined) {
     update.language = req.body.language;
   }
+  if (req.body.intent_display_name!=undefined) {
+    update.intent_display_name = req.body.intent_display_name;
+  }
+  
 
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {

@@ -1,24 +1,37 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
+var { nanoid } = require("nanoid");
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var FaqSchema = new Schema({
   id_faq_kb: {
     type: String,
-    index: true
-    // required: true
-    // type: Schema.Types.ObjectId,
-    // ref: 'faq_kb'
+    index: true    
   },
-  intent: {
+  intent_id: { 
     type: String,
-    required: false
+    required: false,
+    index:true,
+    default: function() {
+      return nanoid(6);
+    } 
+  },
+  intent_display_name: {
+    type: String,
+    required: false,  
+    index:true,
   },
   question: {
     type: String,
     required: true 
+  },
+
+  webhook_enabled: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
   answer: {
     type: String,
@@ -78,6 +91,9 @@ FaqSchema.index({ id_project: 1, id_faq_kb: 1, question: 1 });
 // https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
 FaqSchema.index({question: 'text', answer: 'text'},
  {"name":"faq_fulltext","default_language": defaultFullTextLanguage,"language_override": "language", weights: {question: 10,answer: 1}}); // schema level
+
+FaqSchema.index({ id_project: 1, id_faq_kb: 1, intent_display_name: 1  }, { unique: true }); 
+
 
  var faq = mongoose.model('faq', FaqSchema);
 
