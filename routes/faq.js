@@ -144,7 +144,11 @@ router.put('/:faqid', function (req, res) {
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
     if (err) {
-      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      if (err.code == 11000) {
+        return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
+      }else {
+        return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
     }
 
     faqBotEvent.emit('faq.update', updatedFaq);
