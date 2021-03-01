@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var { nanoid } = require("nanoid");
+const uuidv4 = require('uuid/v4');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
@@ -22,6 +23,9 @@ var FaqSchema = new Schema({
     type: String,
     required: false,  
     index:true,
+    default: function() {
+      return uuidv4();
+    } 
   },
   question: {
     type: String,
