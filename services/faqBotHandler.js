@@ -51,9 +51,10 @@ class FaqBotHandler {
             var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
             if (message.attributes && message.attributes.action) {
-                // var id = mongoose.Types.ObjectId(message.attributes.action);
-                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": message.attributes.action};
-                winston.info("query message.attributes.action ", query);
+                var action = message.attributes.action;
+                
+                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[ {"_id": action}, {"intent_id": action}, {"intent_display_name": action}]};
+                winston.debug("query message.attributes.action ", query);
             }
 
 
