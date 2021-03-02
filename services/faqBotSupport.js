@@ -45,7 +45,7 @@ class FaqBotSupport {
     }
 // usa api di sponziello parseReply: https://github.com/Tiledesk/tiledesk-nodejs-libs/blob/master/tiledesk-chatbot-util/index.js 
 
-    parseMicrolanguage(text, message, bot, faq) { 
+    parseMicrolanguage(text, message, bot, faq, disableWebHook) { 
         var that = this;
         return new Promise(function(resolve, reject) {
             var reply = TiledeskChatbotUtil.parseReply(text);
@@ -68,8 +68,8 @@ class FaqBotSupport {
 
             messageReply.attributes = msg_attributes;
               
-/*
-            // TEMPORARY: search for handoff to agent command (\agent)
+/*           
+            TEMPORARY: search for handoff to agent command (\agent)
             const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(parsed_message);
             console.log('handoff_parsed?', handoff_parsed);
             if (handoff_parsed.agent_handoff) {
@@ -104,14 +104,24 @@ class FaqBotSupport {
             }
 */
 
-            if (reply.webhook) {
+            if (disableWebHook === false && (faq.webhook_enabled  === true || reply.webhook)) {
 
-                var webhookurl = reply.webhook;
+                winston.debug("bot.url "+ bot.url)
+                var webhookurl = bot.url;
 
-                if (webhookurl === true) {
-                    //testa 
-                    webhookurl = bot.url;
+               
+                winston.debug("reply.webhook "+ reply.webhook )
+
+                if (reply.webhook) {
+                     if (reply.webhook === true) {
+                        webhookurl = bot.url;
+                    } else {
+                        webhookurl = reply.webhook;
+                    }
                 }
+                    
+              
+
                 winston.debug("webhookurl "+ webhookurl)
 
                 return request({                        
@@ -125,9 +135,12 @@ class FaqBotSupport {
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
+                            winston.error("Error from webhook reply of getParsedMessage", err);
+
+                            var bot_answer = {};
                             bot_answer.text = err +' '+ response.text;
                             bot_answer.type = "text";
-                            winston.error("Error from webhook reply of getParsedMessage", err);
+                            
                             return resolve(bot_answer);
                         }
                         // if (response.statusCode >= 400) {                  
@@ -141,7 +154,7 @@ class FaqBotSupport {
                         }else {
                             text = json.text;
                         }
-                        that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
+                        that.parseMicrolanguage(text,message, bot, faq, true).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
@@ -152,7 +165,7 @@ class FaqBotSupport {
     }
 
     getParsedMessage(text, message, bot, faq) { 
-        return this.parseMicrolanguage(text, message, bot, faq);
+        return this.parseMicrolanguage(text, message, bot, faq, false);
         // return this.parseMicrolanguageOld(text, message, bot, faq);
     }
 
@@ -249,6 +262,8 @@ class FaqBotSupport {
                         }else {
                             text = json.text;
                         }
+
+
                         that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
