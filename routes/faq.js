@@ -87,6 +87,7 @@ router.post('/', function (req, res) {
     answer: req.body.answer,
     id_project: req.projectid,
     topic: req.body.topic,
+    webhook_enabled: req.body.webhook_enabled,
     intent_display_name: req.body.intent_display_name,
     createdBy: req.user.id,
     updatedBy: req.user.id
@@ -138,6 +139,9 @@ router.put('/:faqid', function (req, res) {
   }
   if (req.body.intent_display_name!=undefined) {
     update.intent_display_name = req.body.intent_display_name;
+  }
+  if (req.body.webhook_enabled!=undefined) {
+    update.webhook_enabled = req.body.webhook_enabled;
   }
   
 

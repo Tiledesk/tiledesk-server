@@ -59,7 +59,7 @@ describe('FaqKBRoute', () => {
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);                                                                              
                                     expect(res.body.question).to.equal("question1");                                                                              
                                     expect(res.body.answer).to.equal("answer1");                                                                              
-                                    expect(res.body.intent_display_name).to.equal(undefined);                                                                              
+                                    expect(res.body.intent_display_name).to.not.equal(undefined);                                                                              
                                     expect(res.body.webhook_enabled).to.equal(false);                                                                              
                                     
                                     done();
@@ -77,7 +77,7 @@ describe('FaqKBRoute', () => {
 
 
 
-    it('createWithIntentDisplayName', (done) => {
+    it('createWithIntentDisplayNameAndWebhookEnalbed', (done) => {
 
         
         //   this.timeout();
@@ -103,7 +103,7 @@ describe('FaqKBRoute', () => {
                              chai.request(server)
                                 .post('/'+ savedProject._id + '/faq')
                                 .auth(email, pwd)
-                                .send({id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", intent_display_name: "intent_display_name1"})
+                                .send({id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", webhook_enabled:true, intent_display_name: "intent_display_name1"})
                                 .end((err, res) => {
                                     //console.log("res",  res);
                                     console.log("res.body",  res.body);
@@ -113,7 +113,7 @@ describe('FaqKBRoute', () => {
                                     expect(res.body.question).to.equal("question1");                                                                              
                                     expect(res.body.answer).to.equal("answer1");                                                                              
                                     expect(res.body.intent_display_name).to.equal("intent_display_name1");                                                                              
-                                    expect(res.body.webhook_enabled).to.equal(false);                                                                              
+                                    expect(res.body.webhook_enabled).to.equal(true);                                                                              
 
                                     done();
                                 });
@@ -126,7 +126,75 @@ describe('FaqKBRoute', () => {
                     
         });
     
-    
+        
+
+
+
+        it('update', (done) => {
+
+        
+            //   this.timeout();
+        
+               var email = "test-signup-" + Date.now() + "@email.com";
+               var pwd = "pwd";
+        
+                userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+                    projectService.create("test-faqkb-create", savedUser._id).then(function(savedProject) {                                              
+                            chai.request(server)
+                                .post('/'+ savedProject._id + '/faq_kb')
+                                .auth(email, pwd)
+                                .send({"name":"testbot", type: "external"})
+                                .end((err, res) => {
+                                    //console.log("res",  res);
+                                    console.log("res.body",  res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.name).to.equal("testbot");                                                                              
+                                    var id_faq_kb = res.body._id;
+        
+                                     chai.request(server)
+                                        .post('/'+ savedProject._id + '/faq')
+                                        .auth(email, pwd)
+                                        .send({id_faq_kb: id_faq_kb, question: "question1", answer: "answer1"})
+                                        .end((err, res) => {
+                                            //console.log("res",  res);
+                                            console.log("res.body",  res.body);
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.id_faq_kb).to.equal(id_faq_kb);                                                                              
+                                            expect(res.body.question).to.equal("question1");                                                                              
+                                            expect(res.body.answer).to.equal("answer1");                                                                              
+                                            expect(res.body.intent_display_name).to.not.equal(undefined);                                                                              
+                                            expect(res.body.webhook_enabled).to.equal(false);                                                                              
+                                            
+                                            chai.request(server)
+                                            .put('/'+ savedProject._id + '/faq/'+res.body._id)
+                                            .auth(email, pwd)
+                                            .send({id_faq_kb: id_faq_kb, question: "question2", answer: "answer2", webhook_enabled:true})
+                                            .end((err, res) => {
+                                                //console.log("res",  res);
+                                                console.log("res.body",  res.body);
+                                                res.should.have.status(200);
+                                                res.body.should.be.a('object');
+                                                expect(res.body.id_faq_kb).to.equal(id_faq_kb);                                                                              
+                                                expect(res.body.question).to.equal("question2");                                                                              
+                                                expect(res.body.answer).to.equal("answer2");                                                                              
+                                                expect(res.body.intent_display_name).to.not.equal(undefined);                                                                              
+                                                expect(res.body.webhook_enabled).to.equal(true);                                                                              
+                                                
+                                                done();
+                                            });
+
+                                        });
+        
+                                });
+        
+                                
+                        });
+                        });
+                        
+            });
+
     
         it('uploadcsv', (done) => {
 

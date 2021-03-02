@@ -47,7 +47,7 @@ describe('FaqService()', function () {
                 expect(savedBot.secret).to.not.equal(null);
                 expect(savedFaq.question).to.equal("question");
                 expect(savedFaq.intent_id).to.not.equal(undefined);
-                expect(savedFaq.intent_display_name).to.equal(undefined);
+                expect(savedFaq.intent_display_name).to.not.equal(undefined);
                 expect(savedFaq.webhook_enabled).to.equal(false);
                
                 var query = { "id_project": savedProject._id };
