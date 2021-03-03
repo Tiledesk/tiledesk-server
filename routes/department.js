@@ -69,7 +69,24 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
     if (req.body.status!=undefined) {
         update.status = req.body.status;
     }
-    
+    if (req.body.id_bot!=undefined) {
+      update.id_bot = req.body.id_bot;
+    }
+    if (req.body.bot_only!=undefined) {
+      update.bot_only = req.body.bot_only;
+    }
+    if (req.body.routing!=undefined) {
+        update.routing = req.body.routing;
+    }
+    if (req.body.name!=undefined) {
+        update.name = req.body.name;
+    }
+    if (req.body.description!=undefined) {
+        update.description = req.body.description;
+    }  
+    if (req.body.id_group!=undefined) {
+        update.id_group = req.body.id_group;
+    }    
   
   
     Department.findByIdAndUpdate(req.params.departmentid, update, { new: true, upsert: true }, function (err, updatedDepartment) {
