@@ -109,9 +109,13 @@ router.put('/:faq_kbid', function (req, res) {
   if (req.body.url!=undefined) {
     update.url = req.body.url;
   }
-  if (req.body.webhookUrl!=undefined) {
-    update.webhookUrl = req.body.webhookUrl;
+  if (req.body.webhook_url!=undefined) {
+    update.webhook_url = req.body.webhook_url;
   }
+  if (req.body.webhook_enabled!=undefined) {
+    update.webhook_enabled = req.body.webhook_enabled;
+  }
+  
   if (req.body.type!=undefined) {
     update.type = req.body.type;
   }

@@ -17,9 +17,14 @@ var Faq_kbSchema = new Schema({
     type: String,
     // required: true
   },
-  webhookUrl: { 
+  webhook_url: {
     type: String,
     // required: true
+  },
+  webhook_enabled: { 
+    type: Boolean,
+    required: false,
+    default: false,
   },
   id_project: {
     type: String,

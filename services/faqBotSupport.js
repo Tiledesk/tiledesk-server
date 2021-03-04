@@ -2,7 +2,6 @@
 
 'use strict';
 
-const departmentService = require('../services/departmentService');
 const Faq = require('../models/faq');
 var winston = require('../config/winston');
 
@@ -54,12 +53,6 @@ class FaqBotSupport {
             
             var msg_attributes = {"_raw_message": text};
 
-            // if (message && message.attributes) {
-            //     for(const [key, value] of Object.entries(message.attributes)) {
-            //       msg_attributes[key] = value
-            //     }
-            // }
-
             if (messageReply && messageReply.attributes) {
                 for(const [key, value] of Object.entries(messageReply.attributes)) {
                   msg_attributes[key] = value
@@ -68,53 +61,19 @@ class FaqBotSupport {
 
             messageReply.attributes = msg_attributes;
               
-/*           
-            TEMPORARY: search for handoff to agent command (\agent)
-            const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(parsed_message);
-            console.log('handoff_parsed?', handoff_parsed);
-            if (handoff_parsed.agent_handoff) {
-                console.log("agent_handoff command found");
-                let handoff_msg = {
-                'text': handoff_parsed.agent_handoff,
-                'type': 'text',
-                'attributes': {
-                    'subtype': 'info' // hidden to users
-                }
-                }
-                cbclient.sendMessage(handoff_msg, function (err) {
-                console.log("agent_handoff message sent:", JSON.stringify(handoff_msg));
-                if (err) {
-                    console.log("agent_handoff Message sending error:", err);
-                }
-                });
-            }
-
-            // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-            // handoff_parsed.text contains the eventual text before the \agent command
-            // or 'all the message text' if \agent was not found
-            let message_text = handoff_parsed.text? handoff_parsed.text : '';
-            
-        let msg = {
-                "text": message_text,
-                "type": parsed_message.type,
-                "attributes": msg_attributes,
-                "metadata": parsed_message.metadata,
-                // attributes._answerid=<INTENT NAME>
-                // "senderFullname": tdclient.botName
-            }
-*/
+        
 
             if (disableWebHook === false && (faq.webhook_enabled  === true || reply.webhook)) {
 
-                winston.debug("bot.url "+ bot.url)
-                var webhookurl = bot.url;
+                winston.debug("bot.webhook_url "+ bot.webhook_url)
+                var webhookurl = bot.webhook_url;
 
                
                 winston.debug("reply.webhook "+ reply.webhook )
 
                 if (reply.webhook) {
                      if (reply.webhook === true) {
-                        webhookurl = bot.url;
+                        webhookurl = bot.webhook_url;
                     } else {
                         webhookurl = reply.webhook;
                     }
