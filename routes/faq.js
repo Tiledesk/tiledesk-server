@@ -95,8 +95,12 @@ router.post('/', function (req, res) {
 
   newFaq.save(function (err, savedFaq) {
     if (err) {
-      winston.debug('--- > ERROR ', err)
-      return res.status(500).send({ success: false, msg: 'Error saving object.' });
+      if (err.code == 11000) {
+        return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
+      } else {
+        winston.debug('--- > ERROR ', err)
+        return res.status(500).send({ success: false, msg: 'Error saving object.' });
+      }     
     }
     winston.debug('1. ID OF THE NEW FAQ CREATED ', savedFaq._id)
     winston.debug('1. QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)

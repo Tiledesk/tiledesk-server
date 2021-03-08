@@ -3,5 +3,6 @@ module.exports = {
         FACEBOOK : 'facebook',
         TELEGRAM : 'telegram',
         WHATSAPP : 'whatsapp',
-        FORM : 'form',                                
+        FORM : 'form',   
+        EMAIL : 'email',                                
 }
