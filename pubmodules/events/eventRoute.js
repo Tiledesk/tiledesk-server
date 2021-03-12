@@ -14,7 +14,8 @@ router.post('/', [
   passport.authenticate(['basic', 'jwt'], 
   { session: false }), 
   validtoken, 
-  roleChecker.hasRole('guest'),
+  // roleChecker.hasRole('guest'),
+  roleChecker.hasRoleOrTypes('guest', ['bot','subscription']),
   check('name').notEmpty(),  
 ],function (req, res) {
 
@@ -129,6 +130,7 @@ router.get('/',   [passport.authenticate(['basic', 'jwt'],
         return (err);
       }
 
+      //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
       return Event.count(query, function (err, totalRowCount) {
 
         var objectToReturn = {
