@@ -15,6 +15,9 @@ router.post('/', [
   { session: false }), 
   validtoken, 
   // roleChecker.hasRole('guest'),
+
+  // >Cannot read property 'id' of undefined</h1>
+
   roleChecker.hasRoleOrTypes('guest', ['bot','subscription']),
   check('name').notEmpty(),  
 ],function (req, res) {
@@ -32,7 +35,11 @@ router.post('/', [
   // eventService.emit2(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.body.id_user, req.user.id).then(function(event) {
 
                   // emit(name,         attributes,       id_project,     project_user, createdBy, user) {
-    eventService.emit(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.user.id).then(function(event) {
+    var pu = undefined;
+    if (req.projectuser) { //if the bot creates the event -> pu is undefined
+      pu = req.projectuser.id
+    }              
+    eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id).then(function(event) {
     res.json(event);
   }).catch(function(err) {
     winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
