@@ -67,14 +67,10 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
             winston.error('--- > ERROR uploadcsv', err)
 
             // return res.status(500).send({ success: false, msg: 'Error saving object.' }); // ADDED 24 APR
+          } else {
+            faqBotEvent.emit('faq.create', savedFaq);
           }
-
-          faqBotEvent.emit('faq.create', savedFaq);
-
-          // res.json({ success: true, savedFaq }); // ADDED 24 APR
-
-          // createRemoteFaq(remote_faqkb_key, savedFaq);
-          // winston.debug('ID OF THE NEW FAQ CREATED from CSV IMPORTED: ', savedFaq._id)
+          
         });
       })
       .on("end", function () {
