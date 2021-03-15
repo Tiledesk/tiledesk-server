@@ -197,7 +197,7 @@ router.get('/csv', function (req, res) {
 
   winston.debug('EXPORT FAQS TO CSV QUERY', query);
 
-   Faq.find(query, 'question answer -_id').lean().exec(function (err, faq) {
+   Faq.find(query, 'question answer intent_id intent_display_name webhook_enabled -_id').lean().exec(function (err, faq) {
     if (err) {
       winston.debug('EXPORT FAQS TO CSV ERR', err)
       return (err)
