@@ -43,6 +43,10 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
         var intent_display_name = data[3];
         var webhook_enabled = data[4];
 
+        var webhook_enabled_boolean = false;
+        if (webhook_enabled) {
+          webhook_enabled_boolean = (webhook_enabled == 'true');
+        }
         // var row = {question: element.question, answer: element.answer, 
         //   intent_id: element.intent_id, intent_display_name: element.intent_display_name,
         //   webhook_enabled: element.webhook_enabled || false }
@@ -52,7 +56,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           answer: answer,
           intent_id:intent_id,
           intent_display_name: intent_display_name,
-          webhook_enabled: webhook_enabled,
+          webhook_enabled: webhook_enabled_boolean,
           id_project: req.projectid,
           createdBy: req.user.id,
           updatedBy: req.user.id
