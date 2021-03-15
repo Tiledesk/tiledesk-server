@@ -197,13 +197,19 @@ router.get('/csv', function (req, res) {
 
   winston.debug('EXPORT FAQS TO CSV QUERY', query);
 
-   Faq.find(query, 'question answer intent_id intent_display_name webhook_enabled -_id').lean().exec(function (err, faq) {
+   Faq.find(query, 'question answer intent_id intent_display_name webhook_enabled -_id').lean().exec(function (err, faqs) {
     if (err) {
       winston.debug('EXPORT FAQS TO CSV ERR', err)
       return (err)
     };
-    winston.debug('EXPORT FAQ TO CSV FAQS', faq)
-    res.csv(faq, true)
+    var csv = [];
+    faqs.forEach(function(element) {
+      var row = {question: element.question, answer: element.answer, webhook_enabled: element.webhook_enabled, 
+        intent_id: element.intent_id, intent_display_name: element.intent_display_name }
+      csv.push(row);
+    });
+    winston.debug('EXPORT FAQ TO CSV FAQS', csv)
+    res.csv(csv, true)
     // res.json(faq);
   });
 
