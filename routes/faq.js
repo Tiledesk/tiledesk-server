@@ -39,13 +39,20 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
 
         var question = data[0]
         var answer = data[1]
-        var intent_display_name = data[2];
+        var intent_id = data[2];
+        var intent_display_name = data[3];
+        var webhook_enabled = data[4];
 
+        // var row = {question: element.question, answer: element.answer, 
+        //   intent_id: element.intent_id, intent_display_name: element.intent_display_name,
+        //   webhook_enabled: element.webhook_enabled || false }
         var newFaq = new Faq({
           id_faq_kb: id_faq_kb,
           question: question,
           answer: answer,
+          intent_id:intent_id,
           intent_display_name: intent_display_name,
+          webhook_enabled: webhook_enabled,
           id_project: req.projectid,
           createdBy: req.user.id,
           updatedBy: req.user.id
@@ -204,8 +211,9 @@ router.get('/csv', function (req, res) {
     };
     var csv = [];
     faqs.forEach(function(element) {
-      var row = {question: element.question, answer: element.answer, webhook_enabled: element.webhook_enabled, 
-        intent_id: element.intent_id, intent_display_name: element.intent_display_name }
+      var row = {question: element.question, answer: element.answer, 
+        intent_id: element.intent_id, intent_display_name: element.intent_display_name,
+        webhook_enabled: element.webhook_enabled || false }
       csv.push(row);
     });
     winston.debug('EXPORT FAQ TO CSV FAQS', csv)
