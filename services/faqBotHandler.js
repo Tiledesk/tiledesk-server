@@ -54,7 +54,7 @@ class FaqBotHandler {
                 var action = message.attributes.action;
                 
                 query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[ {"_id": action}, {"intent_id": action}, {"intent_display_name": action}]};
-                winston.debug("query message.attributes.action ", query);
+                winston.info("query message.attributes.action ", query);
             }
 
 
@@ -81,6 +81,31 @@ class FaqBotHandler {
 
                         answerObj.score = 100; //exact search not set score
                         winston.debug("answerObj.score", answerObj.score);  
+
+
+
+                // ===         TEMPORARY: search for handoff to agent command (\agent)
+                /*
+                        const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
+                        winston.debug('handoff_parsed?', handoff_parsed);
+
+                        if (handoff_parsed.agent_handoff) {
+                            console.log("agent_handoff command found");                    
+                        
+                            messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
+                                    winston.info("faqbot agent sent ", savedMessage.toObject());  
+                            });
+                            
+                             // PATCH: Chat clients (i.e. web widget) remove messages with text = null
+                            // handoff_parsed.text contains the eventual text before the \agent command
+                            // or 'all the message text' if \agent was not found
+                            message.text = handoff_parsed.text? handoff_parsed.text : '';
+                        }
+                       */
+                        // ===         TEMPORARY: search for handoff to agent command (\agent)
+
+
 
                         // qui
                         faqBotSupport.getParsedMessage(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
