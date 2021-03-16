@@ -1,4 +1,22 @@
 
+# 2.1.18
+- Added faq intent_display_name and intent_id. 
+- Now you can filter the requests by snap_department_routing, req.query.snap_department_default, req.query.snap_department_id_bot, snap_department_id_bot_exists 
+- BugFix: Parse FAQ form CSV fix
+- You can enabled Smart Assignment by default for new project with SMART_ASSIGNMENT_CHAT_LIMIT_ON_DEFAULT_PROJECT=true (default = false)
+- Added snapshot object to the request to store embedded snap objects like department, agents, lead, requester.
+- Updated repository dependencies
+- Websocket teammates update fix
+- Now support node 12.x and docker node 12
+- Updated chat21 dependencies (firebase, etc.)
+- Added project_user creation endpoint for Ticketing (POST)
+- Set participants endpoint supports no_populate query param
+- Added request assing endpoint
+- Now a request can be assinged directly to a partipant without a department for ticket use case.
+- Added Analytics events
+- Added leads filter to retrieve only their with email (with_email=true) and with fullname (with_fullname=true)
+- Now the bot can find actions answers by intent_display_name and intent_id
+- Project_user deletion only for owner
 
 # 2.1.17
 - Log fix
