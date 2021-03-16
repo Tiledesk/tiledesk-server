@@ -7,7 +7,7 @@ const botEvent = require('../event/botEvent');
 class FaqService {
 
 
-  create(name, url, projectid, user_id, type, description) {
+  create(name, url, projectid, user_id, type, description, webhook_url) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -17,6 +17,7 @@ class FaqService {
           description: description,
           url: url,
           id_project: projectid,
+          webhook_url: webhook_url,
           type: type,
           trashed: false,
           createdBy: user_id,
