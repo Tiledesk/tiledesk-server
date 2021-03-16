@@ -67,7 +67,11 @@ class FaqService {
         { 'question': 'Sample Video', 'answer': 'tdFrame:https://www.youtube.com/embed/EngW7tLk6R8\n* What can you do?\n* Menu', 'topic': 'sample' },    
         { 'question': 'Where are you', 'answer': 'We are here ❤️\ntdFrame:https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6087916.923447935!2d8.234804542117423!3d41.836572992140624!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d4fe82448dd203%3A0xe22cf55c24635e6f!2sItaly!5e0!3m2!1sen!2sit!4v1613657475377!5m2!1sen!2sit\n* Menu', 'topic': 'sample' },    
         { 'question': 'Sample Webhook', 'answer': 'tdWebhook:https://tiledesk-bot-webhook.tiledesk.repl.co', 'topic': 'sample' },    
-        { 'question': 'Sample Action', 'answer': 'performed', 'intent_display_name': 'action1', 'topic': 'sample' },    
+        { 'question': 'Sample Action', 'answer': 'Hello 👋 Would you like to take a closer look at our offer?\n* Yes, please tdAction:yes_action\n* No tdAction:no_action', 'topic': 'sample' },    
+        { 'question': 'Yes Action', 'answer': 'Great! Take a look here:\n* https://tiledesk.com/pricing-cloud/',  'intent_display_name': 'yes_action','topic': 'sample' },    
+        { 'question': 'No Action', 'answer': 'All right! If you need anything, let us know.',  'intent_display_name': 'no_action','topic': 'sample' },    
+
+       
         // action button nn si può fare perche gli id cambiano 
       ]
       
