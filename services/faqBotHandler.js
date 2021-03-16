@@ -53,7 +53,16 @@ class FaqBotHandler {
             if (message.attributes && message.attributes.action) {
                 var action = message.attributes.action;
                 
-                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[ {"_id": action}, {"intent_id": action}, {"intent_display_name": action}]};
+                var isObjectId = mongoose.Types.ObjectId.isValid(action);
+                winston.debug("isObjectId:"+ isObjectId);
+                             
+              
+                if (isObjectId) {                    
+                    query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "_id": action};
+                }else {
+                    query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[{"intent_id": action}, {"intent_display_name": action}]};
+                }
+                
                 winston.info("query message.attributes.action ", query);
             }
 
