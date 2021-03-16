@@ -97,7 +97,10 @@ class FaqBotSupport {
                             winston.error("Error from webhook reply of getParsedMessage", err);
 
                             var bot_answer = {};
-                            bot_answer.text = err +' '+ response.text;
+                            bot_answer.text = err.toString(); 
+                            if(response && response.text) {
+                                bot_answer.text = bot_answer.text + ' '+response.text;
+                            }
                             bot_answer.type = "text";
                             
                             return resolve(bot_answer);
