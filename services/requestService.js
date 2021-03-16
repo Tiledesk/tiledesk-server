@@ -134,7 +134,7 @@ class RequestService {
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
               if (no_populate==="true" || no_populate===true) {
-                winston.info("no_populate is true");
+                winston.debug("no_populate is true");
                 return resolve(request);
               }
 
@@ -283,7 +283,9 @@ class RequestService {
     var project_user_id = request.project_user_id;
     var lead_id = request.lead_id;
     var id_project = request.id_project;
-    var first_text = request.first_text;
+
+    //TODO rimuovi ritorni a capo first_text, fai anche trim
+    var first_text = request.first_text.replace(/[\n\r]+/g, '');;
     var departmentid = request.departmentid;
     var sourcePage = request.sourcePage;
     var language = request.language;

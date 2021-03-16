@@ -127,6 +127,13 @@ router.delete('/:leadid', function (req, res) {
 router.delete('/:leadid/physical', function (req, res) {
   winston.debug(req.body);
 
+  var projectuser = req.projectuser;
+
+
+  if (projectuser.role != "owner" ) {
+    return res.status(403).send({ success: false, msg: 'Unauthorized.' });
+  }
+  
   Lead.remove({ _id: req.params.leadid }, function (err, lead) {
     if (err) {
       winston.error('--- > ERROR ', err);

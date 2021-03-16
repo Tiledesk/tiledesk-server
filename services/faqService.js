@@ -50,16 +50,23 @@ class FaqService {
     var that = this;
     return new Promise(function (resolve, reject) {
 
+      // aggiungi esempio tdAction con intent_id
       var faqsArray = [
         { 'question': 'Hi', 'answer': 'Hi', 'topic': 'greetings' },
         { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
-        { 'question': 'Who are you?', 'answer': 'Hi, I\'m a bot 🤖. You can find more about me [here](https://tiledesk.com/chatbot-for-customer-service).', 'topic': 'greetings' },   
-        { 'question': '👨🏻‍🦰 I want an agent', 'answer': '\\agent', 'topic': 'internal' },
+        { 'question': 'Who are you?', 'answer': 'Hi, I\'m a bot 🤖. You can find more about me [here](https://tiledesk.com/chatbot-for-customer-service).\ntdImage:http://dialogflow-proxy-tiledesk.herokuapp.com/images/tily-welcomebot.gif\n* See the website https://tiledesk.com/', 'topic': 'greetings' },   
+        { 'question': '👨🏻‍🦰 I want an agent', 'answer': '\\agent', 'intent_display_name': 'agent_handoff', 'topic': 'internal' },
         //TODO RIABILITARE? { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' }, 
-        { 'question': '\\start', 'answer': 'Hello 👋. I\'m a bot 🤖.\n\nChoose one of the options below or write a message to reach our staff.\n* Who are you?\n* 👨🏻‍🦰 I want an agent', 'topic': 'internal' },    
-        { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* 👨🏻‍🦰 I want an agent', 'topic': 'internal' }, //TODO se metto spazio n * nn va
-        { 'question': 'sampleimage', 'answer': '\\image:https://tiledesk.com/tiledesk-logo-x1.png', 'topic': 'sample' },    
-        { 'question': 'samplewebhook', 'answer': '\\webhook:https://tiledesk-bot-webhook.tiledesk.repl.co', 'topic': 'sample' },    
+        { 'question': '\\start', 'answer': 'Hello 👋. I\'m a bot 🤖.\n\nChoose one of the options below or write a message to reach our staff.\n* Who are you?\nWhere are you?\n*What can you do?\n* 👨🏻‍🦰 I want an agent','topic': 'internal' },    
+        { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* See the docs https://docs.tiledesk.com/* 👨🏻‍🦰 I want an agent', 'topic': 'internal' }, //TODO se metto spazio n * nn va      
+        { 'question': 'What can you do?', 'answer': 'Using natural language processing, I\'m able to find the best answer for your users. I also support images, videos etc.. Let\'s try:\n* Sample Image\n* Sample Video\n* Sample Action tdAction:action1\n* Sample Frame\n* Sample Webhook', 'topic': 'sample' },    
+        { 'question': 'Sample Image', 'answer': 'tdImage:https://tiledesk.com/tiledesk-logo-x1.png', 'topic': 'sample' },    
+        { 'question': 'Sample Frame', 'answer': 'tdFrame:https://www.emanueleferonato.com/wp-content/uploads/2019/02/runner/', 'topic': 'sample' },    
+        { 'question': 'Sample Video', 'answer': 'tdFrame:https://www.youtube.com/embed/EngW7tLk6R8"', 'topic': 'sample' },    
+        { 'question': 'Where are you', 'answer': 'We are here\ntdFrame:https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6087916.923447935!2d8.234804542117423!3d41.836572992140624!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d4fe82448dd203%3A0xe22cf55c24635e6f!2sItaly!5e0!3m2!1sen!2sit!4v1613657475377!5m2!1sen!2sit', 'topic': 'sample' },    
+        { 'question': 'Sample Webhook', 'answer': 'tdWebhook:https://tiledesk-bot-webhook.tiledesk.repl.co', 'topic': 'sample' },    
+        { 'question': 'Sample Action', 'answer': 'performed', 'intent_display_name': 'action1', 'topic': 'sample' },    
+        // action button nn si può fare perche gli id cambiano 
       ]
       
       faqsArray.forEach(faq => {
@@ -68,6 +75,7 @@ class FaqService {
           id_faq_kb: faq_kb_id,
           question: faq.question,
           answer: faq.answer,
+          intent_display_name: faq.intent_display_name,
           id_project: projectid,
           topic: faq.topic,
           createdBy: created_by,
