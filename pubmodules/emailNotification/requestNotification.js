@@ -230,9 +230,9 @@ sendUserEmail(projectid, message) {
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {
-                    tokenQueryString =  "&jwt="+token
+                    tokenQueryString =  "&tiledesk_customToken=JWT "+token
                   }else {
-                    tokenQueryString =  "?jwt="+token
+                    tokenQueryString =  "?tiledesk_customToken=JWT "+token
                   }
 
                   emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString);
