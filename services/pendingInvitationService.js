@@ -10,11 +10,11 @@ class Pending_Invitation {
   // USER NOT FOUND > SAVE IN PENDING INVITATION
   saveInPendingInvitation(project_id, project_name, invited_user_email, invited_user_role, currentUserId, currentUserFirstname, currentUserLastname) {
     return new Promise(function (resolve, reject) {
-      console.log('** ** SAVE IN PENDING INVITATION ** **');
+      winston.debug('** ** SAVE IN PENDING INVITATION ** **');
       // router.post('/', function (req, res) {
 
       return PendingInvitation.find({ email: invited_user_email, id_project: project_id }, function (err, pendinginvitation) {
-        console.log('** ** FIND IN PENDING INVITATION ** ** ');
+        winston.debug('** ** FIND IN PENDING INVITATION ** ** ');
 
         if (err) {
           winston.error('** ** FIND IN PENDING INVITATION - ERROR ** **', err)
@@ -29,7 +29,7 @@ class Pending_Invitation {
           }
 
 
-          console.log('** ** FIND IN PENDING INVITATION - OBJECT NOT FOUND -- SAVE IN PENDING INVITATION ** **')
+          winston.debug('** ** FIND IN PENDING INVITATION - OBJECT NOT FOUND -- SAVE IN PENDING INVITATION ** **')
 
           // return reject({ success: false, msg: 'Object not found.' });
           // console.log('** ** FOUND PENDING INVITATION ** ** ', pendinginvitation);
@@ -43,10 +43,10 @@ class Pending_Invitation {
           });
           return newPendingInvitation.save(function (err, savedPendingInvitation) {
             if (err) {
-              console.log('** ** SAVE IN PENDING INVITATION ERROR ** **', err)
+              winston.debug('** ** SAVE IN PENDING INVITATION ERROR ** **', err)
               return reject({ success: false, msg: 'Error saving object.', err: err });
             }
-            console.log('** ** SAVE IN PENDING INVITATION RESPONSE ** **', savedPendingInvitation)
+            winston.debug('** ** SAVE IN PENDING INVITATION RESPONSE ** **', savedPendingInvitation)
             emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role, savedPendingInvitation._id)
 
             return resolve(savedPendingInvitation);
@@ -55,7 +55,7 @@ class Pending_Invitation {
 
         } else {
 
-          console.log('** ** FIND IN PENDING INVITATION - OBJECT FOUND ', pendinginvitation)
+          winston.debug('** ** FIND IN PENDING INVITATION - OBJECT FOUND ', pendinginvitation)
           // emailService.sendInvitationEmail_UserNotRegistered(invited_user_email, currentUserFirstname, currentUserLastname, project_name, project_id, invited_user_role, pendinginvitation._id)
 
           return reject({ success: false, msg: 'Pending Invitation already exist.', pendinginvitation });
