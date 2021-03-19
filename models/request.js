@@ -279,7 +279,7 @@ RequestSchema.virtual('participatingAgents', {
 // });
 
 
-
+/*
  // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
  RequestSchema.virtual('availableAgentsCount').get(function () {
   // if (this.agents && this.agents.length>0  // I uncomment  winston.debug("project_user", project_user); of the requestNotification.js row 252 this.agents doesn't have .filter method??
@@ -302,6 +302,7 @@ RequestSchema.virtual('participatingAgents', {
   // }
 
 });
+*/
 
 // RequestSchema.virtual('availableAgents').get(function () {
 //     var project_users_available = this.agents.filter(function (projectUser) {
