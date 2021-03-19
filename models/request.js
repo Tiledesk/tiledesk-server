@@ -278,7 +278,7 @@ RequestSchema.virtual('participatingAgents', {
 //   //options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
 // });
 
-/*
+
 
  // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
  RequestSchema.virtual('availableAgentsCount').get(function () {
@@ -302,7 +302,6 @@ RequestSchema.virtual('participatingAgents', {
   // }
 
 });
-*/
 
 // RequestSchema.virtual('availableAgents').get(function () {
 //     var project_users_available = this.agents.filter(function (projectUser) {
