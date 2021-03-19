@@ -1,6 +1,16 @@
 
+# 2.1.21
+- BugFix: request availableAgentsCount performance fix
+
+# 2.1.20
+- Default faq fix
+- Log fix
+
+# 2.1.19
+- Default faq with actions example
+
 # 2.1.18
-- Added faq intent_display_name and intent_id. 
+- Added faq intent_display_name and intent_id. Included database migration script: 1615214914082-faq-intent_id-intent_display_name-fields-added--autosync.js
 - Now you can filter the requests by snap_department_routing, req.query.snap_department_default, req.query.snap_department_id_bot, snap_department_id_bot_exists 
 - BugFix: Parse FAQ form CSV fix
 - You can enabled Smart Assignment by default for new project with SMART_ASSIGNMENT_CHAT_LIMIT_ON_DEFAULT_PROJECT=true (default = false)
@@ -11,7 +21,7 @@
 - Updated chat21 dependencies (firebase, etc.)
 - Added project_user creation endpoint for Ticketing (POST)
 - Set participants endpoint supports no_populate query param
-- Added request assing endpoint
+- Added request /assing endpoint
 - Now a request can be assinged directly to a partipant without a department for ticket use case.
 - Added Analytics events
 - Added leads filter to retrieve only their with email (with_email=true) and with fullname (with_fullname=true)

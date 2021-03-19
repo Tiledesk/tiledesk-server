@@ -290,18 +290,19 @@ RequestSchema.virtual('participatingAgents', {
         return true;
       }
     });
-    winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
+    // winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
 
-    if (project_users_available && project_users_available.length>0){
+    // if (project_users_available && project_users_available.length>0){
       return project_users_available.length;
-    }else {
-      return 0;
-    }
+    // }else {
+    //   return 0;
+    // }
   // } else {
   //   return 0;  
   // }
 
 });
+
 
 // RequestSchema.virtual('availableAgents').get(function () {
 //     var project_users_available = this.agents.filter(function (projectUser) {
