@@ -290,7 +290,7 @@ RequestSchema.virtual('participatingAgents', {
         return true;
       }
     });
-    winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
+    // winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
 
     // if (project_users_available && project_users_available.length>0){
       return project_users_available.length;
