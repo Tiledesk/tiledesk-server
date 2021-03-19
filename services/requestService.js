@@ -154,7 +154,7 @@ class RequestService {
               // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
               //return routedRequest.update(function(err, savedRequest) {
               if (err) {                
-                winston.error('Error saving the request. ',err);
+                winston.error('Error saving the request. ', {err:err, routedRequest:routedRequest});
                 return reject(err);
               }
               
@@ -230,7 +230,7 @@ class RequestService {
 
   reroute(request_id, id_project, nobot) {
     var that = this;
- 
+    var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
@@ -247,6 +247,10 @@ class RequestService {
                  
            winston.debug("here reroute1 ");
            return that.route(request_id, request.department.toString(), id_project, nobot).then(function(routedRequest){
+
+            var endDate = new Date();
+            winston.verbose("Performance Request reroute in millis: " + endDate-startDate);
+
              return resolve(routedRequest);
            }).catch(function(err) {
             return reject(err);
@@ -278,6 +282,8 @@ class RequestService {
   };  
 
   create(request) {
+
+    var startDate = new Date();
 
     var request_id = request.request_id;
     var project_user_id = request.project_user_id;
@@ -503,8 +509,10 @@ class RequestService {
               
               
                   winston.verbose("Request created",savedRequest.toObject());
+
+                  var endDate = new Date();
+                  winston.verbose("Performance Request created in millis: " + endDate-startDate);
                                     
-                  
                   requestEvent.emit('request.create.simple', savedRequest);
                   
                   return resolve(savedRequest);
