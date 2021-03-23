@@ -63,7 +63,7 @@ class FaqBotHandler {
                     query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[{"intent_id": action}, {"intent_display_name": action}]};
                 }
                 
-                winston.info("query message.attributes.action ", query);
+                winston.debug("query message.attributes.action ", query);
             }
 
 
