@@ -193,6 +193,7 @@ router.post('/signinWithCustomToken', [
       winston.debug("audUrl AudienceId: " + AudienceId );
 
       if (!AudienceId) {
+        winston.warn("JWT Aud.AudienceId field is required for AudienceType subscriptions", req.user );
         return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType subscriptions' });
       }
 
@@ -208,18 +209,13 @@ router.post('/signinWithCustomToken', [
       winston.debug("audUrl AudienceId: " + AudienceId );
 
       if (!AudienceId) {
+        winston.warn("JWT Aud.AudienceId field is required for AudienceType projects", req.user );
         return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType projects' });
       }
 
       id_project = AudienceId;
 
 
-      // if (req.project.version>200) {
-      //   if (req.user._id.indexOf(id_project+"_")==-1) {
-      //     // Error
-      //     // aggiorna docs ed esempio:
-      //   }
-      // }
 
     } else {
       // When happen?
@@ -268,6 +264,7 @@ router.post('/signinWithCustomToken', [
           if (project_user.status==="active") {
             return res.json({ success: true, token: req.headers["authorization"], user: req.user });
           } else {
+            winston.warn('Authentication failed. Project_user not active.');
             return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not active.' });
           }
           
