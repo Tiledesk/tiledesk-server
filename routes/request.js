@@ -756,7 +756,7 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+  winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
 
   // requestcachefarequi populaterequired
   var q1 = Request.find(query).
