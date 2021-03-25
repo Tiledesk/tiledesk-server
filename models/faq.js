@@ -16,15 +16,15 @@ var FaqSchema = new Schema({
     required: false,
     index:true,
     default: function() {
-      return nanoid(6);
+      return uuidv4();
     } 
   },
-  intent_display_name: {
+  intent_display_name: { //documentare
     type: String,
     required: false,  
     index:true,
     default: function() {
-      return uuidv4();
+      return nanoid(6);
     } 
   },
   question: {
@@ -32,7 +32,7 @@ var FaqSchema = new Schema({
     required: true 
   },
 
-  webhook_enabled: {
+  webhook_enabled: { //usa questo
     type: Boolean,
     required: false,
     default: false,

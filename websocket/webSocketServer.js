@@ -208,7 +208,7 @@ class WebSocketServer {
                   if (projectuser.role == "owner" || projectuser.role == "admin") {
                     winston.debug('queryRequest admin: '+ JSON.stringify(queryRequest));
                   }else {
-                    queryRequest["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                    queryRequest["$or"] = [ { "snapshot.agents.id_user": req.user.id}, {"participants": req.user.id}]            
                     winston.debug('queryRequest agent: '+ JSON.stringify(queryRequest));
                   }
   
@@ -287,7 +287,7 @@ class WebSocketServer {
                     winston.debug('query admin: '+ JSON.stringify(query));
                     cacheUserId = "/admin-owner";
                   }else {
-                    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                    query["$or"] = [ { "snapshot.agents.id_user": req.user.id}, {"participants": req.user.id}]            
                     winston.debug('query agent: '+ JSON.stringify(query));
                     cacheUserId = "/agent/"+req.user.id;
                   }
@@ -299,15 +299,17 @@ class WebSocketServer {
                   // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
                   var startDate = new Date();
                   Request.find(query)
-                  // .populate('lead')
+                  .select("+snapshot.agents")
+                  // .populate('lead') //??
                   // .populate('department')
                   // .populate('participatingBots')
                   // .populate('participatingAgents')  
                   // .populate({path:'requester',populate:{path:'id_user'}})
                   .sort({updatedAt: 'desc'})
                   .limit(lastRequestsLimit) 
-                  .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
-                  .cache(cacheUtil.queryTTL, projectId+":requests:query:status-50-1000:preflight-false:"+cacheUserId) 
+                  // DISABLED 23Marzo2021 per problema request.snapshot.requester.isAuthenticated = undefined 
+                  // .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
+                  .cache(cacheUtil.queryTTL, projectId+":requests:query:status-50-1000:preflight-false:select_snapshot_agents:"+cacheUserId) 
                   .exec(function(err, requests) { 
                   
                       if (err) {
@@ -329,26 +331,16 @@ class WebSocketServer {
                             request.requester_id =  null;
                           }
 
-                          if (request.agents && request.agents.length>0) {
+                          if (request.snapshot.agents && request.snapshot.agents.length>0) {
                             var agentsnew = [];
-                            request.agents.forEach(a => {
+                            request.snapshot.agents.forEach(a => {
                               agentsnew.push({id_user: a.id_user})  //remove unnecessary request.agents[].project_user fields. keep only id_user
                             });
-                            request.agents = agentsnew;
+                            request.snapshot.agents = agentsnew;
                           }
                          
 
-                          // var project_users_available = request.agents.filter(function (projectUser) {
-                          //   if (projectUser.user_available == true) {
-                          //     return true;
-                          //   }
-                          // });
-                      
-                          // if (project_users_available && project_users_available.length>0){
-                          //   request.availableAgents = project_users_available;
-                          // }else {
-                          //   request.availableAgents = [];
-                          // }
+    
 
                         });
                       }
@@ -527,7 +519,7 @@ class WebSocketServer {
                   if (projectuser.role == "owner" || projectuser.role == "admin") {
                     winston.debug('query admin: '+ JSON.stringify(query));
                   }else {
-                    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}]            
+                    query["$or"] = [ { "snapshot.agents.id_user": req.user.id}, {"participants": req.user.id}]            
                     winston.debug('query agent: '+ JSON.stringify(query));
                   }
                     

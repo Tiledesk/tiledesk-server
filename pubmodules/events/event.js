@@ -25,6 +25,12 @@ var EventSchema = new Schema({
     required: true,
     index: true
   },
+  status: {
+    type: String,
+    required: true,
+    default: "stardard",
+    index: true
+  },
   // id_user: {
   //   type: String,
   //   required: true,
@@ -40,6 +46,7 @@ var EventSchema = new Schema({
 }
 );
 
+EventSchema.index({ id_project: 1, name: 1, createdAt: -1 });
 
 var event = mongoose.model('event', EventSchema);
 

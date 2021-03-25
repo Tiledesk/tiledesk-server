@@ -13,6 +13,24 @@ var arrayUtil = require("../utils/arrayUtil");
 
 class RequestService {
 
+  getAvailableAgentsCount(agents) {
+     
+      var project_users_available = agents.filter(function (projectUser) {
+        if (projectUser.user_available == true) {
+          return true;
+        }
+      });
+      winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
+  
+      if (project_users_available && project_users_available.length>0){
+        return project_users_available.length;
+      }else {
+        return 0;
+      }
+
+  
+  }
+
 //change create with this
   routeInternal (request, departmentid, id_project, nobot) {
    var that = this;
@@ -68,7 +86,7 @@ class RequestService {
           request.hasBot = hasBot;
 
           request.department = result.department._id;
-          request.agents = result.agents;
+          // request.agents = result.agents;
           request.assigned_at = assigned_at;
           request.waiting_time = undefined //reset waiting_time on reroute
           
@@ -78,6 +96,7 @@ class RequestService {
 
           request.snapshot.department = result.department;
           request.snapshot.agents = result.agents;
+          request.snapshot.availableAgentsCount = that.getAvailableAgentsCount(result.agents);
 
               return resolve(request);
                   
@@ -329,18 +348,11 @@ class RequestService {
 
           winston.debug("context",context);
 
-          // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
-        // return departmentService.getOperators(departmentid, id_project, false, undefined, context).then(function (result) {
-
-        
-          //  var assigned_operator_id;
-          //  var participants = [];
            var participantsAgents = [];
            var participantsBots = [];
            var hasBot = false;
 
-          //  var dep_id = departmentid;
-          var dep_id = undefined;
+           var dep_id = undefined;
 
            var assigned_at = undefined;          
           
@@ -355,48 +367,6 @@ class RequestService {
           
            agents = result.agents;
 
-
-          //  winston.debug("req status0", status);
-
-          //  if (!status) {
-        
-
-           
-          //   //  winston.debug("req status check", status);
-          //    status = RequestConstants.UNASSIGNED; 
-
-          //    if (result.operators && result.operators.length>0) {
-
-          //      status =  RequestConstants.ASSIGNED;
-
-
-          //     //  assigned_operator_id = result.operators[0].id_user;
-
-          //      var assigned_operator_idString = result.operators[0].id_user.toString();
-
-          //      participants.push(assigned_operator_idString);
-
-          //      // botprefix
-          //      if (assigned_operator_idString.startsWith("bot_")) {
-
-          //       hasBot = true;
-          //       winston.debug("hasBot:"+hasBot);
-
-          //       // botprefix
-          //       var assigned_operator_idStringBot = assigned_operator_idString.replace("bot_","");
-          //       winston.debug("assigned_operator_idStringBot:"+assigned_operator_idStringBot);
-
-          //       participantsBots.push(assigned_operator_idStringBot);
-
-          //      } else {
-          //       participantsAgents.push(assigned_operator_idString);
-          //      }
-
-          //      assigned_at = Date.now();
-          //    }
-          //  }
-           
-          
 
           if (status == 50) {
                 // skip assignment
@@ -449,10 +419,14 @@ class RequestService {
         
            
 
-
-          snapshot.department = result.department;
+          if (dep_id) {
+            snapshot.department = result.department;
+          }
+          
           snapshot.agents = agents;
-          if (request.requester) {
+          snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
+
+          if (request.requester) {      //.toObject()????
             snapshot.requester = request.requester;
           }
           if (request.lead) {
@@ -474,10 +448,7 @@ class RequestService {
                 participantsBots: participantsBots,
                 hasBot: hasBot,
                 department: dep_id,          
-                agents: agents,
-                //availableAgents: result.available_agents,
-
-                // assigned_operator_id:  result.assigned_operator_id,
+                // agents: agents,                
             
                 //others
                 sourcePage: sourcePage,

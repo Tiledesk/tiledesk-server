@@ -31,15 +31,14 @@ router.post('/', [
     return res.status(422).json({ errors: errors.array() });
   }
 
-                  // emit(name, attributes, id_project, project_user, createdBy) {
-  // eventService.emit2(req.body.name, req.body.attributes, req.projectid, req.projectuser.id, req.body.id_user, req.user.id).then(function(event) {
-
-                  // emit(name,         attributes,       id_project,     project_user, createdBy, user) {
+   
     var pu = undefined;
     if (req.projectuser) { //if the bot creates the event -> pu is undefined
       pu = req.projectuser.id
-    }              
-    eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id).then(function(event) {
+    }   
+    
+    // emit(name, attributes, id_project, project_user, createdBy, status, user) {
+    eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id, undefined, req.user).then(function(event) {
     res.json(event);
   }).catch(function(err) {
     winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)

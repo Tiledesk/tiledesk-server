@@ -40,8 +40,7 @@ class EventService {
 
   // }
 
-  emit(name, attributes, id_project, project_user, createdBy) {
-    // emit(name, attributes, id_project, project_user, createdBy, user) {
+  emit(name, attributes, id_project, project_user, createdBy, status, user) {
 
     return new Promise(function (resolve, reject) {
   
@@ -51,9 +50,12 @@ class EventService {
         id_project: id_project,
         project_user: project_user,
         createdBy: createdBy,
-        updatedBy: createdBy
+        updatedBy: createdBy,
+        status: status
       });
     
+      //TODO do not save volatile events
+      
       newEvent.save(function(err, savedEvent) {
         if (err) {
           winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
@@ -65,11 +67,11 @@ class EventService {
           
           var savedEventPopulatedJson = savedEventPopulated.toJSON();
 
-          // if (user) {
-          //   savedEventPopulatedJson.user = user;
-          // }else {
-          //   winston.warn("Attention eventService emit user is empty");
-          // }
+          if (user) {
+            savedEventPopulatedJson.user = user;
+          }else {
+            winston.warn("Attention eventService emit user is empty");
+          }
           
           savedEventPopulatedJson.id = savedEventPopulatedJson._id;
           winston.debug("savedEventPopulatedJson", savedEventPopulatedJson);
@@ -88,6 +90,8 @@ class EventService {
 
 }
 var eventService = new EventService();
+
+
 
 
 module.exports = eventService;

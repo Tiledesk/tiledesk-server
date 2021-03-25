@@ -511,6 +511,14 @@ router.delete('/:requestid',  function (req, res) {
   if (projectuser.role != "owner" ) {
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
+
+  Message.deleteMany({recipient:req.params.requestid}, function(err) {
+          if (err) {
+            return res.status(500).send({success: false, msg: 'Error deleting messages.'});
+          }
+          winston.verbose('Messages deleted for the recipient: '+ req.params.requestid );
+   });
+
   Request.remove({ request_id: req.params.requestid }, function (err, request) {
     if (err) {
       winston.error('--- > ERROR ', err);
@@ -519,8 +527,10 @@ router.delete('/:requestid',  function (req, res) {
 
     if (!request) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
-    }
+    }   
   
+    winston.verbose('Request deleted with request_id: '+ req.params.requestid );
+
     requestEvent.emit('request.delete', request);
 
     res.json(request);
@@ -536,12 +546,16 @@ router.get('/', function (req, res, next) {
   winston.debug("req.query.sort", req.query.sort);
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
-  var limit = 40; // Number of request per page
+  const DEFAULT_LIMIT = 40;
+
+  var limit = DEFAULT_LIMIT; // Number of request per page
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
   }
-
+  if (limit > 100) {
+    limit = DEFAULT_LIMIT;
+  }
 
 
   var page = 0;
@@ -565,10 +579,10 @@ router.get('/', function (req, res, next) {
       //all request 
       // per uni mostrare solo quelle priprio quindi solo participants
     if (req.query.mine) {
-      query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}];
+      query["$or"] = [ { "snapshot.agents.id_user": req.user.id}, {"participants": req.user.id}];
     }
   }else {  
-    query["$or"] = [ { "agents.id_user": req.user.id}, {"participants": req.user.id}];
+    query["$or"] = [ { "snapshot.agents.id_user": req.user.id}, {"participants": req.user.id}];
   }
 
   // console.log('REQUEST ROUTE - req ', req); 
@@ -585,11 +599,17 @@ router.get('/', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
+  var history_search = false;
+
   if (req.query.status) {
     winston.debug('req.query.status', req.query.status);
     query.status = req.query.status;
 
+    if (req.query.status == 1000 || req.query.status == "1000") {
+      history_search = true;
+    }
     if (req.query.status==="all") {
+      history_search = true;
       delete query.status;
     }
   }
@@ -626,7 +646,7 @@ router.get('/', function (req, res, next) {
    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
    */
-  if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if ( history_search === true && req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
 
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
@@ -745,13 +765,13 @@ router.get('/', function (req, res, next) {
    
     winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
 
-    if (req.query.no_populate != "true" && req.query.no_populate != true) {
+    if (req.query.no_populate != "true" && req.query.no_populate != true) {        
       winston.debug('REQUEST ROUTE - no_polutate false ');
       q1.populate('department').
-      populate('participatingBots').
-      populate('participatingAgents').
+      populate('participatingBots').            //nico già nn gli usa
+      populate('participatingAgents').          //nico già nn gli usa
       populate('lead').
-      populate({path:'requester',populate:{path:'id_user'}});
+      populate({path:'requester',populate:{path:'id_user'}});        //toglilo perche nico lo prende già da snapshot
     }
         
     // cache(cacheUtil.defaultTTL, "requests-"+projectId).    
@@ -999,6 +1019,7 @@ router.get('/:requestid', function (req, res) {
 
   // cacherequest       // requestcachefarequi populaterequired
   Request.findOne({request_id: requestid, id_project: req.projectid})
+  // .select("+snapshot.agents")
   .populate('lead')
   .populate('department')
   .populate('participatingBots')

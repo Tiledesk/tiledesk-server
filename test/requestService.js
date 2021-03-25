@@ -55,12 +55,12 @@ describe('RequestService', function () {
                       lead:createdLead, requester: savedProjectAndPU.project_user };
 
        requestService.create(request).then(function(savedRequest) {
-          winston.debug("resolve", savedRequest.toObject());
+          winston.info("resolve", savedRequest.toObject());
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          // expect(savedRequest.ticket_id).to.equal(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
@@ -74,8 +74,10 @@ describe('RequestService', function () {
 
           expect(savedRequest.snapshot.department.name).to.not.equal(null);
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
           expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
           expect(savedRequest.snapshot.requester.role).to.equal("owner");
+          expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
           // expect(savedRequest.snapshot.requester.role).to.equal("owner");
           
           expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -125,7 +127,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.department).to.equal(undefined);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
@@ -138,8 +140,9 @@ describe('RequestService', function () {
           expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
           expect(savedRequest.assigned_at).to.not.equal(null);
 
-          expect(savedRequest.snapshot.department.name).to.not.equal(null);
+          expect(savedRequest.snapshot.department).to.equal(undefined);
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
           expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
           expect(savedRequest.snapshot.requester.role).to.equal("owner");
           // expect(savedRequest.snapshot.requester.role).to.equal("owner");
@@ -195,7 +198,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.department).to.not.equal(undefined);
           expect(savedRequest.status).to.equal(50);
           expect(savedRequest.participants).to.have.lengthOf(0);
@@ -207,6 +210,7 @@ describe('RequestService', function () {
 
           expect(savedRequest.snapshot.department.name).to.not.equal(null);
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
           expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
           expect(savedRequest.snapshot.requester.role).to.equal("owner");
           // expect(savedRequest.snapshot.requester.role).to.equal("owner");
@@ -247,7 +251,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
@@ -261,7 +265,7 @@ describe('RequestService', function () {
 
           expect(savedRequest.snapshot.department.name).to.not.equal(null);
           expect(savedRequest.snapshot.agents).to.not.equal(null);
-          
+          expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
           expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
           // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
@@ -311,7 +315,7 @@ describe('RequestService', function () {
               expect(savedRequest.request_id).to.equal("createWithIdAndCreateNewLeadAndCheckRequestEvent");
               expect(savedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(savedRequest.first_text).to.equal("first_text");
-              expect(savedRequest.agents).to.have.lengthOf(1);
+              expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
               expect(savedRequest.status).to.equal(200);
               expect(savedRequest.participants).to.have.lengthOf(1);
               expect(savedRequest.participants).to.contains(userid);
@@ -325,7 +329,7 @@ describe('RequestService', function () {
 
               expect(savedRequest.participatingAgents.length).to.equal(1);        
               expect(savedRequest.participatingBots.length).to.equal(0);
-              expect(savedRequest.availableAgentsCount).to.equal(1);
+              expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
               
               // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
               // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
@@ -411,7 +415,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.contains(userid);
           expect(savedRequest.participantsAgents).to.contains(userid);
@@ -457,7 +461,7 @@ describe('RequestService', function () {
           expect(savedRequest.request_id).to.equal("request_id1");
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
-          expect(savedRequest.agents).to.have.lengthOf(1);
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
           expect(savedRequest.status).to.equal(100);
           expect(savedRequest.participants).to.have.lengthOf(0);  
           expect(savedRequest.participantsAgents).to.have.lengthOf(0);
@@ -689,7 +693,7 @@ describe('RequestService', function () {
         expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
 
         expect(savedRequestParticipant.first_text).to.equal("first_text");
-        expect(savedRequestParticipant.agents).to.have.lengthOf(2);
+        expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(2);
         expect(savedRequestParticipant.status).to.equal(200);
 
         expect(savedRequestParticipant.participants).to.have.lengthOf(2);
@@ -774,7 +778,7 @@ projectService.createAndReturnProjectAndProjectUser("setParticipantsByRequestId-
       expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
 
       expect(savedRequestParticipant.first_text).to.equal("first_text");
-      expect(savedRequestParticipant.agents).to.have.lengthOf(2);
+      expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(2);
       expect(savedRequestParticipant.status).to.equal(200);
 
       expect(savedRequestParticipant.participants).to.have.lengthOf(1);
@@ -826,7 +830,7 @@ it('removeparticipant', function (done) {
         expect(savedRequestParticipant.request_id).to.equal("request_id1");
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
-        expect(savedRequestParticipant.agents).to.have.lengthOf(1);
+        expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
         expect(savedRequestParticipant.status).to.equal(100);
         expect(savedRequestParticipant.participants).to.have.lengthOf(0);
         expect(savedRequestParticipant.participantsAgents).to.have.lengthOf(0);        
@@ -878,7 +882,7 @@ it('reroute', function (done) {
         expect(savedRequestParticipant.request_id).to.equal("request_id1-reroute");
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
-        expect(savedRequestParticipant.agents).to.have.lengthOf(1);
+        expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
         expect(savedRequestParticipant.status).to.equal(200);
         expect(savedRequestParticipant.participants).to.have.lengthOf(1);
         expect(savedRequestParticipant.participantsAgents).to.have.lengthOf(1);        

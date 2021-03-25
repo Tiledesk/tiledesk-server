@@ -71,7 +71,7 @@ describe('MessageRoute', () => {
                 // expect(res.body.request.messages_count).to.equal(1);
 
                 expect(res.body.request.status).to.equal(200);                                
-                expect(res.body.request.agents.length).to.equal(1);
+                expect(res.body.request.snapshot.agents.length).to.equal(1);
                 expect(res.body.request.participants.length).to.equal(1);
                 expect(res.body.request.department).to.not.equal(null);
                 expect(res.body.request.lead).to.not.equal(null);               
@@ -161,7 +161,7 @@ it('createWithSender', function (done) {
                     // expect(res.body.request.messages_count).to.equal(1);
 
                     expect(res.body.request.status).to.equal(200);                                
-                    expect(res.body.request.agents.length).to.equal(2);
+                    expect(res.body.request.snapshot.agents.length).to.equal(2);
                     expect(res.body.request.participants.length).to.equal(1);
                     expect(res.body.request.department).to.not.equal(null);
                     expect(res.body.request.lead).to.not.equal(null);               
@@ -253,7 +253,7 @@ it('createWithSenderFromLead', function (done) {
                     // expect(res.body.request.messages_count).to.equal(1);
 
                     expect(res.body.request.status).to.equal(200);                                
-                    expect(res.body.request.agents.length).to.equal(1);
+                    expect(res.body.request.snapshot.agents.length).to.equal(1);
                     expect(res.body.request.participants.length).to.equal(1);
                     expect(res.body.request.department).to.not.equal(null);
                     expect(res.body.request.lead).to.not.equal(null);               
@@ -432,7 +432,7 @@ it('createDifferentChannel', function (done) {
               // expect(res.body.request.messages_count).to.equal(1);
 
               expect(res.body.request.status).to.equal(200);                                
-              expect(res.body.request.agents.length).to.equal(1);
+              expect(res.body.request.snapshot.agents.length).to.equal(1);
               expect(res.body.request.participants.length).to.equal(1);
               expect(res.body.request.department).to.not.equal(undefined);
               expect(res.body.request.lead).to.not.equal(null);               
@@ -495,7 +495,7 @@ it('createWithMessageStatus', function (done) {
               // expect(res.body.request.messages_count).to.equal(1);
 
               expect(res.body.request.status).to.equal(200);                                
-              expect(res.body.request.agents.length).to.equal(1);
+              expect(res.body.request.snapshot.agents.length).to.equal(1);
               expect(res.body.request.participants.length).to.equal(1);
               expect(res.body.request.department).to.not.equal(null);
               expect(res.body.request.lead).to.not.equal(null);               
@@ -564,7 +564,7 @@ it('createWithParticipants', function (done) {
               // expect(res.body.request.messages_count).to.equal(1);
 
               expect(res.body.request.status).to.equal(200);                                
-              expect(res.body.request.agents.length).to.equal(1);
+              expect(res.body.request.snapshot.agents.length).to.equal(1);
               expect(res.body.request.participants.length).to.equal(1);
               expect(res.body.request.participants[0]).to.equal(savedUser._id.toString());
 
@@ -595,10 +595,14 @@ it('getall', function (done) {
   var pwd = "pwd";
 
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-    projectService.create("message-create", savedUser._id).then(function(savedProject) {
+    // projectService.create("message-create", savedUser._id).then(function(savedProject) {
+      projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+        var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname-message-getall", "andrea.leo@-subscription-message-getall.it", savedProject._id).then(function(createdLead) {
-        requestService.createWithId("request_id-message-getall", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        // requestService.createWithId("request_id-message-getall", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+          requestService.createWithIdAndRequester("request_id-message-getall", savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
+
             messageService.create(savedUser._id, "senderFullname", savedRequest.request_id, "hello",
             savedProject._id, savedUser._id).then(function(savedMessage){
                 expect(savedMessage.text).to.equal("hello");     
@@ -744,7 +748,7 @@ describe('/SendMessageSigninWithCustomToken', () => {
                                   // expect(res.body.request.messages_count).to.equal(1);
 
                                   expect(res.body.request.status).to.equal(200);                                
-                                  expect(res.body.request.agents.length).to.equal(1);
+                                  expect(res.body.request.snapshot.agents.length).to.equal(1);
                                   expect(res.body.request.participants.length).to.equal(1);
                                   expect(res.body.request.department).to.not.equal(null);
                                   expect(res.body.request.lead).to.not.equal(null);               
@@ -843,7 +847,7 @@ describe('/SendMessageSigninAnonym', () => {
                                   // expect(res.body.request.messages_count).to.equal(1);
 
                                   expect(res.body.request.status).to.equal(200);                                
-                                  expect(res.body.request.agents.length).to.equal(1);
+                                  expect(res.body.request.snapshot.agents.length).to.equal(1);
                                   expect(res.body.request.participants.length).to.equal(1);
                                   expect(res.body.request.department).to.not.equal(null);
                                   expect(res.body.request.lead).to.not.equal(null);               

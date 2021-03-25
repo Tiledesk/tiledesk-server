@@ -282,8 +282,9 @@ sendAgentEmail(projectid, savedRequest) {
                   if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.pooled == false ) {
                     return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
                   }
-
-                   var allAgents = savedRequest.agents;
+                  
+                  //  var allAgents = savedRequest.agents;
+                   var allAgents = savedRequest.snapshot.agents;
                   // winston.debug("allAgents", allAgents);
    
                    allAgents.forEach(project_user => {

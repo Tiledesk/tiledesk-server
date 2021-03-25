@@ -52,7 +52,7 @@ describe('RequestRoute', () => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 // res.body.should.have.property('request_id').eql('request_id');
                 // res.body.should.have.property('requester_id').eql('requester_id');
                 res.body.should.have.property('first_text').eql('first_text');
@@ -64,7 +64,7 @@ describe('RequestRoute', () => {
                 res.body.should.have.property('status').eql(200);
                 
                 // res.body.should.have.property('agents').eql(savedUser._id);
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 expect(res.body.participants.length).to.equal(1);
 
                 expect(res.body.participantsAgents.length).to.equal(1);                
@@ -107,7 +107,7 @@ it('createUpperCaseEmail', function (done) {
               res.should.have.status(200);
               res.body.should.be.a('object');
               
-              expect(res.body.agents.length).to.equal(1);
+              expect(res.body.snapshot.agents.length).to.equal(1);
               // res.body.should.have.property('request_id').eql('request_id');
               // res.body.should.have.property('requester_id').eql('requester_id');
               res.body.should.have.property('first_text').eql('first_text');
@@ -119,7 +119,7 @@ it('createUpperCaseEmail', function (done) {
               res.body.should.have.property('status').eql(200);
               
               // res.body.should.have.property('agents').eql(savedUser._id);
-              expect(res.body.agents.length).to.equal(1);
+              expect(res.body.snapshot.agents.length).to.equal(1);
               expect(res.body.participants.length).to.equal(1);
 
               expect(res.body.participantsAgents.length).to.equal(1);                
@@ -336,6 +336,7 @@ it('getbyidWithPartecipatingBots', function (done) {
                 expect(res.body.requests[0].snapshot).to.not.equal(undefined);
                 expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
                 expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+                expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
                 expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
                 expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
                 // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
@@ -494,6 +495,7 @@ it('getallFilter-snap_department_routing', function (done) {
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
               expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
@@ -577,6 +579,7 @@ it('getallFilter-snap_department_default', function (done) {
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
               expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
@@ -660,6 +663,7 @@ it('getallFilter-snap_department_id_bot_exists', function (done) {
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
               expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
@@ -678,7 +682,7 @@ it('getallFilter-snap_department_id_bot_exists', function (done) {
 });
 
 
-
+// mocha test/requestRoute.js  --grep 'getallcsv'
 it('getallcsv', function (done) {
   // this.timeout(10000);
 
@@ -686,11 +690,16 @@ it('getallcsv', function (done) {
   var pwd = "pwd";
 
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-   projectService.create("createWithId", savedUser._id).then(function(savedProject) {
+   projectService.createAndReturnProjectAndProjectUser("getallcsv", savedUser._id).then(function(savedProjectAndPU) {
+
+    var savedProject = savedProjectAndPU.project;
     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-    // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-     requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-        winston.debug("resolve", savedRequest.toObject());
+
+    winston.info("createdLead", createdLead.toObject());
+      // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
+
+     requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        winston.info("resolve", savedRequest.toObject());
        
 
         chai.request(server)
@@ -727,9 +736,17 @@ it('getallWithLoLead', function (done) {
   var pwd = "pwd";
 
   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-   projectService.create("createWithId", savedUser._id).then(function(savedProject) {
-    leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function(createdLead) {      
-     requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+
+    projectService.createAndReturnProjectAndProjectUser("getallcsv", savedUser._id).then(function(savedProjectAndPU) {
+
+      var savedProject = savedProjectAndPU.project;
+      leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function(createdLead) {      
+  
+      winston.info("createdLead", createdLead.toObject());
+        // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
+  
+       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+
         winston.debug("resolve", savedRequest.toObject());
        
 
@@ -786,7 +803,7 @@ it('getallWithLoLead', function (done) {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 // res.body.should.have.property('request_id').eql('request_id');
                 // res.body.should.have.property('requester_id').eql('requester_id');
                 res.body.should.have.property('first_text').eql('first_text');
@@ -798,7 +815,7 @@ it('getallWithLoLead', function (done) {
                 res.body.should.have.property('status').eql(200);
                 
                 // res.body.should.have.property('agents').eql(savedUser._id);
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 expect(res.body.participants.length).to.equal(1);
 
                 expect(res.body.participantsAgents.length).to.equal(1);                
@@ -864,7 +881,7 @@ it('getallWithLoLead', function (done) {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 // res.body.should.have.property('request_id').eql('request_id');
                 // res.body.should.have.property('requester_id').eql('requester_id');
                 res.body.should.have.property('first_text').eql('first_text');
@@ -876,7 +893,7 @@ it('getallWithLoLead', function (done) {
                 res.body.should.have.property('status').eql(200);
                 
                 // res.body.should.have.property('agents').eql(savedUser._id);
-                expect(res.body.agents.length).to.equal(1);
+                expect(res.body.snapshot.agents.length).to.equal(1);
                 expect(res.body.participants.length).to.equal(1);
 
                 expect(res.body.participantsAgents.length).to.equal(1);                
@@ -942,7 +959,7 @@ it('createAndAssign2', function (done) {
               res.should.have.status(200);
               res.body.should.be.a('object');
               
-              expect(res.body.agents.length).to.equal(1);
+              expect(res.body.snapshot.agents.length).to.equal(1);
               // res.body.should.have.property('request_id').eql('request_id');
               // res.body.should.have.property('requester_id').eql('requester_id');
               res.body.should.have.property('first_text').eql('first_text');
@@ -954,7 +971,7 @@ it('createAndAssign2', function (done) {
               res.body.should.have.property('status').eql(200);
               
               // res.body.should.have.property('agents').eql(savedUser._id);
-              expect(res.body.agents.length).to.equal(1);
+              expect(res.body.snapshot.agents.length).to.equal(1);
               expect(res.body.participants.length).to.equal(1);
 
               expect(res.body.participantsAgents.length).to.equal(1);                

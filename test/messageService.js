@@ -15,6 +15,7 @@ var winston = require('../config/winston');
 
 // mongoose.connect(databaseUri || config.database);
 mongoose.connect(config.databasetest);
+require('../services/mongoose-cache-fn')(mongoose);
 
 var requestService = require('../services/requestService');
 var messageService = require('../services/messageService');
@@ -59,9 +60,14 @@ describe('messageService', function () {
 
   it('createMessageAndUpdateTwoMessagesCount', function (done) {
     // this.timeout(10000);  
-      projectService.create("test1", userid).then(function(savedProject) {
+      // projectService.create("test1", userid).then(function(savedProject) {
+      projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
+        var savedProject = savedProjectAndPU.project;
+
         // attento reqid
-        requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+        // requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+          requestService.createWithIdAndRequester("request_id-createTwoMessage", savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
+
          messageService.create(userid, "test sender", savedRequest.request_id, "hello",
             savedProject._id, userid).then(function(savedMessage){
 

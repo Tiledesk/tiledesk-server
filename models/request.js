@@ -184,10 +184,12 @@ var RequestSchema = new Schema({
 
   // all the agents of the project or the department at the request creation time 
   // TODO renameit
+  /*
   agents:  {
     type: [ProjectUserSchema],
     select: true
   },
+  */
   // TODO select false???  ma serve alla dashboard
 
   sourcePage: {
@@ -281,15 +283,19 @@ RequestSchema.virtual('participatingAgents', {
 
 
  // TODO serve????? Nico dice di no. io lo uso solo per trigger fai una cosa + semplice ese hasAvailableAgent = true o false
+ /* CAMBIA TRIGGER PRIMA DI PUBBLICARE
  RequestSchema.virtual('availableAgentsCount').get(function () {
   // if (this.agents && this.agents.length>0  // I uncomment  winston.debug("project_user", project_user); of the requestNotification.js row 252 this.agents doesn't have .filter method??
   //   // &&  this.agents.filter
   //   ) {
-    var project_users_available = this.agents.filter(function (projectUser) {
+
+    var project_users_available = this.snapshot.agents.filter(function (projectUser) {
+      // var project_users_available = this.agents.filter(function (projectUser) {
       if (projectUser.user_available == true) {
         return true;
       }
     });
+    // ATTENTION DO NOT PRINT INTO A VIRTUAL 
     // winston.debug('++ AVAILABLE PROJECT USERS count ', project_users_available)
 
     // if (project_users_available && project_users_available.length>0){
@@ -302,7 +308,7 @@ RequestSchema.virtual('participatingAgents', {
   // }
 
 });
-
+*/
 
 // RequestSchema.virtual('availableAgents').get(function () {
 //     var project_users_available = this.agents.filter(function (projectUser) {

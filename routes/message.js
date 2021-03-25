@@ -160,6 +160,8 @@ async (req, res)  => {
 
                           let message = savedMessage.toJSON();
 
+                          winston.debug("returning message to", message);
+                          
                           savedRequest
                             .populate('lead')
                             .populate('department')

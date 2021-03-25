@@ -18,10 +18,14 @@ var RequestSnapshotSchema = new Schema({
   },
   agents:  {
     type: [ProjectUserSchema],
-    select: true
+    // select: true
+    select: false
   },
   // participatingAgents
-  // availableAgentsCount
+  availableAgentsCount: {
+    type: Number,
+    index:true
+  }
   // participatingBots
 },{ _id : false }
 );
