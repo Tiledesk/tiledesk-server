@@ -335,7 +335,7 @@ it('getbyidWithPartecipatingBots', function (done) {
                 expect(res.body.requests[0].hasBot).to.equal(false);
                 expect(res.body.requests[0].snapshot).to.not.equal(undefined);
                 expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
-                expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+                // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
                 expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
                 expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
                 expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
@@ -410,7 +410,7 @@ it('getallNoPopulate', function (done) {
               
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
-              expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
               // expect(res.body.requests[0].test).to.not.equal(undefined);
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
               // expect(res.body.requests[0].participatingBots.length).to.equal(0);
@@ -494,7 +494,7 @@ it('getallFilter-snap_department_routing', function (done) {
               expect(res.body.requests[0].hasBot).to.equal(false);
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
-              expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
@@ -578,7 +578,7 @@ it('getallFilter-snap_department_default', function (done) {
               expect(res.body.requests[0].hasBot).to.equal(false);
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
-              expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
@@ -662,7 +662,7 @@ it('getallFilter-snap_department_id_bot_exists', function (done) {
               expect(res.body.requests[0].hasBot).to.equal(false);
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
-              expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
+              // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
