@@ -21,6 +21,7 @@ var ProjectUserUtil = require("../utils/project_userUtil");
 var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
+var RoleConstants = require('../models/roleConstants');
 
 
 
@@ -308,7 +309,7 @@ class WebSocketServer {
                   .sort({updatedAt: 'desc'})
                   .limit(lastRequestsLimit) 
                   // DISABLED 23Marzo2021 per problema request.snapshot.requester.isAuthenticated = undefined 
-                  // .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
+                  .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
                   .cache(cacheUtil.queryTTL, projectId+":requests:query:status-50-1000:preflight-false:select_snapshot_agents:"+cacheUserId) 
                   .exec(function(err, requests) { 
                   
@@ -331,6 +332,16 @@ class WebSocketServer {
                             request.requester_id =  null;
                           }
 
+                          if (request.requester) {
+                            if (request.requester.role === RoleConstants.GUEST ) {
+                              request.requester.isAuthenticated = false;
+                            }else {
+                              request.requester.isAuthenticated = true;
+                            }
+                           
+                          }
+
+                          // attento qui
                           if (request.snapshot.agents && request.snapshot.agents.length>0) {
                             var agentsnew = [];
                             request.snapshot.agents.forEach(a => {
