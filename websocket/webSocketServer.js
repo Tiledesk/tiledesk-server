@@ -332,11 +332,11 @@ class WebSocketServer {
                             request.requester_id =  null;
                           }
 
-                          if (request.requester) {
-                            if (request.requester.role === RoleConstants.GUEST ) {
-                              request.requester.isAuthenticated = false;
+                          if (request.snapshot.requester) {
+                            if (request.snapshot.requester.role === RoleConstants.GUEST ) {
+                              request.snapshot.requester.isAuthenticated = false;
                             }else {
-                              request.requester.isAuthenticated = true;
+                              request.snapshot.requester.isAuthenticated = true;
                             }
                            
                           }
