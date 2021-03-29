@@ -13,6 +13,7 @@ var leadService = require('../services/leadService');
 var messageService = require('../services/messageService');
 const uuidv4 = require('uuid/v4');
 var MessageConstants = require("../models/messageConstants");
+var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
 
