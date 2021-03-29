@@ -72,8 +72,8 @@ router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false 
 
       return res.status(201).json({
           message: 'Image uploded successfully',
-          filename: req.file.filename,
-          thumbnail: thumFilename
+          filename: encodeURIComponent(req.file.filename),
+          thumbnail: encodeURIComponent(thumFilename)
       });
     });
   } catch (error) {
@@ -145,6 +145,10 @@ curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andreale
 ```
 */
 
+/*
+curl -v -X POST -H 'Content-Type: multipart/form-data' -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" https://tiledesk-server-pre.herokuapp.com/images/public/
+*/
+
 router.post('/public', upload.single('file'), (req, res, next) => {
   try {
      winston.debug("req",req);
@@ -169,8 +173,8 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 
         return res.status(201).json({
             message: 'Image uploded successfully',
-            filename: req.file.filename,
-            thumbnail: thumFilename
+            filename: encodeURIComponent(req.file.filename),
+            thumbnail: encodeURIComponent(thumFilename)
         });
       });
       
