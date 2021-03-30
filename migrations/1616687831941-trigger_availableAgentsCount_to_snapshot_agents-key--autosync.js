@@ -15,11 +15,12 @@ async function up () {
     // db.getCollection('triggers').find({"conditions.all.path":"availableAgentsCount"})
     // return mongoose.connection.db.collection('triggers').updateOne({"conditions.all.path":"availableAgentsCount"},{ "$set": { "conditions.all.$.path": "snapshot.availableAgentsCount" } }, function (err, updates) {
       return mongoose.connection.db.collection('triggers').find(
-        {"$or": [ 
-          {"conditions.all.path":"snapshot.availableAgentsCount"},
-          {"conditions.all.path":"availableAgentsCount"}
-          ]
-        }
+        // {
+          // "$or": [ 
+          {"conditions.all.key":"request.availableAgentsCount"},
+          // {"conditions.all.key":"availableAgentsCount"}
+          // ]
+        // }
         ).toArray( function (err, triggers) {
         if (err) {
           winston.error("Schema migration: triggers err", err);
@@ -30,7 +31,7 @@ async function up () {
         triggers.forEach( 
           function(trigger, i){ 
             winston.debug("trigger",trigger);
-            return mongoose.connection.db.collection('triggers').updateOne({_id:trigger._id, "conditions.all.path":"availableAgentsCount"},{ "$set": { "conditions.all.$.path": "snapshot.availableAgentsCount","conditions.all.$.key": "request.snapshot.availableAgentsCount" } }
+            return mongoose.connection.db.collection('triggers').updateOne({_id:trigger._id, "conditions.all.key":"request.availableAgentsCount"},{ "$set": {"conditions.all.$.key": "request.snapshot.availableAgentsCount" } }
             // {
             //   multi: true,
             //   arrayFilters: [ {"conditions.all.path":"availableAgentsCount"} ] 
@@ -44,7 +45,7 @@ async function up () {
             // winston.info("Schema updated for " + updates.n Modified + " triggers ");
         });
       }); 
-      winston.info("Schema updated path for triggers "+triggers.length);
+      winston.info("Schema updated key for triggers "+triggers.length);
        return resolve('ok'); 
     });  
     
