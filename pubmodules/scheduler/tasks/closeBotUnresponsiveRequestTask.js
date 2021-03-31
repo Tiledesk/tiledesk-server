@@ -76,18 +76,18 @@ findUnresponsiveRequests() {
           return 0;
       }
       if (!requests || (requests && requests.length==0)) {
-          winston.info("CloseBotUnresponsiveRequestTask no unresponsive requests found ");
+          winston.verbose("CloseBotUnresponsiveRequestTask no unresponsive requests found ");
           return 0;
       }
 
-      winston.info("CloseBotUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
+      winston.verbose("CloseBotUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
       winston.debug("CloseBotUnresponsiveRequestTask: found unresponsive requests ", requests);
       
       requests.forEach(request => {
         winston.debug("********unresponsive request ", request);
 
         return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {
-          winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
+          winston.verbose("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
           winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
