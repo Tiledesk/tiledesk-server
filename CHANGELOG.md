@@ -1,4 +1,13 @@
 
+# 2.1.30
+- The requests queries with status open (!=1000) are not limited for free accounts.   
+- Performance improvment moving request.agents (select false) and availableAgentsCount fields into request.snapshot. Updated @tiledesk-ent/tiledesk-server-triggers:1.1.75. Migration scripts: 1616687831941-trigger_availableAgentsCount_to_snapshot_agents--autosync 1616687831941-trigger_availableAgentsCount_to_snapshot_agents-key--autosync 1616685902635-request_agents_to_snapshot_agents--autosync
+- Added event index to increase analytics performance 
+- Snapshot.department fix for ticketing (Without a selected department)  
+- Websocket query is improved (without lead populate and with lean. it's enabled isAuthenticated field of the request.snapshot.requester)
+- Added user object to the event emit method to fix decoded_jwt field of the lead and request
+- The Request deletion also deletes messages    
+
 # 2.1.21
 - BugFix: request availableAgentsCount performance fix
 
