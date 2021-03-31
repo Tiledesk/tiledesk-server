@@ -66,6 +66,7 @@ var Faq_kbSchema = new Schema({
 );
 
 Faq_kbSchema.virtual('fullName').get(function () {
+  // winston.debug("faq_kb fullName virtual called");
   return (this.name);
 });
 
