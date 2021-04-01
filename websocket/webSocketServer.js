@@ -621,7 +621,11 @@ class WebSocketServer {
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
 
-          var requestJSON = request.toObject();
+          var requestJSON = request;
+          if (request.toObject) {
+             requestJSON = request.toObject();
+          }
+          
 
           var snapshotAgents = await Request.findById(request.id).select("snapshot.agents").exec();
           winston.verbose('snapshotAgents',snapshotAgents);  
