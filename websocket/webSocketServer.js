@@ -627,9 +627,19 @@ class WebSocketServer {
           }
           
 
-          var snapshotAgents = await Request.findById(request.id).select("snapshot.agents").exec();
+          var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec();
           winston.verbose('snapshotAgents',snapshotAgents);  
-          requestJSON.snapshot.agents = snapshotAgents;
+          // requestJSON.snapshot.agents = snapshotAgents;
+
+          if (snapshotAgents.agents && snapshotAgents.agents.length>0) {
+            var agentsnew = [];
+            snapshotAgents.agents.forEach(a => {
+              agentsnew.push({id_user: a.id_user}) 
+            });
+            requestJSON.snapshot.agents = agentsnew;
+          }
+          winston.verbose('requestJSON',requestJSON);  
+
 
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
