@@ -616,12 +616,19 @@ class WebSocketServer {
       }
 
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
-      requestEvent.on(requestUpdateKey, function(request) {
-        // TODO setImmediate(() => { 
+      requestEvent.on(requestUpdateKey, async function(request) {
+        // TODO setImmediate(() => {        
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
-          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "UPDATE");   
-          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "UPDATE");
+
+          var requestJSON = request.toObject();
+
+          var snapshotAgents = await Request.findById(request.id).select("snapshot.agents").exec();
+          winston.verbose('snapshotAgents',snapshotAgents);  
+          requestJSON.snapshot.agents = snapshotAgents;
+
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
         }
      
       });
