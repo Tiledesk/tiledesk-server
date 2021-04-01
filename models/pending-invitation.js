@@ -7,10 +7,12 @@ var PendingInvitation = new Schema({
   
   email: {
     type: String,
+    index:true
     // required: true
   },
   id_project: {
     type: String,
+    index:true
     // required: true
   },
   role: {
@@ -27,6 +29,7 @@ var PendingInvitation = new Schema({
     timestamps: true
   }
 );
+
 
 var pending= mongoose.model('pending-invitation', PendingInvitation);
 
