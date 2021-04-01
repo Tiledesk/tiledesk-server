@@ -598,7 +598,7 @@ class WebSocketServer {
       requestCreateKey = 'request.create.queue.pubsub';
     }
     winston.debug('requestCreateKey: ' + requestCreateKey);
-      requestEvent.on(requestCreateKey, function (request) {
+      requestEvent.on(requestCreateKey, async function (request) {
         // TODO setImmediate(() => { 
         winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
@@ -627,7 +627,7 @@ class WebSocketServer {
           }
           winston.debug('requestJSON',requestJSON);  
 
-          
+
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
         }
