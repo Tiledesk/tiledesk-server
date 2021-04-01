@@ -626,8 +626,11 @@ class WebSocketServer {
              requestJSON = request.toObject();
           }
           
+          //deleted snapshot department lead, etc..
+          delete requestJSON.snapshot;
+          requestJSON.snapshot = {};
 
-          var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec();
+          var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
           winston.verbose('snapshotAgents',snapshotAgents);  
           // requestJSON.snapshot.agents = snapshotAgents;
 
@@ -639,6 +642,9 @@ class WebSocketServer {
             requestJSON.snapshot.agents = agentsnew;
           }
           winston.verbose('requestJSON',requestJSON);  
+
+          
+
 
 
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
