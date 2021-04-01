@@ -631,9 +631,9 @@ class WebSocketServer {
           winston.verbose('snapshotAgents',snapshotAgents);  
           // requestJSON.snapshot.agents = snapshotAgents;
 
-          if (snapshotAgents.agents && snapshotAgents.agents.length>0) {
+          if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length>0) {
             var agentsnew = [];
-            snapshotAgents.agents.forEach(a => {
+            snapshotAgents.snapshot.agents.forEach(a => {
               agentsnew.push({id_user: a.id_user}) 
             });
             requestJSON.snapshot.agents = agentsnew;
