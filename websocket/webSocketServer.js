@@ -604,6 +604,30 @@ class WebSocketServer {
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
+
+          var requestJSON = request;
+          if (request.toObject) {
+             requestJSON = request.toObject();
+          }
+          
+          //deleted snapshot department lead, etc..
+          delete requestJSON.snapshot;
+          requestJSON.snapshot = {};
+
+          var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+          winston.debug('snapshotAgents',snapshotAgents);  
+          // requestJSON.snapshot.agents = snapshotAgents;
+
+          if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length>0) {
+            var agentsnew = [];
+            snapshotAgents.snapshot.agents.forEach(a => {
+              agentsnew.push({id_user: a.id_user}) 
+            });
+            requestJSON.snapshot.agents = agentsnew;
+          }
+          winston.debug('requestJSON',requestJSON);  
+
+          
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
         }
@@ -631,7 +655,7 @@ class WebSocketServer {
           requestJSON.snapshot = {};
 
           var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
-          winston.verbose('snapshotAgents',snapshotAgents);  
+          winston.debug('snapshotAgents',snapshotAgents);  
           // requestJSON.snapshot.agents = snapshotAgents;
 
           if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length>0) {
@@ -641,7 +665,7 @@ class WebSocketServer {
             });
             requestJSON.snapshot.agents = agentsnew;
           }
-          winston.verbose('requestJSON',requestJSON);  
+          winston.debug('requestJSON',requestJSON);  
 
           
 
