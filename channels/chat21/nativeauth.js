@@ -21,7 +21,7 @@ const maskPhoneOptions = {
   };
 
 
-const jwtSecret = process.env.CHAT21_JWT_SECRET || "chat21SecretKey";
+const jwtSecret = process.env.CHAT21_JWT_SECRET || "tokenKey";
 
 const masked_jwtSecret = MaskData.maskPhone(jwtSecret, maskPhoneOptions);
 
