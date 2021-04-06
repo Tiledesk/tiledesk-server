@@ -15,6 +15,7 @@ async function up () {
         "agents":  { $exists: true } ,
       })
       .lean()
+      // .limit(20000)
       .exec(function(err, requests) {
     if (err) {
       winston.error("Schema migration: agents err", err);
