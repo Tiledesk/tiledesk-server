@@ -80,14 +80,14 @@ findUnresponsiveRequests() {
           return 0;
       }
 
-      winston.verbose("CloseBotUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
+      winston.info("CloseBotUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
       winston.debug("CloseBotUnresponsiveRequestTask: found unresponsive requests ", requests);
       
       requests.forEach(request => {
         winston.debug("********unresponsive request ", request);
 
         return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {
-          winston.verbose("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
+          winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
           winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
