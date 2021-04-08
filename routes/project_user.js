@@ -357,6 +357,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
  
+
 router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
   winston.debug("--> users USER ID ", req.params.user_id);
 
@@ -372,11 +373,15 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
     queryProjectUser.uuid_user = req.params.user_id
   }
 
-  Project_user.findOne(queryProjectUser).
+  var q1 = Project_user.findOne(queryProjectUser);
+
+  if (isObjectId) {    
+    q1.populate('id_user'); //qui cache importante ma populatevirtual
+  }
+
  //  Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
   
-   populate('id_user'). //qui cache importante ma populatevirtual
-    exec(function (err, project_user) {
+   q1.exec(function (err, project_user) {
      if (err) {
        winston.error("Error gettting project_user for get users", err);
        return res.status(500).send({ success: false, msg: 'Error getting object.' });
