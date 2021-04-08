@@ -356,34 +356,45 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
- router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
-   winston.debug("--> users USER ID ", req.params.user_id);
+ 
+router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+  winston.debug("--> users USER ID ", req.params.user_id);
 
-   Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
-//TODO correct is an array
-  // Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
-   
-    populate('id_user'). //qui cache importante ma populatevirtual
-     exec(function (err, project_user) {
-      if (err) {
-        winston.error("Error gettting project_user for get users", err);
-        return res.status(500).send({ success: false, msg: 'Error getting object.' });
-      }
-      if (!project_user) {
-        return res.status(404).send({ success: false, msg: 'Object not found.' });
-      }
-     
-      // res.json(project_user);
-      var pu = project_user.toJSON();
+  var isObjectId = mongoose.Types.ObjectId.isValid(req.params.user_id);
+  winston.debug("isObjectId:"+ isObjectId);
 
+  var queryProjectUser ={ id_project: req.projectid};
 
+  
+  if (isObjectId) {          
+    queryProjectUser.id_user = req.params.user_id
+  }else {
+    queryProjectUser.uuid_user = req.params.user_id
+  }
+
+  Project_user.findOne(queryProjectUser).
+ //  Project_user.findOne({ id_user: req.params.user_id, id_project: req.projectid }).
+  
+   populate('id_user'). //qui cache importante ma populatevirtual
+    exec(function (err, project_user) {
+     if (err) {
+       winston.error("Error gettting project_user for get users", err);
+       return res.status(500).send({ success: false, msg: 'Error getting object.' });
+     }
+     if (!project_user) {
+       return res.status(404).send({ success: false, msg: 'Object not found.' });
+     }
     
-      pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
-      res.json([pu]);
+     // res.json(project_user);
+     var pu = project_user.toJSON();
 
-     });
+
+   
+     pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+     res.json([pu]);
+
+    });
 });
-
 
 
   // TODO if project is deleted
