@@ -672,6 +672,10 @@ else if (req.body.event_type == "presence-change") {
           var pu = updatedProject_userPopulated.toJSON();
 
           // urgente Cannot read property '_id' of null at /usr/src/app/channels/chat21/chat21WebHook.js:663:68 a
+          if (!updatedProject_userPopulated.id_project) {
+            winston.warn('Error updatedProject_userPopulated.id_project not found.' );
+            return res.status(404).send({ success: false, msg: 'Error updatedProject_userPopulated.id_project not found.' });
+          }
           pu.id_project =  updatedProject_userPopulated.id_project._id;
 
    
