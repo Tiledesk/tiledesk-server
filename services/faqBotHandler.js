@@ -290,9 +290,9 @@ class FaqBotHandler {
                             winston.info("question_payload", question_payload);
 
                             const intent_info = {
-                                intent_name: answerObj.intent_display_name,
+                                intent_name: "DEFAULT_FALLBACK", //answerObj.intent_display_name
                                 is_fallback: true,
-                                confidence: answerObj.score,
+                                confidence: 0,
                                 question_payload: question_payload 
                               }
                             winston.info("intent_info", intent_info);
