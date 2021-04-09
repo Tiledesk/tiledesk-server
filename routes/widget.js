@@ -134,6 +134,9 @@ router.get('/', function(req, res, next) {
       // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
       next();      // <=== call next for following middleware 
 
+    }).catch(function(err) {
+      winston.error('Error getting widget.', err);
+      return res.status(500).send({success: false, msg: 'Error getting widget.'});
     });
 
 
