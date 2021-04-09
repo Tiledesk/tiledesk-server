@@ -397,7 +397,7 @@ router.post('/', function (req, res) {
       
       // requestcachefarequi populaterequired
       return Request.findOne({request_id: request_id, id_project: id_project})
-          .populate('lead')
+          .populate('lead') //TODO posso prenderlo da snapshot senza populate
           .exec(function(err, request) {
         if (err){
           winston.error(err);
@@ -578,7 +578,7 @@ else if (req.body.event_type == "typing-start") {
     var attr = {recipient_id: recipient_id, writer_id:writer_id, data: data};
 
 
-    //           emit(name,         attr,  id_project,        project_user, createdBy)    
+    //       emit(name, attributes, id_project, project_user, createdBy, status, user) {
     eventService.emit("typing.start", attr, request.id_project, pu._id, writer_id).then(function (data) {
       // eventService.emit("typing.start", attr, request.id_project, pu._id, writer_id, "volatile").then(function (data) {      
       return res.json(data);
@@ -632,6 +632,10 @@ else if (req.body.event_type == "presence-change") {
       winston.error("Error gettting project_user", err);
       return res.status(500).send({ success: false, msg: 'Error getting objects.' });
     }
+    if (!project_users) {
+      winston.warn('Error getting Project_user.' );
+      return res.status(404).send({ success: false, msg: 'Error getting Project_user.' });
+    }
     winston.debug("project_users:", project_users);
 
 
@@ -644,7 +648,8 @@ else if (req.body.event_type == "presence-change") {
 
       project_user.save(function (err, savedProjectUser) {
         if (err) {
-         return winston.error('Error saving project_user ', err)
+         winston.error('Error saving project_user ', err)
+         return res.status(500).send({ success: false, msg: 'Error getting objects.' });         
         }
         winston.debug('project_user saved ', savedProjectUser);
 
@@ -656,10 +661,17 @@ else if (req.body.event_type == "presence-change") {
           // .populate('id_user id_project')
           .execPopulate(function (err, updatedProject_userPopulated){    
           if (err) {
-            return winston.error("Error gettting updatedProject_userPopulated for update", err);
-          }            
+            winston.error("Error gettting updatedProject_userPopulated for update", err);
+            return res.status(500).send({ success: false, msg: "Error gettting updatedProject_userPopulated for update" }); 
+          }        
+          if (!updatedProject_userPopulated) {
+            winston.warn('Error getting updatedProject_userPopulated.' );
+            return res.status(404).send({ success: false, msg: 'Error getting updatedProject_userPopulated.' });
+          }    
           winston.debug("updatedProject_userPopulated:", updatedProject_userPopulated);
           var pu = updatedProject_userPopulated.toJSON();
+
+          // urgente Cannot read property '_id' of null at /usr/src/app/channels/chat21/chat21WebHook.js:663:68 a
           pu.id_project =  updatedProject_userPopulated.id_project._id;
 
    
