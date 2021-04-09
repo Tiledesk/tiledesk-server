@@ -767,7 +767,7 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
 
     if (req.query.no_populate != "true" && req.query.no_populate != true) {        
-      winston.verbose('REQUEST ROUTE - no_polutate false ', req);
+      winston.verbose('REQUEST ROUTE - no_polutate false ', req.headers);
       q1.populate('department').
       populate('participatingBots').            //nico già nn gli usa
       populate('participatingAgents').          //nico già nn gli usa
