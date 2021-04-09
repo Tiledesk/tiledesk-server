@@ -93,20 +93,17 @@ router.get('/', function(req, res, next) {
       winston.info("req.project:" + JSON.stringify(req.project));
       
       if (req.project) {
-        winston.info("req.project defined");
-      }else {
-        winston.info("req.project undefined defined");
+        if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+          query.default = true;
+        }
+  
+        winston.debug("query:", query);
+  
+        Department.find(query).exec(function(err, result) {
+              return resolve(result);
+        });
       }
-      if (req.project != null && req.project != undefined && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
-        query.default = true;
-      }
-
-      winston.debug("query:", query);
-
-      Department.find(query).exec(function(err, result) {
-            return resolve(result);
-      });
 
     });
 
