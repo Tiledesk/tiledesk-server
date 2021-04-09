@@ -93,7 +93,7 @@ router.get('/', function(req, res, next) {
 
       var query = { "id_project": req.projectid, "status": 1 };
 
-      winston.info("req.project:" + JSON.stringify(req.project));
+      winston.debug("req.project:" + JSON.stringify(req.project));
       
       if (req.project) {
         if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
