@@ -24,6 +24,9 @@ router.get('/', function(req, res, next) {
     var availableUsers = function() {
       winston.debug('availableUsers:');
       return new Promise(function (resolve, reject) {
+        if (!req.project) {
+          return reject({err: "Project Not Found"});
+        }
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
           if (isOpen) {            
@@ -102,6 +105,8 @@ router.get('/', function(req, res, next) {
         Department.find(query).exec(function(err, result) {
               return resolve(result);
         });
+      } else {        
+          return reject({err: "Project Not Found"});        
       }
 
 
