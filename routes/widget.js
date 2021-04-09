@@ -90,9 +90,9 @@ router.get('/', function(req, res, next) {
 
       var query = { "id_project": req.projectid, "status": 1 };
 
-      winston.info("req.project:", req.project);
+      winston.info("req.project:" + JSON.stringify(req.project));
       
-      if (req.project!=null && req.project!=undefined && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+      if (req.project != null && req.project != undefined && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
         query.default = true;
       }
