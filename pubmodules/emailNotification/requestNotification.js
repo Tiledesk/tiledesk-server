@@ -35,7 +35,7 @@ listen() {
       setImmediate(() => {      
         // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
-        //  that.sendUserEmail(message.id_project, message);
+         that.sendUserEmail(message.id_project, message);
       });
      });
 
@@ -284,7 +284,10 @@ sendAgentEmail(projectid, savedRequest) {
                   }
                   
                   if (!savedRequest.snapshot) {
-                    return winston.info("RequestNotification savedRequest.snapshot is null :(");
+                    return winston.warn("RequestNotification savedRequest.snapshot is null :(");
+                  }
+                  if (!savedRequest.snapshot.agents) {
+                    return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(");
                   }
                   //  var allAgents = savedRequest.agents;
                    var allAgents = savedRequest.snapshot.agents;
