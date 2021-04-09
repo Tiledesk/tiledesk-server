@@ -271,7 +271,7 @@ sendAgentEmail(projectid, savedRequest) {
           winston.debug("project", project);            
 
           if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.blocked == true ) {
-            return winston.info("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
+            return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
           winston.debug("savedRequest", savedRequest);
@@ -283,6 +283,9 @@ sendAgentEmail(projectid, savedRequest) {
                     return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
                   }
                   
+                  if (!savedRequest.snapshot) {
+                    return winston.info("RequestNotification savedRequest.snapshot is null :(");
+                  }
                   //  var allAgents = savedRequest.agents;
                    var allAgents = savedRequest.snapshot.agents;
                   // winston.debug("allAgents", allAgents);
@@ -294,7 +297,7 @@ sendAgentEmail(projectid, savedRequest) {
                   var userid = project_user.id_user;
                   
                    if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.pooled == false ) {
-                     return winston.info("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation is disabled");
+                     return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation is disabled");
                    }                  
                     
                      User.findOne({_id: userid , status: 100})
@@ -324,7 +327,7 @@ sendAgentEmail(projectid, savedRequest) {
                    else if (savedRequest.status==RequestConstants.ASSIGNED) { //ASSIGNED
 
                     if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.assigned == false ) {
-                      return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation is disabled");
+                      return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation is disabled");
                     }
 
 
