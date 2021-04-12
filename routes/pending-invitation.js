@@ -44,8 +44,13 @@ router.get('/resendinvite/:pendinginvitationid', function (req, res) {
 router.post('/', function (req, res) {
 
   winston.debug(req.body);
+
+  var email = req.body.email;
+  if (email) {
+    email = email.toLowerCase();
+  }
   var newPendingInvitation = new PendingInvitation({
-    email: req.body.email,
+    email: email,
     role: req.body.role,
     id_project: req.id_projectid,
     createdBy: req.user.id,
@@ -66,7 +71,13 @@ router.put('/:pendinginvitationid', function (req, res) {
   winston.debug('PENDING INVITATION UPDATE - BODY ', req.body);
 
   var update = {};
-  update.email = req.body.email;
+
+  var email = req.body.email;
+  if (email) {
+    email = email.toLowerCase();
+  }
+
+  update.email = email;
   update.role = req.body.role;
 
   PendingInvitation
