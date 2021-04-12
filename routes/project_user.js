@@ -25,11 +25,16 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
   winston.debug('-> INVITE USER ', req.body);
 
-  winston.debug('»»» INVITE USER EMAIL', req.body.email);
+  var email = req.body.email;
+  if (email) {
+    email = email.toLowerCase();
+  }
+
+  winston.debug('»»» INVITE USER EMAIL', email);
   winston.debug('»»» CURRENT USER ID', req.user._id);
   winston.debug('»»» PROJECT ID', req.projectid);
 // authType
-  User.findOne({ email: req.body.email, status: 100
+  User.findOne({ email: email, status: 100
     // , authType: 'email_password' 
   }, function (err, user) {
     if (err) throw err;
@@ -38,7 +43,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
       /*
        * *** USER NOT FOUND > SAVE EMAIL AND PROJECT ID IN PENDING INVITATION *** */
       // TODO req.user.firstname is null for bot visitor
-      return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, req.body.email, req.body.role, req.user._id, req.user.firstname, req.user.lastname)
+      return pendinginvitation.saveInPendingInvitation(req.projectid, req.project.name, email, req.body.role, req.user._id, req.user.firstname, req.user.lastname)
         .then(function (savedPendingInvitation) {      
            
             var eventData = {req: req, savedPendingInvitation: savedPendingInvitation};
@@ -146,7 +151,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
 
             winston.debug('INVITED USER (IS THE USER FOUND BY EMAIL) ', user);
-            winston.debug('EMAIL of THE INVITED USER ', req.body.email);
+            winston.debug('EMAIL of THE INVITED USER ', email);
             winston.debug('ROLE of THE INVITED USER ', req.body.role);
             winston.debug('PROJECT NAME ', req.body.role);
             winston.debug('LOGGED USER ID ', req.user.id);
@@ -157,7 +162,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             var invitedUserFirstname = user.firstname
             var invitedUserLastname = user.lastname
 
-            emailService.sendYouHaveBeenInvited(req.body.email, req.user.firstname, req.user.lastname, req.project.name, req.projectid, invitedUserFirstname, invitedUserLastname, req.body.role)
+            emailService.sendYouHaveBeenInvited(email, req.user.firstname, req.user.lastname, req.project.name, req.projectid, invitedUserFirstname, invitedUserLastname, req.body.role)
             
             // try {
               //test it
