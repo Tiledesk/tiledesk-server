@@ -25,7 +25,8 @@ router.post('/', function (req, res) {
   // 2020-05-21T17:56:50.397555+00:00 app[web.1]: error: message validation failed: text: Path `text` is required. {"errors":{"text":{"message":"Path `text` is required.","name":"ValidatorError","properties":{"message":"Path `text` is required.","type":"required","path":"text","value":""},"kind":"required","path":"text","value":""}},"_message":"message validation failed","name":"ValidationError"}
   // 2020-05-21T17:56:50.397891+00:00 app[web.1]: error: Error creating messagemessage validation failed: text: Path `text` is required. {"errors":{"text":{"message":"Path `text` is required.","name":"ValidatorError","properties":{"message":"Path `text` is required.","type":"required","path":"text","value":""},"kind":"required","path":"text","value":""}},"_message":"message validation failed","name":"ValidationError","stack":"ValidationError: message validation failed: text: Path `text` is required.\n    at new ValidationError (/app/node_modules/mongoose/lib/error/validation.js:31:11)\n    at model.Document.invalidate (/app/node_modules/mongoose/lib/document.js:2461:32)\n    at p.doValidate.skipSchemaValidators (/app/node_modules/mongoose/lib/document.js:2310:17)\n    at /app/node_modules/mongoose/lib/schematype.js:1064:9\n    at processTicksAndRejections (internal/process/next_tick.js:74:9)"}
 
-  if (req.body.event_type == "new-message") {
+                                                    //Deprecated
+  if (req.body.event_type == "message-sent" || req.body.event_type == "new-message") {
     //with projectid
     // curl -X POST -H 'Content-Type:application/json'  -d '{"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":"123456789123456789", "recipient_fullname":"Andrea Leo","text":"text", "projectid":"987654321"}}' http://localhost:3000/chat21/requests
     //with recipient with existing projectid
