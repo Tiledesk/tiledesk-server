@@ -26,10 +26,19 @@ mongoose.plugin(schema => { schema.options.usePushEach = true });
 
 var RequestSchema = new Schema({
 
+  // find duplicate
+  /*
+  db.getCollection('requests').aggregate( {"$group" : { "_id": "$request_id", "count": { "$sum": 1 } } },
+    {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } }, 
+    {"$sort": {"count" : -1} },
+    {"$project": {"request_id" : "$_id", "_id" : 0} })
+*/
+
   request_id: {
     type: String,
     required: true,
-    index: true
+    index: true,
+    unique: true
   },
 
   requester: {
