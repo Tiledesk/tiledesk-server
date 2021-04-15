@@ -115,7 +115,7 @@ async (req, res)  => {
                     email = lead.email;
                     winston.debug("lead email: "+ email);
                   }else {
-                    winston.warn("lead not found");
+                    winston.warn("lead not found: " + JSON.stringify({lead_id: project_user.uuid_user, id_project: req.projectid}));
                   }
                   
                 } else {
