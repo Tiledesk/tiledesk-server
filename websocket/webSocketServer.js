@@ -98,7 +98,7 @@ class WebSocketServer {
                                 return winston.error('error verifing websocket jwt token. User find error ', err);
                             }
                             if (!user) {   
-                              winston.warn('websocket user not found with id : '+identifier);                             
+                              winston.verbose('websocket user not found with id : '+identifier);                             
                               return cb(false, 401, 'Unauthorized');
                             }
 
@@ -200,7 +200,7 @@ class WebSocketServer {
                      return reject(err);
                   }
                   if (!projectuser) {
-                     winston.warn('WebSocket project_user not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.verbose('WebSocket project_user not found for user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found for user id '+ req.user._id + ' and projectid ' + projectId});
                   }
   
@@ -222,7 +222,7 @@ class WebSocketServer {
                         return reject(err);
                       }
                       if (!request) {
-                         winston.warn('WebSocket Request query not found for user id '+ req.user._id + ' and projectid ' + projectId);  
+                         winston.verbose('WebSocket Request query not found for user id '+ req.user._id + ' and projectid ' + projectId);  
                          return reject({err:'Request query not found for user id '+ req.user._id + ' and projectid ' + projectId});
                       }
   
@@ -268,7 +268,7 @@ class WebSocketServer {
                      return reject(err);
                   }
                   if (!projectuser) {
-                     winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.verbose('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
                   winston.debug('projectuser', projectuser.toObject()); 
@@ -383,7 +383,7 @@ class WebSocketServer {
                      return reject(err);
                   }
                   if (!currentProjectuser) {
-                     winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                     winston.verbose('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                      return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                   }
                   winston.debug('currentProjectuser', currentProjectuser.toObject()); 
@@ -409,7 +409,7 @@ class WebSocketServer {
                         return reject(err);
                       }
                       if (!projectuser) {
-                        winston.warn('WebSocket Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
+                        winston.verbose('WebSocket Project_user not found with user id '+ userId + ' and projectid ' + projectId);  
                         return reject({err:'Project_user not found with user id '+ userId + ' and projectid ' + projectId});
                       }
           
@@ -453,7 +453,7 @@ class WebSocketServer {
                  return reject(err);
               }
               if (!projectuser) {
-                 winston.warn('WebSocket Project_user not found with project_user id '+ puId + ' and projectid ' + projectId);  
+                 winston.verbose('WebSocket Project_user not found with project_user id '+ puId + ' and projectid ' + projectId);  
                  return reject({err:'Project_user not found with project_user id '+ puId + ' and projectid ' + projectId});
               }
   
@@ -520,7 +520,7 @@ class WebSocketServer {
                        return reject(err);
                     }
                     if (!projectuser) {
-                       winston.warn('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
+                       winston.verbose('WebSocket Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId);  
                        return reject({err:'Project_user not found with user id '+ req.user._id + ' and projectid ' + projectId});
                     }
   
