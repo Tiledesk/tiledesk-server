@@ -359,7 +359,7 @@ class PubSub {
                 winston.debug("resCallBack onSubscribe",resCallBack);
                 //console.log("resCallBack onSubscribe",resCallBack);
               } catch(e) {
-                winston.warn("resCallBack onSubscribe err",e);
+                winston.verbose("resCallBack onSubscribe err",e);
                 return 0;
               }
             }
