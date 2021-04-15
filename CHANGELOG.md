@@ -1,6 +1,16 @@
 
+# 2.1.32
+- Project_user endpoint (/get) now can be obtained by uuid_user field
+- Added intent_info to message.attributes sent from bot
+- Pending invite email lowercase fix
+- Project_user invite email lowercase fix
+- Widget endpoint fix for not found project 
+- Chat21 WebHook now support also "message-sent" event_type value
 
-# 2.1.30
+# 2.1.31
+- Log fix
+
+# 2.1.30 (Requires tiledesk-dashboard 2.1.45+)
 - Added Pending Invitation db indexes
 - The requests queries with status open (!=1000) are not limited for free accounts.   
 - Performance improvment moving request.agents (select false) and availableAgentsCount fields into request.snapshot. Updated @tiledesk-ent/tiledesk-server-triggers:1.1.75. Migration scripts: 1616687831941-trigger_availableAgentsCount_to_snapshot_agents--autosync 1616687831941-trigger_availableAgentsCount_to_snapshot_agents-key--autosync 1616685902635-request_agents_to_snapshot_agents--autosync
