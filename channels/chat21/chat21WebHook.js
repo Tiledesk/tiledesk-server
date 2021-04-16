@@ -270,7 +270,7 @@ router.post('/', function (req, res) {
                       }
                     });
                   }).catch(function(err){
-                    winston.error("Error creating message", err);
+                    winston.error("Error creating message", {err: err, message: message});
                     return res.status(500).send({success: false, msg: 'Error creating message', err:err });
                   });
 
