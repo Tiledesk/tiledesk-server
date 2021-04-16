@@ -53,7 +53,7 @@ class FaqBotSupport {
 
     parseMicrolanguage(text, message, bot, faq, disableWebHook) { 
         var that = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise(async (resolve, reject) => {
             var reply = TiledeskChatbotUtil.parseReply(text);
             winston.debug('parseReply: ' + JSON.stringify(reply) );
             var messageReply = reply.message;
