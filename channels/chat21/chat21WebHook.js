@@ -21,10 +21,6 @@ router.post('/', function (req, res) {
 
    
 
-  // 2020-05-21T17:56:50.215257+00:00 heroku[router]: at=info method=POST path="/chat21/requests" host=tiledesk-server-pre.herokuapp.com request_id=94c9541f-bff9-4a3a-9086-3653e0e1781a fwd="107.178.200.218" dyno=web.1 connect=4ms service=3ms status=500 bytes=1637 protocol=https
-  // 2020-05-21T17:56:50.397555+00:00 app[web.1]: error: message validation failed: text: Path `text` is required. {"errors":{"text":{"message":"Path `text` is required.","name":"ValidatorError","properties":{"message":"Path `text` is required.","type":"required","path":"text","value":""},"kind":"required","path":"text","value":""}},"_message":"message validation failed","name":"ValidationError"}
-  // 2020-05-21T17:56:50.397891+00:00 app[web.1]: error: Error creating messagemessage validation failed: text: Path `text` is required. {"errors":{"text":{"message":"Path `text` is required.","name":"ValidatorError","properties":{"message":"Path `text` is required.","type":"required","path":"text","value":""},"kind":"required","path":"text","value":""}},"_message":"message validation failed","name":"ValidationError","stack":"ValidationError: message validation failed: text: Path `text` is required.\n    at new ValidationError (/app/node_modules/mongoose/lib/error/validation.js:31:11)\n    at model.Document.invalidate (/app/node_modules/mongoose/lib/document.js:2461:32)\n    at p.doValidate.skipSchemaValidators (/app/node_modules/mongoose/lib/document.js:2310:17)\n    at /app/node_modules/mongoose/lib/schematype.js:1064:9\n    at processTicksAndRejections (internal/process/next_tick.js:74:9)"}
-
                                                     //Deprecated
   if (req.body.event_type == "message-sent" || req.body.event_type == "new-message") {
     //with projectid
@@ -39,14 +35,31 @@ router.post('/', function (req, res) {
     winston.debug("event_type", "new-message");
 
     var message = req.body.data;
- 
+    
+
+
+
+    var projectid;
+    if (message.attributes) {            
+      projectid = message.attributes.projectId;
+      winston.debug("chat21 projectid", projectid);
+    }
+
+    if (!projectid) {
+      winston.warn("projectid is null. Not a support message");
+      return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+    }
+
+
+
+
     winston.debug("Chat21 message", message);
 
         // requestcachefarequi nocachepopulatereqired
-        return Request.findOne({request_id: message.recipient})      
+        // before request_id id_project unique - return Request.findOne({request_id: message.recipient}) 
+        return Request.findOne({request_id: message.recipient, id_project: projectid})      
           // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) project_id not available
           .exec(function(err, request) {
-          // return Request.findOne({request_id: message.recipient, id_project: projectid}, function(err, request) {
 
           if (err) {
             return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
@@ -70,14 +83,15 @@ router.post('/', function (req, res) {
                 var client;
                 var userEmail;
                 var userFullname;
-                var projectid;
+                // var projectid; // before request_id id_project unique -
             
                 var requestStatus = undefined;
 
                 if (message.attributes) {
             
-                  projectid = message.attributes.projectId;
-                  winston.debug("chat21 projectid", projectid);
+                  // before request_id id_project unique -
+                  // projectid = message.attributes.projectId;
+                  // winston.debug("chat21 projectid", projectid);
             
                   departmentid = message.attributes.departmentId;
                   winston.debug("chat21 departmentid", departmentid);
@@ -104,11 +118,12 @@ router.post('/', function (req, res) {
                 
                 winston.debug("requestStatus "+ requestStatus);
                 
-            
-                if (!projectid) {
-                  winston.warn("projectid is null. Not a support message");
-                  return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-                }
+                // before request_id id_project unique -
+                // if (!projectid) {
+                //   winston.warn("projectid is null. Not a support message");
+                //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+                // }
+
                 if (!message.recipient.startsWith("support-group")) {
                   winston.warn("recipient not starts wiht support-group. Not a support message");
                   return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
@@ -545,7 +560,8 @@ else if (req.body.event_type == "typing-start") {
   
   // requestcachefarequi nocachepopulatereqired
   return Request.findOne({request_id: recipient_id})
-  .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)
+                             //TOD  errore cache sistemare e riabbilitare->
+  // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)
   .exec(function(err, request) {
   if (err){
     winston.error(err);
