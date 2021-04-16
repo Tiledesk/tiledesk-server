@@ -535,7 +535,7 @@ else if (req.body.event_type == "typing-start") {
 
   winston.debug("event_type","typing-start");
 
-  winston.debug("req.body",req.body);
+  winston.verbose("typing-start req.body",req.body);
 
 
   var recipient_id = req.body.recipient_id;
