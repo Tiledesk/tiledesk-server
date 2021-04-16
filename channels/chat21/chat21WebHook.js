@@ -555,6 +555,11 @@ else if (req.body.event_type == "typing-start") {
     return res.status(404).send({success: false, msg: 'Request not found for request_id '+ request_id + ' and id_project '+ id_project});
   }
 
+  if (writer_id.startsWith("bot_")){
+      winston.debug('Writer  writer_id starts with bot_');
+      return res.status(500).send({success: false, msg: 'Writer  writer_id starts with bot_' });
+  }
+
   var isObjectId = mongoose.Types.ObjectId.isValid(writer_id);
   winston.debug("isObjectId:"+ isObjectId);
 
