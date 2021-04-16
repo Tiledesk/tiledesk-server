@@ -3,7 +3,11 @@
 'use strict';
 
 const Faq = require('../models/faq');
+const Faq_kb = require('../models/faq_kb');
 var winston = require('../config/winston');
+
+var jwt = require('jsonwebtoken');
+const uuidv4 = require('uuid/v4');
 
 const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
@@ -11,7 +15,10 @@ var request = require('retry-request', {
     request: require('request')
   });
 
-  
+ 
+var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+winston.debug("webhook_origin: "+webhook_origin);
+
 class FaqBotSupport {
 
 
@@ -79,23 +86,41 @@ class FaqBotSupport {
                     }
                 }
                     
-              
+                var botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();
+
+                var signOptions = {
+                    issuer:  'https://tiledesk.com',
+                    subject:  'bot',
+                    audience:  'https://tiledesk.com/bots/'+bot._id,   
+                    jwtid: uuidv4()       
+                    };
+            
+                    // TODO metti bot_? a user._id
+                var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);                  
+
 
                 winston.debug("webhookurl "+ webhookurl)
 
                 return request({                        
                     uri :  webhookurl,
                     headers: {
-                        'Content-Type': 'application/json'
-                    },
+                        'Content-Type' : 'application/json', 
+                        'User-Agent': 'tiledesk-bot',
+                        'Origin': webhook_origin
+                         //'x-hook-secret': s.secret
+                       },
                     method: 'POST',
                     json: true,
-                    body: {payload:{text: text, bot: bot, message: message, faq: faq}},
+                    body: {payload:{text: text, bot: bot, message: message, faq: faq}, token: token},
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
                             winston.error("Error from webhook reply of getParsedMessage", err);
 
+                            return resolve(messageReply);
+
+                            // return error
+                            /*
                             var bot_answer = {};
                             bot_answer.text = err.toString(); 
                             if(response && response.text) {
@@ -104,6 +129,7 @@ class FaqBotSupport {
                             bot_answer.type = "text";
                             
                             return resolve(bot_answer);
+                            */
                         }
                         // if (response.statusCode >= 400) {                  
                         //     return reject(`HTTP Error: ${response.statusCode}`);

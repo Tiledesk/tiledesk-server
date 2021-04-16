@@ -8,6 +8,9 @@ var request = require('retry-request', {
   request: require('request')
 });
 
+var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+winston.debug("webhook_origin: "+webhook_origin);
+
 class BotSubscriptionNotifier {
    
   
@@ -34,13 +37,18 @@ class BotSubscriptionNotifier {
       var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
       json["token"] = token;
 
+
+      json["environment"] = {url: XXX, name: "PROD"};
+      termimna
+
       winston.debug("BotSubscriptionNotifier notify json ", json );
 
           request({
             url: url,
             headers: {
              'Content-Type' : 'application/json', 
-             'User-Agent': 'tiledesk-bot'       
+             'User-Agent': 'tiledesk-bot',
+             'Origin': webhook_origin
               //'x-hook-secret': s.secret
             },
             json: json,
