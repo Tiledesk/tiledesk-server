@@ -138,11 +138,12 @@ class FaqBotSupport {
 
                         var text = undefined;
                         if(json && json.text===undefined) {
-                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
+                            // text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
+                            return resolve(messageReply);
                         }else {
                             text = json.text;
                         }
-                        that.parseMicrolanguage(text,message, bot, faq, true).then(function(bot_answer) {
+                        that.parseMicrolanguage(text, message, bot, faq, true).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
