@@ -216,7 +216,7 @@ class FaqBotHandler {
                             let question_payload = Object.assign({}, message);
                             delete question_payload.request;
 
-                            winston.info("question_payload", question_payload);
+                            winston.debug("question_payload", question_payload);
 
                             const intent_info = {
                                 intent_name: answerObj.intent_display_name,
@@ -224,7 +224,7 @@ class FaqBotHandler {
                                 confidence: answerObj.score,
                                 question_payload: question_payload 
                               }
-                            winston.info("intent_info", intent_info);
+                            winston.debug("intent_info", intent_info);
                             attr.intent_info = intent_info;
 
 
