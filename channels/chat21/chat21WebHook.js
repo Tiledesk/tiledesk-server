@@ -535,7 +535,7 @@ else if (req.body.event_type == "typing-start") {
 
   winston.debug("event_type","typing-start");
 
-  winston.verbose("typing-start req.body",req.body);
+  winston.debug("typing-start req.body",req.body);
 
 
   var recipient_id = req.body.recipient_id;
@@ -559,6 +559,7 @@ else if (req.body.event_type == "typing-start") {
 
   
   // requestcachefarequi nocachepopulatereqired
+  //*********ATTENTION FINDING BY request_id only does not guarantee uniqueness**************TODO
   return Request.findOne({request_id: recipient_id})
                              //TOD  errore cache sistemare e riabbilitare->
   // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)

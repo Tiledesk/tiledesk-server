@@ -71,11 +71,11 @@ class Pending_Invitation {
 
       return PendingInvitation.find({ email: newUserEmail }, function (err, pendinginvitations) {
         if (err) {
-          winston.error('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
+          winston.error('CHECK NEW USER EMAIL IN PENDING INVITATION ** ERROR ** ', err);
           return reject({ msg: 'Error getting pending invitation' });
         }
         if (!pendinginvitations.length) {
-          winston.warn('** ** CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND ** ');
+          winston.warn('CHECK NEW USER EMAIL IN PENDING INVITATION ** OBJECT NOT FOUND with email:  '+newUserEmail);
           return resolve({ msg: 'New user email not found in pending invitation' });
         }
 

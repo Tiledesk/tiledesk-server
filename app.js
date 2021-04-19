@@ -73,6 +73,7 @@ var authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
 
 var lead = require('./routes/lead');
 var message = require('./routes/message');
+var messagesRootRoute = require('./routes/messagesRoot');
 var department = require('./routes/department');
 var faq = require('./routes/faq');
 var faq_kb = require('./routes/faq_kb');
@@ -309,8 +310,10 @@ app.use('/:projectid/', [projectIdSetter, projectSetter]);
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], lead);
+                                                                                                                                                          //???? no???
+app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('guest', ['bot','subscription'])] , message);
 
-app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['bot','subscription'])] , message);
+app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')] , messagesRootRoute);
 
 // department internal auth check
 app.use('/:projectid/departments', department);

@@ -74,7 +74,7 @@ describe('messageService', function () {
               // Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
               //   requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {
 
-                  Request.findOne({"request_id": "request_id-createTwoMessage"}).exec().then(function(req) {
+                  Request.findOne({"request_id": "request_id-createTwoMessage","id_project": savedProject._id}).exec().then(function(req) {
                     console.log("test resolve", req);
 
                     // expect(req.messages_count).to.equal(2);

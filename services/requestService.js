@@ -1322,7 +1322,23 @@ class RequestService {
            }else {
             var indexParticipantsAgents = request.participantsAgents.indexOf(member);
             request.participantsAgents.splice(indexParticipantsAgents, 1);
-           }
+
+
+            //request.attributes.abandoned_by_project_users  start TODO move to routing-queue
+            if (!request.attributes) {
+              winston.verbose("removeParticipantByRequestId request.attributes is empty. creating it");
+              request.attributes = {};
+            }
+            if (!request.attributes.abandoned_by_project_users) {
+              winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users is empty. creating it");
+              request.attributes.abandoned_by_project_users = {}
+            }
+           
+            request.attributes.abandoned_by_project_users[member] = new Date().getTime();
+            winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users", request.attributes.abandoned_by_project_users);
+            //request.attributes.abandoned_by_project_users  end
+
+          }
 
 
           if (request.status!= RequestConstants.CLOSED) {//don't change the status to 100 or 200 for closed request to resolve this bug. if the agent leave the group and after close the request the status became 100, but if the request is closed the state (1000) must not be changed

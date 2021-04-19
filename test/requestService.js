@@ -89,7 +89,15 @@ describe('RequestService', function () {
 
           // aiuto
           // expect(savedRequest.department).to.equal("requester_id1");
-          done();
+
+          requestService.create(request).then(function(savedRequest) {
+            // assert.isNotOk('No duplicate check index');
+            console.log("no index check ???");
+            
+          }).catch(function(err) {
+            console.log("ok duplicate check index ", err);
+            done();
+          });
         }).catch(function(err) {
             console.log("test reject",err);
             assert.isNotOk(err,'Promise error');
@@ -99,6 +107,9 @@ describe('RequestService', function () {
   });
     });
   });
+
+
+
 
 
 

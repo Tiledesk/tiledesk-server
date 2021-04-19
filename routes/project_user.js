@@ -193,7 +193,9 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
   var newProject_user = new Project_user({
     id_project: req.projectid, //il fullname????
     uuid_user: uuidv4(),
-    role: RoleConstants.USER,         
+    // role: RoleConstants.USER,   
+    // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
+    role: RoleConstants.GUEST,         
     user_available: false, 
     createdBy: req.user.id,
     updatedBy: req.user.id
