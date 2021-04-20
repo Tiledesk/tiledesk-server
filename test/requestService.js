@@ -818,6 +818,7 @@ projectService.createAndReturnProjectAndProjectUser("setParticipantsByRequestId-
 });
 
 
+  // mocha test/requestService.js  --grep 'removeparticipant'
 
 it('removeparticipant', function (done) {
 
@@ -851,6 +852,7 @@ it('removeparticipant', function (done) {
         expect(savedRequestParticipant.participatingBots).to.have.lengthOf(0);
 
         expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
+        expect(savedRequestParticipant.attributes.abandoned_by_project_users[userid]).to.not.equal(undefined);
         
         done();
       }).catch(function(err) {

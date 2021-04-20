@@ -2,6 +2,7 @@
 
 var departmentService = require('../services/departmentService');
 var Request = require("../models/request");
+var Project_user = require("../models/project_user");
 var messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
 var winston = require('../config/winston');
@@ -1277,7 +1278,7 @@ class RequestService {
     winston.debug("id_project", id_project);
     winston.debug("member", member);
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject)  {
 
 
 
@@ -1289,9 +1290,10 @@ class RequestService {
 
     
       return Request        
-        .findOne({request_id: request_id, id_project: id_project})   
+        .findOne({request_id: request_id, id_project: id_project})
+        // .populate('participatingAgents')  //for abandoned_by_project_users
         // qui cache    
-        .exec( function(err, request) {
+        .exec( async (err, request) => {
         
         if (err){
           winston.error("Error removing participant ", err);
@@ -1324,8 +1326,11 @@ class RequestService {
             request.participantsAgents.splice(indexParticipantsAgents, 1);
 
 
-            //request.attributes.abandoned_by_project_users  start TODO move to routing-queue
-            if (!request.attributes) {
+           
+           try {
+
+             //request.attributes.abandoned_by_project_users  start TODO move to routing-queue
+             if (!request.attributes) {
               winston.verbose("removeParticipantByRequestId request.attributes is empty. creating it");
               request.attributes = {};
             }
@@ -1333,10 +1338,27 @@ class RequestService {
               winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users is empty. creating it");
               request.attributes.abandoned_by_project_users = {}
             }
-           
-            request.attributes.abandoned_by_project_users[member] = new Date().getTime();
+
+            /*
+            winston.info("request.participatingAgents",request.participatingAgents);
+            var pu = request.participatingAgents.find(projectUser => {
+              console.log(projectUser);
+              projectUser.id_user.toString() === member
+            });
+            winston.verbose("pu",pu);
+            */
+
+            var pu = await Project_user.findOne({ id_user: member, id_project:id_project }).exec();
+            winston.info("pu",pu);
+
+            request.attributes.abandoned_by_project_users[pu._id] = new Date().getTime();
             winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users", request.attributes.abandoned_by_project_users);
             //request.attributes.abandoned_by_project_users  end
+
+           }catch(e) {
+              winston.error("Error getting removeParticipantByRequestId pu",e);
+           }
+           
 
           }
 
