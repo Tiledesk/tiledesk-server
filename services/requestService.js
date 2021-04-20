@@ -1351,6 +1351,7 @@ class RequestService {
           }
         }
          
+        request.markModified('attributes');
           // winston.debug(" request",  request);
          //cacheinvalidation
          return request.save(function(err, savedRequest) {
