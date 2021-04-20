@@ -1012,6 +1012,77 @@ it('createAndAssign2', function (done) {
 });
 });
 
+
+
+// mocha test/requestRoute.js  --grep 'removeParticipant'
+it('removeParticipant', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    projectService.createAndReturnProjectAndProjectUser("request-removeParticipant", savedUser._id).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+
+      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+        winston.info("savedProjectAndPU.project_user._id:" +savedProjectAndPU.project_user._id);
+        
+  //  projectService.create("request-removeParticipant", savedUser._id).then(function(savedProject) {
+    // requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
+      var request = {
+        request_id:"request_id1-removeParticipant", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+        id_project:savedProject._id, first_text: "first_text",
+        lead:createdLead, requester: savedProjectAndPU.project_user };
+
+        requestService.create(request).then(function(savedRequest) {
+        winston.info("savedRequest", savedRequest.toObject());
+        expect(savedRequest.request_id).to.equal("request_id1-removeParticipant");
+
+        chai.request(server)
+          .delete('/'+ savedProject._id + '/requests/'+'request_id1-removeParticipant'+"/participants/"+savedUser._id)
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({"text":"first_text"})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              
+              // expect(res.body.snapshot.agents.length).to.equal(1);
+              // res.body.should.have.property('request_id').eql('request_id');
+              // res.body.should.have.property('requester_id').eql('requester_id');
+              res.body.should.have.property('first_text').eql('first_text');
+              res.body.should.have.property('id_project').eql(savedProject._id.toString());
+              // res.body.should.have.property('createdBy').eql(savedUser._id.toString()); ?? expected '607ef36a2d060d79dc83ac9f' to deeply equal '607ef3692d060d79dc83ac9d'
+
+              // res.body.should.have.property('messages_count').gt(0);
+
+              res.body.should.have.property('status').eql(100);
+              
+              // res.body.should.have.property('agents').eql(savedUser._id);
+              // expect(res.body.snapshot.agents.length).to.equal(1);
+              expect(res.body.participants.length).to.equal(0);
+
+              expect(res.body.participantsAgents.length).to.equal(0);                
+              expect(res.body.participantsBots).to.have.lengthOf(0);
+              expect(res.body.hasBot).to.equal(false);          
+              winston.info("res.body.attributes.abandoned_by_project_users", res.body.attributes.abandoned_by_project_users); 
+              expect(res.body.attributes.abandoned_by_project_users[savedUser._id]).to.not.equal(undefined);           
+
+              res.body.should.have.property('department').not.eql(null);
+              // res.body.should.have.property('lead').eql(undefined);
+                          
+        
+             done();
+          });
+      });
+    });
+  });
+});
+});
+
     // it('assign', (done) => {
 
         
