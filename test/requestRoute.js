@@ -1069,7 +1069,7 @@ it('removeParticipant', function (done) {
               expect(res.body.participantsBots).to.have.lengthOf(0);
               expect(res.body.hasBot).to.equal(false);          
               winston.info("res.body.attributes.abandoned_by_project_users", res.body.attributes.abandoned_by_project_users); 
-              expect(res.body.attributes.abandoned_by_project_users[savedUser._id]).to.not.equal(undefined);           
+              expect(res.body.attributes.abandoned_by_project_users[savedProjectAndPU.project_user._id]).to.not.equal(undefined);           
 
               res.body.should.have.property('department').not.eql(null);
               // res.body.should.have.property('lead').eql(undefined);
