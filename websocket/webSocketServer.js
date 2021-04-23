@@ -654,18 +654,25 @@ class WebSocketServer {
           delete requestJSON.snapshot;
           requestJSON.snapshot = {};
 
-          var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
-          winston.debug('snapshotAgents',snapshotAgents);  
-          // requestJSON.snapshot.agents = snapshotAgents;
+          // ATTENTO https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
+          try {
+            var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+            winston.debug('snapshotAgents',snapshotAgents);  
+            // requestJSON.snapshot.agents = snapshotAgents;
 
-          if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length>0) {
-            var agentsnew = [];
-            snapshotAgents.snapshot.agents.forEach(a => {
-              agentsnew.push({id_user: a.id_user}) 
-            });
-            requestJSON.snapshot.agents = agentsnew;
+            if (snapshotAgents.snapshot.agents && snapshotAgents.snapshot.agents.length>0) {
+              var agentsnew = [];
+              snapshotAgents.snapshot.agents.forEach(a => {
+                agentsnew.push({id_user: a.id_user}) 
+              });
+              requestJSON.snapshot.agents = agentsnew;
+            }
+            winston.debug('requestJSON',requestJSON);  
+
+          }catch (e) {
+            winston.error('Error getting snapshotAgents in ws. This is a mongo issue',e);
           }
-          winston.debug('requestJSON',requestJSON);  
+          
 
           
 
