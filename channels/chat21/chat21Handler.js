@@ -425,6 +425,7 @@ class Chat21Handler {
 
             requestEvent.on('request.create',  function(request) {          
 
+                winston.debug("chat21Handler requestEvent request.create called" , request);
                 // setImmediate(() => {
 // perche nn c'è setImmedite? per performace
                     if (request.channelOutbound.name === ChannelConstants.CHAT21) {
@@ -522,6 +523,8 @@ class Chat21Handler {
     
             requestEvent.on('request.close',  function(request) {          
 
+                winston.debug("chat21Handler requestEvent request.close called" , request);
+
                 setImmediate(() => {
                     if (request.channelOutbound.name === ChannelConstants.CHAT21) {
 
@@ -581,7 +584,10 @@ class Chat21Handler {
             
             
 
-             requestEvent.on('request.participants.update',  function(data) {       
+             requestEvent.on('request.participants.update',  function(data) {      
+                 
+                winston.debug("chat21Handler requestEvent request.participants.update called" , data);
+
                    let request = data.request;
                    let removedParticipants = data.removedParticipants;
                 
@@ -667,6 +673,8 @@ class Chat21Handler {
             
             
                requestEvent.on('request.participants.join',  function(data) {       
+                   winston.debug("chat21Handler requestEvent request.participants.join called" , data);
+
                    let request = data.request;
                    let member = data.member;
 
@@ -702,7 +710,9 @@ class Chat21Handler {
             });
             
             
-               requestEvent.on('request.participants.leave',  function(data) {       
+               requestEvent.on('request.participants.leave',  function(data) {     
+                   winston.debug("chat21Handler requestEvent request.participants.leave called" , data);
+
                    let request = data.request;
                    let member = data.member;
 
