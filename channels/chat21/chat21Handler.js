@@ -79,7 +79,7 @@ class Chat21Handler {
 
         if (process.env.SYNC_CHAT21_GROUPS !=="true") {
             winston.info("Sync Tiledesk to Chat21 groups disabled");
-            return;
+            // return; questo distrugge il tread. attento non lo mettere +
         }
 
         
