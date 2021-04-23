@@ -39,6 +39,8 @@ router.post('/', function (req, res) {
 
 
 
+    // before request_id id_project unique commented
+    /*
     var projectid;
     if (message.attributes) {            
       projectid = message.attributes.projectId;
@@ -49,15 +51,17 @@ router.post('/', function (req, res) {
       winston.warn("projectid is null. Not a support message");
       return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
     }
-
+    */
+    // before request_id id_project unique commented
 
 
 
     winston.debug("Chat21 message", message);
 
-        // requestcachefarequi nocachepopulatereqired
-        // before request_id id_project unique - return Request.findOne({request_id: message.recipient}) 
-        return Request.findOne({request_id: message.recipient, id_project: projectid})      
+        // requestcachefarequi nocachepopulatereqired        
+        return Request.findOne({request_id: message.recipient}) 
+        // before request_id id_project unique - commented
+        // return Request.findOne({request_id: message.recipient, id_project: projectid})      
           // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) project_id not available
           .exec(function(err, request) {
 
@@ -83,15 +87,15 @@ router.post('/', function (req, res) {
                 var client;
                 var userEmail;
                 var userFullname;
-                // var projectid; // before request_id id_project unique -
+                var projectid;  // before request_id id_project unique - commented
             
                 var requestStatus = undefined;
 
                 if (message.attributes) {
             
-                  // before request_id id_project unique -
-                  // projectid = message.attributes.projectId;
-                  // winston.debug("chat21 projectid", projectid);
+                  // before request_id id_project unique - commented
+                  projectid = message.attributes.projectId;
+                  winston.debug("chat21 projectid", projectid);
             
                   departmentid = message.attributes.departmentId;
                   winston.debug("chat21 departmentid", departmentid);
@@ -118,12 +122,13 @@ router.post('/', function (req, res) {
                 
                 winston.debug("requestStatus "+ requestStatus);
                 
-                // before request_id id_project unique -
-                // if (!projectid) {
-                //   winston.warn("projectid is null. Not a support message");
-                //   return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-                // }
+                 // before request_id id_project unique - commented
+                if (!projectid) {
+                  winston.warn("projectid is null. Not a support message");
+                  return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
+                }
 
+                
                 if (!message.recipient.startsWith("support-group")) {
                   winston.warn("recipient not starts wiht support-group. Not a support message");
                   return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
