@@ -9,7 +9,6 @@ csv = require('csv-express');
 csv.separator = ';';
 
 
-//TODO PER MESSAGGI DIRECT 
 router.post('/', 
   async (req, res)  => {
 

@@ -113,7 +113,11 @@ class LeadService {
 
     update.fullname = fullname;
     update.email = email;
-    update.status = status;
+    
+    if (status) {
+      update.status = status;
+    }
+    
 
     
       Lead.findOneAndUpdate({lead_id:lead_id}, update, { new: true, upsert: true }, function (err, updatedLead) {

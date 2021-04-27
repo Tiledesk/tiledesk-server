@@ -5,6 +5,7 @@ var Request = require("../models/request");
 var Project_user = require("../models/project_user");
 var messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
+const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
@@ -14,6 +15,49 @@ var arrayUtil = require("../utils/arrayUtil");
 
 class RequestService {
 
+  constructor() {
+    this.listen();
+  }
+
+  listen() {
+    this.updateSnapshotLead();
+  }
+  updateSnapshotLead() {
+    leadEvent.on('lead.update', function(lead) {
+      setImmediate(() => {
+          winston.info("updateSnapshotLead on lead.update ",  lead);
+          
+          Request.updateMany({lead: lead._id, id_project: lead.id_project}, {"$set": {"snapshot.lead": lead}}, function (err, updates) {
+            if (err) {
+                winston.error("Error updating requests updateSnapshotLead", err);
+                return 0;
+            }
+            winston.info("updateSnapshotLead updated for " + updates.nModified + " request")
+            requestEvent.emit('request.update.snapshot.lead',{lead:lead,updates:updates});
+            return;
+          });  
+          // Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
+
+          //     if (err) {
+          //         winston.error("Error getting request by lead", err);
+          //         return 0;
+          //     }
+          //     if (!requests || (requests && requests.length==0)) {
+          //         winston.warn("No request found for lead id " +lead._id );
+          //         return 0;
+          //     }
+              
+          //     requests.forEach(function(request) {
+                
+
+          //     });
+
+            // });
+
+
+          });
+        });
+  }
   getAvailableAgentsCount(agents) {
      
       var project_users_available = agents.filter(function (projectUser) {

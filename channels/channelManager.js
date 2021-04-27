@@ -69,7 +69,7 @@ class ChannelManager {
         if (chat21Enabled && chat21Enabled == "true") {   
             var chat21Handler = require('../channels/chat21/chat21Handler');         
             chat21Handler.listen();
-            winston.info("ChannelManager listener started ");
+            winston.info("ChannelManager listener started");
         }else {
             winston.info("ChannelManager listener NOT started ");
         }
