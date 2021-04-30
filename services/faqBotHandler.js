@@ -66,7 +66,7 @@ class FaqBotHandler {
                 winston.debug("query message.attributes.action ", query);
             }
 
-
+    
             Faq.find(query) 
             .lean().               
              exec(function (err, faqs) {
@@ -220,7 +220,7 @@ class FaqBotHandler {
 
                             const intent_info = {
                                 intent_name: answerObj.intent_display_name,
-                                is_fallback: true,
+                                is_fallback: false,
                                 confidence: answerObj.score,
                                 question_payload: question_payload 
                               }
