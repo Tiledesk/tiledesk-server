@@ -782,7 +782,10 @@ class Chat21Handler {
                     var groupMembers = group.members;
                     winston.debug("groupMembers ", groupMembers); 
                     
-                    return chat21.groups.create(group.name, groupMembers, undefined, group._id).then(function(data) {
+                    var group_id = "group-" + group._id;
+                    winston.debug("group_id :" + group_id); 
+
+                    return chat21.groups.create(group.name, groupMembers, undefined, group_id).then(function(data) {
                         winston.verbose("Chat21 group created: " + JSON.stringify(data));      
                         chat21Event.emit('group.create', data);                                          
                     }).catch(function(err) {
@@ -812,11 +815,14 @@ class Chat21Handler {
                     var groupMembers = group.members;
                     winston.debug("groupMembers ", groupMembers); 
                     
+                    var group_id = "group-" + group._id;
+                    winston.debug("group_id :" + group_id); 
+
                             // update: function(name, owner, attributes, group_id){
-                    return chat21.groups.update(group.name, undefined, undefined, group._id).then(function(data) {
+                    return chat21.groups.update(group.name, undefined, undefined, group_id).then(function(data) {
                         winston.verbose("Chat21 group.update updated: " + JSON.stringify(data));      
                         chat21Event.emit('group.update', data);     
-                        return chat21.groups.setMembers(groupMembers, group._id).then(function(data) {      
+                        return chat21.groups.setMembers(groupMembers, group_id).then(function(data) {      
                             winston.verbose("Chat21 group.update set: " + JSON.stringify(data));      
                             chat21Event.emit('group.setMembers', data);          
                         }).catch(function(err) {
@@ -849,9 +855,12 @@ class Chat21Handler {
 
                     chat21.auth.setAdminToken(adminToken);
                   
+                    var group_id = "group-" + group._id;
+                    winston.debug("group_id :" + group_id); 
+
                     //Remove members but group remains.
 
-                    return chat21.groups.setMembers(["system"], group._id).then(function(data) {      
+                    return chat21.groups.setMembers(["system"], group_id).then(function(data) {      
                         winston.verbose("Chat21 group set for group.delete : " + JSON.stringify(data));      
                         chat21Event.emit('group.setMembers', data);          
                     }).catch(function(err) {
