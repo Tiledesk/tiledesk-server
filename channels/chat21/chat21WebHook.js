@@ -345,8 +345,12 @@ router.post('/', function (req, res) {
 
               var projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
 
-              if (!projectId) { //back compatibility when projectId were always presents in the attributes (firebase)
+              var isObjectId = mongoose.Types.ObjectId.isValid(projectId);
+              winston.debug("isObjectId:"+ isObjectId);
+
+              if (!projectId || !isObjectId) { //back compatibility when projectId were always presents in the attributes (firebase)                
                 projectId = conversation.attributes.projectId;
+                winston.verbose('getting projectId from attributes: '+ projectId);
               }
                 
               winston.verbose('projectId: '+ projectId);
