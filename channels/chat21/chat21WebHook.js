@@ -334,10 +334,10 @@ router.post('/', function (req, res) {
 
       winston.debug("attributes",conversation.attributes);
 
-      // if (user_id!="system"){
-      //   winston.debug("we close request only for system conversation");
-      //   return res.status(400).send({success: false, msg: "not a system conversation" });
-      // }
+      if (user_id!="system"){
+        winston.debug("we close request only for system conversation");
+        return res.status(400).send({success: false, msg: "not a system conversation" });
+      }
 
 // chiudi apri e chiudi. projectid nn c'è in attributes
 
