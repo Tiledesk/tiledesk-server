@@ -6,6 +6,7 @@ var messageService = require('../../services/messageService');
 var leadService = require('../../services/leadService');
 var eventService = require('../../pubmodules/events/eventService');
 var Project_user = require("../../models/project_user");
+var RequestConstants = require("../../models/requestConstants");
 
 var cacheUtil = require('../../utils/cacheUtil');
 
@@ -332,12 +333,12 @@ router.post('/', function (req, res) {
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
-      winston.debug("attributes",conversation.attributes);
+     
 
-      if (user_id!="system"){
-        winston.debug("we close request only for system conversation");
-        return res.status(400).send({success: false, msg: "not a system conversation" });
-      }
+      // if (user_id!="system"){
+      //   winston.debug("we close request only for system conversation");
+      //   return res.status(400).send({success: false, msg: "not a system conversation" });
+      // }
 
 // chiudi apri e chiudi. projectid nn c'è in attributes
 
@@ -347,6 +348,8 @@ router.post('/', function (req, res) {
 
               var isObjectId = mongoose.Types.ObjectId.isValid(projectId);
               winston.debug("isObjectId:"+ isObjectId);
+
+              winston.debug("attributes",conversation.attributes);
 
               if (!projectId || !isObjectId) { //back compatibility when projectId were always presents in the attributes (firebase)                
                 projectId = conversation.attributes.projectId;
@@ -375,7 +378,10 @@ router.post('/', function (req, res) {
                   return res.status(404).send({success: false, msg: "Request with query " + JSON.stringify(query) + " not found" });
                 }
               
-                
+                if (request.status === RequestConstants.CLOSED) {
+                   winston.verbose("request already closed with id: " + recipient_id);
+                  return res.send({success: false, msg: "request already closed with id: " + recipient_id});
+                }
 
 
                     // se agente archivia conversazione allora chiude anche richiesta
