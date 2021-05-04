@@ -13,6 +13,7 @@ var mongoose = require('mongoose');
 var winston = require('../../config/winston');
 var MessageConstants = require("../../models/messageConstants");
 var ProjectUserUtil = require("../../utils/project_userUtil");
+var RequestUtil = require("../../utils/requestUtil");
 const authEvent = require('../../event/authEvent');
 
 
@@ -306,8 +307,8 @@ router.post('/', function (req, res) {
    
       
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
-
-    } else if (req.body.event_type == "deleted-conversation") {
+                                                                                         // depreated
+    } else if (req.body.event_type == "conversation-archived" || req.body.event_type == "deleted-conversation" ) {
       winston.debug("event_type deleted-conversation");
 
       var conversation = req.body.data;
@@ -316,10 +317,14 @@ router.post('/', function (req, res) {
       var user_id = req.body.user_id;
       winston.debug("user_id: "+user_id);
 
-      var recipient_id = req.body.recipient_id;
-      winston.debug("recipient_id: "+recipient_id);
+      var recipient_id = req.body.convers_with;
 
-      winston.debug("attributes",conversation.attributes);
+      if (!recipient_id && req.body.recipient_id) { //back compatibility
+        recipient_id = req.body.recipient_id;
+      }
+      winston.verbose("recipient_id: "+recipient_id);
+
+      
 
  
       if (!recipient_id.startsWith("support-group")){
@@ -327,15 +332,24 @@ router.post('/', function (req, res) {
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
-      if (user_id!="system"){
-        winston.debug("we close request only for system conversation");
-        return res.status(400).send({success: false, msg: "not a system conversation" });
-      }
+      winston.debug("attributes",conversation.attributes);
+
+      // if (user_id!="system"){
+      //   winston.debug("we close request only for system conversation");
+      //   return res.status(400).send({success: false, msg: "not a system conversation" });
+      // }
 
 // chiudi apri e chiudi. projectid nn c'è in attributes
 
-              var projectId = conversation.attributes.projectId;
-              winston.debug('projectId: '+ projectId);
+                // prendi id progetto dal recipient_id e nn da attributes. facciamo release intermedia nel cloud con solo questa modifica
+
+              var projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
+
+              if (!projectId) { //back compatibility when projectId were always presents in the attributes (firebase)
+                projectId = conversation.attributes.projectId;
+              }
+                
+              winston.verbose('projectId: '+ projectId);
 
               if (!projectId) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
@@ -748,6 +762,7 @@ else if (req.body.event_type == "presence-change") {
 }
 
 else {
+  winston.error("Chat21WebHook error event_type not implemented", req.body);
   res.json("Not implemented");
 }
 

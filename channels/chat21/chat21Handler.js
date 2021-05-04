@@ -521,6 +521,8 @@ class Chat21Handler {
                 // });
             });
     
+
+            
             requestEvent.on('request.close',  function(request) {          
 
                 winston.debug("chat21Handler requestEvent request.close called" , request);
@@ -552,12 +554,12 @@ class Chat21Handler {
                     //    archive: function(recipient_id, user_id){
                        chat21.conversations.archive(request.request_id, "system")
                        .then(function(data){
-                           winston.verbose("Chat21 archived "+ JSON.stringify(data));
+                           winston.verbose("Chat21 archived for system"+ JSON.stringify(data));
                    
                            chat21Event.emit('conversation.archived', data);                                               
 
                         }).catch(function(err) {
-                            winston.error("Chat21 archived err", err);
+                            winston.error("Chat21 archived  for system err", err);
                             chat21Event.emit('conversation.archived.error', err);
                         });
 
@@ -568,12 +570,12 @@ class Chat21Handler {
                             chat21.conversations.archive(request.request_id, request.lead.lead_id)  //                        chat21.conversations.archive(request.request_id, request.requester_id)<-desnt'archive
 
                             .then(function(data){
-                                winston.verbose("Chat21 archived "+ JSON.stringify(data));
+                                winston.verbose("Chat21 archived for request.lead.lead_id"+ JSON.stringify(data));
                         
                                 chat21Event.emit('conversation.archived', data);                                               
      
                              }).catch(function(err) {
-                                 winston.error("Chat21 archived err", err);
+                                 winston.error("Chat21 archived for request.lead.lead_id err", err);
                                  chat21Event.emit('conversation.archived.error', err);
                              });
                         }
