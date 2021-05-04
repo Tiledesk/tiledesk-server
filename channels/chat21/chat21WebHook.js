@@ -761,6 +761,10 @@ else if (req.body.event_type == "presence-change") {
 
 }
 
+else if (req.body.event_type == "new-group") {
+  winston.debug("new-group is not implemented");
+  res.json("new-group event_type is not implemented");
+}
 else {
   winston.error("Chat21WebHook error event_type not implemented", req.body);
   res.json("Not implemented");
