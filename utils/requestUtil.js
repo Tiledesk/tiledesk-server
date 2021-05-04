@@ -14,6 +14,22 @@ class RequestUtil {
         }
     }
 
+    getProjectIdFromRequestId(request_id) {
+        if (request_id && request_id.length>0) {
+            request_id = request_id.replace("support-group-","");
+            const firstChar = request_id.indexOf("-");
+            if (firstChar && request_id.length>0) {
+                return request_id.substring(0,request_id.indexOf("-"));
+            }else {
+                return null;
+            }
+            
+        } else {
+            return null;
+        }
+
+    }
+
     arraysEqual (a, b) {
         if (a === b) return true;
         if (a == null || b == null) return false;
