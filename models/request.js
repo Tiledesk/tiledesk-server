@@ -384,7 +384,8 @@ RequestSchema.index({ updatedAt: -1 }); // schema level
 RequestSchema.index({ id_project: 1 }); // schema level
 // https://stackoverflow.com/questions/27179664/error-when-using-a-text-index-on-mongodb/27180032
 RequestSchema.index({ id_project: 1, request_id: 1 }
-  , { unique: true }); // query for websocket
+  // , { unique: true }
+  ); // query for websocket
 
 // https://docs.mongodb.com/manual/core/index-text/
 // https://docs.mongodb.com/manual/tutorial/specify-language-for-text-index/

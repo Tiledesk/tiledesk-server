@@ -588,7 +588,6 @@ else if (req.body.event_type == "typing-start") {
 
   
   // requestcachefarequi nocachepopulatereqired
-  //*********ATTENTION FINDING BY request_id only does not guarantee uniqueness**************TODO
   return Request.findOne({request_id: recipient_id})
                              //TOD  errore cache sistemare e riabbilitare->
   // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)
