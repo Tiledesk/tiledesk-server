@@ -28,7 +28,7 @@ var RoleConstants = require('../models/roleConstants');
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
 
-var messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 100;
+var messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 300;
 winston.debug('messagesLimit:'+ messagesLimit);
 
 var lastEventsLimit = process.env.WS_HISTORY_EVENTS_LIMIT || 20;
@@ -617,6 +617,7 @@ class WebSocketServer {
           //deleted snapshot department lead, etc..
           delete requestJSON.snapshot;
           requestJSON.snapshot = {};
+
 
           
            // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
