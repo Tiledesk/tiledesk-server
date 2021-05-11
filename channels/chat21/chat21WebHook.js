@@ -309,6 +309,7 @@ router.post('/', function (req, res) {
       
       // curl -X POST -H 'Content-Type:application/json'  -d '{ "event_type": "deleted-conversation", "createdAt": 1537973334802, "app_id": "tilechat", "user_id": "system", "recipient_id": "support-group-LNPQ57JnotOEEwDXr9b"}' http://localhost:3000/chat21/requests
                                                                                          // depreated
+// this is a deprecated method for closing request. In the past used by chat21 cloud function support api /close method called by old versions of ionic. The new version of the ionic (both for firebase and mqtt) chat call Tiledesk DELETE /requests/:req_id endpoint so  this will not be used                                                                                        
     } else if (req.body.event_type == "conversation-archived" || req.body.event_type == "deleted-conversation" ) {
       winston.debug("event_type deleted-conversation");
 
@@ -323,7 +324,7 @@ router.post('/', function (req, res) {
       if (!recipient_id && req.body.recipient_id) { //back compatibility
         recipient_id = req.body.recipient_id;
       }
-      winston.verbose("recipient_id: "+recipient_id);
+      winston.debug("recipient_id: "+recipient_id);
 
       
 
@@ -353,10 +354,10 @@ router.post('/', function (req, res) {
 
               if (!projectId || !isObjectId) { //back compatibility when projectId were always presents in the attributes (firebase)                
                 projectId = conversation.attributes.projectId;
-                winston.verbose('getting projectId from attributes: '+ projectId);
+                winston.verbose('getting projectId from attributes (back compatibility): '+ projectId);
               }
                 
-              winston.verbose('projectId: '+ projectId);
+              winston.debug('projectId: '+ projectId);
 
               if (!projectId) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
@@ -529,7 +530,7 @@ router.post('/', function (req, res) {
       winston.debug("recipient_id",recipient_id);
 
      
-
+// TODO leggi projectid from support-group
 
       if (!recipient_id.startsWith("support-group")){
         winston.debug("not a support conversation");
