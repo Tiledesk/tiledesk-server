@@ -28,6 +28,9 @@ var RoleConstants = require('../models/roleConstants');
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:'+ lastRequestsLimit);
 
+var messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 100;
+winston.debug('messagesLimit:'+ messagesLimit);
+
 var lastEventsLimit = process.env.WS_HISTORY_EVENTS_LIMIT || 20;
 winston.debug('lastEventsLimit:'+ lastEventsLimit);
 
@@ -233,7 +236,8 @@ class WebSocketServer {
                         var query = {id_project:projectId, recipient: recipientId };                       
                         winston.debug('query : '+ JSON.stringify(query));
   
-                        Message.find(query).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+                        Message.find(query).sort({createdAt: 'asc'})
+                        .limit(messagesLimit).exec(function(err, messages) { 
                         
                             if (err) {
                               winston.error('WebSocket Error finding message for onSubscribeCallback', err);  
@@ -614,6 +618,7 @@ class WebSocketServer {
           delete requestJSON.snapshot;
           requestJSON.snapshot = {};
 
+          
            // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
             var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
