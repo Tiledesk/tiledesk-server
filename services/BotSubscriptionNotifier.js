@@ -38,9 +38,6 @@ class BotSubscriptionNotifier {
       json["token"] = token;
 
 
-      json["environment"] = {url: XXX, name: "PROD"};
-      termimna
-
       winston.debug("BotSubscriptionNotifier notify json ", json );
 
           request({
