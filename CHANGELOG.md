@@ -1,4 +1,35 @@
 
+
+# 2.1.37 
+
+- Trigger module moved to public npm
+- Websocket Message limit with environment variable WS_HISTORY_MESSAGES_LIMIT (300 default)
+- Chat21Webhook now support then new event_type with values "conversation-archived" and the old "deleted-conversation" (back compatibility). The field recipient_id is renamed to convers_with, but maintained for back compatibility. The project_id is taken from the support-group but also from conversation.attributes for back compatibility.
+- Chat21 group sync now create group with group- prefix. If old group exists (before group- prefix) group updating and deleting can create a duplicate entries
+- Fix intent_info object for is_fallback false
+- Updated dependencies
+- Updated snapshot.lead when a lead is updated. Editing a lead requires to refresh the realtime conversation panel.
+- Lead PUT endpoint fix for status field
+- Websocket error fix when MongoDB is < 4.XX catch snapshot exception
+- Added request.attributes.abandoned_by_project_users when a user leave a chat
+- Send messages direct endpoint
+- Create project_user endpoint by agent (Ticketing) now is with Guest Role
+- Bot webhook error now return the standard message and not the error 
+- Added WEBHOOK_ORIGIN env variable for each webhook calls
+
+
+# 2.1.36
+- Minor log fix 
+
+# 2.1.35
+- Minor ws log fix 
+
+# 2.1.34
+- Minor ws log fix 
+
+# 2.1.33
+- Disabled sendUser email for requestNotification
+
 # 2.1.32
 - Project_user endpoint (/get) now can be obtained by uuid_user field
 - Added intent_info to message.attributes sent from bot
