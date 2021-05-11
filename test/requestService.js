@@ -93,15 +93,15 @@ describe('RequestService', function () {
           requestService.create(request).then(function(savedRequest) {
             // assert.isNotOk('No duplicate check index');
             console.log("no index check ???");
-            
+            done();
           }).catch(function(err) {
             console.log("ok duplicate check index ", err);
-            done();
+            // done();
           });
         }).catch(function(err) {
             console.log("test reject",err);
             assert.isNotOk(err,'Promise error');
-            done();
+            // done();
         });
     });
   });
