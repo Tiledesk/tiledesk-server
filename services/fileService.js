@@ -4,6 +4,7 @@ class FileService {
 
     createFile ( fileName, data, contentType, options) {}
     getFileData (filename) {}
+    deleteFile(fileName) {}
 
 }
 
