@@ -6,6 +6,8 @@ var Request = require("../../../models/request");
 var projectService = require('../../../services/projectService');
 var requestService = require('../../../services/requestService');
 var leadService = require('../../../services/leadService');
+var userService = require('../../../services/userService');
+
 var Lead = require('../../../models/lead');
 var Message = require('../../../models/message');
 
@@ -43,10 +45,15 @@ describe('Chat21WebHook', () => {
 
       it('new-messageWithoutEmail', (done) => {
 
-          projectService.create("test-new-message", userid).then(function(savedProject) {
+        var email = "test-request-create-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+    
+        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+          projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
 
             var request_id = "support-group-"+savedProject._id;
-            let webhookContent = {"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
+            let webhookContent = {"event_type": "new-message", "data":{"sender":savedUser._id, "sender_fullname": "sender_fullname", 
             "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
             "attributes": {"projectId":savedProject._id} }
                };
@@ -69,7 +76,7 @@ describe('Chat21WebHook', () => {
                     // expect(request.waiting_time).to.gt(0);
                     Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
-                        expect(message.sender).to.equal("sender");    
+                        expect(message.sender).to.equal(savedUser._id.toString());    
                         expect(message.recipient).to.equal(request_id);     
                         expect(message.attributes.projectId).to.equal(savedProject._id.toString());     
                         Lead.findById(res.body.requester_id, function (err, lead){
@@ -86,17 +93,22 @@ describe('Chat21WebHook', () => {
                 });
           });
         });
+    });
 
+ // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailOnly'
+        it('new-messageWithEmailOnly', (done) => {
 
+            var email = "test-request-create-" + Date.now() + "@email.com";
+            var pwd = "pwd";
 
-        it('new-messageWithEmail', (done) => {
+            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
 
-            projectService.create("test-new-message", userid).then(function(savedProject) {
+            projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
   
               var request_id = "support-group-"+savedProject._id;
               let webhookContent = {"event_type": "new-message", 
                 "data":{
-                    "sender":"sender", "sender_fullname": "sender_fullname", 
+                    "sender":savedUser._id, "sender_fullname": "sender_fullname", 
                     "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
                     "attributes": {"projectId":savedProject._id, "userEmail": "user@email.com", "userFullname": "userFullname"},
                     // elimina
@@ -143,9 +155,9 @@ describe('Chat21WebHook', () => {
                       // expect(request.waiting_time).to.gt(0);
                       Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
-                        expect(message.sender).to.equal("sender");    
+                        expect(message.sender).to.equal(savedUser._id.toString());    
                         expect(message.recipient).to.equal(request_id);     
-                        Lead.findById(res.body.requester_id, function (err, lead){
+                        Lead.findById(res.body.lead, function (err, lead){
                             console.log("lead.attributes", JSON.stringify(lead.attributes));
                             expect(lead.fullname).to.equal("userFullname");   
                             expect(lead.email).to.equal("user@email.com");   
@@ -161,23 +173,39 @@ describe('Chat21WebHook', () => {
                   });
             });
           });
+        });
 
-
-
+        
+//        mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailAndFullnameAndRequestAlreadyExists'
           it('new-messageWithEmailAndFullnameAndRequestAlreadyExists', (done) => {
 
-            projectService.create("test-new-message", userid).then(function(savedProject) {
+            var email = "test-request-create-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+            // projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
+            projectService.createAndReturnProjectAndProjectUser("test-new-message", savedUser._id).then(function(savedProjectAndPU) {
+                var savedProject = savedProjectAndPU.project;    
+
                 var request_id = "support-group-"+savedProject._id;
 
                 leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
                         // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-                        requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                        // requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
                             
-                            let webhookContent = {"event_type": "new-message", "data":{"sender":"sender", "sender_fullname": "sender_fullname", 
+                            var request = {
+                                request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                                id_project:savedProject._id, first_text: "first_text",
+                                lead:createdLead, requester: savedProjectAndPU.project_user };
+          
+                            requestService.create(request).then(function(savedRequest) {
+
+                            let webhookContent = {"event_type": "new-message", "data":{"sender":savedUser._id, "sender_fullname": "sender_fullname", 
                             "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text", 
                             "attributes": {"projectId":savedProject._id, "userEmail": createdLead.email, "userFullname": createdLead.fullname} }
                                 };
-                
+                // DA SISTEMARE
                             chai.request(server)
                                 .post('/chat21/requests')
                                 .send(webhookContent)
@@ -196,9 +224,9 @@ describe('Chat21WebHook', () => {
                                     // expect(request.waiting_time).to.gt(0);
                                     Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
-                                        expect(message.sender).to.equal("sender");    
+                                        expect(message.sender).to.equal(savedUser._id.toString());    
                                         expect(message.recipient).to.equal(request_id);     
-                                        Lead.findById(res.body.requester_id, function (err, lead){
+                                        Lead.findById(res.body.lead, function (err, lead){
                                             expect(lead.fullname).to.equal("leadfullname");   
                                             expect(lead.email).to.equal("email@email.com");   
                                             done();
@@ -212,23 +240,41 @@ describe('Chat21WebHook', () => {
                     });
             });
           });
-
+        });
     
 
 
 
+ //       mocha channels/chat21/test-int/chat21WebHook.js   --grep 'new-messageWithEmailAndFullnameAndRequestAlreadyExistAndNOProjectID'
+          it('new-messageWithEmailAndFullnameAndRequestAlreadyExistAndNOProjectID', (done) => {
 
-          it('new-messageWithEmailAndFullnameAndRequestAlreadyExistsAndNOProjectID', (done) => {
+            var email = "test-request-create-" + Date.now() + "@email.com";
+            var pwd = "pwd";
 
-            projectService.create("test-new-message", userid).then(function(savedProject) {
+            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+
+            // projectService.create("test-new-message", savedUser._id).then(function(savedProject) {
+            projectService.createAndReturnProjectAndProjectUser("test-new-message", savedUser._id).then(function(savedProjectAndPU) {
+                var savedProject = savedProjectAndPU.project;    
+
+                    
                 var request_id = "support-group-"+savedProject._id;
 
                 leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
                         // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy) {
-                        requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                        // requestService.createWithId(request_id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+
+                            var request = {
+                                request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                                id_project:savedProject._id, first_text: "first_text",
+                                lead:createdLead, requester: savedProjectAndPU.project_user };
+          
+                            requestService.create(request).then(function(savedRequest) {
+
                             
                             let webhookContent = {"event_type": "new-message", 
-                                "data":{"sender":"sender", "sender_fullname": "sender_fullname", "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text"}
+                                "data":{"sender":savedUser._id, "sender_fullname": "sender_fullname", "recipient":request_id, "recipient_fullname":"Andrea Leo","text":"text"}
                                 };
                 
                             chai.request(server)
@@ -249,9 +295,9 @@ describe('Chat21WebHook', () => {
                                     // expect(request.waiting_time).to.gt(0);
                                     Message.findOne({recipient : request_id, id_project: savedProject._id,text:"text"}, function(err, message){
 
-                                        expect(message.sender).to.equal("sender");    
+                                        expect(message.sender).to.equal(savedUser._id.toString());    
                                         expect(message.recipient).to.equal(request_id);     
-                                        Lead.findById(res.body.requester_id, function (err, lead){
+                                        Lead.findById(res.body.lead, function (err, lead){
                                             expect(lead.fullname).to.equal("leadfullname");   
                                             expect(lead.email).to.equal("email@email.com");   
                                             done();
@@ -265,18 +311,39 @@ describe('Chat21WebHook', () => {
                     });
             });
           });
+        });
 
-
-
+//       mocha channels/chat21/test-int/chat21WebHook.js   --grep 'joinmember'
         it('joinmember', (done) => {
 
-            projectService.create("test-join-member", userid).then(function(savedProject) {
+
+            var email = "test-request-create-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+
+            // projectService.create("test-join-member", userid).then(function(savedProject) {
+                projectService.createAndReturnProjectAndProjectUser("test-join-member", savedUser._id).then(function(savedProjectAndPU) {
+                    var savedProject = savedProjectAndPU.project;    
 
                 // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-                requestService.createWithId("join-member", "join-member-requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+                // requestService.createWithId("join-member", "join-member-requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
+
+                    var request_id = "support-group-"+savedProject._id;
+
+                    leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+
+                    var request = {
+                        request_id:request_id, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                        id_project:savedProject._id, first_text: "join-member-requester_id1",
+                        lead:createdLead, requester: savedProjectAndPU.project_user };
+  
+                    requestService.create(request).then(function(savedRequest) {
+
     
                     var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
-                            "app_id": 'tilechat', "member_id": 'agentid1', "data": { "member_id": 'agentid1', "group":  { "createdOn": 1538156223311,
+                            "app_id": 'tilechat', "member_id": savedUser._id, "data": { "member_id": savedUser._id, "group":  { "createdOn": 1538156223311,
                         "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
             
@@ -291,9 +358,9 @@ describe('Chat21WebHook', () => {
                             res.body.should.have.property('status').eql(200);
                             
 
-                            res.body.should.have.property('participants').to.have.lengthOf(2);
-                            res.body.should.have.property('participants').contains("agentid1");
-                            res.body.should.have.property('participants').contains(userid);
+                            res.body.should.have.property('participants').to.have.lengthOf(1);
+                            // res.body.should.have.property('participants').contains("agentid1");
+                            res.body.should.have.property('participants').contains(savedUser._id.toString());
                            
                         done();
                         });
@@ -302,44 +369,52 @@ describe('Chat21WebHook', () => {
                 });
                 });
         });
+    });
 
+    });
 
+    // A cosa serve ?
+    // // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'butnottherequesterid'
+    //     it('join-member-butnottherequesterid', (done) => {
 
-        it('join-member-butnottherequesterid', (done) => {
+    //         var email = "test-request-create-" + Date.now() + "@email.com";
+    //         var pwd = "pwd";
 
-            projectService.create("test-join-member", userid).then(function(savedProject) {
-                leadService.createIfNotExistsWithLeadId("requester_id1-join-member-butnottherequesterid", "leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-                requestService.createWithId("join-member-requestid", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+    //         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+    //         projectService.create("test-join-member", savedUser._id).then(function(savedProject) {
+    //             leadService.createIfNotExistsWithLeadId("requester_id1-join-member-butnottherequesterid", "leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+    //             requestService.createWithId("join-member-requestid", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
     
-                    var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
-                            "app_id": 'tilechat', "member_id": createdLead.lead_id, "data": { "member_id": createdLead.lead_id, "group":  { "createdOn": 1538156223311,
-                        "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
+    //                 var webhookContent =     { "event_type": 'join-member', "createdAt": 1538156223681, "group_id": savedRequest.request_id, 
+    //                         "app_id": 'tilechat', "member_id": savedUser._id, "data": { "member_id": savedUser._id, "group":  { "createdOn": 1538156223311,
+    //                     "iconURL": 'NOICON', "members": [Object], "name": 'Bash', "owner": 'system', 'attributes': {"projectId":savedProject._id} } } }
                         
             
-                    chai.request(server)
-                        .post('/chat21/requests')
-                        .send(webhookContent)
-                        .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body",  res.body);
-                            res.should.have.status(400);
+    //                 chai.request(server)
+    //                     .post('/chat21/requests')
+    //                     .send(webhookContent)
+    //                     .end((err, res) => {
+    //                         //console.log("res",  res);
+    //                         console.log("res.body",  res.body);
+    //                         res.should.have.status(400);
                             
                            
-                        done();
-                        });
-                    });
+    //                     done();
+    //                     });
+    //                 });
                         
-                });
-                });
-        });
+    //             });
+    //             });
+    //     });
+
+    // });
 
 
 
 
 
-
-
-
+    // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'leave-member'
         it('leave-member', (done) => {
 
             projectService.create("test-leave-member", userid).then(function(savedProject) {
@@ -372,7 +447,7 @@ describe('Chat21WebHook', () => {
         });
 
 
-
+        // mocha channels/chat21/test-int/chat21WebHook.js   --grep 'deleted-archivedconversation'
 
         it('deleted-archivedconversation', (done) => {
 
