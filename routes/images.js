@@ -181,7 +181,14 @@ uploadAvatar.single('file'), (req, res, next) => {
       return res.status(409).send({success: false, msg: 'Error uploading photo image, file already exists'});
     }
 
-     var destinationFolder = 'uploads/users/' + req.user.id + "/images/";
+    var userid = req.user.id;
+
+    if (req.query.user_id) {
+      userid = req.query.user_id;
+    }
+    
+
+     var destinationFolder = 'uploads/users/' + userid + "/images/";
      winston.info("destinationFolder:"+destinationFolder);
 
      var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
@@ -217,7 +224,7 @@ curl -v -X DELETE -u andrea.leo@f21.it:123456 \
   http://localhost:3000/images/users/?path=uploads%2Fusers%2F609bf8157bf5ca7ef7160197%2Fimages%2Ftest.jpg
 
 curl -v -X DELETE  -u andrea.leo@frontiere21.it:123 \
-   https://tiledesk-server-pre.herokuapp.com/images/users/?path=uploads%2Fusers%2F5aaa99024c3b110014b478f0%2Fimages%2Ftest.jpg
+   https://tiledesk-server-pre.herokuapp.com/images/users/?path=uploads%2Fusers%2F5aaa99024c3b110014b478f0%2Fimages%2Fphoto.jpg
  
 */
 

@@ -197,9 +197,8 @@ class FileGridFsService extends FileService {
                 // console.log("XXX req.headers",JSON.stringify(req.headers))
                 // console.log("XXX file",file)
 
-                // if (req.body.folder) {
-                    
-                //     folder = req.body.folder;
+                // if (req.query.folder) {                    
+                //     folder = req.query.folder;
                 // }
 
                
@@ -282,7 +281,19 @@ class FileGridFsService extends FileService {
 
                 var subfolder = "/public";
                 if (req.user && req.user.id) {
-                  subfolder = "/users/"+req.user.id;
+                  var userid = req.user.id;
+
+                  if (req.query.user_id) {
+                    winston.debug("req.query.user_id: "+ req.query.user_id);
+                    // winston.info("req.projectuser ",req.projectuser);
+
+                    // TODO pass also project_id ?user_id=abc&project_id=123 and find PU
+                    // if (req.project_user && req.project_user.role === ) {
+
+                    // }
+                    userid = req.query.user_id;
+                  }
+                  subfolder = "/users/"+userid;
                 }
                 const path = 'uploads'+ subfolder + "/" + folderName ;
                 // req.folder = folder;
@@ -295,14 +306,14 @@ class FileGridFsService extends FileService {
                 // }
     
                 var pathExists = `${path}/${filename}`;
-                winston.info("pathExists: "+ pathExists);
+                winston.debug("pathExists: "+ pathExists);
 
                 let fileExists = await this.gfs.find({filename: pathExists}).toArray();
-                winston.info("fileExists", fileExists);
+                winston.debug("fileExists", fileExists);
                 
                 if (fileExists && fileExists.length>0) {
                     req.upload_file_already_exists = true;
-                    winston.info("file already exists", pathExists);
+                    winston.debug("file already exists", pathExists);
                     return;
                 }
                 
