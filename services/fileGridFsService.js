@@ -242,6 +242,82 @@ class FileGridFsService extends FileService {
        return storageMongo;     
     }
 
+
+
+
+
+
+
+
+
+
+    getStorageAvatar(folderName) {
+        const storageMongo = new GridFsStorage({ 
+            url : this.mongoURI,
+            options: { useNewUrlParser: true, useUnifiedTopology: true },
+            file: async (req, file) => {
+                var filename = "photo.jpg";
+                // var folder = uuidv4();
+
+                // var form = new multiparty.Form();
+
+                // form.parse(req, function(err, fields, files) {
+                //     console.log("XXX fields",fields)
+                //     console.log("XXX files",files)
+                // });
+
+                // console.log("XXX req",req)
+                // console.log("XXX req.query",JSON.stringify(req.query))
+                // console.log("XXX req.body",JSON.stringify(req.body))
+                // console.log("XXX req.folder",JSON.stringify(req.folder))
+                // console.log("XXX req.headers",JSON.stringify(req.headers))
+                // console.log("XXX file",file)
+
+                // if (req.body.folder) {
+                    
+                //     folder = req.body.folder;
+                // }
+
+               
+
+                var subfolder = "/public";
+                if (req.user && req.user.id) {
+                  subfolder = "/users/"+req.user.id;
+                }
+                const path = 'uploads'+ subfolder + "/" + folderName ;
+                // req.folder = folder;
+
+                // const match = ["image/png", "image/jpeg"];
+    
+                // if (match.indexOf(file.mimetype) === -1) {
+                //     const filename = `${Date.now()}-${file.originalname}`;
+                //     return filename;
+                // }
+    
+                var pathExists = `${path}/${filename}`;
+                winston.info("pathExists: "+ pathExists);
+
+                let fileExists = await this.gfs.find({filename: pathExists}).toArray();
+                winston.info("fileExists", fileExists);
+                
+                if (fileExists && fileExists.length>0) {
+                    req.upload_file_already_exists = true;
+                    winston.info("file already exists", pathExists);
+                    return;
+                }
+                
+
+
+                return {
+                    bucketName: folderName,
+                    filename: `${path}/${filename}`
+                };
+            }
+            });
+
+       return storageMongo;     
+    }
+
 }
 
 

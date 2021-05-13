@@ -97,6 +97,52 @@ describe('ImagesRoute', () => {
 
 
 
+// mocha test/imageRoute.js  --grep 'upload-avatar'
+it('upload-avatar', (done) => {
+
+    var email = "test-signup-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+             
+        chai.request(server)
+        .put('/images/users/photo')
+        .auth(email, pwd)
+        .set('Content-Type','image/jpeg')
+        .attach('file',  fs.readFileSync('./test/test-image.png'), 'profile.png')             
+        // .field('folder', 'myfolder')            
+        .end((err, res) => {                        
+                //console.log("res",  res);
+                console.log("res.body",  res.body);
+                console.log("res.status",  res.status);
+                res.should.have.status(201);
+                res.body.should.be.a('object');
+                expect(res.body.message).to.equal('Image uploded successfully');                                                                              
+                expect(res.body.filename).to.not.equal("photo.jpg");                 
+                // assert(res.body.filename.indexOf()).to.have.string('');                             
+                // assert.equal(res.body.filename.indexOf('myfilder'), 1);                                           
+                expect(res.body.thumbnail).to.not.equal(null);  
+                
+
+
+                //check duplicate
+                chai.request(server)
+                .put('/images/users/photo')
+                .auth(email, pwd)
+                .set('Content-Type','image/jpeg')
+                .attach('file',  fs.readFileSync('./test/test-image.png'), 'profile.png')             
+                // .field('folder', 'myfolder')            
+                .end((err, res) => {   
+                    res.should.have.status(409);
+                    done();
+                });
+        });              
+            
+    });
+});
+
+
+
 
 // mocha test/imageRoute.js  --grep 'delete-user-folder'
 it('delete-user-folder', (done) => {
