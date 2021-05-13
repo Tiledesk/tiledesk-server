@@ -45,7 +45,7 @@ curl -u andrea.leo@f21.it:123456 \
   http://localhost:3000/images/users/
 
 
-  curl -u andrea.leo@frontiere21.it:258456td \ 
+  curl -u andrea.leo@frontiere21.it:123 \ 
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
   https://tiledesk-server-pre.herokuapp.com/images/users/
 
@@ -98,6 +98,11 @@ curl -v -X PUT -u andrea.leo@f21.it:123456 \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
   http://localhost:3000/images/users/
 
+
+  curl -v -X PUT -u andrea.leo@frontiere21.it:123 \
+  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
+    https://tiledesk-server-pre.herokuapp.com/images/users/
+
   */
 router.put('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],
 // bodymiddleware, 
@@ -110,6 +115,7 @@ uploadFixedFolder.single('file'), (req, res, next) => {
     // winston.info("folder:"+folder);
 
     if (req.upload_file_already_exists) {
+      winston.warn('Error uploading photo image, file already exists',req.file.filename );
       return res.status(409).send({success: false, msg: 'Error uploading user image, file already exists'});
     }
 
@@ -139,9 +145,80 @@ uploadFixedFolder.single('file'), (req, res, next) => {
   }
 });
 
+
+
+
+
+
+
+
+
+const uploadAvatar= multer({ storage: fileService.getStorageAvatar("images"), fileFilter: fileFilter });
+
+/*
+curl -v -X PUT -u andrea.leo@f21.it:123456 \
+  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
+  http://localhost:3000/images/users/photo
+
+
+  curl -v -X PUT -u andrea.leo@frontiere21.it:258456td \
+  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test.jpg" \
+    https://tiledesk-server-pre.herokuapp.com/images/users/photo
+
+  */
+router.put('/users/photo', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],
+// bodymiddleware, 
+uploadAvatar.single('file'), (req, res, next) => {
+  try {
+    winston.debug("/users/photo");
+    // winston.info("req.query.folder1:"+req.body.folder);
+
+    // var folder = req.folder || "error";
+    // winston.info("folder:"+folder);
+
+    if (req.upload_file_already_exists) {
+      winston.warn('Error uploading photo image, file already exists',req.file.filename );
+      return res.status(409).send({success: false, msg: 'Error uploading photo image, file already exists'});
+    }
+
+     var destinationFolder = 'uploads/users/' + req.user.id + "/images/";
+     winston.info("destinationFolder:"+destinationFolder);
+
+     var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
+
+     winston.info("req.file.filename:"+req.file.filename);
+     fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
+
+      sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+        //in prod nn genera thumb
+        if (err) { winston.error("Error generating thumbnail", err); }
+        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+      });
+
+      return res.status(201).json({
+          message: 'Image uploded successfully',
+          filename: encodeURIComponent(req.file.filename),
+          thumbnail: encodeURIComponent(thumFilename)
+      }); 
+    });
+  } catch (error) {
+    winston.error('Error uploading user image.',error);
+    return res.status(500).send({success: false, msg: 'Error uploading user image.'});
+  }
+});
+
+
+
+
+
+
 /*
 curl -v -X DELETE -u andrea.leo@f21.it:123456 \
   http://localhost:3000/images/users/?path=uploads%2Fusers%2F609bf8157bf5ca7ef7160197%2Fimages%2Ftest.jpg
+
+curl -v -X DELETE  -u andrea.leo@frontiere21.it:123 \
+   https://tiledesk-server-pre.herokuapp.com/images/users/?path=uploads%2Fusers%2F5aaa99024c3b110014b478f0%2Fimages%2Ftest.jpg
+ 
 */
 
 router.delete('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], (req, res, next) => {
