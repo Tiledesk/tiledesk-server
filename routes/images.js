@@ -423,8 +423,13 @@ router.get("/", (req, res) => {
   winston.debug('path', req.query.path);
   // try {
     fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
-      winston.error('Error getting the image', e);
-      return res.status(500).send({success: false, msg: 'Error getting image.'});
+      if (e.code == "ENOENT") {
+        winston.debug('Image not found: '+req.query.path);
+        return res.status(404).send({success: false, msg: 'Image not found.'});
+      }else {
+        winston.error('Error getting the image', e);
+        return res.status(500).send({success: false, msg: 'Error getting image.'});
+      }      
     }).pipe(res);
   // } catch (e) {
   //   winston.error('Error getting the image', e);
