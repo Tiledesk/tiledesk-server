@@ -7,6 +7,7 @@ const GridFsStorage = require("multer-gridfs-storage");
 const uuidv4 = require('uuid/v4');
 var config = require('../config/database');
 var winston = require('../config/winston');
+var pathlib = require('path');
 
 const FileService = require("./fileService");
 
@@ -312,9 +313,31 @@ class FileGridFsService extends FileService {
                 winston.debug("fileExists", fileExists);
                 
                 if (fileExists && fileExists.length>0) {
-                    req.upload_file_already_exists = true;
-                    winston.debug("file already exists", pathExists);
-                    return;
+
+                    if (req.query.force) {
+                        try {
+                            await this.deleteFile(pathExists);
+                        
+                            let thumbFilename = 'thumbnails_200_200-'+filename;
+                            winston.info("thumbFilename:"+thumbFilename);
+                        
+                            let thumbPath = pathExists.replace(filename,thumbFilename);
+                            winston.info("thumbPath:"+thumbPath);
+                        
+                            await this.deleteFile(thumbPath);
+                        } catch(e) {
+                            winston.error("Error deleting forced old image:",e);
+                        }
+                        
+    
+                    } else {
+
+                        req.upload_file_already_exists = true;
+                        winston.debug("file already exists", pathExists);
+                        return;
+                    }
+                    
+
                 }
                 
 
