@@ -235,10 +235,11 @@ router.delete('/users', [passport.authenticate(['basic', 'jwt'], { session: fals
     let path = req.query.path;
     winston.debug("path:"+path);
 
-    if (path.indexOf("/"+req.user.id+"/")==-1) {
-      winston.warn('Permission denied to delete image:'+path);
-      return res.status(403).send({success: false, msg: 'Permission denied to delete image:'+path});
-    }
+    // TODO later if enabled there is problem when admin delete a bot image
+    // if (path.indexOf("/"+req.user.id+"/")==-1) {
+    //   winston.warn('Permission denied to delete image:'+path);
+    //   return res.status(403).send({success: false, msg: 'Permission denied to delete image:'+path});
+    // }
 
     let filename = pathlib.basename(path);
     winston.debug("filename:"+filename);
