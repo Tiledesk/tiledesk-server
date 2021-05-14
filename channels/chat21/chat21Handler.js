@@ -360,8 +360,31 @@ class Chat21Handler {
                          message.channel_type ==  MessageConstants.CHANNEL_TYPE.DIRECT &&
                          message.channel.name == ChannelConstants.CHAT21) {
                         
-                            winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
-                            return;
+                            // winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
+
+                            // send: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata){
+                           return  chat21.messages.send(message.senderFullname,     message.recipient, 
+                            "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata)
+                                    .then(function(data){
+                                        winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
+                                
+
+                                        // chat21.conversations.stopTyping(message.recipient,message.sender);
+
+                                        chat21Event.emit('message.sent', data);
+
+                                            messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
+                                                winston.debug("Chat21 message sent ", upMessage.toObject());                                        
+                                            }).catch(function(err) {
+                                                winston.error("Error Chat21 message sent with id: "+message._id, err);                                        
+                                            });
+
+                            }).catch(function(err) {
+                                winston.error("Chat21 sendToGroup err", err);
+                                chat21Event.emit('message.sent.error', err);
+                            });
+
+                            
 
                     } else {
                         winston.error("Chat21Sender this is not a group o direct message", message);
