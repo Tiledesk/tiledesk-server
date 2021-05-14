@@ -3,7 +3,7 @@ var express = require('express');
 // https://stackoverflow.com/questions/28977253/express-router-undefined-params-with-router-use-when-split-across-files
 var router = express.Router();
 
-var MessageConstants = require("../models/MessageConstants");
+var MessageConstants = require("../models/messageConstants");
 var messageService = require("../services/messageService");
 var winston = require('../config/winston');
 
