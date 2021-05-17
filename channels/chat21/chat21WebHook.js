@@ -436,7 +436,7 @@ router.post('/', function (req, res) {
       if (group && group.attributes) {
         id_project = group.attributes.projectId;
       }else {
-        winston.error("id_project "+ id_project+ " isn't a support joining");
+        winston.verbose("id_project "+ id_project+ " isn't a support joining");
         return res.status(400).send({success: false, msg: "not a support joining" });
       }
       winston.debug("id_project: " + id_project);
