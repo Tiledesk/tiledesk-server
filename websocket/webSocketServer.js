@@ -735,7 +735,7 @@ class WebSocketServer {
         winston.debug('event', event);
         if (event.project_user === undefined) {
           //with "faqbot.answer_not_found" project_user is undefined but it's ok 
-          winston.warn('not sending with ws event with project_user undefined', event);
+          winston.debug('not sending with ws event with project_user undefined', event);
           return ;
         }
         pubSubServer.handlePublishMessage ('/'+event.id_project+'/events/'+event.project_user._id, event, undefined, true, "CREATE");
