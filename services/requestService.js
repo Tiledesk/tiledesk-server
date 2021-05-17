@@ -1377,11 +1377,11 @@ class RequestService {
 
              //request.attributes.abandoned_by_project_users  start TODO move to routing-queue
              if (!request.attributes) {
-              winston.verbose("removeParticipantByRequestId request.attributes is empty. creating it");
+              winston.debug("removeParticipantByRequestId request.attributes is empty. creating it");
               request.attributes = {};
             }
             if (!request.attributes.abandoned_by_project_users) {
-              winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users is empty. creating it");
+              winston.debug("removeParticipantByRequestId request.attributes.abandoned_by_project_users is empty. creating it");
               request.attributes.abandoned_by_project_users = {}
             }
 
@@ -1395,10 +1395,10 @@ class RequestService {
             */
 
             var pu = await Project_user.findOne({ id_user: member, id_project:id_project }).exec();
-            winston.info("pu",pu);
+            winston.debug("pu",pu);
 
             request.attributes.abandoned_by_project_users[pu._id] = new Date().getTime();
-            winston.verbose("removeParticipantByRequestId request.attributes.abandoned_by_project_users", request.attributes.abandoned_by_project_users);
+            winston.debug("removeParticipantByRequestId request.attributes.abandoned_by_project_users", request.attributes.abandoned_by_project_users);
             //request.attributes.abandoned_by_project_users  end
 
            }catch(e) {
