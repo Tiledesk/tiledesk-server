@@ -189,6 +189,7 @@ class Chat21Handler {
             setImmediate(() => {
                 winston.debug("Chat21Handler on lead.update ",  lead);
 
+                // AGGIORNA SOLO SE PASSA DA GUEST A ALTRO??
                 Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
                     if (err) {
@@ -362,6 +363,8 @@ class Chat21Handler {
                         
                             // winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
 
+                            chat21.auth.setAdminToken(adminToken);
+                            
                             // send: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata){
                            return  chat21.messages.send(message.senderFullname,     message.recipient, 
                             "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata)
