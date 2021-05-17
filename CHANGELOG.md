@@ -1,5 +1,17 @@
 
 
+# 2.1.39
+- Log fix
+- Chat21 presence  webhook error handler fix 
+
+# 2.1.38 -> TILEDESK DASHBOARD v2.1.49.1
+- Added PUT /images/users endpoint where you can archive user's image at the root level of the path
+- Added DELETE /images/users endpoint to delete an image
+- Added PUT /images/users/photo endpoint where you can archive user's avatar at the root level of the path
+- Root messages endpoint fixed
+- Now RestHook module is public
+- Minor deps update
+
 # 2.1.37 
 
 - Trigger module moved to public npm
