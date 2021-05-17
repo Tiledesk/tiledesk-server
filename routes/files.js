@@ -23,8 +23,6 @@ const upload = multer({ storage: fileService.getStorage("files") });
 
 /*
 curl -u andrea.leo@f21.it:123456 \
-  -F "userid=1" \
-  -F "filecomment=This is an image file" \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/users/
 
@@ -41,8 +39,6 @@ router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false 
 
 /*
 curl \
-  -F "userid=1" \
-  -F "filecomment=This is an image file" \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/public/
 

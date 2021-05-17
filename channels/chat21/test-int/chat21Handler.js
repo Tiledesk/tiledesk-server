@@ -12,6 +12,7 @@ var Request = require('../../../models/request');
 var mongoose = require('mongoose');
 var winston = require('../../../config/winston');
 var MessageConstants = require("../../../models/messageConstants");
+require('../../../services/mongoose-cache-fn')(mongoose);
 
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
@@ -72,7 +73,7 @@ describe('Chat21Handler', function () {
 
 
 
-
+// mocha channels/chat21/test-int/chat21Handler.js   --grep 'createRequest'
   it('createRequest', function (done) {
   
 
@@ -122,52 +123,52 @@ describe('Chat21Handler', function () {
 
 
 
-  it('firstMessage', function (done) {
+  // it('firstMessage', function (done) {
 
 
 
-    var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
-    var pwd = "pwd";
+  //   var email = "test-createRequest-chat21handler" + Date.now() + "@email.com";
+  //   var pwd = "pwd";
 
-    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-     projectService.create("createWithId", savedUser._id).then(function(savedProject) {
-      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+  //   userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+  //    projectService.create("createWithId", savedUser._id).then(function(savedProject) {
+  //     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
             
-      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
-       requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          winston.debug("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");                       
+  //     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
+  //      requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+  //         winston.debug("resolve", savedRequest.toObject());
+  //         expect(savedRequest.request_id).to.equal("request_id1");                       
 
 
-          // messageEvent.on('message.create.first',function(message) {
-          //   expect(message.text).to.equal("hello");   
-          //     done();
-          // });
-          chat21Event.on('firestore.first_message', function(firestoreUpdate){
-                    winston.info("firestore.first_message created", firestoreUpdate);
-                    winston.info("savedUser._id", savedUser._id);
-                  if (firestoreUpdate.first_message.sender === savedUser._id.toString()) {
-                    expect(firestoreUpdate.first_message.attributes).to.not.equal(null);                                               
-                    done();
-                  }
+  //         // messageEvent.on('message.create.first',function(message) {
+  //         //   expect(message.text).to.equal("hello");   
+  //         //     done();
+  //         // });
+  //         chat21Event.on('firestore.first_message', function(firestoreUpdate){
+  //                   winston.info("firestore.first_message created", firestoreUpdate);
+  //                   winston.info("savedUser._id", savedUser._id);
+  //                 if (firestoreUpdate.first_message.sender === savedUser._id.toString()) {
+  //                   expect(firestoreUpdate.first_message.attributes).to.not.equal(null);                                               
+  //                   done();
+  //                 }
                    
-                  });
+  //                 });
 
 
 
-            //  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
-             messageService.create(savedUser._id, "test sender", savedRequest.request_id, "first_text",
-                                        savedProject._id, savedUser._id,MessageConstants.CHAT_MESSAGE_STATUS.SENDING, {attr1:'attr1'}).then(function(savedMessage){
-                                            expect(savedMessage.text).to.equal("hello");                                               
+  //           //  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes)
+  //            messageService.create(savedUser._id, "test sender", savedRequest.request_id, "first_text",
+  //                                       savedProject._id, savedUser._id,MessageConstants.CHAT_MESSAGE_STATUS.SENDING, {attr1:'attr1'}).then(function(savedMessage){
+  //                                           expect(savedMessage.text).to.equal("hello");                                               
 
-            });
+  //           });
 
-        });
-    });
-  });
-  });
+  //       });
+  //   });
+  // });
+  // });
 
-  }).timeout(20000);
+  // }).timeout(20000);
 
 
 });

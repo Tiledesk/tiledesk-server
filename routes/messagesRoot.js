@@ -3,11 +3,12 @@ var express = require('express');
 // https://stackoverflow.com/questions/28977253/express-router-undefined-params-with-router-use-when-split-across-files
 var router = express.Router();
 
-var Message = require("../models/message");
+var MessageConstants = require("../models/messageConstants");
+var messageService = require("../services/messageService");
+var winston = require('../config/winston');
 
-csv = require('csv-express');
-csv.separator = ';';
-
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456td -d '{"senderFullname":"Bot","recipient":"USERID", "text":"ciao"}' https://tiledesk-server-pre.herokuapp.com/5f86c201189063003453a045/messages/
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"senderFullname":"Bot","recipient":"USERID", "text":"ciao"}' http://localhost:3000/609e3fd8e049553972114b88/messages/
 
 router.post('/', 
   async (req, res)  => {

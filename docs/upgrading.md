@@ -2,6 +2,8 @@
 
 Use this procedure to upgrade from a previous version of Tiledesk server. You must manually execute the following upgrades depending on the starting version:
 
+# From the 2.0.7 version the schema updates are automatically managed by migrations
+
 # Upgrading from 2.0.X to 2.0.6
 
 ## Add requests preflight field
