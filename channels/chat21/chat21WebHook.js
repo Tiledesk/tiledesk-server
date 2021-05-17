@@ -701,8 +701,8 @@ else if (req.body.event_type == "presence-change") {
       project_user.save(function (err, savedProjectUser) {
         if (err) {
          winston.error('Error saving project_user ', err)
-         return res.status(500).send({ success: false, msg: 'Error getting objects.' });         
-        }
+        //  return res.status(500).send({ success: false, msg: 'Error getting objects.' });         
+        } else {
         winston.debug('project_user saved ', savedProjectUser);
 
 
@@ -711,57 +711,57 @@ else if (req.body.event_type == "presence-change") {
           // .populate({path:'id_project', select:{'settings':1}})
           .populate([{path:'id_user', select:{'firstname':1, 'lastname':1}}, {path:'id_project'}])
           // .populate('id_user id_project')
-          .execPopulate(function (err, updatedProject_userPopulated){    
-          if (err) {
-            winston.error("Error gettting updatedProject_userPopulated for update", err);
-            // continue;
-            // return res.status(500).send({ success: false, msg: "Error gettting updatedProject_userPopulated for update" }); 
-          } else {
+                .execPopulate(function (err, updatedProject_userPopulated){    
+                if (err) {
+                  winston.error("Error gettting updatedProject_userPopulated for update", err);
+                  // continue;
+                  // return res.status(500).send({ success: false, msg: "Error gettting updatedProject_userPopulated for update" }); 
+                } else {
 
-            if (!updatedProject_userPopulated) {
-              winston.warn('Error getting updatedProject_userPopulated.',savedProjectUser );
-              // continue;
-              // return res.status(404).send({ success: false, msg: 'Error getting updatedProject_userPopulated.' });
-            } else {
+                  if (!updatedProject_userPopulated) {
+                    winston.warn('Error getting updatedProject_userPopulated.',savedProjectUser );
+                    // continue;
+                    // return res.status(404).send({ success: false, msg: 'Error getting updatedProject_userPopulated.' });
+                  } else {
 
-              winston.debug("updatedProject_userPopulated:", updatedProject_userPopulated);
-              var pu = updatedProject_userPopulated.toJSON();
-    
-              // urgente Cannot read property '_id' of null at /usr/src/app/channels/chat21/chat21WebHook.js:663:68 a
-              if (!updatedProject_userPopulated.id_project) {
-                winston.warn('Error updatedProject_userPopulated.id_project not found.',{updatedProject_userPopulated:updatedProject_userPopulated, savedProjectUser:savedProjectUser,project_user:project_user});
-                // return res.status(404).send({ success: false, msg: 'Error updatedProject_userPopulated.id_project not found.' });
-                // continue;
-              } else {
-                pu.id_project =  updatedProject_userPopulated.id_project._id;
-    
-      
-                if (updatedProject_userPopulated.id_user) {
-                  pu.id_user = updatedProject_userPopulated.id_user._id;
-                }else {
-                  // it's uuid_user user
-                }
-                
-                pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_assigned_chat);
-      
-                // winston.info("pu:", pu);
-      
-      
-                authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
-              // winston.info("after pu:");
-              }
-             
-    
-
-            }   
+                    winston.debug("updatedProject_userPopulated:", updatedProject_userPopulated);
+                    var pu = updatedProject_userPopulated.toJSON();
+          
+                    // urgente Cannot read property '_id' of null at /usr/src/app/channels/chat21/chat21WebHook.js:663:68 a
+                    if (!updatedProject_userPopulated.id_project) {
+                      winston.warn('Error updatedProject_userPopulated.id_project not found.',{updatedProject_userPopulated:updatedProject_userPopulated, savedProjectUser:savedProjectUser,project_user:project_user});
+                      // return res.status(404).send({ success: false, msg: 'Error updatedProject_userPopulated.id_project not found.' });
+                      // continue;
+                    } else {
+                      pu.id_project =  updatedProject_userPopulated.id_project._id;
+          
             
-          }       
+                      if (updatedProject_userPopulated.id_user) {
+                        pu.id_user = updatedProject_userPopulated.id_user._id;
+                      }else {
+                        // it's uuid_user user
+                      }
+                      
+                      pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, updatedProject_userPopulated.id_project.settings && updatedProject_userPopulated.id_project.settings.max_agent_assigned_chat);
+            
+                      // winston.info("pu:", pu);
+            
+            
+                      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req, skipArchive:true});
+                    // winston.info("after pu:");
+                    }
+                  
           
-          
+
+                  }   
+                  
+                }       
+                
+                
 
 
-      });
-
+            });
+        }
 
 
     }); 
