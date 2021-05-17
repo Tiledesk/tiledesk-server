@@ -32,7 +32,7 @@ class RequestService {
                 winston.error("Error updating requests updateSnapshotLead", err);
                 return 0;
             }
-            winston.info("updateSnapshotLead updated for " + updates.nModified + " request")
+            winston.verbose("updateSnapshotLead updated for " + updates.nModified + " request")
             requestEvent.emit('request.update.snapshot.lead',{lead:lead,updates:updates});
             return;
           });  
