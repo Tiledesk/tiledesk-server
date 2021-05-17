@@ -626,6 +626,13 @@ router.get('/', function (req, res, next) {
     query.participants = req.query.participant;
   }
 
+  winston.debug('req.query.hasbot', req.query.hasbot);
+  if (req.query.hasbot!=undefined) {
+    winston.debug('req.query.hasbot', req.query.hasbot);
+    query.hasBot = req.query.hasbot;
+  }
+
+
   if (req.query.tags) {
     winston.debug('req.query.tags', req.query.tags);
     query["tags.tag"] = req.query.tags;
@@ -865,9 +872,9 @@ router.get('/csv', function (req, res, next) {
     query.participants = req.query.participant;
   }
     
-  winston.verbose('req.query.hasbot', req.query.hasbot);
+  winston.debug('req.query.hasbot', req.query.hasbot);
   if (req.query.hasbot!=undefined) {
-    winston.verbose('req.query.hasbot', req.query.hasbot);
+    winston.debug('req.query.hasbot', req.query.hasbot);
     query.hasBot = req.query.hasbot;
   }
 
