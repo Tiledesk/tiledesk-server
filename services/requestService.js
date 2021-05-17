@@ -1455,7 +1455,7 @@ class RequestService {
 
 
         }else {
-          winston.info('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
+          winston.verbose('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
 
           return request
           .populate('lead')
