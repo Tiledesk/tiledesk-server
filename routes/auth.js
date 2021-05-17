@@ -112,7 +112,7 @@ function (req, res) {
     return res.status(422).json({ errors: errors.array() });
   }
   var firstname = req.body.firstname || "Guest";
-  
+
 // TODO remove email.sec?
   let userAnonym = {_id: uuidv4(), firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
 
@@ -218,7 +218,7 @@ router.post('/signinWithCustomToken', [
 
 
     } else {
-      // When happen?
+      // When happen? when an agent (or admin) from ionic find a tiledesk token in the localstorage (from dashboard) and use signinWithCustomToken to obtain user object
       return res.json({ success: true, token: req.headers["authorization"], user: req.user });
     }    
   
@@ -374,7 +374,7 @@ router.post('/signin', function (req, res) {
               // return the information including token as JSON
               res.json(returnObject);
             } else {
-              winston.warn('Authentication failed. Wrong password.' );
+              winston.warn('Authentication failed. Wrong password for email: ' + email);
               res.status(401).send({ success: false, msg: 'Authentication failed. Wrong password.' });
             }
           });
@@ -419,7 +419,7 @@ router.put('/verifyemail/:userid', function (req, res) {
  */
 router.get('/pendinginvitationsnoauth/:pendinginvitationid', function (req, res) {
 
-  console.log('PENDING INVITATION NO AUTH GET BY ID - BODY ');
+  winston.debug('PENDING INVITATION NO AUTH GET BY ID - BODY ');
 
   PendingInvitation.findById(req.params.pendinginvitationid, function (err, pendinginvitation) {
     if (err) {
