@@ -865,6 +865,7 @@ router.get('/csv', function (req, res, next) {
     query.participants = req.query.participant;
   }
     
+  winston.verbose('req.query.hasbot', req.query.hasbot);
   if (req.query.hasbot!=undefined) {
     winston.verbose('req.query.hasbot', req.query.hasbot);
     query.hasBot = req.query.hasbot;
