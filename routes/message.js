@@ -82,7 +82,7 @@ async (req, res)  => {
               if (sender) {
 
                 var isObjectId = mongoose.Types.ObjectId.isValid(sender);
-                winston.info("isObjectId:"+ isObjectId);
+                winston.debug("isObjectId:"+ isObjectId);
             
                  var queryProjectUser = {id_project:req.projectid, status: "active" };
             
