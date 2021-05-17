@@ -190,7 +190,7 @@ router.post('/', function (req, res) {
                         winston.debug("project_user_id: " + project_user_id);
                       }else {
                         // error->utente bloccato oppure non autenticator request.requester sarà nulll...⁄
-                        return winston.error("project_user not found with query:", query);                        
+                        return winston.error("project_user not found with query: ", queryProjectUser);                        
                       }
 
                       
@@ -348,16 +348,16 @@ router.post('/', function (req, res) {
               var projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
 
               var isObjectId = mongoose.Types.ObjectId.isValid(projectId);
-              winston.debug("isObjectId:"+ isObjectId);
+              winston.verbose("isObjectId:"+ isObjectId);
 
-              winston.debug("attributes",conversation.attributes);
+              winston.verbose("attributes",conversation.attributes);
 
               if (!projectId || !isObjectId) { //back compatibility when projectId were always presents in the attributes (firebase)                
                 projectId = conversation.attributes.projectId;
                 winston.verbose('getting projectId from attributes (back compatibility): '+ projectId);
               }
                 
-              winston.debug('projectId: '+ projectId);
+              winston.verbose('projectId: '+ projectId);
 
               if (!projectId) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
@@ -530,7 +530,7 @@ router.post('/', function (req, res) {
       winston.debug("recipient_id",recipient_id);
 
      
-// TODO leggi projectid from support-group
+//  TODO leggi projectid from support-group
 
       if (!recipient_id.startsWith("support-group")){
         winston.debug("not a support conversation");
