@@ -25,7 +25,7 @@ class RequestService {
   updateSnapshotLead() {
     leadEvent.on('lead.update', function(lead) {
       setImmediate(() => {
-          winston.info("updateSnapshotLead on lead.update ",  lead);
+          winston.debug("updateSnapshotLead on lead.update ",  lead);
           
           Request.updateMany({lead: lead._id, id_project: lead.id_project}, {"$set": {"snapshot.lead": lead}}, function (err, updates) {
             if (err) {
@@ -914,6 +914,8 @@ class RequestService {
         return resolve(request);
        }
 
+      //  un utente può chiudere se appartiene a participatingAgents oppure meglio agents del progetto?
+      
      
        return that.changeStatusByRequestId(request_id, id_project, 1000).then(function(updatedRequest) {
          //  qui1000
