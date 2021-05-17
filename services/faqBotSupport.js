@@ -131,6 +131,9 @@ class FaqBotSupport {
                             return resolve(bot_answer);
                             */
                         }
+                        if (!json) { //the webhook return empty body
+                            return resolve(messageReply);
+                        }
                         // if (response.statusCode >= 400) {                  
                         //     return reject(`HTTP Error: ${response.statusCode}`);
                         // }
