@@ -35,7 +35,10 @@ listen() {
       setImmediate(() => {      
         // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
-         //that.sendUserEmail(message.id_project, message);
+        // if (process.env.SEND_OFFLINE_EMAIL) {
+        //   that.sendUserEmail(message.id_project, message);
+        // }
+        
       });
      });
 
@@ -248,7 +251,7 @@ sendUserEmail(projectid, message) {
     });
 
   } catch(e) {
-    winston.debug("Error sending email", e);
+    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -390,7 +393,7 @@ sendAgentEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     winston.warn("Error sending email", e); //it's better to view error email at this stage
+     winston.warn("Error sending email", {error:e, projectid:projectid, savedRequest:savedRequest}); //it's better to view error email at this stage
    }
    //end send email
    

@@ -124,7 +124,7 @@ class EmailService {
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
       if (error) {
-        return winston.error("Error sending email ", error);
+        return winston.error("Error sending email ", {error:error, mailOptions:mailOptions});
       }
       winston.debug('Email sent: %s', info);
       // Preview only available when sending through an Ethereal account
