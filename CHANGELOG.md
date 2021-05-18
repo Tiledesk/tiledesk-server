@@ -1,4 +1,8 @@
 
+# 2.1.40
+- webhook fix for return empty body
+- log fix
+- Added hasbot filter for GET requests endpoint
 
 # 2.1.39
 - Log fix
