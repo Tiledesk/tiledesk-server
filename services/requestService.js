@@ -355,7 +355,11 @@ class RequestService {
     var id_project = request.id_project;
 
     //TODO rimuovi ritorni a capo first_text, fai anche trim
-    var first_text = request.first_text.replace(/[\n\r]+/g, '');;
+    var first_text;  
+    if (request.first_text) {  //first_text can be empty for type image
+      first_text = request.first_text.replace(/[\n\r]+/g, '');
+    }
+     
     var departmentid = request.departmentid;
     var sourcePage = request.sourcePage;
     var language = request.language;
