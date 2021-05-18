@@ -132,17 +132,17 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
 // GET ALL DEPTS (i.e. NOT FILTERED FOR STATUS and WITH AUTHENTICATION (USED BY THE DASHBOARD)
 router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], function (req, res) {
 
-  winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
-  winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
+  // winston.debug("## GET ALL DEPTS req.project.isActiveSubscription ", req.project.isActiveSubscription)
+  // winston.debug("## GET ALL DEPTS req.project.trialExpired ", req.project.trialExpired)
 
-  if (req.project.profile) {
-    winston.debug("## GET ALL DEPTS eq.project.profile.type ", req.project.profile.type);
-  }
+  // if (req.project.profile) {
+  //   winston.debug("## GET ALL DEPTS eq.project.profile.type ", req.project.profile.type);
+  // }
 
   winston.debug("## GET ALL DEPTS req.project ", req.project)
 
   var query = { "id_project": req.projectid };
-  if (req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+  if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
     query.default = true;
   }
