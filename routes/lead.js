@@ -196,7 +196,7 @@ router.get('/csv', function (req, res, next) {
         winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV ERR ', err)
         return next(err);
       }
-      winston.error('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)      
+      winston.verbose('LEAD ROUTE - EXPORT CONTACT TO CSV LEADS', leads)      
       
       return res.csv(leads, true);
     });
