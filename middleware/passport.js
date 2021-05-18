@@ -100,18 +100,18 @@ module.exports = function(passport) {
                     if (AudienceType == "bots") {
 
                       if (!AudienceId) {
-                        winston.error("AudienceId for bots is required: ");
+                        winston.error("AudienceId for bots is required: ", decoded);
                         return done(null, null);
                       }
 
                       winston.debug("bot id: "+ AudienceId );
                       Faq_kb.findById(AudienceId).select('+secret').exec(function (err, faq_kb){
                         if (err) {
-                          winston.error("auth Faq_kb err: ", err );
+                          winston.error("auth Faq_kb err: ", {error: err, decoded:decoded} );
                           return done(null, null);
                         }
                         if (!faq_kb) {
-                          winston.warn("faq_kb not found with id: " +  AudienceId);
+                          winston.warn("faq_kb not found with id: " +  AudienceId, decoded);
                           return done(null, null);
                         }
 
@@ -123,7 +123,7 @@ module.exports = function(passport) {
 
                     else if (AudienceType == "projects") {
                       if (!AudienceId) {
-                        winston.error("AudienceId for projects is required: ");
+                        winston.error("AudienceId for projects is required: ", decoded);
                         return done(null, null);
                       }
 
@@ -132,11 +132,11 @@ module.exports = function(passport) {
                       .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret")
                       .exec(function (err, project){
                         if (err) {
-                          winston.error("auth Project err: ", err );
+                          winston.error("auth Project err: ", {error:err, decoded: decoded} );
                           return done(null, null);
                         }
                         if (!project) {
-                          winston.warn("Project not found with id: " +  AudienceId);
+                          winston.warn("Project not found with id: " +  AudienceId, decoded);
                           return done(null, null);
                         }
                         winston.debug("project: ", project );
@@ -148,18 +148,18 @@ module.exports = function(passport) {
                     else if (AudienceType == "subscriptions") {
                       
                       if (!AudienceId) {
-                        winston.error("AudienceId for subscriptions is required: ");
+                        winston.error("AudienceId for subscriptions is required: ", decoded);
                         return done(null, null);
                       }
 
                       winston.debug("Subscription id: "+ AudienceId );
                       Subscription.findById(AudienceId).select('+secret').exec(function (err, subscription){
                         if (err) {
-                          winston.error("auth Subscription err: ", err );
+                          winston.error("auth Subscription err: ", {error: err, decoded: decoded} );
                           return done(null, null);
                         }
                         if (!subscription) {
-                          winston.warn("subscription not found with id: " +  AudienceId);
+                          winston.warn("subscription not found with id: " +  AudienceId, decoded);
                           return done(null, null);
                         }
                         winston.debug("subscription: ", subscription );
