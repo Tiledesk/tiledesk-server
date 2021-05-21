@@ -33,11 +33,12 @@ listen() {
     messageEvent.on("message.create", function(message) {
 
       setImmediate(() => {      
-        // TODO aggiunta jwt widget login  
         winston.debug("sendUserEmail", message);
-        // if (process.env.SEND_OFFLINE_EMAIL) {
-        //   that.sendUserEmail(message.id_project, message);
-        // }
+        if (process.env.DISABLE_SEND_OFFLINE_EMAIL==="true" ||process.env.DISABLE_SEND_OFFLINE_EMAIL===true ) {
+          winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
+        }else {
+          that.sendUserEmail(message.id_project, message);
+        }
         
       });
      });
@@ -110,7 +111,7 @@ listen() {
 
                 if (project_users && project_users.length>0) {
                   project_users.forEach(project_user => {
-                    if (project_user.id_user) {
+                    if (project_user.id_user && project_user.id_user.email) {
                       return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
                     } else {
                     }
@@ -123,9 +124,9 @@ listen() {
               //send email to lead
               return Lead.findById(request.requester_id, function(err, lead){
                 //if (lead && lead.email) {
-                  if (lead) {
+                  if (lead && lead.email) {
                     return that.sendTranscriptByEmail(lead.email, request_id, id_project);
-                }
+                  }
                   
               });
               //end send email to lead
@@ -287,10 +288,10 @@ sendAgentEmail(projectid, savedRequest) {
                   }
                   
                   if (!savedRequest.snapshot) {
-                    return winston.warn("RequestNotification savedRequest.snapshot is null :(");
+                    return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
                   if (!savedRequest.snapshot.agents) {
-                    return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(", savedRequest);
+                    return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
                   //  var allAgents = savedRequest.agents;
                    var allAgents = savedRequest.snapshot.agents;
