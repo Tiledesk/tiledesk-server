@@ -112,7 +112,10 @@ function (req, res) {
     return res.status(422).json({ errors: errors.array() });
   }
   var firstname = req.body.firstname || "Guest";
+  
 
+  //TODO togli trattini da uuidv4()
+  
 // TODO remove email.sec?
   let userAnonym = {_id: uuidv4(), firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
 
@@ -217,9 +220,17 @@ router.post('/signinWithCustomToken', [
 
 
 
+
     } else {
-      // When happen? when an agent (or admin) from ionic find a tiledesk token in the localstorage (from dashboard) and use signinWithCustomToken to obtain user object
-      return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+      winston.debug("audience generic");
+      if (req.body.id_project) {
+        id_project = req.body.id_project;
+        winston.verbose("audience generic. id_project is passed explicitly");
+      }else {
+        // When happen? when an agent (or admin) from ionic find a tiledesk token in the localstorage (from dashboard) and use signinWithCustomToken to obtain user object
+        return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+      }
+      
     }    
   
       Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.USER}).              
