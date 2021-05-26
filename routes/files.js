@@ -4,6 +4,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
+var pathlib = require('path');
 
 
 var router = express.Router();
@@ -29,7 +30,7 @@ curl -u andrea.leo@f21.it:123456 \
   */
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
- 
+  winston.info("files/users")
       return res.status(201).json({
           message: 'File uploded successfully',
           filename: req.file.filename
@@ -42,10 +43,12 @@ curl \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/public/
 
+
+
   */
 
 router.post('/public', upload.single('file'), (req, res, next) => {
-  
+  winston.debug("files/public")
       return res.status(201).json({
           message: 'File uploded successfully',
           filename: req.file.filename
@@ -72,6 +75,18 @@ router.get("/", (req, res) => {
   //     gfs.openDownloadStreamByName(req.query.path).pipe(res);
   //   });
 });
+
+
+router.get("/download", (req, res) => {
+  winston.debug('path', req.query.path);
+  // if (path.indexOf("/users/"))
+  let filename = pathlib.basename(req.query.path);
+  winston.info("filename:"+filename);
+
+  res.attachment('pdfname.pdf');
+  fileService.getFileDataAsStream(req.query.path).pipe(res);
+});
+
 
 
 module.exports = router;
