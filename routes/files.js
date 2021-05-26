@@ -83,7 +83,7 @@ router.get("/download", (req, res) => {
   let filename = pathlib.basename(req.query.path);
   winston.info("filename:"+filename);
 
-  res.attachment('pdfname.pdf');
+  res.attachment(filename);
   fileService.getFileDataAsStream(req.query.path).pipe(res);
 });
 
