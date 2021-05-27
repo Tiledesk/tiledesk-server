@@ -348,8 +348,8 @@ class EmailService {
       }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}`, html:html});
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification`, html:html});
+      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, html:html});
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, html:html});
 
     });
   }
