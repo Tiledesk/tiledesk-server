@@ -46,6 +46,12 @@ class EmailService {
     this.bcc = process.env.EMAIL_BCC || config.bcc;
     winston.info('EmailService bcc address: '+ this.bcc);
 
+    this.replyTo = process.env.EMAIL_REPLY_TO || config.replyTo;
+    winston.info('EmailService replyTo address: '+ this.replyTo);
+
+    this.replyToDomain = process.env.EMAIL_REPLY_TO_DOMAIN || config.replyToDomain;
+    winston.info('EmailService replyToDomain : '+ this.replyToDomain);
+
     this.emailPassword = process.env.EMAIL_PASSWORD;
 
     var maskedemailPassword;
@@ -102,6 +108,9 @@ class EmailService {
   }
 
   send(to, subject, html) {
+    return this.sendMail({to:to, subject:subject, html:html});
+  }
+  sendMail(mail) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -111,15 +120,23 @@ class EmailService {
       return winston.warn("EmailService not sending email for testing");
     }
 
+   
+
     let mailOptions = {
       from: this.from, // sender address
-      to: to,
+      to: mail.to,
       // bcc: config.bcc,
-      subject: subject, // Subject line
+      replyTo: mail.replyTo || this.replyTo,
+      subject: mail.subject, // Subject line
       //text: 'Hello world?', // plain text body
-      html: html
+      html: mail.html
     };
+
     winston.debug('mailOptions', mailOptions);
+
+    if (!mail.to) {
+      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+    }
 
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
@@ -278,9 +295,15 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html: " + html);
 
+      let replyTo;
+      if (message.request) {
+        replyTo = message.request.request_id+"@"+this.replyToDomain;
+        winston.info("replyTo: " + replyTo);
+      }
+      
 
-      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html);
-      that.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html);
+      that.sendMail({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
 
     });
   }
