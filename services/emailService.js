@@ -170,7 +170,7 @@ class EmailService {
 
       that.send(to, `TileDesk test email`, html);
 
-      that.send(that.bcc, `TileDesk test email`, html);
+      that.send(that.bcc, `TileDesk test email - notification`, html);
 
     });
    
@@ -218,7 +218,7 @@ class EmailService {
 
       that.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
 
-      that.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}`, html);
+      that.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html);
 
     });
     
@@ -303,7 +303,7 @@ class EmailService {
       
 
       that.sendMail({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
 
     });
   }
@@ -344,7 +344,7 @@ class EmailService {
 
 
       that.send(to, '[TileDesk] Password reset request', html);
-      that.send(that.bcc, '[TileDesk] Password reset request', html);
+      that.send(that.bcc, '[TileDesk] Password reset request - notification', html);
 
     });
   }
@@ -383,7 +383,7 @@ class EmailService {
 
 
       that.send(to, '[TileDesk] Your password has been changed', html);
-      that.send(that.bcc, '[TileDesk] Your password has been changed', html);
+      that.send(that.bcc, '[TileDesk] Your password has been changed - notification', html);
 
     });
 
@@ -433,7 +433,7 @@ class EmailService {
 
 
       that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project - notification`, html);
 
     });
   }
@@ -480,7 +480,7 @@ class EmailService {
       var html = template(replacements);
 
       that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project`, html);
+      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project - notification`, html);
 
     });
   }
@@ -518,7 +518,7 @@ class EmailService {
 
 
       that.send(to, `[TileDesk] Verify your email address`, html);
-      that.send(that.bcc, `[TileDesk] Verify your email address `+to, html);
+      that.send(that.bcc, `[TileDesk] Verify your email address `+to + " - notification", html);
 
     });
   }
@@ -574,7 +574,7 @@ class EmailService {
 
 
       that.send(to, '[TileDesk] Transcript', html);
-      that.send(that.bcc, '[TileDesk] Transcript', html);
+      that.send(that.bcc, '[TileDesk] Transcript - notification', html);
 
 
     });
