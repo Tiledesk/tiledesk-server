@@ -40,8 +40,13 @@ listen() {
           return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
         }
         if (message.request && message.request.channel.name===ChannelConstants.EMAIL) {
-          winston.verbose("sending sendEmailChannelEmail for EMAIL channel");
-          return that.sendEmailChannelEmail(message.id_project, message);           
+          if (message.sender != message.request.lead.lead_id) {
+            winston.verbose("sending sendEmailChannelEmail for EMAIL channel");
+            return that.sendEmailChannelEmail(message.id_project, message);           
+          } else {
+            winston.verbose("Not sending sendEmailChannelEmail for agent messages");
+          }
+          
         } else {
           if (process.env.DISABLE_SEND_OFFLINE_EMAIL==="true" ||process.env.DISABLE_SEND_OFFLINE_EMAIL===true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
