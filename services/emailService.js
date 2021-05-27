@@ -297,7 +297,7 @@ class EmailService {
 
       let replyTo;
       if (message.request) {
-        replyTo = message.request.request_id+"@"+this.replyToDomain;
+        replyTo = message.request.request_id+"@"+that.replyToDomain;
         winston.info("replyTo: " + replyTo);
       }
       
