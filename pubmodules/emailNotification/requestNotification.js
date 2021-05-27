@@ -12,6 +12,7 @@ var Message = require("../../models/message");
 const requestEvent = require('../../event/requestEvent');
 var winston = require('../../config/winston');
 var RoleConstants = require("../../models/roleConstants");
+var ChannelConstants = require("../../models/channelConstants");
 var cacheUtil = require('../../utils/cacheUtil');
 
 const messageEvent = require('../../event/messageEvent');
@@ -34,15 +35,22 @@ listen() {
 
       setImmediate(() => {      
         winston.debug("sendUserEmail", message);
-        if (process.env.DISABLE_SEND_OFFLINE_EMAIL==="true" ||process.env.DISABLE_SEND_OFFLINE_EMAIL===true ) {
-          winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
-        }else {
-          if (message.attributes && message.attributes.subtype==='info') {
-            return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
-          }
-          // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
-          that.sendUserEmail(message.id_project, message);
+        
+        if (message.attributes && message.attributes.subtype==='info') {
+          return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
         }
+        if (message.request && message.request.channel.name===ChannelConstants.EMAIL) {
+          winston.verbose("sending sendEmailChannelEmail for EMAIL channel");
+          return that.sendEmailChannelEmail(message.id_project, message);           
+        } else {
+          if (process.env.DISABLE_SEND_OFFLINE_EMAIL==="true" ||process.env.DISABLE_SEND_OFFLINE_EMAIL===true ) {
+            return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
+          }
+            // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
+          return that.sendUserEmail(message.id_project, message);
+        }
+         
+      
         
       });
      });
@@ -146,6 +154,49 @@ listen() {
       });
   });
 }
+
+
+sendEmailChannelEmail(projectid, message) {
+  try {
+
+    if (!message.request) {
+      return winston.debug("This is a direct message");
+    }
+
+    if (!message.request.lead || !message.request.lead.email) {
+      return winston.debug("The lead object is undefined or has empty email");
+    }
+
+    Project.findOne({_id: projectid, status: 100}, function(err, project){
+      if (err) {
+        return winston.error(err);
+      }
+  
+      if (!project) {
+       //  console.warn("Project not found", req.projectid);
+       return console.warn("Project not found", projectid);
+      } 
+
+      // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
+      //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for  the conversations is blocked");
+      // }
+  
+
+      // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
+      //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
+      // }
+      emailService.sendEmailChannelNotification(message.request.lead.email, message, project);
+
+
+    });
+
+  } catch(e) {
+    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+  }
+}
+
+
+
 
 sendUserEmail(projectid, message) {
   try {

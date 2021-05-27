@@ -309,6 +309,51 @@ class EmailService {
   }
 
 
+  
+  sendEmailChannelNotification(to, message, project, tokenQueryString) {
+
+    var that = this;
+
+    this.readHTMLFile('ticket.html', function(err, html) {
+
+
+      var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
+       winston.debug("envTemplate: " + envTemplate);
+
+      if (envTemplate) {
+          html = envTemplate;
+      }
+
+      winston.debug("html: " + html);
+
+      var template = handlebars.compile(html);
+
+      var baseScope = JSON.parse(JSON.stringify(that));
+      delete baseScope.emailPassword;
+
+      var replacements = {        
+        message: message,
+        project: project.toJSON(),
+        tokenQueryString: tokenQueryString,
+        baseScope: baseScope    
+      };
+
+      var html = template(replacements);
+      winston.debug("html: " + html);
+
+      let replyTo;
+      if (message.request) {
+        replyTo = message.request.request_id+"@"+that.replyToDomain;
+        winston.info("replyTo: " + replyTo);
+      }
+      
+
+      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}`, html:html});
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification`, html:html});
+
+    });
+  }
+
 
   // ok
   sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
