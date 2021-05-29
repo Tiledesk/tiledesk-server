@@ -78,10 +78,10 @@ class EmailService {
   }
 
 
-  readHTMLFile(templateName, callback) {
+  readTemplateFile(templateName, callback) {
     fs.readFile(appRoot + '/template/email/'+templateName, {encoding: 'utf-8'}, function (err, html) {
         if (err) {
-            throw err;
+            winston.error('error readTemplateFile getting ', err);
             callback(err);
         }
         else {
@@ -128,7 +128,7 @@ class EmailService {
       // bcc: config.bcc,
       replyTo: mail.replyTo || this.replyTo,
       subject: mail.subject, // Subject line
-      //text: 'Hello world?', // plain text body
+      text: mail.text, // plain text body
       html: mail.html
     };
 
@@ -157,7 +157,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('test.html', function(err, html) {
+    this.readTemplateFile('test.html', function(err, html) {
 
       var template = handlebars.compile(html);
 
@@ -184,7 +184,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('assignedRequest.html', function(err, html) {
+    this.readTemplateFile('assignedRequest.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
@@ -229,7 +229,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('pooledRequest.html', function(err, html) {
+    this.readTemplateFile('pooledRequest.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
@@ -268,7 +268,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('newMessage.html', function(err, html) {
+    this.readTemplateFile('newMessage.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
@@ -314,7 +314,8 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('ticket.html', function(err, html) {
+    this.readTemplateFile('ticket.txt', function(err, html) {
+      // this.readTemplateFile('ticket.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
@@ -348,8 +349,8 @@ class EmailService {
       }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, html:html});
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, html:html});
+      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, text:html});//html:html
 
     });
   }
@@ -360,7 +361,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('resetPassword.html', function(err, html) {
+    this.readTemplateFile('resetPassword.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
@@ -399,7 +400,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('passwordChanged.html', function(err, html) {
+    this.readTemplateFile('passwordChanged.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
@@ -445,7 +446,7 @@ class EmailService {
 
     var that = this;
 
-    this.readHTMLFile('beenInvitedExistingUser.html', function(err, html) {
+    this.readTemplateFile('beenInvitedExistingUser.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
@@ -494,7 +495,7 @@ class EmailService {
    
     var that = this;
 
-    this.readHTMLFile('beenInvitedNewUser.html', function(err, html) {
+    this.readTemplateFile('beenInvitedNewUser.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
@@ -536,7 +537,7 @@ class EmailService {
    
     var that = this;
 
-    this.readHTMLFile('verify.html', function(err, html) {
+    this.readTemplateFile('verify.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
@@ -588,7 +589,7 @@ class EmailService {
       
     var that = this;
 
-    this.readHTMLFile('sendTranscript.html', function(err, html) {
+    this.readTemplateFile('sendTranscript.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
