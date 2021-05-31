@@ -100,8 +100,8 @@ describe('messageService', function () {
 
 
 
-
-  it('createMessageMultiLanguage', function (done) {
+  // mocha test/messageService.js  --grep 'createMessageMultiLanguageSimple'
+  it('createMessageMultiLanguageSimple', function (done) {
     // this.timeout(10000);
 
 
@@ -197,6 +197,43 @@ describe('messageService', function () {
         });
       });
   
+
+
+
+
+
+
+      // mocha test/messageService.js  --grep 'createMessageMicroLanguage'
+
+  it('createMessageMicroLanguage', function (done) {
+    // this.timeout(10000);
+
+
+    var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+    console.log("microLanguageTransformerInterceptor",microLanguageTransformerInterceptor);
+    microLanguageTransformerInterceptor.listen();
+
+
+
+      projectService.create("test1", userid).then(function(savedProject) {
+        // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "ciao\n* Button1",
+          savedProject._id, userid, undefined, {microlanguage:true}).then(function(savedMessage){
+            winston.debug("resolve savedMessage", savedMessage.toObject());
+     
+          expect(savedMessage.text).to.equal("ciao");
+          expect(savedMessage.type).to.equal("text");
+          expect(savedMessage.attributes._raw_message).to.equal("ciao\n* Button1","attachment");
+          expect(savedMessage.attributes.attachment.type).to.equal("template");        
+          expect(savedMessage.attributes.attachment.buttons[0].value).to.equal("Button1");
+          expect(savedMessage.sender).to.equal(userid);
+          expect(savedMessage.senderFullname).to.equal("test sender");
+          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+          done();
+
+        })
+      });
+    });
 
       
 

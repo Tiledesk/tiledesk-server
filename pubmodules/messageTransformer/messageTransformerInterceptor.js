@@ -6,6 +6,7 @@ var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 var cacheUtil = require('../../utils/cacheUtil');
 
+//TODO rename to LabelMessageTransformerInterceptor
 class MessageTransformerInterceptor {
 
  
@@ -15,7 +16,8 @@ class MessageTransformerInterceptor {
 
         var that = this;
         winston.info("MessageTransformerInterceptor listener start ");
-        
+ 
+
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
             winston.debug('MessageTransformerInterceptor message.create.simple.before', data); 
 
@@ -70,7 +72,7 @@ class MessageTransformerInterceptor {
                 winston.debug('MessageTransformerInterceptor label: ' + label);
 
                 if (label) {
-                    message.text=label;  
+                    message.text=label;  //ATTENTION Changes is made by reference
                 }
              
                 return data;
