@@ -347,6 +347,11 @@ class EmailService {
         replyTo = message.request.request_id+"@"+that.replyToDomain;
         winston.info("replyTo: " + replyTo);
       }
+
+      if (message.request && message.request.lead && message.request.lead.email) {
+        winston.info("message.request.lead.email: " + message.request.lead.email);
+        replyTo = replyTo + ", "+ message.request.lead.email;
+      }
       
 
       that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
