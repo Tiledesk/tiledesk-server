@@ -72,6 +72,7 @@ class PubModulesManager {
             this.messageTransformer = require('./messageTransformer');
             winston.debug("this.messageTransformer:"+ this.messageTransformer);
             this.messageTransformer.messageTransformerInterceptor.listen();
+            this.messageTransformer.microLanguageTransformerInterceptor.listen();
             winston.info("PubModulesManager init messageTransformer loaded.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
