@@ -4,6 +4,7 @@
 
 const Faq = require('../models/faq');
 const Faq_kb = require('../models/faq_kb');
+const MessageConstants = require('../models/messageConstants');
 var winston = require('../config/winston');
 
 var jwt = require('jsonwebtoken');
@@ -191,11 +192,11 @@ class FaqBotSupport {
                     buttons: buttons
                 }
                 }
-                repl_message.type = "text";
+                repl_message.type = MessageConstants.MESSAGE_TYPE.TEXT;
             } else {
                 // no buttons
                 repl_message.text = text
-                repl_message.type = "text";
+                repl_message.type =  MessageConstants.MESSAGE_TYPE.TEXT;
             }
 
             var image_pattern = /^\\image:.*/mg; 
@@ -206,7 +207,7 @@ class FaqBotSupport {
                 var text_with_removed_image = text.replace(image_pattern,"").trim();
                 repl_message.text = text_with_removed_image + " " + imageurl
                 repl_message.metadata = {src: imageurl, width:200, height:200};
-                repl_message.type = "image";
+                repl_message.type =  MessageConstants.MESSAGE_TYPE.IMAGE;
             }
 
             var frame_pattern = /^\\frame:.*/mg; 
@@ -217,7 +218,7 @@ class FaqBotSupport {
                 // var text_with_removed_image = text.replace(frame_pattern,"").trim();
                 // repl_message.text = text_with_removed_image + " " + imageurl
                 repl_message.metadata = {src: frameurl};
-                repl_message.type = "frame";
+                repl_message.type = MessageConstants.MESSAGE_TYPE.FRAME;
             }
 
 
@@ -239,7 +240,7 @@ class FaqBotSupport {
                     }, function(err, response, json){
                         if (err) {
                             bot_answer.text = err +' '+ response.text;
-                            bot_answer.type = "text";
+                            bot_answer.type =  MessageConstants.MESSAGE_TYPE.TEXT;
                             winston.error("Error from webhook reply of getParsedMessage", err);
                             return resolve(bot_answer);
                         }
