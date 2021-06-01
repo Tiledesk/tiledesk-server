@@ -65,7 +65,7 @@ listen() {
 
       setImmediate(() => {
    
-        if (message.request && (message.request.channel.name===ChannelConstants.EMAIL || message.request.channel.name===ChannelConstants.FORM )) {
+        if (request && (request.channel.name===ChannelConstants.EMAIL || request.channel.name===ChannelConstants.FORM )) {
           winston.verbose("sending sendEmailChannelTakingNotification for EMAIL or FORM channel");
          that.sendEmailChannelTakingNotification(request.id_project, request)
         } 
