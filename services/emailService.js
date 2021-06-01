@@ -354,8 +354,8 @@ class EmailService {
       // }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, text:html});//html:html
+      that.sendMail({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html }); //html:html
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
 
     });
   }
@@ -406,8 +406,8 @@ class EmailService {
       // }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[${request ? request.subject : '-'}]`, text:html }); //html:html
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${request ? request.subject : '-'} - notification]`, text:html});//html:html
+      that.sendMail({to:to, replyTo: replyTo, subject:`R: ${request ? request.subject : '-'}`, text:html }); //html:html
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `R: ${request ? request.subject : '-'} - notification`, text:html});//html:html
 
     });
   }
