@@ -65,10 +65,12 @@ listen() {
 
       setImmediate(() => {
    
+        /*
         if (request && (request.channel.name===ChannelConstants.EMAIL || request.channel.name===ChannelConstants.FORM )) {
           winston.verbose("sending sendEmailChannelTakingNotification for EMAIL or FORM channel");
          that.sendEmailChannelTakingNotification(request.id_project, request)
         } 
+        */
         
         that.sendAgentEmail(request.id_project, request);
         
