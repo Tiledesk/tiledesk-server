@@ -39,9 +39,10 @@ listen() {
         if (message.attributes && message.attributes.subtype==='info') {
           return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
         }
-        if (message.request && message.request.channel.name===ChannelConstants.EMAIL) {
+        if (message.request && (message.request.channel.name===ChannelConstants.EMAIL || message.request.channel.name===ChannelConstants.FORM)) {
+
           if (message.sender != message.request.lead.lead_id) {
-            winston.verbose("sending sendEmailChannelEmail for EMAIL channel");
+            winston.verbose("sending sendEmailChannelEmail for EMAIL or FORM channel");
             return that.sendEmailChannelEmail(message.id_project, message);           
           } else {
             winston.verbose("Not sending sendEmailChannelEmail for agent messages");
@@ -64,7 +65,13 @@ listen() {
 
       setImmediate(() => {
    
-         that.sendAgentEmail(request.id_project, request);
+        if (message.request && (message.request.channel.name===ChannelConstants.EMAIL || message.request.channel.name===ChannelConstants.FORM )) {
+          winston.verbose("sending sendEmailChannelTakingNotification for EMAIL or FORM channel");
+         that.sendEmailChannelTakingNotification(request.id_project, request)
+        } 
+        
+        that.sendAgentEmail(request.id_project, request);
+        
       });
      });
 
@@ -199,6 +206,47 @@ sendEmailChannelEmail(projectid, message) {
     winston.error("Error sending email", {error:e, projectid:projectid, message:message});
   }
 }
+
+
+
+
+
+sendEmailChannelTakingNotification(projectid, request) {
+  try {
+
+
+    if (!request.lead || !request.lead.email) {
+      return winston.debug("The lead object is undefined or has empty email");
+    }
+
+    Project.findOne({_id: projectid, status: 100}, function(err, project){
+      if (err) {
+        return winston.error(err);
+      }
+  
+      if (!project) {
+       //  console.warn("Project not found", req.projectid);
+       return console.warn("Project not found", projectid);
+      } 
+
+      // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
+      //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for  the conversations is blocked");
+      // }
+  
+
+      // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
+      //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
+      // }
+      emailService.sendEmailChannelTakingNotification(request.lead.email, request, project);
+
+
+    });
+
+  } catch(e) {
+    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+  }
+}
+
 
 
 

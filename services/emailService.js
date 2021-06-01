@@ -348,10 +348,62 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
       }
 
-      if (message.request && message.request.lead && message.request.lead.email) {
-        winston.info("message.request.lead.email: " + message.request.lead.email);
-        replyTo = replyTo + ", "+ message.request.lead.email;
+      // if (message.request && message.request.lead && message.request.lead.email) {
+      //   winston.info("message.request.lead.email: " + message.request.lead.email);
+      //   replyTo = replyTo + ", "+ message.request.lead.email;
+      // }
+      
+
+      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, text:html});//html:html
+
+    });
+  }
+
+
+
+  sendEmailChannelTakingNotification(to, request, project, tokenQueryString) {
+
+    var that = this;
+
+    this.readTemplateFile('ticket-taking.txt', function(err, html) {
+      // this.readTemplateFile('ticket.html', function(err, html) {
+
+
+      var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
+       winston.debug("envTemplate: " + envTemplate);
+
+      if (envTemplate) {
+          html = envTemplate;
       }
+
+      winston.debug("html: " + html);
+
+      var template = handlebars.compile(html);
+
+      var baseScope = JSON.parse(JSON.stringify(that));
+      delete baseScope.emailPassword;
+
+      var replacements = {        
+        request: request,
+        project: project.toJSON(),
+        tokenQueryString: tokenQueryString,
+        baseScope: baseScope    
+      };
+
+      var html = template(replacements);
+      winston.debug("html: " + html);
+
+      let replyTo;
+      if (message.request) {
+        replyTo = message.request.request_id+"@"+that.replyToDomain;
+        winston.info("replyTo: " + replyTo);
+      }
+
+      // if (message.request && message.request.lead && message.request.lead.email) {
+      //   winston.info("message.request.lead.email: " + message.request.lead.email);
+      //   replyTo = replyTo + ", "+ request.lead.email;
+      // }
       
 
       that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
