@@ -108,10 +108,10 @@ roundRobin(operatorSelectedEvent) {
 
 
           let lastRequest = lastRequests[0];
-          winston.debug('lastRequest:'+ JSON.stringify(lastRequest)); 
+          winston.verbose('lastRequest:'+ JSON.stringify(lastRequest)); 
 
           let lastOperatorId = lastRequest.participants[0];
-          winston.debug('lastOperatorId: ' + lastOperatorId);
+          winston.verbose('lastOperatorId: ' + lastOperatorId);
 
 
           // BUGFIX (node:74274) UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'id_user' of undefined
@@ -131,12 +131,12 @@ roundRobin(operatorSelectedEvent) {
 
   
 
-          winston.debug('lastOperatorIndex: ' + lastOperatorIndex);
+          winston.verbose('lastOperatorIndex: ' + lastOperatorIndex);
 
           let nextOperator = that.nextOperator(operatorSelectedEvent.available_agents, lastOperatorIndex);
 
           
-          winston.debug('roundRobin nextOperator: ' ,nextOperator.toJSON());
+          winston.verbose('roundRobin nextOperator: ' ,nextOperator.toJSON());
           
           
 
