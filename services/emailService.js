@@ -123,7 +123,7 @@ class EmailService {
    
 
     let mailOptions = {
-      from: this.from, // sender address
+      from: mail.from || this.from, // sender address
       to: mail.to,
       // bcc: config.bcc,
       replyTo: mail.replyTo || this.replyTo,
@@ -141,7 +141,7 @@ class EmailService {
     // send mail with defined transport object
     this.getTransport().sendMail(mailOptions, (error, info) => {
       if (error) {
-        return winston.error("Error sending email ", {error:error, mailOptions:mailOptions});
+        return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
       winston.debug('Email sent: %s', info);
       // Preview only available when sending through an Ethereal account
@@ -395,8 +395,8 @@ class EmailService {
       winston.debug("html: " + html);
 
       let replyTo;
-      if (message.request) {
-        replyTo = message.request.request_id+"@"+that.replyToDomain;
+      if (request) {
+        replyTo = request.request_id+"@"+that.replyToDomain;
         winston.info("replyTo: " + replyTo);
       }
 
@@ -406,8 +406,8 @@ class EmailService {
       // }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[${message.request ? message.request.subject : '-'}]`, text:html }); //html:html
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${message.request ? message.request.subject : '-'} - notification]`, text:html});//html:html
+      that.sendMail({to:to, replyTo: replyTo, subject:`[${request ? request.subject : '-'}]`, text:html }); //html:html
+      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[${request ? request.subject : '-'} - notification]`, text:html});//html:html
 
     });
   }
