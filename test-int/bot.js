@@ -15,6 +15,7 @@ var faqService = require('../services/faqService');
 var Department = require('../models/department');
 var Faq = require('../models/faq');
 var faqBotSupport = require('../services/faqBotSupport');
+var Project_user = require("../models/project_user");
 
 var expect = chai.expect;
 var assert = chai.assert;
@@ -131,6 +132,237 @@ describe('bot', () => {
 
 
 
+
+
+    // mocha test-int/bot.js  --grep 'createSimpleAgent'
+    it('createSimpleAgent', (done) => {
+       
+        var email = "test-bot-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+ 
+       
+
+         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+             projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
+                // create(name, url, projectid, user_id, type) 
+                faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                    
+                    var newFaq = new Faq({
+                        id_faq_kb: savedBot._id,
+                        question: 'switch agent',
+                        answer: '\\agent',
+                        id_project: savedProject._id,
+                        createdBy: savedUser._id,
+                        updatedBy: savedUser._id
+                      });
+              
+                                newFaq.save(function (err, savedFaq) {
+
+
+                                Department.findOneAndUpdate({id_project: savedProject._id, default:true}, {id_bot:savedBot._id}, function (err, updatedDepartment) {
+                                    console.log('000');
+                                        chai.request(server)
+                                        .post('/'+ savedProject._id + '/subscriptions')
+                                        .auth(email, pwd)
+                                        .set('content-type', 'application/json')
+                                        .send({"event":"request.update", "target":"http://localhost:3006/"})
+                                        .end((err, res) => {
+                                            console.log("res.body",  JSON.stringify(res.body));
+                                            // console.dir("res.body 1",  res.body);
+                                            console.log("res.headers",  res.headers);
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.event).to.equal("request.update"); 
+                                            var secret = res.body.secret;
+                                            expect(secret).to.not.equal(null);                     
+                                            expect(res.headers["x-hook-secret"]).to.equal(secret); 
+                                            console.log('001');
+
+                                        
+                                            let messageReceived = 0;
+                                            var serverClient = express();
+                                            serverClient.use(bodyParser.json());
+                                            serverClient.post('/', function (req, res) {
+                                                console.log('serverClient req', JSON.stringify(req.body));                        
+                                                console.log("serverClient.headers",  JSON.stringify(req.headers));
+                                                messageReceived = messageReceived+1;
+                                                expect(req.body.hook.event).to.equal("request.update");
+                                                console.log('11');
+                                                expect(req.body.payload.request_id).to.equal("request_id-subscription-message-sending-createSimpleAgent");
+                                                console.log('12');
+                                                expect(req.body.payload.hasBot).equal(false);
+                                                console.log('savedUser._id',savedUser._id);                                               
+                                                expect(req.body.payload.participantsAgents[0]).equal(savedUser._id.toString());                                                
+                                                console.log('13');                                               
+                                                
+                                                expect(req.headers["x-hook-secret"]).to.equal(secret); 
+                                                res.send('POST request to the homepage');
+                                                expect(req.body.payload.first_text).to.equal("first_text");
+                                               
+                                                done();
+                                                
+                                               
+                                                
+                                                                    
+                                            });
+                                            var listener = serverClient.listen(3006, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+
+
+                                            leadService.createIfNotExists("leadfullname-subscription-message-sending-createSimpleAgent", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
+                                                requestService.createWithId("request_id-subscription-message-sending-createSimpleAgent", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                                                    messageService.create(savedUser._id, "test sender", savedRequest.request_id, "switch agent",
+                                                    savedProject._id, savedUser._id).then(function(savedMessage){
+                                                        expect(savedMessage.text).to.equal("switch agent");     
+                                                        // expect(savedMessage.sender).to.equal("question");     
+                                                    });
+                                                });
+                                            });
+                                        });
+                        });
+                        });
+                    });
+
+            });
+        });
+        }).timeout(20000);
+
+
+
+
+ 
+    // mocha test-int/bot.js  --grep 'createSimpleAgentTwoAgent'
+    it('createSimpleAgentTwoAgent', (done) => {
+       
+        var email = "test-bot-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+ 
+       
+
+         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+            projectService.create("test-bot", savedUser._id).then(function(savedProject) {   
+
+            userService.signup( "test-bot-" + Date.now() + "@email.com" ,pwd, "Test Firstname", "Test lastname").then(function(savedUser2) {
+
+            var newProject_user = new Project_user({
+                // _id: new mongoose.Types.ObjectId(),
+                id_project: savedProject._id.toString(),
+                id_user: savedUser2._id.toString(),
+                role: "agent",           
+                user_available: true, 
+                createdBy: savedUser._id,
+                updatedBy: savedUser._id
+                });
+        
+                return newProject_user.save(function (err, savedProject_user) {
+        
+                if (err) {
+                    console.log("err",err)
+                }
+                leadService.createIfNotExists("leadfullname-subscription-message-sending-createSimpleAgent", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
+                requestService.createWithId("request_id-subscription-message-sending-createSimpleAgent-2", createdLead._id, savedProject._id, "first_text").then(function(savedRequest2) {
+                    console.log("savedRequest2",  savedRequest2);
+
+                    expect(savedRequest2.request_id).to.equal("request_id-subscription-message-sending-createSimpleAgent-2");
+                    // expect(savedRequest2.participantsAgents[0]).equal(savedUser2._id.toString());      
+                    var selectedAgent = savedRequest2.participantsAgents[0];
+                    console.log("selectedAgent",  selectedAgent);
+
+                    expect(savedRequest2.hasBot).equal(false);
+
+                    messageService.create(savedUser._id, "test sender", savedRequest2.request_id, "switch agent", savedProject._id, savedUser._id).then(function(savedMessage2){
+                        expect(savedMessage2.text).to.equal("switch agent");     
+                        // expect(savedMessage.sender).to.equal("question");     
+                    
+                // create(name, url, projectid, user_id, type) 
+                faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                    
+                    var newFaq = new Faq({
+                        id_faq_kb: savedBot._id,
+                        question: 'switch agent',
+                        answer: '\\agent',
+                        id_project: savedProject._id,
+                        createdBy: savedUser._id,
+                        updatedBy: savedUser._id
+                      });
+              
+                                newFaq.save(function (err, savedFaq) {
+
+
+                                Department.findOneAndUpdate({id_project: savedProject._id, default:true}, {id_bot:savedBot._id}, function (err, updatedDepartment) {
+                                    console.log('000');
+                                        chai.request(server)
+                                        .post('/'+ savedProject._id + '/subscriptions')
+                                        .auth(email, pwd)
+                                        .set('content-type', 'application/json')
+                                        .send({"event":"request.update", "target":"http://localhost:3006/"})
+                                        .end((err, res) => {
+                                            console.log("res.body",  JSON.stringify(res.body));
+                                            // console.dir("res.body 1",  res.body);
+                                            console.log("res.headers",  res.headers);
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.event).to.equal("request.update"); 
+                                            var secret = res.body.secret;
+                                            expect(secret).to.not.equal(null);                     
+                                            expect(res.headers["x-hook-secret"]).to.equal(secret); 
+                                            console.log('001');
+
+                                        
+                                            let messageReceived = 0;
+                                            var serverClient = express();
+                                            serverClient.use(bodyParser.json());
+                                            serverClient.post('/', function (req, res) {
+                                                console.log('serverClient req', JSON.stringify(req.body));                        
+                                                console.log("serverClient.headers",  JSON.stringify(req.headers));
+                                                messageReceived = messageReceived+1;
+                                                expect(req.body.hook.event).to.equal("request.update");
+                                                console.log('11');
+                                                expect(req.body.payload.request_id).to.equal("request_id-subscription-message-sending-createSimpleAgent");
+                                                console.log('12');
+                                                expect(req.body.payload.hasBot).equal(false);
+                                                console.log('savedUser._id',savedUser._id);                                               
+                                                console.log('savedUser2._id',savedUser2._id);                                               
+                                                // expect(req.body.payload.participantsAgents[0]).equal(savedUser._id.toString());                                                
+                                                expect(req.body.payload.participantsAgents[0]).not.equal(selectedAgent);                                                
+                                                
+                                                console.log('13');                                               
+                                                
+                                                expect(req.headers["x-hook-secret"]).to.equal(secret); 
+                                                res.send('POST request to the homepage');
+                                                expect(req.body.payload.first_text).to.equal("first_text");
+                                               
+                                                done();
+                                                
+                                               
+                                                
+                                                                    
+                                            });
+                                            var listener = serverClient.listen(3006, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+
+
+                                            
+                                                requestService.createWithId("request_id-subscription-message-sending-createSimpleAgent", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                                                    messageService.create(savedUser._id, "test sender", savedRequest.request_id, "switch agent",
+                                                    savedProject._id, savedUser._id).then(function(savedMessage){
+                                                        expect(savedMessage.text).to.equal("switch agent");   
+                                                                                                               
+                                                        // expect(savedMessage.sender).to.equal("question");     
+                                                    });
+                                                });
+                                        });
+                                        });
+                                    });
+                                });
+                        });
+                        });
+                    });
+                });
+            });
+            });
+        });
+        }).timeout(20000);
+       
 
 
     

@@ -78,7 +78,9 @@ roundRobin(operatorSelectedEvent) {
     // db.getCollection('requests').find({id_project: "5c12662488379d0015753c49", participants: { $exists: true, $ne: [] }}).sort({_id:-1}).limit(1)
     
       // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
-      let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
+      let query = {id_project: operatorSelectedEvent.id_project, 
+        hasBot:false, preflight:false, status: { $gt: 100 }, 
+        participants: { $exists: true, $ne: [] }};
       
       winston.debug('query', query);            
 
@@ -94,6 +96,7 @@ roundRobin(operatorSelectedEvent) {
           winston.debug('lastRequests',lastRequests); 
 
           if (lastRequests.length==0) {
+              winston.debug('roundRobin lastRequest not found. fall back to random info',operatorSelectedEvent); 
               winston.verbose('roundRobin lastRequest not found. fall back to random'); 
               //first request use default random algoritm
               // return 0;
@@ -108,10 +111,10 @@ roundRobin(operatorSelectedEvent) {
 
 
           let lastRequest = lastRequests[0];
-          winston.verbose('lastRequest:'+ JSON.stringify(lastRequest)); 
+          winston.debug('lastRequest:'+ JSON.stringify(lastRequest)); 
 
           let lastOperatorId = lastRequest.participants[0];
-          winston.verbose('lastOperatorId: ' + lastOperatorId);
+          winston.debug('lastOperatorId: ' + lastOperatorId);
 
 
           // BUGFIX (node:74274) UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'id_user' of undefined
@@ -121,7 +124,7 @@ roundRobin(operatorSelectedEvent) {
           if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0) {
             winston.debug('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
             return resolve(operatorSelectedEvent);
-          }
+          }          
 
           // https://stackoverflow.com/questions/15997879/get-the-index-of-the-object-inside-an-array-matching-a-condition
           let lastOperatorIndex = operatorSelectedEvent.available_agents.findIndex(projectUser => projectUser.id_user.toString() === lastOperatorId);
@@ -131,12 +134,15 @@ roundRobin(operatorSelectedEvent) {
 
   
 
-          winston.verbose('lastOperatorIndex: ' + lastOperatorIndex);
+          winston.debug('lastOperatorIndex: ' + lastOperatorIndex);
 
+          winston.debug('operatorSelectedEvent.available_agents: ', operatorSelectedEvent.available_agents);
+
+          
           let nextOperator = that.nextOperator(operatorSelectedEvent.available_agents, lastOperatorIndex);
 
           
-          winston.verbose('roundRobin nextOperator: ' ,nextOperator.toJSON());
+          winston.debug('roundRobin nextOperator: ' ,nextOperator.toJSON());
           
           
 
