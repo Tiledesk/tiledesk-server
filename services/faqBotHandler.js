@@ -66,7 +66,18 @@ class FaqBotHandler {
                 winston.debug("query message.attributes.action ", query);
             }
 
-    
+            
+            if (message.request && message.request.attributes && message.request.attributes.blocked_intent) {
+                query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id,  $or:[{"intent_id": message.request.attributes.blocked_intent}, {"intent_display_name": message.request.attributes.blocked_intent}]};
+                // TODO skip if type  reset (better create a resetIntent action /reset reset the attributes) -> TODO DELETE message.request.attributes.blocked_intent for next call
+                winston.debug("query message.attributes.blocked_intent ", query);
+                // res.send({text:"ripeti la mail", action: id_intent}); fai un test che forse già funziona
+            }
+            
+
+           
+
+
             Faq.find(query) 
             .lean().               
              exec(function (err, faqs) {
