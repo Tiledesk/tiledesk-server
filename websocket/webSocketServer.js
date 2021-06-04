@@ -22,6 +22,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
 
 
 
@@ -70,14 +71,14 @@ class WebSocketServer {
 
           var token = queryParameter.token;
           winston.debug('token:'+ token);
-          winston.debug('config.secret:'+ config.secret);
+          winston.debug('configSecret:'+ configSecret);
 
         
           if (!token)
               cb(false, 401, 'Unauthorized');
           else {
             token = token.replace('JWT ', '');            
-              jwt.verify(token, config.secret, function (err, decoded) {
+              jwt.verify(token, configSecret, function (err, decoded) {
                   if (err) {
                      winston.error('WebSocket error verifing websocket jwt token ', err);
                      return cb(false, 401, 'Unauthorized');

@@ -23,6 +23,7 @@ var config = require('../../config/database');
 
 var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
 
 class RequestNotification {
 
@@ -330,7 +331,7 @@ sendUserEmail(projectid, message) {
                   winston.info("userAnonym  ",userAnonym);
 
         
-                  var token = jwt.sign(userAnonym, config.secret, signOptions);
+                  var token = jwt.sign(userAnonym, configSecret, signOptions);
                   winston.info("token  "+token);
 
                   var sourcePage = widgetTestLocation;
