@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.1.4",
-    "@tiledesk/tiledesk-chatbot-util": "^0.8.19",
+    "@tiledesk/tiledesk-chatbot-util": "^0.8.21",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.19.0",
