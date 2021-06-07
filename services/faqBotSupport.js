@@ -112,7 +112,7 @@ class FaqBotSupport {
                        },
                     method: 'POST',
                     json: true,
-                    body: {payload:{text: text, bot: bot, message: message, faq: faq}, token: token},
+                    body: {payload:{text: text, bot: bot, message: message, intent: faq}, token: token},
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
