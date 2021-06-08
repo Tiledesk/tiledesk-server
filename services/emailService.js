@@ -272,8 +272,13 @@ class EmailService {
 
       var html = template(replacements);
 
+      let config;
+      if (project && project.settings && project.settings.email && project.settings.email.config) {
+        config = project.settings.email.config;
+        winston.verbose("custom email setting found: ", config);
+      }
 
-      that.send({to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html });
+      that.send({to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:config });
     // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
     });
@@ -322,8 +327,14 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
       }
       
+      let config;
+      if (project && project.settings && project.settings.email && project.settings.email.config) {
+        config = project.settings.email.config;
+        winston.verbose("custom email setting found: ", config);
+      }
 
-      that.send({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
+
+      that.send({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config});
       that.send({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
 
     });
@@ -374,13 +385,19 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
       }
 
+      let config;
+      if (project && project.settings && project.settings.email && project.settings.email.config) {
+        config = project.settings.email.config;
+        winston.verbose("custom email setting found: ", config);
+      }
+
       // if (message.request && message.request.lead && message.request.lead.email) {
       //   winston.info("message.request.lead.email: " + message.request.lead.email);
       //   replyTo = replyTo + ", "+ message.request.lead.email;
       // }
       
 
-      that.send({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html }); //html:html
+      that.send({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config }); //html:html
       that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
 
     });
@@ -660,7 +677,7 @@ class EmailService {
 
 // ok
 
-  sendRequestTranscript(to, messages, request) {
+  sendRequestTranscript(to, messages, request, project) {
 
     var transcriptAsHtml = ""; //https://handlebarsjs.com/guide/expressions.html#html-escaping
     messages.forEach(message => {
@@ -700,9 +717,13 @@ class EmailService {
 
       var html = template(replacements);
 
+      let config;
+      if (project && project.settings && project.settings.email && project.settings.email.config) {
+        config = project.settings.email.config;
+        winston.verbose("custom email setting found: ", config);
+      }
 
-
-      that.send({to:to, subject: '[TileDesk] Transcript', html:html});
+      that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: config});
       that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
 
 

@@ -139,7 +139,7 @@ listen() {
                 if (project_users && project_users.length>0) {
                   project_users.forEach(project_user => {
                     if (project_user.id_user && project_user.id_user.email) {
-                      return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project);                              
+                      return that.sendTranscriptByEmail(project_user.id_user.email, request_id, id_project, project);                              
                     } else {
                     }
                   });  
@@ -152,7 +152,7 @@ listen() {
               return Lead.findById(request.requester_id, function(err, lead){
                 //if (lead && lead.email) {
                   if (lead && lead.email) {
-                    return that.sendTranscriptByEmail(lead.email, request_id, id_project);
+                    return that.sendTranscriptByEmail(lead.email, request_id, id_project, project);
                   }
                   
               });
@@ -516,7 +516,7 @@ sendAgentEmail(projectid, savedRequest) {
 
 
 
-   sendTranscriptByEmail(sendTo, request_id, id_project) {
+   sendTranscriptByEmail(sendTo, request_id, id_project, project) {
     return new Promise(function (resolve, reject) {
       return Request.findOne({request_id: request_id, id_project: id_project})
       .populate('department')
@@ -546,7 +546,7 @@ sendAgentEmail(projectid, savedRequest) {
 
       
 
-        emailService.sendRequestTranscript(sendTo, messages, request);
+        emailService.sendRequestTranscript(sendTo, messages, request, project);
         winston.debug("sendTranscriptByEmail sent");
         return resolve({sendTo: sendTo, messages: messages, request: request});
 
