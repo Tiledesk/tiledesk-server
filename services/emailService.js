@@ -226,13 +226,18 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html after: " + html);
 
+      let from;
       let config;
       if (project && project.settings && project.settings.email && project.settings.email.config) {
         config = project.settings.email.config;
-        winston.verbose("custom email setting found: ", config);
+        winston.verbose("custom email config setting found: ", config);
+        if (config.from) {
+          from = config.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
       }
 
-      that.send({to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: config});
+      that.send({from:from, to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: config});
 
       that.send({to: that.bcc, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html:html});
 
