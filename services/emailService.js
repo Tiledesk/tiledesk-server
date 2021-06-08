@@ -91,26 +91,39 @@ class EmailService {
 };
 
 
-  getTransport() {
+  getTransport(config) {
 
+    if (!config) {
+      config = {
+        host: this.host,
+        port: this.port, // defaults to 587 if is secure is false or 465 if true
+        secure: this.secureEmail,         
+        user: this.user,
+        pass: this.emailPassword      
+      }
+    }
+
+    winston.verbose("getTransport config", config);
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: this.host,
-      port: this.port, // defaults to 587 if is secure is false or 465 if true
-      secure: this.secureEmail, 
+      host: config.host,
+      port: config.port, // defaults to 587 if is secure is false or 465 if true
+      secure: config.secureEmail, 
       auth: {
-        user: this.user,
-        pass: this.emailPassword
+        user: config.user,
+        pass: config.emailPassword
       }
     });
     return transporter;
   }
 
-  send(to, subject, html) {
-    return this.sendMail({to:to, subject:subject, html:html});
-  }
-  sendMail(mail) {
+  // @deprecated
+  // send(to, subject, html) {
+  //   return this.sendMail({to:to, subject:subject, html:html});
+  // }
+
+  send(mail) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -119,8 +132,6 @@ class EmailService {
     if (process.env.NODE_ENV == 'test')  {	
       return winston.warn("EmailService not sending email for testing");
     }
-
-   
 
     let mailOptions = {
       from: mail.from || this.from, // sender address
@@ -139,7 +150,7 @@ class EmailService {
     }
 
     // send mail with defined transport object
-    this.getTransport().sendMail(mailOptions, (error, info) => {
+    this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
       if (error) {
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
@@ -215,10 +226,15 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html after: " + html);
 
+      let config;
+      if (project && project.settings && project.settings.email && project.settings.email.config) {
+        config = project.settings.email.config;
+        winston.verbose("custom email setting found: ", config);
+      }
 
-      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html);
+      that.send({to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: config});
 
-      that.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html);
+      that.send({to: that.bcc, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html:html});
 
     });
     
@@ -257,7 +273,7 @@ class EmailService {
       var html = template(replacements);
 
 
-      that.send(to, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+      that.send({to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html });
     // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
     });
@@ -297,13 +313,18 @@ class EmailService {
 
       let replyTo;
       if (message.request) {
-        replyTo = message.request.request_id+"@"+that.replyToDomain;
+        if (message.request.ticket_id) {
+          replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        } else {
+          replyTo = message.request.request_id+"@"+that.replyToDomain;
+        }
+        
         winston.info("replyTo: " + replyTo);
       }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
+      that.send({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html});
+      that.send({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
 
     });
   }
@@ -344,7 +365,12 @@ class EmailService {
 
       let replyTo;
       if (message.request) {
-        replyTo = message.request.request_id+"@"+that.replyToDomain;
+        if (message.request.ticket_id) {
+          replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        } else {
+          replyTo = message.request.request_id+"@"+that.replyToDomain;
+        }
+        
         winston.info("replyTo: " + replyTo);
       }
 
@@ -354,14 +380,14 @@ class EmailService {
       // }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html }); //html:html
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
+      that.send({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html }); //html:html
+      that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
 
     });
   }
 
 
-
+/*
   sendEmailChannelTakingNotification(to, request, project, tokenQueryString) {
 
     var that = this;
@@ -406,12 +432,12 @@ class EmailService {
       // }
       
 
-      that.sendMail({to:to, replyTo: replyTo, subject:`R: ${request ? request.subject : '-'}`, text:html }); //html:html
-      that.sendMail({to: config.bcc, replyTo: replyTo, subject: `R: ${request ? request.subject : '-'} - notification`, text:html});//html:html
+      that.send({to:to, replyTo: replyTo, subject:`R: ${request ? request.subject : '-'}`, text:html }); //html:html
+      that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${request ? request.subject : '-'} - notification`, text:html});//html:html
 
     });
   }
-
+*/
 
   // ok
   sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
@@ -446,8 +472,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      that.send(to, '[TileDesk] Password reset request', html);
-      that.send(that.bcc, '[TileDesk] Password reset request - notification', html);
+      that.send({to: to, subject: '[TileDesk] Password reset request', html:html});
+      that.send({to:that.bcc, subject: '[TileDesk] Password reset request - notification', html:html });
 
     });
   }
@@ -485,8 +511,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      that.send(to, '[TileDesk] Your password has been changed', html);
-      that.send(that.bcc, '[TileDesk] Your password has been changed - notification', html);
+      that.send({to: to, subject:'[TileDesk] Your password has been changed', html:html });
+      that.send({to: that.bcc, subject: '[TileDesk] Your password has been changed - notification', html: html });
 
     });
 
@@ -535,8 +561,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project - notification`, html);
+      that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html});
+      that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
 
     });
   }
@@ -582,8 +608,8 @@ class EmailService {
 
       var html = template(replacements);
 
-      that.send(to, `[TileDesk] You have been invited to the '${projectName}' project`, html);
-      that.send(that.bcc, `[TileDesk] You have been invited to the '${projectName}' project - notification`, html);
+      that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html });
+      that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
 
     });
   }
@@ -620,8 +646,8 @@ class EmailService {
       var html = template(replacements);
 
 
-      that.send(to, `[TileDesk] Verify your email address`, html);
-      that.send(that.bcc, `[TileDesk] Verify your email address `+to + " - notification", html);
+      that.send({to: to, subject: `[TileDesk] Verify your email address`, html:html });
+      that.send({to: that.bcc, subject: `[TileDesk] Verify your email address `+to + " - notification", html:html });
 
     });
   }
@@ -676,8 +702,8 @@ class EmailService {
 
 
 
-      that.send(to, '[TileDesk] Transcript', html);
-      that.send(that.bcc, '[TileDesk] Transcript - notification', html);
+      that.send({to:to, subject: '[TileDesk] Transcript', html:html});
+      that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
 
 
     });
