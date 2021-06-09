@@ -32,6 +32,7 @@ const maskOptions = {
 const X_REQUEST_ID_HEADER_KEY = "X-TILEDESK-REQUEST-ID";
 const X_TICKET_ID_HEADER_KEY = "x-TILEDESK-TICKET-ID";
 const X_PROJECT_ID_HEADER_KEY = "x-TILEDESK-PROJECT-ID";
+const MESSAGE_ID_DOMAIN = "tiledesk.com";
 
 class EmailService {
 
@@ -341,10 +342,14 @@ class EmailService {
       winston.debug("html: " + html);
 
 
+      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
       let replyTo;
       let headers;
-      if (message.request) {      
+      if (message.request) { 
+        
+         messageId = message.request.request_id + "+" +message._id + "@" + MESSAGE_ID_DOMAIN;  
+
         if (message.request.ticket_id) {
           replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
         } else {
@@ -353,6 +358,7 @@ class EmailService {
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
+        winston.info("messageId: " + messageId);
         winston.info("replyTo: " + replyTo);
         winston.info("email headers", headers);
       }
@@ -371,8 +377,27 @@ class EmailService {
       }
 
 
-      that.send({sender: message.senderFullname, from:from, to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config, headers: headers});
-      that.send({sender: message.senderFullname, to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html, headers: headers});
+      that.send({
+        messageId: messageId,
+        sender: message.senderFullname, 
+        from:from, 
+        to:to, 
+        replyTo: replyTo, 
+        subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
+        html:html, 
+        config:config, 
+        headers: headers
+      });
+
+      that.send({
+        messageId: messageId,
+        sender: message.senderFullname, 
+        to: config.bcc, 
+        replyTo: replyTo, 
+        subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
+        html:html, 
+        headers: headers
+      });
 
     });
   }
@@ -413,9 +438,15 @@ class EmailService {
 
      
     
+      
+      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
       let replyTo;
       let headers;
-      if (message.request) {      
+      if (message.request) { 
+        
+         messageId = message.request.request_id + "+" +message._id + "@" + MESSAGE_ID_DOMAIN;  
+
         if (message.request.ticket_id) {
           replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
         } else {
@@ -424,6 +455,7 @@ class EmailService {
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
+        winston.info("messageId: " + messageId);
         winston.info("replyTo: " + replyTo);
         winston.info("email headers", headers);
       }
@@ -448,8 +480,27 @@ class EmailService {
       // }
       
 
-      that.send({sender: message.senderFullname, from:from, to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config, headers:headers }); //html:html
-      that.send({sender: message.senderFullname, to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html, headers:headers});//html:html
+      that.send({
+        messageId: messageId,
+        sender: message.senderFullname, 
+        from:from, 
+        to:to, 
+        replyTo: replyTo, 
+        subject:`R: ${message.request ? message.request.subject : '-'}`, 
+        text:html, 
+        config:config, 
+        headers:headers 
+      }); //html:html
+      
+      that.send({
+        messageId: messageId,
+        sender: message.senderFullname, 
+        to: config.bcc, 
+        replyTo: replyTo, 
+        subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
+        text:html, 
+        headers:headers
+      });//html:html
 
     });
   }
