@@ -228,11 +228,13 @@ class EmailService {
 
       let from;
       let config;
-      if (project && project.settings && project.settings.email && project.settings.email.config) {
-        config = project.settings.email.config;
-        winston.verbose("custom email config setting found: ", config);
-        if (config.from) {
-          from = config.from;
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          config = project.settings.email.config;
+          winston.verbose("custom email config setting found: ", config);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
           winston.verbose("custom from email setting found: "+ from);
         }
       }
@@ -277,13 +279,20 @@ class EmailService {
 
       var html = template(replacements);
 
+      let from;
       let config;
-      if (project && project.settings && project.settings.email && project.settings.email.config) {
-        config = project.settings.email.config;
-        winston.verbose("custom email setting found: ", config);
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          config = project.settings.email.config;
+          winston.verbose("custom email config setting found: ", config);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
       }
 
-      that.send({to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:config });
+      that.send({from:from, to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:config });
     // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
     });
@@ -332,14 +341,21 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
       }
       
+      let from;
       let config;
-      if (project && project.settings && project.settings.email && project.settings.email.config) {
-        config = project.settings.email.config;
-        winston.verbose("custom email setting found: ", config);
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          config = project.settings.email.config;
+          winston.verbose("custom email config setting found: ", config);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
       }
 
 
-      that.send({to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config});
+      that.send({from:from, to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config});
       that.send({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
 
     });
@@ -390,11 +406,19 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
       }
 
+      let from;
       let config;
-      if (project && project.settings && project.settings.email && project.settings.email.config) {
-        config = project.settings.email.config;
-        winston.verbose("custom email setting found: ", config);
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          config = project.settings.email.config;
+          winston.verbose("custom email config setting found: ", config);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
       }
+
 
       // if (message.request && message.request.lead && message.request.lead.email) {
       //   winston.info("message.request.lead.email: " + message.request.lead.email);
@@ -402,7 +426,7 @@ class EmailService {
       // }
       
 
-      that.send({to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config }); //html:html
+      that.send({from:from, to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config }); //html:html
       that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
 
     });
