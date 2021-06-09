@@ -151,7 +151,11 @@ class EmailService {
       subject: mail.subject, // Subject line
       text: mail.text, // plain text body
       html: mail.html,
-      headers: mail.headers || this.headers
+
+      headers: mail.headers || this.headers,
+
+      messageId: mail.messageId,
+      sender: mail.sender
     };
 
     winston.debug('mailOptions', mailOptions);
@@ -444,7 +448,6 @@ class EmailService {
       let replyTo;
       let headers;
       if (message.request) { 
-        
          messageId = message.request.request_id + "+" +message._id + "@" + MESSAGE_ID_DOMAIN;  
 
         if (message.request.ticket_id) {
