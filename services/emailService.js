@@ -29,6 +29,8 @@ const maskOptions = {
   unmaskedEndDigits : 3 // Should be positive Integer
   };
 
+const X_REQUEST_ID_HEADER_KEY = "x-tiledesk-request-id";
+const X_TICKET_ID_HEADER_KEY = "x-tiledesk-ticket-id";
 
 class EmailService {
 
@@ -74,6 +76,12 @@ class EmailService {
 
     this.port  = process.env.EMAIL_PORT;
     winston.info('EmailService port: ' + this.port);
+
+
+    this.headers = {
+      // "X-Mailer": "Tiledesk Mailer",
+    }
+    winston.info('EmailService headers: ' + JSON.stringify(this.headers));
 
   }
 
@@ -140,7 +148,8 @@ class EmailService {
       replyTo: mail.replyTo || this.replyTo,
       subject: mail.subject, // Subject line
       text: mail.text, // plain text body
-      html: mail.html
+      html: mail.html,
+      headers: mail.headers || this.headers
     };
 
     winston.debug('mailOptions', mailOptions);
@@ -330,15 +339,21 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html: " + html);
 
+
+
       let replyTo;
-      if (message.request) {
+      let headers;
+      if (message.request) {      
         if (message.request.ticket_id) {
           replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+          headers = {X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };    
         } else {
           replyTo = message.request.request_id+"@"+that.replyToDomain;
+          headers = {X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
         }
         
         winston.info("replyTo: " + replyTo);
+        winston.info("email headers", headers);
       }
       
       let from;
@@ -355,8 +370,8 @@ class EmailService {
       }
 
 
-      that.send({from:from, to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config});
-      that.send({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html});
+      that.send({from:from, to:to, replyTo: replyTo, subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, html:html, config:config, headers: headers});
+      that.send({to: config.bcc, replyTo: replyTo, subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, html:html, headers: headers});
 
     });
   }
@@ -395,15 +410,20 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html: " + html);
 
+     
       let replyTo;
-      if (message.request) {
+      let headers;
+      if (message.request) {      
         if (message.request.ticket_id) {
           replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+          headers = {X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };    
         } else {
           replyTo = message.request.request_id+"@"+that.replyToDomain;
+          headers = {X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
         }
         
         winston.info("replyTo: " + replyTo);
+        winston.info("email headers", headers);
       }
 
       let from;
@@ -426,8 +446,8 @@ class EmailService {
       // }
       
 
-      that.send({from:from, to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config }); //html:html
-      that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html});//html:html
+      that.send({from:from, to:to, replyTo: replyTo, subject:`R: ${message.request ? message.request.subject : '-'}`, text:html, config:config, headers:headers }); //html:html
+      that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${message.request ? message.request.subject : '-'} - notification`, text:html, headers:headers});//html:html
 
     });
   }
