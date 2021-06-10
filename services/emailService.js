@@ -153,7 +153,7 @@ class EmailService {
       html: mail.html,
 
       headers: mail.headers || this.headers,
-
+      
       messageId: mail.messageId,
       sender: mail.sender
     };
@@ -352,13 +352,16 @@ class EmailService {
       let headers;
       if (message.request) { 
         
-         messageId = message.request.request_id + "+" +message._id + "@" + MESSAGE_ID_DOMAIN;  
+         messageId = message.request.request_id + "+" + messageId;
 
-        if (message.request.ticket_id) {
-          replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        } else {
-          replyTo = message.request.request_id+"@"+that.replyToDomain;
-        }
+         if (message.request.attributes && message.request.attributes.replyTo) {
+          replyTo = message.request.attributes.replyTo;
+         }
+        // if (message.request.ticket_id) {
+        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+        // }
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
@@ -383,7 +386,7 @@ class EmailService {
 
       that.send({
         messageId: messageId,
-        sender: message.senderFullname, 
+        // sender: message.senderFullname, //must be an email
         from:from, 
         to:to, 
         replyTo: replyTo, 
@@ -395,7 +398,7 @@ class EmailService {
 
       that.send({
         messageId: messageId,
-        sender: message.senderFullname, 
+        // sender: message.senderFullname, //must be an email
         to: config.bcc, 
         replyTo: replyTo, 
         subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
@@ -448,13 +451,17 @@ class EmailService {
       let replyTo;
       let headers;
       if (message.request) { 
-         messageId = message.request.request_id + "+" +message._id + "@" + MESSAGE_ID_DOMAIN;  
+        
+         messageId = message.request.request_id + "+" + messageId;
 
-        if (message.request.ticket_id) {
-          replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        } else {
-          replyTo = message.request.request_id+"@"+that.replyToDomain;
-        }
+         if (message.request.attributes && message.request.attributes.replyTo) {
+          replyTo = message.request.attributes.replyTo;
+         }
+        // if (message.request.ticket_id) {
+        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+        // }
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
@@ -462,6 +469,7 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
         winston.info("email headers", headers);
       }
+      
 
       let from;
       let config;
@@ -485,7 +493,7 @@ class EmailService {
 
       that.send({
         messageId: messageId,
-        sender: message.senderFullname, 
+        // sender: message.senderFullname, //must be an email
         from:from, 
         to:to, 
         replyTo: replyTo, 
@@ -497,7 +505,7 @@ class EmailService {
       
       that.send({
         messageId: messageId,
-        sender: message.senderFullname, 
+        // sender: message.senderFullname, //must be an email
         to: config.bcc, 
         replyTo: replyTo, 
         subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
