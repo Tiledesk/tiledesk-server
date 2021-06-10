@@ -1,5 +1,7 @@
 #- Please type your reply above this line -#
 
+Ticket number: #{{message.request.ticket_it}}
+
 {{message.senderFullname}}
 
 {{message.text}}
