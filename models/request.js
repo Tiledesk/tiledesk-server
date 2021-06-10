@@ -15,12 +15,17 @@ var LocationSchema = require("../models/location");
 var RequestSnapshotSchema = require("../models/requestSnapshot");
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+winston.info("Request defaultFullTextLanguage: "+ defaultFullTextLanguage);
+
+const disableTicketIdSequence = process.env.DISABLE_TICKET_ID_SEQUENCE || false;
+winston.info("Request disableTicketIdSequence: "+ disableTicketIdSequence);
 
 // var autoIncrement = require('mongoose-auto-increment');
 
 //https://github.com/Automattic/mongoose/issues/5924
 mongoose.plugin(schema => { schema.options.usePushEach = true });
 
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 
 
@@ -38,7 +43,14 @@ var RequestSchema = new Schema({
     type: String,
     required: true,
     index: true,
-    // unique: true //testare
+    // unique: true        
+
+  },
+
+  ticket_id: {
+    type: Number,
+    // required: true,
+    index: true
   },
 
   requester: {
@@ -139,7 +151,7 @@ var RequestSchema = new Schema({
   },
 
   //timestamp when the agent reply the first time to a visitor
-  // documenta
+  // First reply time is the time between ticket creation and the first public comment from an agent, displayed in minutes. Some qualifications include:
   first_response_at: {
     type: Date,
     index: true
@@ -253,6 +265,12 @@ var RequestSchema = new Schema({
 }
 
 );
+
+if (!disableTicketIdSequence) {
+  winston.info("AutoIncrement plugin enabled");
+  RequestSchema.plugin(AutoIncrement, {id: 'ticket_seq', inc_field: 'ticket_id', reference_fields: ['id_project'], disable_hooks:false });
+}
+
 
 
 // Backcompatibility
