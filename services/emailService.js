@@ -316,7 +316,7 @@ class EmailService {
   }
 
 
-  sendNewMessageNotification(to, message, project, tokenQueryString) {
+  sendNewMessageNotification(to, message, project, tokenQueryString, sourcePage) {
 
     var that = this;
 
@@ -340,6 +340,7 @@ class EmailService {
       var replacements = {        
         message: message,
         project: project.toJSON(),
+        seamlessPage: sourcePage,
         tokenQueryString: tokenQueryString,
         baseScope: baseScope    
       };
@@ -375,10 +376,10 @@ class EmailService {
       let inReplyTo;
       let references;
       if (message.attributes) {
-        if (message.attributes && message.attributes.email_messageId) {
+        if (message.attributes.email_messageId) {
           inReplyTo = message.attributes.email_messageId;
          }
-         if (message.attributes && message.attributes.email_references) {
+         if (message.attributes.email_references) {
           references = message.attributes.email_references;
          }
       }
@@ -430,7 +431,7 @@ class EmailService {
 
 
   
-  sendEmailChannelNotification(to, message, project, tokenQueryString) {
+  sendEmailChannelNotification(to, message, project, tokenQueryString, sourcePage) {
 
     var that = this;
 
@@ -455,6 +456,7 @@ class EmailService {
       var replacements = {        
         message: message,
         project: project.toJSON(),
+        seamlessPage: sourcePage,
         tokenQueryString: tokenQueryString,
         baseScope: baseScope    
       };
@@ -493,10 +495,12 @@ class EmailService {
       let inReplyTo;
       let references;
       if (message.attributes) {
-        if (message.attributes && message.attributes.email_messageId) {
+
+        // per email touching manca
+        if (message.attributes.email_messageId) {
           inReplyTo = message.attributes.email_messageId;
          }
-         if (message.attributes && message.attributes.email_references) {
+         if (message.attributes.email_references) {
           references = message.attributes.email_references;
          }
       }

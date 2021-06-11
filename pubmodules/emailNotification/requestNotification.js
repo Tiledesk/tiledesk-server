@@ -236,12 +236,12 @@ sendEmailChannelEmail(projectid, message) {
 
       var tokenQueryString;
       if(sourcePage && sourcePage.indexOf('?')>-1) {
-        tokenQueryString =  "&tiledesk_customToken=JWT "+token
+        tokenQueryString =  "&tiledesk_jwt=JWT "+token
       }else {
-        tokenQueryString =  "?tiledesk_customToken=JWT "+token
+        tokenQueryString =  "?tiledesk_jwt=JWT "+token
       }
       
-      emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString);
+      emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString, sourcePage);
     
 
     });
@@ -357,7 +357,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);   
+              winston.debug("lead", lead);     
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
@@ -386,12 +386,12 @@ sendUserEmail(projectid, message) {
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {
-                    tokenQueryString =  "&tiledesk_customToken=JWT "+token
+                    tokenQueryString =  "&tiledesk_jwt=JWT "+token
                   }else {
-                    tokenQueryString =  "?tiledesk_customToken=JWT "+token
+                    tokenQueryString =  "?tiledesk_jwt=JWT "+token
                   }
 
-                  emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString);
+                  emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString, sourcePage);
               } 
                 
             });
