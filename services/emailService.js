@@ -60,22 +60,22 @@ class EmailService {
     this.replyToDomain = process.env.EMAIL_REPLY_TO_DOMAIN || config.replyToDomain;
     winston.info('EmailService replyToDomain : '+ this.replyToDomain);
 
-    this.emailPassword = process.env.EMAIL_PASSWORD;
+    this.pass = process.env.EMAIL_PASSWORD;
 
     var maskedemailPassword;
-    if (this.emailPassword) {
-      maskedemailPassword = MaskData.maskPhone(this.emailPassword, maskOptions);
+    if (this.pass) {
+      maskedemailPassword = MaskData.maskPhone(this.pass, maskOptions);
     }else {
-      maskedemailPassword = this.emailPassword;
+      maskedemailPassword = this.pass;
     }
 
-    winston.info('EmailService emailPassword: ' + maskedemailPassword);
+    winston.info('EmailService pass: ' + maskedemailPassword);
 
     this.host = process.env.EMAIL_HOST || config.host;
     winston.info('EmailService host: ' + this.host);
 
-    this.secureEmail  = process.env.EMAIL_SECURE || false;
-    winston.info('EmailService secureEmail: ' + this.secureEmail);
+    this.secure  = process.env.EMAIL_SECURE || false;
+    winston.info('EmailService secure: ' + this.secure);
 
     this.user  = process.env.EMAIL_USERNAME || config.username;
     winston.info('EmailService username: ' + this.user);
@@ -111,9 +111,9 @@ class EmailService {
       configEmail = {
         host: this.host,
         port: this.port, // defaults to 587 if is secure is false or 465 if true
-        secure: this.secureEmail,         
+        secure: this.secure,         
         user: this.user,
-        pass: this.emailPassword      
+        pass: this.pass      
       }
       winston.verbose("getTransport initialized with default");
     }
@@ -236,7 +236,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
       // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
@@ -303,7 +303,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
@@ -354,7 +354,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
       var replacements = {        
         message: message,
@@ -470,7 +470,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
       var replacements = {        
         message: message,
@@ -601,7 +601,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
       var replacements = {        
         request: request,
@@ -652,7 +652,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
@@ -691,7 +691,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
@@ -737,7 +737,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
@@ -786,7 +786,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
@@ -828,7 +828,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
@@ -880,7 +880,7 @@ class EmailService {
       var template = handlebars.compile(html);
 
       var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.emailPassword;
+      delete baseScope.pass;
 
 
       var replacements = {        
