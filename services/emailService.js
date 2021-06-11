@@ -118,18 +118,22 @@ class EmailService {
       winston.verbose("getTransport initialized with default");
     }
 
-    winston.verbose("getTransport configEmail: "+ JSON.stringify(configEmail));
+    winston.debug("getTransport configEmail: "+ JSON.stringify(configEmail));
 
-    // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
+    let transport = {
       host: configEmail.host,
       port: configEmail.port, // defaults to 587 if is secure is false or 465 if true
-      secure: configEmail.secureEmail, 
+      secure: configEmail.secure, 
       auth: {
         user: configEmail.user,
-        pass: configEmail.emailPassword
+        pass: configEmail.pass
       }
-    });
+    };
+
+    winston.debug("getTransport transport: ",transport);
+
+    // create reusable transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport(transport);
     return transporter;
   }
 
@@ -201,9 +205,9 @@ class EmailService {
 
       var html = template(replacements);
 
-      that.send(to, `TileDesk test email`, html);
+      that.send({to:to, subject:`TileDesk test email`,html: html});
 
-      that.send(that.bcc, `TileDesk test email - notification`, html);
+      //that.send(that.bcc, `TileDesk test email - notification`, html);
 
     });
    
@@ -909,5 +913,7 @@ class EmailService {
 
 
 var emailService = new EmailService();
+
+//emailService.sendTest("al@f21.it");
 
 module.exports = emailService;
