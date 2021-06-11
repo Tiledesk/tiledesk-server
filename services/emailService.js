@@ -115,7 +115,9 @@ class EmailService {
         user: this.user,
         pass: this.pass      
       }
-      winston.verbose("getTransport initialized with default");
+      winston.debug("getTransport initialized with default");
+    } else {
+      winston.verbose("getTransport custom", configEmail);
     }
 
     winston.verbose("getTransport configEmail: "+ JSON.stringify(configEmail));
