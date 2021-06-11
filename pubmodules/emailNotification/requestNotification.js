@@ -51,7 +51,6 @@ listen() {
           
         } else {
 
-          // controlla se sta funzionando
           if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
@@ -203,7 +202,7 @@ sendEmailChannelEmail(projectid, message) {
       //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
       // }
 
-      let lead = request.lead;
+      let lead = message.request.lead;
       winston.info("sending channel emaol email to lead ", lead);
 
       
@@ -358,7 +357,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);  //TODO  lead  is already present in request.lead
+              winston.debug("lead", lead);   
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
