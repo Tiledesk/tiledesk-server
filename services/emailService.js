@@ -435,8 +435,8 @@ class EmailService {
 
     var that = this;
 
-    this.readTemplateFile('ticket.txt', function(err, html) {
-      // this.readTemplateFile('ticket.html', function(err, html) {
+    // this.readTemplateFile('ticket.txt', function(err, html) {
+    this.readTemplateFile('ticket.html', function(err, html) {
 
 
       var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
