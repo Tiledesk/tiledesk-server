@@ -51,6 +51,7 @@ listen() {
           
         } else {
 
+            
           if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
@@ -236,9 +237,9 @@ sendEmailChannelEmail(projectid, message) {
 
       var tokenQueryString;
       if(sourcePage && sourcePage.indexOf('?')>-1) {
-        tokenQueryString =  "&tiledesk_jwt=JWT "+token
+        tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
       }else {
-        tokenQueryString =  "?tiledesk_jwt=JWT "+token
+        tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
       }
       
       emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString, sourcePage);
@@ -357,7 +358,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);     
+              winston.debug("lead", lead);    
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
@@ -386,9 +387,9 @@ sendUserEmail(projectid, message) {
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {
-                    tokenQueryString =  "&tiledesk_jwt=JWT "+token
+                    tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
                   }else {
-                    tokenQueryString =  "?tiledesk_jwt=JWT "+token
+                    tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
                   }
 
                   emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString, sourcePage);
