@@ -6,4 +6,6 @@ Ticket number: #{{message.request.ticket_id}}
 
 {{message.text}}
 
+Continue the conversation by chat here: {{tokenQueryString}}
+
 Powered by Tiledesk : https://tiledesk.com
