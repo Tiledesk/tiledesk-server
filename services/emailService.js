@@ -118,7 +118,7 @@ class EmailService {
       winston.verbose("getTransport initialized with default");
     }
 
-    winston.debug("getTransport configEmail: "+ JSON.stringify(configEmail));
+    winston.verbose("getTransport configEmail: "+ JSON.stringify(configEmail));
 
     let transport = {
       host: configEmail.host,
@@ -387,9 +387,9 @@ class EmailService {
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
-        winston.info("messageId: " + messageId);
-        winston.info("replyTo: " + replyTo);
-        winston.info("email headers", headers);
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
       }
 
       let inReplyTo;
@@ -402,8 +402,8 @@ class EmailService {
           references = message.attributes.email_references;
          }
       }
-      winston.info("email inReplyTo: "+ inReplyTo);
-      winston.info("email references: "+ references);
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
 
       let from;
       let configEmail;
@@ -505,9 +505,9 @@ class EmailService {
         
         headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
 
-        winston.info("messageId: " + messageId);
-        winston.info("replyTo: " + replyTo);
-        winston.info("email headers", headers);
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
       }
       
 
@@ -523,8 +523,8 @@ class EmailService {
           references = message.attributes.email_references;
          }
       }
-      winston.info("email inReplyTo: "+ inReplyTo);
-      winston.info("email references: "+ references);
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
 
       let from;
       let configEmail;
