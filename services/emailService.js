@@ -5,6 +5,10 @@ var config = require('../config/email');
 var winston = require('../config/winston');
 var handlebars = require('handlebars');
 
+handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
+  return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
+
 // handlebars.registerHelper('ifCond', function(v1, v2, options) {
 //   if(v1 === v2) {
 //     return options.fn(this);
