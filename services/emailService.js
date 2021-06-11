@@ -256,9 +256,19 @@ class EmailService {
         }
       }
 
-      that.send({from:from, to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: configEmail});
+      that.send({
+        from:from, 
+        to:to, 
+        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, 
+        html:html, 
+        config: configEmail
+      });
 
-      that.send({to: that.bcc, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html:html});
+      that.send({
+        to: that.bcc, 
+        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, 
+        html:html
+      });
 
     });
     
@@ -310,7 +320,7 @@ class EmailService {
       }
 
       that.send({from:from, to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:configEmail });
-    // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+    // this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
     });
   }
@@ -417,7 +427,7 @@ class EmailService {
       that.send({
         messageId: messageId,
         // sender: message.senderFullname, //must be an email
-        to: config.bcc, 
+        to: that.bcc, 
         replyTo: replyTo,
         inReplyTo: inReplyTo, 
         references: references,
@@ -546,7 +556,7 @@ class EmailService {
       that.send({
         messageId: messageId,
         // sender: message.senderFullname, //must be an email
-        to: config.bcc, 
+        to: that.bcc, 
         replyTo: replyTo, 
         inReplyTo: inReplyTo,
         references: references,
@@ -607,7 +617,7 @@ class EmailService {
       
 
       that.send({to:to, replyTo: replyTo, subject:`R: ${request ? request.subject : '-'}`, text:html }); //html:html
-      that.send({to: config.bcc, replyTo: replyTo, subject: `R: ${request ? request.subject : '-'} - notification`, text:html});//html:html
+      that.send({to: that.bcc, replyTo: replyTo, subject: `R: ${request ? request.subject : '-'} - notification`, text:html});//html:html
 
     });
   }
