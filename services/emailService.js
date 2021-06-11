@@ -535,8 +535,8 @@ class EmailService {
         replyTo: replyTo, 
         inReplyTo: inReplyTo,
         references: references,
-        subject:`${message.request ? message.request.subject : '-'}`, 
-        // subject:`R: ${message.request ? message.request.subject : '-'}`, 
+        // subject:`${message.request ? message.request.subject : '-'}`, 
+        subject:`R: ${message.request ? message.request.subject : '-'}`,  //gmail uses subject
         text:html, 
         html:html,
         config:configEmail, 
@@ -550,8 +550,8 @@ class EmailService {
         replyTo: replyTo, 
         inReplyTo: inReplyTo,
         references: references,
-        subject: `${message.request ? message.request.subject : '-'} - notification`, 
-        // subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
+        // subject: `${message.request ? message.request.subject : '-'} - notification`, 
+        subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
         text:html, 
         html:html,
         headers:headers
