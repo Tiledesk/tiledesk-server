@@ -148,6 +148,8 @@ class EmailService {
       to: mail.to,
       // bcc: config.bcc,
       replyTo: mail.replyTo || this.replyTo,
+      inReplyTo: mail.inReplyTo,
+      references: mail.references,
       subject: mail.subject, // Subject line
       text: mail.text, // plain text body
       html: mail.html,
@@ -354,9 +356,9 @@ class EmailService {
         
          messageId = message.request.request_id + "+" + messageId;
 
-         if (message.request.attributes && message.request.attributes.replyTo) {
-          replyTo = message.request.attributes.replyTo;
-         }
+         if (message.request.attributes && message.request.attributes.email_replyTo) {
+          replyTo = message.request.attributes.email_replyTo;
+         }         
         // if (message.request.ticket_id) {
         //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
         // } else {
@@ -369,7 +371,20 @@ class EmailService {
         winston.info("replyTo: " + replyTo);
         winston.info("email headers", headers);
       }
-      
+
+      let inReplyTo;
+      let references;
+      if (message.attributes) {
+        if (message.attributes && message.attributes.email_messageId) {
+          inReplyTo = message.attributes.email_messageId;
+         }
+         if (message.attributes && message.attributes.email_references) {
+          references = message.attributes.email_references;
+         }
+      }
+      winston.info("email inReplyTo: "+ inReplyTo);
+      winston.info("email references: "+ references);
+
       let from;
       let config;
       if (project && project.settings && project.settings.email) {
@@ -390,6 +405,8 @@ class EmailService {
         from:from, 
         to:to, 
         replyTo: replyTo, 
+        inReplyTo: inReplyTo,
+        references: references,
         subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
         html:html, 
         config:config, 
@@ -400,7 +417,9 @@ class EmailService {
         messageId: messageId,
         // sender: message.senderFullname, //must be an email
         to: config.bcc, 
-        replyTo: replyTo, 
+        replyTo: replyTo,
+        inReplyTo: inReplyTo, 
+        references: references,
         subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
         html:html, 
         headers: headers
@@ -454,8 +473,8 @@ class EmailService {
         
          messageId = message.request.request_id + "+" + messageId;
 
-         if (message.request.attributes && message.request.attributes.replyTo) {
-          replyTo = message.request.attributes.replyTo;
+         if (message.request.attributes && message.request.attributes.email_replyTo) {
+          replyTo = message.request.attributes.email_replyTo;
          }
         // if (message.request.ticket_id) {
         //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
@@ -470,6 +489,19 @@ class EmailService {
         winston.info("email headers", headers);
       }
       
+
+      let inReplyTo;
+      let references;
+      if (message.attributes) {
+        if (message.attributes && message.attributes.email_messageId) {
+          inReplyTo = message.attributes.email_messageId;
+         }
+         if (message.attributes && message.attributes.email_references) {
+          references = message.attributes.email_references;
+         }
+      }
+      winston.info("email inReplyTo: "+ inReplyTo);
+      winston.info("email references: "+ references);
 
       let from;
       let config;
@@ -497,7 +529,10 @@ class EmailService {
         from:from, 
         to:to, 
         replyTo: replyTo, 
-        subject:`R: ${message.request ? message.request.subject : '-'}`, 
+        inReplyTo: inReplyTo,
+        references: references,
+        subject:`${message.request ? message.request.subject : '-'}`, 
+        // subject:`R: ${message.request ? message.request.subject : '-'}`, 
         text:html, 
         config:config, 
         headers:headers 
@@ -508,7 +543,10 @@ class EmailService {
         // sender: message.senderFullname, //must be an email
         to: config.bcc, 
         replyTo: replyTo, 
-        subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
+        inReplyTo: inReplyTo,
+        references: references,
+        subject: `${message.request ? message.request.subject : '-'} - notification`, 
+        // subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
         text:html, 
         headers:headers
       });//html:html
