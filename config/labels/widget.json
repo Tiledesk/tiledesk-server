@@ -37,9 +37,14 @@
         "BUTTON_EDIT_PROFILE": "Update profile",
         "BUTTON_DOWNLOAD_TRANSCRIPT": "Download transcript",
         "RATE_CHAT": "Rate chat",
+        // deprecated
         "WELLCOME_TITLE": "Hi, welcome to Tiledesk 👋",
         "WELLCOME_MSG": "How can we help?",
         "WELLCOME": "Welcome",
+
+        "WELCOME_TITLE": "Hi, welcome to Tiledesk 👋",
+        "WELCOME_MSG": "How can we help?",
+        "WELCOME": "Welcome",
         "OPTIONS": "options",
         "SOUND_OFF": "sound off",
         "SOUND_ON": "sound on",
@@ -94,10 +99,16 @@
         "BUTTON_EDIT_PROFILE": "Modifica profilo",
         "BUTTON_DOWNLOAD_TRANSCRIPT": "Scarica transcript",
         "RATE_CHAT": "Valuta chat",
+        // deprecated
         "WELLCOME_TITLE": "Ciao, benvenuto su Tiledesk 👋",
         "WELLCOME_MSG": "Come possiamo aiutarti?",
-        "OPTIONS": "opzioni",
         "WELLCOME": "Benvenuto",
+
+        "WELCOME_TITLE": "Ciao, benvenuto su Tiledesk 👋",
+        "WELCOME_MSG": "Come possiamo aiutarti?",
+        "WELCOME": "Benvenuto",
+
+        "OPTIONS": "opzioni",
         "SOUND_OFF": "suono spento",
         "SOUND_ON": "suono acceso",
         "LOGOUT": "disconnetti",
@@ -151,10 +162,17 @@
         "BUTTON_EDIT_PROFILE": "Modifier le profil",
         "BUTTON_DOWNLOAD_TRANSCRIPT": "Télécharger la transcription",
         "RATE_CHAT": "évaluer la conversation",
+
+        //deprecated
         "WELLCOME_TITLE": "Salut, bienvenue à Tiledesk 👋",
         "WELLCOME_MSG": "Comment pouvons-nous vous aider?",
-        "OPTIONS": "options",
         "WELLCOME": "Bienvenue",
+
+        "WELCOME_TITLE": "Salut, bienvenue à Tiledesk 👋",
+        "WELCOME_MSG": "Comment pouvons-nous vous aider?",
+        "WELCOME": "Bienvenue",
+
+        "OPTIONS": "options",
         "SOUND_OFF": "Sound off",
         "SOUND_ON": "Sound on",
         "LOGOUT": "Connectez-out",
@@ -208,9 +226,16 @@
         "BUTTON_EDIT_PROFILE":"Actualización del perfil",
         "BUTTON_DOWNLOAD_TRANSCRIPT":"Download transcript",
         "RATE_CHAT":"Califica el chat",
+        
+        //deprecated
         "WELLCOME_TITLE":"Hola, bienvenido a tiledesk 👋",
         "WELLCOME_MSG":"¿Cómo podemos ayudar?",
         "WELLCOME":"¡Bienvenido!",
+
+        "WELCOME_TITLE":"Hola, bienvenido a tiledesk 👋",
+        "WELCOME_MSG":"¿Cómo podemos ayudar?",
+        "WELCOME":"¡Bienvenido!",
+
         "OPTIONS":"Opciones",
         "SOUND_OFF":"Sonido apagado",
         "SOUND_ON":"Sonido encendido",
@@ -265,9 +290,16 @@
         "BUTTON_EDIT_PROFILE":"Profil aktualisieren",
         "BUTTON_DOWNLOAD_TRANSCRIPT":"Download transcript",
         "RATE_CHAT":"Chat bewerten",
+
+        //deprecated
         "WELLCOME_TITLE":"Hallo, willkommen in Tiledesk 👋",
         "WELLCOME_MSG":"Wie können wir helfen?",
         "WELLCOME":"Herzlich willkommen",
+
+        "WELCOME_TITLE":"Hallo, willkommen in Tiledesk 👋",
+        "WELCOME_MSG":"Wie können wir helfen?",
+        "WELCOME":"Herzlich willkommen",
+
         "OPTIONS":"Optionen",
         "SOUND_OFF":"Ton aus",
         "SOUND_ON":"Ton an",
@@ -322,9 +354,16 @@
         "BUTTON_EDIT_PROFILE":"Atualizar perfil",
         "BUTTON_DOWNLOAD_TRANSCRIPT":"Download transcript",
         "RATE_CHAT":"Classificar conversa",
+        
+        //deprecated
         "WELLCOME_TITLE":"Olá, seja bem-vindo ao Tiledesk 👋",
         "WELLCOME_MSG":"Como podemos ajudar?",
         "WELLCOME":"Bem-vinda",
+
+        "WELCOME_TITLE":"Olá, seja bem-vindo ao Tiledesk 👋",
+        "WELCOME_MSG":"Como podemos ajudar?",
+        "WELCOME":"Bem-vinda",
+
         "OPTIONS":"Opções",
         "SOUND_OFF":"som desligado",
         "SOUND_ON":"som ligado",
@@ -379,9 +418,16 @@
         "BUTTON_EDIT_PROFILE":"Обновить профиль",
         "BUTTON_DOWNLOAD_TRANSCRIPT":"Download transcript",
         "RATE_CHAT":"Оценить чат",
+
+        // deprecated 
         "WELLCOME_TITLE":"Привет, добро пожаловать в Tiledesk 👋",
         "WELLCOME_MSG":"Как мы можем помочь?",
         "WELLCOME":"желанный",
+
+        "WELCOME_TITLE":"Привет, добро пожаловать в Tiledesk 👋",
+        "WELCOME_MSG":"Как мы можем помочь?",
+        "WELCOME":"желанный",
+
         "OPTIONS":"опции",
         "SOUND_OFF":"звук выключен",
         "SOUND_ON":"звучать на",
@@ -436,9 +482,16 @@
         "BUTTON_EDIT_PROFILE":"Profili güncelle",
         "BUTTON_DOWNLOAD_TRANSCRIPT":"Download transcript",
         "RATE_CHAT":"Sohbeti derecelendir",
+
+        // deprecated 
         "WELLCOME_TITLE":"Merhaba Tiledesk’e hoş geldiniz. 👋",
         "WELLCOME_MSG":"Size nasıl yardımcı olabiliriz?",
         "WELLCOME":"Hoş geldiniz.",
+
+        "WELCOME_TITLE":"Merhaba Tiledesk’e hoş geldiniz. 👋",
+        "WELCOME_MSG":"Size nasıl yardımcı olabiliriz?",
+        "WELCOME":"Hoş geldiniz.",
+
         "OPTIONS":"Seçenekler",
         "SOUND_OFF":"Ses kapalı",
         "SOUND_ON":"Ses açık",
