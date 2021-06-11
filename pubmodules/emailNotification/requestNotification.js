@@ -51,7 +51,6 @@ listen() {
           
         } else {
 
-            
           if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
@@ -226,7 +225,7 @@ sendEmailChannelEmail(projectid, message) {
       var token = jwt.sign(userEmail, configSecret, signOptions);
       winston.info("token  "+token);
 
-      var sourcePage = widgetTestLocation;
+      var sourcePage = widgetTestLocation + "?tiledesk_projectid="+projectid+"&project_name="+encodeURIComponent(project.name)+"&isOpen=true";
 
 
       if (message.request.sourcePage) {
@@ -358,7 +357,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);    
+              winston.debug("lead", lead);   
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
@@ -376,7 +375,7 @@ sendUserEmail(projectid, message) {
                   var token = jwt.sign(userAnonym, configSecret, signOptions);
                   winston.info("token  "+token);
 
-                  var sourcePage = widgetTestLocation;
+                  var sourcePage = widgetTestLocation + "?tiledesk_projectid="+projectid+"&project_name="+encodeURIComponent(project.name)+"&isOpen=true";
 
 
                   if (message.request.sourcePage) {
