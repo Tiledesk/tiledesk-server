@@ -50,7 +50,9 @@ listen() {
           }
           
         } else {
-          if (process.env.DISABLE_SEND_OFFLINE_EMAIL==="true" ||process.env.DISABLE_SEND_OFFLINE_EMAIL===true ) {
+
+          // controlla se sta funzionando
+          if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
             // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
@@ -200,8 +202,48 @@ sendEmailChannelEmail(projectid, message) {
       // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
       //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
       // }
-      emailService.sendEmailChannelNotification(message.request.lead.email, message, project);
 
+      let lead = request.lead;
+      winston.info("sending channel emaol email to lead ", lead);
+
+      
+      winston.info("sending user email to  "+ lead.email);
+
+      var signOptions = {
+        issuer:  'https://tiledesk.com',
+        subject:  'userexternal',
+        audience:  'https://tiledesk.com',
+        jwtid: uuidv4()        
+      };
+
+      var recipient = lead.lead_id;
+      winston.info("recipient:"+ recipient);
+
+      let userEmail = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
+      winston.info("userEmail  ",userEmail);
+
+
+      var token = jwt.sign(userEmail, configSecret, signOptions);
+      winston.info("token  "+token);
+
+      var sourcePage = widgetTestLocation;
+
+
+      if (message.request.sourcePage) {
+        sourcePage = message.request.sourcePage;
+      }
+      
+      winston.info("sourcePage  "+sourcePage);
+
+      var tokenQueryString;
+      if(sourcePage && sourcePage.indexOf('?')>-1) {
+        tokenQueryString =  "&tiledesk_customToken=JWT "+token
+      }else {
+        tokenQueryString =  "?tiledesk_customToken=JWT "+token
+      }
+      
+      emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString);
+    
 
     });
 
@@ -213,7 +255,7 @@ sendEmailChannelEmail(projectid, message) {
 
 
 
-
+//unused
 sendEmailChannelTakingNotification(projectid, request) {
   try {
 
@@ -240,8 +282,8 @@ sendEmailChannelTakingNotification(projectid, request) {
       // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
       //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
       // }
-      emailService.sendEmailChannelTakingNotification(request.lead.email, request, project);
-
+    emailService.sendEmailChannelTakingNotification(request.lead.email, request, project);
+  
 
     });
 
@@ -316,7 +358,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);
+              winston.debug("lead", lead);  //TODO  lead  is already present in request.lead
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
