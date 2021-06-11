@@ -538,9 +538,10 @@ class EmailService {
         subject:`${message.request ? message.request.subject : '-'}`, 
         // subject:`R: ${message.request ? message.request.subject : '-'}`, 
         text:html, 
+        html:html,
         config:configEmail, 
         headers:headers 
-      }); //html:html
+      }); 
       
       that.send({
         messageId: messageId,
@@ -552,8 +553,9 @@ class EmailService {
         subject: `${message.request ? message.request.subject : '-'} - notification`, 
         // subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
         text:html, 
+        html:html,
         headers:headers
-      });//html:html
+      });
 
     });
   }
