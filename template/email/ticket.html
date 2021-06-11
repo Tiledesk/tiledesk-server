@@ -110,6 +110,9 @@
                         {{#ifEquals message.type "image"}}
                           <img src="{{message.metadata.src}}"/>
                         {{/ifEquals}}
+                        {{#ifEquals message.type "file"}}
+                          <a href="{{message.metadata.src}}">{{message.metadata.name}}</a>
+                        {{/ifEquals}}
                         
                       </td>
                     </tr>
