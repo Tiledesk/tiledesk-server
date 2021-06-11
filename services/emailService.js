@@ -101,10 +101,10 @@ class EmailService {
 };
 
 
-  getTransport(config) {
+  getTransport(configEmail) {
 
-    if (!config) {
-      config = {
+    if (!configEmail) {
+      configEmail = {
         host: this.host,
         port: this.port, // defaults to 587 if is secure is false or 465 if true
         secure: this.secureEmail,         
@@ -113,16 +113,16 @@ class EmailService {
       }
     }
 
-    winston.verbose("getTransport config", config);
+    winston.verbose("getTransport configEmail", configEmail);
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: config.host,
-      port: config.port, // defaults to 587 if is secure is false or 465 if true
-      secure: config.secureEmail, 
+      host: configEmail.host,
+      port: configEmail.port, // defaults to 587 if is secure is false or 465 if true
+      secure: configEmail.secureEmail, 
       auth: {
-        user: config.user,
-        pass: config.emailPassword
+        user: configEmail.user,
+        pass: configEmail.emailPassword
       }
     });
     return transporter;
@@ -244,11 +244,11 @@ class EmailService {
       winston.debug("html after: " + html);
 
       let from;
-      let config;
+      let configEmail;
       if (project && project.settings && project.settings.email) {
         if (project.settings.email.config) {
-          config = project.settings.email.config;
-          winston.verbose("custom email config setting found: ", config);
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
         }
         if (project.settings.email.from) {
           from = project.settings.email.from;
@@ -256,7 +256,7 @@ class EmailService {
         }
       }
 
-      that.send({from:from, to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: config});
+      that.send({from:from, to:to, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, html:html, config: configEmail});
 
       that.send({to: that.bcc, subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, html:html});
 
@@ -297,11 +297,11 @@ class EmailService {
       var html = template(replacements);
 
       let from;
-      let config;
+      let configEmail;
       if (project && project.settings && project.settings.email) {
         if (project.settings.email.config) {
-          config = project.settings.email.config;
-          winston.verbose("custom email config setting found: ", config);
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
         }
         if (project.settings.email.from) {
           from = project.settings.email.from;
@@ -309,7 +309,7 @@ class EmailService {
         }
       }
 
-      that.send({from:from, to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:config });
+      that.send({from:from, to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:configEmail });
     // this.send(config.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
     });
@@ -386,11 +386,11 @@ class EmailService {
       winston.info("email references: "+ references);
 
       let from;
-      let config;
+      let configEmail;
       if (project && project.settings && project.settings.email) {
         if (project.settings.email.config) {
-          config = project.settings.email.config;
-          winston.verbose("custom email config setting found: ", config);
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
         }
         if (project.settings.email.from) {
           from = project.settings.email.from;
@@ -409,7 +409,7 @@ class EmailService {
         references: references,
         subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
         html:html, 
-        config:config, 
+        config:configEmail, 
         headers: headers
       });
 
@@ -504,11 +504,11 @@ class EmailService {
       winston.info("email references: "+ references);
 
       let from;
-      let config;
+      let configEmail;
       if (project && project.settings && project.settings.email) {
         if (project.settings.email.config) {
-          config = project.settings.email.config;
-          winston.verbose("custom email config setting found: ", config);
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
         }
         if (project.settings.email.from) {
           from = project.settings.email.from;
@@ -534,7 +534,7 @@ class EmailService {
         subject:`${message.request ? message.request.subject : '-'}`, 
         // subject:`R: ${message.request ? message.request.subject : '-'}`, 
         text:html, 
-        config:config, 
+        config:configEmail, 
         headers:headers 
       }); //html:html
       
@@ -868,13 +868,13 @@ class EmailService {
 
       var html = template(replacements);
 
-      let config;
+      let configEmail;
       if (project && project.settings && project.settings.email && project.settings.email.config) {
-        config = project.settings.email.config;
-        winston.verbose("custom email setting found: ", config);
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email setting found: ", configEmail);
       }
 
-      that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: config});
+      that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: configEmail});
       that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
 
 
