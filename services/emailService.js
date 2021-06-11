@@ -175,7 +175,7 @@ class EmailService {
       if (error) {
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
-      winston.debug('Email sent: %s', info);
+      winston.verbose('Email sent: %s', {info: info, mailOptions: mailOptions});
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
