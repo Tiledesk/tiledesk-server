@@ -118,7 +118,7 @@ class EmailService {
       winston.verbose("getTransport initialized with default");
     }
 
-    winston.verbose("getTransport configEmail", configEmail);
+    winston.verbose("getTransport configEmail: "+ JSON.stringify(configEmail));
 
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
