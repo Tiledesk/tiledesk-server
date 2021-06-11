@@ -107,7 +107,7 @@ class EmailService {
 
   getTransport(configEmail) {
 
-    if (!configEmail) {
+    if (configEmail === undefined) {
       configEmail = {
         host: this.host,
         port: this.port, // defaults to 587 if is secure is false or 465 if true
@@ -115,6 +115,7 @@ class EmailService {
         user: this.user,
         pass: this.emailPassword      
       }
+      winston.verbose("getTransport initialized with default");
     }
 
     winston.verbose("getTransport configEmail", configEmail);
@@ -175,7 +176,7 @@ class EmailService {
       if (error) {
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
-      winston.verbose('Email sent: %s', {info: info, mailOptions: mailOptions});
+      winston.debug('Email sent: %s', {info: info, mailOptions: mailOptions});
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
