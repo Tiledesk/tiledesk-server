@@ -354,11 +354,13 @@ class RequestService {
     var lead_id = request.lead_id;
     var id_project = request.id_project;
 
-    //TODO rimuovi ritorni a capo first_text, fai anche trim
-    var first_text;  
-    if (request.first_text) {  //first_text can be empty for type image
-      first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
-    }
+
+    //removed for ticket
+    // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
+    // var first_text;  
+    // if (request.first_text) {  //first_text can be empty for type image
+    //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
+    // }
      
     var departmentid = request.departmentid;
     var sourcePage = request.sourcePage;
