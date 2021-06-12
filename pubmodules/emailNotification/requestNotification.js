@@ -40,22 +40,36 @@ listen() {
         if (message.attributes && message.attributes.subtype==='info') {
           return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
         }
+
+
         if (message.request && (message.request.channel.name===ChannelConstants.EMAIL || message.request.channel.name===ChannelConstants.FORM)) {
 
           if (message.sender != message.request.lead.lead_id) {
-            winston.verbose("sending sendEmailChannelEmail for EMAIL or FORM channel");
-            return that.sendEmailChannelEmail(message.id_project, message);           
+            winston.verbose("sending sendToUserEmailChannelEmail for EMAIL or FORM channel");
+            return that.sendToUserEmailChannelEmail(message.id_project, message);           
           } else {
-            winston.verbose("Not sending sendEmailChannelEmail for agent messages");
+
+            if (message.text != message.request.first_text) {              
+              winston.verbose("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel");
+              return that.sendToAgentEmailChannelEmail(message.id_project, message);           
+            } else {
+              winston.debug("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel disabled for first text message")
+            }
+            
           }
           
         } else {
-
+          winston.verbose("sendUserEmail chat channel");
+              // controlla se sta funzionando
           if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
             // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
-          return that.sendUserEmail(message.id_project, message);
+          if (message.sender != message.request.lead.lead_id) {
+            winston.verbose("sendUserEmail", message);
+            return that.sendUserEmail(message.id_project, message);
+          }
+          
         }
          
       
@@ -172,7 +186,7 @@ listen() {
 }
 
 
-sendEmailChannelEmail(projectid, message) {
+sendToUserEmailChannelEmail(projectid, message) {
   try {
 
     if (!message.request) {
@@ -251,6 +265,157 @@ sendEmailChannelEmail(projectid, message) {
   }
 }
 
+
+
+
+sendToAgentEmailChannelEmail(projectid, message) {
+  // sendAgentEmail(projectid, savedRequest) {
+    let savedRequest = message.request;
+      // send email
+      try {
+     
+     
+      Project.findOne({_id: projectid, status: 100}, function(err, project){
+         if (err) {
+           return winston.error(err);
+         }
+     
+         if (!project) {
+          //  console.warn("Project not found", req.projectid);
+          return console.warn("Project not found", projectid);
+         } else {
+           
+            winston.debug("project", project);            
+  
+            if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.blocked == true ) {
+              return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
+            }
+  
+            winston.debug("savedRequest", savedRequest);
+  
+                // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
+                   if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
+  
+                    if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.ticket && project.settings.email.notification.conversation.ticket.pooled == false ) {
+                      return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation ticket is disabled");
+                    }
+                    
+                    if (!savedRequest.snapshot) {
+                      return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
+                    }
+                    winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
+                    // agents è selected false quindi nn va sicuro
+                    if (!savedRequest.snapshot.agents) {
+                      return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(. You are closing an old request?", savedRequest);
+                    }
+                    //  var allAgents = savedRequest.agents;
+                     var allAgents = savedRequest.snapshot.agents;
+                    // winston.debug("allAgents", allAgents);
+     
+                     allAgents.forEach(project_user => {
+                    //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
+     
+  
+                    var userid = project_user.id_user;
+                    
+                     if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.ticket && project_user.settings.email.notification.conversation.ticket.pooled == false ) {
+                       return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the pooled conversation ticket is disabled");
+                     }                  
+                      
+                       User.findOne({_id: userid , status: 100})
+                        .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+                        .exec(function (err, user) {
+                         if (err) {
+                         //  winston.debug(err);
+                         }
+                         if (!user) {
+                          winston.warn("User not found", userid);
+                         } else {
+                           winston.debug("Sending sendNewPooledMessageNotification to user with email: "+ user.email);
+                           if (user.emailverified) {
+                             emailService.sendNewPooledMessageEmailNotification(user.email, savedRequest, project, message);
+                           }else {
+                             winston.verbose("User email not verified", user.email);
+                           }
+                         }
+                       });
+     
+                       
+                     });
+     
+                     }
+  
+                     // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
+                     else if (savedRequest.status==RequestConstants.ASSIGNED) { //ASSIGNED
+  
+                      if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.ticket && project.settings.email.notification.conversation.ticket.assigned == false ) {
+                        return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation ticket is disabled");
+                      }
+  
+  
+                      var assignedId = savedRequest.participants[0];
+  
+                      //  winston.info("assignedId1:"+ assignedId);
+  
+                      //  if (!assignedId) {
+                      //    console.log("attention90", savedRequest);
+                      //  }
+  
+  
+                      
+                      Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) //attento in 2.1.14.2
+                      .exec(function (err, project_user) {
+                        
+                          winston.debug("project_user notification", project_user);
+                          if (project_user && project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.ticket && project_user.settings.email.notification.conversation.ticket.assigned &&  project_user.settings.email.notification.conversation.ticket.assigned.toyou == false ) {
+                            return winston.info("RequestNotification email notification for the user with id : " + assignedId + " for the pooled conversation ticket is disabled");
+                          }
+  
+                          // botprefix
+                          if (assignedId.startsWith("bot_")) {
+                            return ;
+                          }
+        
+                          User.findOne({_id: assignedId, status: 100})
+                            .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                            .exec(function (err, user) {
+                            if (err) {
+                              winston.error("Error sending email to " + savedRequest.participants[0], err);
+                            }
+                            if (!user) {
+                              console.warn("User not found",  savedRequest.participants[0]);
+                            } else {
+                              winston.debug("Sending sendNewAssignedAgentMessageEmailNotification to user with email", user.email);
+                              //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account     
+                              // attento cambia           
+                                emailService.sendNewAssignedAgentMessageEmailNotification(user.email, savedRequest, project, message);
+                              //  }
+                            }
+                          });
+  
+                        });
+  
+                     }
+  
+  
+  
+                     else {
+                      return winston.debug("Other states");
+                     }
+     
+     
+           
+           }
+     
+     });
+     
+     } catch (e) {
+       winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+     }
+     //end send email
+     
+     }
+  
 
 
 
@@ -357,7 +522,7 @@ sendUserEmail(projectid, message) {
 
              //send email to lead
             return Lead.findOne({lead_id: recipient}, function(err, lead){
-              winston.debug("lead", lead);   
+              winston.debug("lead", lead);     //TODO  lead  is already present in request.lead
               if (lead && lead.email) {
                   winston.info("sending user email to  "+ lead.email);
 
@@ -438,10 +603,10 @@ sendAgentEmail(projectid, savedRequest) {
                   if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.pooled == false ) {
                     return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
                   }
-                  
                   if (!savedRequest.snapshot) {
                     return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
+                  // agents è selected false quindi nn va sicuro
                   if (!savedRequest.snapshot.agents) {
                     return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
@@ -500,7 +665,7 @@ sendAgentEmail(projectid, savedRequest) {
 
 
                     
-                    Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) //attento in 2.1.14.2
+                    Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) 
                     .exec(function (err, project_user) {
                       
                         winston.debug("project_user notification", project_user);

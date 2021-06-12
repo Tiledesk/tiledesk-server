@@ -33,9 +33,10 @@ const maskOptions = {
   unmaskedEndDigits : 3 // Should be positive Integer
   };
 
-const X_REQUEST_ID_HEADER_KEY = "X-TILEDESK-REQUEST-ID";
-const X_TICKET_ID_HEADER_KEY = "x-TILEDESK-TICKET-ID";
-const X_PROJECT_ID_HEADER_KEY = "x-TILEDESK-PROJECT-ID";
+// const X_REQUEST_ID_HEADER_KEY = "X-TILEDESK-REQUEST-ID";
+// const X_TICKET_ID_HEADER_KEY = "X-TILEDESK-TICKET-ID";
+// const X_PROJECT_ID_HEADER_KEY = "X-TILEDESK-PROJECT-ID";
+
 const MESSAGE_ID_DOMAIN = "tiledesk.com";
 
 class EmailService {
@@ -218,8 +219,8 @@ class EmailService {
   }
 
 
-// ok
-  sendNewAssignedRequestNotification(to, savedRequest, project) {      
+
+  sendNewAssignedRequestNotification(to, request, project) {      
 
     var that = this;
 
@@ -244,7 +245,7 @@ class EmailService {
 // Stampa anche contact.email
 
       var replacements = {        
-        savedRequest: savedRequest.toJSON(),
+        request: request.toJSON(),
         project: project.toJSON(),
         baseScope: baseScope    
       };
@@ -253,6 +254,161 @@ class EmailService {
 
       var html = template(replacements);
       winston.debug("html after: " + html);
+
+    
+      let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
+
+      let replyTo;
+      let headers;
+      if (request) { 
+        
+         messageId = request.request_id + "+" + messageId;
+
+         if (request.attributes && request.attributes.email_replyTo) {
+          replyTo = request.attributes.email_replyTo;
+         }         
+        // if (request.ticket_id) {
+        //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = request.request_id+"@"+that.replyToDomain;
+        // }
+        
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
+
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
+      }
+
+      let inReplyTo;
+      let references;
+      if (request.attributes) {
+        if (request.attributes.email_messageId) {
+          inReplyTo = request.attributes.email_messageId;
+         }
+         if (request.attributes.email_references) {
+          references = request.attributes.email_references;
+         }
+      }
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
+
+      let from;
+      let configEmail;
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
+      }
+
+ 
+
+      that.send({
+        messageId: messageId,
+        from:from, 
+        to:to, 
+        replyTo: replyTo,
+        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`, 
+        html:html, 
+        config: configEmail,
+        headers:headers 
+      });
+
+      messageId =  "notification" + messageId;
+
+      that.send({
+        messageId: messageId,
+        to: that.bcc, 
+        replyTo: replyTo,
+        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Chat ${to}  - notification`, 
+        html:html,
+        headers:headers 
+      });
+
+    });
+    
+  }
+
+
+  sendNewAssignedAgentMessageEmailNotification(to, request, project, message) {      
+
+    var that = this;
+
+    this.readTemplateFile('assignedEmailMessage.html', function(err, html) {
+
+
+      var envTemplate = process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE;
+       winston.debug("envTemplate: " + envTemplate);
+
+      if (envTemplate) {
+          html = envTemplate;
+      }
+
+      winston.debug("html: " + html);
+
+      var template = handlebars.compile(html);
+
+      var baseScope = JSON.parse(JSON.stringify(that));
+      delete baseScope.pass;
+
+      // passa anche tutti i messages in modo da stampare tutto
+// Stampa anche contact.email
+
+      var replacements = {        
+        request: request,
+        // request: request.toJSON(),
+        project: project.toJSON(),
+        message: message,
+        baseScope: baseScope    
+      };
+
+      winston.debug("replacements ", replacements);
+
+      var html = template(replacements);
+      winston.debug("html after: " + html);
+
+
+      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+      let replyTo;
+      let headers;
+      if (message.request) { 
+        
+         messageId = message.request.request_id + "+" + messageId;
+
+         if (message.request.attributes && message.request.attributes.email_replyTo) {
+          replyTo = message.request.attributes.email_replyTo;
+         }         
+        // if (message.request.ticket_id) {
+        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+        // }
+        
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
+      }
+
+      let inReplyTo;
+      let references;
+      if (message.attributes) {
+        if (message.attributes.email_messageId) {
+          inReplyTo = message.attributes.email_messageId;
+         }
+         if (message.attributes.email_references) {
+          references = message.attributes.email_references;
+         }
+      }
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
 
       let from;
       let configEmail;
@@ -268,25 +424,37 @@ class EmailService {
       }
 
       that.send({
+        messageId: messageId,
         from:from, 
         to:to, 
-        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request`, 
+        replyTo: replyTo,
+        // inReplyTo: inReplyTo,???
+        // references: references,??
+        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'}`, 
         html:html, 
-        config: configEmail
+        config: configEmail,        
+        headers:headers 
       });
 
+
+    
+      messageId =  "notification" + messageId;
+
       that.send({
+        messageId: messageId,
         to: that.bcc, 
-        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Request ${to}  - notification`, 
-        html:html
+        replyTo: replyTo,
+        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'} - notification`, 
+        html:html,
+        headers:headers 
       });
 
     });
     
   }
 
-  // ok
-  sendNewPooledRequestNotification(to, savedRequest, project) {
+  
+  sendNewPooledRequestNotification(to, request, project) {
 
     var that = this;
 
@@ -310,12 +478,50 @@ class EmailService {
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
       var replacements = {        
-        savedRequest: savedRequest.toJSON(),
+        request: request.toJSON(),
         project: project.toJSON(),
         baseScope: baseScope    
       };
 
       var html = template(replacements);
+
+      
+      let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
+
+      let replyTo;
+      let headers;
+      if (request) { 
+        
+         messageId = request.request_id + "+" + messageId;
+
+         if (request.attributes && request.attributes.email_replyTo) {
+          replyTo = request.attributes.email_replyTo;
+         }         
+        // if (request.ticket_id) {
+        //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = request.request_id+"@"+that.replyToDomain;
+        // }
+        
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
+
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
+      }
+
+      let inReplyTo;
+      let references;
+      if (request.attributes) {
+        if (request.attributes.email_messageId) {
+          inReplyTo = request.attributes.email_messageId;
+         }
+         if (request.attributes.email_references) {
+          references = request.attributes.email_references;
+         }
+      }
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
 
       let from;
       let configEmail;
@@ -330,9 +536,146 @@ class EmailService {
         }
       }
 
-      that.send({from:from, to: to, subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html:html, config:configEmail });
+
+      that.send({
+        messageId: messageId,
+        from:from, 
+        to: to, 
+        replyTo: replyTo,
+        subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`, 
+        html:html, 
+        config:configEmail,
+        headers:headers 
+      });
     // this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
 
+    });
+  }
+
+
+
+
+
+  sendNewPooledMessageEmailNotification(to, request, project, message) {
+
+    var that = this;
+    
+    this.readTemplateFile('pooledEmailMessage.html', function(err, html) {
+
+
+      var envTemplate = process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+
+      if (envTemplate) {
+          html = envTemplate;
+      }
+
+      winston.debug("html: " + html);
+
+      var template = handlebars.compile(html);
+
+      var baseScope = JSON.parse(JSON.stringify(that));
+      delete baseScope.pass;
+
+      // passa anche tutti i messages in modo da stampare tutto
+// Stampa anche contact.email
+
+      var replacements = {        
+        request: request,
+        // request: request.toJSON(),
+        project: project.toJSON(),
+        message: message,
+        baseScope: baseScope    
+      };
+
+      winston.debug("replacements ", replacements);
+
+      var html = template(replacements);
+      winston.debug("html after: " + html);
+
+
+
+      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+      let replyTo;
+      let headers;
+      if (message.request) { 
+        
+         messageId = message.request.request_id + "+" + messageId;
+
+         if (message.request.attributes && message.request.attributes.email_replyTo) {
+          replyTo = message.request.attributes.email_replyTo;
+         }         
+        // if (message.request.ticket_id) {
+        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+        // } else {
+        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+        // }
+        
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+
+        winston.verbose("messageId: " + messageId);
+        winston.verbose("replyTo: " + replyTo);
+        winston.verbose("email headers", headers);
+      }
+
+      let inReplyTo;
+      let references;
+      if (message.attributes) {
+        if (message.attributes.email_messageId) {
+          inReplyTo = message.attributes.email_messageId;
+         }
+         if (message.attributes.email_references) {
+          references = message.attributes.email_references;
+         }
+      }
+      winston.verbose("email inReplyTo: "+ inReplyTo);
+      winston.verbose("email references: "+ references);
+
+      let from;
+      let configEmail;
+      if (project && project.settings && project.settings.email) {
+        if (project.settings.email.config) {
+          configEmail = project.settings.email.config;
+          winston.verbose("custom email configEmail setting found: ", configEmail);
+        }
+        if (project.settings.email.from) {
+          from = project.settings.email.from;
+          winston.verbose("custom from email setting found: "+ from);
+        }
+      }
+
+
+
+
+      that.send({
+        messageId: messageId,
+        from:from, 
+        to:to, 
+        replyTo: replyTo,
+        // inReplyTo: inReplyTo,???
+        // references: references,??
+        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'}`, 
+        html:html, 
+        config: configEmail,        
+        headers:headers 
+      });
+
+
+    
+      // messageId =  "notification" + messageId;
+
+      // that.send({
+      //   messageId: messageId,
+      //   to: that.bcc, 
+      //   replyTo: replyTo,
+      //   subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'} - notification`, 
+      //   html:html,
+      //   headers:headers 
+      // });
+
+    
     });
   }
 
@@ -387,7 +730,7 @@ class EmailService {
         //   replyTo = message.request.request_id+"@"+that.replyToDomain;
         // }
         
-        headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
         winston.verbose("messageId: " + messageId);
         winston.verbose("replyTo: " + replyTo);
@@ -434,6 +777,8 @@ class EmailService {
         config:configEmail, 
         headers: headers
       });
+
+      messageId =  "notification" + messageId;
 
       that.send({
         messageId: messageId,
@@ -505,7 +850,7 @@ class EmailService {
         //   replyTo = message.request.request_id+"@"+that.replyToDomain;
         // }
         
-        headers = {X_PROJECT_ID_HEADER_KEY: project._id, X_REQUEST_ID_HEADER_KEY: message.request.request_id, X_TICKET_ID_HEADER_KEY:message.request.ticket_id };
+        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
         winston.verbose("messageId: " + messageId);
         winston.verbose("replyTo: " + replyTo);
@@ -547,7 +892,6 @@ class EmailService {
       //   replyTo = replyTo + ", "+ message.request.lead.email;
       // }
       
-
       that.send({
         messageId: messageId,
         // sender: message.senderFullname, //must be an email
@@ -564,6 +908,8 @@ class EmailService {
         headers:headers 
       }); 
       
+      messageId =  "notification" + messageId;
+
       that.send({
         messageId: messageId,
         // sender: message.senderFullname, //must be an email
