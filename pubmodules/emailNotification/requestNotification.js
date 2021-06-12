@@ -65,7 +65,7 @@ listen() {
             return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
           }
             // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
-          if (message.sender != message.request.lead.lead_id) {
+          if (message.request && message.request.lead && message.sender != message.request.lead.lead_id) {
             winston.verbose("sendUserEmail", message);
             return that.sendUserEmail(message.id_project, message);
           }
