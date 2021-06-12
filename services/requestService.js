@@ -357,7 +357,7 @@ class RequestService {
     //TODO rimuovi ritorni a capo first_text, fai anche trim
     var first_text;  
     if (request.first_text) {  //first_text can be empty for type image
-      first_text = request.first_text.replace(/[\n\r]+/g, '');
+      first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
     }
      
     var departmentid = request.departmentid;
@@ -704,10 +704,16 @@ class RequestService {
 
   changeFirstTextAndPreflightByRequestId(request_id, id_project, first_text, preflight) {
 
+
     return new Promise(function (resolve, reject) {
      // winston.debug("request_id", request_id);
      // winston.debug("newstatus", newstatus);
 
+        if (!first_text) {
+              winston.error(err);
+              return reject({err:" Error changing first text. The field first_text is empty"});
+        }
+        
         return Request       
         .findOneAndUpdate({request_id: request_id, id_project: id_project}, {first_text: first_text, preflight: preflight}, {new: true, upsert:false})
         .populate('lead')
