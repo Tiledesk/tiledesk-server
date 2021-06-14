@@ -364,11 +364,15 @@ class EmailService {
       // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
+    let msgText = message.text.replace(/[\n\r]/g, '<br>');
+    winston.verbose("msgText: " + msgText);
+
       var replacements = {        
         request: request,
         // request: request.toJSON(),
         project: project.toJSON(),
         message: message,
+        msgText: msgText,
         baseScope: baseScope    
       };
 
@@ -482,12 +486,17 @@ class EmailService {
 
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
+
+      let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
+      winston.verbose("msgText: " + msgText);
+
       var replacements = {        
         request: request.toJSON(),
         project: project.toJSON(),
+        msgText: msgText,
         baseScope: baseScope    
       };
-
+    
       var html = template(replacements);
 
       
@@ -583,6 +592,9 @@ class EmailService {
       var baseScope = JSON.parse(JSON.stringify(that));
       delete baseScope.pass;
 
+      let msgText = message.text.replace(/[\n\r]/g, '<br>');
+      winston.verbose("msgText: " + msgText);
+  
       // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
@@ -591,6 +603,7 @@ class EmailService {
         // request: request.toJSON(),
         project: project.toJSON(),
         message: message,
+        msgText: msgText,
         baseScope: baseScope    
       };
 
@@ -706,9 +719,13 @@ class EmailService {
       var baseScope = JSON.parse(JSON.stringify(that));
       delete baseScope.pass;
 
+      let msgText = message.text.replace(/[\n\r]/g, '<br>');
+      winston.verbose("msgText: " + msgText);
+
       var replacements = {        
         message: message,
         project: project.toJSON(),
+        msgText:msgText, 
         seamlessPage: sourcePage,
         tokenQueryString: tokenQueryString,
         baseScope: baseScope    
@@ -824,10 +841,15 @@ class EmailService {
       var baseScope = JSON.parse(JSON.stringify(that));
       delete baseScope.pass;
 
+
+      let msgText = message.text.replace(/[\n\r]/g, '<br>');
+      winston.verbose("msgText: " + msgText);
+
       var replacements = {        
         message: message,
         project: project.toJSON(),
         seamlessPage: sourcePage,
+        msgText: msgText,
         tokenQueryString: tokenQueryString,
         baseScope: baseScope    
       };
