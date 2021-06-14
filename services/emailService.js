@@ -244,9 +244,14 @@ class EmailService {
       // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
+
+      let msgText = msgText.replace(/[\n\r]/g, '<br>');
+      winston.verbose("msgText: " + msgText);
+
       var replacements = {        
         request: request.toJSON(),
         project: project.toJSON(),
+        msgText: msgText,
         baseScope: baseScope    
       };
 
