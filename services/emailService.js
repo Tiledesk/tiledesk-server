@@ -245,7 +245,7 @@ class EmailService {
 // Stampa anche contact.email
 
 
-      let msgText = msgText.replace(/[\n\r]/g, '<br>');
+      let msgText = message.text.replace(/[\n\r]/g, '<br>');
       winston.verbose("msgText: " + msgText);
 
       var replacements = {        
