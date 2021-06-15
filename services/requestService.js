@@ -193,7 +193,7 @@ class RequestService {
             winston.debug("after routeInternal");
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
-            winston.debug("request.status:" + requestBeforeRoute.status);
+            winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
             winston.debug("routedRequest.status:" + routedRequest.status);
 
             winston.info(" requestBeforeRoute.department:"+ requestBeforeRoute.department.toString());
@@ -201,7 +201,7 @@ class RequestService {
 
             
             if (requestBeforeRoute.status === routedRequest.status && 
-                requestBeforeRoute.department === routedRequest.department && 
+                requestBeforeRoute.department.toString() === routedRequest.department.toString() && 
                 requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
