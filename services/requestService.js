@@ -196,12 +196,21 @@ class RequestService {
             winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
             winston.debug("routedRequest.status:" + routedRequest.status);
 
-            winston.info(" requestBeforeRoute.department:"+ requestBeforeRoute.department.toString());
-            winston.info(" routedRequest.department:"+ routedRequest.department.toString());
-
+            let beforeDepartmentId;
+            if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
+              beforeDepartmentId = requestBeforeRoute.department.toString();
+              winston.info("beforeDepartmentId:"+ beforeDepartmentId);
+            }
+            
+            let afterDepartmentId;
+            if (routedRequest.department) {
+              afterDepartmentId = routedRequest.department.toString();
+              winston.info("afterDepartmentId:"+ afterDepartmentId);
+            }
+                  
             
             if (requestBeforeRoute.status === routedRequest.status && 
-                requestBeforeRoute.department.toString() === routedRequest.department.toString() && 
+                 beforeDepartmentId === afterDepartmentId && 
                 requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
