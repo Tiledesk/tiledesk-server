@@ -196,7 +196,10 @@ class RequestService {
             winston.debug("request.status:" + requestBeforeRoute.status);
             winston.debug("routedRequest.status:" + routedRequest.status);
 
+            winston.info(" requestBeforeRoute.department:"+ requestBeforeRoute.department.toString());
+            winston.info(" routedRequest.department:"+ routedRequest.department.toString());
 
+            
             if (requestBeforeRoute.status === routedRequest.status && 
                 requestBeforeRoute.department === routedRequest.department && 
                 requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
