@@ -123,6 +123,9 @@ class RequestService {
            winston.debug("routeInternal assigned_operator_id: "+ assigned_operator_id);
            winston.debug("routeInternal status: "+ status);
 
+
+
+          //  cosi modifica la request originale forse devi fare il clone?????
           request.status = status;
 
           request.participants = participants;          
@@ -194,7 +197,10 @@ class RequestService {
             winston.debug("routedRequest.status:" + routedRequest.status);
 
 
-            if (requestBeforeRoute.status === routedRequest.status && requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+            if (requestBeforeRoute.status === routedRequest.status && 
+                requestBeforeRoute.department === routedRequest.department && 
+                requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
+
               winston.verbose("Request " +request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
               if (no_populate==="true" || no_populate===true) {

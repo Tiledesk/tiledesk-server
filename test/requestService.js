@@ -27,6 +27,7 @@ var leadService = require('../services/leadService');
 var userService = require('../services/userService');
 
 var Request = require("../models/request");
+var Group = require("../models/group");
 var Project_user = require("../models/project_user");
 // var Tag = require('../models/tag');
 var requestEvent = require('../event/requestEvent');
@@ -60,7 +61,7 @@ describe('RequestService', function () {
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
-          // expect(savedRequest.ticket_id).to.equal(1);
+          //expect(savedRequest.ticket_id).to.equal(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
@@ -93,15 +94,15 @@ describe('RequestService', function () {
           requestService.create(request).then(function(savedRequest) {
             // assert.isNotOk('No duplicate check index');
             console.log("no index check ???");
-            done();
+             done();
           }).catch(function(err) {
             console.log("ok duplicate check index ", err);
-            // done();
+            //done();
           });
         }).catch(function(err) {
             console.log("test reject",err);
             assert.isNotOk(err,'Promise error');
-            // done();
+            //done();
         });
     });
   });
@@ -137,7 +138,6 @@ describe('RequestService', function () {
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
-          // expect(savedRequest.ticket_id).to.equal(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
@@ -957,6 +957,256 @@ it('removeparticipant', function (done) {
 
 
 
+  // mocha test/requestService.js  --grep 'routeDepartmentSameAgentSameDepartmentSkipUpdate'
+  it('routeDepartmentSameAgentSameDepartmentSkipUpdate', function (done) {
+    // this.timeout(10000);
+  
+    var email = "test-route-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+  
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+  
+     projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentSameDepartmentSkipUpdate", userid).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+  
+       requestService.createWithIdAndRequester("routeDepartmentSameAgentSameDepartmentSkipUpdate", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+          winston.debug("resolve savedRequest");
+          expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate");
+          expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+          expect(savedRequest.first_text).to.equal("first_text");
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+          expect(savedRequest.status).to.equal(200);
+          expect(savedRequest.participants).to.have.lengthOf(1);  
+          expect(savedRequest.participantsAgents).to.have.lengthOf(1);
+          expect(savedRequest.participantsBots).to.have.lengthOf(0);
+          expect(savedRequest.hasBot).to.equal(false);        
+          expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+  
+          console.log("savedRequest.department",savedRequest.department);
+          // expect(savedRequest.department.name).to.equal("Default");
+  
+          // departmentService.create("AssignedDepartment-for-routeDepartmentSameAgentSameDepartmentSkipUpdate", savedProject._id, 'assigned', userid).then(function(createdDepartment) {
+            let dep = savedRequest.department;
+  
+            // route(request_id, departmentid, id_project, nobot, no_populate) {
+            requestService.route("routeDepartmentSameAgentSameDepartmentSkipUpdate", dep, savedProject._id, false).then(function(routedRequest) {
+  
+              expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate");
+              expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+              expect(routedRequest.first_text).to.equal("first_text");
+              expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+              expect(routedRequest.status).to.equal(200);
+              expect(routedRequest.participants).to.have.lengthOf(1);  
+              expect(routedRequest.participantsAgents).to.have.lengthOf(1);
+              expect(routedRequest.participantsBots).to.have.lengthOf(0);
+              expect(routedRequest.hasBot).to.equal(false);        
+              expect(routedRequest.id_project).to.equal(savedProject._id.toString());
+      
+              console.log("routedRequest.department.name",routedRequest.department.name);
+              expect(routedRequest.department._id.toString()).to.equal(dep.toString());
+              expect(routedRequest.snapshot.department._id.toString()).to.equal(dep.toString());
+              
+              done();
+  
+            });
+  
+          }).catch(function(err) {
+            console.log("test reject",err);
+              assert.isNotOk(err,'Promise error');
+              done();
+          });
+    });
+  });
+});
+
+
+  
+  // mocha test/requestService.js  --grep 'routeDepartmentSameAgentDifferentDepartment'
+it('routeDepartmentSameAgentDifferentDepartment', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-route-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
+
+   projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentDifferentDepartment", userid).then(function(savedProjectAndPU) {
+    var savedProject = savedProjectAndPU.project;
+
+     requestService.createWithIdAndRequester("routeDepartmentSameAgentDifferentDepartment", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+        winston.debug("resolve savedRequest");
+        expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment");
+        expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+        expect(savedRequest.first_text).to.equal("first_text");
+        expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+        expect(savedRequest.status).to.equal(200);
+        expect(savedRequest.participants).to.have.lengthOf(1);  
+        expect(savedRequest.participantsAgents).to.have.lengthOf(1);
+        expect(savedRequest.participantsBots).to.have.lengthOf(0);
+        expect(savedRequest.hasBot).to.equal(false);        
+        expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+        console.log("savedRequest.department",savedRequest.department);
+        // expect(savedRequest.department.name).to.equal("Default");
+
+        departmentService.create("AssignedDepartment-for-routeDepartmentSameAgentDifferentDepartment", savedProject._id, 'assigned', userid).then(function(createdDepartment) {
+
+          // route(request_id, departmentid, id_project, nobot, no_populate) {
+          requestService.route("routeDepartmentSameAgentDifferentDepartment", createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
+
+            expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment");
+            expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+            expect(routedRequest.first_text).to.equal("first_text");
+            expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+            expect(routedRequest.status).to.equal(200);
+            expect(routedRequest.participants).to.have.lengthOf(1);  
+            expect(routedRequest.participantsAgents).to.have.lengthOf(1);
+            expect(routedRequest.participantsBots).to.have.lengthOf(0);
+            expect(routedRequest.hasBot).to.equal(false);        
+            expect(routedRequest.id_project).to.equal(savedProject._id.toString());
+    
+            console.log("routedRequest.department.name",routedRequest.department.name);
+            expect(routedRequest.department._id.toString()).to.equal(createdDepartment._id.toString());
+            expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
+            
+            done();
+
+          });
+
+        }).catch(function(err) {
+          console.log("test reject",err);
+            assert.isNotOk(err,'Promise error');
+            done();
+        });
+  });
+});
+});
+});
+
+
+
+
+  // mocha test/requestService.js  --grep 'routeDepartmentDifferentAgentDifferentDepartment'
+  it('routeDepartmentDifferentAgentDifferentDepartment', function (done) {
+    // this.timeout(10000);
+  
+    var email = "test-route-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+  
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+  
+      projectService.createAndReturnProjectAndProjectUser("routeDepartmentDifferentAgentDifferentDepartment", userid).then(function(savedProjectAndPU) {
+        var savedProject = savedProjectAndPU.project;
+
+
+
+
+      var email2 = "test-route-create-" + Date.now() + "@email.com";
+      var pwd2 = "pwd";
+    
+      userService.signup( email2 ,pwd2, "Test Firstname", "Test lastname").then(function(savedUser2) {
+        var userid2 = savedUser2.id;
+
+
+        var newProject_user = new Project_user({
+          // _id: new mongoose.Types.ObjectId(),
+          id_project: savedProject._id.toString(),
+          id_user: savedUser2._id.toString(),
+          role: "agent",           
+          user_available: true, 
+          createdBy: userid,
+          updatedBy: userid
+        });
+  
+        newProject_user.save(function (err, savedProject_user) {
+  
+          if (err) {
+            console.log("err",err)
+          }
+  
+       requestService.createWithIdAndRequester("routeDepartmentDifferentAgentDifferentDepartment", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+          winston.debug("resolve savedRequest");
+          expect(savedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment");
+          expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+          expect(savedRequest.first_text).to.equal("first_text");
+          expect(savedRequest.snapshot.agents).to.have.lengthOf(2);
+          expect(savedRequest.status).to.equal(200);
+          expect(savedRequest.participants).to.have.lengthOf(1);  
+          // expect(savedRequest.participants[0]).to.equal(userid);
+          expect(savedRequest.participantsAgents).to.have.lengthOf(1);
+          expect(savedRequest.participantsBots).to.have.lengthOf(0);
+          expect(savedRequest.hasBot).to.equal(false);        
+          expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+  
+          console.log("savedRequest.department",savedRequest.department);
+          // expect(savedRequest.department.name).to.equal("Default");
+  
+
+          var newGroup = new Group({
+            name: "group1",
+            members: [userid2],
+            trashed: false,
+            id_project: savedProject._id,
+            createdBy: userid,
+            updatedBy: userid
+          });
+          newGroup.save(function (err, savedGroup) {
+            console.log("savedGroup",savedGroup)
+
+
+
+          departmentService.create("AssignedDepartment-for-routeDepartmentDifferentAgentDifferentDepartment", savedProject._id, 'assigned', userid).then(function(createdDepartment) {
+
+            
+            createdDepartment.id_group = newGroup._id;
+            createdDepartment.save(function (err, savedGroupDepartment) {
+              console.log("savedGroupDepartment",savedGroupDepartment)
+
+  
+            // route(request_id, departmentid, id_project, nobot, no_populate) {
+            requestService.route("routeDepartmentDifferentAgentDifferentDepartment", createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
+  
+              expect(routedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment");
+              expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+              expect(routedRequest.first_text).to.equal("first_text");
+              expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
+              expect(routedRequest.status).to.equal(200);
+              expect(routedRequest.participants).to.have.lengthOf(1);  
+              expect(routedRequest.participants[0]).to.equal(userid2);
+              expect(routedRequest.participantsAgents).to.have.lengthOf(1);
+              expect(routedRequest.participantsBots).to.have.lengthOf(0);
+              expect(routedRequest.hasBot).to.equal(false);        
+              expect(routedRequest.id_project).to.equal(savedProject._id.toString());
+      
+              console.log("routedRequest.department.name",routedRequest.department.name);
+              expect(routedRequest.department._id.toString()).to.equal(createdDepartment._id.toString());
+              expect(routedRequest.snapshot.department._id.toString()).to.equal(createdDepartment._id.toString());
+              
+              done();
+  
+            });
+  
+          }).catch(function(err) {
+            console.log("test reject",err);
+              assert.isNotOk(err,'Promise error');
+              done();
+          });
+    });
+  });
+  });
+  });
+  });
+  });
+  });
+});
+
+
+
+
+
 
 
 
@@ -1135,6 +1385,13 @@ it('removeTag', function (done) {
 });
   });
 });
+
+
+
+
+
+
+
 
 
 
