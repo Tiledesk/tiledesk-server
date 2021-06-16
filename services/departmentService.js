@@ -77,9 +77,11 @@ roundRobin(operatorSelectedEvent) {
 
     // db.getCollection('requests').find({id_project: "5c12662488379d0015753c49", participants: { $exists: true, $ne: [] }}).sort({_id:-1}).limit(1)
     
-      // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
-      let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
-      
+      // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty      
+      let query = {id_project: operatorSelectedEvent.id_project, 
+        hasBot:false, preflight:false, status: { $gt: 100 }, 
+        participants: { $exists: true, $ne: [] }};
+
       winston.debug('query', query);            
 
       // let lastRequests = await 
