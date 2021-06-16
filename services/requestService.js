@@ -197,13 +197,13 @@ class RequestService {
             let beforeDepartmentId;
             if (requestBeforeRoute.department) { //requestBeforeRoute.department can be empty for internal ticket
               beforeDepartmentId = requestBeforeRoute.department.toString();
-              winston.info("beforeDepartmentId:"+ beforeDepartmentId);
+              winston.debug("beforeDepartmentId:"+ beforeDepartmentId);
             }
 
             let afterDepartmentId;
             if (routedRequest.department) {
               afterDepartmentId = routedRequest.department.toString();
-              winston.info("afterDepartmentId:"+ afterDepartmentId);
+              winston.debug("afterDepartmentId:"+ afterDepartmentId);
             }
 
 
