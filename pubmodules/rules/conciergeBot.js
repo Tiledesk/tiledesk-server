@@ -55,11 +55,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                         if (message.type === MessageConstants.MESSAGE_TYPE.IMAGE)  {
                             first_text = "Image";
                             winston.debug("setting first_text to image");
-                        }
-                        if (message.type === MessageConstants.MESSAGE_TYPE.FILE)  {
-                            first_text = "File";
-                            winston.debug("setting first_text to file");
-                        }
+                        }      
 
                         if (message.type === MessageConstants.MESSAGE_TYPE.FRAME)  {
                             first_text = "Frame";
