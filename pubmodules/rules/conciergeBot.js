@@ -56,6 +56,17 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             first_text = "Image";
                             winston.debug("setting first_text to image");
                         }
+                        if (message.type === MessageConstants.MESSAGE_TYPE.FILE)  {
+                            first_text = "File";
+                            winston.debug("setting first_text to file");
+                        }
+
+                        if (message.type === MessageConstants.MESSAGE_TYPE.FRAME)  {
+                            first_text = "Frame";
+                            winston.debug("setting first_text to frame");
+                        }
+
+
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         
                             // requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
