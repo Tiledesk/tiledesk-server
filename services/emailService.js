@@ -316,7 +316,12 @@ class EmailService {
       if (request.subject) {
         subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
       }
+
       if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
+      }
+      
+      if (request.ticket_id && request.subject) {
         subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
       }
 
@@ -446,8 +451,13 @@ class EmailService {
         subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
       }
       if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] New message`;
+      }
+      
+      if (request.ticket_id && request.subject) {
         subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
       }
+
 
 
       that.send({
@@ -574,8 +584,13 @@ class EmailService {
         subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
       }
       if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
+      }
+      
+      if (request.ticket_id && request.subject) {
         subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
       }
+
 
 
       that.send({
@@ -698,8 +713,13 @@ class EmailService {
         subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
       }
       if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] New Message`;
+      }
+      
+      if (request.ticket_id && request.subject) {
         subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
       }
+
 
       that.send({
         messageId: messageId,
