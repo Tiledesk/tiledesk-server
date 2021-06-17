@@ -311,14 +311,21 @@ class EmailService {
         }
       }
 
- 
+      let subject = `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`;
+
+      if (request.subject) {
+        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      }
+      if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      }
 
       that.send({
         messageId: messageId,
         from:from, 
         to:to, 
         replyTo: replyTo,
-        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`, 
+        subject: subject, 
         html:html, 
         config: configEmail,
         headers:headers 
@@ -330,7 +337,7 @@ class EmailService {
         messageId: messageId,
         to: that.bcc, 
         replyTo: replyTo,
-        subject: `[TileDesk ${project ? project.name : '-'}] New Assigned Chat ${to}  - notification`, 
+        subject: subject + ` ${to}  - notification`, 
         html:html,
         headers:headers 
       });
@@ -432,6 +439,17 @@ class EmailService {
         }
       }
 
+
+      let subject = `[TileDesk ${project ? project.name : '-'}] New message`;
+
+      if (request.subject) {
+        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      }
+      if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      }
+
+
       that.send({
         messageId: messageId,
         from:from, 
@@ -439,7 +457,7 @@ class EmailService {
         replyTo: replyTo,
         // inReplyTo: inReplyTo,???
         // references: references,??
-        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'}`, 
+        subject: subject,
         html:html, 
         config: configEmail,        
         headers:headers 
@@ -453,7 +471,7 @@ class EmailService {
         messageId: messageId,
         to: that.bcc, 
         replyTo: replyTo,
-        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'} - notification`, 
+        subject: subject + ` - notification`, 
         html:html,
         headers:headers 
       });
@@ -550,13 +568,22 @@ class EmailService {
         }
       }
 
+      let subject = `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`;
+
+      if (request.subject) {
+        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      }
+      if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      }
+
 
       that.send({
         messageId: messageId,
         from:from, 
         to: to, 
         replyTo: replyTo,
-        subject: `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`, 
+        subject: subject, 
         html:html, 
         config:configEmail,
         headers:headers 
@@ -665,7 +692,14 @@ class EmailService {
       }
 
 
+      let subject = `[TileDesk ${project ? project.name : '-'}] New Message`;
 
+      if (request.subject) {
+        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      }
+      if (request.ticket_id) {
+        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      }
 
       that.send({
         messageId: messageId,
@@ -674,7 +708,7 @@ class EmailService {
         replyTo: replyTo,
         // inReplyTo: inReplyTo,???
         // references: references,??
-        subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'}`, 
+        subject: subject,
         html:html, 
         config: configEmail,        
         headers:headers 
