@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var routingConstants = require('../models/routingConstants');
 var winston = require('../config/winston');
+var TagSchema = require("../models/tag");
 
 var DepartmentSchema = new Schema({
   id_bot: {
@@ -46,6 +47,7 @@ var DepartmentSchema = new Schema({
     index: true
     // required: true
   },
+  tags: [TagSchema],
   status: {
     type: Number,
     default: 1,
@@ -71,6 +73,7 @@ DepartmentSchema.virtual('bot', {
 });
 
 DepartmentSchema.virtual('hasBot').get(function () {
+  // winston.debug("department hasBot virtual called");
   if (this.id_bot!=undefined) {
     return true;
   }else {
