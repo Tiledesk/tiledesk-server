@@ -50,7 +50,13 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     winston.debug("message send from lead with preflight on");
 
                         // changeFirstTextAndPreflightByRequestId(request_id, id_project, first_text, preflight) {
-                        requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, message.text, false).then(function (reqChanged) {
+
+                        let first_text =  message.text;
+                        if (message.type === MessageConstants.MESSAGE_TYPE.IMAGE)  {
+                            first_text = "Image";
+                            winston.debug("setting first_text to image");
+                        }
+                        requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
                         
                             // requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
                             // requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
@@ -304,12 +310,24 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     if (member) {
                         updateconversationfor = [member];
                     }
+
+                    let touchText = request.first_text;
+                    if (touchText) {  //first_text can be empty for type image
+                        touchText = touchText.replace(/[\n\r]+/g, ' '); //replace new line with space
+                    }
+                    if (touchText.length > 30) {
+                        touchText = touchText.substring(0,30);
+                    }
+                    if (request.subject) {
+                        touchText = request.subject;
+                    }
+
                         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
                         messageService.send(
                             'system', 
                             'Bot',                                     
                             request.request_id,
-                            i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS)+": " + request.first_text, 
+                            i8nUtil.getMessage("TOUCHING_OPERATOR", request.language, MessageConstants.LABELS)+": " + touchText, 
                             request.id_project,
                             'system',                             
                             {subtype:"info", "updateconversation" : true, "updateconversationfor":updateconversationfor, forcenotification: true,  messagelabel: {key: "TOUCHING_OPERATOR"}},
