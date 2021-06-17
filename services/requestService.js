@@ -346,7 +346,7 @@ class RequestService {
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
-    var request_id = 'support-group-'+uuidv4();
+    var request_id = 'support-group-'+ id_project + "-" + uuidv4();
     winston.debug("request_id: "+request_id);
     
     return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
@@ -393,6 +393,9 @@ class RequestService {
     var location = request.location;
     var participants = request.participants || [];
 
+    var tags = request.tags;
+    var notes = request.notes;
+
     if (!departmentid) {
       departmentid ='default';
     }
@@ -413,7 +416,7 @@ class RequestService {
         var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location,
-          participants:participants}};
+          participants:participants, tags: tags, notes:notes}};
 
           winston.debug("context",context);
 
@@ -533,7 +536,9 @@ class RequestService {
                 preflight: preflight,
                 channel: channel,
                 location: location,
-                snapshot: snapshot
+                snapshot: snapshot,
+                tags: tags,
+                notes: notes
               });
                     
 
@@ -1595,7 +1600,7 @@ class RequestService {
 
 
       // return Request.findById(id).then(function (request) {
-        if (request.participants.indexOf(tag)==-1){
+        if (request.tags.indexOf(tag)==-1){
           request.tags.push(tag);        
 // check error here
 

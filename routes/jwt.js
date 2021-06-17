@@ -7,7 +7,6 @@ var router = express.Router();
 var config = require('../config/database'); 
 var jwt = require('jsonwebtoken');
 var validtoken = require('../middleware/valid-token');
-// var secret = process.env.SECRET || config.secret;
 var requestUtil = require('../utils/requestUtil');
 var Project = require('../models/project');
 var winston = require('../config/winston');

@@ -698,7 +698,8 @@ it('getallcsv', function (done) {
     winston.info("createdLead", createdLead.toObject());
       // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
 
-     requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+     requestService.create({request_id: "request_id1", project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id, id_project: savedProject._id, 
+     first_text: "first_text", tags: [{tag: "tag1"},{tag: "tag2"}]}).then(function(savedRequest) {
         winston.info("resolve", savedRequest.toObject());
        
 
@@ -707,7 +708,8 @@ it('getallcsv', function (done) {
           .auth(email, pwd)
           .end(function(err, res) {
               //console.log("res",  res);
-              // console.log("res.body",  res.body);
+               console.log("res.text",  res.text);
+              //  console.log("res",  res);              
               res.should.have.status(200);
               res.body.should.be.a('object');
              

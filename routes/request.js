@@ -58,7 +58,7 @@ function (req, res) {
     let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
     winston.debug('messageStatus: ' + messageStatus);
 
-    var request_id = req.params.request_id || 'support-group-'+uuidv4();
+    var request_id = req.params.request_id || 'support-group-' + req.projectid + "-" + uuidv4();
 
     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
     return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
@@ -632,6 +632,11 @@ router.get('/', function (req, res, next) {
     query.hasBot = req.query.hasbot;
   }
 
+  // if (req.query.waiting_time_exists) { //non basta aggiungi anche che nn è null
+  //   query.waiting_time = {"$exists": req.query.waiting_time_exists} //{$ne:null}
+  //   winston.debug('REQUEST ROUTE - QUERY waiting_time_exists', query.waiting_time_exists);
+  // }
+
 
   if (req.query.tags) {
     winston.debug('req.query.tags', req.query.tags);
@@ -918,7 +923,7 @@ router.get('/csv', function (req, res, next) {
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString() };
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
-
+  winston.debug("csv query", query);
 
   var direction = 1; //-1 descending , 1 ascending
   if (req.query.direction) {
@@ -938,7 +943,7 @@ router.get('/csv', function (req, res, next) {
   winston.debug("sort query", sortQuery);
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
-    return Request.find(query, '-transcript  -agents -status -__v').
+    return Request.find(query, '-transcript -status -__v').
     skip(skip).limit(limit).
         //populate('department', {'_id':-1, 'name':1}).     
         populate('department').
@@ -987,17 +992,34 @@ router.get('/csv', function (req, res, next) {
             
             element.lead_email = lead_email;
 
+            var tags = [];
+            var tagsString = "";
+            if (element.tags && element.tags.length>0) {
+              
+              element.tags.forEach(function(tag) {
+                // tags = tags  + tag.tag + ", ";
+                tags.push(tag.tag);
+              });              
+            }
+            tagsString = tags.join(", ")
+
+            winston.debug('tagsString ' +tagsString)
+            
+            element.tags = tagsString;
+
             delete element.lead;
 
             delete element.attributes;
 
             delete element.notes;
 
-            delete element.tags;
+            // delete element.tags;
 
             delete element.channelOutbound;
 
             delete element.location;
+
+            delete element.snapshot;
             
 
             // TODO print also lead. use a library to flattize
