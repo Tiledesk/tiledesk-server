@@ -1,4 +1,17 @@
 
+# 2.1.40.3
+- Bugfix first message with an image fix and touchText limited to 30 character or subject
+- Removed answer field from the fulltext search of the faqs
+
+
+# 2.1.40.2 -> PROD
+- log fix
+
+# 2.1.40.1
+- Routing round robin fix
+- Updated tiledesk-chat-util to 0.8.21
+- BugFix route request to another department with the same agents
+
 # 2.1.40
 - webhook fix for return empty body
 - log fix
