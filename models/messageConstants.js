@@ -14,6 +14,12 @@ module.exports = {
         DIRECT : "direct",    
     },
 
+    MESSAGE_TYPE : {
+        TEXT : "text",
+        IMAGE : "image",    
+        FRAME: "frame"
+    },
+
 
     LABELS : {
         EN : {

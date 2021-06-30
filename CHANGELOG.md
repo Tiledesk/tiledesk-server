@@ -1,4 +1,6 @@
-
+# 2.1.40.4
+- BugFix messageConstants
+ 
 # 2.1.40.3
 - Bugfix first message with an image fix and touchText limited to 30 character or subject
 - Removed answer field from the fulltext search of the faqs
