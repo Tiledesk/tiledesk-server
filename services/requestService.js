@@ -84,8 +84,14 @@ class RequestService {
 
       var context = {request: request};
 
-          // getOperators(departmentid, projectid, nobot, disableWebHookCall, context)
-        return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
+         
+          try {
+            //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
+              var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+              winston.info("getOperators", result);
+          } catch(err) {
+            return reject(err);
+          }
 
           // winston.debug("getOperators", result);
 
