@@ -77,11 +77,11 @@ roundRobin(operatorSelectedEvent) {
 
     // db.getCollection('requests').find({id_project: "5c12662488379d0015753c49", participants: { $exists: true, $ne: [] }}).sort({_id:-1}).limit(1)
     
-      // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty      
+      // https://stackoverflow.com/questions/14789684/find-mongodb-records-where-array-field-is-not-empty
       let query = {id_project: operatorSelectedEvent.id_project, 
         hasBot:false, preflight:false, status: { $gt: 100 }, 
         participants: { $exists: true, $ne: [] }};
-
+      
       winston.debug('query', query);            
 
       // let lastRequests = await 
@@ -96,6 +96,7 @@ roundRobin(operatorSelectedEvent) {
           winston.debug('lastRequests',lastRequests); 
 
           if (lastRequests.length==0) {
+              winston.debug('roundRobin lastRequest not found. fall back to random info',operatorSelectedEvent); 
               winston.verbose('roundRobin lastRequest not found. fall back to random'); 
               //first request use default random algoritm
               // return 0;
@@ -123,7 +124,7 @@ roundRobin(operatorSelectedEvent) {
           if (operatorSelectedEvent.available_agents && operatorSelectedEvent.available_agents.length==0) {
             winston.debug('operatorSelectedEvent.available_agents empty ', operatorSelectedEvent.available_agents);
             return resolve(operatorSelectedEvent);
-          }
+          }          
 
           // https://stackoverflow.com/questions/15997879/get-the-index-of-the-object-inside-an-array-matching-a-condition
           let lastOperatorIndex = operatorSelectedEvent.available_agents.findIndex(projectUser => projectUser.id_user.toString() === lastOperatorId);
@@ -135,6 +136,9 @@ roundRobin(operatorSelectedEvent) {
 
           winston.debug('lastOperatorIndex: ' + lastOperatorIndex);
 
+          winston.debug('operatorSelectedEvent.available_agents: ', operatorSelectedEvent.available_agents);
+
+          
           let nextOperator = that.nextOperator(operatorSelectedEvent.available_agents, lastOperatorIndex);
 
           
@@ -210,7 +214,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         }
         // console.log("department", department);
         if (!department) {
-          winston.error("Department not found for query ", query);
+          winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
           return reject({ success: false, msg: 'Department not found.' });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
