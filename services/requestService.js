@@ -428,7 +428,7 @@ class RequestService {
            try {
             //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
               var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-              winston.info("getOperators", result);
+              winston.debug("getOperators", result);
           } catch(err) {
             return reject(err);
           }
