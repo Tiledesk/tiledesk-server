@@ -31,7 +31,8 @@ router.post('/',
     channel_type: req.body.channel_type || MessageConstants.CHANNEL_TYPE.DIRECT, 
     channel: req.body.channel
 };
-  return messageService.save(message).then(function(savedMessage){                    
+//.save()
+  return messageService.create(message).then(function(savedMessage){                    
       res.json(savedMessage);
     });
 
