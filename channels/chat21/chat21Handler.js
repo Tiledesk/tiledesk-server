@@ -401,7 +401,7 @@ class Chat21Handler {
                            chat21.auth.setAdminToken(adminToken);
 
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                            "recipient_fullname", message.text, message.sender, attributes, message.type, message.metadata, timestamp)                         
+                            "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata, timestamp)                         
                                    .then(function(data){
                                        winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
                                
