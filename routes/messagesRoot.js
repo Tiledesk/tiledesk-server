@@ -20,6 +20,7 @@ router.post('/',
     sender: req.body.sender || req.user._id, 
     senderFullname: req.body.senderFullname || req.user.fullName, 
     recipient: req.body.recipient, 
+    recipientFullname: req.body.recipientFullname,
     text: req.body.text, 
     id_project: req.projectid, // rendilo opzionale?
     createdBy: req.user._id, 
