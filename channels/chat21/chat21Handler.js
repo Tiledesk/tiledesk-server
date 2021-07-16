@@ -400,6 +400,13 @@ class Chat21Handler {
 
                            chat21.auth.setAdminToken(adminToken);
 
+                           var timestamp = Date.now();
+                           // var timestamp = undefined;
+                           if (message.attributes && message.attributes.clienttimestamp) {
+                               timestamp = message.attributes.clienttimestamp;
+                           }
+
+                           
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                             "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata, timestamp)                         
                                    .then(function(data){
