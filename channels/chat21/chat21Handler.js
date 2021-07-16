@@ -367,7 +367,7 @@ class Chat21Handler {
 
                             // send: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata){
                            return  chat21.messages.send(message.senderFullname,     message.recipient, 
-                            "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata)
+                            message.recipientFullname, message.text, message.sender, message.attributes, message.type, message.metadata)
                                     .then(function(data){
                                         winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
                                 
@@ -406,9 +406,9 @@ class Chat21Handler {
                                timestamp = message.attributes.clienttimestamp;
                            }
 
-                           
+
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
-                            "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata, timestamp)                         
+                            message.recipientFullname, message.text, message.sender, message.attributes, message.type, message.metadata, timestamp)                         
                                    .then(function(data){
                                        winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
                                
