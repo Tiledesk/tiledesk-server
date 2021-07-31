@@ -79,10 +79,3 @@ To see how to upgrade tiledesk-server see [here](./docs/upgrading.md)
 
 # Testing
 Run unit test with `npm test` and integration test with `npm run test:int` 
-
-
-
-
-
-
-
