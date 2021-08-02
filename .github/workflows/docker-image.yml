@@ -3,6 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ master ]
+    tags:
+      - '**'           # Push events to every tag including hierarchical tags like
   pull_request:
     branches: [ master ]
 
