@@ -336,7 +336,10 @@ router.put('/:requestid/assign', function (req, res) {
         winston.debug("department changed", updatedRequest);
 
         return res.json(updatedRequest);
-      });
+      }).catch(function(error)  {
+        winston.error('Error changing the department.', error)
+        return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+      })
   });
 });
 
@@ -349,7 +352,10 @@ router.put('/:requestid/departments', function (req, res) {
       winston.debug("department changed", updatedRequest);
 
       return res.json(updatedRequest);
-  });
+  }).catch(function(error)  {
+    winston.error('Error changing the department.', error)
+    return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+  })
 });
 
 
@@ -538,6 +544,37 @@ router.delete('/:requestid',  function (req, res) {
 
   });
 });
+
+
+
+router.delete('/id/:id',  function (req, res) {
+  
+  var projectuser = req.projectuser;
+
+
+  if (projectuser.role != "owner" ) {
+    return res.status(403).send({ success: false, msg: 'Unauthorized.' });
+  }
+
+  Request.remove({ _id: req.params.id }, function (err, request) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+    }
+
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }   
+  
+    winston.verbose('Request deleted with id: '+ req.params.id );
+
+    requestEvent.emit('request.delete', request);
+
+    res.json(request);
+
+  });
+});
+
 
 
 

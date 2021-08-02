@@ -1,4 +1,30 @@
 
+# 2.1.40.8 
+- Added request delete endpoint by id
+
+# 2.1.40.7 -> PROD
+- logfix
+
+# 2.1.40.6
+- Fix request create if department id is not correct
+
+# 2.1.40.5
+- Logfix
+
+# 2.1.40.3 
+- Bugfix first message with an image fix and touchText limited to 30 character or subject
+- Removed answer field from the fulltext search of the faqs
+
+
+# 2.1.40.2 
+- log fix
+
+# 2.1.40.1
+- Routing round robin fix
+- Updated tiledesk-chat-util to 0.8.21
+- BugFix route request to another department with the same agents
+
+
 # 2.1.40
 - webhook fix for return empty body
 - log fix
@@ -171,7 +197,7 @@ Added email notification setting for each teammate (also in 2.1.14.3)
 - Fix TD218 Audit log for user invitation already registered
 
 # 2.1.12
-- Chat21 engine selection with CHAT21_ENGINE=[native|firebase]
+- Chat21 engine selection with CHAT21_ENGINE=[mqtt|firebase]
 - Schema migration tool with mongoose-migrate. Added env property DISABLE_AUTO_SHEMA_MIGRATION
 - #TD-250 Added emoji callout
 - Cors fix. Removed alternative cors response header.
