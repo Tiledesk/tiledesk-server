@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image Community latest CI
 
 on:	
   push:	 
@@ -16,9 +16,7 @@ jobs:
       name: Check out the repo
     - uses: docker/build-push-action@v1
       with:	    
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-        dockerfile: Dockerfile-en
-        repository: tiledeskrepo/tiledesk-server-enterprise
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: tiledesk/tiledesk-server
         tags: latest
