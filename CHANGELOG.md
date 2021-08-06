@@ -1,8 +1,21 @@
 
-# 2.1.40.8 
+
+# 2.1.40.13 -> in PROD
+- Stripe fix for adding new agents
+
+# 2.1.40.12
+- Docker image number fix 
+
+# 2.1.40.11
+- Docker image number fix 
+
+# 2.1.40.10 
+- Docker image number fix 
+
+# 2.1.40.9 
 - Added request delete endpoint by id
 
-# 2.1.40.7 -> PROD
+# 2.1.40.7
 - logfix
 
 # 2.1.40.6
@@ -10,6 +23,9 @@
 
 # 2.1.40.5
 - Logfix
+
+# 2.1.40.4
+- GLOBAL_SECRET env variable fix
 
 # 2.1.40.3 
 - Bugfix first message with an image fix and touchText limited to 30 character or subject
