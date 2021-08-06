@@ -40,15 +40,15 @@ describe('CampaignsRoute', () => {
           .post('/' + savedProject._id + '/campaigns/direct')
           .auth(email, pwd)
           .set('content-type', 'application/json')
-          .send({ "text": "ciao", "recipient": recipient})
+          .send({ "text": "ciao", "recipient": recipient })
           .end(function (err, res) {
             //console.log("res",  res);
             console.log("res.body", res.body);
             res.should.have.status(200);
             res.body.should.be.a('object');
-           
-                        
-            
+
+
+
             expect(res.body.success).to.equal(true);
 
 
@@ -91,8 +91,8 @@ describe('CampaignsRoute', () => {
             expect(res.body.senderFullname).to.equal("Test Firstname Test lastname");
             expect(res.body.sender).to.equal(savedUser._id.toString());
             expect(res.body.recipient).to.equal(recipient);
-                        
-            
+
+
             // expect(res.body.success).to.equal(true);
 
 
@@ -116,39 +116,43 @@ describe('CampaignsRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
-        
+
         var userid = savedUser._id;
 
-        var newGroup = new Group({
-          name: "group1",
-          members: ["userid1", "userid2"],
-          // members: [userid, "userid2"],
-          trashed: false,
-          id_project: savedProject._id,
-          createdBy: userid,
-          updatedBy: userid
-        });
-        newGroup.save(function (err, savedGroup) {
-          console.log("savedGroup", savedGroup)
+        var email2 = "test-message-create-" + Date.now() + "@email.com";
+        userService.signup(email2, pwd, "Test Firstname", "Test lastname").then(function (savedUser2) {
+
+          var newGroup = new Group({
+            name: "group1",
+            // members: ["userid1", "userid2"],
+            members: [userid, savedUser2._id.toString()],
+            trashed: false,
+            id_project: savedProject._id,
+            createdBy: userid,
+            updatedBy: userid
+          });
+          newGroup.save(function (err, savedGroup) {
+            console.log("savedGroup", savedGroup)
 
 
-          chai.request(server)
-            .post('/' + savedProject._id + '/campaigns/direct')
-            .auth(email, pwd)
-            .set('content-type', 'application/json')
-            .send({ "text": "ciao", "group_id": savedGroup._id.toString()})
-            .end(function (err, res) {
-              //console.log("res",  res);
-              console.log("res.body", res.body);
-              res.should.have.status(200);
-              res.body.should.be.a('object');
-
-              
-              expect(res.body.success).to.equal(true);
+            chai.request(server)
+              .post('/' + savedProject._id + '/campaigns/direct')
+              .auth(email, pwd)
+              .set('content-type', 'application/json')
+              .send({ "text": "ciao", "group_id": savedGroup._id.toString() })
+              .end(function (err, res) {
+                //console.log("res",  res);
+                console.log("res.body", res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
 
 
-              done();
-            });
+                expect(res.body.success).to.equal(true);
+
+
+                done();
+              });
+          });
         });
       });
     });
@@ -157,9 +161,9 @@ describe('CampaignsRoute', () => {
 
 
 
-  // mocha test/campaignsRoute.js  --grep 'directGroupId'
+  // mocha test/campaignsRoute.js  --grep 'directGroupId2'
 
-  it('directGroupId', function (done) {
+  it('directGroupId2', function (done) {
 
     var email = "test-message-create-" + Date.now() + "@email.com";
     var pwd = "pwd";
@@ -168,41 +172,45 @@ describe('CampaignsRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("directSimple", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
-        
+
         var userid = savedUser._id;
 
-        var newGroup = new Group({
-          name: "group1",
-          members: ["userid1", "userid2"],
-          // members: [userid, "userid2"],
-          trashed: false,
-          id_project: savedProject._id,
-          createdBy: userid,
-          updatedBy: userid
-        });
-        newGroup.save(function (err, savedGroup) {
-          console.log("savedGroup", savedGroup)
+        var email2 = "test-message-create-" + Date.now() + "@email.com";
+        userService.signup(email2, pwd, "Test Firstname", "Test lastname").then(function (savedUser2) {
+
+          var newGroup = new Group({
+            name: "group1",
+            // members: ["userid1", "userid2"],
+            members: [userid, savedUser2._id.toString()],
+            trashed: false,
+            id_project: savedProject._id,
+            createdBy: userid,
+            updatedBy: userid
+          });
+          newGroup.save(function (err, savedGroup) {
+            console.log("savedGroup", savedGroup)
 
 
-          chai.request(server)
-            .post('/' + savedProject._id + '/campaigns/direct')
-            .auth(email, pwd)
-            .set('content-type', 'application/json')
-            .send({ "text": "ciao", "group_id": savedGroup._id.toString(), returnobject: true })
-            .end(function (err, res) {
-              //console.log("res",  res);
-              console.log("res.body", res.body);
-              res.should.have.status(200);
-              res.body.should.be.a('array');
+            chai.request(server)
+              .post('/' + savedProject._id + '/campaigns/direct')
+              .auth(email, pwd)
+              .set('content-type', 'application/json')
+              .send({ "text": "ciao", "group_id": savedGroup._id.toString(), returnobject: true })
+              .end(function (err, res) {
+                //console.log("res",  res);
+                console.log("res.body", res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('array');
 
-              expect(res.body.length).to.equal(2);
-              expect(res.body[0].recipient).to.equal("userid1");
-              expect(res.body[1].recipient).to.equal("userid2");
-              // expect(res.body.success).to.equal(true);
+                expect(res.body.length).to.equal(2);
+                expect(res.body[0].recipient).to.equal(userid.toString());
+                expect(res.body[1].recipient).to.equal(savedUser2._id.toString());
+                // expect(res.body.success).to.equal(true);
 
 
-              done();
-            });
+                done();
+              });
+          });
         });
       });
     });

@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Group = require("../models/group");
+var User = require("../models/user");
 var winston = require('../config/winston');
 var requestService = require("../services/requestService");
 var messageService = require("../services/messageService");
@@ -75,14 +76,30 @@ router.post('/direct', async function (req, res) {
   winston.info("recipients", recipients);
   winston.info("recipients.length: " + recipients.length);
 
+  let message = {
+    sender: req.body.sender || req.user._id, 
+    senderFullname: req.body.senderFullname || req.user.fullName, 
+    recipient: req.body.recipient, 
+    recipientFullname: req.body.recipientFullname,
+    text: req.body.text, 
+    id_project: req.projectid, // rendilo opzionale?
+    createdBy: req.user._id, 
+    status:  messageStatus,
+    attributes: req.body.attributes, 
+    type: req.body.type, 
+    metadata: req.body.metadata, 
+    language: req.body.language, 
+    channel_type: MessageConstants.CHANNEL_TYPE.DIRECT, 
+    channel: req.body.channel
+};
+  
+
   if (recipients.length == 0) {
-    // return res
+    // return res  XXX
   }
 
   if (recipients.length == 1) {
-    return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, req.body.recipient, req.body.text,
-      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, MessageConstants.CHANNEL_TYPE.DIRECT, req.body.channel).then(function (savedMessage) {
-
+    return messageService.save(message).then(function(savedMessage){                        
         if (req.body.returnobject) {
           return res.json(savedMessage);
         } else {
@@ -94,16 +111,29 @@ router.post('/direct', async function (req, res) {
 
 
   var promises = [];
-  recipients.forEach(recipient => {
+  for (const recipient of recipients) {
+  // recipients.forEach( async (recipient) => {
 
     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type) {
-    var promise = messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, recipient, req.body.text,
-      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, MessageConstants.CHANNEL_TYPE.DIRECT, req.body.channel);
+    // var promise = messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, recipient, req.body.text,
+    //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, MessageConstants.CHANNEL_TYPE.DIRECT, req.body.channel);
+
+    winston.info("recipient: " + recipient);
+
+    message.recipient = recipient;
+
+    var user = await User.findOne({_id:recipient}).exec();
+    winston.info("user", user);
+    
+    message.recipientFullname = user.fullName;
+
+    var promise = messageService.save(message);
     promises.push(promise);
     // .then(function(savedMessage){                    
     // result.push(savedMessage);
     // res.json(savedMessage);
-  });
+  }
+  //);
 
   Promise.all(promises).then(function (data) {
     if (req.body.returnobject) {
