@@ -988,51 +988,68 @@ router.get('/csv', function (req, res, next) {
         }
         
 
-         requests.forEach(function(element) {
+        requests.forEach(function(element) {
 
-            var channel_name = "";
-            if (element.channel && element.channel.name) {
-              channel_name = element.channel.name;
-            }
-            delete element.channel;
-            element.channel_name = channel_name;
+          var channel_name = "";
+          if (element.channel && element.channel.name) {
+            channel_name = element.channel.name;
+          }
+          delete element.channel;
+          element.channel_name = channel_name;
 
-            var department_name = "";
-            if (element.department && element.department.name) {
-              department_name = element.department.name;
-            }
-            delete element.department;
-            element.department_name = department_name;
+          var department_name = "";
+          if (element.department && element.department.name) {
+            department_name = element.department.name;
+          }
+          delete element.department;
+          element.department_name = department_name;
 
-            var lead_fullname = "";
-            if (element.lead && element.lead.fullname) {
-              lead_fullname = element.lead.fullname
-            }
-            element.lead_fullname = lead_fullname;
+          var lead_fullname = "";
+          if (element.lead && element.lead.fullname) {
+            lead_fullname = element.lead.fullname
+          }
+          element.lead_fullname = lead_fullname;
 
 
-            var lead_email = "";
-            if (element.lead && element.lead.email) {
-              lead_email = element.lead.email
-            }
+          var lead_email = "";
+          if (element.lead && element.lead.email) {
+            lead_email = element.lead.email
+          }
+          
+          element.lead_email = lead_email;
+
+          var tags = [];
+          var tagsString = "";
+          if (element.tags && element.tags.length>0) {
             
-            element.lead_email = lead_email;
+            element.tags.forEach(function(tag) {
+              // tags = tags  + tag.tag + ", ";
+              tags.push(tag.tag);
+            });              
+          }
+          tagsString = tags.join(", ")
 
-            delete element.lead;
+          winston.debug('tagsString ' +tagsString)
+          
+          element.tags = tagsString;
 
-            delete element.attributes;
+          delete element.lead;
 
-            delete element.notes;
+          delete element.attributes;
 
-            delete element.tags;
+          delete element.notes;
 
-            delete element.channelOutbound;
+          // delete element.tags;
 
-            delete element.location;
-            
+          delete element.channelOutbound;
 
-            // TODO print also lead. use a library to flattize
-          });
+          delete element.location;
+
+          delete element.snapshot;
+          
+
+          // TODO print also lead. use a library to flattize
+        });
 
           winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
 
