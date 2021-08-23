@@ -189,7 +189,7 @@ class Chat21Handler {
             setImmediate(() => {
                 winston.debug("Chat21Handler on lead.update ",  lead);
 
-                // AGGIORNA SOLO SE PASSA DA GUEST A ALTRO??
+                //  TODO AGGIORNA SOLO SE PASSA DA GUEST A ALTRO??
                 Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
                     if (err) {
@@ -364,10 +364,10 @@ class Chat21Handler {
                             // winston.warn("Chat21Sender this is a direct message. Unimplemented method", message);
 
                             chat21.auth.setAdminToken(adminToken);
-                            
+
                             // send: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata){
                            return  chat21.messages.send(message.senderFullname,     message.recipient, 
-                            "recipient_fullname", message.text, message.sender, message.attributes, message.type, message.metadata)
+                            message.recipientFullname, message.text, message.sender, message.attributes, message.type, message.metadata)
                                     .then(function(data){
                                         winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
                                 
@@ -383,13 +383,54 @@ class Chat21Handler {
                                             });
 
                             }).catch(function(err) {
-                                winston.error("Chat21 sendToGroup err", err);
+                                winston.error("Chat21 send direct err", err);
                                 chat21Event.emit('message.sent.error', err);
                             });
 
                             
 
-                    } else {
+                    } 
+                    
+                    else if (message &&
+                        message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING && 
+                        message.channel_type ==  MessageConstants.CHANNEL_TYPE.GROUP &&
+                        message.channel.name == ChannelConstants.CHAT21) {
+                       
+                           // winston.warn("Chat21Sender this is a group message. Unimplemented method", message);
+
+                           chat21.auth.setAdminToken(adminToken);
+
+                           var timestamp = Date.now();
+                           // var timestamp = undefined;
+                           if (message.attributes && message.attributes.clienttimestamp) {
+                               timestamp = message.attributes.clienttimestamp;
+                           }
+
+
+                           return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
+                            message.recipientFullname, message.text, message.sender, message.attributes, message.type, message.metadata, timestamp)                         
+                                   .then(function(data){
+                                       winston.verbose("Chat21Sender send sent: "+ JSON.stringify(data));
+                               
+
+                                       // chat21.conversations.stopTyping(message.recipient,message.sender);
+
+                                       chat21Event.emit('message.sent', data);
+
+                                           messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
+                                               winston.debug("Chat21 message sent ", upMessage.toObject());                                        
+                                           }).catch(function(err) {
+                                               winston.error("Error Chat21 message sent with id: "+message._id, err);                                        
+                                           });
+
+                           }).catch(function(err) {
+                               winston.error("Chat21 sendToGroup err", err);
+                               chat21Event.emit('message.sent.error', err);
+                           });
+
+                           
+
+                   } else {
                         winston.error("Chat21Sender this is not a group o direct message", message);
                         return;
                     }
@@ -815,6 +856,8 @@ class Chat21Handler {
 
                     return chat21.groups.create(group.name, groupMembers, undefined, group_id).then(function(data) {
                         winston.verbose("Chat21 group created: " + JSON.stringify(data));      
+                        // TODO ritorna success anche se 
+                        // verbose: Chat21 group created: {"success":false,"err":{"message":"Channel closed","stack":"IllegalOperationError: Channel closed\n    at ConfirmChannel.<anonymous> (/usr/src/app/node_modules/amqplib/lib/channel.js:160:11)\n    at ConfirmChannel.Channel.publish (/usr/src/app/node_modules/amqplib/lib/callback_model.js:171:17)\n    at ConfirmChannel.publish (/usr/src/app/node_modules/amqplib/lib/callback_model.js:301:36)\n    at Chat21Api.publish (/usr/src/app/chat21Api/index.js:1028:29)\n    at Chat21Api.sendMessageRaw (/usr/src/app/chat21Api/index.js:762:14)\n    at Chat21Api.sendGroupWelcomeMessage (/usr/src/app/chat21Api/index.js:205:14)\n    at /usr/src/app/chat21Api/index.js:99:22\n    at /usr/src/app/chat21Api/index.js:234:17\n    at /usr/src/app/chatdb/index.js:77:9\n    at executeCallback (/usr/src/app/node_modules/mongodb/lib/operations/execute_operation.js:70:5)\n    at updateCallback (/usr/src/app/node_modules/mongodb/lib/operations/update_one.js:41:3)\n    at /usr/src/app/node_modules/mongodb/lib/operations/update_one.js:24:64\n    at handleCallback (/usr/src/app/node_modules/mongodb/lib/utils.js:128:55)\n    at /usr/src/app/node_modules/mongodb/lib/operations/common_functions.js:378:5\n    at handler (/usr/src/app/node_modules/mongodb/lib/core/sdam/topology.js:913:24)","stackAtStateChange":"Stack capture: Socket error\n    at Connection.C.onSocketError (/usr/src/app/node_modules/amqplib/lib/connection.js:354:13)\n    at Connection.emit (events.js:314:20)\n    at Socket.go (/usr/src/app/node_modules/amqplib/lib/connection.js:481:12)\n    at Socket.emit (events.js:314:20)\n    at emitReadable_ (_stream_readable.js:557:12)\n    at processTicksAndRejections (internal/process/task_queues.js:83:21)"}}
                         chat21Event.emit('group.create', data);                                          
                     }).catch(function(err) {
                         winston.error("Error creating chat21 group ", err);

@@ -6,6 +6,12 @@ var MessageConstants = require('../models/messageConstants');
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var MessageSchema = new Schema({
+  // messageId: {
+  //   type: String,
+  //   required: true,
+  //   // unique: true???
+  //   index: true
+  // },
   sender: {
     type: String,
     required: true,
@@ -21,10 +27,10 @@ var MessageSchema = new Schema({
     required: true,
     index: true
   },
-  // recipientFullname: {
-  //   type: String,
-  //   required: false
-  // },
+  recipientFullname: {
+    type: String,
+    required: false
+  },
   type: {
     type: String,
     required: true,

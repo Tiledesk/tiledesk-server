@@ -21,33 +21,81 @@ class MessageService {
             return this.changeStatus(id, status);
        }
    }
-  create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
 
-    winston.debug('message.create called');
+   create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
+    let message = {
+        sender: sender, 
+        senderFullname: senderFullname, 
+        recipient: recipient, 
+        text: text, 
+        id_project: id_project, 
+        createdBy: createdBy, 
+        status: status, 
+        attributes: attributes, 
+        type: type, 
+        metadata: metadata, 
+        language: language, 
+        channel_type: channel_type, 
+        channel: channel
+    };
+    return this.save(message);
+   }
 
+   save(message) {
     var that = this;
+    winston.debug('message.save called');
+
+    let sender = message.sender;
+    let senderFullname = message.senderFullname;
+    let recipient = message.recipient;
+    let recipientFullname = message.recipientFullname;
+    let text = message.text;
+    let id_project = message.id_project;
+    let createdBy = message.createdBy;
+    let status = message.status;
+    let attributes = message.attributes;
+    let type = message.type;
+    let metadata = message.metadata;
+    let language = message.language;
+    let channel_type = message.channel_type;
+    let channel = message.channel;
+
+
+    
     return new Promise(function (resolve, reject) {
 
         if (!createdBy) {
             createdBy = sender;
         }
     
-          var beforeMessage = {sender:sender, senderFullname:senderFullname, recipient:recipient
+          var beforeMessage = {sender:sender, senderFullname:senderFullname
+            , recipient:recipient, recipientFullname: recipientFullname
             , text:text, id_project:id_project, createdBy:createdBy, status:status, attributes:attributes,
              type:type, metadata:metadata, language:language, channel_type: channel_type, channel: channel};
 
           var messageToCreate = beforeMessage;
-          winston.debug('messageToCreate',messageToCreate);
+          winston.debug('messageToCreate before',messageToCreate);
         //   messageEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage});
 
        
 
           messagePromiseEvent.emit('message.create.simple.before', {beforeMessage:beforeMessage}).then(results => {
-            winston.debug('message.create.simple.before', results);
-
-            if (results && results.beforeMessage) {
-                messageToCreate =  results.beforeMessage;
+            winston.debug('message.create.simple.before results', results);
+            winston.debug('message.create.simple.before results prototype: ' + Object.prototype.toString.call(results));
+            
+            if (results) {
+                winston.debug('message.create.simple.before results.length: '+ results.length); //TODO ELIMINA DOPO CHE CREA CRASH
             }
+            
+            /*
+            if (results ) { //NN HA MAI FUNZIONATO. LA MADIFICA DEL VALORE AVVENIVA PER PUNTATORE
+                winston.info('message.create.simple.before results.beforeMessage', results[0].beforeMessage);
+                messageToCreate =  results[0].beforeMessage;
+            }
+            */
+           
+            winston.debug('messageToCreate', messageToCreate);
+
 
                  // if (id_project) {
 
@@ -55,8 +103,8 @@ class MessageService {
                         sender: messageToCreate.sender,
                         senderFullname: messageToCreate.senderFullname,
                         recipient: messageToCreate.recipient,
+                        recipientFullname: messageToCreate.recipientFullname, //for direct
                         type: messageToCreate.type,
-                        // recipientFullname: recipientFullname,
                         text: messageToCreate.text,
                         id_project: messageToCreate.id_project,
                         createdBy: messageToCreate.createdBy,
