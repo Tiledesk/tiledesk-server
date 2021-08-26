@@ -220,6 +220,7 @@ router.post('/signinWithCustomToken', [
       id_project = AudienceId;
 
 
+
     } else {
       winston.debug("audience generic");
       if (req.body.id_project) {
@@ -292,8 +293,23 @@ router.post('/signinWithCustomToken', [
 
 // TODO aggiungere logout? con user.logout event?
 
-router.post('/signin', function (req, res) {
-  var email = req.body.email;
+router.post('/signin', 
+[
+  // check('email').notEmpty(),  
+  check('email').isEmail(), 
+  check('password').notEmpty(),  
+],
+function (req, res) {
+  
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    winston.error("Signin validation error", errors);
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  var email = req.body.email.toLowerCase();
+  
   winston.debug("email", email);
   User.findOne({
     email: email, status: 100

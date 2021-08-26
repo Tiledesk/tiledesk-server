@@ -1,6 +1,15 @@
 
 
-# 2.1.40.13 -> in PROD
+# 2.1.40.16 -> PROD
+- added message recipientfullname field to the message entity  to support chat campaigns for direct and group 
+
+# 2.1.40.15
+- tag fix
+
+# 2.1.40.14
+- requet CSV export fix
+
+# 2.1.40.13 
 - Stripe fix for adding new agents
 
 # 2.1.40.12

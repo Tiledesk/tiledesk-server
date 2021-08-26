@@ -341,9 +341,15 @@ module.exports = function(passport) {
 
 
   passport.use(new BasicStrategy(function(userid, password, done) {
-     
-      User.findOne({ email: userid, status: 100}, 'email firstname lastname password emailverified id')
-      .cache(cacheUtil.defaultTTL, "users:email:"+userid)
+      
+      winston.info("BasicStrategy: " + userid);
+      
+
+      var email = userid.toLowerCase();
+      winston.info("email email lowercase: " + email);
+
+      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id')
+      .cache(cacheUtil.defaultTTL, "users:email:"+email)
       .exec(function (err, user) {
        
         if (err) {

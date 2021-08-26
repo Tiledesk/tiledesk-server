@@ -87,6 +87,78 @@ describe('Authentication', () => {
 
 
 
+
+
+    it('signinValidation', (done) => {
+
+        
+        //   this.timeout();
+    
+           var email = "test-signinko-" + Date.now() + "@email.com";
+           var pwd = "pwd";
+    
+          
+                        chai.request(server)
+                            .post('/auth/signin' )
+                            .send()
+                            .end((err, res) => {
+                                //console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(422);
+                                
+                            
+                                done();
+                            });
+    
+                 
+                    });
+        
+
+    // mocha test/authentication.js  --grep 'signinLowercase'
+
+    it('signinLowercase', (done) => {
+
+        
+        //   this.timeout();
+    
+           var email = "Test-SigninKO-" + Date.now() + "@email.com";
+           var pwd = "pwd";
+    
+           userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+                        chai.request(server)
+                            .post('/auth/signin' )
+                            .send({"email":email, "password":pwd})
+                            .end((err, res) => {
+                                console.log("res.body",  res.body);
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+                                expect(res.body.success).to.equal(true);                                               
+                                expect(res.body.token).to.not.equal(null);                                               
+                                expect(res.body.user.email).to.equal(email.toLowerCase());                                               
+                                expect(res.body.user.password).to.equal(undefined);                                               
+                        
+                            
+
+                                chai.request(server)
+                                    .get('/users/' )        
+                                    .auth(email, pwd)                            
+                                    .end((err, res) => {
+                                        console.log("res.body",  res.body);
+                                        res.should.have.status(200);
+                                        res.body.should.be.a('object');                                                                                
+                                
+                                        done();
+                                    });
+            
+                                });
+
+                            });
+    
+                        });
+                    });
+        
+
 });
 
 
@@ -129,6 +201,8 @@ describe('/signup', () => {
                 
     });
 
+    // mocha test/authentication.js  --grep 'signupUpperCaseEmail'
+
 
     it('signupUpperCaseEmail', (done) => {
 
@@ -153,9 +227,7 @@ describe('/signup', () => {
                             
                                 done();
                             });
-    
-                 
-                    
+                           
         });
 
 
@@ -184,7 +256,7 @@ describe('/signup', () => {
         });
 
 
-});
+// });
 
 
 
