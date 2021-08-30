@@ -1,6 +1,9 @@
 
 
-# 2.1.40.16 -> PROD
+# 2.1.40.17 -> PROD
+- Stripe restored to the previous version 1.1.3
+
+# 2.1.40.16
 - added message recipientfullname field to the message entity  to support chat campaigns for direct and group 
 
 # 2.1.40.15
