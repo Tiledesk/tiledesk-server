@@ -214,8 +214,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         }
         // console.log("department", department);
         if (!department) {
-          winston.error("Department not found for query ", query);
-          return reject({ success: false, msg: 'Department not found.' });
+          winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+          return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
         // console.log('OPERATORS - »»» DEPARTMENT - ID BOT ', department.id_bot)
