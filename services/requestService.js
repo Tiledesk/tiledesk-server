@@ -432,9 +432,14 @@ class RequestService {
 
            var snapshot = {};
 
-          //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
-           var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-           winston.debug("getOperators", result);
+           try {
+            //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
+              var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+              winston.debug("getOperators", result);
+           } catch(err) {
+            return reject(err);
+           }
+          
  
           
            agents = result.agents;
