@@ -59,7 +59,14 @@
         "SEE_PREVIOUS": "see previous",
         "WAITING_TIME_FOUND": "The team typically replies in $reply_time",
         "WAITING_TIME_NOT_FOUND": "The team will reply as soon as possible",
-        "CLOSED": "CLOSED"
+        "CLOSED": "CLOSED",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT":"you",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB":"you have been added ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"joined",
+        "INFO_SUPPORT_USER_ADDED_VERB":"to chat",
+        "INFO_SUPPORT_CHAT_REOPENED":"Chat reopened",
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat closed"
     }
 },
 {
@@ -122,7 +129,14 @@
         "SEE_PREVIOUS": "vedi precedenti",
         "WAITING_TIME_FOUND": "Il team tipicamente risponde in $reply_time",
         "WAITING_TIME_NOT_FOUND": "Vi risponderemo appena possibile",
-        "CLOSED": "CHIUSA"
+        "CLOSED": "CHIUSA",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT":"tu",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB":"sei stato aggiunto ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"si è unito",
+        "INFO_SUPPORT_USER_ADDED_VERB":"alla chat",
+        "INFO_SUPPORT_CHAT_REOPENED":"Chat riaperta",
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa"
     }
 },
 {
@@ -185,7 +199,14 @@
         "SEE_PREVIOUS": "voir les conversations précédentes",
         "WAITING_TIME_FOUND": "L'équipe répond généralement en $reply_time",
         "WAITING_TIME_NOT_FOUND": "Nous vous répondrons dans les plus brefs délais",
-        "CLOSED": "FERMÉ"
+        "CLOSED": "FERMÉ",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT":"toi",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB":"tu as été ajouté ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"rejoint",
+        "INFO_SUPPORT_USER_ADDED_VERB":"discuter",
+        "INFO_SUPPORT_CHAT_REOPENED":"Chat rouvert",
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat fermé"
     }
  },
  {
@@ -248,7 +269,14 @@
         "SEE_PREVIOUS":"Ver anterior",
         "WAITING_TIME_FOUND":"El equipo típicamente responde en $reply_time",
         "WAITING_TIME_NOT_FOUND":"El equipo responderá lo antes posible.",
-        "CLOSED":"CERRADO"
+        "CLOSED":"CERRADO",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT":"usted",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB":"usted ha sido agregado ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"unido",
+        "INFO_SUPPORT_USER_ADDED_VERB":"para charlar",
+        "INFO_SUPPORT_CHAT_REOPENED":"Chat reabierto",
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat cerrado"
     }
 },
 {
@@ -311,7 +339,14 @@
         "SEE_PREVIOUS":"siehe vorher",
         "WAITING_TIME_FOUND":"Das Team antwortet normalerweise in $reply_time",
         "WAITING_TIME_NOT_FOUND":"Das Team wird so schnell wie möglich antworten",
-        "CLOSED":"GESCHLOSSEN"
+        "CLOSED":"GESCHLOSSEN",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT": "Sie",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB": "Sie wurden hinzugefügt ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "beigetreten",
+        "INFO_SUPPORT_USER_ADDED_VERB": "zum Chatten",
+        "INFO_SUPPORT_CHAT_REOPENED": "Chat wieder geöffnet",
+        "INFO_SUPPORT_CHAT_CLOSED": "Chat geschlossen"
     }
 },
 {
@@ -374,7 +409,14 @@
         "SEE_PREVIOUS":"ver anterior",
         "WAITING_TIME_FOUND":"A equipe normalmente responde em $reply_time",
         "WAITING_TIME_NOT_FOUND":"A equipe responderá o mais breve possível",
-        "CLOSED":"FECHADO"
+        "CLOSED":"FECHADO",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT": "você",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB": "você foi adicionado ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "aderiu",
+        "INFO_SUPPORT_USER_ADDED_VERB": "para conversar",
+        "INFO_SUPPORT_CHAT_REOPENED": "Chat reaberto",
+        "INFO_SUPPORT_CHAT_CLOSED": "Bate-papo fechado"
     }
 },
 {
@@ -437,7 +479,13 @@
         "SEE_PREVIOUS":"смотри предыдущий",
         "WAITING_TIME_FOUND":"Команда обычно отвечает в $reply_time",
         "WAITING_TIME_NOT_FOUND":"Команда ответит как можно скорее",
-        "CLOSED":"ЗАКРЫТО"
+        "CLOSED":"ЗАКРЫТО",
+        "INFO_SUPPORT_USER_ADDED_SUBJECT": "вы",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB": "вы добавлены ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "присоединился",
+        "INFO_SUPPORT_USER_ADDED_VERB": "в чат",
+        "INFO_SUPPORT_CHAT_REOPENED": "Чат возобновлен",
+        "INFO_SUPPORT_CHAT_CLOSED": "Чат закрыт"
     }
 },
 {
@@ -500,7 +548,14 @@
         "SEE_PREVIOUS":"Öncekine bak",
         "WAITING_TIME_FOUND":"Ekip genellikle …… içerisinde cevaplar $reply_time",
         "WAITING_TIME_NOT_FOUND":"Ekip en kısa süre içerisinde cevap verecektir.",
-        "CLOSED":"KAPALI"
+        "CLOSED":"KAPALI",
+
+        "INFO_SUPPORT_USER_ADDED_SUBJECT": "siz",
+        "INFO_SUPPORT_USER_ADDED_YOU_VERB": "eklendiniz ",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "katıldı",
+        "INFO_SUPPORT_USER_ADDED_VERB": "sohbet etmek",
+        "INFO_SUPPORT_CHAT_REOPENED": "Sohbet yeniden açıldı",
+        "INFO_SUPPORT_CHAT_CLOSED": "Sohbet kapatıldı"
     }
 }
 ]
