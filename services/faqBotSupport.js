@@ -55,12 +55,23 @@ class FaqBotSupport {
     parseMicrolanguage(text, message, bot, faq, disableWebHook) { 
         var that = this;
         return new Promise(async (resolve, reject) => {
+            winston.debug('parseMicrolanguage message: ' + JSON.stringify(message) );
             var reply = TiledeskChatbotUtil.parseReply(text);
             winston.debug('parseReply: ' + JSON.stringify(reply) );
             var messageReply = reply.message;
             
             var msg_attributes = {"_raw_message": text};
 
+            // prendi attributi e li mergi
+            // metadata prendi da messageReply SOLO SE CI SONO (DIVERSI NULL). Se riesci fai il merge
+            // prendi type e text
+
+            if (message && message.attributes) {
+                for(const [key, value] of Object.entries(message.attributes)) {
+                  msg_attributes[key] = value
+                }
+            }
+            
             if (messageReply && messageReply.attributes) {
                 for(const [key, value] of Object.entries(messageReply.attributes)) {
                   msg_attributes[key] = value
@@ -68,9 +79,14 @@ class FaqBotSupport {
             }
 
             messageReply.attributes = msg_attributes;
-              
+            
+            // not used in faqBotHandler but used when the message is returned by webhook (subscription). So you must clone(add) all message fields here.
+            winston.debug('message.language: '+ message.language );
+            if (message.language) {
+                messageReply.language = message.language;
+            }
         
-
+            winston.debug('faq: ', faq );
             if (disableWebHook === false && (faq.webhook_enabled  === true || reply.webhook)) {
 
                 winston.debug("bot.webhook_url "+ bot.webhook_url)
@@ -116,7 +132,7 @@ class FaqBotSupport {
                     // }).then(response => {
                     }, function(err, response, json){
                         if (err) {
-                            winston.error("Error from webhook reply of getParsedMessage", err);
+                            winston.error("Error from webhook reply of getParsedMessage. Return standard reply", err);
 
                             return resolve(messageReply);
 
@@ -132,22 +148,45 @@ class FaqBotSupport {
                             return resolve(bot_answer);
                             */
                         }
-                        if (!json) { //the webhook return empty body
+                         if (response.statusCode >= 400) {      
+                            winston.debug("The ChatBot webhook return error http status code. Return standard reply", response);            
                             return resolve(messageReply);
                         }
-                        // if (response.statusCode >= 400) {                  
-                        //     return reject(`HTTP Error: ${response.statusCode}`);
-                        // }
+
+                        if (!json) { //the webhook return empty body
+                            winston.debug("The ChatBot webhook return no json. Return standard reply", response);
+                            return resolve(messageReply);
+                        }
+                       
                         winston.debug("webhookurl repl_message ", response);
 
                         var text = undefined;
                         if(json && json.text===undefined) {
+                            winston.debug("webhookurl json is defined but text not. return standard reply",{json:json, response:response});
                             // text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
                             return resolve(messageReply);
                         }else {
                             text = json.text;
                         }
-                        that.parseMicrolanguage(text, message, bot, faq, true).then(function(bot_answer) {
+                        winston.debug("webhookurl text:  "+ text);
+
+                        // let cloned_message = Object.assign({}, messageReply);
+                        let cloned_message =  message;
+                        winston.debug("cloned_message :  ",cloned_message);
+
+                        if (json.attributes) {
+                            if (!cloned_message.attributes) {
+                                cloned_message.attributes = {}
+                            }
+                            winston.debug("ChatBot webhook json.attributes: ",json.attributes);
+                            for(const [key, value] of Object.entries(json.attributes)) {
+                                cloned_message.attributes[key] = value
+                            }
+                        }
+
+                        winston.debug("cloned_message after attributes:  ",cloned_message);
+
+                        that.parseMicrolanguage(text, cloned_message, bot, faq, true).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
@@ -305,8 +344,8 @@ class FaqBotSupport {
                                 // found = true;
                                 // return resolve(bot_answer);
 
-                                if (message.channel.name == "chat21") {
-
+                                if (message.channel.name == "chat21") {    //why this contition on chat21 channel? bacause only chat21 support parsed replies?
+                                    winston.debug("faqBotSupport message.channel.name is chat21",message);
                                     that.getParsedMessage(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {
                                     
                                         bot_answerres.defaultFallback=true;
@@ -315,6 +354,7 @@ class FaqBotSupport {
                                     });
 
                                 } else {
+                                    winston.debug("faqBotSupport message.channel.name is not chat21 returning default",message);
                                     return resolve(bot_answer);
                                 }
                                 

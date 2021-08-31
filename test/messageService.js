@@ -203,9 +203,9 @@ describe('messageService', function () {
 
 
 
-      // mocha test/messageService.js  --grep 'createMessageMicroLanguage'
+      // mocha test/messageService.js  --grep 'createMessageMicroLanguageWithAttribute'
 
-  it('createMessageMicroLanguage', function (done) {
+  it('createMessageMicroLanguageWithAttribute', function (done) {
     // this.timeout(10000);
 
 
@@ -217,7 +217,7 @@ describe('messageService', function () {
 
       projectService.create("test1", userid).then(function(savedProject) {
         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
-      messageService.create(userid, "test sender", "testrecipient-createMessage", "ciao\n* Button1",
+      messageService.create("bot_"+userid, "test sender", "testrecipient-createMessageMicroLanguageWithAttribute", "ciao\n* Button1",
           savedProject._id, userid, undefined, {microlanguage:true}).then(function(savedMessage){
             winston.debug("resolve savedMessage", savedMessage.toObject());
      
@@ -226,9 +226,9 @@ describe('messageService', function () {
           expect(savedMessage.attributes._raw_message).to.equal("ciao\n* Button1","attachment");
           expect(savedMessage.attributes.attachment.type).to.equal("template");        
           expect(savedMessage.attributes.attachment.buttons[0].value).to.equal("Button1");
-          expect(savedMessage.sender).to.equal(userid);
+          expect(savedMessage.sender).to.equal("bot_"+userid);
           expect(savedMessage.senderFullname).to.equal("test sender");
-          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+          expect(savedMessage.recipient).to.equal("testrecipient-createMessageMicroLanguageWithAttribute");
           done();
 
         })

@@ -161,7 +161,7 @@ class FaqBotHandler {
                             winston.debug("attr", attr);
 
                             messageService.send(sender, botName, message.recipient, bot_answer.text, 
-                                message.id_project, sender, attr, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
+                                message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
                                     winston.debug("faqbot message botAns ", savedMessage.toObject());  
                             });
                         
@@ -243,7 +243,7 @@ class FaqBotHandler {
                             winston.debug("attr", attr);
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
-                                    message.id_project, sender, attr, bot_answer.type, bot_answer.metadata).then(function(savedMessage){
+                                    message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
 
                                         winston.debug("faqbot message sending ", savedMessage.toObject());  
                                 });
@@ -317,7 +317,7 @@ class FaqBotHandler {
 
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
                             messageService.send(sender, botName, message.recipient, botAns.text, 
-                                message.id_project, sender, attr, botAns.type, botAns.metadata).then(function(savedMessage){
+                                message.id_project, sender, attr, botAns.type, botAns.metadata, botAns.language).then(function(savedMessage){
                                     winston.debug("faqbot message botAns " ,savedMessage.toObject());  
                             });
                         }
