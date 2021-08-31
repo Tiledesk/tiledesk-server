@@ -52,7 +52,7 @@ class FaqBotSupport {
     }
 // usa api di sponziello parseReply: https://github.com/Tiledesk/tiledesk-nodejs-libs/blob/master/tiledesk-chatbot-util/index.js 
 
-    parseMicrolanguage(text, message, bot, faq, disableWebHook) { 
+    parseMicrolanguage(text, message, bot, faq, disableWebHook, json) { 
         var that = this;
         return new Promise(async (resolve, reject) => {
             winston.debug('parseMicrolanguage message: ' + JSON.stringify(message) );
@@ -66,12 +66,18 @@ class FaqBotSupport {
             // metadata prendi da messageReply SOLO SE CI SONO (DIVERSI NULL). Se riesci fai il merge
             // prendi type e text
 
-            if (message && message.attributes) {
-                for(const [key, value] of Object.entries(message.attributes)) {
+            // if (message && message.attributes) {
+            //     for(const [key, value] of Object.entries(message.attributes)) {
+            //       msg_attributes[key] = value
+            //     }
+            // }
+
+            if (json && json.attributes) {
+                for(const [key, value] of Object.entries(json.attributes)) {
                   msg_attributes[key] = value
                 }
             }
-            
+
             if (messageReply && messageReply.attributes) {
                 for(const [key, value] of Object.entries(messageReply.attributes)) {
                   msg_attributes[key] = value
@@ -81,10 +87,23 @@ class FaqBotSupport {
             messageReply.attributes = msg_attributes;
             
             // not used in faqBotHandler but used when the message is returned by webhook (subscription). So you must clone(add) all message fields here.
-            winston.debug('message.language: '+ message.language );
-            if (message.language) {
-                messageReply.language = message.language;
+            // winston.debug('message.language: '+ message.language );
+            // if (message.language) {
+            //     messageReply.language = message.language;
+            // }
+
+            if (json && json.language) {
+                messageReply.language = json.language;
             }
+
+            if (json && json.type) {
+                messageReply.type = json.type;
+            } 
+            
+            if (json && json.metadata) {
+                messageReply.metadata = json.metadata;
+            }
+
         
             winston.debug('faq: ', faq );
             if (disableWebHook === false && (faq.webhook_enabled  === true || reply.webhook)) {
@@ -170,23 +189,23 @@ class FaqBotSupport {
                         }
                         winston.debug("webhookurl text:  "+ text);
 
-                        // let cloned_message = Object.assign({}, messageReply);
-                        let cloned_message =  message;
-                        winston.debug("cloned_message :  ",cloned_message);
+                        // // let cloned_message = Object.assign({}, messageReply);
+                        // let cloned_message =  message;
+                        // winston.debug("cloned_message :  ",cloned_message);
 
-                        if (json.attributes) {
-                            if (!cloned_message.attributes) {
-                                cloned_message.attributes = {}
-                            }
-                            winston.debug("ChatBot webhook json.attributes: ",json.attributes);
-                            for(const [key, value] of Object.entries(json.attributes)) {
-                                cloned_message.attributes[key] = value
-                            }
-                        }
+                        // if (json.attributes) {
+                        //     if (!cloned_message.attributes) {
+                        //         cloned_message.attributes = {}
+                        //     }
+                        //     winston.debug("ChatBot webhook json.attributes: ",json.attributes);
+                        //     for(const [key, value] of Object.entries(json.attributes)) {
+                        //         cloned_message.attributes[key] = value
+                        //     }
+                        // }
 
-                        winston.debug("cloned_message after attributes:  ",cloned_message);
+                        // winston.debug("cloned_message after attributes:  ",cloned_message);
 
-                        that.parseMicrolanguage(text, cloned_message, bot, faq, true).then(function(bot_answer) {
+                        that.parseMicrolanguage(text, message, bot, faq, true, json).then(function(bot_answer) {
                             return resolve(bot_answer);
                         });
                     });
