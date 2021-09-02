@@ -1,13 +1,14 @@
 var express = require('express');
 
 // https://stackoverflow.com/questions/28977253/express-router-undefined-params-with-router-use-when-split-across-files
-var router = express.Router();
+var router = express.Router({mergeParams: true});
 
 var MessageConstants = require("../models/messageConstants");
 var Message = require("../models/message");
 var messageService = require("../services/messageService");
 var winston = require('../config/winston');
 var fastCsv = require("fast-csv");
+var roleChecker = require('../middleware/has-role');
 
 
 router.post('/', 
@@ -41,8 +42,7 @@ router.post('/',
 });
 
 
-//TODO reenable it with role owner
-router.get('/csv', function(req, res) {
+router.get('/csv', roleChecker.hasRoleOrTypes('owner'), function(req, res) {
 
   
   // return Message.find({id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
