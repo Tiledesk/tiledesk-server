@@ -4,8 +4,10 @@ var express = require('express');
 var router = express.Router();
 
 var MessageConstants = require("../models/messageConstants");
+var Message = require("../models/message");
 var messageService = require("../services/messageService");
 var winston = require('../config/winston');
+var fastCsv = require("fast-csv");
 
 
 router.post('/', 
@@ -40,14 +42,40 @@ router.post('/',
 
 
 //TODO reenable it with role owner
-/*
 router.get('/csv', function(req, res) {
 
-  return Message.find({id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) return next(err);
-      res.csv(messages, true);
-    });
+  
+  // return Message.find({id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+  //     if (err) return next(err);
+  //     res.csv(messages, true);
+  //   });
+
+
+  const cursor = Message.find({id_project: req.projectid}).select("-channel -attributes -metadata");
+
+  const transformer = (doc)=> {
+    return {
+        Id: doc._id,
+        Name: doc.fullname,
+        Email: doc.email,
+        Type: doc.registration_type,
+        RegisterOn: doc.registered_on
+    };
+  }
+
+  const filename = 'export.csv';
+
+  res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+  res.writeHead(200, { 'Content-Type': 'text/csv' });
+
+  res.flushHeaders();
+
+  console.log("fastCsv",fastCsv)
+  var csvStream = fastCsv.format({headers: true})//.transform(transformer)
+  // var csvStream = fastCsv.createWriteStream({headers: true}).transform(transformer)
+  cursor.stream().pipe(csvStream).pipe(res);
+
 });
-*/
+
 
 module.exports = router;
