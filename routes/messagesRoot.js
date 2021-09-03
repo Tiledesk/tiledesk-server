@@ -9,15 +9,27 @@ var messageService = require("../services/messageService");
 var winston = require('../config/winston');
 var fastCsv = require("fast-csv");
 var roleChecker = require('../middleware/has-role');
+const { check, validationResult } = require('express-validator');
 
 
 router.post('/', 
+[
+  check('recipient').notEmpty(),  
+  check('recipientFullname').notEmpty(),
+  check('text').notEmpty()
+],
   async (req, res)  => {
 
   winston.debug('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    winston.error("Signup validation error", errors);
+    return res.status(422).json({ errors: errors.array() });
+  }
 
   let message = {
     sender: req.body.sender || req.user._id, 
@@ -40,6 +52,7 @@ router.post('/',
     });
 
 });
+
 
 
 router.get('/csv', roleChecker.hasRoleOrTypes('owner'), function(req, res) {

@@ -28,7 +28,7 @@ chai.use(chaiHttp);
 describe('MessageRoute', () => {
 
 
-// mocha test/messageRoute.js  --grep 'createSimple'
+// mocha test/messageRootRoute.js  --grep 'createSimple'
 
   it('createSimple', function (done) {
     // this.timeout(10000);
@@ -45,7 +45,7 @@ describe('MessageRoute', () => {
             .post('/'+ savedProject._id + '/messages')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"recipient":"5ddd30bff0195f0017f72c6d", "text":"text"})
+            .send({"recipient":"5ddd30bff0195f0017f72c6d", "recipientFullname": "Dest", "text":"text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
@@ -75,8 +75,39 @@ describe('MessageRoute', () => {
 
 
 
+// mocha test/messageRootRoute.js  --grep 'createSimpleValidation'
+it('createSimpleValidation', function (done) {
+  // this.timeout(10000);
 
-// mocha test/messageRoute.js  --grep 'createWithSenderFullName'
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({"text":"text"})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(422);
+              res.body.should.be.a('object');                          
+        
+             done();
+          });
+  });
+});
+});
+
+
+
+
+// mocha test/messageRootRoute.js  --grep 'createWithSenderFullName'
 
 it('createWithSenderFullName', function (done) {
   // this.timeout(10000);
@@ -93,7 +124,7 @@ it('createWithSenderFullName', function (done) {
           .post('/'+ savedProject._id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
-          .send({"senderFullname":"Pippo","recipient":"5ddd30bff0195f0017f72c6d", "text":"text"})
+          .send({"senderFullname":"Pippo","recipient":"5ddd30bff0195f0017f72c6d",  "recipientFullname": "Dest", "text":"text"})
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
