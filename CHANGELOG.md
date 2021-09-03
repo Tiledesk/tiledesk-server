@@ -1,6 +1,11 @@
 
+# 2.1.40.19 -> PROD
+- Stripe fix with version 1.1.5
 
-# 2.1.40.17 -> PROD
+# 2.1.40.18
+- Messages export csv supported
+
+# 2.1.40.17
 - Stripe restored to the previous version 1.1.3
 
 # 2.1.40.16
