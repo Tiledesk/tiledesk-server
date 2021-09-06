@@ -100,6 +100,7 @@ var images = require('./routes/images');
 var files = require('./routes/files');
 var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
+var requestUtilRoot = require('./routes/requestUtilRoot');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -134,6 +135,10 @@ try {
 }
 
 
+// //enterprise modules can modify pubmodule
+// modulesManager.start();
+
+// pubModulesManager.start();
 
 
 settingDataLoader.save();
@@ -285,6 +290,8 @@ app.use('/images', images);
 app.use('/files', files);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/logs', logs);
+app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
+
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
@@ -313,7 +320,7 @@ app.use('/:projectid/', [projectIdSetter, projectSetter]);
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], lead);
-
+                                                                                                                                                              //  guest  perche nn c'è guest???? no???
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['bot','subscription'])] , message);
 
 app.use('/:projectid/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])] , messagesRootRoute);
