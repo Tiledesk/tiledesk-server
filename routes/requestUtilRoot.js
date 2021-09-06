@@ -14,7 +14,7 @@ router.get('/lookup/id_project/:request_id',  function(req, res) {
         return res.status(500).send({success: false, msg: 'Error creating message', err:err });
       } 
       if (!request) {
-        return res.status(404).send({success: false, msg: "Request with  " + request_id + " not found" });
+        return res.status(404).send({success: false, msg: "Request with  " + req.params.request_id + " not found" });
       }
       winston.info("request",request);
       res.json({id_project: request.id_project});
