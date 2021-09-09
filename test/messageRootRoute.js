@@ -75,8 +75,8 @@ describe('MessageRoute', () => {
 
 
 
-// mocha test/messageRootRoute.js  --grep 'createSimpleValidation'
-it('createSimpleValidation', function (done) {
+// mocha test/messageRootRoute.js  --grep 'createValidationNoRecipient'
+it('createValidationNoRecipient', function (done) {
   // this.timeout(10000);
 
   var email = "test-message-create-" + Date.now() + "@email.com";
@@ -92,6 +92,38 @@ it('createSimpleValidation', function (done) {
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({"text":"text"})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(422);
+              res.body.should.be.a('object');                          
+        
+             done();
+          });
+  });
+});
+});
+
+
+
+
+// mocha test/messageRootRoute.js  --grep 'createValidationNoText'
+it('createValidationNoText', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({"recipient":"5ddd30bff0195f0017f72c6d", "recipientFullname": "Dest"})
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
