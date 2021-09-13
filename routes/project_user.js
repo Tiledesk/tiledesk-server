@@ -112,7 +112,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
                   // if ('5ae6c62c61c7d54bf119ac73' == '5ae6c62c61c7d54bf119ac73') {
 
                     winston.debug('»»»» THE PRJCT-USER ID ', p_user.id_user, ' MATCHES THE FOUND USER-ID', user._id)
-                    winston.debug('»»»» USER IS ALREADY A MEMBER OF THE PROJECT ')
+                    winston.warn("User " + projectUserId+ " is already a member of the project: " + req.projectid)
 
                   // cannot use continue or break inside a JavaScript Array.prototype.forEach loop. However, there are other options:
                   throw new Error('User is already a member'); // break
@@ -359,6 +359,37 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 });
 
 
+router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], async (req, res, next) => {
+  winston.info("--> users search  ");
+
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
+
+
+  let query =  {email: req.query.email};
+  
+  winston.info('query: ', query);
+  
+  let user = await User.findOne(query).exec();
+  winston.info('user: ', user);
+  
+  if (!user) {
+    return res.status(404).send({ success: false, msg: 'Object not found.' });
+  }
+ 
+
+  let project_user = await Project_user.findOne({id_user: user._id, id_project: req.projectid}).exec();
+  winston.info('project_user: ', project_user);
+  
+  if (!project_user) {
+    return res.status(403).json({msg: "Unauthorized. This is not a your teammate." });
+  }
+  
+
+  return res.json({_id: user._id});
+
+});
 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
@@ -367,6 +398,10 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
   winston.debug("--> users USER ID ", req.params.user_id);
+
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
 
   var isObjectId = mongoose.Types.ObjectId.isValid(req.params.user_id);
   winston.debug("isObjectId:"+ isObjectId);
