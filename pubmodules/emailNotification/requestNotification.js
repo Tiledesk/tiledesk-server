@@ -32,7 +32,15 @@ listen() {
     var that = this;
     
 
-    messageEvent.on("message.create", function(message) {
+
+    var messageCreateKey = 'message.create';
+    if (messageEvent.queueEnabled) {
+      messageCreateKey = 'message.create.queue.pubsub';
+    }
+    winston.info('RequestNotification messageCreateKey: ' + messageCreateKey);
+
+
+    messageEvent.on(messageCreateKey, function(message) {
 
       setImmediate(() => {      
         winston.debug("sendUserEmail", message);
@@ -77,8 +85,14 @@ listen() {
       });
      });
 
-     requestEvent.on("request.create", function(request) {
+     var requestCreateKey = 'request.create';
+     if (requestEvent.queueEnabled) {
+       requestCreateKey = 'request.create.queue.pubsub';
+     }
+     winston.info('RequestNotification requestCreateKey: ' + requestCreateKey);
 
+     requestEvent.on(requestCreateKey, function(request) {
+      winston.info('quiiiiiiiiiiiii');
       setImmediate(() => {
    
         /*
@@ -94,7 +108,14 @@ listen() {
      });
 
 
-     requestEvent.on("request.participants.update", function(data) {
+     var requestParticipantsUpdateKey = 'request.participants.update';
+    //  this is not queued
+    //  if (requestEvent.queueEnabled) {
+    //   requestParticipantsUpdateKey = 'request.participants.update.queue.pubsub';
+    //  }
+     winston.info('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
+
+     requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
       winston.debug("requestEvent request.participants.update");
 
@@ -121,7 +142,13 @@ listen() {
 
     //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 
-    requestEvent.on("request.close.extended", function(data) {
+    var requestCloseExtendedKey = 'request.close.extended';
+        //  this is not queued
+    // if (requestEvent.queueEnabled) {
+    //   requestCloseExtendedKey = 'request.close.extended.queue.pubsub';
+    // }
+    winston.info('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
+    requestEvent.on(requestCloseExtendedKey, function(data) {
       setImmediate(() => {
         var request = data.request;
         var notify = data.notify;
@@ -275,7 +302,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
       try {
      
      
-      Project.findOne({_id: projectid, status: 100}, function(err, project){
+      Project.findOne({_id: projectid, status: 100}, async function(err, project){
          if (err) {
            return winston.error(err);
          }
@@ -303,13 +330,20 @@ sendToAgentEmailChannelEmail(projectid, message) {
                     if (!savedRequest.snapshot) {
                       return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                     }
-                    winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
+
+
+                    var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+                    winston.info('snapshotAgents',snapshotAgents);                              
+
+
+                    // winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
                     // agents è selected false quindi nn va sicuro
-                    if (!savedRequest.snapshot.agents) {
-                      return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(. You are closing an old request?", savedRequest);
+                    if (!snapshotAgents.snapshot.agents) {
+                      return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                     }
+                    
                     //  var allAgents = savedRequest.agents;
-                     var allAgents = savedRequest.snapshot.agents;
+                     var allAgents = snapshotAgents.snapshot.agents;
                     // winston.debug("allAgents", allAgents);
      
                      allAgents.forEach(project_user => {
@@ -579,7 +613,7 @@ sendAgentEmail(projectid, savedRequest) {
     try {
    
    
-    Project.findOne({_id: projectid, status: 100}, function(err, project){
+    Project.findOne({_id: projectid, status: 100}, async function(err, project){
        if (err) {
          return winston.error(err);
        }
@@ -606,15 +640,25 @@ sendAgentEmail(projectid, savedRequest) {
                   if (!savedRequest.snapshot) {
                     return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
+
+                  var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+                  winston.info('snapshotAgents',snapshotAgents);                              
+
+
+                  // winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
                   // agents è selected false quindi nn va sicuro
-                  if (!savedRequest.snapshot.agents) {
-                    return winston.warn("RequestNotification savedRequest.snapshot.agents is null :(. You are closing an old request?", savedRequest);
+                  if (!snapshotAgents.snapshot.agents) {
+                    return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
+                  
                   //  var allAgents = savedRequest.agents;
-                   var allAgents = savedRequest.snapshot.agents;
-                  // winston.debug("allAgents", allAgents);
+                   var allAgents = snapshotAgents.snapshot.agents;
+            
+                  // //  var allAgents = savedRequest.agents;
+                  //  var allAgents = savedRequest.snapshot.agents;
+                  // // winston.debug("allAgents", allAgents);
    
-                   allAgents.forEach(project_user => {
+                  allAgents.forEach(project_user => {
                   //  winston.debug("project_user", project_user); //DON'T UNCOMMENT THIS. OTHERWISE this.agents.filter of models/request.js:availableAgentsCount has .filter not found.
    
 
