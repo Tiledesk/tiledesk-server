@@ -623,7 +623,7 @@ class WebSocketServer {
           
            // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
-            var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+            var snapshotAgents = await Request.findById(request.id).select({"snapshot":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents',snapshotAgents);  
             // requestJSON.snapshot.agents = snapshotAgents;
 
@@ -667,7 +667,7 @@ class WebSocketServer {
 
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
-            var snapshotAgents = await Request.findById(request.id).select({"snapshot.agents":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
+            var snapshotAgents = await Request.findById(request.id).select({"snapshot":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents',snapshotAgents);  
             // requestJSON.snapshot.agents = snapshotAgents;
 
