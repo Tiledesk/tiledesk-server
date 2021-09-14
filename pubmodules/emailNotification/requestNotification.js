@@ -35,7 +35,7 @@ listen() {
 
     var messageCreateKey = 'message.create';
     if (messageEvent.queueEnabled) {
-      messageCreateKey = 'message.create.queue.pubsub';
+      messageCreateKey = 'message.create.queue';
     }
     winston.info('RequestNotification messageCreateKey: ' + messageCreateKey);
 
@@ -87,7 +87,7 @@ listen() {
 
      var requestCreateKey = 'request.create';
      if (requestEvent.queueEnabled) {
-       requestCreateKey = 'request.create.queue.pubsub';
+       requestCreateKey = 'request.create.queue';
      }
      winston.info('RequestNotification requestCreateKey: ' + requestCreateKey);
 
@@ -111,7 +111,7 @@ listen() {
      var requestParticipantsUpdateKey = 'request.participants.update';
     //  this is not queued
     //  if (requestEvent.queueEnabled) {
-    //   requestParticipantsUpdateKey = 'request.participants.update.queue.pubsub';
+    //   requestParticipantsUpdateKey = 'request.participants.update.queue';
     //  }
      winston.info('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
@@ -145,7 +145,7 @@ listen() {
     var requestCloseExtendedKey = 'request.close.extended';
         //  this is not queued
     // if (requestEvent.queueEnabled) {
-    //   requestCloseExtendedKey = 'request.close.extended.queue.pubsub';
+    //   requestCloseExtendedKey = 'request.close.extended.queue';
     // }
     winston.info('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
     requestEvent.on(requestCloseExtendedKey, function(data) {
