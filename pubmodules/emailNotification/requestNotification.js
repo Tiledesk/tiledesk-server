@@ -37,7 +37,7 @@ listen() {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
-    winston.info('RequestNotification messageCreateKey: ' + messageCreateKey);
+    winston.debug('RequestNotification messageCreateKey: ' + messageCreateKey);
 
 
     messageEvent.on(messageCreateKey, function(message) {
@@ -89,10 +89,10 @@ listen() {
      if (requestEvent.queueEnabled) {
        requestCreateKey = 'request.create.queue';
      }
-     winston.info('RequestNotification requestCreateKey: ' + requestCreateKey);
+     winston.debug('RequestNotification requestCreateKey: ' + requestCreateKey);
 
      requestEvent.on(requestCreateKey, function(request) {
-      winston.info('quiiiiiiiiiiiii');
+      // winston.info('quiiiiiiiiiiiii');
       setImmediate(() => {
    
         /*
@@ -113,7 +113,7 @@ listen() {
     //  if (requestEvent.queueEnabled) {
     //   requestParticipantsUpdateKey = 'request.participants.update.queue';
     //  }
-     winston.info('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
+     winston.debug('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
@@ -147,7 +147,7 @@ listen() {
     // if (requestEvent.queueEnabled) {
     //   requestCloseExtendedKey = 'request.close.extended.queue';
     // }
-    winston.info('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
+    winston.debug('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
     requestEvent.on(requestCloseExtendedKey, function(data) {
       setImmediate(() => {
         var request = data.request;
@@ -629,7 +629,7 @@ sendAgentEmail(projectid, savedRequest) {
             return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
-          winston.debug("savedRequest", savedRequest);
+          winston.info("savedRequest", JSON.stringify(savedRequest));
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
