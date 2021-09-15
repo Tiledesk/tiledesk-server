@@ -230,8 +230,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       }
   
       if (!project) {
-       //  console.warn("Project not found", req.projectid);
-       return console.warn("Project not found", projectid);
+       return winston.warn("Project not found", projectid);
       } 
 
       // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
@@ -307,8 +306,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
          }
      
          if (!project) {
-          //  console.warn("Project not found", req.projectid);
-          return console.warn("Project not found", projectid);
+          return winston.warn("Project not found", projectid);
          } else {
            
             winston.debug("project", project);            
@@ -419,7 +417,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                               winston.error("Error sending email to " + savedRequest.participants[0], err);
                             }
                             if (!user) {
-                              console.warn("User not found",  savedRequest.participants[0]);
+                              winston.warn("User not found",  savedRequest.participants[0]);
                             } else {
                               winston.debug("Sending sendNewAssignedAgentMessageEmailNotification to user with email", user.email);
                               //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account     
@@ -470,8 +468,7 @@ sendEmailChannelTakingNotification(projectid, request) {
       }
   
       if (!project) {
-       //  console.warn("Project not found", req.projectid);
-       return console.warn("Project not found", projectid);
+       return winston.warn("Project not found", projectid);
       } 
 
       // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
@@ -513,8 +510,7 @@ sendUserEmail(projectid, message) {
       }
   
       if (!project) {
-       //  console.warn("Project not found", req.projectid);
-       return console.warn("Project not found", projectid);
+       return winston.warn("Project not found", projectid);
       } 
 
       if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
@@ -610,7 +606,6 @@ sendUserEmail(projectid, message) {
 }
 
 sendAgentEmail(projectid, savedRequest) {
-  //  console.log("savedRequest23", savedRequest);
     // send email
     try {
    
@@ -621,8 +616,7 @@ sendAgentEmail(projectid, savedRequest) {
        }
    
        if (!project) {
-        //  console.warn("Project not found", req.projectid);
-        return console.warn("Project not found", projectid);
+        return winston.warn("Project not found", projectid);
        } else {
          
           winston.debug("project", project);            
@@ -726,6 +720,9 @@ sendAgentEmail(projectid, savedRequest) {
                     Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) 
                     .exec(function (err, project_user) {
                       
+                       if (err) {
+                        return winston.error("RequestNotification email notification error getting project_user", err);
+                       }
                         winston.debug("project_user notification", project_user);
                         if (project_user && project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.assigned &&  project_user.settings.email.notification.conversation.assigned.toyou == false ) {
                           return winston.info("RequestNotification email notification for the user with id : " + assignedId + " for the pooled conversation is disabled");
@@ -736,6 +733,9 @@ sendAgentEmail(projectid, savedRequest) {
                           return ;
                         }
       
+                        if (!project_user) {
+                          return winston.warn("RequestNotification email notification for the user with id : " + assignedId + " not found project_user");
+                        }
                         User.findOne({_id: assignedId, status: 100})
                           .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
                           .exec(function (err, user) {
@@ -743,7 +743,7 @@ sendAgentEmail(projectid, savedRequest) {
                             winston.error("Error sending email to " + savedRequest.participants[0], err);
                           }
                           if (!user) {
-                            console.warn("User not found",  savedRequest.participants[0]);
+                            winston.warn("User not found",  savedRequest.participants[0]);
                           } else {
                             winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
                             //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                
