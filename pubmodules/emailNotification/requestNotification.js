@@ -296,7 +296,6 @@ sendToUserEmailChannelEmail(projectid, message) {
 
 
 sendToAgentEmailChannelEmail(projectid, message) {
-  // sendAgentEmail(projectid, savedRequest) {
     let savedRequest = message.request;
       // send email
       try {
@@ -332,7 +331,10 @@ sendToAgentEmailChannelEmail(projectid, message) {
                     }
 
 
+
+                    
                     var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+
                     winston.info('snapshotAgents',snapshotAgents);                              
 
 
@@ -641,12 +643,24 @@ sendAgentEmail(projectid, savedRequest) {
                     return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
 
-                  var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
-                  winston.info('snapshotAgents',snapshotAgents);                              
+
+
+                  var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
+
+                  
 
 
                   // winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
                   // agents è selected false quindi nn va sicuro
+                  if (!snapshotAgents.snapshot.agents) {
+                    //return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
+
+                  // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
+                      snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+                      winston.info('load snapshotAgents with Request.findById ');                              
+                  }
+                  winston.info('snapshotAgents', snapshotAgents);                              
+
                   if (!snapshotAgents.snapshot.agents) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
