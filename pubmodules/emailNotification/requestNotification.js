@@ -720,6 +720,11 @@ sendAgentEmail(projectid, savedRequest) {
                     Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) 
                     .exec(function (err, project_user) {
                       
+                      // botprefix
+                      if (assignedId.startsWith("bot_")) {
+                        return ;
+                      }
+                      
                        if (err) {
                         return winston.error("RequestNotification email notification error getting project_user", err);
                        }
@@ -728,10 +733,7 @@ sendAgentEmail(projectid, savedRequest) {
                           return winston.info("RequestNotification email notification for the user with id : " + assignedId + " for the pooled conversation is disabled");
                         }
 
-                        // botprefix
-                        if (assignedId.startsWith("bot_")) {
-                          return ;
-                        }
+                        
       
                         if (!project_user) {
                           return winston.warn("RequestNotification email notification for the user with id : " + assignedId + " not found project_user");
