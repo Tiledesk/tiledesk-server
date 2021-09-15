@@ -629,7 +629,7 @@ sendAgentEmail(projectid, savedRequest) {
             return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
-          winston.info("savedRequest", JSON.stringify(savedRequest));
+          winston.info("savedRequest: " + JSON.stringify(savedRequest));
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
