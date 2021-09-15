@@ -178,7 +178,7 @@ class ModulesManager {
             winston.debug("this.trigger:"+ this.trigger);
             this.triggerRoute = require('@tiledesk-ent/tiledesk-server-triggers').triggerRoute;
             winston.debug("this.triggerRoute:"+ this.triggerRoute);       
-            winston.info("ModulesManager init trigger loaded.");
+            winston.info("ModulesManager trigger initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init trigger module not found");
@@ -190,7 +190,7 @@ class ModulesManager {
 
         try {
             this.stripe = require('@tiledesk-ent/tiledesk-server-payments').stripeRoute;
-            winston.info("ModulesManager init stripe loaded");
+            winston.info("ModulesManager stripe initialized");
         } catch(err) {
            if (err.code == 'MODULE_NOT_FOUND') {
                winston.info("ModulesManager init stripe module not found");
@@ -203,8 +203,8 @@ class ModulesManager {
             this.resthookRoute = require('@tiledesk-ent/tiledesk-server-resthook').resthookRoute;
             winston.debug("this.resthookRoute:"+ this.resthookRoute);        
              this.subscriptionNotifier = require('@tiledesk-ent/tiledesk-server-resthook').subscriptionNotifier;
-            this.subscriptionNotifier.start();
-            winston.info("ModulesManager init resthook loaded");
+            // this.subscriptionNotifier.start();
+            winston.info("ModulesManager resthook initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init resthookRoute module not found");
@@ -217,7 +217,7 @@ class ModulesManager {
        try {
             this.analyticsRoute = require('@tiledesk-ent/tiledesk-server-analytics').analyticsRoute;
             winston.debug("this.analyticsRoute:"+ this.analyticsRoute);        
-            winston.info("ModulesManager init analyticsRoute loaded");
+            winston.info("ModulesManager analyticsRoute initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init analytics module not found");
@@ -229,13 +229,13 @@ class ModulesManager {
 
         try {
             this.activityArchiver = require('@tiledesk-ent/tiledesk-server-activities').activityArchiver;
-            this.activityArchiver.listen();
+            // this.activityArchiver.listen();
             winston.debug("this.activityArchiver:"+ this.activityArchiver);   
             
             this.activityRoute = require('@tiledesk-ent/tiledesk-server-activities').activityRoute;
             winston.debug("this.activityRoute:"+ this.activityRoute);
 
-            winston.info("ModulesManager init activities loaded");
+            winston.info("ModulesManager activities initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init activities module not found");
@@ -248,13 +248,13 @@ class ModulesManager {
 
         try {
             this.jwthistoryArchiver = require('@tiledesk-ent/tiledesk-server-jwthistory').jwthistoryArchiver;
-            this.jwthistoryArchiver.listen();
+            // this.jwthistoryArchiver.listen();
             winston.debug("this.jwthistoryArchiver:"+ this.jwthistoryArchiver);   
             
             this.jwthistoryRoute = require('@tiledesk-ent/tiledesk-server-jwthistory').jwthistoryRoute;
             winston.debug("this.jwthistoryRoute:"+ this.jwthistoryRoute);
 
-            winston.info("ModulesManager init jwthistory loaded");
+            winston.info("ModulesManager jwthistory initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init jwthistory module not found");
@@ -268,13 +268,13 @@ class ModulesManager {
 
         try {
             this.requestHistoryArchiver = require('@tiledesk-ent/tiledesk-server-request-history').listener;
-            this.requestHistoryArchiver.listen();
+            // this.requestHistoryArchiver.listen();
             winston.debug("this.requestHistoryArchiver:"+ this.requestHistoryArchiver);   
             
             this.requestHistoryRoute = require('@tiledesk-ent/tiledesk-server-request-history').route;
             winston.debug("this.requestHistoryRoute:"+ this.requestHistoryRoute);
 
-            winston.info("ModulesManager init requestHistory loaded");
+            winston.info("ModulesManager requestHistory initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init requestHistory module not found");
@@ -289,10 +289,10 @@ class ModulesManager {
 
         try {
             this.dialogflowListener = require('@tiledesk-ent/tiledesk-server-dialogflow').listener;
-            this.dialogflowListener.listen();
+            // this.dialogflowListener.listen();
             winston.debug("this.dialogflowListener:"+ this.dialogflowListener);           
 
-            winston.info("ModulesManager init dialogflow loaded");
+            winston.info("ModulesManager dialogflow initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init dialogflow module not found");
@@ -304,10 +304,10 @@ class ModulesManager {
 
         try {
             this.routingQueue = require('@tiledesk-ent/tiledesk-server-routing-queue').listener;
-            this.routingQueue.listen();
+            // this.routingQueue.listen();
             winston.debug("this.routingQueue:"+ this.routingQueue);           
 
-            winston.info("ModulesManager init routing queue loaded");
+            winston.info("ModulesManager routing queue initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init routing queue module not found");
@@ -322,7 +322,7 @@ class ModulesManager {
             this.queue = require('@tiledesk-ent/tiledesk-server-queue');            
             winston.debug("this.queue:"+ this.queue);           
 
-            winston.info("ModulesManager init queue loaded");
+            winston.info("ModulesManager queue initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init queue module not found");
@@ -335,7 +335,7 @@ class ModulesManager {
         try {            
             this.cache = require('@tiledesk-ent/tiledesk-server-cache').cachegoose(config.mongoose);            
             winston.debug("this.cache:"+ this.cache);           
-            winston.info("ModulesManager init cache loaded");
+            winston.info("ModulesManager cache initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init cache module not found");
@@ -347,7 +347,7 @@ class ModulesManager {
         try {
             this.cannedResponseRoute = require('@tiledesk-ent/tiledesk-server-canned').cannedResponseRoute;
             winston.debug("this.cannedResponseRoute:"+ this.cannedResponseRoute);        
-            winston.info("ModulesManager init cannedResponseRoute loaded");
+            winston.info("ModulesManager cannedResponseRoute initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init canned module not found");
@@ -359,7 +359,7 @@ class ModulesManager {
         try {
             this.tagRoute = require('@tiledesk-ent/tiledesk-server-tags').tagRoute;
             winston.debug("this.tagRoute:"+ this.tagRoute);        
-            winston.info("ModulesManager init tagRoute loaded");
+            winston.info("ModulesManager tagRoute initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init tag module not found");
@@ -371,7 +371,7 @@ class ModulesManager {
         try {
             this.groupsRoute = require('@tiledesk-ent/tiledesk-server-groups').groupsRoute;
             winston.debug("this.groupsRoute:"+ this.groupsRoute);        
-            winston.info("ModulesManager init groupsRoute loaded");
+            winston.info("ModulesManager groupsRoute initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init group module not found");
@@ -385,7 +385,7 @@ class ModulesManager {
         if (config && config.routes && config.routes.departmentsRoute) {
             try {                          
                 require('@tiledesk-ent/tiledesk-server-departments').ext(config.routes.departmentsRoute, config.passport);
-                winston.info("ModulesManager init departmentsRoute loaded");
+                winston.info("ModulesManager departmentsRoute initialized");
             } catch(err) {
                 if (err.code == 'MODULE_NOT_FOUND') {
                     winston.info("ModulesManager init departments module not found");
@@ -398,7 +398,7 @@ class ModulesManager {
         if (config && config.routes && config.routes.projectsRoute) {
             try {                          
                 require('@tiledesk-ent/tiledesk-server-mt').ext(config.routes.projectsRoute, config.passport);
-                winston.info("ModulesManager init mt loaded");
+                winston.info("ModulesManager mt initialized");
             } catch(err) {
                 if (err.code == 'MODULE_NOT_FOUND') {
                     winston.info("ModulesManager init mt module not found");
@@ -416,7 +416,7 @@ class ModulesManager {
             this.widgetsRoute = config.routes.widgetsRoute;
             winston.debug(" this.widgetsRoute:"+  this.widgetsRoute);        
 
-            winston.info("ModulesManager init visitorCounter loaded");
+            winston.info("ModulesManager visitorCounter initialized");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("ModulesManager init visitorCounter module not found");
@@ -454,6 +454,69 @@ class ModulesManager {
 
 
         
+    }
+
+
+    start() {
+
+        // stampa log
+        if (this.subscriptionNotifier) {
+            try {
+                this.subscriptionNotifier.start();
+                winston.info("ModulesManager subscriptionNotifier started");            
+            } catch(err) {        
+                winston.info("ModulesManager error starting subscriptionNotifier module", err);            
+            }
+        }
+
+        if (this.activityArchiver) {
+            try {
+                this.activityArchiver.listen();
+                winston.info("ModulesManager activityArchiver started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting activityArchiver module", err);            
+            }
+        }
+        
+        if (this.jwthistoryArchiver) {
+            try {
+                this.jwthistoryArchiver.listen();
+                winston.info("ModulesManager jwthistoryArchiver started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting jwthistoryArchiver module", err);            
+            }
+        }
+
+        if (this.requestHistoryArchiver) {
+            try {
+                this.requestHistoryArchiver.listen();
+                winston.info("ModulesManager requestHistoryArchiver started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting requestHistoryArchiver module", err);            
+            }
+        }
+        if (this.routingQueue) {
+            try {
+                this.routingQueue.listen();
+                winston.info("ModulesManager routingQueue started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting routingQueue module", err);            
+            }
+        }
+        if (this.dialogflowListener) {
+            try {
+                this.dialogflowListener.listen();
+                winston.info("ModulesManager dialogflowListener started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting dialogflowListener module", err);            
+            }
+        }
+
+
+        
+
+
+         
     }
 
 
