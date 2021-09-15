@@ -117,7 +117,7 @@ listen() {
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
-      winston.debug("requestEvent request.participants.update");
+      winston.info("requestEvent request.participants.update");
 
       var request = data.request;
       
@@ -664,7 +664,7 @@ sendAgentEmail(projectid, savedRequest) {
                   if (!snapshotAgents.snapshot.agents) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
-                  
+
                   //  var allAgents = savedRequest.agents;
                    var allAgents = snapshotAgents.snapshot.agents;
             
