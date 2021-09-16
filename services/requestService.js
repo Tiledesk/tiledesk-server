@@ -190,7 +190,7 @@ class RequestService {
 
           return that.routeInternal(request, departmentid, id_project, nobot ).then(function(routedRequest){
 
-            winston.debug("after routeInternal");
+            winston.debug("after routeInternal",routedRequest);
             // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
             // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
             winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
@@ -227,6 +227,8 @@ class RequestService {
               .populate('participatingAgents')  
               .populate({path:'requester',populate:{path:'id_user'}})
               .execPopulate( function(err, requestComplete) {
+                winston.debug("requestComplete",requestComplete);
+                
                 return resolve(requestComplete);
               });
             }
@@ -240,7 +242,7 @@ class RequestService {
                 return reject(err);
               }
               
-              winston.debug("after save");
+              winston.debug("after save savedRequest", savedRequest);
 
               return savedRequest
               .populate('lead')
@@ -283,7 +285,6 @@ class RequestService {
               
               requestEvent.emit('request.update',requestComplete);
               requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
-              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:requestComplete});
               requestEvent.emit('request.participants.update', {beforeRequest:request, 
                 removedParticipants:removedParticipants, 
                 addedParticipants:addedParticipants,
