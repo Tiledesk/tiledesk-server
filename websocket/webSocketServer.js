@@ -605,7 +605,7 @@ class WebSocketServer {
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, async function (request) {
         // TODO setImmediate(() => { 
-        winston.debug('requestEvent websocket server: '+requestCreateKey, request);
+        winston.info('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
@@ -653,7 +653,7 @@ class WebSocketServer {
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, async function(request) {
         // TODO setImmediate(() => {        
-        winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
+        winston.info('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
 
           var requestJSON = request;
