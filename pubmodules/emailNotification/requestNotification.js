@@ -36,15 +36,15 @@ listen() {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
-    winston.info('RequestNotification messageCreateKey: ' + messageCreateKey);
+    winston.debug('RequestNotification messageCreateKey: ' + messageCreateKey);
 
 
     messageEvent.on(messageCreateKey, function(message) {
 
       setImmediate(() => {      
         winston.debug("sendUserEmail", message);
-       
-    
+        
+      
         
       });
      });
@@ -53,7 +53,7 @@ listen() {
      if (requestEvent.queueEnabled) {
        requestCreateKey = 'request.create.queue';
      }
-     winston.info('RequestNotification requestCreateKey: ' + requestCreateKey);
+     winston.debug('RequestNotification requestCreateKey: ' + requestCreateKey);
 
      requestEvent.on(requestCreateKey, function(request) {
       // winston.info('quiiiiiiiiiiiii');
@@ -77,11 +77,11 @@ listen() {
     //  if (requestEvent.queueEnabled) {
     //   requestParticipantsUpdateKey = 'request.participants.update.queue';
     //  }
-     winston.info('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
+     winston.debug('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
-      winston.debug("requestEvent request.participants.update");
+      winston.info("requestEvent request.participants.update");
 
       var request = data.request;
       
@@ -111,7 +111,7 @@ listen() {
     // if (requestEvent.queueEnabled) {
     //   requestCloseExtendedKey = 'request.close.extended.queue';
     // }
-    winston.info('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
+    winston.debug('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
     requestEvent.on(requestCloseExtendedKey, function(data) {
       setImmediate(() => {
         var request = data.request;
@@ -293,7 +293,6 @@ sendUserEmail(projectid, message) {
 
 
 sendAgentEmail(projectid, savedRequest) {
-  //  console.log("savedRequest23", savedRequest);
     // send email
     try {
    
@@ -304,8 +303,7 @@ sendAgentEmail(projectid, savedRequest) {
        }
    
        if (!project) {
-        //  console.warn("Project not found", req.projectid);
-        return console.warn("Project not found", projectid);
+        return winston.warn("Project not found", projectid);
        } else {
          
           winston.debug("project", project);            
@@ -314,7 +312,7 @@ sendAgentEmail(projectid, savedRequest) {
             return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
-          winston.debug("savedRequest", savedRequest);
+          winston.info("savedRequest: " + JSON.stringify(savedRequest));
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
@@ -326,16 +324,28 @@ sendAgentEmail(projectid, savedRequest) {
                     return winston.warn("RequestNotification savedRequest.snapshot is null :(. You are closing an old request?");
                   }
 
-                  var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
-                  winston.info('snapshotAgents',snapshotAgents);                              
+
+
+                  var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
+
+                  
 
 
                   // winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
                   // agents è selected false quindi nn va sicuro
                   if (!snapshotAgents.snapshot.agents) {
+                    //return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
+
+                  // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
+                      snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+                      winston.info('load snapshotAgents with Request.findById ');                              
+                  }
+                  winston.info('snapshotAgents', snapshotAgents);                              
+
+                  if (!snapshotAgents.snapshot.agents) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
                   }
-                  
+
                   //  var allAgents = savedRequest.agents;
                    var allAgents = snapshotAgents.snapshot.agents;
             
@@ -397,16 +407,24 @@ sendAgentEmail(projectid, savedRequest) {
                     Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) 
                     .exec(function (err, project_user) {
                       
+                      // botprefix
+                      if (assignedId.startsWith("bot_")) {
+                        return ;
+                      }
+                      
+                       if (err) {
+                        return winston.error("RequestNotification email notification error getting project_user", err);
+                       }
                         winston.debug("project_user notification", project_user);
                         if (project_user && project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.assigned &&  project_user.settings.email.notification.conversation.assigned.toyou == false ) {
                           return winston.info("RequestNotification email notification for the user with id : " + assignedId + " for the pooled conversation is disabled");
                         }
 
-                        // botprefix
-                        if (assignedId.startsWith("bot_")) {
-                          return ;
-                        }
+                        
       
+                        if (!project_user) {
+                          return winston.warn("RequestNotification email notification for the user with id : " + assignedId + " not found project_user");
+                        }
                         User.findOne({_id: assignedId, status: 100})
                           .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
                           .exec(function (err, user) {
@@ -414,7 +432,7 @@ sendAgentEmail(projectid, savedRequest) {
                             winston.error("Error sending email to " + savedRequest.participants[0], err);
                           }
                           if (!user) {
-                            console.warn("User not found",  savedRequest.participants[0]);
+                            winston.warn("User not found",  savedRequest.participants[0]);
                           } else {
                             winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
                             //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                

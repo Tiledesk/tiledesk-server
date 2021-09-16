@@ -99,6 +99,8 @@ var cacheUtil = require("./utils/cacheUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
 var campaigns = require('./routes/campaigns');
+var requestUtilRoot = require('./routes/requestUtilRoot');
+
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -287,6 +289,8 @@ app.use('/widgets', widgetsLoader);
 app.use('/images', images);
 app.use('/files', files);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
+
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
