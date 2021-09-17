@@ -1,5 +1,24 @@
 
-# 2.1.40.19 -> PROD
+# 2.1.40.25 -> PROD
+- microLanguageTransformerInterceptor startup error. It is disabled. Module not present
+
+# 2.1.40.24
+- emailService toJSON is not a function fix
+
+# 2.1.40.23
+- requestNotification fix and requestUtilRoot endpoint added
+
+# 2.1.40.22
+- Inizialize enterprise modules before public modules
+- Request Notification fix loading snapshot agents
+
+# 2.1.40.21
+- Find user id from user email endpoint
+
+# 2.1.40.20
+- MessageRoot endpoint validation fix
+
+# 2.1.40.19 
 - Stripe fix with version 1.1.5
 
 # 2.1.40.18
