@@ -167,6 +167,15 @@ class EmailService {
 
     var that = this;
 
+     //if the request came from rabbit mq?
+     if (savedRequest.toJSON) {
+      savedRequest = savedRequest.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
     this.readHTMLFile('assignedRequest.html', function(err, html) {
 
 
@@ -188,8 +197,8 @@ class EmailService {
 // Stampa anche contact.email
 
       var replacements = {        
-        savedRequest: savedRequest.toJSON(),
-        project: project.toJSON(),
+        savedRequest: savedRequest,
+        project: project,
         baseScope: baseScope    
       };
 
@@ -212,6 +221,15 @@ class EmailService {
 
     var that = this;
 
+    //if the request came from rabbit mq?
+    if (savedRequest.toJSON) {
+      savedRequest = savedRequest.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
     this.readHTMLFile('pooledRequest.html', function(err, html) {
 
 
@@ -232,8 +250,8 @@ class EmailService {
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
       var replacements = {        
-        savedRequest: savedRequest.toJSON(),
-        project: project.toJSON(),
+        savedRequest: savedRequest,
+        project: project,
         baseScope: baseScope    
       };
 
@@ -250,6 +268,11 @@ class EmailService {
   sendNewMessageNotification(to, message, project, tokenQueryString) {
 
     var that = this;
+
+    //if the request came from rabbit mq?
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
 
     this.readHTMLFile('newMessage.html', function(err, html) {
 
@@ -270,7 +293,7 @@ class EmailService {
 
       var replacements = {        
         message: message,
-        project: project.toJSON(),
+        project: project,
         tokenQueryString: tokenQueryString,
         baseScope: baseScope    
       };
@@ -468,6 +491,11 @@ class EmailService {
    
     var that = this;
 
+    if (savedUser.toJSON) {
+      savedUser = savedUser.toJSON();
+    }
+
+
     this.readHTMLFile('verify.html', function(err, html) {
 
 
@@ -487,7 +515,7 @@ class EmailService {
 
 
       var replacements = {        
-        savedUser: savedUser.toJSON(),      
+        savedUser: savedUser,      
         baseScope: baseScope    
       };
 
@@ -520,6 +548,12 @@ class EmailService {
       
     var that = this;
 
+
+     //if the request came from rabbit mq?
+     if (request.toJSON) {
+      request = request.toJSON();
+    }
+
     this.readHTMLFile('sendTranscript.html', function(err, html) {
 
 
@@ -540,7 +574,7 @@ class EmailService {
 
       var replacements = {        
         messages: messages,    
-        request: request.toJSON(),  
+        request: request,  
         formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
         transcriptAsHtml: transcriptAsHtml,
         baseScope: baseScope    
