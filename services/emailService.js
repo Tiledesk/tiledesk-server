@@ -43,6 +43,7 @@ class EmailService {
 
   constructor() {
 
+    // controlla se è string da kuberntes nn funziona
     this.enabled = process.env.EMAIL_ENABLED || false;
     winston.info('EmailService enabled: '+ this.enabled);
 
@@ -121,7 +122,7 @@ class EmailService {
       winston.verbose("getTransport custom", configEmail);
     }
 
-    winston.verbose("getTransport configEmail: "+ JSON.stringify(configEmail));
+    winston.debug("getTransport configEmail: "+ JSON.stringify(configEmail));
 
     let transport = {
       host: configEmail.host,
@@ -224,6 +225,15 @@ class EmailService {
 
     var that = this;
 
+    //if the request came from rabbit mq?
+    if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
     this.readTemplateFile('assignedRequest.html', function(err, html) {
 
 
@@ -244,13 +254,14 @@ class EmailService {
       // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-
+    
+  
       let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
       winston.verbose("msgText: " + msgText);
 
       var replacements = {        
-        request: request.toJSON(),
-        project: project.toJSON(),
+        request: request,
+        project: project,
         msgText: msgText,
         baseScope: baseScope    
       };
@@ -338,6 +349,8 @@ class EmailService {
 
       messageId =  "notification" + messageId;
 
+
+      // togliere bcc 
       that.send({
         messageId: messageId,
         to: that.bcc, 
@@ -355,6 +368,16 @@ class EmailService {
   sendNewAssignedAgentMessageEmailNotification(to, request, project, message) {      
 
     var that = this;
+
+    //if the request came from rabbit mq?
+    if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
 
     this.readTemplateFile('assignedEmailMessage.html', function(err, html) {
 
@@ -381,8 +404,7 @@ class EmailService {
 
       var replacements = {        
         request: request,
-        // request: request.toJSON(),
-        project: project.toJSON(),
+        project: project,
         message: message,
         msgText: msgText,
         baseScope: baseScope    
@@ -493,6 +515,15 @@ class EmailService {
   
   sendNewPooledRequestNotification(to, request, project) {
 
+    //if the request came from rabbit mq?
+    if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
     var that = this;
 
     this.readTemplateFile('pooledRequest.html', function(err, html) {
@@ -519,8 +550,8 @@ class EmailService {
       winston.verbose("msgText: " + msgText);
 
       var replacements = {        
-        request: request.toJSON(),
-        project: project.toJSON(),
+        request: request,
+        project: project,
         msgText: msgText,
         baseScope: baseScope    
       };
@@ -615,7 +646,18 @@ class EmailService {
   sendNewPooledMessageEmailNotification(to, request, project, message) {
 
     var that = this;
+
     
+    //if the request came from rabbit mq?
+    if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
+
     this.readTemplateFile('pooledEmailMessage.html', function(err, html) {
 
 
@@ -642,8 +684,7 @@ class EmailService {
 
       var replacements = {        
         request: request,
-        // request: request.toJSON(),
-        project: project.toJSON(),
+        project: project,
         message: message,
         msgText: msgText,
         baseScope: baseScope    
@@ -756,6 +797,12 @@ class EmailService {
 
     var that = this;
 
+    //if the request came from rabbit mq?
+   
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+    
     this.readTemplateFile('newMessage.html', function(err, html) {
 
 
@@ -778,7 +825,7 @@ class EmailService {
 
       var replacements = {        
         message: message,
-        project: project.toJSON(),
+        project: project,
         msgText:msgText, 
         seamlessPage: sourcePage,
         tokenQueryString: tokenQueryString,
@@ -877,6 +924,11 @@ class EmailService {
 
     var that = this;
 
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
     // this.readTemplateFile('ticket.txt', function(err, html) {
     this.readTemplateFile('ticket.html', function(err, html) {
 
@@ -901,7 +953,7 @@ class EmailService {
 
       var replacements = {        
         message: message,
-        project: project.toJSON(),
+        project: project,
         seamlessPage: sourcePage,
         msgText: msgText,
         tokenQueryString: tokenQueryString,
@@ -1242,6 +1294,10 @@ class EmailService {
    
     var that = this;
 
+    if (savedUser.toJSON) {
+      savedUser = savedUser.toJSON();
+    }
+
     this.readTemplateFile('verify.html', function(err, html) {
 
 
@@ -1261,7 +1317,7 @@ class EmailService {
 
 
       var replacements = {        
-        savedUser: savedUser.toJSON(),      
+        savedUser: savedUser,      
         baseScope: baseScope    
       };
 
@@ -1283,6 +1339,16 @@ class EmailService {
 // ok
 
   sendRequestTranscript(to, messages, request, project) {
+
+
+     //if the request came from rabbit mq?
+     if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    // if (project.toJSON) {
+    //   project = project.toJSON();
+    // }
 
     var transcriptAsHtml = ""; //https://handlebarsjs.com/guide/expressions.html#html-escaping
     messages.forEach(message => {
@@ -1314,7 +1380,7 @@ class EmailService {
 
       var replacements = {        
         messages: messages,    
-        request: request.toJSON(),  
+        request: request,  
         formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
         transcriptAsHtml: transcriptAsHtml,
         baseScope: baseScope    
