@@ -167,7 +167,7 @@ class PubModulesManager {
         if (this.messageTransformer) {
             try {
                 this.messageTransformer.messageTransformerInterceptor.listen();
-                this.messageTransformer.microLanguageTransformerInterceptor.listen();    
+                // this.messageTransformer.microLanguageTransformerInterceptor.listen();    
                 winston.info("PubModulesManager messageTransformer started.");   
             } catch(err) {        
                 winston.info("PubModulesManager error starting messageTransformer module", err);            
