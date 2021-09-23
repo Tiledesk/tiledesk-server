@@ -108,6 +108,19 @@
   <a href="{{message.metadata.src}}">{{message.metadata.name}}</a>
 {{/ifEquals}}
 
+
+{{#if message.request.attributes}}
+    {{#if message.request.attributes.attachment}}
+        {{#if message.request.attributes.attachment.buttons}}
+            {{#each message.request.attributes.attachment.buttons}}
+                <li><a href="https://api.tiledesk.com/v2/{{project.id}}/link?token={{tokenQueryString}}" class="dynamic_button">{{this.value}}</a></li>
+            {{/each}}
+
+                    
+        {{/if}}
+    {{/if}}
+{{/if}}
+
                 </td>
               </tr>
 
