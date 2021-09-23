@@ -66,7 +66,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"joined",
         "INFO_SUPPORT_USER_ADDED_VERB":"to chat",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reopened",
-        "INFO_SUPPORT_CHAT_CLOSED":"Chat closed"
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat closed",
+
+        "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email."
     }
 },
 {
@@ -136,7 +138,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"si è unito",
         "INFO_SUPPORT_USER_ADDED_VERB":"alla chat",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat riaperta",
-        "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa"
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa",
+
+        "TICKET_TAKING":"La richiesta è stata ricevuta e il personale di assistenza se ne sta occupando.\nPer aggiungere ulteriori commenti, rispondi a questa email."
     }
 },
 {
@@ -206,7 +210,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"rejoint",
         "INFO_SUPPORT_USER_ADDED_VERB":"discuter",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat rouvert",
-        "INFO_SUPPORT_CHAT_CLOSED":"Chat fermé"
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat fermé",
+
+        "TICKET_TAKING":"La demande a été reçue et le personnel d'assistance la traite.\nPour ajouter d'autres commentaires, répondez à cet e-mail."
     }
  },
  {
@@ -276,7 +282,10 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"unido",
         "INFO_SUPPORT_USER_ADDED_VERB":"para charlar",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reabierto",
-        "INFO_SUPPORT_CHAT_CLOSED":"Chat cerrado"
+        "INFO_SUPPORT_CHAT_CLOSED":"Chat cerrado",
+
+        "TICKET_TAKING":"La solicitud ha sido recibida y el personal de asistencia está tratando con ella. \nPara agregar más comentarios, responda a este correo electrónico."
+
     }
 },
 {
@@ -346,7 +355,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "beigetreten",
         "INFO_SUPPORT_USER_ADDED_VERB": "zum Chatten",
         "INFO_SUPPORT_CHAT_REOPENED": "Chat wieder geöffnet",
-        "INFO_SUPPORT_CHAT_CLOSED": "Chat geschlossen"
+        "INFO_SUPPORT_CHAT_CLOSED": "Chat geschlossen",
+
+        "TICKET_TAKING":"Die Anfrage ist eingegangen und wird vom Hilfspersonal bearbeitet.\nUm weitere Kommentare hinzuzufügen, antworten Sie auf diese E-Mail."
     }
 },
 {
@@ -416,7 +427,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "aderiu",
         "INFO_SUPPORT_USER_ADDED_VERB": "para conversar",
         "INFO_SUPPORT_CHAT_REOPENED": "Chat reaberto",
-        "INFO_SUPPORT_CHAT_CLOSED": "Bate-papo fechado"
+        "INFO_SUPPORT_CHAT_CLOSED": "Bate-papo fechado",
+
+        "TICKET_TAKING":"A solicitação foi recebida e a equipe de assistência está tratando dela. \nPara adicionar mais comentários, responda a este e-mail."
     }
 },
 {
@@ -485,7 +498,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "присоединился",
         "INFO_SUPPORT_USER_ADDED_VERB": "в чат",
         "INFO_SUPPORT_CHAT_REOPENED": "Чат возобновлен",
-        "INFO_SUPPORT_CHAT_CLOSED": "Чат закрыт"
+        "INFO_SUPPORT_CHAT_CLOSED": "Чат закрыт",
+
+        "TICKET_TAKING":"Запрос был получен, и обслуживающий персонал занимается им. \nЧтобы добавить больше комментариев, ответьте на это письмо."
     }
 },
 {
@@ -555,7 +570,9 @@
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "katıldı",
         "INFO_SUPPORT_USER_ADDED_VERB": "sohbet etmek",
         "INFO_SUPPORT_CHAT_REOPENED": "Sohbet yeniden açıldı",
-        "INFO_SUPPORT_CHAT_CLOSED": "Sohbet kapatıldı"
+        "INFO_SUPPORT_CHAT_CLOSED": "Sohbet kapatıldı",
+
+        "TICKET_TAKING":"Talep alındı ve yardım ekibi bununla ilgileniyor.\nDaha fazla yorum eklemek için bu e-postayı yanıtlayın."
     }
 }
 ]
