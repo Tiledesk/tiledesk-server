@@ -168,12 +168,12 @@ class FaqBotSupport {
                             */
                         }
                          if (response.statusCode >= 400) {      
-                            winston.debug("The ChatBot webhook return error http status code. Return standard reply", response);            
+                            winston.verbose("The ChatBot webhook return error http status code. Return standard reply", response);            
                             return resolve(messageReply);
                         }
 
                         if (!json) { //the webhook return empty body
-                            winston.debug("The ChatBot webhook return no json. Return standard reply", response);
+                            winston.verbose("The ChatBot webhook return no json. Return standard reply", response);
                             return resolve(messageReply);
                         }
                        
@@ -181,7 +181,7 @@ class FaqBotSupport {
 
                         var text = undefined;
                         if(json && json.text===undefined) {
-                            winston.debug("webhookurl json is defined but text not. return standard reply",{json:json, response:response});
+                            winston.verbose("webhookurl json is defined but text not. return standard reply",{json:json, response:response});
                             // text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
                             return resolve(messageReply);
                         }else {
