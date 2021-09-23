@@ -63,7 +63,7 @@ module.exports = function(passport) {
 
   var opts = {
             // jwtFromRequest: ExtractJwt.fromAuthHeader(),
-            jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt"),
+            jwtFromRequest:ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderWithScheme("jwt"), ExtractJwt.fromUrlQueryParameter('secret_token')]),            
             //this will help you to pass request body to passport
             passReqToCallback: true, //https://stackoverflow.com/questions/55163015/how-to-bind-or-pass-req-parameter-to-passport-js-jwt-strategy
             // secretOrKey: configSecret,
@@ -346,7 +346,7 @@ module.exports = function(passport) {
       
 
       var email = userid.toLowerCase();
-      winston.info("email email lowercase: " + email);
+      winston.info("email lowercase: " + email);
 
       User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id')
       .cache(cacheUtil.defaultTTL, "users:email:"+email)
