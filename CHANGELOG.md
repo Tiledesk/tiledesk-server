@@ -1,4 +1,7 @@
 
+# 2.1.40.26
+- Lic ck bug fix for users
+
 # 2.1.40.25 -> PROD
 - microLanguageTransformerInterceptor startup error. It is disabled. Module not present
 
