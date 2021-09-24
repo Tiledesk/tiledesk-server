@@ -131,6 +131,18 @@
     {{/if}}
 {{/if}}
 
+{{#if message.attributes.intent_info}}
+  {{#if message.attributes.intent_info.others}}
+    {{#each message.attributes.intent_info.others}}
+      <li><span>{{this.answer}}</span></li>
+    {{/each}}
+  {{/if}}
+{{/if}}
+
+
+
+
+
                       </td>
                     </tr>
 
