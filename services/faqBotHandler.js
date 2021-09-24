@@ -139,8 +139,7 @@ class FaqBotHandler {
                            // attr._answer = that.getCircularReplacer(answerObj);
                             if (answerObj && answerObj._id) {
                                 attr._answerid = answerObj._id.toString();
-                            }
-
+                            }                            
                             
                             let question_payload = Object.assign({}, message);
                             delete question_payload.request;
@@ -151,7 +150,8 @@ class FaqBotHandler {
                                 intent_name: answerObj.intent_display_name,
                                 is_fallback: false,
                                 confidence: answerObj.score,
-                                question_payload: question_payload 
+                                question_payload: question_payload,
+                                others: faqs
                               }
                             winston.debug("intent_info", intent_info);
                             attr.intent_info = intent_info;
@@ -233,7 +233,8 @@ class FaqBotHandler {
                                 intent_name: answerObj.intent_display_name,
                                 is_fallback: false,
                                 confidence: answerObj.score,
-                                question_payload: question_payload 
+                                question_payload: question_payload,
+                                others: faqs
                               }
                             winston.debug("intent_info", intent_info);
                             attr.intent_info = intent_info;
