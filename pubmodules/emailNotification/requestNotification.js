@@ -66,7 +66,6 @@ listen() {
             
           }
           
-          
         } else {
           winston.debug("sendUserEmail chat channel");
               // controlla se sta funzionando
@@ -268,7 +267,7 @@ sendToUserEmailChannelEmail(projectid, message) {
 
       var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
                              + projectid + "&project_name="+encodeURIComponent(project.name) 
-                             + "&tiledesk_recipientId="+message.request.request_id;
+                             + "&tiledesk_recipientId="+message.request.request_id
                              + "&tiledesk_isOpen=true";
 
       if (message.request.sourcePage) {
@@ -577,7 +576,7 @@ sendUserEmail(projectid, message) {
 
                   var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
                   + projectid + "&project_name="+encodeURIComponent(project.name) 
-                  + "&tiledesk_recipientId="+message.request.request_id;
+                  + "&tiledesk_recipientId="+message.request.request_id 
                   + "&tiledesk_isOpen=true";
 
 
