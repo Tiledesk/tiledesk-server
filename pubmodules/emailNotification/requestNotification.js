@@ -66,6 +66,7 @@ listen() {
             
           }
           
+          
         } else {
           winston.debug("sendUserEmail chat channel");
               // controlla se sta funzionando
@@ -243,7 +244,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       // }
 
       let lead = message.request.lead;
-      winston.info("sending channel emaol email to lead ", lead);
+      winston.debug("sending channel emaol email to lead ", lead);
 
       
       winston.info("sending user email to  "+ lead.email);
@@ -256,23 +257,25 @@ sendToUserEmailChannelEmail(projectid, message) {
       };
 
       var recipient = lead.lead_id;
-      winston.info("recipient:"+ recipient);
+      winston.debug("recipient:"+ recipient);
 
       let userEmail = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
-      winston.info("userEmail  ",userEmail);
+      winston.debug("userEmail  ",userEmail);
 
 
       var token = jwt.sign(userEmail, configSecret, signOptions);
-      winston.info("token  "+token);
+      winston.debug("token  "+token);
 
-      var sourcePage = widgetTestLocation + "?tiledesk_projectid="+projectid+"&project_name="+encodeURIComponent(project.name)+"&isOpen=true";
-
+      var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
+                             + projectid + "&project_name="+encodeURIComponent(project.name) 
+                             + "&tiledesk_recipientId="+message.request.request_id;
+                             + "&tiledesk_isOpen=true";
 
       if (message.request.sourcePage) {
         sourcePage = message.request.sourcePage;
       }
       
-      winston.info("sourcePage  "+sourcePage);
+      winston.debug("sourcePage  "+sourcePage);
 
       var tokenQueryString;
       if(sourcePage && sourcePage.indexOf('?')>-1) {
@@ -556,7 +559,7 @@ sendUserEmail(projectid, message) {
             return Lead.findOne({lead_id: recipient}, function(err, lead){
               winston.debug("lead", lead);     //TODO  lead  is already present in request.lead
               if (lead && lead.email) {
-                  winston.info("sending user email to  "+ lead.email);
+                  winston.debug("sending user email to  "+ lead.email);
 
                   var signOptions = {
                     issuer:  'https://tiledesk.com',
@@ -566,20 +569,23 @@ sendUserEmail(projectid, message) {
                   };
 
                   let userAnonym = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
-                  winston.info("userAnonym  ",userAnonym);
+                  winston.debug("userAnonym  ",userAnonym);
 
         
                   var token = jwt.sign(userAnonym, configSecret, signOptions);
-                  winston.info("token  "+token);
+                  winston.debug("token  "+token);
 
-                  var sourcePage = widgetTestLocation + "?tiledesk_projectid="+projectid+"&project_name="+encodeURIComponent(project.name)+"&isOpen=true";
+                  var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
+                  + projectid + "&project_name="+encodeURIComponent(project.name) 
+                  + "&tiledesk_recipientId="+message.request.request_id;
+                  + "&tiledesk_isOpen=true";
 
 
                   if (message.request.sourcePage) {
                     sourcePage = message.request.sourcePage;
                   }
                   
-                  winston.info("sourcePage  "+sourcePage);
+                  winston.debug("sourcePage  "+sourcePage);
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {
