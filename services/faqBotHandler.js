@@ -146,7 +146,7 @@ class FaqBotHandler {
 
                             winston.debug("question_payload", question_payload);
 
-                            let clonedfaqs = Object.assign({}, faqs);
+                            let clonedfaqs = faqs.slice();
                             if (clonedfaqs && clonedfaqs.length>0) {
                                 clonedfaqs = clonedfaqs.shift()
                             }
@@ -235,7 +235,7 @@ class FaqBotHandler {
 
                             winston.debug("question_payload", question_payload);
 
-                            let clonedfaqs = Object.assign({}, faqs);
+                            let clonedfaqs = faqs.slice();
                             if (clonedfaqs && clonedfaqs.length>0) {
                                 clonedfaqs = clonedfaqs.shift()
                             }
