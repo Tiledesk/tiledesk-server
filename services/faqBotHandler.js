@@ -146,12 +146,18 @@ class FaqBotHandler {
 
                             winston.debug("question_payload", question_payload);
 
+                            let clonedfaqs = Object.assign({}, faqs.toObject());
+                            if (clonedfaqs && clonedfaqs.length>0) {
+                                clonedfaqs = clonedfaqs.shift()
+                            }
+                            winston.verbose("clonedfaqs", clonedfaqs);
+
                             const intent_info = {
                                 intent_name: answerObj.intent_display_name,
                                 is_fallback: false,
                                 confidence: answerObj.score,
                                 question_payload: question_payload,
-                                others: faqs
+                                others: clonedfaqs
                               }
                             winston.debug("intent_info", intent_info);
                             attr.intent_info = intent_info;
@@ -229,12 +235,18 @@ class FaqBotHandler {
 
                             winston.debug("question_payload", question_payload);
 
+                            let clonedfaqs = Object.assign({}, faqs.toObject());
+                            if (clonedfaqs && clonedfaqs.length>0) {
+                                clonedfaqs = clonedfaqs.shift()
+                            }
+                            winston.verbose("clonedfaqs", clonedfaqs);
+
                             const intent_info = {
                                 intent_name: answerObj.intent_display_name,
                                 is_fallback: false,
                                 confidence: answerObj.score,
                                 question_payload: question_payload,
-                                others: faqs
+                                others: clonedfaqs
                               }
                             winston.debug("intent_info", intent_info);
                             attr.intent_info = intent_info;

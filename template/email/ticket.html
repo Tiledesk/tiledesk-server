@@ -140,10 +140,9 @@
     {{/if}}
 {{/if}}
 
-Others:
-
 {{#if message.attributes.intent_info}}
   {{#if message.attributes.intent_info.others}}
+    Others:
     {{#each message.attributes.intent_info.others}}
       <li><span>{{this.answer}}</span></li>
     {{/each}}
