@@ -109,9 +109,18 @@
 {{/ifEquals}}
 {{#ifEquals message.type "image"}}
   <img src="{{message.metadata.src}}"/>
+  {{#if msgText}}
+    {{{msgText}}}
+  {{/if}}
 {{/ifEquals}}
 {{#ifEquals message.type "file"}}
   <a href="{{message.metadata.src}}">{{message.metadata.name}}</a>
+{{/ifEquals}}
+{{#ifEquals message.type "frame"}}
+  <a href="{{message.metadata.src}}">{{message.metadata.name}}</a>
+  {{#if msgText}}
+    {{{msgText}}}
+  {{/if}}
 {{/ifEquals}}
                         
 {{#if message.attributes}}
