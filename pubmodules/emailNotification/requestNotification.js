@@ -117,7 +117,7 @@ listen() {
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
-      winston.info("requestEvent request.participants.update");
+      winston.debug("requestEvent request.participants.update");
 
       var request = data.request;
       
@@ -224,7 +224,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       return winston.debug("The lead object is undefined or has empty email");
     }
 
-    Project.findOne({_id: projectid, status: 100}, function(err, project){
+    Project.findOne({_id: projectid, status: 100}).select("+settings").exec(function(err, project){
       if (err) {
         return winston.error(err);
       }
@@ -246,7 +246,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("sending channel emaol email to lead ", lead);
 
       
-      winston.info("sending user email to  "+ lead.email);
+      winston.debug("sending user email to  "+ lead.email);
 
       var signOptions = {
         issuer:  'https://tiledesk.com',
@@ -302,7 +302,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
       try {
      
      
-      Project.findOne({_id: projectid, status: 100}, async function(err, project){
+      Project.findOne({_id: projectid, status: 100}).select("+settings").exec(async function(err, project){
          if (err) {
            return winston.error(err);
          }
@@ -464,7 +464,7 @@ sendEmailChannelTakingNotification(projectid, request) {
       return winston.debug("The lead object is undefined or has empty email");
     }
 
-    Project.findOne({_id: projectid, status: 100}, function(err, project){
+    Project.findOne({_id: projectid, status: 100}).select("+settings").exec(function(err, project){
       if (err) {
         return winston.error(err);
       }
@@ -506,7 +506,7 @@ sendUserEmail(projectid, message) {
       return winston.debug("The lead object is undefined or has empty email");
     }
 
-    Project.findOne({_id: projectid, status: 100}, function(err, project){
+    Project.findOne({_id: projectid, status: 100}).select("+settings").exec(function(err, project){
       if (err) {
         return winston.error(err);
       }
@@ -615,7 +615,7 @@ sendAgentEmail(projectid, savedRequest) {
     try {
    
    
-    Project.findOne({_id: projectid, status: 100}, async function(err, project){
+    Project.findOne({_id: projectid, status: 100}).select("+settings").exec( async function(err, project){
        if (err) {
          return winston.error(err);
        }
@@ -630,7 +630,7 @@ sendAgentEmail(projectid, savedRequest) {
             return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
-          winston.info("savedRequest: " + JSON.stringify(savedRequest));
+          winston.debug("savedRequest: " + JSON.stringify(savedRequest));
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED

@@ -93,16 +93,40 @@ class EmailService {
 
   }
 
-
-  readTemplateFile(templateName, callback) {
-    fs.readFile(appRoot + '/template/email/'+templateName, {encoding: 'utf-8'}, function (err, html) {
-        if (err) {
-            winston.error('error readTemplateFile getting ', err);
-            callback(err);
-        }
-        else {
-            callback(null, html);
-        }
+  readTemplate(templateName, settings) {
+    var that = this;
+    winston.debug('EmailService readTemplate: '+ templateName + '  ' + JSON.stringify(settings)); 
+    return new Promise(function (resolve, reject) {
+      if (settings && settings.email && settings.email.templates) {
+       var templates = settings.email.templates;
+       winston.debug('EmailService templates: ',templates); 
+       var template = templates[templateName];
+       winston.debug('EmailService template: '+template); 
+        if (template) {
+        // that.callback(template);
+          return resolve(template);
+        }else {
+          return that.readTemplateFile(templateName);
+        }      
+      } else {
+        return that.readTemplateFile(templateName);
+      } 
+    });
+  }
+  readTemplateFile(templateName) {
+    // var that = this;
+    return new Promise(function (resolve, reject) {
+      fs.readFile(appRoot + '/template/email/'+templateName, {encoding: 'utf-8'}, function (err, html) {
+          if (err) {
+              winston.error('error readTemplateFile getting ', err);
+              // callback(err);
+              return reject(err);
+          }
+          else {
+              // callback(null, html);
+              return resolve(html);
+          }
+      }); 
     });
 };
 
@@ -131,7 +155,15 @@ class EmailService {
       auth: {
         user: configEmail.user,
         pass: configEmail.pass
-      }
+      },
+      // XXXXkKKKKKKKKKKK
+      // dkim: {
+      //   domainName: "example.com",
+      //   keySelector: "2017",
+      //   privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBg...",
+      //   cacheDir: "/tmp",
+      //   cacheTreshold: 100 * 1024
+      // }
     };
 
     winston.debug("getTransport transport: ",transport);
@@ -194,34 +226,33 @@ class EmailService {
   }
 
 
-  sendTest(to) {      
+  async sendTest(to) {      
 
     var that = this;
 
-    this.readTemplateFile('test.html', function(err, html) {
+    var html = await this.readTemplateFile('test.html');
 
-      var template = handlebars.compile(html);
+    var template = handlebars.compile(html);
 
-      var replacements = {        
-        user: {name: "andrea"},
-        enabled: true   
-      };
+    var replacements = {        
+      user: {name: "andrea"},
+      enabled: true   
+    };
 
-      var html = template(replacements);
+    var html = template(replacements);
 
-      that.send({to:to, subject:`TileDesk test email`,html: html});
+    that.send({to:to, subject:`TileDesk test email`,html: html});
 
-      //that.send(that.bcc, `TileDesk test email - notification`, html);
+    //that.send(that.bcc, `TileDesk test email - notification`, html);
 
-    });
-   
+
 
     
   }
 
 
 
-  sendNewAssignedRequestNotification(to, request, project) {      
+  async sendNewAssignedRequestNotification(to, request, project) {      
 
     var that = this;
 
@@ -234,286 +265,282 @@ class EmailService {
       project = project.toJSON();
     }
 
-    this.readTemplateFile('assignedRequest.html', function(err, html) {
+    var html = await this.readTemplate('assignedRequest.html', project.settings);
 
+    var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    winston.verbose("html: " + html);
 
-      winston.debug("html: " + html);
+    var template = handlebars.compile(html);
 
-      var template = handlebars.compile(html);
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-      // passa anche tutti i messages in modo da stampare tutto
+    // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-    
   
-      let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
-      winston.verbose("msgText: " + msgText);
 
-      var replacements = {        
-        request: request,
-        project: project,
-        msgText: msgText,
-        baseScope: baseScope    
-      };
-
-      winston.debug("replacements ", replacements);
-
-      var html = template(replacements);
-      winston.debug("html after: " + html);
-
-    
-      let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
-
-      let replyTo;
-      let headers;
-      if (request) { 
-        
-         messageId = request.request_id + "+" + messageId;
-
-         if (request.attributes && request.attributes.email_replyTo) {
-          replyTo = request.attributes.email_replyTo;
-         }         
-        // if (request.ticket_id) {
-        //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
-
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
-
-      let inReplyTo;
-      let references;
-      if (request.attributes) {
-        if (request.attributes.email_messageId) {
-          inReplyTo = request.attributes.email_messageId;
-         }
-         if (request.attributes.email_references) {
-          references = request.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
-        }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
-        }
-      }
-
-      let subject = `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`;
-
-      if (request.subject) {
-        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
-      }
-
-      if (request.ticket_id) {
-        subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
-      }
-      
-      if (request.ticket_id && request.subject) {
-        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
-      }
-
-      that.send({
-        messageId: messageId,
-        from:from, 
-        to:to, 
-        replyTo: replyTo,
-        subject: subject, 
-        html:html, 
-        config: configEmail,
-        headers:headers 
-      });
-
-      messageId =  "notification" + messageId;
-
-
-      // togliere bcc 
-      that.send({
-        messageId: messageId,
-        to: that.bcc, 
-        replyTo: replyTo,
-        subject: subject + ` ${to}  - notification`, 
-        html:html,
-        headers:headers 
-      });
-
-    });
-    
-  }
-
-
-  sendNewAssignedAgentMessageEmailNotification(to, request, project, message) {      
-
-    var that = this;
-
-    //if the request came from rabbit mq?
-    if (request.toJSON) {
-      request = request.toJSON();
-    }
-
-    if (project.toJSON) {
-      project = project.toJSON();
-    }
-
-
-    this.readTemplateFile('assignedEmailMessage.html', function(err, html) {
-
-
-      var envTemplate = process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
-
-      if (envTemplate) {
-          html = envTemplate;
-      }
-
-      winston.debug("html: " + html);
-
-      var template = handlebars.compile(html);
-
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-      // passa anche tutti i messages in modo da stampare tutto
-// Stampa anche contact.email
-
-    let msgText = message.text.replace(/[\n\r]/g, '<br>');
+    let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
     winston.verbose("msgText: " + msgText);
 
-      var replacements = {        
-        request: request,
-        project: project,
-        message: message,
-        msgText: msgText,
-        baseScope: baseScope    
-      };
+    var replacements = {        
+      request: request,
+      project: project,
+      msgText: msgText,
+      baseScope: baseScope    
+    };
 
-      winston.debug("replacements ", replacements);
+    winston.debug("replacements ", replacements);
 
-      var html = template(replacements);
-      winston.debug("html after: " + html);
+    var html = template(replacements);
+    winston.debug("html after: " + html);
 
+  
+    let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
 
-      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
-
-      let replyTo;
-      let headers;
-      if (message.request) { 
-        
-         messageId = message.request.request_id + "+" + messageId;
-
-         if (message.request.attributes && message.request.attributes.email_replyTo) {
-          replyTo = message.request.attributes.email_replyTo;
-         }         
-        // if (message.request.ticket_id) {
-        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
-
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
-
-      let inReplyTo;
-      let references;
-      if (message.attributes) {
-        if (message.attributes.email_messageId) {
-          inReplyTo = message.attributes.email_messageId;
-         }
-         if (message.attributes.email_references) {
-          references = message.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
-        }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
-        }
-      }
-
-
-      let subject = `[TileDesk ${project ? project.name : '-'}] New message`;
-
-      if (request.subject) {
-        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
-      }
-      if (request.ticket_id) {
-        subject = `[Ticket #${request.ticket_id}] New message`;
-      }
+    let replyTo;
+    let headers;
+    if (request) { 
       
-      if (request.ticket_id && request.subject) {
-        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+        messageId = request.request_id + "+" + messageId;
+
+        if (request.attributes && request.attributes.email_replyTo) {
+        replyTo = request.attributes.email_replyTo;
+        }         
+      // if (request.ticket_id) {
+      //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = request.request_id+"@"+that.replyToDomain;
+      // }
+      
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
+
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+
+    let inReplyTo;
+    let references;
+    if (request.attributes) {
+      if (request.attributes.email_messageId) {
+        inReplyTo = request.attributes.email_messageId;
+        }
+        if (request.attributes.email_references) {
+        references = request.attributes.email_references;
+        }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
       }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
+
+    let subject = `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`;
+
+    if (request.subject) {
+      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+    }
+
+    if (request.ticket_id) {
+      subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
+    }
+    
+    if (request.ticket_id && request.subject) {
+      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    }
+
+    that.send({
+      messageId: messageId,
+      from:from, 
+      to:to, 
+      replyTo: replyTo,
+      subject: subject, 
+      html:html, 
+      config: configEmail,
+      headers:headers 
+    });
+
+    messageId =  "notification" + messageId;
 
 
-
-      that.send({
-        messageId: messageId,
-        from:from, 
-        to:to, 
-        replyTo: replyTo,
-        // inReplyTo: inReplyTo,???
-        // references: references,??
-        subject: subject,
-        html:html, 
-        config: configEmail,        
-        headers:headers 
-      });
-
+    // togliere bcc 
+    that.send({
+      messageId: messageId,
+      to: that.bcc, 
+      replyTo: replyTo,
+      subject: subject + ` ${to}  - notification`, 
+      html:html,
+      headers:headers 
+    });
 
     
-      messageId =  "notification" + messageId;
+  }
 
-      that.send({
-        messageId: messageId,
-        to: that.bcc, 
-        replyTo: replyTo,
-        subject: subject + ` - notification`, 
-        html:html,
-        headers:headers 
-      });
 
+  async sendNewAssignedAgentMessageEmailNotification(to, request, project, message) {      
+
+    var that = this;
+
+    //if the request came from rabbit mq?
+    if (request.toJSON) {
+      request = request.toJSON();
+    }
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+    
+    var html = await this.readTemplate('assignedEmailMessage.html', project.settings);
+
+
+    var envTemplate = process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+    if (envTemplate) {
+        html = envTemplate;
+    }
+
+    winston.debug("html: " + html);
+
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
+
+    // passa anche tutti i messages in modo da stampare tutto
+// Stampa anche contact.email
+
+  let msgText = message.text.replace(/[\n\r]/g, '<br>');
+  winston.debug("msgText: " + msgText);
+
+    var replacements = {        
+      request: request,
+      project: project,
+      message: message,
+      msgText: msgText,
+      baseScope: baseScope    
+    };
+
+    winston.debug("replacements ", replacements);
+
+    var html = template(replacements);
+    winston.debug("html after: " + html);
+
+
+    let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+    let replyTo;
+    let headers;
+    if (message.request) { 
+      
+        messageId = message.request.request_id + "+" + messageId;
+
+        if (message.request.attributes && message.request.attributes.email_replyTo) {
+        replyTo = message.request.attributes.email_replyTo;
+        }         
+      // if (message.request.ticket_id) {
+      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+      // }
+      
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+
+    let inReplyTo;
+    let references;
+    if (message.attributes) {
+      if (message.attributes.email_messageId) {
+        inReplyTo = message.attributes.email_messageId;
+        }
+        if (message.attributes.email_references) {
+        references = message.attributes.email_references;
+        }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
+      }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
+
+
+    let subject = `[TileDesk ${project ? project.name : '-'}] New message`;
+
+    if (request.subject) {
+      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+    }
+    if (request.ticket_id) {
+      subject = `[Ticket #${request.ticket_id}] New message`;
+    }
+    
+    if (request.ticket_id && request.subject) {
+      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    }
+
+
+
+    that.send({
+      messageId: messageId,
+      from:from, 
+      to:to, 
+      replyTo: replyTo,
+      // inReplyTo: inReplyTo,???
+      // references: references,??
+      subject: subject,
+      html:html, 
+      config: configEmail,        
+      headers:headers 
     });
+
+
+  
+    messageId =  "notification" + messageId;
+
+    that.send({
+      messageId: messageId,
+      to: that.bcc, 
+      replyTo: replyTo,
+      subject: subject + ` - notification`, 
+      html:html,
+      headers:headers 
+    });
+
     
   }
 
   
-  sendNewPooledRequestNotification(to, request, project) {
+  async sendNewPooledRequestNotification(to, request, project) {
 
     //if the request came from rabbit mq?
     if (request.toJSON) {
@@ -526,124 +553,122 @@ class EmailService {
 
     var that = this;
 
-    this.readTemplateFile('pooledRequest.html', function(err, html) {
+    var html = await this.readTemplate('pooledRequest.html', project.settings);
 
+    var envTemplate = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      var envTemplate = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    winston.debug("html: " + html);
 
-      winston.debug("html: " + html);
+    var template = handlebars.compile(html);
 
-      var template = handlebars.compile(html);
-
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-      let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
-      winston.verbose("msgText: " + msgText);
+    let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
+    winston.verbose("msgText: " + msgText);
 
-      var replacements = {        
-        request: request,
-        project: project,
-        msgText: msgText,
-        baseScope: baseScope    
-      };
+    var replacements = {        
+      request: request,
+      project: project,
+      msgText: msgText,
+      baseScope: baseScope    
+    };
+  
+    var html = template(replacements);
+
     
-      var html = template(replacements);
+    let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
 
+    let replyTo;
+    let headers;
+    if (request) { 
       
-      let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
+        messageId = request.request_id + "+" + messageId;
 
-      let replyTo;
-      let headers;
-      if (request) { 
-        
-         messageId = request.request_id + "+" + messageId;
-
-         if (request.attributes && request.attributes.email_replyTo) {
-          replyTo = request.attributes.email_replyTo;
-         }         
-        // if (request.ticket_id) {
-        //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
-
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
-
-      let inReplyTo;
-      let references;
-      if (request.attributes) {
-        if (request.attributes.email_messageId) {
-          inReplyTo = request.attributes.email_messageId;
-         }
-         if (request.attributes.email_references) {
-          references = request.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
-        }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
-        }
-      }
-
-      let subject = `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`;
-
-      if (request.subject) {
-        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
-      }
-      if (request.ticket_id) {
-        subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
-      }
+        if (request.attributes && request.attributes.email_replyTo) {
+        replyTo = request.attributes.email_replyTo;
+        }         
+      // if (request.ticket_id) {
+      //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = request.request_id+"@"+that.replyToDomain;
+      // }
       
-      if (request.ticket_id && request.subject) {
-        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
+
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+
+    let inReplyTo;
+    let references;
+    if (request.attributes) {
+      if (request.attributes.email_messageId) {
+        inReplyTo = request.attributes.email_messageId;
+        }
+        if (request.attributes.email_references) {
+        references = request.attributes.email_references;
+        }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
       }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
+
+    let subject = `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`;
+
+    if (request.subject) {
+      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+    }
+    if (request.ticket_id) {
+      subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
+    }
+    
+    if (request.ticket_id && request.subject) {
+      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    }
 
 
 
-      that.send({
-        messageId: messageId,
-        from:from, 
-        to: to, 
-        replyTo: replyTo,
-        subject: subject, 
-        html:html, 
-        config:configEmail,
-        headers:headers 
-      });
-    // this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
-
+    that.send({
+      messageId: messageId,
+      from:from, 
+      to: to, 
+      replyTo: replyTo,
+      subject: subject, 
+      html:html, 
+      config:configEmail,
+      headers:headers 
     });
+  // this.send(that.bcc, `[TileDesk ${project ? project.name : '-'}] New Pooled Request`, html);
+  
   }
 
 
 
 
 
-  sendNewPooledMessageEmailNotification(to, request, project, message) {
+  async sendNewPooledMessageEmailNotification(to, request, project, message) {
 
     var that = this;
 
@@ -657,143 +682,141 @@ class EmailService {
       project = project.toJSON();
     }
 
-
-    this.readTemplateFile('pooledEmailMessage.html', function(err, html) {
-
-
-      var envTemplate = process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE;
-      winston.debug("envTemplate: " + envTemplate);
+    var html = await this.readTemplate('pooledEmailMessage.html', project.settings);
 
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    var envTemplate = process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE;
+    winston.debug("envTemplate: " + envTemplate);
 
-      winston.debug("html: " + html);
 
-      var template = handlebars.compile(html);
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
+    winston.debug("html: " + html);
 
-      let msgText = message.text.replace(/[\n\r]/g, '<br>');
-      winston.verbose("msgText: " + msgText);
-  
-      // passa anche tutti i messages in modo da stampare tutto
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
+
+    let msgText = message.text.replace(/[\n\r]/g, '<br>');
+    winston.verbose("msgText: " + msgText);
+
+    // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-      var replacements = {        
-        request: request,
-        project: project,
-        message: message,
-        msgText: msgText,
-        baseScope: baseScope    
-      };
+    var replacements = {        
+      request: request,
+      project: project,
+      message: message,
+      msgText: msgText,
+      baseScope: baseScope    
+    };
 
-      winston.debug("replacements ", replacements);
+    winston.debug("replacements ", replacements);
 
-      var html = template(replacements);
-      winston.debug("html after: " + html);
-
-
-
-      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
-
-      let replyTo;
-      let headers;
-      if (message.request) { 
-        
-         messageId = message.request.request_id + "+" + messageId;
-
-         if (message.request.attributes && message.request.attributes.email_replyTo) {
-          replyTo = message.request.attributes.email_replyTo;
-         }         
-        // if (message.request.ticket_id) {
-        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
-
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
-
-      let inReplyTo;
-      let references;
-      if (message.attributes) {
-        if (message.attributes.email_messageId) {
-          inReplyTo = message.attributes.email_messageId;
-         }
-         if (message.attributes.email_references) {
-          references = message.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
-        }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
-        }
-      }
+    var html = template(replacements);
+    winston.debug("html after: " + html);
 
 
-      let subject = `[TileDesk ${project ? project.name : '-'}] New Message`;
 
-      if (request.subject) {
-        subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
-      }
-      if (request.ticket_id) {
-        subject = `[Ticket #${request.ticket_id}] New Message`;
-      }
+    let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+    let replyTo;
+    let headers;
+    if (message.request) { 
       
-      if (request.ticket_id && request.subject) {
-        subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+        messageId = message.request.request_id + "+" + messageId;
+
+        if (message.request.attributes && message.request.attributes.email_replyTo) {
+        replyTo = message.request.attributes.email_replyTo;
+        }         
+      // if (message.request.ticket_id) {
+      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+      // }
+      
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+
+    let inReplyTo;
+    let references;
+    if (message.attributes) {
+      if (message.attributes.email_messageId) {
+        inReplyTo = message.attributes.email_messageId;
+        }
+        if (message.attributes.email_references) {
+        references = message.attributes.email_references;
+        }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
       }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
 
 
-      that.send({
-        messageId: messageId,
-        from:from, 
-        to:to, 
-        replyTo: replyTo,
-        // inReplyTo: inReplyTo,???
-        // references: references,??
-        subject: subject,
-        html:html, 
-        config: configEmail,        
-        headers:headers 
-      });
+    let subject = `[TileDesk ${project ? project.name : '-'}] New Message`;
 
-
+    if (request.subject) {
+      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+    }
+    if (request.ticket_id) {
+      subject = `[Ticket #${request.ticket_id}] New Message`;
+    }
     
-      // messageId =  "notification" + messageId;
+    if (request.ticket_id && request.subject) {
+      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    }
 
-      // that.send({
-      //   messageId: messageId,
-      //   to: that.bcc, 
-      //   replyTo: replyTo,
-      //   subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'} - notification`, 
-      //   html:html,
-      //   headers:headers 
-      // });
 
-    
+    that.send({
+      messageId: messageId,
+      from:from, 
+      to:to, 
+      replyTo: replyTo,
+      // inReplyTo: inReplyTo,???
+      // references: references,??
+      subject: subject,
+      html:html, 
+      config: configEmail,        
+      headers:headers 
     });
+
+
+  
+    // messageId =  "notification" + messageId;
+
+    // that.send({
+    //   messageId: messageId,
+    //   to: that.bcc, 
+    //   replyTo: replyTo,
+    //   subject: `[TileDesk ${project ? project.name : '-'}] - ${request.subject ? request.subject : 'New message'} - notification`, 
+    //   html:html,
+    //   headers:headers 
+    // });
+
+    
   }
 
 
-  sendNewMessageNotification(to, message, project, tokenQueryString, sourcePage) {
+  async sendNewMessageNotification(to, message, project, tokenQueryString, sourcePage) {
 
     var that = this;
 
@@ -802,125 +825,125 @@ class EmailService {
     if (project.toJSON) {
       project = project.toJSON();
     }
-    
-    this.readTemplateFile('newMessage.html', function(err, html) {
+
+    var html = await this.readTemplate('newMessage.html', project.settings);
 
 
-      var envTemplate = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    var envTemplate = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      winston.debug("html: " + html);
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      var template = handlebars.compile(html);
+    winston.debug("html: " + html);
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
+    var template = handlebars.compile(html);
 
-      let msgText = message.text.replace(/[\n\r]/g, '<br>');
-      winston.verbose("msgText: " + msgText);
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
-      var replacements = {        
-        message: message,
-        project: project,
-        msgText:msgText, 
-        seamlessPage: sourcePage,
-        tokenQueryString: tokenQueryString,
-        baseScope: baseScope    
-      };
+    let msgText = message.text.replace(/[\n\r]/g, '<br>');
+    winston.verbose("msgText: " + msgText);
 
-      var html = template(replacements);
-      winston.debug("html: " + html);
+    var replacements = {        
+      message: message,
+      project: project,
+      msgText:msgText, 
+      seamlessPage: sourcePage,
+      tokenQueryString: tokenQueryString,
+      baseScope: baseScope    
+    };
+
+    var html = template(replacements);
+    winston.debug("html: " + html);
 
 
-      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+    let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-      let replyTo;
-      let headers;
-      if (message.request) { 
-        
-         messageId = message.request.request_id + "+" + messageId;
+    let replyTo;
+    let headers;
+    if (message.request) { 
+      
+        messageId = message.request.request_id + "+" + messageId;
 
-         if (message.request.attributes && message.request.attributes.email_replyTo) {
-          replyTo = message.request.attributes.email_replyTo;
-         }         
-        // if (message.request.ticket_id) {
-        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+        if (message.request.attributes && message.request.attributes.email_replyTo) {
+        replyTo = message.request.attributes.email_replyTo;
+        }         
+      // if (message.request.ticket_id) {
+      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
+      // }
+      
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
 
-      let inReplyTo;
-      let references;
-      if (message.attributes) {
-        if (message.attributes.email_messageId) {
-          inReplyTo = message.attributes.email_messageId;
-         }
-         if (message.attributes.email_references) {
-          references = message.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
+    let inReplyTo;
+    let references;
+    if (message.attributes) {
+      if (message.attributes.email_messageId) {
+        inReplyTo = message.attributes.email_messageId;
         }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
+        if (message.attributes.email_references) {
+        references = message.attributes.email_references;
         }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
       }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
 
 
-      that.send({
-        messageId: messageId,
-        // sender: message.senderFullname, //must be an email
-        from:from, 
-        to:to, 
-        replyTo: replyTo, 
-        inReplyTo: inReplyTo,
-        references: references,
-        subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
-        html:html, 
-        config:configEmail, 
-        headers: headers
-      });
-
-      messageId =  "notification" + messageId;
-
-      that.send({
-        messageId: messageId,
-        // sender: message.senderFullname, //must be an email
-        to: that.bcc, 
-        replyTo: replyTo,
-        inReplyTo: inReplyTo, 
-        references: references,
-        subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
-        html:html, 
-        headers: headers
-      });
-
+    that.send({
+      messageId: messageId,
+      // sender: message.senderFullname, //must be an email
+      from:from, 
+      to:to, 
+      replyTo: replyTo, 
+      inReplyTo: inReplyTo,
+      references: references,
+      subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
+      html:html, 
+      config:configEmail, 
+      headers: headers
     });
+
+    messageId =  "notification" + messageId;
+
+    that.send({
+      messageId: messageId,
+      // sender: message.senderFullname, //must be an email
+      to: that.bcc, 
+      replyTo: replyTo,
+      inReplyTo: inReplyTo, 
+      references: references,
+      subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
+      html:html, 
+      headers: headers
+    });
+
   }
 
 
   
-  sendEmailChannelNotification(to, message, project, tokenQueryString, sourcePage) {
+  async sendEmailChannelNotification(to, message, project, tokenQueryString, sourcePage) {
 
     var that = this;
 
@@ -929,135 +952,134 @@ class EmailService {
       project = project.toJSON();
     }
 
+    var html = await this.readTemplate('ticket.html', project.settings);
     // this.readTemplateFile('ticket.txt', function(err, html) {
-    this.readTemplateFile('ticket.html', function(err, html) {
 
 
-      var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      winston.debug("html: " + html);
+    winston.debug("html: " + html);
 
-      var template = handlebars.compile(html);
+    var template = handlebars.compile(html);
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      let msgText = message.text.replace(/[\n\r]/g, '<br>');
-      winston.verbose("msgText: " + msgText);
+    let msgText = message.text.replace(/[\n\r]/g, '<br>');
+    winston.debug("msgText: " + msgText);
 
-      var replacements = {        
-        message: message,
-        project: project,
-        seamlessPage: sourcePage,
-        msgText: msgText,
-        tokenQueryString: tokenQueryString,
-        baseScope: baseScope    
-      };
+    var replacements = {        
+      message: message,
+      project: project,
+      seamlessPage: sourcePage,
+      msgText: msgText,
+      tokenQueryString: tokenQueryString,
+      baseScope: baseScope    
+    };
 
-      var html = template(replacements);
-      winston.debug("html: " + html);
+    var html = template(replacements);
+    winston.debug("html: " + html);
 
-     
     
+  
+    
+    let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+    let replyTo;
+    let headers;
+    if (message.request) { 
       
-      let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+        messageId = message.request.request_id + "+" + messageId;
 
-      let replyTo;
-      let headers;
-      if (message.request) { 
-        
-         messageId = message.request.request_id + "+" + messageId;
-
-         if (message.request.attributes && message.request.attributes.email_replyTo) {
-          replyTo = message.request.attributes.email_replyTo;
-         }
-        // if (message.request.ticket_id) {
-        //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-        // } else {
-        //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-        // }
-        
-        headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
-
-        winston.verbose("messageId: " + messageId);
-        winston.verbose("replyTo: " + replyTo);
-        winston.verbose("email headers", headers);
-      }
-      
-
-      let inReplyTo;
-      let references;
-      if (message.attributes) {
-
-        // per email touching manca
-        if (message.attributes.email_messageId) {
-          inReplyTo = message.attributes.email_messageId;
-         }
-         if (message.attributes.email_references) {
-          references = message.attributes.email_references;
-         }
-      }
-      winston.verbose("email inReplyTo: "+ inReplyTo);
-      winston.verbose("email references: "+ references);
-
-      let from;
-      let configEmail;
-      if (project && project.settings && project.settings.email) {
-        if (project.settings.email.config) {
-          configEmail = project.settings.email.config;
-          winston.verbose("custom email configEmail setting found: ", configEmail);
+        if (message.request.attributes && message.request.attributes.email_replyTo) {
+        replyTo = message.request.attributes.email_replyTo;
         }
-        if (project.settings.email.from) {
-          from = project.settings.email.from;
-          winston.verbose("custom from email setting found: "+ from);
-        }
-      }
-
-
-      // if (message.request && message.request.lead && message.request.lead.email) {
-      //   winston.info("message.request.lead.email: " + message.request.lead.email);
-      //   replyTo = replyTo + ", "+ message.request.lead.email;
+      // if (message.request.ticket_id) {
+      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
+      // } else {
+      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
       // }
       
-      that.send({
-        messageId: messageId,
-        // sender: message.senderFullname, //must be an email
-        from:from, 
-        to:to, 
-        replyTo: replyTo, 
-        inReplyTo: inReplyTo,
-        references: references,
-        // subject:`${message.request ? message.request.subject : '-'}`, 
-        subject:`R: ${message.request ? message.request.subject : '-'}`,  //gmail uses subject
-        text:html, 
-        html:html,
-        config:configEmail, 
-        headers:headers 
-      }); 
-      
-      messageId =  "notification" + messageId;
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
-      that.send({
-        messageId: messageId,
-        // sender: message.senderFullname, //must be an email
-        to: that.bcc, 
-        replyTo: replyTo, 
-        inReplyTo: inReplyTo,
-        references: references,
-        // subject: `${message.request ? message.request.subject : '-'} - notification`, 
-        subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
-        text:html, 
-        html:html,
-        headers:headers
-      });
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+    
 
+    let inReplyTo;
+    let references;
+    if (message.attributes) {
+
+      // per email touching manca
+      if (message.attributes.email_messageId) {
+        inReplyTo = message.attributes.email_messageId;
+        }
+        if (message.attributes.email_references) {
+        references = message.attributes.email_references;
+        }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
+      }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
+
+
+    // if (message.request && message.request.lead && message.request.lead.email) {
+    //   winston.info("message.request.lead.email: " + message.request.lead.email);
+    //   replyTo = replyTo + ", "+ message.request.lead.email;
+    // }
+    
+    that.send({
+      messageId: messageId,
+      // sender: message.senderFullname, //must be an email
+      from:from, 
+      to:to, 
+      replyTo: replyTo, 
+      inReplyTo: inReplyTo,
+      references: references,
+      // subject:`${message.request ? message.request.subject : '-'}`, 
+      subject:`R: ${message.request ? message.request.subject : '-'}`,  //gmail uses subject
+      text:html, 
+      html:html,
+      config:configEmail, 
+      headers:headers 
+    }); 
+    
+    messageId =  "notification" + messageId;
+
+    that.send({
+      messageId: messageId,
+      // sender: message.senderFullname, //must be an email
+      to: that.bcc, 
+      replyTo: replyTo, 
+      inReplyTo: inReplyTo,
+      references: references,
+      // subject: `${message.request ? message.request.subject : '-'} - notification`, 
+      subject: `R: ${message.request ? message.request.subject : '-'} - notification`, 
+      text:html, 
+      html:html,
+      headers:headers
     });
+
   }
 
 
@@ -1114,81 +1136,78 @@ class EmailService {
 */
 
   // ok
-  sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
+  async sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
 
     var that = this;
 
-    this.readTemplateFile('resetPassword.html', function(err, html) {
+    var html = await this.readTemplate('resetPassword.html', project.settings);
 
 
-      var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-       winston.debug("html: " + html);
+      winston.debug("html: " + html);
 
-      var template = handlebars.compile(html);
+    var template = handlebars.compile(html);
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-
-      var replacements = {        
-        resetPswRequestId: resetPswRequestId,
-        userFirstname: userFirstname,
-        userLastname: userLastname,
-        baseScope: baseScope    
-      };
-
-      var html = template(replacements);
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      that.send({to: to, subject: '[TileDesk] Password reset request', html:html});
-      that.send({to:that.bcc, subject: '[TileDesk] Password reset request - notification', html:html });
+    var replacements = {        
+      resetPswRequestId: resetPswRequestId,
+      userFirstname: userFirstname,
+      userLastname: userLastname,
+      baseScope: baseScope    
+    };
 
-    });
+    var html = template(replacements);
+
+
+    that.send({to: to, subject: '[TileDesk] Password reset request', html:html});
+    that.send({to:that.bcc, subject: '[TileDesk] Password reset request - notification', html:html });
+
   }
 
   // ok
-  sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
+  async sendYourPswHasBeenChangedEmail(to, userFirstname, userLastname) {
 
     var that = this;
 
-    this.readTemplateFile('passwordChanged.html', function(err, html) {
+    var html = await this.readTemplateFile('passwordChanged.html');
 
 
-      var envTemplate = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var envTemplate = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-       winston.debug("html: " + html);
+      winston.debug("html: " + html);
 
-      var template = handlebars.compile(html);
+    var template = handlebars.compile(html);
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-
-      var replacements = {        
-        userFirstname: userFirstname,
-        userLastname: userLastname,
-        to: to,
-        baseScope: baseScope    
-      };
-
-      var html = template(replacements);
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      that.send({to: to, subject:'[TileDesk] Your password has been changed', html:html });
-      that.send({to: that.bcc, subject: '[TileDesk] Your password has been changed - notification', html: html });
+    var replacements = {        
+      userFirstname: userFirstname,
+      userLastname: userLastname,
+      to: to,
+      baseScope: baseScope    
+    };
 
-    });
+    var html = template(replacements);
+
+
+    that.send({to: to, subject:'[TileDesk] Your password has been changed', html:html });
+    that.send({to: that.bcc, subject: '[TileDesk] Your password has been changed - notification', html: html });
 
   }
 
@@ -1199,46 +1218,43 @@ class EmailService {
   /**
    *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT  ***
    */
-  sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
+   async sendYouHaveBeenInvited(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserFirstname, invitedUserLastname, invitedUserRole) {
 
     var that = this;
 
-    this.readTemplateFile('beenInvitedExistingUser.html', function(err, html) {
+    var html = await this.readTemplateFile('passwordChanged.html');
+
+    var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+    if (envTemplate) {
+        html = envTemplate;
+    }
+
+      winston.debug("html: " + html);
+
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var replacements = {        
+      currentUserFirstname: currentUserFirstname,
+      currentUserLastname: currentUserLastname,
+      projectName: projectName,
+      id_project: id_project,
+      invitedUserFirstname: invitedUserFirstname,
+      invitedUserLastname: invitedUserLastname,
+      invitedUserRole: invitedUserRole,
+      baseScope: baseScope    
+    };
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
-
-       winston.debug("html: " + html);
-
-      var template = handlebars.compile(html);
-
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-
-      var replacements = {        
-        currentUserFirstname: currentUserFirstname,
-        currentUserLastname: currentUserLastname,
-        projectName: projectName,
-        id_project: id_project,
-        invitedUserFirstname: invitedUserFirstname,
-        invitedUserLastname: invitedUserLastname,
-        invitedUserRole: invitedUserRole,
-        baseScope: baseScope    
-      };
-
-      var html = template(replacements);
+    var html = template(replacements);
 
 
-      that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html});
-      that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
-
-    });
+    that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html});
+    that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
   }
 
     // ok
@@ -1247,49 +1263,47 @@ class EmailService {
   /**
    *! *** EMAIL: YOU HAVE BEEN INVITED AT THE PROJECT (USER NOT REGISTERED) ***
    */
-  sendInvitationEmail_UserNotRegistered(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserRole, pendinginvitationid) {
+   async sendInvitationEmail_UserNotRegistered(to, currentUserFirstname, currentUserLastname, projectName, id_project, invitedUserRole, pendinginvitationid) {
 
    
     var that = this;
 
-    this.readTemplateFile('beenInvitedNewUser.html', function(err, html) {
+    var html = await this.readTemplateFile('passwordChanged.html');
+
+    var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+    if (envTemplate) {
+        html = envTemplate;
+    }
+
+      winston.debug("html: " + html);
+
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var replacements = {        
+      currentUserFirstname: currentUserFirstname,
+      currentUserLastname: currentUserLastname,
+      projectName: projectName,
+      id_project: id_project,
+      invitedUserRole: invitedUserRole,
+      pendinginvitationid: pendinginvitationid,
+      baseScope: baseScope    
+    };
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    var html = template(replacements);
 
-       winston.debug("html: " + html);
+    that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html });
+    that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
 
-      var template = handlebars.compile(html);
-
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-
-      var replacements = {        
-        currentUserFirstname: currentUserFirstname,
-        currentUserLastname: currentUserLastname,
-        projectName: projectName,
-        id_project: id_project,
-        invitedUserRole: invitedUserRole,
-        pendinginvitationid: pendinginvitationid,
-        baseScope: baseScope    
-      };
-
-      var html = template(replacements);
-
-      that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html });
-      that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
-
-    });
   }
 
   // ok
-  sendVerifyEmailAddress(to, savedUser) {
+  async sendVerifyEmailAddress(to, savedUser) {
 
    
     var that = this;
@@ -1297,37 +1311,34 @@ class EmailService {
     if (savedUser.toJSON) {
       savedUser = savedUser.toJSON();
     }
+    var html = await this.readTemplateFile('verify.html');
 
-    this.readTemplateFile('verify.html', function(err, html) {
+    var envTemplate = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
 
+    if (envTemplate) {
+        html = envTemplate;
+    }
 
-      var envTemplate = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+      winston.debug("html: " + html);
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    var template = handlebars.compile(html);
 
-       winston.debug("html: " + html);
-
-      var template = handlebars.compile(html);
-
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      var replacements = {        
-        savedUser: savedUser,      
-        baseScope: baseScope    
-      };
+    var replacements = {        
+      savedUser: savedUser,      
+      baseScope: baseScope    
+    };
 
-      var html = template(replacements);
+    var html = template(replacements);
 
 
-      that.send({to: to, subject: `[TileDesk] Verify your email address`, html:html });
-      that.send({to: that.bcc, subject: `[TileDesk] Verify your email address `+to + " - notification", html:html });
+    that.send({to: to, subject: `[TileDesk] Verify your email address`, html:html });
+    that.send({to: that.bcc, subject: `[TileDesk] Verify your email address `+to + " - notification", html:html });
 
-    });
   }
 
 
@@ -1338,7 +1349,7 @@ class EmailService {
 
 // ok
 
-  sendRequestTranscript(to, messages, request, project) {
+async sendRequestTranscript(to, messages, request, project) {
 
 
      //if the request came from rabbit mq?
@@ -1360,45 +1371,42 @@ class EmailService {
       
     var that = this;
 
-    this.readTemplateFile('sendTranscript.html', function(err, html) {
+    var html = await this.readTemplate('sendTranscript.html', project.settings);
+
+    var envTemplate = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+    if (envTemplate) {
+        html = envTemplate;
+    }
+
+      winston.debug("html: " + html);
+
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
 
 
-      var envTemplate = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
-       winston.debug("envTemplate: " + envTemplate);
+    var replacements = {        
+      messages: messages,    
+      request: request,  
+      formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
+      transcriptAsHtml: transcriptAsHtml,
+      baseScope: baseScope    
+    };
 
-      if (envTemplate) {
-          html = envTemplate;
-      }
+    var html = template(replacements);
 
-       winston.debug("html: " + html);
+    let configEmail;
+    if (project && project.settings && project.settings.email && project.settings.email.config) {
+      configEmail = project.settings.email.config;
+      winston.verbose("custom email setting found: ", configEmail);
+    }
 
-      var template = handlebars.compile(html);
+    that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: configEmail});
+    that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
 
-      var baseScope = JSON.parse(JSON.stringify(that));
-      delete baseScope.pass;
-
-
-      var replacements = {        
-        messages: messages,    
-        request: request,  
-        formattedCreatedAt: request.createdAt.toLocaleString('en', { timeZone: 'UTC' }),
-        transcriptAsHtml: transcriptAsHtml,
-        baseScope: baseScope    
-      };
-
-      var html = template(replacements);
-
-      let configEmail;
-      if (project && project.settings && project.settings.email && project.settings.email.config) {
-        configEmail = project.settings.email.config;
-        winston.verbose("custom email setting found: ", configEmail);
-      }
-
-      that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: configEmail});
-      that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
-
-
-    });
 }
 
 
