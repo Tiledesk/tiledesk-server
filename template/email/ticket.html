@@ -105,16 +105,12 @@
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                       <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
 {{#ifEquals message.type "text"}}
-  {{#markdown}}
     {{{msgText}}}
-  {{/markdown}}
 {{/ifEquals}}
 {{#ifEquals message.type "image"}}
   <img src="{{message.metadata.src}}"/>
   {{#if msgText}}
-    {{#markdown}}
       {{{msgText}}}
-    {{/markdown}}
   {{/if}}
 {{/ifEquals}}
 {{#ifEquals message.type "file"}}
@@ -123,9 +119,7 @@
 {{#ifEquals message.type "frame"}}
   <a href="{{message.metadata.src}}">{{message.metadata.name}}</a>
   {{#if msgText}}
-    {{#markdown}}
       {{{msgText}}}
-    {{/markdown}}
   {{/if}}
 {{/ifEquals}}
                         
