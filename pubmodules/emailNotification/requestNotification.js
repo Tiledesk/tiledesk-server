@@ -421,7 +421,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                             if (!user) {
                               winston.warn("User not found",  savedRequest.participants[0]);
                             } else {
-                              winston.verbose("Sending sendNewAssignedAgentMessageEmailNotification to user with email", user.email);
+                              winston.verbose("Sending sendNewAssignedAgentMessageEmailNotification to user with email: "+ user.email);
                               //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account     
                               // attento cambia           
                                 emailService.sendNewAssignedAgentMessageEmailNotification(user.email, savedRequest, project, message);
