@@ -335,7 +335,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                     
                     var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
 
-                    winston.info('snapshotAgents',snapshotAgents);                              
+                    winston.debug('snapshotAgents',snapshotAgents);                              
 
 
                     // winston.info("savedRequest.snapshot.agents", savedRequest.snapshot.agents);
@@ -367,7 +367,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                          if (!user) {
                           winston.warn("User not found", userid);
                          } else {
-                           winston.debug("Sending sendNewPooledMessageNotification to user with email: "+ user.email);
+                           winston.verbose("Sending sendNewPooledMessageNotification to user with email: "+ user.email);
                            if (user.emailverified) {
                              emailService.sendNewPooledMessageEmailNotification(user.email, savedRequest, project, message);
                            }else {
@@ -421,7 +421,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                             if (!user) {
                               winston.warn("User not found",  savedRequest.participants[0]);
                             } else {
-                              winston.debug("Sending sendNewAssignedAgentMessageEmailNotification to user with email", user.email);
+                              winston.verbose("Sending sendNewAssignedAgentMessageEmailNotification to user with email", user.email);
                               //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account     
                               // attento cambia           
                                 emailService.sendNewAssignedAgentMessageEmailNotification(user.email, savedRequest, project, message);
@@ -656,9 +656,9 @@ sendAgentEmail(projectid, savedRequest) {
 
                   // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
                       snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
-                      winston.info('load snapshotAgents with Request.findById ');                              
+                      winston.debug('load snapshotAgents with Request.findById ');                              
                   }
-                  winston.info('snapshotAgents', snapshotAgents);                              
+                  winston.debug('snapshotAgents', snapshotAgents);                              
 
                   if (!snapshotAgents.snapshot.agents) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
@@ -690,7 +690,7 @@ sendAgentEmail(projectid, savedRequest) {
                        if (!user) {
                         winston.warn("User not found", userid);
                        } else {
-                         winston.debug("Sending sendNewPooledRequestNotification to user with email: "+ user.email);
+                         winston.verbose("Sending sendNewPooledRequestNotification to user with email: "+ user.email);
                          if (user.emailverified) {
                            emailService.sendNewPooledRequestNotification(user.email, savedRequest, project);
                          }else {
@@ -752,7 +752,7 @@ sendAgentEmail(projectid, savedRequest) {
                           if (!user) {
                             winston.warn("User not found",  savedRequest.participants[0]);
                           } else {
-                            winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                            winston.verbose("Sending sendNewAssignedRequestNotification to user with email", user.email);
                             //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                
                               emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
                             //  }
@@ -818,7 +818,7 @@ sendAgentEmail(projectid, savedRequest) {
       
 
         emailService.sendRequestTranscript(sendTo, messages, request, project);
-        winston.debug("sendTranscriptByEmail sent");
+        winston.verbose("sendTranscriptByEmail sent");
         return resolve({sendTo: sendTo, messages: messages, request: request});
 
       
