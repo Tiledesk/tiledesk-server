@@ -68,7 +68,14 @@
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reopened",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat closed",
 
-        "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email."
+        "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email.",
+
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Required field",
+        "SENT_AN_ATTACHMENT": "sent an attachment",
+        "SENT_AN_IMAGE":"sent an image"
+
+
     }
 },
 {
@@ -140,7 +147,11 @@
         "INFO_SUPPORT_CHAT_REOPENED":"Chat riaperta",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa",
 
-        "TICKET_TAKING":"La richiesta è stata ricevuta e il personale di assistenza se ne sta occupando.\nPer aggiungere ulteriori commenti, rispondi a questa email."
+        "TICKET_TAKING":"La richiesta è stata ricevuta e il personale di assistenza se ne sta occupando.\nPer aggiungere ulteriori commenti, rispondi a questa email.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Campo richiesto",
+        "SENT_AN_ATTACHMENT": "ha inviato un allegato",
+        "SENT_AN_IMAGE":"ha inviato un'immagine"
     }
 },
 {
