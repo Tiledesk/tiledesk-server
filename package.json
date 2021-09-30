@@ -66,6 +66,7 @@
     "fast-csv": "^4.3.6",
     "geoip-lite": "^1.4.2",
     "handlebars": "^4.7.7",
+    "html-entities": "^2.3.2",
     "http": "0.0.0",
     "immutable": "^4.0.0-rc.14",
     "jade": "~1.11.0",

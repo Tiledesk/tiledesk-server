@@ -5,6 +5,7 @@ var config = require('../config/email');
 var winston = require('../config/winston');
 var marked = require('marked');
 var handlebars = require('handlebars');
+var encode = require('html-entities').encode;
 
 handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
@@ -165,7 +166,19 @@ class EmailService {
         pass: configEmail.pass
       },
 
+// openssl genrsa -out dkim_private.pem 2048
+// openssl rsa -in dkim_private.pem -pubout -outform der 2>/dev/null | openssl base64 -A
+// -> 
+// v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL
+// testdkim._domainkey.tiledesk.com. 86400 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL"
 
+      dkim: {
+        domainName: "example.com",
+        keySelector: "2017",
+        privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBg...",
+        cacheDir: "/tmp",
+        cacheTreshold: 100 * 1024
+      }
     };
 
     winston.debug("getTransport transport: ",transport);
@@ -287,8 +300,10 @@ class EmailService {
 // Stampa anche contact.email
 
 
-    let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
-
+    let msgText = request.first_text;//.replace(/[\n\r]/g, '<br>');
+    // winston.verbose("msgText: " + msgText);
+    msgText = encode(msgText);
+    // winston.verbose("msgText: " + msgText);
     if (this.markdown) {
       msgText = marked(msgText);
     }
@@ -435,8 +450,8 @@ class EmailService {
     // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-  let msgText = message.text.replace(/[\n\r]/g, '<br>');
-
+  let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
+  msgText = encode(msgText);
   if (this.markdown) {
     msgText = marked(msgText);
   }
@@ -585,8 +600,8 @@ class EmailService {
 // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-    let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
-
+    let msgText = request.first_text;//.replace(/[\n\r]/g, '<br>');
+    msgText = encode(msgText);
     if (this.markdown) {
       msgText = marked(msgText);
     }
@@ -718,8 +733,8 @@ class EmailService {
     var baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
-    let msgText = message.text.replace(/[\n\r]/g, '<br>');
-
+    let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
+    msgText = encode(msgText);
     if (this.markdown) {
       msgText = marked(msgText);
     }
@@ -867,8 +882,8 @@ class EmailService {
     var baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
-    let msgText = message.text.replace(/[\n\r]/g, '<br>');
-
+    let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
+    msgText = encode(msgText);
     if (this.markdown) {
       msgText = marked(msgText);
     }
@@ -999,12 +1014,12 @@ class EmailService {
     delete baseScope.pass;
 
 
-    let msgText = message.text.replace(/[\n\r]/g, '<br>');
-
+    let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
+    msgText = encode(msgText);
     if (this.markdown) {
       msgText = marked(msgText);
     }
-
+    
     winston.debug("msgText: " + msgText);
 
     var replacements = {        
