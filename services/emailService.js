@@ -156,14 +156,7 @@ class EmailService {
         user: configEmail.user,
         pass: configEmail.pass
       },
-      // XXXXkKKKKKKKKKKK
-      // dkim: {
-      //   domainName: "example.com",
-      //   keySelector: "2017",
-      //   privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBg...",
-      //   cacheDir: "/tmp",
-      //   cacheTreshold: 100 * 1024
-      // }
+
     };
 
     winston.debug("getTransport transport: ",transport);
@@ -216,7 +209,7 @@ class EmailService {
       if (error) {
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
-      winston.debug('Email sent: %s', {info: info, mailOptions: mailOptions});
+      winston.verbose('Email sent: %s', {info: info, mailOptions: mailOptions});
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
