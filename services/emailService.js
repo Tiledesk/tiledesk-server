@@ -96,7 +96,7 @@ class EmailService {
   readTemplate(templateName, settings) {
     var that = this;
     winston.debug('EmailService readTemplate: '+ templateName + '  ' + JSON.stringify(settings)); 
-    return new Promise(function (resolve, reject) {
+    
       if (settings && settings.email && settings.email.templates) {
        var templates = settings.email.templates;
        winston.debug('EmailService templates: ',templates); 
@@ -104,14 +104,15 @@ class EmailService {
        winston.debug('EmailService template: '+template); 
         if (template) {
         // that.callback(template);
-          return resolve(template);
+          return new Promise(function (resolve, reject) {
+            return resolve(template);
+          });
         }else {
           return that.readTemplateFile(templateName);
         }      
       } else {
         return that.readTemplateFile(templateName);
       } 
-    });
   }
   readTemplateFile(templateName) {
     // var that = this;
@@ -156,6 +157,7 @@ class EmailService {
         user: configEmail.user,
         pass: configEmail.pass
       },
+
 
     };
 
