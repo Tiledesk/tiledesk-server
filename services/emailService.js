@@ -3,11 +3,15 @@
 const nodemailer = require('nodemailer');
 var config = require('../config/email');
 var winston = require('../config/winston');
+var marked = require('marked');
 var handlebars = require('handlebars');
 
 handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
 });
+
+// var options = {};
+// handlebars.registerHelper('markdown', markdown(options));
 
 // handlebars.registerHelper('ifCond', function(v1, v2, options) {
 //   if(v1 === v2) {
@@ -85,6 +89,9 @@ class EmailService {
     this.port  = process.env.EMAIL_PORT;
     winston.info('EmailService port: ' + this.port);
 
+
+    this.markdown = process.env.EMAIL_MARKDOWN || true;
+    winston.info('EmailService markdown: '+ this.markdown);
 
     this.headers = {
       // "X-Mailer": "Tiledesk Mailer",
@@ -279,16 +286,22 @@ class EmailService {
     // passa anche tutti i messages in modo da stampare tutto
 // Stampa anche contact.email
 
-  
 
     let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
+
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+    
+    
     winston.verbose("msgText: " + msgText);
 
     var replacements = {        
       request: request,
       project: project,
       msgText: msgText,
-      baseScope: baseScope    
+      baseScope: baseScope,
+      // tools: {marked:marked}    
     };
 
     winston.debug("replacements ", replacements);
@@ -423,6 +436,11 @@ class EmailService {
 // Stampa anche contact.email
 
   let msgText = message.text.replace(/[\n\r]/g, '<br>');
+
+  if (this.markdown) {
+    msgText = marked(msgText);
+  }
+
   winston.debug("msgText: " + msgText);
 
     var replacements = {        
@@ -568,6 +586,11 @@ class EmailService {
 // Stampa anche contact.email
 
     let msgText = request.first_text.replace(/[\n\r]/g, '<br>');
+
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+
     winston.verbose("msgText: " + msgText);
 
     var replacements = {        
@@ -696,6 +719,11 @@ class EmailService {
     delete baseScope.pass;
 
     let msgText = message.text.replace(/[\n\r]/g, '<br>');
+
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+
     winston.verbose("msgText: " + msgText);
 
     // passa anche tutti i messages in modo da stampare tutto
@@ -840,6 +868,11 @@ class EmailService {
     delete baseScope.pass;
 
     let msgText = message.text.replace(/[\n\r]/g, '<br>');
+
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+
     winston.verbose("msgText: " + msgText);
 
     var replacements = {        
@@ -967,6 +1000,11 @@ class EmailService {
 
 
     let msgText = message.text.replace(/[\n\r]/g, '<br>');
+
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+
     winston.debug("msgText: " + msgText);
 
     var replacements = {        
