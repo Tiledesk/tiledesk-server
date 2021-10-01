@@ -1064,6 +1064,9 @@ class EmailService {
 
     let inReplyTo;
     let references;
+    let cc;
+    let ccString;
+
     if (message.attributes) {
 
       // per email touching manca
@@ -1073,9 +1076,17 @@ class EmailService {
         if (message.attributes.email_references) {
         references = message.attributes.email_references;
         }
+        if (message.attributes.email_cc) {
+        cc = message.attributes.email_cc;       
+        }
+        if (message.attributes.email_ccStr) {
+        ccString = message.attributes.email_ccStr;
+        }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
     winston.verbose("email references: "+ references);
+    winston.verbose("email cc: ", cc);
+    winston.verbose("email ccString: ", ccString);
 
     let from;
     let configEmail;
@@ -1101,6 +1112,7 @@ class EmailService {
       // sender: message.senderFullname, //must be an email
       from:from, 
       to:to, 
+      cc: ccString,
       replyTo: replyTo, 
       inReplyTo: inReplyTo,
       references: references,
