@@ -206,6 +206,7 @@ class EmailService {
     let mailOptions = {
       from: mail.from || this.from, // sender address
       to: mail.to,
+      cc: mail.cc,
       // bcc: config.bcc,
       replyTo: mail.replyTo || this.replyTo,
       inReplyTo: mail.inReplyTo,
