@@ -232,7 +232,8 @@ class EmailService {
       if (error) {
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
-      winston.verbose('Email sent: %s', {info: info, mailOptions: mailOptions});
+      winston.verbose('Email sent:', {info: info});
+      winston.debug('Email sent:', {info: info, mailOptions: mailOptions});
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
@@ -290,7 +291,7 @@ class EmailService {
         html = envTemplate;
     }
 
-    winston.verbose("html: " + html);
+    winston.debug("html: " + html);
 
     var template = handlebars.compile(html);
 
@@ -310,7 +311,7 @@ class EmailService {
     }
     
     
-    winston.verbose("msgText: " + msgText);
+    winston.debug("msgText: " + msgText);
 
     var replacements = {        
       request: request,
@@ -492,9 +493,9 @@ class EmailService {
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
-      winston.verbose("messageId: " + messageId);
-      winston.verbose("replyTo: " + replyTo);
-      winston.verbose("email headers", headers);
+      winston.verbose("sendNewAssignedAgentMessageEmailNotification messageId: " + messageId);
+      winston.verbose("sendNewAssignedAgentMessageEmailNotification replyTo: " + replyTo);
+      winston.verbose("sendNewAssignedAgentMessageEmailNotification email headers", headers);
     }
 
     let inReplyTo;
@@ -507,19 +508,19 @@ class EmailService {
         references = message.attributes.email_references;
         }
     }
-    winston.verbose("email inReplyTo: "+ inReplyTo);
-    winston.verbose("email references: "+ references);
+    winston.verbose("sendNewAssignedAgentMessageEmailNotification email inReplyTo: "+ inReplyTo);
+    winston.verbose("sendNewAssignedAgentMessageEmailNotification email references: "+ references);
 
     let from;
     let configEmail;
     if (project && project.settings && project.settings.email) {
       if (project.settings.email.config) {
         configEmail = project.settings.email.config;
-        winston.verbose("custom email configEmail setting found: ", configEmail);
+        winston.verbose("sendNewAssignedAgentMessageEmailNotification custom email configEmail setting found: ", configEmail);
       }
       if (project.settings.email.from) {
         from = project.settings.email.from;
-        winston.verbose("custom from email setting found: "+ from);
+        winston.verbose("sendNewAssignedAgentMessageEmailNotification custom from email setting found: "+ from);
       }
     }
 
@@ -638,9 +639,9 @@ class EmailService {
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
 
-      winston.verbose("messageId: " + messageId);
-      winston.verbose("replyTo: " + replyTo);
-      winston.verbose("email headers", headers);
+      winston.verbose("sendNewPooledRequestNotification messageId: " + messageId);
+      winston.verbose("sendNewPooledRequestNotification replyTo: " + replyTo);
+      winston.verbose("sendNewPooledRequestNotification email headers", headers);
     }
 
     let inReplyTo;
@@ -653,19 +654,19 @@ class EmailService {
         references = request.attributes.email_references;
         }
     }
-    winston.verbose("email inReplyTo: "+ inReplyTo);
-    winston.verbose("email references: "+ references);
+    winston.verbose("sendNewPooledRequestNotification email inReplyTo: "+ inReplyTo);
+    winston.verbose("sendNewPooledRequestNotification email references: "+ references);
 
     let from;
     let configEmail;
     if (project && project.settings && project.settings.email) {
       if (project.settings.email.config) {
         configEmail = project.settings.email.config;
-        winston.verbose("custom email configEmail setting found: ", configEmail);
+        winston.verbose("sendNewPooledRequestNotification custom email configEmail setting found: ", configEmail);
       }
       if (project.settings.email.from) {
         from = project.settings.email.from;
-        winston.verbose("custom from email setting found: "+ from);
+        winston.verbose("sendNewPooledRequestNotification custom from email setting found: "+ from);
       }
     }
 
@@ -779,9 +780,9 @@ class EmailService {
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
-      winston.verbose("messageId: " + messageId);
-      winston.verbose("replyTo: " + replyTo);
-      winston.verbose("email headers", headers);
+      winston.verbose("sendNewPooledMessageEmailNotification messageId: " + messageId);
+      winston.verbose("sendNewPooledMessageEmailNotification replyTo: " + replyTo);
+      winston.verbose("sendNewPooledMessageEmailNotification email headers", headers);
     }
 
     let inReplyTo;
@@ -794,19 +795,19 @@ class EmailService {
         references = message.attributes.email_references;
         }
     }
-    winston.verbose("email inReplyTo: "+ inReplyTo);
-    winston.verbose("email references: "+ references);
+    winston.verbose("sendNewPooledMessageEmailNotification email inReplyTo: "+ inReplyTo);
+    winston.verbose("sendNewPooledMessageEmailNotification email references: "+ references);
 
     let from;
     let configEmail;
     if (project && project.settings && project.settings.email) {
       if (project.settings.email.config) {
         configEmail = project.settings.email.config;
-        winston.verbose("custom email configEmail setting found: ", configEmail);
+        winston.verbose("sendNewPooledMessageEmailNotification custom email configEmail setting found: ", configEmail);
       }
       if (project.settings.email.from) {
         from = project.settings.email.from;
-        winston.verbose("custom from email setting found: "+ from);
+        winston.verbose("sendNewPooledMessageEmailNotification custom from email setting found: "+ from);
       }
     }
 
@@ -889,7 +890,7 @@ class EmailService {
       msgText = marked(msgText);
     }
 
-    winston.verbose("msgText: " + msgText);
+    winston.debug("msgText: " + msgText);
 
     var replacements = {        
       message: message,
@@ -1070,24 +1071,27 @@ class EmailService {
 
     if (message.attributes) {
 
+      winston.verbose("email message.attributes: ", message.attributes);
       // per email touching manca
-      if (message.attributes.email_messageId) {
-        inReplyTo = message.attributes.email_messageId;
+        if (message.attributes.email_messageId) {
+          inReplyTo = message.attributes.email_messageId;
         }
         if (message.attributes.email_references) {
-        references = message.attributes.email_references;
+          references = message.attributes.email_references;
         }
         if (message.attributes.email_cc) {
-        cc = message.attributes.email_cc;       
+          cc = message.attributes.email_cc;       
         }
-        if (message.attributes.email_ccStr) {
-        ccString = message.attributes.email_ccStr;
+        winston.verbose("email message.attributes.email_ccStr: "+ message.attributes.email_ccStr);
+        if (message.attributes.email_ccStr!=undefined) {
+          ccString = message.attributes.email_ccStr;
+          winston.verbose("email set ccString");
         }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
     winston.verbose("email references: "+ references);
     winston.verbose("email cc: ", cc);
-    winston.verbose("email ccString: ", ccString);
+    winston.verbose("email ccString: "+ ccString);
 
     let from;
     let configEmail;
