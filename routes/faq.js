@@ -250,6 +250,24 @@ router.get('/', function (req, res, next) {
     query.id_faq_kb = req.query.id_faq_kb;
   }
 
+  var limit = 100; // Number of request per page
+
+  if (req.query.limit) {    
+    limit = parseInt(req.query.limit);
+    winston.debug('faq ROUTE - limit: '+limit);
+  }
+
+  var page = 0;
+
+  if (req.query.page) {
+    page = req.query.page;
+  }
+
+  var skip = page * limit;
+  winston.debug('faq ROUTE - SKIP PAGE ', skip);
+
+
+
   if (req.query.text) {
     winston.debug("GET FAQ req.projectid", req.projectid);
 
@@ -263,6 +281,7 @@ router.get('/', function (req, res, next) {
   // query.$text = {"$search": "question"};
 
   return Faq.find(query).
+  skip(skip).limit(limit).
   populate({path:'faq_kb'})//, match: { trashed: { $in: [null, false] } }}).
   .exec(function (err, faq) {
       winston.debug("GET FAQ ", faq);
