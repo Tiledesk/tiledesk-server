@@ -106,7 +106,7 @@ class FaqBotHandler {
 
 
                 // ===         TEMPORARY: search for handoff to agent command (\agent)
-                
+                /*
                         const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
                         winston.debug('handoff_parsed?', handoff_parsed);
 
@@ -122,7 +122,7 @@ class FaqBotHandler {
                             // or 'all the message text' if \agent was not found
                             message.text = handoff_parsed.text? handoff_parsed.text : '';
                         }
-                       
+                       */
                         // ===         TEMPORARY: search for handoff to agent command (\agent)
 
 
@@ -217,7 +217,7 @@ class FaqBotHandler {
 
 
                          // ===         TEMPORARY: search for handoff to agent command (\agent)
-                
+                        /*
                          const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
                          winston.debug('handoff_parsed?', handoff_parsed);
  
@@ -233,7 +233,7 @@ class FaqBotHandler {
                              // or 'all the message text' if \agent was not found
                              message.text = handoff_parsed.text? handoff_parsed.text : '';
                          }
-                        
+                        */
                          // ===         TEMPORARY: search for handoff to agent command (\agent)
 
                          
