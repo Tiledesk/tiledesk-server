@@ -104,7 +104,6 @@ class FaqBotHandler {
                         winston.debug("answerObj.score", answerObj.score);  
 
 
-
                 // ===         TEMPORARY: search for handoff to agent command (\agent)
                         /*
                         const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
