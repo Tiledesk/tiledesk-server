@@ -103,6 +103,7 @@ class FaqBotHandler {
                         answerObj.score = 100; //exact search not set score
                         winston.debug("answerObj.score", answerObj.score);  
 
+                        
 
                 // ===         TEMPORARY: search for handoff to agent command (\agent)
                         /*
