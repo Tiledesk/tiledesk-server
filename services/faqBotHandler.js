@@ -198,12 +198,6 @@ class FaqBotHandler {
                             winston.debug("attr", attr);                            
 
 
-                            messageService.send(sender, botName, message.recipient, bot_answer.text, 
-                                message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
-                                    winston.debug("faqbot message botAns ", savedMessage.toObject());  
-                            });                         
-                            
-                            
 
                             const handoff_parsed = FaqBotHandler.is_agent_handoff_command(bot_answer.text);
                             winston.debug('handoff_parsed?', handoff_parsed);
@@ -218,8 +212,21 @@ class FaqBotHandler {
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
                                 // handoff_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
-                                message.text = handoff_parsed.text? handoff_parsed.text : '';
+                                bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
                             } 
+
+
+
+
+                            if (bot_answer.text) { //can be undefined id /agent only
+                                messageService.send(sender, botName, message.recipient, bot_answer.text, 
+                                    message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
+                                        winston.debug("faqbot message botAns ", savedMessage.toObject());  
+                                });                         
+                            }
+                            
+                                                    
+                           
                         });
                       
         
