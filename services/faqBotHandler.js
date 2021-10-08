@@ -10,7 +10,7 @@ var BotFromParticipant = require("../utils/botFromParticipant");
 var cacheUtil = require('../utils/cacheUtil');
 var eventService = require('../pubmodules/events/eventService');
 var mongoose = require('mongoose');
-// const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
+const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
 class FaqBotHandler {
  
