@@ -10,10 +10,42 @@ var BotFromParticipant = require("../utils/botFromParticipant");
 var cacheUtil = require('../utils/cacheUtil');
 var eventService = require('../pubmodules/events/eventService');
 var mongoose = require('mongoose');
-const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
+// const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 
 class FaqBotHandler {
  
+    static is_agent_handoff_command(text) {
+        // console.log("msg:", msg);
+        if (!text) {
+          return {
+            'agent_handoff': null,
+            'text': null
+          }
+        }
+        // const text = msg.text;
+        // console.log("msg.text:", msg.text);
+        // console.log("TiledeskChatbotUtil.AGENT_COMMAND:", TiledeskChatbotUtil.AGENT_COMMAND.replace(/\\\\/g, '\\'));
+        const agent_pattern = new RegExp('^(' + TiledeskChatbotUtil.AGENT_COMMAND.replace(/\\/g, '\\\\') + ')$', 'm');
+        // console.log("agent_pattern:", agent_pattern);
+        const match_agent = text.match(agent_pattern);
+        // console.log("match_agent: ", match_agent);
+        const agent_handoff = null;
+        if (match_agent && match_agent.length >=2) {
+          // console.log("match!");
+          let parts = text.split('\\agent');
+          // console.log(parts)
+          const new_msg_text = parts[0].trim()
+          // console.log(new_msg_text)
+          return {
+            'agent_handoff': TiledeskChatbotUtil.AGENT_COMMAND,
+            'text': new_msg_text
+          }
+        }
+        return {
+          'agent_handoff': null,
+          'text': text
+        }
+      }
 
       
     listen() {
@@ -106,7 +138,7 @@ class FaqBotHandler {
 
 
                 // ===         TEMPORARY: search for handoff to agent command (\agent)
-                        
+                        /*
                         const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
                         winston.debug('handoff_parsed?', handoff_parsed);
 
@@ -122,7 +154,7 @@ class FaqBotHandler {
                             // or 'all the message text' if \agent was not found
                             message.text = handoff_parsed.text? handoff_parsed.text : '';
                         }
-                       
+                       */
                         // ===         TEMPORARY: search for handoff to agent command (\agent)
 
 
@@ -163,37 +195,37 @@ class FaqBotHandler {
                                                        
                             winston.debug("answerObj", answerObj);
                             // winston.info("that.getCircularReplacer(answerObj)",  that.getCircularReplacer(answerObj));
-                            winston.debug("attr", attr);
+                            winston.debug("attr", attr);                            
+
 
                             messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                 message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
                                     winston.debug("faqbot message botAns ", savedMessage.toObject());  
-                            });                           
-                        
-                           /* messageService.send(sender, botName, message.recipient, answerObj.answer, 
-                                message.id_project, sender).then(function(savedMessage){
-                                    winston.info("faqbot message sending ", savedMessage.toObject());  
-                            });*/
+                            });                         
+                            
+                            
+
+                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(bot_answer.text);
+                            winston.debug('handoff_parsed?', handoff_parsed);
+    
+                            if (handoff_parsed.agent_handoff) {
+                                winston.verbose("agent_handoff faqs command found");                    
+                            
+                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                    message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
+                                        winston.info("agent_handoff faqs agent sent ", savedMessage.toObject());  
+                                });                                                       
+                                 // PATCH: Chat clients (i.e. web widget) remove messages with text = null
+                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // or 'all the message text' if \agent was not found
+                                message.text = handoff_parsed.text? handoff_parsed.text : '';
+                            } 
                         });
                       
         
                     }
                     
-                
-                    // getBotMessageNew(botAnswer, projectid, bot, language, threshold) 
-                    // faqBotSupport.getBotMessageNew(answerObj, message.id_project, faq_kb, message, 1.2).then(function(botAns){
-                    // // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
-                    //     winston.debug("faqbot message botAns ", botAns);  
-
-                    //     if (botAns) {
-                    //         // let attributes = {bot_reponse_template: botAns.template};
-                    //         messageService.send(sender, botName, message.recipient, botAns.text, 
-                    //             message.id_project, sender, botAns.attributes, botAns.type, botAns.metadata).then(function(savedMessage){
-                    //                 winston.info("faqbot message bot answer " ,savedMessage.toObject());  
-                    //         });                           
-                    //     }            
-                    // });
-
+                        
 
                } else {
  
@@ -217,7 +249,7 @@ class FaqBotHandler {
 
 
                          // ===         TEMPORARY: search for handoff to agent command (\agent)
-                        
+                        /*
                          const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
                          winston.debug('handoff_parsed?', handoff_parsed);
  
@@ -233,7 +265,7 @@ class FaqBotHandler {
                              // or 'all the message text' if \agent was not found
                              message.text = handoff_parsed.text? handoff_parsed.text : '';
                          }
-                        
+                        */
                          // ===         TEMPORARY: search for handoff to agent command (\agent)
 
                          
@@ -289,7 +321,6 @@ class FaqBotHandler {
                         var threshold = 1.2;
 
                         faqBotSupport.getBotMessage(answerObj, message.id_project, faq_kb, message, threshold).then(function(botAns){
-                    // faqBotSupport.getBotMessage(answerObj, message.id_project, message.request.department._id, message.language, 1.2).then(function(botAns){
                         winston.debug("faqbot message botAns ", botAns);  
 
                         if (botAns) {
