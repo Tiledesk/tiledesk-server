@@ -41,7 +41,7 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   if (isObjectId) {
     query.id_user = contact_id;
     // query.id_user = mongoose.Types.ObjectId(contact_id);
-  }else {
+  } else {
     query.uuid_user = contact_id;
   }
 

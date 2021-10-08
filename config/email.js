@@ -4,5 +4,5 @@ module.exports = {
   'from': 'Tiledesk Notification <postmaster@mg.tiledesk.com>',
   'bcc': 'tiledesknotification@frontiere21.it',
   'replyToDomain': 'tickets.com',
-  'baseUrl':'https://console.tiledesk.com/v2/dashboard',
+  'baseUrl':'https://console.tiledesk.com/v2/dashboard'
 };

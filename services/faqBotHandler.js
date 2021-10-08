@@ -32,9 +32,10 @@ class FaqBotHandler {
         const agent_handoff = null;
         if (match_agent && match_agent.length >=2) {
           // console.log("match!");
-          let parts = text.split('\\agent');
+        //   let parts = text.split('\\agent');
           // console.log(parts)
-          const new_msg_text = parts[0].trim()
+          const new_msg_text = text.replace("\\agent","");
+        //   const new_msg_text = parts[0].trim()
           // console.log(new_msg_text)
           return {
             'agent_handoff': TiledeskChatbotUtil.AGENT_COMMAND,
@@ -203,21 +204,22 @@ class FaqBotHandler {
                             winston.debug('handoff_parsed?', handoff_parsed);
     
                             if (handoff_parsed.agent_handoff) {
-                                winston.verbose("agent_handoff faqs command found");                    
+                                winston.debug("agent_handoff faqs command found");                    
                             
                                 messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
-                                        winston.info("agent_handoff faqs agent sent ", savedMessage.toObject());  
+                                        winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
                                 });                                                       
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
                                 // handoff_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
                                 bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                winston.verbose(" bot_answer.text "+ bot_answer.text );
                             } 
 
 
 
-
+                            winston.verbose(" bot_answer.text 2"+ bot_answer.text );
                             if (bot_answer.text) { //can be undefined id /agent only
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                     message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
