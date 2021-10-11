@@ -319,6 +319,27 @@ class FaqBotHandler {
 
                             
                             winston.debug("attr", attr);
+
+
+                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(bot_answer.text);
+                            winston.debug('handoff_parsed?', handoff_parsed);
+    
+                            if (handoff_parsed.agent_handoff) {
+                                winston.debug("agent_handoff faqs command found");                    
+                            
+                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                    message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
+                                        winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
+                                });                                                       
+                                 // PATCH: Chat clients (i.e. web widget) remove messages with text = null
+                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // or 'all the message text' if \agent was not found
+                                bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                winston.debug("bot_answer.text1 "+ bot_answer.text );
+                            } 
+
+
+
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                     message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
@@ -390,6 +411,27 @@ class FaqBotHandler {
 
 
                             winston.debug("attr", attr);
+
+
+
+                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(botAns.text);
+                            winston.debug('handoff_parsed?', handoff_parsed);
+    
+                            if (handoff_parsed.agent_handoff) {
+                                winston.debug("agent_handoff faqs command found");                    
+                            
+                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                    message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
+                                        winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
+                                });                                                       
+                                 // PATCH: Chat clients (i.e. web widget) remove messages with text = null
+                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // or 'all the message text' if \agent was not found
+                                botAns.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                winston.debug("bot_answer.text1 "+ botAns.text );
+                            } 
+
+
 
 
                             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata) 
