@@ -25,16 +25,19 @@ class FaqBotHandler {
         // const text = msg.text;
         // console.log("msg.text:", msg.text);
         // console.log("TiledeskChatbotUtil.AGENT_COMMAND:", TiledeskChatbotUtil.AGENT_COMMAND.replace(/\\\\/g, '\\'));
-        const agent_pattern = new RegExp('^(' + TiledeskChatbotUtil.AGENT_COMMAND.replace(/\\/g, '\\\\') + ')$', 'm');
+        //const agent_pattern = new RegExp('^(' + TiledeskChatbotUtil.AGENT_COMMAND.replace(/\\/g, '\\\\') + ')$', 'm');
         // console.log("agent_pattern:", agent_pattern);
-        const match_agent = text.match(agent_pattern);
-        // console.log("match_agent: ", match_agent);
+        //const match_agent = text.match(agent_pattern);
+        //console.log("match_agent: ", match_agent);
+        const match_agent = text.indexOf(TiledeskChatbotUtil.AGENT_COMMAND);
+        //console.log("match_agent: ", match_agent);
         const agent_handoff = null;
-        if (match_agent && match_agent.length >=2) {
+        //if (match_agent && match_agent.length >=2) {
+        if (match_agent >-1) {
           // console.log("match!");
         //   let parts = text.split('\\agent');
           // console.log(parts)
-          const new_msg_text = text.replace("\\agent","");
+          const new_msg_text = text.replace(TiledeskChatbotUtil.AGENT_COMMAND,"");
         //   const new_msg_text = parts[0].trim()
           // console.log(new_msg_text)
           return {
@@ -214,18 +217,18 @@ class FaqBotHandler {
                                 // handoff_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
                                 bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
-                                winston.verbose(" bot_answer.text "+ bot_answer.text );
+                                winston.debug("bot_answer.text1 "+ bot_answer.text );
                             } 
 
 
 
-                            winston.verbose(" bot_answer.text 2"+ bot_answer.text );
-                            if (bot_answer.text) { //can be undefined id /agent only
+                            winston.debug("bot_answer.text2 "+ bot_answer.text );
+                            // if (bot_answer.text) { //can be undefined id /agent only
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                     message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
                                         winston.debug("faqbot message botAns ", savedMessage.toObject());  
                                 });                         
-                            }
+                            // }
                             
                                                     
                            

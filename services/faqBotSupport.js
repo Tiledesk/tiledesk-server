@@ -220,115 +220,115 @@ class FaqBotSupport {
         // return this.parseMicrolanguageOld(text, message, bot, faq);
     }
 
-    parseMicrolanguageOld(text, message, bot, faq) { 
-        var that = this;
-        // text = "*"
-        return new Promise(function(resolve, reject) {
-            winston.debug("getParsedMessage ******",text);
-            var repl_message = {};
+    // parseMicrolanguageOld(text, message, bot, faq) { 
+    //     var that = this;
+    //     // text = "*"
+    //     return new Promise(function(resolve, reject) {
+    //         winston.debug("getParsedMessage ******",text);
+    //         var repl_message = {};
 
-            // cerca i bottoni eventualmente definiti
-            var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
-            var text_buttons = text.match(button_pattern);
-            if (text_buttons) {
-                var text_with_removed_buttons = text.replace(button_pattern,"").trim();
-                repl_message.text = text_with_removed_buttons
-                var buttons = []
-                text_buttons.forEach(element => {
-                winston.debug("button ", element)
-                var remove_extra_from_button = /^\*/mg;
-                var button_text = element.replace(remove_extra_from_button, "").trim()
-                var button = {}
-                button["type"] = "text"
-                button["value"] = button_text
-                buttons.push(button)
-                });
-                repl_message.attributes =
-                { 
-                attachment: {
-                    type:"template",
-                    buttons: buttons
-                }
-                }
-                repl_message.type = MessageConstants.MESSAGE_TYPE.TEXT;
-            } else {
-                // no buttons
-                repl_message.text = text
-                repl_message.type =  MessageConstants.MESSAGE_TYPE.TEXT;
-            }
+    //         // cerca i bottoni eventualmente definiti
+    //         var button_pattern = /^\*.*/mg; // buttons are defined as a line starting with an asterisk            
+    //         var text_buttons = text.match(button_pattern);
+    //         if (text_buttons) {
+    //             var text_with_removed_buttons = text.replace(button_pattern,"").trim();
+    //             repl_message.text = text_with_removed_buttons
+    //             var buttons = []
+    //             text_buttons.forEach(element => {
+    //             winston.debug("button ", element)
+    //             var remove_extra_from_button = /^\*/mg;
+    //             var button_text = element.replace(remove_extra_from_button, "").trim()
+    //             var button = {}
+    //             button["type"] = "text"
+    //             button["value"] = button_text
+    //             buttons.push(button)
+    //             });
+    //             repl_message.attributes =
+    //             { 
+    //             attachment: {
+    //                 type:"template",
+    //                 buttons: buttons
+    //             }
+    //             }
+    //             repl_message.type = MessageConstants.MESSAGE_TYPE.TEXT;
+    //         } else {
+    //             // no buttons
+    //             repl_message.text = text
+    //             repl_message.type =  MessageConstants.MESSAGE_TYPE.TEXT;
+    //         }
 
-            var image_pattern = /^\\image:.*/mg; 
-            var imagetext = text.match(image_pattern);
-            if (imagetext && imagetext.length>0) {
-                var imageurl = imagetext[0].replace("\\image:","").trim();
-                winston.debug("imageurl ", imageurl)
-                var text_with_removed_image = text.replace(image_pattern,"").trim();
-                repl_message.text = text_with_removed_image + " " + imageurl
-                repl_message.metadata = {src: imageurl, width:200, height:200};
-                repl_message.type =  MessageConstants.MESSAGE_TYPE.IMAGE;
-            }
+    //         var image_pattern = /^\\image:.*/mg; 
+    //         var imagetext = text.match(image_pattern);
+    //         if (imagetext && imagetext.length>0) {
+    //             var imageurl = imagetext[0].replace("\\image:","").trim();
+    //             winston.debug("imageurl ", imageurl)
+    //             var text_with_removed_image = text.replace(image_pattern,"").trim();
+    //             repl_message.text = text_with_removed_image + " " + imageurl
+    //             repl_message.metadata = {src: imageurl, width:200, height:200};
+    //             repl_message.type =  MessageConstants.MESSAGE_TYPE.IMAGE;
+    //         }
 
-            var frame_pattern = /^\\frame:.*/mg; 
-            var frametext = text.match(frame_pattern);
-            if (frametext && frametext.length>0) {
-                var frameurl = frametext[0].replace("\\frame:","").trim();
-                winston.debug("frameurl ", frameurl)
-                // var text_with_removed_image = text.replace(frame_pattern,"").trim();
-                // repl_message.text = text_with_removed_image + " " + imageurl
-                repl_message.metadata = {src: frameurl};
-                repl_message.type = MessageConstants.MESSAGE_TYPE.FRAME;
-            }
-
-
-            var webhook_pattern = /^\\webhook:.*/mg; 
-            var webhooktext = text.match(webhook_pattern);
-            if (webhooktext && webhooktext.length>0) {
-                var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
-                winston.debug("webhookurl ", webhookurl)
-
-                return request({                        
-                    uri :  webhookurl,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'POST',
-                    json: true,
-                    body: {payload:{text: text, bot: bot, message: message, faq: faq}},
-                    // }).then(response => {
-                    }, function(err, response, json){
-                        if (err) {
-                            bot_answer.text = err +' '+ response.text;
-                            bot_answer.type =  MessageConstants.MESSAGE_TYPE.TEXT;
-                            winston.error("Error from webhook reply of getParsedMessage", err);
-                            return resolve(bot_answer);
-                        }
-                        // if (response.statusCode >= 400) {                  
-                        //     return reject(`HTTP Error: ${response.statusCode}`);
-                        // }
-                        winston.debug("webhookurl repl_message ", response);
-
-                        var text = undefined;
-                        if(json && json.text===undefined) {
-                            text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
-                        }else {
-                            text = json.text;
-                        }
+    //         var frame_pattern = /^\\frame:.*/mg; 
+    //         var frametext = text.match(frame_pattern);
+    //         if (frametext && frametext.length>0) {
+    //             var frameurl = frametext[0].replace("\\frame:","").trim();
+    //             winston.debug("frameurl ", frameurl)
+    //             // var text_with_removed_image = text.replace(frame_pattern,"").trim();
+    //             // repl_message.text = text_with_removed_image + " " + imageurl
+    //             repl_message.metadata = {src: frameurl};
+    //             repl_message.type = MessageConstants.MESSAGE_TYPE.FRAME;
+    //         }
 
 
-                        that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
-                            return resolve(bot_answer);
-                        });
-                    });
+    //         var webhook_pattern = /^\\webhook:.*/mg; 
+    //         var webhooktext = text.match(webhook_pattern);
+    //         if (webhooktext && webhooktext.length>0) {
+    //             var webhookurl = webhooktext[0].replace("\\webhook:","").trim();
+    //             winston.debug("webhookurl ", webhookurl)
+
+    //             return request({                        
+    //                 uri :  webhookurl,
+    //                 headers: {
+    //                     'Content-Type': 'application/json'
+    //                 },
+    //                 method: 'POST',
+    //                 json: true,
+    //                 body: {payload:{text: text, bot: bot, message: message, faq: faq}},
+    //                 // }).then(response => {
+    //                 }, function(err, response, json){
+    //                     if (err) {
+    //                         bot_answer.text = err +' '+ response.text;
+    //                         bot_answer.type =  MessageConstants.MESSAGE_TYPE.TEXT;
+    //                         winston.error("Error from webhook reply of getParsedMessage", err);
+    //                         return resolve(bot_answer);
+    //                     }
+    //                     // if (response.statusCode >= 400) {                  
+    //                     //     return reject(`HTTP Error: ${response.statusCode}`);
+    //                     // }
+    //                     winston.debug("webhookurl repl_message ", response);
+
+    //                     var text = undefined;
+    //                     if(json && json.text===undefined) {
+    //                         text = 'Field text is not defined in the webhook respose of the faq with id: '+ faq._id+ ". Error: " + JSON.stringify(response);
+    //                     }else {
+    //                         text = json.text;
+    //                     }
+
+
+    //                     that.getParsedMessage(text,message, bot, faq).then(function(bot_answer) {
+    //                         return resolve(bot_answer);
+    //                     });
+    //                 });
              
-            }else {
-                winston.debug("repl_message ", repl_message)
-                return resolve(repl_message);
-            }
+    //         }else {
+    //             winston.debug("repl_message ", repl_message)
+    //             return resolve(repl_message);
+    //         }
 
 
            
-        });
-    }
+    //     });
+    // }
 
 
     getBotMessage(botAnswer, projectid, bot, message, threshold) {
