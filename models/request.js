@@ -47,6 +47,7 @@ var RequestSchema = new Schema({
 
   },
 
+  // TODO attiva solo condizionalmente per performance
   ticket_id: {
     type: Number,
     // required: true,
@@ -95,7 +96,6 @@ var RequestSchema = new Schema({
     type: String,
     required: true
   },
-
   status: {
     type: Number,
     required: false,
@@ -419,6 +419,11 @@ RequestSchema.index({ id_project: 1, participants: 1});
 //  https://docs.mongodb.com/manual/core/index-compound/ The order of the fields listed in a compound index is important. The index will contain references to documents sorted first by the values of the item field and, within each value of the item field, sorted by values of the stock field. See Sort Order for more information
 RequestSchema.index({ id_project: 1, status: 1, updatedAt: -1 }); // query for websocket
 RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); // query for websocket
+
+RequestSchema.index({ id_project: 1, preflight:1, updatedAt: -1 }); // used query ws (topic.endsWith('/requests'))
+
+
+
 
 //   cannot index parallel arrays [agents] [participants] {"driv
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
