@@ -11,14 +11,15 @@ var cacheUtil = require('../utils/cacheUtil');
 var eventService = require('../pubmodules/events/eventService');
 var mongoose = require('mongoose');
 const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
+const ActionsConstants = require('../models/actionsConstants');
 
 class FaqBotHandler {
  
-    static is_agent_handoff_command(text) {
+    static is_command(text) {
         // console.log("msg:", msg);
         if (!text) {
           return {
-            'agent_handoff': null,
+            'command': null,
             'text': null
           }
         }
@@ -29,24 +30,37 @@ class FaqBotHandler {
         // console.log("agent_pattern:", agent_pattern);
         //const match_agent = text.match(agent_pattern);
         //console.log("match_agent: ", match_agent);
-        const match_agent = text.indexOf(TiledeskChatbotUtil.AGENT_COMMAND);
+        const match_agent = text.indexOf(ActionsConstants.CHAT_ACTION_MESSAGE.AGENT);
+        const match_close = text.indexOf(ActionsConstants.CHAT_ACTION_MESSAGE.CLOSE);
         //console.log("match_agent: ", match_agent);
-        const agent_handoff = null;
+        // const agent_handoff = null;
         //if (match_agent && match_agent.length >=2) {
+        if (match_close >-1) {
+            // console.log("match!");
+            //   let parts = text.split('\\agent');
+            // console.log(parts)
+            const new_msg_text = text.replace(ActionsConstants.CHAT_ACTION_MESSAGE.CLOSE,"");
+            //   const new_msg_text = parts[0].trim()
+            // console.log(new_msg_text)
+            return {
+                'command': ActionsConstants.CHAT_ACTION_MESSAGE.CLOSE,
+                'text': new_msg_text
+            }
+        }
         if (match_agent >-1) {
           // console.log("match!");
         //   let parts = text.split('\\agent');
           // console.log(parts)
-          const new_msg_text = text.replace(TiledeskChatbotUtil.AGENT_COMMAND,"");
+          const new_msg_text = text.replace(ActionsConstants.CHAT_ACTION_MESSAGE.AGENT,"");
         //   const new_msg_text = parts[0].trim()
           // console.log(new_msg_text)
           return {
-            'agent_handoff': TiledeskChatbotUtil.AGENT_COMMAND,
+            'command': ActionsConstants.CHAT_ACTION_MESSAGE.AGENT,
             'text': new_msg_text
           }
         }
         return {
-          'agent_handoff': null,
+          'command': null,
           'text': text
         }
       }
@@ -139,29 +153,6 @@ class FaqBotHandler {
                         answerObj.score = 100; //exact search not set score
                         winston.debug("answerObj.score", answerObj.score);  
 
-
-
-                // ===         TEMPORARY: search for handoff to agent command (\agent)
-                        /*
-                        const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
-                        winston.debug('handoff_parsed?', handoff_parsed);
-
-                        if (handoff_parsed.agent_handoff) {
-                            winston.verbose("agent_handoff faqs command found");                    
-                        
-                            messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
-                                message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
-                                    winston.info("agent_handoff faqs agent sent ", savedMessage.toObject());  
-                            });                                                       
-                             // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-                            // handoff_parsed.text contains the eventual text before the \agent command
-                            // or 'all the message text' if \agent was not found
-                            message.text = handoff_parsed.text? handoff_parsed.text : '';
-                        }
-                       */
-                        // ===         TEMPORARY: search for handoff to agent command (\agent)
-
-
                         // qui
                         faqBotSupport.getParsedMessage(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type) {
@@ -203,20 +194,20 @@ class FaqBotHandler {
 
 
 
-                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(bot_answer.text);
-                            winston.debug('handoff_parsed?', handoff_parsed);
+                            const command_parsed = FaqBotHandler.is_command(bot_answer.text);
+                            winston.debug('command_parsed?', command_parsed);
     
-                            if (handoff_parsed.agent_handoff) {
+                            if (command_parsed.command) {
                                 winston.debug("agent_handoff faqs command found");                    
                             
-                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
                                 });                                                       
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
-                                bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                bot_answer.text = command_parsed.text? command_parsed.text : undefined;
                                 winston.debug("bot_answer.text1 "+ bot_answer.text );
                             } 
 
@@ -259,28 +250,6 @@ class FaqBotHandler {
                     if (faqs && faqs.length>0 && faqs[0].answer) {
                         answerObj = faqs[0];                
 
-
-                         // ===         TEMPORARY: search for handoff to agent command (\agent)
-                        /*
-                         const handoff_parsed = TiledeskChatbotUtil.is_agent_handoff_command(message);
-                         winston.debug('handoff_parsed?', handoff_parsed);
- 
-                         if (handoff_parsed.agent_handoff) {
-                             winston.verbose("agent_handoff faqs search command found");                    
-                         
-                             messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
-                                 message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
-                                     winston.info("agent_handoff faqs search agent sent ", savedMessage.toObject());  
-                             });                                                       
-                              // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-                             // handoff_parsed.text contains the eventual text before the \agent command
-                             // or 'all the message text' if \agent was not found
-                             message.text = handoff_parsed.text? handoff_parsed.text : '';
-                         }
-                        */
-                         // ===         TEMPORARY: search for handoff to agent command (\agent)
-
-                         
                         // qui
                         faqBotSupport.getParsedMessage(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {
 
@@ -321,20 +290,20 @@ class FaqBotHandler {
                             winston.debug("attr", attr);
 
 
-                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(bot_answer.text);
-                            winston.debug('handoff_parsed?', handoff_parsed);
+                            const command_parsed = FaqBotHandler.is_command(bot_answer.text);
+                            winston.debug('command_parsed?', command_parsed);
     
-                            if (handoff_parsed.agent_handoff) {
+                            if (command_parsed.command) {
                                 winston.debug("agent_handoff faqs command found");                    
                             
-                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
                                 });                                                       
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
-                                bot_answer.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                bot_answer.text = command_parsed.text? command_parsed.text : undefined;
                                 winston.debug("bot_answer.text1 "+ bot_answer.text );
                             } 
 
@@ -414,20 +383,20 @@ class FaqBotHandler {
 
 
 
-                            const handoff_parsed = FaqBotHandler.is_agent_handoff_command(botAns.text);
-                            winston.debug('handoff_parsed?', handoff_parsed);
+                            const command_parsed = FaqBotHandler.is_command(botAns.text);
+                            winston.debug('command_parsed?', command_parsed);
     
-                            if (handoff_parsed.agent_handoff) {
+                            if (command_parsed.command) {
                                 winston.debug("agent_handoff faqs command found");                    
                             
-                                messageService.send(sender, botName, message.recipient, handoff_parsed.agent_handoff, 
+                                messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
                                 });                                                       
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
-                                // handoff_parsed.text contains the eventual text before the \agent command
+                                // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
-                                botAns.text = handoff_parsed.text? handoff_parsed.text : undefined;
+                                botAns.text = command_parsed.text? command_parsed.text : undefined;
                                 winston.debug("bot_answer.text1 "+ botAns.text );
                             } 
 
