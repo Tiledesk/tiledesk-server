@@ -55,9 +55,9 @@ class FaqService {
       var faqsArray = [
         { 'question': 'Hi', 'answer': 'Hi', 'topic': 'greetings' },
         { 'question': 'Hello', 'answer': 'Hello', 'topic': 'greetings' },
-        { 'question': 'Who are you?', 'answer': 'Hi, I\'m a bot 🤖. You can find more about me [here](https://tiledesk.com/chatbot-for-customer-service).\ntdImage:http://dialogflow-proxy-tiledesk.herokuapp.com/images/tily-welcomebot.gif\n* See the website https://tiledesk.com/\n* Back to start tdAction:start', 'topic': 'greetings' },   
-        { 'question': '👨🏻‍🦰 I want an agent', 'answer': '\\agent', 'intent_display_name': 'agent_handoff', 'topic': 'internal' },
-        //TODO RIABILITARE? { 'question': 'Ok close', 'answer': '\\close', 'topic': 'internal' }, 
+        { 'question': 'Who are you?', 'answer': 'Hi, I\'m a bot 🤖. You can find more about me [here](https://tiledesk.com/chatbot-for-customer-service).\ntdImage:https://console.tiledesk.com/assets/images/tily-welcomebot.gif\n* See the website https://tiledesk.com/\n* Back to start tdAction:start', 'topic': 'greetings' },   
+        { 'question': '👨🏻‍🦰 I want an agent', 'answer': 'We are looking for an operator.. \\agent', 'intent_display_name': 'agent_handoff', 'topic': 'internal' },
+        { 'question': 'Ok close\n Ok resolved', 'answer': '\\close', 'topic': 'internal' }, 
         { 'question': '\\start', 'answer': 'Hello 👋. I\'m a bot 🤖.\n\nChoose one of the options below or write a message to reach our staff.\n* Who are you?\n* Where are you?\n* What can you do?\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'start', 'topic': 'internal' },            
         // { 'question': 'Menu', 'answer': 'Choose one of the options below or write a message to reach our staff.\n* Who are you?\n* Where are you?\n* What can you do?\n* 👨🏻‍🦰 I want an agent','topic': 'internal' },            
         { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'topic': 'internal' }, //TODO se metto spazio n * nn va      
