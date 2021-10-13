@@ -108,8 +108,8 @@ class FaqBotHandler {
                 if (action_parameters_index > -1) {
                     action = action.substring(0,action_parameters_index-1);
                 }
-                winston.debug("action " + action);
-                
+                winston.verbose("action: " + action);
+
                 var isObjectId = mongoose.Types.ObjectId.isValid(action);
                 winston.debug("isObjectId:"+ isObjectId);
                              
