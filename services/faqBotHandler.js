@@ -102,7 +102,13 @@ class FaqBotHandler {
             var query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id, "question": message.text};
 
             if (message.attributes && message.attributes.action) {
+
                 var action = message.attributes.action;
+                var action_parameters_index = action.indexOf("?");
+                if (action_parameters_index > -1) {
+                    action = action.substring(0,action_parameters_index-1);
+                }
+                winston.debug("action " + action);
                 
                 var isObjectId = mongoose.Types.ObjectId.isValid(action);
                 winston.debug("isObjectId:"+ isObjectId);
