@@ -106,9 +106,9 @@ class FaqBotHandler {
                 var action = message.attributes.action;
                 var action_parameters_index = action.indexOf("?");
                 if (action_parameters_index > -1) {
-                    action = action.substring(0,action_parameters_index-1);
+                    action = action.substring(0,action_parameters_index);
                 }
-                winston.verbose("action: " + action);
+                winston.debug("action: " + action);
 
                 var isObjectId = mongoose.Types.ObjectId.isValid(action);
                 winston.debug("isObjectId:"+ isObjectId);
