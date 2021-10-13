@@ -189,6 +189,9 @@ router.post('/signinWithCustomToken', [
     winston.debug("audUrl AudienceType: " + AudienceType );
 
     var id_project;
+     
+
+    var role = RoleConstants.USER;
 
     //problema wp da testare
     if (AudienceType === "subscriptions") {
@@ -217,8 +220,7 @@ router.post('/signinWithCustomToken', [
         return res.status(400).send({ success: false, msg: 'JWT Aud.AudienceId field is required for AudienceType projects' });
       }
 
-      id_project = AudienceId;
-
+      id_project = AudienceId;     
 
 
     } else {
@@ -233,7 +235,15 @@ router.post('/signinWithCustomToken', [
       
     }    
   
-      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: RoleConstants.USER}).              
+
+
+    if (req.user.role) {
+      role = req.user.role;
+    }
+    winston.debug("role: " + role );
+
+
+      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
       exec(function (err, project_user) {
         if (err) {
           winston.error(err);
@@ -245,7 +255,7 @@ router.post('/signinWithCustomToken', [
               id_project: id_project,
               uuid_user: req.user._id,
               // id_user: req.user._id,
-              role: RoleConstants.USER,
+              role: role,
               user_available: true,
               createdBy: req.user._id, //oppure req.user.id attento problema
               updatedBy: req.user._id
@@ -300,7 +310,6 @@ router.post('/signin',
   check('password').notEmpty(),  
 ],
 function (req, res) {
-  
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
