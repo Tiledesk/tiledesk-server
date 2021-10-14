@@ -17,12 +17,22 @@ const { Query } = require('mongoose');
 
 router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
   winston.debug('REQ USER ID ', req.user._id);
-
-  var contact_id = req.params.contact_id;
-  winston.debug('contact_id: '+ contact_id);
   
+  var isObjectId = mongoose.Types.ObjectId.isValid(req.user._id);
+  winston.debug("isObjectId:"+ isObjectId);     
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).    
+  var query = { role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
+  winston.debug(' query: ',query);
+
+
+  if (isObjectId) {
+    query.id_user = req.user._id;
+    // query.id_user = mongoose.Types.ObjectId(contact_id);
+  } else {
+    query.uuid_user = req.user._id;
+  }
+
+  var projects = await Project_user.find(query).    
     exec(); 
 
   var projectsArray = [];
@@ -32,10 +42,13 @@ router.get('/:contact_id', [passport.authenticate(['basic', 'jwt'], { session: f
   });
     
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(contact_id);
+  var contact_id = req.params.contact_id;
+  winston.debug('contact_id: '+ contact_id);
+
+  isObjectId = mongoose.Types.ObjectId.isValid(contact_id);
   winston.debug("isObjectId:"+ isObjectId);                             
 
-  var query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
+  query = { id_project: { $in : projectsArray }, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
   winston.debug(' query: ',query);
 
   if (isObjectId) {
