@@ -126,9 +126,27 @@ roundRobin(operatorSelectedEvent) {
             return resolve(operatorSelectedEvent);
           }          
 
-          // https://stackoverflow.com/questions/15997879/get-the-index-of-the-object-inside-an-array-matching-a-condition
-          let lastOperatorIndex = operatorSelectedEvent.available_agents.findIndex(projectUser => projectUser.id_user.toString() === lastOperatorId);
 
+            //when the agent has a custom auth jwt. so he has uuid_user and not id_user
+          // error: uncaughtException: Cannot read property 'toString' of undefined
+          // 2021-10-14T08:54:00.099370+00:00 app[web.1]: TypeError: Cannot read property 'toString' of undefined
+          // 2021-10-14T08:54:00.099371+00:00 app[web.1]:     at /app/services/departmentService.js:130:119
+          // 2021-10-14T08:54:00.099372+00:00 app[web.1]:     at Array.findIndex (<anonymous>)
+          // 2021-10-14T08:54:00.099372+00:00 app[web.1]:     at /app/services/departmentService.js:130:74
+          // 2021-10-14T08:54:00.099372+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:5074:18
+          // 2021-10-14T08:54:00.099381+00:00 app[web.1]:     at processTicksAndRejections (internal/process/task_q
+
+          // https://stackoverflow.com/questions/15997879/get-the-index-of-the-object-inside-an-array-matching-a-condition
+          let lastOperatorIndex = operatorSelectedEvent.available_agents.findIndex(projectUser =>  {
+                if (projectUser.id_user) {
+                  return projectUser.id_user.toString() === lastOperatorId;
+                } else { //when the agent has a custom auth jwt. so he has uuid_user and not id_user
+                  return projectUser.uuid_user === lastOperatorId;
+                }
+              }
+            );
+
+          
           // if lastOperatorIndex is -1(last operator is not available)->  that.nextOperator increment index +1 so it's work
 
 
