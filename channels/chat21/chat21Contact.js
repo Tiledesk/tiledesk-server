@@ -130,8 +130,21 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
+  var query = { role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" };
 
-  var projects = await Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).    
+  var isObjectId = mongoose.Types.ObjectId.isValid(req.user._id);
+  winston.debug("isObjectId:"+ isObjectId);                             
+
+  if (isObjectId) {
+    query.id_user = req.user._id;
+    // query.id_user = mongoose.Types.ObjectId(contact_id);
+  } else {
+    query.uuid_user = req.user._id;
+  }
+
+
+
+  var projects = await Project_user.find(query).    
     exec(); 
 
     var projectsArray = [];
