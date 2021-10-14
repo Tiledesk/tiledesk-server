@@ -81,7 +81,7 @@ listen() {
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
 
-      winston.info("requestEvent request.participants.update");
+      winston.debug("requestEvent request.participants.update");
 
       var request = data.request;
       
@@ -312,7 +312,7 @@ sendAgentEmail(projectid, savedRequest) {
             return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
           }
 
-          winston.info("savedRequest: " + JSON.stringify(savedRequest));
+          winston.debug("savedRequest: " + JSON.stringify(savedRequest));
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
@@ -338,9 +338,9 @@ sendAgentEmail(projectid, savedRequest) {
 
                   // agents già c'è in quanto viene creato con departmentService.getOperator nella request.create ma nn c'è per request.participants.update
                       snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
-                      winston.info('load snapshotAgents with Request.findById ');                              
+                      winston.debug('load snapshotAgents with Request.findById ');                              
                   }
-                  winston.info('snapshotAgents', snapshotAgents);                              
+                  winston.debug('snapshotAgents', snapshotAgents);                              
 
                   if (!snapshotAgents.snapshot.agents) {
                     return winston.warn("RequestNotification snapshotAgents.snapshot.agents is null :(. You are closing an old request?", savedRequest);
