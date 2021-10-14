@@ -74,7 +74,8 @@ router.post('/askbot', function (req, res) {
            .lean().               
             exec(function (err, faqs) {
               if (err) {
-                return res.status(500).send({ success: false, msg: 'Error getting object.' });
+                winston.error('Error getting object.', err);      
+                return res.status(500).send({ success: false, msg: 'Error getting fulltext object.' });
               }
     
                winston.debug("faqs", faqs);              

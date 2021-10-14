@@ -246,12 +246,15 @@ class FaqBotHandler {
                     search_obj["$language"] = faq_kb.language;
                 }
                 query.$text = search_obj;
-                winston.verbose("fulltext search query", query);   
+                winston.debug("fulltext search query", query);   
 
                 Faq.find(query,  {score: { $meta: "textScore" } })  
                 .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
                 .lean().               
                 exec(function (err, faqs) {
+                    if (err) {
+                        return winston.error('Error getting fulltext objects.', err);      
+                    }
                     winston.debug("faqs", faqs);              
 
                     // botprefix
