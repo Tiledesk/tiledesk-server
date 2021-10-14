@@ -76,7 +76,7 @@ router.post('/createCustomToken', function (req, res) {
             "kid": "tiledesk-key", //"legacy-token-key",
             "tiledesk_api_roles": "user"
         }
-        console.log("payload:\n", payload)
+        winston.debug("payload:\n", payload)
         var token = jwt.sign(
             payload,
             jwtSecret,
