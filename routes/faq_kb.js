@@ -58,8 +58,15 @@ router.post('/askbot', function (req, res) {
          }else {
           query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb};
 
-          query.$text = {"$search": req.body.question};
-       
+          var search_obj = {"$search": req.body.question};
+
+          if (faq_kb.language) {
+              search_obj["$language"] = faq_kb.language;
+          }
+          query.$text = search_obj;
+          winston.info("fulltext search query", query);  
+
+
           winston.debug('internal ft query: '+ query);
     
            Faq.find(query,  {score: { $meta: "textScore" } })  

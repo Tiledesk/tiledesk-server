@@ -239,8 +239,15 @@ class FaqBotHandler {
                } else {
  
                 query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id};
-                query.$text = {"$search": message.text};
-            
+        
+                var search_obj = {"$search": message.text};
+
+                if (faq_kb.language) {
+                    search_obj["$language"] = faq_kb.language;
+                }
+                query.$text = search_obj;
+                winston.verbose("fulltext search query", query);   
+
                 Faq.find(query,  {score: { $meta: "textScore" } })  
                 .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
                 .lean().               

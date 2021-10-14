@@ -53,6 +53,11 @@ var Faq_kbSchema = new Schema({
     default: uuidv4(),
     select: false
   },
+  language: {
+    type: String,
+    required: false,
+    // index: true
+  },
   attributes: {
     type: Object,
   },
