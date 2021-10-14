@@ -46,7 +46,7 @@ router.post('/createCustomToken', function (req, res) {
         ]
     
         const now = Math.round(new Date().getTime()/1000);
-        console.log("now: ", now)
+        // console.log("now: ", now)
         const exp = now + 60 * 60 * 24 * 30;
 
         var payload = {
