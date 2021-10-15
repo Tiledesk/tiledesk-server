@@ -8,7 +8,7 @@ const ActionsConstants = require('../models/actionsConstants');
 class FaqService {
 
 
-  create(name, url, projectid, user_id, type, description, webhook_url) {
+  create(name, url, projectid, user_id, type, description, webhook_url, language) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -20,6 +20,7 @@ class FaqService {
           id_project: projectid,
           webhook_url: webhook_url,
           type: type,
+          language: language,
           trashed: false,
           createdBy: user_id,
           updatedBy: user_id
