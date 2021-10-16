@@ -33,7 +33,7 @@ router.get('/', function (req, res, next) {
       winston.debug("GET FAQ ", faq);
 
       if (err) {
-        winston.debug('GET FAQ err ', err)
+        winston.error('GET FAQ err ', err)
         return next(err)
       };
       winston.debug('GET FAQ  ', faq)
