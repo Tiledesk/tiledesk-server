@@ -22,7 +22,7 @@
         "CALLOUT_TITLE_PLACEHOLDER": "🖐 Need Help?",
         "CALLOUT_MSG_PLACEHOLDER": "Click here and start chatting with us!",
         "CUSTOMER_SATISFACTION": "Customer satisfaction",
-        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "your opinion on our customer service",
+        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "Your opinion on our customer service",
         "DOWNLOAD_TRANSCRIPT": "Download transcript",
         "BACK": "Back",
         "YOUR_RATING": "your rating",
@@ -50,7 +50,7 @@
         "SOUND_OFF": "sound off",
         "SOUND_ON": "sound on",
         "LOGOUT": "logout",
-        "CLOSE": "close",
+        "CLOSE": "Close",
         "PREV_CONVERSATIONS": "Your conversations",
         "YOU": "You",
         "SHOW_ALL_CONV": "show all",
@@ -59,7 +59,7 @@
         "SEE_PREVIOUS": "see previous",
         "WAITING_TIME_FOUND": "The team typically replies in $reply_time",
         "WAITING_TIME_NOT_FOUND": "The team will reply as soon as possible",
-        "CLOSED": "CLOSED",
+        "CLOSED": "Closed",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"you",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"you have been added ",
@@ -70,10 +70,10 @@
 
         "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email.",
 
-
+        
         "LABEL_ERROR_FIELD_REQUIRED": "Required field",
         "SENT_AN_ATTACHMENT": "sent an attachment",
-        "SENT_AN_IMAGE":"sent an image"
+        "SENT_AN_IMAGE": "sent an image"
 
 
     }
@@ -101,7 +101,7 @@
         "CALLOUT_TITLE_PLACEHOLDER": "🖐 Bisogno di aiuto?",
         "CALLOUT_MSG_PLACEHOLDER": "Clicca qui e inizia a chattare con noi!",
         "CUSTOMER_SATISFACTION": "Valutazione servizio",
-        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "il tuo giudizio sul nostro servizio clienti",
+        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "Il tuo giudizio sul nostro servizio clienti",
         "DOWNLOAD_TRANSCRIPT": "Scarica transcript",
         "BACK": "Indietro",
         "YOUR_RATING": "il tuo voto",
@@ -138,7 +138,7 @@
         "SEE_PREVIOUS": "vedi precedenti",
         "WAITING_TIME_FOUND": "Il team tipicamente risponde in $reply_time",
         "WAITING_TIME_NOT_FOUND": "Vi risponderemo appena possibile",
-        "CLOSED": "CHIUSA",
+        "CLOSED": "Chiusa",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"tu",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"sei stato aggiunto ",
@@ -177,7 +177,7 @@
         "CALLOUT_TITLE_PLACEHOLDER": "🖐 Besoin d'aide?",
         "CALLOUT_MSG_PLACEHOLDER": "Cliquez ici et commencez à discuter avec nous!",
         "CUSTOMER_SATISFACTION": "Évaluation des services",
-        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "votre avis sur notre service client",
+        "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "Votre avis sur notre service client",
         "DOWNLOAD_TRANSCRIPT": "Télécharger la transcription",
         "BACK": "En arrière",
         "YOUR_RATING": "votre vote",
@@ -214,7 +214,7 @@
         "SEE_PREVIOUS": "voir les conversations précédentes",
         "WAITING_TIME_FOUND": "L'équipe répond généralement en $reply_time",
         "WAITING_TIME_NOT_FOUND": "Nous vous répondrons dans les plus brefs délais",
-        "CLOSED": "FERMÉ",
+        "CLOSED": "Fermé",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"toi",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"tu as été ajouté ",
@@ -286,7 +286,7 @@
         "SEE_PREVIOUS":"Ver anterior",
         "WAITING_TIME_FOUND":"El equipo típicamente responde en $reply_time",
         "WAITING_TIME_NOT_FOUND":"El equipo responderá lo antes posible.",
-        "CLOSED":"CERRADO",
+        "CLOSED":"Cerrado",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"usted",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"usted ha sido agregado ",
@@ -350,7 +350,7 @@
         "SOUND_OFF":"Ton aus",
         "SOUND_ON":"Ton an",
         "LOGOUT":"Ausloggen",
-        "CLOSE":"schließen",
+        "CLOSE":"Schließen",
         "PREV_CONVERSATIONS":"Ihre Gespräche",
         "YOU":"Du",
         "SHOW_ALL_CONV":"zeige alles",
@@ -359,7 +359,7 @@
         "SEE_PREVIOUS":"siehe vorher",
         "WAITING_TIME_FOUND":"Das Team antwortet normalerweise in $reply_time",
         "WAITING_TIME_NOT_FOUND":"Das Team wird so schnell wie möglich antworten",
-        "CLOSED":"GESCHLOSSEN",
+        "CLOSED":"Geschlossen",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "Sie",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "Sie wurden hinzugefügt ",
@@ -431,7 +431,7 @@
         "SEE_PREVIOUS":"ver anterior",
         "WAITING_TIME_FOUND":"A equipe normalmente responde em $reply_time",
         "WAITING_TIME_NOT_FOUND":"A equipe responderá o mais breve possível",
-        "CLOSED":"FECHADO",
+        "CLOSED":"Fechado",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "você",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "você foi adicionado ",
@@ -494,7 +494,7 @@
         "SOUND_OFF":"звук выключен",
         "SOUND_ON":"звучать на",
         "LOGOUT":"выйти",
-        "CLOSE":"закрывать",
+        "CLOSE":"Закрывать",
         "PREV_CONVERSATIONS":"Ваши разговоры",
         "YOU":"Вы",
         "SHOW_ALL_CONV":"показать все",
@@ -503,7 +503,7 @@
         "SEE_PREVIOUS":"смотри предыдущий",
         "WAITING_TIME_FOUND":"Команда обычно отвечает в $reply_time",
         "WAITING_TIME_NOT_FOUND":"Команда ответит как можно скорее",
-        "CLOSED":"ЗАКРЫТО",
+        "CLOSED":"Закрыто",
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "вы",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "вы добавлены ",
         "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "присоединился",
@@ -574,7 +574,7 @@
         "SEE_PREVIOUS":"Öncekine bak",
         "WAITING_TIME_FOUND":"Ekip genellikle …… içerisinde cevaplar $reply_time",
         "WAITING_TIME_NOT_FOUND":"Ekip en kısa süre içerisinde cevap verecektir.",
-        "CLOSED":"KAPALI",
+        "CLOSED":"Kapali",
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "siz",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "eklendiniz ",
