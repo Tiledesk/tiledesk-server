@@ -130,7 +130,7 @@
                 {{#ifEquals this.type "url"}}
                   <li><a href="{{this.link}}" class="dynamic_button">{{this.value}}</a></li>
                 {{else}}
-                  <li><a href="mailto:{{../message.request.request_id}}@tickets-pre.tiledesk.com?subject=Re:%20{{../message.request.subject}}&body={{this.value}}" class="dynamic_button">{{this.value}}</a></li>   
+                  <li><a href="mailto:{{../message.request.request_id}}@{{baseScope.inboundDomain}}?subject=Re:%20{{../message.request.subject}}&body={{this.value}}" class="dynamic_button">{{this.value}}</a></li>   
                   <!-- <li><a href="https://api.tiledesk.com/v2/{{project.id}}/link?secret_token={{tokenQueryString}}" class="dynamic_button">{{this.value}}</a></li>     -->
                 {{/ifEquals}}
             {{/each}}

@@ -61,6 +61,11 @@ function populateMessageWithRequest(message, eventPrefix) {
   populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
   lean().
+  //perche lean?
+  // TODO availableAgentsCount nn c'è per il lean problema trigger
+  // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
+  // request.department.hasBot 
+  // request.isOpen
   cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
   exec(function (err, request) {
 
@@ -88,6 +93,7 @@ function populateMessageWithRequest(message, eventPrefix) {
           winston.debug("message.emit",messageJson );
           messageEvent.emit(eventPrefix,messageJson );
 
+          //se a req.first_text toglio ritorni a capo è sempre diverso da msg.txt
           if (message.text === request.first_text){
             messageEvent.emit(eventPrefix+'.first', messageJson );
           }
@@ -97,6 +103,17 @@ function populateMessageWithRequest(message, eventPrefix) {
           if (request.lead && message.sender === request.lead.lead_id) {
             messageEvent.emit(eventPrefix+'.from.requester', messageJson );
           }
+
+//           olumn":21,"file":"/app/node_modules/mongoose/lib/model.js","function":null,"line":4869,"method":null,"native":false},{"column":11,"file":"/app/node_modules/mongoose/lib/query.js","function":"_hooks.execPost","line":4391,"method":"execPost","native":false},{"column":16,"file":"/app/node_modules/kareem/index.js","function":null,"line":135,"method":null,"native":false},{"column":9,"file":"internal/process/task_queues.js","function":"processTicksAndRejections","line":79,"method":null,"native":false}]}
+// 2021-01-26T10:30:16.045281+00:00 app[web.1]: error: uncaughtException: Cannot read property 'name' of undefined
+// 2021-01-26T10:30:16.045283+00:00 app[web.1]: TypeError: Cannot read property 'name' of undefined
+// 2021-01-26T10:30:16.045284+00:00 app[web.1]:     at /app/event/messageEvent.js:101:80
+// 2021-01-26T10:30:16.045284+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4846:16
+// 2021-01-26T10:30:16.045285+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/helpers/promiseOrCallback.js:24:16
+// 2021-01-26T10:30:16.045285+00:00 app[web.1]:     at /app/node_modules/mongoose/lib/model.js:4869:21
+// 2021-01-26T10:30:16.045286+00:00 app[web.1]:     at _hooks.execPost (/app/node_modules/mongoose/lib/query.js:4391:11)
+// 2021-01-26T10:30:16.045286+00:00 app[web.1]:     at /app/node_modules/kareem/index.js:135:16
+// 2021-01-26T10:30:16.045287+00:00 app[web.1]: 
 
           message2Event.emit(eventPrefix+'.request.channel.' + request.channel.name, messageJson );
           message2Event.emit(eventPrefix+'.request.channelOutbound.' + request.channelOutbound.name, messageJson );
@@ -129,7 +146,7 @@ function populateMessageWithRequest(message, eventPrefix) {
       }   
           
   } else {
-    winston.warn("request is undefined in messageEvent. Is it a direct message ?" );
+    winston.debug("request is undefined in messageEvent. Is it a direct or group message ?" );
     messageEvent.emit(eventPrefix,messageJson );
     message2Event.emit(eventPrefix+'.channel.' + message.channel.name, messageJson );
   }

@@ -64,8 +64,9 @@ class EmailService {
     this.replyTo = process.env.EMAIL_REPLY_TO || config.replyTo;
     winston.info('EmailService replyTo address: '+ this.replyTo);
 
-    this.replyToDomain = process.env.EMAIL_REPLY_TO_DOMAIN || config.replyToDomain;
-    winston.info('EmailService replyToDomain : '+ this.replyToDomain);
+    this.inboudDomain = process.env.EMAIL_INBOUND_DOMAIN || config.inboundDomain;
+    winston.info('EmailService inboudDomain : '+ this.inboudDomain);
+
 
     this.pass = process.env.EMAIL_PASSWORD;
 
@@ -338,12 +339,7 @@ class EmailService {
         if (request.attributes && request.attributes.email_replyTo) {
         replyTo = request.attributes.email_replyTo;
         }         
-      // if (request.ticket_id) {
-      //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = request.request_id+"@"+that.replyToDomain;
-      // }
-      
+    
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
 
       winston.verbose("messageId: " + messageId);
@@ -485,11 +481,6 @@ class EmailService {
         if (message.request.attributes && message.request.attributes.email_replyTo) {
         replyTo = message.request.attributes.email_replyTo;
         }         
-      // if (message.request.ticket_id) {
-      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-      // }
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
@@ -631,12 +622,7 @@ class EmailService {
         if (request.attributes && request.attributes.email_replyTo) {
         replyTo = request.attributes.email_replyTo;
         }         
-      // if (request.ticket_id) {
-      //   replyTo = "support+"+request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = request.request_id+"@"+that.replyToDomain;
-      // }
-      
+
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
 
       winston.verbose("sendNewPooledRequestNotification messageId: " + messageId);
@@ -772,11 +758,6 @@ class EmailService {
         if (message.request.attributes && message.request.attributes.email_replyTo) {
         replyTo = message.request.attributes.email_replyTo;
         }         
-      // if (message.request.ticket_id) {
-      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-      // }
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
@@ -916,11 +897,6 @@ class EmailService {
         if (message.request.attributes && message.request.attributes.email_replyTo) {
         replyTo = message.request.attributes.email_replyTo;
         }         
-      // if (message.request.ticket_id) {
-      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-      // }
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
@@ -1050,12 +1026,7 @@ class EmailService {
         if (message.request.attributes && message.request.attributes.email_replyTo) {
         replyTo = message.request.attributes.email_replyTo;
         }
-      // if (message.request.ticket_id) {
-      //   replyTo = "support+"+message.request.ticket_id+"@"+that.replyToDomain;
-      // } else {
-      //   replyTo = message.request.request_id+"@"+that.replyToDomain;
-      // }
-      
+     
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
 
       winston.verbose("messageId: " + messageId);
@@ -1181,11 +1152,6 @@ class EmailService {
       var html = template(replacements);
       winston.debug("html: " + html);
 
-      let replyTo;
-      if (request) {
-        replyTo = request.request_id+"@"+that.replyToDomain;
-        winston.info("replyTo: " + replyTo);
-      }
 
       // if (message.request && message.request.lead && message.request.lead.email) {
       //   winston.info("message.request.lead.email: " + message.request.lead.email);

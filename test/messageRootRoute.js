@@ -37,6 +37,10 @@ describe('MessageRoute', () => {
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+      var email2 = "test-message-create-" + Date.now() + "@email.com";
+      userService.signup( email2 ,pwd, "Test Firstname2", "Test lastname2").then(function(savedUser2) {
+
      projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
      
       var savedProject = savedProjectAndPU.project;
@@ -45,7 +49,7 @@ describe('MessageRoute', () => {
             .post('/'+ savedProject._id + '/messages')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"recipient":"5ddd30bff0195f0017f72c6d", "recipientFullname": "Dest", "text":"text"})
+            .send({"recipient":savedUser2._id.toString(), "recipientFullname": "Dest", "text":"text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
@@ -54,7 +58,7 @@ describe('MessageRoute', () => {
 
                 expect(res.body.sender).to.equal(savedUser._id.toString());                
                 expect(res.body.senderFullname).to.equal("Test Firstname Test lastname");
-                expect(res.body.recipient).to.equal("5ddd30bff0195f0017f72c6d");
+                expect(res.body.recipient).to.equal(savedUser2._id.toString());
                 expect(res.body.type).to.equal("text");
                 expect(res.body.text).to.equal("text");
                 expect(res.body.id_project).to.equal(savedProject._id.toString());
@@ -67,6 +71,7 @@ describe('MessageRoute', () => {
           
                done();
             });
+          });
     });
   });
 });

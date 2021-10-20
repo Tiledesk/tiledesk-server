@@ -379,6 +379,79 @@ it('signinJWt-userYESAudYesSubject', (done) => {
 
 
 
+
+
+
+
+// // mocha test/authenticationJwt.js  --grep 'signinJWt-Project-external-user-YESAudYesSubjectAndRole'
+
+//     it('signinJWt-Project-external-user-YESAudYesSubjectAndRole', (done) => {
+
+
+//         //   this.timeout();
+    
+//             var email = "test-signup-" + Date.now() + "@email.com";
+//             var pwd = "pwd";
+    
+//             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+//                 // create(name, createdBy, settings)
+//                 projectService.create("test-signinJWt-user", savedUser._id).then(function(savedProject) {                                              
+                                                
+//                     chai.request(server)
+//                     .post('/'+ savedProject._id + '/keys/generate')
+//                     .auth(email, pwd)
+//                     .send()
+//                     .end((err, res) => {
+//                         //console.log("res",  res);
+//                         console.log("res.body",  res.body);
+//                         res.should.have.status(200);
+//                         res.body.should.be.a('object');
+//                         expect(res.body.jwtSecret).to.not.equal(null);                                                                              
+                    
+
+//                         var externalUserObj = {_id:"123",name:"andrea", surname:"leo",role : 'agent'};
+                        
+//                         console.log("externalUserObj", externalUserObj);
+
+
+//                         var signOptions = {                                                            
+//                             subject:  'userexternal',                                                                                     
+//                             audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
+//                             };
+
+
+//                         var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+
+                            
+                                
+//                                 console.log("jwtToken", jwtToken);
+                                
+//                                 chai.request(server)
+//                                 .get('/testauth/noentitycheck')
+//                                 .set('Authorization', 'JWT '+jwtToken)
+//                                 .send()
+//                                 .end((err, res) => {
+//                                     console.log("res.body", res.body);
+//                                     res.should.have.status(200);
+                                    
+//                                     done();
+//                                 });
+
+                            
+                
+                        
+//                     });
+
+
+
+
+
+//                     });
+                            
+                            
+//                     });
+//                     });                           
+
     it('signinJWt-bot-YESAudYesSubject', (done) => {
 
 

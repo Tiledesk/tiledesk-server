@@ -55,6 +55,7 @@ class BotSubscriptionNotifier {
             winston.verbose("SENT notify for bot with url " + url +  " with err " + err);
             if (err) {
               winston.error("Error sending notify for bot with url " + url + " with err " + err);
+              //TODO Reply with error
               // next(err, json);
             }
           });

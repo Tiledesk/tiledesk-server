@@ -61,7 +61,7 @@ describe('RequestService', function () {
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
-          //expect(savedRequest.ticket_id).to.equal(1);
+          expect(savedRequest.ticket_id).to.equal(1);
           expect(savedRequest.status).to.equal(200);
           expect(savedRequest.participants).to.have.lengthOf(1);
           expect(savedRequest.participants).to.contains(userid);
@@ -72,6 +72,7 @@ describe('RequestService', function () {
           expect(savedRequest.participants[0].toString()).to.equal(userid);
           expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
           expect(savedRequest.assigned_at).to.not.equal(null);
+          console.log("savedRequest.participants1");
 
           expect(savedRequest.snapshot.department.name).to.not.equal(null);
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -80,29 +81,30 @@ describe('RequestService', function () {
           expect(savedRequest.snapshot.requester.role).to.equal("owner");
           expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
           // expect(savedRequest.snapshot.requester.role).to.equal("owner");
-          
+          console.log("savedRequest.participants2");
+
           expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
           // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
           // console.log("savedRequest.id_project", savedRequest.id_project, typeof savedRequest.id_project);
 
           expect(savedRequest.id_project).to.equal(savedProject._id.toString());
-
+          console.log("savedRequest.participants3");
           // aiuto
           // expect(savedRequest.department).to.equal("requester_id1");
 
           requestService.create(request).then(function(savedRequest) {
             // assert.isNotOk('No duplicate check index');
             console.log("no index check ???");
-             done();
+            done();
           }).catch(function(err) {
             console.log("ok duplicate check index ", err);
-            //done();
+            // done();
           });
         }).catch(function(err) {
             console.log("test reject",err);
             assert.isNotOk(err,'Promise error');
-            //done();
+            // done();
         });
     });
   });
@@ -544,6 +546,31 @@ describe('RequestService', function () {
 
 
 
+  // mocha test/requestService.js  --grep 'createWithWrongDepartmentId'
+
+  it('createWithWrongDepartmentId', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+      var userid = savedUser.id;
+     projectService.createAndReturnProjectAndProjectUser("createWithWrongDepartmentId", userid).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+      // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
+       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", "5ebd890b3f2702001915c89e", null, null,null,null, "user1").then(function(savedRequest) {
+                  
+        })
+        .catch(function(err) {
+            console.log("test reject",err);
+            done();
+        });
+    });
+  });
+  });
+
+
 
   it('createWithIdWithPooledDepartment', function (done) {
     // this.timeout(10000);
@@ -581,7 +608,8 @@ describe('RequestService', function () {
   });
   });
 
- 
+    // mocha test/requestService.js  --grep 'updateWaitingTimeRequest'
+
   it('updateWaitingTimeRequest', function (done) {
     this.timeout(1000);
     var email = "test-request-create-" + Date.now() + "@email.com";
@@ -601,14 +629,20 @@ describe('RequestService', function () {
                 messageService.create(messageSender, "test sender", savedRequest.request_id, "hello2",
                 savedProject._id, messageSender)]).then(function(all) {
                   requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
-                        winston.debug("resolve closedRequest", upRequest.toObject());
                         var maxWaitingTime  = Date.now() - upRequest.createdAt;
+                        console.log("resolve closedRequest", upRequest.toObject(),maxWaitingTime);
+
                         expect(upRequest.status).to.equal(200);
+                        // console.log("1")
                         // expect(upRequest.status).to.equal(300);
                         expect(upRequest.waiting_time).to.not.equal(null);
-                        expect(upRequest.waiting_time).to.gte(500);
+                        // console.log("2")
+                        expect(upRequest.waiting_time).to.gte(300);
+                        // console.log("3")
                         expect(upRequest.waiting_time).to.lte(maxWaitingTime);
+                        // console.log("4")
                         expect(upRequest.first_response_at).to.not.equal(null);
+                        // console.log("5")
                         done();                         
                       }).catch(function(err){
                         winston.error("test reject", err);
@@ -616,7 +650,7 @@ describe('RequestService', function () {
                         done();
                       });
                   });
-            }, 500);
+            }, 300);
         });
       });
   });
@@ -626,6 +660,8 @@ describe('RequestService', function () {
 
 
 
+
+    // mocha test/requestService.js  --grep 'closeRequest'
 
 
   it('closeRequest', function (done) {
@@ -650,6 +686,8 @@ describe('RequestService', function () {
                     expect(closedRequest.closed_at).to.not.equal(null);
                     expect(closedRequest.transcript).to.contains("hello1");
                     expect(closedRequest.transcript).to.contains("hello2");
+                    expect(closedRequest.snapshot.agents).to.equal(undefined);
+
                     done();                         
                   }).catch(function(err){
                     winston.error("test reject", err);
@@ -688,6 +726,8 @@ describe('RequestService', function () {
                   expect(closedRequest.closed_at).to.not.equal(null);
                   expect(closedRequest.transcript).to.contains("hello1");
                   expect(closedRequest.transcript).to.contains("hello2");
+                  expect(closedRequest.snapshot.agents).to.equal(undefined);
+
                   done();                         
                 }).catch(function(err){
                   winston.error("test reject", err);
@@ -730,7 +770,8 @@ describe('RequestService', function () {
                   expect(reopenedRequest.status).to.equal(200);
                   expect(reopenedRequest.closed_at).to.not.equal(null);      
                   expect(reopenedRequest.participants).to.have.lengthOf(1);          
-                  
+                  expect(reopenedRequest.snapshot.agents).to.equal(undefined);
+
           
                   done();                         
                 }).catch(function(err){
@@ -744,7 +785,7 @@ describe('RequestService', function () {
   });
 });
 
-
+ // mocha test/requestService.js  --grep 'addparticipant'
 
   it('addparticipant', function (done) {
 
@@ -809,6 +850,8 @@ describe('RequestService', function () {
         expect(savedRequestParticipant.participatingBots).to.have.lengthOf(0);
         expect(savedRequestParticipant.hasBot).to.equal(false);
         expect(savedRequestParticipant.id_project).to.equal(savedProject._id.toString());
+
+        expect(savedRequestParticipant.snapshot.agents).to.equal(undefined);
 
         done();
       }).catch(function(err) {
@@ -1189,10 +1232,6 @@ it('routeDepartmentSameAgentDifferentDepartment', function (done) {
   
             });
   
-          }).catch(function(err) {
-            console.log("test reject",err);
-              assert.isNotOk(err,'Promise error');
-              done();
           });
     });
   });
@@ -1393,6 +1432,171 @@ it('removeTag', function (done) {
 
 
 
+      // mocha test/requestService.js  --grep 'createMessageMicroLanguageAttributes'
 
+      it('createMessageMicroLanguageAttributes', function (done) {
+        // this.timeout(10000);
+    
+    
+        var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
+        // var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+        console.log("microLanguageTransformerInterceptor",microLanguageTransformerInterceptor);
+        microLanguageTransformerInterceptor.listen();
+    
+    
+    
+        var email = "test-request-create-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+          var userid = savedUser.id;
+          
+          projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+            var savedProject = savedProjectAndPU.project;
+      
+            leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+              
+              var request = {
+                            request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                            id_project:savedProject._id, first_text: "first_text",
+                            participants: [userid],
+                            lead:createdLead, requester: savedProjectAndPU.project_user };
+      
+             requestService.create(request).then(function(savedRequest) {
+                winston.info("resolve", savedRequest.toObject());
+
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+            messageService.create(userid, "test sender", "testrecipient-createMessageMicroLanguageFromBot", "ciao\n* Button1",
+              savedProject._id, userid, undefined, {microlanguage:true}).then(function(savedMessage){
+                winston.debug("resolve savedMessage", savedMessage.toObject());
+         
+              expect(savedMessage.text).to.equal("ciao");
+              expect(savedMessage.type).to.equal("text");
+              expect(savedMessage.attributes._raw_message).to.equal("ciao\n* Button1","attachment");
+              expect(savedMessage.attributes.attachment.type).to.equal("template");        
+              expect(savedMessage.attributes.attachment.buttons[0].value).to.equal("Button1");
+              expect(savedMessage.sender).to.equal(userid);
+              expect(savedMessage.senderFullname).to.equal("test sender");
+              expect(savedMessage.recipient).to.equal("testrecipient-createMessageMicroLanguageFromBot");
+              done();
+    
+            })
+          });
+        });
+      });
+
+    });
+  });
+
+
+
+
+
+
+
+
+
+
+
+      // mocha test/requestService.js  --grep 'createMessageMicroLanguageFromBot'
+
+      it('createMessageMicroLanguageFromBot', function (done) {
+        // this.timeout(10000);
+    
+    
+        // var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageAttributesTransformerInterceptor');
+        var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
+        console.log("microLanguageTransformerInterceptor",microLanguageTransformerInterceptor);
+        microLanguageTransformerInterceptor.listen();
+    
+    
+    
+        var email = "test-request-create-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+          var userid = savedUser.id;
+          
+          projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+            var savedProject = savedProjectAndPU.project;
+      
+            leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+              
+              var request = {
+                            request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                            id_project:savedProject._id, first_text: "first_text",
+                            participants: ["bot_"+userid],
+                            lead:createdLead, requester: savedProjectAndPU.project_user };
+      
+             requestService.create(request).then(function(savedRequest) {
+                winston.info("resolve", savedRequest.toObject());
+
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
+            messageService.create(userid, "test sender", "testrecipient-createMessageMicroLanguageFromBot", "ciao\n* Button1",
+              savedProject._id, userid, undefined, {microlanguage:true}).then(function(savedMessage){
+                winston.debug("resolve savedMessage", savedMessage.toObject());
+         
+              expect(savedMessage.text).to.equal("ciao");
+              expect(savedMessage.type).to.equal("text");
+              expect(savedMessage.attributes._raw_message).to.equal("ciao\n* Button1","attachment");
+              expect(savedMessage.attributes.attachment.type).to.equal("template");        
+              expect(savedMessage.attributes.attachment.buttons[0].value).to.equal("Button1");
+              expect(savedMessage.sender).to.equal(userid);
+              expect(savedMessage.senderFullname).to.equal("test sender");
+              expect(savedMessage.recipient).to.equal("testrecipient-createMessageMicroLanguageFromBot");
+              done();
+    
+            })
+          });
+        });
+      });
+
+    });
+  });
+
+
+
+ // mocha test/requestService.js  --grep 'selectSnapshot'
+
+ it('selectSnapshot',  function (done) {
+  // this.timeout(10000);
+  // return new Promise(function (resolve) {
+  var email = "test-request-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+    var userid = savedUser.id;
+    
+    projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
+      var savedProject = savedProjectAndPU.project;
+
+      leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
+        
+        var request = {
+                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      id_project:savedProject._id, first_text: "first_text",
+                      participants: ["bot_"+userid],
+                      lead:createdLead, requester: savedProjectAndPU.project_user };
+
+       requestService.create(request).then(async function(savedRequest) {
+          winston.info("resolve", savedRequest.toObject());
+
+        var snapshotAgents = await Request.findById(savedRequest.id).select({"snapshot":1}).exec();
+
+        console.log("snapshotAgents",snapshotAgents);
+
+        expect(snapshotAgents.snapshot.agents.length).to.equal(1);
+        // return;
+        done();
+
+       });
+      });
+    });
+  });
+  // });
+ });
 
 });
+
+
+

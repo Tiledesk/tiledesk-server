@@ -69,7 +69,6 @@
         "INFO_SUPPORT_CHAT_CLOSED":"Chat closed",
 
         "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email.",
-
         
         "LABEL_ERROR_FIELD_REQUIRED": "Required field",
         "SENT_AN_ATTACHMENT": "sent an attachment",
@@ -223,7 +222,11 @@
         "INFO_SUPPORT_CHAT_REOPENED":"Chat rouvert",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat fermé",
 
-        "TICKET_TAKING":"La demande a été reçue et le personnel d'assistance la traite.\nPour ajouter d'autres commentaires, répondez à cet e-mail."
+        "TICKET_TAKING":"La demande a été reçue et le personnel d'assistance la traite.\nPour ajouter d'autres commentaires, répondez à cet e-mail.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Champ obligatoire",
+        "SENT_AN_ATTACHMENT": "envoyé une pièce jointe",
+        "SENT_AN_IMAGE": "envoyé une image"
     }
  },
  {
@@ -295,7 +298,11 @@
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reabierto",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat cerrado",
 
-        "TICKET_TAKING":"La solicitud ha sido recibida y el personal de asistencia está tratando con ella. \nPara agregar más comentarios, responda a este correo electrónico."
+        "TICKET_TAKING":"La solicitud ha sido recibida y el personal de asistencia está tratando con ella. \nPara agregar más comentarios, responda a este correo electrónico.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Campo obligatorio",
+        "SENT_AN_ATTACHMENT": "envió un archivo adjunto",
+        "SENT_AN_IMAGE": "envió una imagen"
 
     }
 },
@@ -368,7 +375,11 @@
         "INFO_SUPPORT_CHAT_REOPENED": "Chat wieder geöffnet",
         "INFO_SUPPORT_CHAT_CLOSED": "Chat geschlossen",
 
-        "TICKET_TAKING":"Die Anfrage ist eingegangen und wird vom Hilfspersonal bearbeitet.\nUm weitere Kommentare hinzuzufügen, antworten Sie auf diese E-Mail."
+        "TICKET_TAKING":"Die Anfrage ist eingegangen und wird vom Hilfspersonal bearbeitet.\nUm weitere Kommentare hinzuzufügen, antworten Sie auf diese E-Mail.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Pflichtfeld",
+        "SENT_AN_ATTACHMENT": "Anhang gesendet",
+        "SENT_AN_IMAGE": "ein Bild gesendet"
     }
 },
 {
@@ -440,7 +451,11 @@
         "INFO_SUPPORT_CHAT_REOPENED": "Chat reaberto",
         "INFO_SUPPORT_CHAT_CLOSED": "Bate-papo fechado",
 
-        "TICKET_TAKING":"A solicitação foi recebida e a equipe de assistência está tratando dela. \nPara adicionar mais comentários, responda a este e-mail."
+        "TICKET_TAKING":"A solicitação foi recebida e a equipe de assistência está tratando dela. \nPara adicionar mais comentários, responda a este e-mail.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Campo obrigatório",
+        "SENT_AN_ATTACHMENT": "enviou um anexo",
+        "SENT_AN_IMAGE": "enviou uma imagem"
     }
 },
 {
@@ -511,7 +526,11 @@
         "INFO_SUPPORT_CHAT_REOPENED": "Чат возобновлен",
         "INFO_SUPPORT_CHAT_CLOSED": "Чат закрыт",
 
-        "TICKET_TAKING":"Запрос был получен, и обслуживающий персонал занимается им. \nЧтобы добавить больше комментариев, ответьте на это письмо."
+        "TICKET_TAKING":"Запрос был получен, и обслуживающий персонал занимается им. \nЧтобы добавить больше комментариев, ответьте на это письмо.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Обязательное поле",
+        "SENT_AN_ATTACHMENT": "отправлено вложение",
+        "SENT_AN_IMAGE": "отправил изображение"
     }
 },
 {
@@ -583,7 +602,11 @@
         "INFO_SUPPORT_CHAT_REOPENED": "Sohbet yeniden açıldı",
         "INFO_SUPPORT_CHAT_CLOSED": "Sohbet kapatıldı",
 
-        "TICKET_TAKING":"Talep alındı ve yardım ekibi bununla ilgileniyor.\nDaha fazla yorum eklemek için bu e-postayı yanıtlayın."
+        "TICKET_TAKING":"Talep alındı ve yardım ekibi bununla ilgileniyor.\nDaha fazla yorum eklemek için bu e-postayı yanıtlayın.",
+
+        "LABEL_ERROR_FIELD_REQUIRED": "Gerekli alan",
+        "SENT_AN_ATTACHMENT": "bir ek gönderdi",
+        "SENT_AN_IMAGE": "bir resim gönderdi"
     }
 }
 ]

@@ -605,7 +605,7 @@ class WebSocketServer {
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, async function (request) {
         // TODO setImmediate(() => { 
-        winston.info('requestEvent websocket server: '+requestCreateKey, request);
+        winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
         if (request.preflight===false) {
@@ -618,6 +618,7 @@ class WebSocketServer {
           //deleted snapshot department lead, etc..
           delete requestJSON.snapshot;
           requestJSON.snapshot = {};
+
 
 
           
@@ -653,7 +654,7 @@ class WebSocketServer {
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, async function(request) {
         // TODO setImmediate(() => {        
-        winston.info('requestEvent websocket server: '+requestUpdateKey, request);  
+        winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
 
           var requestJSON = request;
@@ -666,6 +667,7 @@ class WebSocketServer {
           requestJSON.snapshot = {};
 
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
+
           try {
             var snapshotAgents = await Request.findById(request.id).select({"snapshot":1}).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents',snapshotAgents);  

@@ -31,14 +31,16 @@ describe('RequestRoute', () => {
 
 
 
-  it('create', function (done) {
+// mocha test/requestRoute.js  --grep 'createSimple'
+
+  it('createSimple', function (done) {
     // this.timeout(10000);
 
     var email = "test-request-create-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-     projectService.create("request-create", savedUser._id).then(function(savedProject) {
+     projectService.create("request-create", savedUser._id, {email: { template: {assignedRequest: "123"}} }).then(function(savedProject) {
      
 
           chai.request(server)
@@ -139,7 +141,7 @@ it('createUpperCaseEmail', function (done) {
 
 
 
-
+// mocha test/requestRoute.js  --grep 'getbyid'
   it('getbyid', function (done) {
     // this.timeout(10000);
 
@@ -186,6 +188,9 @@ it('createUpperCaseEmail', function (done) {
                 
                 expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
                 expect(res.body.requester.isAuthenticated).to.equal(true);
+
+                expect(res.body.snapshot.agents).to.equal(undefined);    
+
                done();
             });
             // .catch(function(err) {
@@ -254,7 +259,7 @@ it('getbyidWithPartecipatingBots', function (done) {
               expect(res.body.participantsBots).to.have.lengthOf(1);
               expect(res.body.hasBot).to.equal(true);
 
-            
+              expect(res.body.snapshot.agents).to.equal(undefined);    
               expect(res.body.department.hasBot).to.equal(true);
 
              done();
@@ -339,6 +344,8 @@ it('getbyidWithPartecipatingBots', function (done) {
                 expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
                 expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
                 expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
+                expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
+
                 // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
                 // expect(res.body.requests[0].participatingBots.length).to.equal(0);
                done();
@@ -410,6 +417,7 @@ it('getallNoPopulate', function (done) {
               
               expect(res.body.requests[0].snapshot).to.not.equal(undefined);
               expect(res.body.requests[0].snapshot.department.name).to.not.equal(null);
+              expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
               // expect(res.body.requests[0].snapshot.agents.length).to.equal(1);
               // expect(res.body.requests[0].test).to.not.equal(undefined);
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
@@ -498,6 +506,7 @@ it('getallFilter-snap_department_routing', function (done) {
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
+              expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
               // expect(res.body.requests[0].participatingBots.length).to.equal(0);
              done();
@@ -582,6 +591,7 @@ it('getallFilter-snap_department_default', function (done) {
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
+              expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
               // expect(res.body.requests[0].participatingBots.length).to.equal(0);
              done();
@@ -666,6 +676,8 @@ it('getallFilter-snap_department_id_bot_exists', function (done) {
               expect(res.body.requests[0].snapshot.availableAgentsCount).to.equal(1);
               expect(res.body.requests[0].snapshot.lead.fullname).to.equal("leadfullname");
               expect(res.body.requests[0].snapshot.requester.role).to.equal("owner");
+
+              expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
               // expect(res.body.requests[0].participatingAgents.length).to.equal(1);        
               // expect(res.body.requests[0].participatingBots.length).to.equal(0);
              done();
@@ -762,6 +774,8 @@ it('getallWithLoLead', function (done) {
               res.body.should.be.a('object');
               expect(res.body.requests[0].department).to.not.equal(null);
               expect(res.body.requests[0].lead).to.not.equal(null);
+
+              expect(res.body.requests[0].snapshot.agents).to.equal(undefined);    
         
              done();
           });
@@ -844,7 +858,8 @@ it('getallWithLoLead', function (done) {
                     expect(res.body.participantsBots.length).to.equal(0);
 
                   
-                    
+                    // expect(res.body.snapshot.agents).to.equal(undefined);    
+
                     res2.body.requester.should.be.a('object');
                     res2.body.lead.should.be.a('object');
                     // expect(res.body.requester).to.equal(undefined);                
@@ -921,7 +936,7 @@ it('getallWithLoLead', function (done) {
                     expect(res.body.participantsAgents.length).to.equal(1);
                     expect(res.body.participantsBots.length).to.equal(0);
 
-                  
+                    // expect(res.body.snapshot.agents).to.equal(undefined);    
                     
                     res2.body.requester.should.be.a('string');
                     res2.body.lead.should.be.a('string');
@@ -999,7 +1014,7 @@ it('createAndAssign2', function (done) {
                   expect(res.body.participantsAgents.length).to.equal(1);
                   expect(res.body.participantsBots.length).to.equal(0);
 
-                
+                  // expect(res.body.snapshot.agents).to.equal(undefined);    
                   
                   res2.body.requester.should.be.a('string');
                   res2.body.lead.should.be.a('string');
@@ -1072,6 +1087,7 @@ it('removeParticipant', function (done) {
               expect(res.body.hasBot).to.equal(false);          
               winston.info("res.body.attributes.abandoned_by_project_users", res.body.attributes.abandoned_by_project_users); 
               expect(res.body.attributes.abandoned_by_project_users[savedProjectAndPU.project_user._id]).to.not.equal(undefined);           
+              expect(res.body.snapshot.agents).to.equal(undefined);    
 
               res.body.should.have.property('department').not.eql(null);
               // res.body.should.have.property('lead').eql(undefined);
