@@ -1,5 +1,5 @@
 const messageTransformerInterceptor = require("./messageTransformerInterceptor");
-const microLanguageTransformerInterceptor = require("./microLanguageTransformerInterceptor");
+const microLanguageTransformerInterceptor = require("./microLanguageAttributesTransformerInterceptor");
 
 
 
