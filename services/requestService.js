@@ -396,6 +396,7 @@ class RequestService {
 
     var tags = request.tags;
     var notes = request.notes;
+    var priority = request.priority;
 
     if (!departmentid) {
       departmentid ='default';
@@ -417,7 +418,8 @@ class RequestService {
         var context = {request: {request_id:request_id, project_user_id:project_user_id, lead_id:lead_id, id_project:id_project, 
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location,
-          participants:participants, tags: tags, notes:notes}};
+          participants:participants, tags: tags, notes:notes,
+          priority: priority}};
 
           winston.debug("context",context);
 
@@ -544,7 +546,8 @@ class RequestService {
                 location: location,
                 snapshot: snapshot,
                 tags: tags,
-                notes: notes
+                notes: notes,
+                priority: priority
               });
                     
 
