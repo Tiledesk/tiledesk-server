@@ -53,7 +53,7 @@ var RequestSchema = new Schema({
     // required: true,
     index: true
   },
-
+// The user who is asking for support through a ticket is the requester. For most businesses that use Tiledesk Support, the requester is a customer, but requesters can also be agents in your Tiledesk Support instance.  requester: {
   requester: {
     type: Schema.Types.ObjectId,
     ref: 'project_user',
@@ -128,6 +128,13 @@ var RequestSchema = new Schema({
     required: false,
     index: true,
   },
+  
+  priority: {
+    type: String,
+    index: true,
+    default: "medium" //translate on client side
+  },
+  
 
   participantsAgents: {  
     type: Array,

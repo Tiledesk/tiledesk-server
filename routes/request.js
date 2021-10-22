@@ -27,9 +27,9 @@ const { check, validationResult } = require('express-validator');
 
 
 
-// undocumented
+// undocumented, used by test
 
-// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
+// TODO make a synchronous chat21 version (with query parameter?) with request.support_group.create
 router.post('/', 
 [
   check('text').notEmpty(),  
@@ -107,7 +107,6 @@ function (req, res) {
 
 
 
-
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.patch('/:requestid', function (req, res) {
   winston.debug(req.body);
@@ -159,7 +158,9 @@ router.patch('/:requestid', function (req, res) {
   if (req.body.location) {
     update.location = req.body.location;
   }
-
+  if (req.body.priority) {
+    update.priority = req.body.priority;
+  }
 
   
   winston.verbose("Request patch update",update);
@@ -189,6 +190,7 @@ router.patch('/:requestid', function (req, res) {
 
 });
 
+
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/close', function (req, res) {
   winston.debug(req.body);
@@ -198,7 +200,8 @@ router.put('/:requestid/close', function (req, res) {
 
       winston.verbose("request closed", closedRequest);
 
-      return res.json(closedRequest);
+        return res.json(closedRequest);
+      
   });
 
 
@@ -868,7 +871,7 @@ router.get('/', function (req, res, next) {
 });
 
 
-
+// TODO converti con fast-csv e stream
 // DOWNLOAD HISTORY REQUESTS AS CSV
 router.get('/csv', function (req, res, next) {
 
@@ -985,6 +988,8 @@ router.get('/csv', function (req, res, next) {
         //populate('department', {'_id':-1, 'name':1}).     
         populate('department').
         populate('lead').
+        // populate('participatingBots').
+        // populate('participatingAgents'). 
         lean().
       // populate({
       //   path: 'department', 
@@ -1043,6 +1048,18 @@ router.get('/csv', function (req, res, next) {
             winston.debug('tagsString ' +tagsString)
             
             element.tags = tagsString;
+
+
+            // var participatingAgents = "";
+            // if (element.participatingAgents && element.participatingAgents.length>0) {
+            //   element.participatingAgents.forEach(function(agent) {                
+            //     participatingAgents = participatingAgents + ", " + agent;
+            //   });          
+            // }
+            // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
+            // element.participatingAgents = participatingAgents;
+            
+
 
             delete element.lead;
 
