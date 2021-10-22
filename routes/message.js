@@ -130,6 +130,8 @@ async (req, res)  => {
               return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
 
+
+
               
                 var new_request = {                                     // problema
                   request_id: req.params.request_id, project_user_id: project_user._id, lead_id: createdLead._id, id_project:req.projectid,
@@ -137,7 +139,8 @@ async (req, res)  => {
                   language: req.body.language, userAgent:req.body.userAgent, status:null, createdBy: req.user._id,
                   attributes: req.body.attributes, subject: req.body.subject, preflight:undefined, channel: req.body.channel, location: req.body.location,
                   participants: req.body.participants,
-                  lead: createdLead, requester: project_user
+                  lead: createdLead, requester: project_user,
+                  priority: req.body.priority
                 };
   
                 return requestService.create(new_request).then(function (savedRequest) {
@@ -176,6 +179,7 @@ async (req, res)  => {
 
                             message.request = savedRequestPopulated;
 
+
                             return res.json(message);
                           });
                         });
@@ -205,6 +209,8 @@ async (req, res)  => {
                       return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
                           let message = savedMessage.toJSON();
                           message.request = upRequest;
+
+
                           return res.json(message);
                       });
                     }else {
@@ -278,7 +284,6 @@ async (req, res)  => {
 //       res.json(Message);
 //     });
 //   });
-
 
   router.get('/:messageid', function(req, res) {
   
