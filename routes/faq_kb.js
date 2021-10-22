@@ -9,7 +9,7 @@ var winston = require('../config/winston');
 
 router.post('/', function (req, res) {
   // create(name, url, projectid, user_id, type, description) {
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, 
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined,
     req.body.language).then(function(savedFaq_kb) {
     res.json(savedFaq_kb);
   });

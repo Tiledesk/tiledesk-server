@@ -56,6 +56,7 @@ var Faq_kbSchema = new Schema({
   language: {
     type: String,
     required: false,
+    default: 'en'
     // index: true
   },
   attributes: {
