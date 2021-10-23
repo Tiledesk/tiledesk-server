@@ -1,4 +1,16 @@
 
+# 2.1.40.30
+- logfix
+
+# 2.1.40.29
+- --production for npm install within Docker for Enterprise
+
+# 2.1.40.28
+- --production for npm install within Docker
+
+# 2.1.40.27
+- Added language field to faq_kb and used to specify the language for faq full-text query 
+
 # 2.1.40.26
 - Lic ck bug fix for users
 
@@ -9,7 +21,7 @@
 - emailService toJSON is not a function fix
 
 # 2.1.40.23
-- requestNotification fix and requestUtilRoot endpoint added
+- requestNotification fix and requestUtilRoot lookup endpoint added
 
 # 2.1.40.22
 - Inizialize enterprise modules before public modules
