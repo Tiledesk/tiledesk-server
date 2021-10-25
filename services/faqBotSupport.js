@@ -106,7 +106,7 @@ class FaqBotSupport {
 
         
             winston.debug('faq: ', faq );
-            if (disableWebHook === false && (faq.webhook_enabled  === true || reply.webhook)) {
+            if (disableWebHook === false && bot.webhook_enabled ===true && (faq.webhook_enabled  === true || reply.webhook)) {
 
                 winston.debug("bot.webhook_url "+ bot.webhook_url)
                 var webhookurl = bot.webhook_url;
@@ -120,6 +120,11 @@ class FaqBotSupport {
                     } else {
                         webhookurl = reply.webhook;
                     }
+                }
+
+                if (!webhookurl) {
+                    winston.debug("webhookurl is undefined return standard");
+                    return resolve(messageReply);
                 }
                     
                 var botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();
