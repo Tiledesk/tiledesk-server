@@ -37,13 +37,14 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/'+ savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({"name":"testbot", type: "external"})
+                        .send({"name":"testbot", type: "external", language: 'fr'})
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
                             res.should.have.status(200);
                             res.body.should.be.a('object');
-                            expect(res.body.name).to.equal("testbot");                                                                              
+                            expect(res.body.name).to.equal("testbot");         
+                            expect(res.body.language).to.equal("fr");                                                                              
                         
                             done();
                         });

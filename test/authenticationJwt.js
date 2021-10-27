@@ -462,8 +462,9 @@ it('signinJWt-userYESAudYesSubject', (done) => {
     
             userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                 // create(name, createdBy, settings)
-                projectService.create("test-signinJWt-user", savedUser._id).then(function(savedProject) {                                              
-                    faqService.create("testbot", null, savedProject._id, savedUser._id, true).then(function(savedBot) {                                                             
+                projectService.create("test-signinJWt-user", savedUser._id).then(function(savedProject) {     
+                    // create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language) {                                         
+                    faqService.create("testbot", null, savedProject._id, savedUser._id).then(function(savedBot) {                                                             
                                 var savedBotObj = savedBot.toObject();                           
                                 console.log("savedBotObj", savedBotObj);
     

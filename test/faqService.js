@@ -28,7 +28,7 @@ describe('FaqService()', function () {
 
      userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
          projectService.create("test-FaqService", savedUser._id).then(function(savedProject) {    
-            faqService.create("testbot", null, savedProject._id, savedUser._id, true).then(function(savedBot) {  
+            faqService.create("testbot", null, savedProject._id, savedUser._id).then(function(savedBot) {  
 
               var newFaq = new Faq({
                 id_faq_kb: savedBot._id,
@@ -94,7 +94,7 @@ it('create-with-intent_display_name-and-search', (done) => {
 
    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
        projectService.create("test-FaqService", savedUser._id).then(function(savedProject) {    
-          faqService.create("testbot", null, savedProject._id, savedUser._id, true).then(function(savedBot) {  
+          faqService.create("testbot", null, savedProject._id, savedUser._id).then(function(savedBot) {  
 
             var newFaq = new Faq({
               id_faq_kb: savedBot._id,
@@ -162,7 +162,7 @@ it('create-with-duplicated-intent_display_name-and-search', (done) => {
 
    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
        projectService.create("test-FaqService", savedUser._id).then(function(savedProject) {    
-          faqService.create("testbot", null, savedProject._id, savedUser._id, true).then(function(savedBot) {  
+          faqService.create("testbot", null, savedProject._id, savedUser._id).then(function(savedBot) {  
 
             var newFaq0 = new Faq({
               id_faq_kb: savedBot._id,

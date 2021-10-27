@@ -1223,7 +1223,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3019/").then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3019/", true).then(function(savedBot) {  
                             
                             var newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
@@ -1271,14 +1271,17 @@ describe('bot', () => {
                                                         messageReceived = messageReceived+1;
                                                         expect(req.body.hook.event).to.equal("message.create");
                                                         expect(req.body.payload.type).to.equal("text");
+                                                        console.log('1');
                                                         expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-createFaqWithButton");
                                                         expect(req.body.payload.request.department).to.not.equal(null);
                                                         expect(req.body.payload.request.department.bot).to.not.equal(null);
                                                         expect(req.body.payload.request.department.bot.name).to.equal("testbot");
-                                                        
+                                                        console.log('2');
                                                         expect(req.headers["x-hook-secret"]).to.equal(secret); 
                                                         res.send('POST request to the homepage');
+                                                        console.log('3',req.body.payload.text);
                                                         expect(req.body.payload.text).to.equal("ok from webhook");
+                                                        console.log('4');
                                                         expect(req.body.payload.attributes.attachment.buttons[0].value).to.equal("button1");
                                                         expect(req.body.payload.attributes.attachment.buttons[0].type).to.equal("text");
                                                     
@@ -1332,7 +1335,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3029/").then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3029/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1437,7 +1440,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3028/").then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3028/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1569,7 +1572,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3030/").then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3030/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1705,7 +1708,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal", undefined, undefined, true).then(function(savedBot) {  
                             
                             var newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
@@ -1752,14 +1755,17 @@ describe('bot', () => {
                                                         messageReceived = messageReceived+1;
                                                         expect(req.body.hook.event).to.equal("message.create");
                                                         expect(req.body.payload.type).to.equal("text");
+                                                        console.log("1")
                                                         expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-createFaqWithButton");
                                                         expect(req.body.payload.request.department).to.not.equal(null);
                                                         expect(req.body.payload.request.department.bot).to.not.equal(null);
                                                         expect(req.body.payload.request.department.bot.name).to.equal("testbot");
-                                                        
+                                                        console.log("2")
                                                         expect(req.headers["x-hook-secret"]).to.equal(secret); 
                                                         res.send('POST request to the homepage');
+                                                        console.log("3",req.body.payload.text)
                                                         expect(req.body.payload.text).to.equal("ok from webhook");
+                                                        console.log("4")
                                                         expect(req.body.payload.attributes.attachment.buttons[0].value).to.equal("button1");
                                                         expect(req.body.payload.attributes.attachment.buttons[0].type).to.equal("text");
                                                     
@@ -1907,3 +1913,43 @@ describe('bot', () => {
 
     });
 });
+
+
+
+
+// 5 failing
+
+// 1) bot
+//      /messages
+//        createFaqWithWebhook:
+//    Error: Timeout of 20000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test-int/bot.js)
+//     at listOnTimeout (internal/timers.js:557:17)
+//     at processTimers (internal/timers.js:500:7)
+
+// 2) bot
+//      /messages
+//        createFaqWithDefaultIntentWebhook:
+//    Error: Timeout of 20000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test-int/bot.js)
+//     at listOnTimeout (internal/timers.js:557:17)
+//     at processTimers (internal/timers.js:500:7)
+
+// 3) bot
+//      /messages
+//        createFaqWithDefaultIntentWebhookReturnAttributes:
+//    Error: Timeout of 20000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test-int/bot.js)
+//     at listOnTimeout (internal/timers.js:557:17)
+//     at processTimers (internal/timers.js:500:7)
+
+// 4) bot
+//      /messages
+//        createFaqWithDefaultIntentWebhookReturnTypeAndMetadata:
+//    Error: Timeout of 20000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test-int/bot.js)
+//     at listOnTimeout (internal/timers.js:557:17)
+//     at processTimers (internal/timers.js:500:7)
+
+// 5) bot
+//      /messages
+//        createFaqWithWebhookMicrolanguage:
+//    Error: Timeout of 20000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/test-int/bot.js)
+//     at listOnTimeout (internal/timers.js:557:17)
+//     at processTimers (internal/timers.js:500:7)
