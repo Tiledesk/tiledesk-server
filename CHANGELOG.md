@@ -1,5 +1,5 @@
 
-# 2.1.40.30
+# 2.1.40.30 -> PROD
 - logfix
 
 # 2.1.40.29
@@ -14,7 +14,7 @@
 # 2.1.40.26
 - Lic ck bug fix for users
 
-# 2.1.40.25 -> PROD
+# 2.1.40.25 
 - microLanguageTransformerInterceptor startup error. It is disabled. Module not present
 
 # 2.1.40.24
