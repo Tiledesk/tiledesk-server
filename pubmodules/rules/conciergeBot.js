@@ -43,7 +43,10 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                 // winston.debug(" ConciergeBot message.request.first_text: "+message.request.first_text);
 
                 // lead_id used. Change it?
-                if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
+                
+                if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text) {
+                    winston.debug("conciergebot: " + message.request.first_text );
+                // if (message.request && message.request.preflight === true  && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text ) {
                     // if (message.request.status < 100 && message.sender == message.request.lead.lead_id && message.text != message.request.first_text && !botId) {
                 
@@ -64,13 +67,17 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
                         requestService.changeFirstTextAndPreflightByRequestId(message.request.request_id, message.request.id_project, first_text, false).then(function (reqChanged) {
-                        
-                            // requestService.changeFirstTextByRequestId(message.request.request_id, message.request.id_project, message.text).then(function (reqChanged) {
-                            // requestService.changePreflightByRequestId(message.request.request_id, message.request.id_project, false).then(function (reqChanged) {
+                        //TESTA QUESTO
 
-
-                                // reroute(request_id, id_project, nobot)
-                                requestService.reroute(message.request.request_id, message.request.id_project, false );     
+                                winston.debug("message.request.status: "+message.request.status);
+                                winston.debug("message.request.department.id_bot: "+message.request.department.id_bot);
+                                if (message.request.status === 50 &&  message.request.department.id_bot == undefined) { 
+                                    //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
+                                    winston.debug("rerouting");
+                                    // reroute(request_id, id_project, nobot)
+                                    requestService.reroute(message.request.request_id, message.request.id_project, false );     
+                                }
+                                
                                 // updateStatusWitId(lead_id, id_project, status)
                                 // lead_id used. Change it?
                                 leadService.updateStatusWitId(message.request.lead.lead_id, message.request.id_project, LeadConstants.NORMAL);
@@ -242,58 +249,58 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
 
     // unused
-    welcomeOnJoin(request) {
-        var botId = BotFromParticipant.getBotFromParticipants(request.participants);
-        if (!botId) {                        
-        // if (!request.department.id_bot) {
+    // welcomeOnJoin(request) {
+    //     var botId = BotFromParticipant.getBotFromParticipants(request.participants);
+    //     if (!botId) {                        
+    //     // if (!request.department.id_bot) {
             
-            winston.debug("ConciergeBot send welcome bot message");     
+    //         winston.debug("ConciergeBot send welcome bot message");     
           
-              // TODO if (request is assigned allora manda we are putting inn touch )
-            // controlla dopo reassing
-            if (request.status == RequestConstants.ASSIGNED) {
-                if (request.participants.length==0) {
-                    // if (request.availableAgents.length==0) {
+    //           // TODO if (request is assigned allora manda we are putting inn touch )
+    //         // controlla dopo reassing
+    //         if (request.status == RequestConstants.ASSIGNED) {
+    //             if (request.participants.length==0) {
+    //                 // if (request.availableAgents.length==0) {
                        
-                        // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
-                        messageService.send(
-                            'system', 
-                            'Bot',                                     
-                            request.request_id,
-                            i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                            request.id_project,
-                            'system', 
-                            //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
-                            {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}},
-                            undefined,
-                            request.language
+    //                     // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
+    //                     messageService.send(
+    //                         'system', 
+    //                         'Bot',                                     
+    //                         request.request_id,
+    //                         i8nUtil.getMessage("NO_AVAILABLE_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+    //                         request.id_project,
+    //                         'system', 
+    //                         //{"updateconversation" : false, messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}}
+    //                         {messagelabel: {key: "NO_AVAILABLE_OPERATOR_MESSAGE"}},
+    //                         undefined,
+    //                         request.language
                            
 
-                        );
+    //                     );
                     
                         
-                    }else {
+    //                 }else {
         
-                        messageService.send(
-                            'system', 
-                            'Bot',                                     
-                            request.request_id,
-                            i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
-                            request.id_project,
-                            'system', 
-                            {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}},
-                            // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
-                            undefined,
-                            request.language
+    //                     messageService.send(
+    //                         'system', 
+    //                         'Bot',                                     
+    //                         request.request_id,
+    //                         i8nUtil.getMessage("JOIN_OPERATOR_MESSAGE", request.language, MessageConstants.LABELS), 
+    //                         request.id_project,
+    //                         'system', 
+    //                         {messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}},
+    //                         // {"updateconversation" : false, messagelabel: {key: "JOIN_OPERATOR_MESSAGE"}}
+    //                         undefined,
+    //                         request.language
 
-                        );
+    //                     );
         
                        
-                    }
-            }
+    //                 }
+    //         }
             
-        } 
-    }
+    //     } 
+    // }
 
 
 
