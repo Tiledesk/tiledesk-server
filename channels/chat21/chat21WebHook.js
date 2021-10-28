@@ -17,11 +17,16 @@ var ProjectUserUtil = require("../../utils/project_userUtil");
 var RequestUtil = require("../../utils/requestUtil");
 const authEvent = require('../../event/authEvent');
 
+var syncJoinAndLeaveGroupEvent =  false;
+if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LEAVE_GROUP_EVENT ==="true") {
+  syncJoinAndLeaveGroupEvent = true;
+}
+winston.info("Chat21 Sync JoinAndLeave Support Group Event: " + syncJoinAndLeaveGroupEvent);
 
 router.post('/', function (req, res) {
 
 
-   
+  winston.debug("req.body.event_type: " + req.body.event_type);
 
                                                     //Deprecated
   if (req.body.event_type == "message-sent" || req.body.event_type == "new-message") {
@@ -38,7 +43,7 @@ router.post('/', function (req, res) {
 
     var message = req.body.data;
     
-
+    winston.debug("message text: " + message.text);
 
 
     // before request_id id_project unique commented
@@ -407,9 +412,14 @@ router.post('/', function (req, res) {
       
 
     }else if (req.body.event_type == "join-member") {
-      winston.debug("event_type","join-member");
+      winston.info("event_type","join-member");
 
       winston.debug("req.body", JSON.stringify(req.body));
+
+      if (!syncJoinAndLeaveGroupEvent)  {
+        winston.info("syncJoinAndLeaveGroupEvent is disabled");
+        return res.status(200).send({success: true, msg: "syncJoinAndLeaveGroupEvent is disabled" });
+      }
 
       var data = req.body.data;
       //winston.debug("data",data);
@@ -475,6 +485,12 @@ router.post('/', function (req, res) {
     winston.debug("event_type","leave-member");
     
     winston.debug("req.body", JSON.stringify(req.body));
+
+    if (!syncJoinAndLeaveGroupEvent)  {
+      winston.info("syncJoinAndLeaveGroupEvent is disabled");
+      return res.status(200).send({success: true, msg: "syncJoinAndLeaveGroupEvent is disabled" });
+    }
+
 
 
     var data = req.body.data;
@@ -694,6 +710,7 @@ else if (req.body.event_type == "presence-change") {
 
       project_user.presence = update
 
+      
       project_user.save(function (err, savedProjectUser) {
         if (err) {
          winston.error('Error saving project_user ', err)
