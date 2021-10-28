@@ -412,12 +412,12 @@ router.post('/', function (req, res) {
       
 
     }else if (req.body.event_type == "join-member") {
-      winston.info("event_type","join-member");
+      winston.debug("event_type","join-member");
 
       winston.debug("req.body", JSON.stringify(req.body));
 
       if (!syncJoinAndLeaveGroupEvent)  {
-        winston.info("syncJoinAndLeaveGroupEvent is disabled");
+        winston.debug("syncJoinAndLeaveGroupEvent is disabled");
         return res.status(200).send({success: true, msg: "syncJoinAndLeaveGroupEvent is disabled" });
       }
 
@@ -487,7 +487,7 @@ router.post('/', function (req, res) {
     winston.debug("req.body", JSON.stringify(req.body));
 
     if (!syncJoinAndLeaveGroupEvent)  {
-      winston.info("syncJoinAndLeaveGroupEvent is disabled");
+      winston.debug("syncJoinAndLeaveGroupEvent is disabled");
       return res.status(200).send({success: true, msg: "syncJoinAndLeaveGroupEvent is disabled" });
     }
 
