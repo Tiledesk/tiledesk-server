@@ -23,6 +23,13 @@ if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LE
 }
 winston.info("Chat21 Sync JoinAndLeave Support Group Event: " + syncJoinAndLeaveGroupEvent);
 
+var allowReopenChat =  false;
+if (process.env.ALLOW_REOPEN_CHAT === true || process.env.ALLOW_REOPEN_CHAT ==="true") {
+  allowReopenChat = true;
+}
+winston.info("Chat21 allow reopen chat: " + allowReopenChat);
+
+
 router.post('/', function (req, res) {
 
 
@@ -530,6 +537,11 @@ router.post('/', function (req, res) {
     winston.debug("event_type","deleted-archivedconversation");
 
     winston.debug("req.body",req.body);
+
+    if (!allowReopenChat)  {
+      winston.debug("allowReopenChat is disabled");
+      return res.status(200).send({success: true, msg: "allowReopenChat is disabled" });
+    }
 
 
       var conversation = req.body.data;
