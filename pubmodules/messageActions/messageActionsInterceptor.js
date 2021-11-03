@@ -18,8 +18,7 @@ class MessageActionsInterceptor {
 
         var that = this;
         winston.info("MessageActionsInterceptor listener start ");
-        
-
+                 
         messageEvent.on('message.create',  function(message) {          
 
                 setImmediate(() => {
@@ -78,6 +77,7 @@ class MessageActionsInterceptor {
              
              var request = message.request;
              
+
              if (request) {
                     //var botId = botEvent.getBotId(message);
                 var botId =  BotFromParticipant.getBotId(message);
@@ -144,14 +144,17 @@ class MessageActionsInterceptor {
             var request = message.request;
             
             if (request) {
-                // closeRequestByRequestId(request_id, id_project, notify) {
-                requestService.closeRequestByRequestId(request.request_id, request.id_project );
+                setTimeout(function() {
+                    winston.info("delayed closed")
+                     // closeRequestByRequestId(request_id, id_project, notify) {
+                    requestService.closeRequestByRequestId(request.request_id, request.id_project );
+                  }, 1500);
+
+               
             }
                                                                                                                                                         
        });
         
-        
-
 
        
 
