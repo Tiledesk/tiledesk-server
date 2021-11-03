@@ -1,4 +1,13 @@
 
+# 2.1.40.33
+- Added setTimeout to resolve race condition for \close event returned by bot 
+
+# 2.1.40.32
+- Added SYNC_JOIN_LEAVE_GROUP_EVENT environment variable to enable sync between Chat21 (join and leave) and Tiledesk. Default is false. 
+
+# 2.1.40.31
+- Concierge bot fix to reroute only for temp conversation without a bot. Race condition issue when you try manually route a request for example inside a chatbot webhook 
+
 # 2.1.40.30 -> PROD
 - logfix
 
