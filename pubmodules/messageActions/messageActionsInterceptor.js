@@ -18,9 +18,11 @@ class MessageActionsInterceptor {
 
         var that = this;
         winston.info("MessageActionsInterceptor listener start ");
-        
-
-        messageEvent.on('message.create',  function(message) {          
+                    
+            //use .received to be sure for \close the message is sent to chat21 and after that you can archive the conversation. otherwise a race condition occurs with message.create if \close is sent by the bot      
+            messageEvent.on('message.received',  function(message) {          
+        // messageEvent.on('message.create',  function(message) {          
+            winston.debug("message.received ", message);
 
                 setImmediate(() => {
                   
@@ -145,24 +147,25 @@ class MessageActionsInterceptor {
             var request = message.request;
             
             if (request) {
-                setTimeout(function() {
+                // setTimeout(function() {
+                    // winston.info("delayed")
                      // closeRequestByRequestId(request_id, id_project, notify) {
                     requestService.closeRequestByRequestId(request.request_id, request.id_project );
-                  }, 1500);
+                //   }, 1500);
 
                
             }
                                                                                                                                                         
        });
         
-    /*
+        /*
        messageActionEvent.on("actions", function(message) {
         //    esegui custom action--->
        });
        messageActionEvent.on("events", function(message) {
         // lancia event
-    });
-    */
+    });*/
+
        
 
     }
