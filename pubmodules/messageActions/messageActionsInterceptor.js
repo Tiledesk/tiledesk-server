@@ -78,6 +78,7 @@ class MessageActionsInterceptor {
              
              var request = message.request;
              
+
              if (request) {
                     //var botId = botEvent.getBotId(message);
                 var botId =  BotFromParticipant.getBotId(message);
@@ -144,15 +145,24 @@ class MessageActionsInterceptor {
             var request = message.request;
             
             if (request) {
-                // closeRequestByRequestId(request_id, id_project, notify) {
-                requestService.closeRequestByRequestId(request.request_id, request.id_project );
+                setTimeout(function() {
+                     // closeRequestByRequestId(request_id, id_project, notify) {
+                    requestService.closeRequestByRequestId(request.request_id, request.id_project );
+                  }, 1500);
+
+               
             }
                                                                                                                                                         
        });
         
-        
-
-
+    /*
+       messageActionEvent.on("actions", function(message) {
+        //    esegui custom action--->
+       });
+       messageActionEvent.on("events", function(message) {
+        // lancia event
+    });
+    */
        
 
     }
