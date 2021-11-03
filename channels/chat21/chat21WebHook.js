@@ -356,16 +356,16 @@ router.post('/', function (req, res) {
               var projectId = RequestUtil.getProjectIdFromRequestId(recipient_id);
 
               var isObjectId = mongoose.Types.ObjectId.isValid(projectId);
-              winston.verbose("isObjectId:"+ isObjectId);
+              winston.debug("isObjectId:"+ isObjectId);
 
-              winston.verbose("attributes",conversation.attributes);
+              winston.debug("attributes",conversation.attributes);
 
               if (!projectId || !isObjectId) { //back compatibility when projectId were always presents in the attributes (firebase)                
                 projectId = conversation.attributes.projectId;
                 winston.verbose('getting projectId from attributes (back compatibility): '+ projectId);
               }
                 
-              winston.verbose('projectId: '+ projectId);
+              winston.debug('projectId: '+ projectId);
 
               if (!projectId) {
                 return res.status(500).send({success: false, msg: "Error projectid is not presents in attributes " });
