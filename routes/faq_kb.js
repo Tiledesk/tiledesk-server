@@ -65,7 +65,7 @@ router.post('/askbot', function (req, res) {
               search_obj["$language"] = faq_kb.language;
           }
           query.$text = search_obj;
-          winston.info("fulltext search query", query);  
+          winston.debug("fulltext search query", query);  
 
 
           winston.debug('internal ft query: '+ query);
