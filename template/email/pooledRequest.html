@@ -139,6 +139,21 @@
 
                 
 
+              <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                Channel : <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+
+                    {{#ifEquals request.channel.name "chat21"}}
+                        Chat
+                    {{else}}
+                        {{request.channel.name}}
+                    {{/ifEquals}}
+
+                            
+                        </strong>   
+                </td>
+                </tr>
+
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                   <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                     <a href="{{baseScope.baseUrl}}/#/project/{{request.id_project}}/wsrequest/{{request.request_id}}/messages">Open the dashboard</a>.
