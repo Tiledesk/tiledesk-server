@@ -379,19 +379,20 @@ class EmailService {
       subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
     }
 
-    if (request.ticket_id) {
-      subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
-    }
+    // if (request.ticket_id) {
+    //   subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
+    // }
     
-    if (request.ticket_id && request.subject) {
-      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
-    }
+    // if (request.ticket_id && request.subject) {
+    //   subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    // }
 
     that.send({
       messageId: messageId,
       from:from, 
       to:to, 
       replyTo: replyTo,
+
       subject: subject, 
       html:html, 
       config: configEmail,
@@ -661,13 +662,13 @@ class EmailService {
     if (request.subject) {
       subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
     }
-    if (request.ticket_id) {
-      subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
-    }
+    // if (request.ticket_id) {
+    //   subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
+    // }
     
-    if (request.ticket_id && request.subject) {
-      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
-    }
+    // if (request.ticket_id && request.subject) {
+    //   subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+    // }
 
 
 
