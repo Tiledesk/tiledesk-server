@@ -66,7 +66,9 @@ class EmailService {
 
     this.inboudDomain = process.env.EMAIL_INBOUND_DOMAIN || config.inboundDomain;
     winston.info('EmailService inboudDomain : '+ this.inboudDomain);
-
+    
+    this.inboudDomainWithAt = "@"+inboudDomain;
+    winston.info('EmailService inboudDomainWithAt : '+ this.inboudDomainWithAt);
 
     this.pass = process.env.EMAIL_PASSWORD;
 
@@ -330,15 +332,15 @@ class EmailService {
   
     let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = request_id + inboudDomainWithAt;
     let headers;
     if (request) { 
       
         messageId = request.request_id + "+" + messageId;
 
         if (request.attributes && request.attributes.email_replyTo) {
-        replyTo = request.attributes.email_replyTo;
-        }         
+          replyTo = request.attributes.email_replyTo;
+        }        
     
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
 
@@ -392,7 +394,6 @@ class EmailService {
       from:from, 
       to:to, 
       replyTo: replyTo,
-
       subject: subject, 
       html:html, 
       config: configEmail,
@@ -1025,7 +1026,7 @@ class EmailService {
         messageId = message.request.request_id + "+" + messageId;
 
         if (message.request.attributes && message.request.attributes.email_replyTo) {
-        replyTo = message.request.attributes.email_replyTo;
+          replyTo = message.request.attributes.email_replyTo;
         }
      
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
