@@ -75,6 +75,8 @@ listen() {
             // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
           if (message.request && message.request.lead && message.sender != message.request.lead.lead_id) {
             winston.debug("sendUserEmail", message);
+
+            // send an email only if offline and has an email 
             return that.sendUserEmail(message.id_project, message);
           }
           
@@ -266,18 +268,25 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("token  "+token);
 
       var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
-                             + projectid + "&project_name="+encodeURIComponent(project.name) 
-                             + "&tiledesk_recipientId="+message.request.request_id
-                             + "&tiledesk_isOpen=true";
+                  + projectid + "&project_name="+encodeURIComponent(project.name)                   
 
       if (message.request.sourcePage) {
-        sourcePage = message.request.sourcePage;
+        sourcePage = message.request.sourcePage;                    
       }
       
+      if (sourcePage && sourcePage.indexOf("?")===-1) {
+        sourcePage = sourcePage + "?";                   
+      }
+
+      sourcePage = sourcePage  
+                  + "&tiledesk_recipientId="+message.request.request_id 
+                  + "&tiledesk_isOpen=true";
+                  
       winston.debug("sourcePage  "+sourcePage);
 
+
       var tokenQueryString;
-      if(sourcePage && sourcePage.indexOf('?')>-1) {
+      if(sourcePage && sourcePage.indexOf('?')>-1) { //controllo superfluo ma lascio per indipendenza
         tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
       }else {
         tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
@@ -575,19 +584,24 @@ sendUserEmail(projectid, message) {
                   winston.debug("token  "+token);
 
                   var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
-                  + projectid + "&project_name="+encodeURIComponent(project.name) 
-                  + "&tiledesk_recipientId="+message.request.request_id 
-                  + "&tiledesk_isOpen=true";
-
+                  + projectid + "&project_name="+encodeURIComponent(project.name)                   
 
                   if (message.request.sourcePage) {
-                    sourcePage = message.request.sourcePage;
+                    sourcePage = message.request.sourcePage;                    
                   }
                   
+                  if (sourcePage && sourcePage.indexOf("?")===-1) {
+                    sourcePage = sourcePage + "?";                   
+                  }
+
+                  sourcePage = sourcePage  
+                              + "&tiledesk_recipientId="+message.request.request_id 
+                              + "&tiledesk_isOpen=true";
+
                   winston.debug("sourcePage  "+sourcePage);
 
                   var tokenQueryString;
-                  if(sourcePage && sourcePage.indexOf('?')>-1) {
+                  if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
                     tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
                   }else {
                     tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
