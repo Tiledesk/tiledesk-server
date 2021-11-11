@@ -5,7 +5,7 @@
 
 > ***🚀 Do you want to install Tiledesk on your server with just one click?***
 > 
-> ***[Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)***
+> *** Use [Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)guide***
 
 # Introduction
 
