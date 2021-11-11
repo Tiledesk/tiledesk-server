@@ -6,6 +6,9 @@
 > 
 > ***Use the [Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)***
 
+![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+) `#1589F0`
+
+
 # Introduction
 
 Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs and Express. Build your own customer support with a multi-channel platform for Web, Android and iOS. More info here https://www.tiledesk.com.
