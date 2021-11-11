@@ -65,7 +65,7 @@
 
 <body itemscope itemtype="http://schema.org/EmailMessage" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
 
-    {{#if baseScope.replyTo}}
+    {{#if baseScope.replyEnabled}}
         <div>\# Please type your reply above this line \#</div>
     {{/if}}
 
@@ -160,7 +160,7 @@
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                 <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                     <a href="{{baseScope.baseUrl}}/#/project/{{request.id_project}}/wsrequest/{{request.request_id}}/messages">Open the dashboard</a>.
-
+                   FAI BOTTONE-> Open chat https://console.tiledesk.com/v2/chat/#/conversation-detail/support-group-5f47e834c85eca0012c97888-04bcc959aa4543bca69c36082c62c88f/Evan/active
                 </td>
                 </tr>
             
@@ -182,6 +182,7 @@
                 <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
                     <span><a href="http://www.tiledesk.com" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;" > Tiledesk.com </a></span>
                     <br><span><a href="%unsubscribe_url%"  style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a></span>
+                    Change email settings for this project https://support-pre.tiledesk.com/dashboard/#/project/618c050b49a73000358210e4/project-settings/notification
                 </td>
                 </tr>
             </table>

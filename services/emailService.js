@@ -61,6 +61,10 @@ class EmailService {
     this.bcc = process.env.EMAIL_BCC || config.bcc;
     winston.info('EmailService bcc address: '+ this.bcc);
 
+    this.replyEnabled = process.env.EMAIL_REPLY_ENABLED || config.replyEnabled;
+    winston.info('EmailService replyEnabled : '+ this.replyEnabled);
+
+    // unused? is empty why?
     this.replyTo = process.env.EMAIL_REPLY_TO || config.replyTo;
     winston.info('EmailService replyTo address: '+ this.replyTo);
 
