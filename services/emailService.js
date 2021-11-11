@@ -67,8 +67,8 @@ class EmailService {
     this.inboudDomain = process.env.EMAIL_INBOUND_DOMAIN || config.inboundDomain;
     winston.info('EmailService inboudDomain : '+ this.inboudDomain);
     
-    this.inboudDomainWithAt = "@"+inboudDomain;
-    winston.info('EmailService inboudDomainWithAt : '+ this.inboudDomainWithAt);
+    this.inboudDomainWithAt = "@"+this.inboudDomain;
+    winston.verbose('EmailService inboudDomainWithAt : '+ this.inboudDomainWithAt);
 
     this.pass = process.env.EMAIL_PASSWORD;
 
@@ -332,7 +332,7 @@ class EmailService {
   
     let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = request_id + inboudDomainWithAt;
+    let replyTo = request.request_id + this.inboudDomainWithAt;
     let headers;
     if (request) { 
       
@@ -474,7 +474,7 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = message.request.request_id + this.inboudDomainWithAt;
     let headers;
     if (message.request) { 
       
@@ -615,7 +615,7 @@ class EmailService {
     
     let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = request.request_id + this.inboudDomainWithAt;
     let headers;
     if (request) { 
       
@@ -751,14 +751,14 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = message.request.request_id + this.inboudDomainWithAt;
     let headers;
     if (message.request) { 
       
         messageId = message.request.request_id + "+" + messageId;
 
         if (message.request.attributes && message.request.attributes.email_replyTo) {
-        replyTo = message.request.attributes.email_replyTo;
+          replyTo = message.request.attributes.email_replyTo;
         }         
       
       headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
@@ -890,7 +890,7 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = message.request.request_id + this.inboudDomainWithAt;
     let headers;
     if (message.request) { 
       
@@ -1019,7 +1019,7 @@ class EmailService {
     
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo;
+    let replyTo = message.request.request_id + this.inboudDomainWithAt;
     let headers;
     if (message.request) { 
       
