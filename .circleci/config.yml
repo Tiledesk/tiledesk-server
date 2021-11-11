@@ -29,10 +29,10 @@ jobs:
       # - node/install-packages:
       #     pkg-manager: yarn 
       - restore_cache:
-        keys:
-          # Find a cache corresponding to this specific package-lock.json checksum
-          # when this file is changed, this key will fail
-          - v1-npm-deps-{{ checksum "package-lock.json" }}
+          keys:
+            # Find a cache corresponding to this specific package-lock.json checksum
+            # when this file is changed, this key will fail
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Run tests
           command: npm test
