@@ -48,8 +48,11 @@ class EmailService {
 
   constructor() {
 
-    // controlla se è string da kuberntes nn funziona
-    this.enabled = process.env.EMAIL_ENABLED || false;
+    this.enabled = false;
+    if (process.env.EMAIL_ENABLED ==="true" || process.env.EMAIL_ENABLED === true ) {
+      this.enabled = true;
+    }
+
     winston.info('EmailService enabled: '+ this.enabled);
 
     this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
@@ -61,7 +64,10 @@ class EmailService {
     this.bcc = process.env.EMAIL_BCC || config.bcc;
     winston.info('EmailService bcc address: '+ this.bcc);
 
-    this.replyEnabled = process.env.EMAIL_REPLY_ENABLED || config.replyEnabled;
+    this.replyEnabled = config.replyEnabled;
+    if (process.env.EMAIL_REPLY_ENABLED  === "true" || process.env.EMAIL_REPLY_ENABLED === true ) {
+      this.replyEnabled = true;
+    }
     winston.info('EmailService replyEnabled : '+ this.replyEnabled);
 
     // unused? is empty why?
