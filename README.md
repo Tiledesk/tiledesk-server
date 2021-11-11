@@ -2,6 +2,11 @@
 
 [![CircleCI](https://circleci.com/gh/Tiledesk/tiledesk-server.svg?style=svg)](https://circleci.com/gh/Tiledesk/tiledesk-server)
 
+
+> ***🚀 Do you want to install Tiledesk on your server with just one click?***
+> 
+> ***Use [Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md) guide***
+
 # Introduction
 
 Tiledesk-server is the server engine of Tiledesk. Tiledesk is an Open Source Live Chat platform with integrated ChatBot written in NodeJs and Express. Build your own customer support with a multi-channel platform for Web, Android and iOS. More info here https://www.tiledesk.com.
