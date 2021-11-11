@@ -2,12 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Tiledesk/tiledesk-server.svg?style=svg)](https://circleci.com/gh/Tiledesk/tiledesk-server)
 
-![#1589F0](https://via.placeholder.com/15/1589F0/000000?text=+)
-> ***Do you want to install Tiledesk on your server with just one click?***
-> 
-> ***[Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)***
-
-
+<span style=“color:green;”><b>Do you want to install Tiledesk on your server with just one click?[Docker Compose Tiledesk installation](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)</b></span>
 
 # Introduction
 
