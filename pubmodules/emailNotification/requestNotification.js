@@ -26,7 +26,8 @@ var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
 
-let apiUrl = process.env.APIURL || configGlobal.apiUrl;
+let apiUrl = process.env.API_URL || configGlobal.apiUrl;
+winston.debug('********* RequestNotification apiUrl: ' + apiUrl);
 
 class RequestNotification {
 

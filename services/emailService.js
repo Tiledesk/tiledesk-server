@@ -59,7 +59,7 @@ class EmailService {
     this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
     winston.info('EmailService baseUrl: '+ this.baseUrl);
     
-    this.apiUrl = process.env.APIURL || configGlobal.apiUrl;
+    this.apiUrl = process.env.API_URL || configGlobal.apiUrl;
     winston.info('EmailService apiUrl: '+ this.apiUrl);
 
     this.from = process.env.EMAIL_FROM_ADDRESS || config.from;
