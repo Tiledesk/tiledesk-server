@@ -2,6 +2,7 @@
 
 const nodemailer = require('nodemailer');
 var config = require('../config/email');
+var configGlobal = require('../config/global');
 var winston = require('../config/winston');
 var marked = require('marked');
 var handlebars = require('handlebars');
@@ -57,6 +58,9 @@ class EmailService {
 
     this.baseUrl = process.env.EMAIL_BASEURL || config.baseUrl;
     winston.info('EmailService baseUrl: '+ this.baseUrl);
+    
+    this.apiUrl = process.env.APIURL || configGlobal.apiUrl;
+    winston.info('EmailService apiUrl: '+ this.apiUrl);
 
     this.from = process.env.EMAIL_FROM_ADDRESS || config.from;
     winston.info('EmailService from email: '+ this.from);

@@ -20,10 +20,13 @@ var mongoose = require('mongoose');
 var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 var config = require('../../config/database');
+var configGlobal = require('../../config/global');
 
 var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
+
+let apiUrl = process.env.APIURL || configGlobal.apiUrl;
 
 class RequestNotification {
 
@@ -274,14 +277,16 @@ sendToUserEmailChannelEmail(projectid, message) {
         sourcePage = message.request.sourcePage;                    
       }
       
-      if (sourcePage && sourcePage.indexOf("?")===-1) {
+      if (sourcePage.indexOf("?")===-1) {
         sourcePage = sourcePage + "?";                   
       }
 
       sourcePage = sourcePage  
                   + "&tiledesk_recipientId="+message.request.request_id 
                   + "&tiledesk_isOpen=true";
-                  
+      
+                
+      sourcePage = apiUrl + "/urls/redirect?path=" + encodeURIComponent(sourcePage)
       winston.debug("sourcePage  "+sourcePage);
 
 
@@ -597,6 +602,8 @@ sendUserEmail(projectid, message) {
                   sourcePage = sourcePage  
                               + "&tiledesk_recipientId="+message.request.request_id 
                               + "&tiledesk_isOpen=true";
+
+                  sourcePage = apiUrl + "/urls/redirect?path=" + encodeURIComponent(sourcePage)
 
                   winston.debug("sourcePage  "+sourcePage);
 
