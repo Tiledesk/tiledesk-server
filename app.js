@@ -101,6 +101,7 @@ var files = require('./routes/files');
 var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
+var urls = require('./routes/urls');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -288,6 +289,7 @@ app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }
 app.use('/widgets', widgetsLoader);
 app.use('/images', images);
 app.use('/files', files);
+app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/logs', logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
