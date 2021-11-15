@@ -1,5 +1,89 @@
 
+# 2.2.0
+- Cache circleci fix
+- Added EMAIL_REPLY_ENABLED and EMAIL_INBOUND_DOMAIN env parameters.
+- Added API_URL env variable TODO use wehbook url the same as API_URL if not differnet
+
+# 2.1.42 (Compatible with tiledesk-dashboard 2.2.X)
+
+
+- Added ticket_id sequence field to the request model
+- Routing round robin fix (Also in 2.1.40.1)
+- GLOBAL_SECRET env variable fix (Also in 2.1.40.4)
+- Chatbot now support blocked_intent
+- BugFix route request to another department with the same agents (Also in 2.1.40.1)
+- Renamed the chatbot webhook payload field from faq to intent
+- Updated tiledesk-chat-util to 0.8.21  (Also in 2.1.40.1)
+- Removed request first_text replace new line with empty string (for ticketing)
+
+- Fix login problem when email contains upper case char
+- Removed answer field from the fulltext search of the faqs (2.1.40.3)
+
+- Stripe fix for adding new agents (2.1.40.13)
+- Added request delete endpoint by id (Also in 2.1.40.15)
+- Campaigns direct and for group (Also in 2.1.40.16)
+
+- Csv request export added tags (2.1.40.14)
+- Changed request_id to the new standard: support-group-<project_id>-<uid>
+- Added tag to the department model
+- Bugfix first message with an image fix and touchText limited to 30 character or subject (2.1.40.3)
+- Fix request create if department id is not correct
+- MessageRoot endpoint also for group messages (Also in 2.1.40.16)
+- c21 handler group mesages support (Also in 2.1.40.16)
+- Added recipientFullname field to message model. Added save method to messageServive (Also in 2.1.40.16)
+- ChatBot webhook fix when the webhook returns also attributes 
+- Messages export csv supported
+- Request util to lookup id_project from request_id (2.1.40.24)
+
+- Find user id from user email endpoint (also in 2.1.40.21)
+- Inizialize enterprise modules before public modules
+- Request Notification fix loading snapshot agents (also in 2.1.40.22)
+- Config secret fix from env (also in 2.1.40.22)
+- Lic ck for users (also in 2.1.40.26)
+- Added s_ticketing_taking_01 trigger
+- Added email template from project settings
+- Faq pagination support
+- For Ticketing send to the cc(s) the agent replies 
+- \agent now is hidden
+- added \close faq
+- \close now is hidden
+- set custom role in custom auth using signInWithCustomToken
+- Chat21 contacts find for agent logged with custom auth 
+- Added language field to faq_kb and used to specify the language for faq full-text query (default en)
+- Added request priority field
+- Concierge bot fix to reroute only for temp conversation without a bot. Race condition issue when you try manually route a request for example inside a chatbot webhook (Also in 2.1.40.31)
+- Added webhook_enabled parameter to the faqService create method and test refactor
+- Added SYNC_JOIN_LEAVE_GROUP_EVENT environment variable to enable sync between Chat21 (join and leave) and Tiledesk. Default is false. (Also in 2.1.40.32 )
+- Added ALLOW_REOPEN_CHAT environment variable to reopen a chat if a user write after a chat is closed  
+- Used message.received instead message.create in the messageActionsInterceptor to fix race condition sometime occurs with \close message sent by the bot      
+- Please type your reply above this line Only if replyTo is specified
+- Webhook origin header fix for webhook
+
+
+## Email inbound
+- EmailService supports custom email config with custom SMTP server settings and custom from email
+- Added Tiledesk customer header in the outbound email
+- Added Message-ID and sender (message sender fullname) on the outbound email 
+- Added project object to sendRequestTranscript function
+- Welcome label fix key
+- Seamless source page fix
+
+# 2.1.41 
+- remove duplicate request script with: 1619185894304-request-remove-duplicated-request-by-request_id--autosync.js
+- requestNotification improvement not sending email with empty email field
+- Enabled witb DISABLE_SEND_OFFLINE_EMAIL the seamless conversation with email
+- signinWithCustomToken endpoint of the auth router now support id_project body parameter for jwt with generic https://www.tiledesk.com audience field (used by tiledesk-smtp-server)
+- files download endpoint
+- emailService added EMAIL_REPLY_TO parameter;
+- Added email notification for new message and new request for email and form channel (ticket) 
+- Added microLanguageTransformationInterceptor enabled when message.attributes.microlanguage==true
+
+
+# 2.1.40.34 -> PROD
+- logfix
+
 # 2.1.40.33
+
 - Added setTimeout to resolve race condition for \close event returned by bot 
 
 # 2.1.40.32
