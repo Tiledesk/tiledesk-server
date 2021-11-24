@@ -133,7 +133,6 @@
                   <li><a href="{{this.link}}" class="dynamic_button">{{this.value}}</a></li>
                 {{else}}
                   <li><a href="mailto:{{../message.request.request_id}}@{{baseScope.inboundDomain}}?subject=Re:%20{{../message.request.subject}}&body={{this.value}}" class="dynamic_button">{{this.value}}</a></li>   
-                  <!-- <li><a href="https://api.tiledesk.com/v2/{{project.id}}/link?secret_token={{tokenQueryString}}" class="dynamic_button">{{this.value}}</a></li>     -->
                 {{/ifEquals}}
             {{/each}}
 
@@ -142,14 +141,14 @@
     {{/if}}
 {{/if}}
 
-{{#if message.attributes.intent_info}}
+<!-- {{#if message.attributes.intent_info}}
   {{#if message.attributes.intent_info.others}}
     Others:
     {{#each message.attributes.intent_info.others}}
       <li><span>{{this.answer}}</span></li>
     {{/each}}
   {{/if}}
-{{/if}}
+{{/if}} -->
 
 
 

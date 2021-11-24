@@ -74,15 +74,15 @@ class EmailService {
     }
     winston.info('EmailService replyEnabled : '+ this.replyEnabled);
 
-    // unused? is empty why?
+    // this is used as fixed reply to url, but this is unused we always return support-group-dynamic
     this.replyTo = process.env.EMAIL_REPLY_TO || config.replyTo;
     winston.info('EmailService replyTo address: '+ this.replyTo);
 
-    this.inboudDomain = process.env.EMAIL_INBOUND_DOMAIN || config.inboundDomain;
-    winston.info('EmailService inboudDomain : '+ this.inboudDomain);
+    this.inboundDomain = process.env.EMAIL_INBOUND_DOMAIN || config.inboundDomain;         
+    winston.info('EmailService inboundDomain : '+ this.inboundDomain);
     
-    this.inboudDomainWithAt = "@"+this.inboudDomain;
-    winston.verbose('EmailService inboudDomainWithAt : '+ this.inboudDomainWithAt);
+    this.inboundDomainDomainWithAt = "@"+this.inboundDomain;
+    winston.verbose('EmailService inboundDomainDomainWithAt : '+ this.inboundDomainDomainWithAt);
 
     this.pass = process.env.EMAIL_PASSWORD;
 
@@ -346,7 +346,11 @@ class EmailService {
   
     let messageId = "notification" + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) { //fai anche per gli altri
+      replyTo = request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (request) { 
       
@@ -356,7 +360,11 @@ class EmailService {
           replyTo = request.attributes.email_replyTo;
         }        
     
-      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": request.request_id, "X-TILEDESK-TICKET-ID":request.ticket_id };
+      headers = {
+                  "X-TILEDESK-PROJECT-ID": project._id, 
+                  "X-TILEDESK-REQUEST-ID": request.request_id, 
+                  "X-TILEDESK-TICKET-ID":request.ticket_id,
+                };
 
       winston.verbose("messageId: " + messageId);
       winston.verbose("replyTo: " + replyTo);
@@ -488,7 +496,11 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = message.request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = message.request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (message.request) { 
       
@@ -629,7 +641,11 @@ class EmailService {
     
     let messageId = "notification-pooled" + new Date().getTime() + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (request) { 
       
@@ -765,7 +781,11 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = message.request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = message.request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (message.request) { 
       
@@ -904,7 +924,11 @@ class EmailService {
 
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = message.request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = message.request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (message.request) { 
       
@@ -1033,7 +1057,11 @@ class EmailService {
     
     let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
 
-    let replyTo = message.request.request_id + this.inboudDomainWithAt;
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = message.request.request_id + this.inboundDomainDomainWithAt;
+    }
+
     let headers;
     if (message.request) { 
       
