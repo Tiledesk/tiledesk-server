@@ -1,3 +1,11 @@
+# 2.2.3
+- Email inboud fix (others disabled and inboudDomain variable fix and token query string encode fix)
+
+# 2.2.2
+- log fix
+
+# 2.2.1
+- log fix
 
 # 2.2.0
 - Cache circleci fix
