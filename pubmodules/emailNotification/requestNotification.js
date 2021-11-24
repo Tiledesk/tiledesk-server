@@ -292,13 +292,13 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("sourcePage  "+sourcePage);
 
 
-      var tokenQueryString;
-      if(sourcePage && sourcePage.indexOf('?')>-1) { //controllo superfluo ma lascio per indipendenza
-        tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
+      var tokenQueryString;      
+      if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
+        tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
       }else {
-        tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
+        tokenQueryString =  encodeURIComponent("?tiledesk_jwt=JWT "+token);
       }
-      winston.verbose("tokenQueryString:  "+tokenQueryString);
+      winston.debug("tokenQueryString:  "+tokenQueryString);
       
       emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString, sourcePage);
     
@@ -612,12 +612,12 @@ sendUserEmail(projectid, message) {
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
-                    tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
+                    tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
                   }else {
-                    tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
+                    tokenQueryString =  encodeURIComponent("?tiledesk_jwt=JWT "+token);
                   }
-                  winston.verbose("tokenQueryString:  "+tokenQueryString);
-
+                  winston.debug("tokenQueryString:  "+tokenQueryString);
+                  
                   emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString, sourcePage);
               } 
                 
