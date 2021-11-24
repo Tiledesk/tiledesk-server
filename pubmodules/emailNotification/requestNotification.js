@@ -261,6 +261,7 @@ sendToUserEmailChannelEmail(projectid, message) {
         jwtid: uuidv4()        
       };
 
+
       var recipient = lead.lead_id;
       winston.debug("recipient:"+ recipient);
 
@@ -291,12 +292,13 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("sourcePage  "+sourcePage);
 
 
-      var tokenQueryString;
-      if(sourcePage && sourcePage.indexOf('?')>-1) { //controllo superfluo ma lascio per indipendenza
-        tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
+      var tokenQueryString;      
+      if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
+        tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
       }else {
-        tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
+        tokenQueryString =  encodeURIComponent("?tiledesk_jwt=JWT "+token);
       }
+      winston.debug("tokenQueryString:  "+tokenQueryString);
       
       emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString, sourcePage);
     
@@ -610,11 +612,12 @@ sendUserEmail(projectid, message) {
 
                   var tokenQueryString;
                   if(sourcePage && sourcePage.indexOf('?')>-1) {  //controllo superfluo visto che lo metto prima? ma lascio comunque per indipendenza
-                    tokenQueryString =  "&tiledesk_jwt="+encodeURIComponent("JWT "+token)
+                    tokenQueryString =  encodeURIComponent("&tiledesk_jwt=JWT "+token)
                   }else {
-                    tokenQueryString =  "?tiledesk_jwt="+encodeURIComponent("JWT "+token);
+                    tokenQueryString =  encodeURIComponent("?tiledesk_jwt=JWT "+token);
                   }
-
+                  winston.debug("tokenQueryString:  "+tokenQueryString);
+                  
                   emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString, sourcePage);
               } 
                 
@@ -775,8 +778,27 @@ sendAgentEmail(projectid, savedRequest) {
                             winston.warn("User not found",  savedRequest.participants[0]);
                           } else {
                             winston.verbose("Sending sendNewAssignedRequestNotification to user with email", user.email);
-                            //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account                
-                              emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
+                            //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account    
+                            
+                            
+                            // var signOptions = {
+                            //   issuer:  'https://tiledesk.com',
+                            //   subject:  'user',
+                            //   audience:  'https://tiledesk.com',
+                            //   jwtid: uuidv4()        
+                            // };
+          
+                            // let userObject = {_id: user._id, firstname: user.firstname, lastname: user.lastname, email: user.email, attributes: user.attributes};
+                            // winston.debug("userObject  ",userObject);
+          
+                  
+                            // var agentToken = jwt.sign(userObject, configSecret, signOptions);
+                            // winston.debug("agentToken  "+agentToken);
+
+                            
+
+
+                            emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
                             //  }
                           }
                         });

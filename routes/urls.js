@@ -4,7 +4,7 @@ var winston = require('../config/winston');
 
 
 router.get('/redirect', function (req, res) {
-  winston.debug(req.body);
+  winston.debug("redirect: "+ req.query.path);
   res.redirect(req.query.path);
 });
 
