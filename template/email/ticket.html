@@ -99,7 +99,6 @@
                     <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                       <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                         Sender: <strong style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">{{message.senderFullname}}</strong>
-                        {{baseScope.inboundDomain}}
                       </td>
                     </tr>   
 
@@ -133,7 +132,7 @@
                 {{#ifEquals this.type "url"}}
                   <li><a href="{{this.link}}" class="dynamic_button">{{this.value}}</a></li>
                 {{else}}
-                  <li><a href="mailto:{{../message.request.request_id}}@{{baseScope.inboundDomain}}?subject=Re:%20{{../message.request.subject}}&body={{this.value}}" class="dynamic_button">{{this.value}}</a></li>   
+                  <li><a href="mailto:{{../message.request.request_id}}@{{../baseScope.inboundDomain}}?subject=Re:%20{{../message.request.subject}}&body={{this.value}}" class="dynamic_button">{{this.value}}</a></li>   
                 {{/ifEquals}}
             {{/each}}
 
@@ -142,14 +141,14 @@
     {{/if}}
 {{/if}}
 
-{{#if message.attributes.intent_info}}
+<!-- {{#if message.attributes.intent_info}}
   {{#if message.attributes.intent_info.others}}
     Others:
     {{#each message.attributes.intent_info.others}}
       <li><span>{{this.answer}}</span></li>
     {{/each}}
   {{/if}}
-{{/if}}
+{{/if}} -->
 
 
 
