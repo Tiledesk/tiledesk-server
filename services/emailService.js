@@ -1039,6 +1039,8 @@ class EmailService {
     }
     
     winston.debug("msgText: " + msgText);
+    winston.verbose("baseScope: " + JSON.stringify(baseScope));
+    
 
     var replacements = {        
       message: message,
