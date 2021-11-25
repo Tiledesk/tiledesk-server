@@ -92,8 +92,10 @@
 - Added email notification for new message and new request for email and form channel (ticket) 
 - Added microLanguageTransformationInterceptor enabled when message.attributes.microlanguage==true
 
+# 2.1.40.35
+- Quota license fix
 
-# 2.1.40.34 -> PROD
+# 2.1.40.34
 - logfix
 
 # 2.1.40.33
