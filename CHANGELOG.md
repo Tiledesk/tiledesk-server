@@ -1,3 +1,6 @@
+# 2.2.5
+- Quota license fix
+
 # 2.2.4
 - email invitation fix
 
