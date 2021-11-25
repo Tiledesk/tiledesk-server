@@ -1299,7 +1299,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('passwordChanged.html');
+    var html = await this.readTemplateFile('beenInvitedExistingUser.html');
 
     var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
       winston.debug("envTemplate: " + envTemplate);
@@ -1345,7 +1345,7 @@ class EmailService {
    
     var that = this;
 
-    var html = await this.readTemplateFile('passwordChanged.html');
+    var html = await this.readTemplateFile('beenInvitedNewUser.html');
 
     var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
       winston.debug("envTemplate: " + envTemplate);
