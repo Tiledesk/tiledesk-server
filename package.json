@@ -41,7 +41,7 @@
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.5",
     "@tiledesk-ent/tiledesk-server-queue": "^1.1.10",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.50",
+    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.51",
     "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.11",
     "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
     "@tiledesk-ent/tiledesk-server-triggers": "^1.1.77",

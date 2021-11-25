@@ -205,10 +205,6 @@ it('createUpperCaseEmail', function (done) {
 });
 // mocha test/requestRoute.js  --grep 'getbyidWithPartecipatingBots'
 
-it('testcachetesting', function (done) {
-  done();
-});
-
 it('getbyidWithPartecipatingBots', function (done) {
   // this.timeout(10000);
 
