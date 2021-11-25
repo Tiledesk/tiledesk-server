@@ -1,3 +1,6 @@
+# 2.2.4
+- email invitation fix
+
 # 2.2.3
 - Email inboud fix (others disabled and inboudDomain variable fix and token query string encode fix)
 
