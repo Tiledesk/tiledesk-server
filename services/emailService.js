@@ -1217,7 +1217,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplate('resetPassword.html', project.settings);
+    var html = await this.readTemplate('resetPassword.html');
 
 
     var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
