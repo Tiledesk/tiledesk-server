@@ -1095,15 +1095,20 @@ class EmailService {
         }
         if (message.attributes.email_references) {
           references = message.attributes.email_references;
-        }
-        if (message.attributes.email_cc) {
-          cc = message.attributes.email_cc;       
-        }
-        winston.verbose("email message.attributes.email_ccStr: "+ message.attributes.email_ccStr);
-        if (message.attributes.email_ccStr!=undefined) {
-          ccString = message.attributes.email_ccStr;
-          winston.verbose("email set ccString");
-        }
+        }        
+    }
+
+    if (message.request && message.request.attributes) {
+      winston.verbose("email message.request.attributes: ", message.request.attributes);
+      
+      if (message.request.attributes.email_cc) {
+        cc = message.request.attributes.email_cc;       
+      }
+      winston.verbose("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
+      if (message.request.attributes.email_ccStr!=undefined) {
+        ccString = message.request.attributes.email_ccStr;
+        winston.verbose("email set ccString");
+      }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
     winston.verbose("email references: "+ references);
