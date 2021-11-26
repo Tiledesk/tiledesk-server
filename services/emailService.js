@@ -519,13 +519,13 @@ class EmailService {
 
     let inReplyTo;
     let references;
-    if (message.attributes) {
-      if (message.attributes.email_messageId) {
-        inReplyTo = message.attributes.email_messageId;
-        }
-        if (message.attributes.email_references) {
-        references = message.attributes.email_references;
-        }
+    if (message.request.attributes) {
+      if (message.request.attributes.email_messageId) {
+        inReplyTo = message.request.attributes.email_messageId;
+      }
+      if (message.request.attributes.email_references) {
+        references = message.request.attributes.email_references;
+      }
     }
     winston.verbose("sendNewAssignedAgentMessageEmailNotification email inReplyTo: "+ inReplyTo);
     winston.verbose("sendNewAssignedAgentMessageEmailNotification email references: "+ references);
@@ -804,13 +804,13 @@ class EmailService {
 
     let inReplyTo;
     let references;
-    if (message.attributes) {
-      if (message.attributes.email_messageId) {
-        inReplyTo = message.attributes.email_messageId;
-        }
-        if (message.attributes.email_references) {
-        references = message.attributes.email_references;
-        }
+    if (message.request.attributes) {
+      if (message.request.attributes.email_messageId) {
+        inReplyTo = message.request.attributes.email_messageId;
+      }
+      if (message.request.attributes.email_references) {
+        references = message.request.attributes.email_references;
+      }
     }
     winston.verbose("sendNewPooledMessageEmailNotification email inReplyTo: "+ inReplyTo);
     winston.verbose("sendNewPooledMessageEmailNotification email references: "+ references);
@@ -947,13 +947,13 @@ class EmailService {
 
     let inReplyTo;
     let references;
-    if (message.attributes) {
-      if (message.attributes.email_messageId) {
-        inReplyTo = message.attributes.email_messageId;
-        }
-        if (message.attributes.email_references) {
-        references = message.attributes.email_references;
-        }
+    if (message.request.attributes) {
+      if (message.request.attributes.email_messageId) {
+        inReplyTo = message.request.attributes.email_messageId;
+      }
+      if (message.attributes.email_references) {
+        references = message.request.attributes.email_references;
+      }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
     winston.verbose("email references: "+ references);
@@ -1086,28 +1086,23 @@ class EmailService {
     let cc;
     let ccString;
 
-    if (message.attributes) {
-
-      winston.verbose("email message.attributes: ", message.attributes);
-      // per email touching manca
-        if (message.attributes.email_messageId) {
-          inReplyTo = message.attributes.email_messageId;
-        }
-        if (message.attributes.email_references) {
-          references = message.attributes.email_references;
-        }        
-    }
-
     if (message.request && message.request.attributes) {
-      winston.verbose("email message.request.attributes: ", message.request.attributes);
-      
+      winston.debug("email message.request.attributes: ", message.request.attributes);
+
+      if (message.request.attributes.email_messageId) {
+        inReplyTo = message.request.attributes.email_messageId;
+      }
+      if (message.request.attributes.email_references) {
+        references = message.request.attributes.email_references;
+      }        
+
       if (message.request.attributes.email_cc) {
         cc = message.request.attributes.email_cc;       
       }
-      winston.verbose("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
+      winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
       if (message.request.attributes.email_ccStr!=undefined) {
         ccString = message.request.attributes.email_ccStr;
-        winston.verbose("email set ccString");
+        winston.debug("email set ccString");
       }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
