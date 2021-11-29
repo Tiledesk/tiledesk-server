@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -44,7 +44,7 @@
     "@tiledesk-ent/tiledesk-server-resthook": "^1.1.51",
     "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.11",
     "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.77",
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.78",
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {
