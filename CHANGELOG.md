@@ -1,3 +1,6 @@
+# 2.2.8
+- Public trigger module
+
 # 2.2.6
 - Quota license fix
 
