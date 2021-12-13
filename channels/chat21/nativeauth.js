@@ -42,6 +42,7 @@ router.post('/createCustomToken', function (req, res) {
         const scope = [
             `rabbitmq.read:*/*/apps.${appid}.users.${userid}.*`,
             `rabbitmq.write:*/*/apps.${appid}.users.${userid}.*`,
+            `rabbitmq.write:*/*/apps.${appid}.outgoing.users.${userid}.*`,
             'rabbitmq.configure:*/*/*'
         ]
     
