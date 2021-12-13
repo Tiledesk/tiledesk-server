@@ -1,3 +1,6 @@
+# 2.2.9
+- Native mqtt auth fix
+
 # 2.2.8
 - Public trigger module
 
