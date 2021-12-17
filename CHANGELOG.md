@@ -1,3 +1,6 @@
+# 2.2.11
+- Logfix
+
 # 2.2.10
 - Native mqtt auth fix
 
