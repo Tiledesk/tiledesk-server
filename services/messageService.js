@@ -121,7 +121,7 @@ class MessageService {
         
                     return newMessage.save(function(err, savedMessage) {
                         if (err) {
-                            winston.error(err);
+                            winston.error("Error savig the message", {err:err, message: message, newMessage: newMessage});
                             return reject(err);
                         }
                         winston.verbose("Message created", savedMessage.toObject());
