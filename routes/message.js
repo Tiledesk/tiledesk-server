@@ -129,12 +129,13 @@ async (req, res)  => {
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
               return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
-              
+
+               
               
                 var new_request = {                                     
                   request_id: req.params.request_id, 
-                  project_user_id: project_user_id, 
-                  lead_id: lead_id, 
+                  project_user_id: project_user._id, 
+                  lead_id: createdLead._id, 
                   id_project:req.projectid,
                   first_text: req.body.text, 
                   departmentid: req.body.departmentid, 
