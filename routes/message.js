@@ -95,7 +95,7 @@ async (req, res)  => {
                 winston.debug("queryProjectUser", queryProjectUser);
                 
                 project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
-                winston.debug("queryProjectUser", queryProjectUser);
+                winston.info("project_user", project_user);
             
                 if (!project_user) {
                   return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
