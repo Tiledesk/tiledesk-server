@@ -129,15 +129,25 @@ async (req, res)  => {
               // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
               return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
               .then(function(createdLead) {
-
-
-
               
-                var new_request = {                                     // problema
-                  request_id: req.params.request_id, project_user_id: project_user._id, lead_id: createdLead._id, id_project:req.projectid,
-                  first_text: req.body.text, departmentid: req.body.departmentid, sourcePage:req.body.sourcePage, 
-                  language: req.body.language, userAgent:req.body.userAgent, status:null, createdBy: req.user._id,
-                  attributes: req.body.attributes, subject: req.body.subject, preflight:undefined, channel: req.body.channel, location: req.body.location,
+              
+                var new_request = {                                     
+                  request_id: req.params.request_id, 
+                  project_user_id: project_user_id, 
+                  lead_id: lead_id, 
+                  id_project:req.projectid,
+                  first_text: req.body.text, 
+                  departmentid: req.body.departmentid, 
+                  sourcePage:req.body.sourcePage, 
+                  language: req.body.language, 
+                  userAgent:req.body.userAgent, 
+                  status:null, 
+                  createdBy: req.user._id,
+                  attributes: req.body.attributes, 
+                  subject: req.body.subject, 
+                  preflight:undefined, 
+                  channel: req.body.channel, 
+                  location: req.body.location,
                   participants: req.body.participants,
                   lead: createdLead, requester: project_user,
                   priority: req.body.priority

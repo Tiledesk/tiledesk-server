@@ -710,7 +710,7 @@ class WebSocketServer {
       winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
         var pu = data.updatedProject_userPopulated;
-        winston.debug('pu', pu);
+        winston.debug('ws pu', pu);
         
         //TODO pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/', pu, undefined, true, "UPDATE");
 

@@ -1,4 +1,4 @@
-# 2.2.11
+# 2.2.11 
 - Logfix
 
 # 2.2.10
@@ -10,7 +10,7 @@
 # 2.2.6
 - Quota license fix
 
-# 2.2.4
+# 2.2.4  -> PROD
 - email invitation fix
 
 # 2.2.3
@@ -117,7 +117,7 @@
 # 2.1.40.31
 - Concierge bot fix to reroute only for temp conversation without a bot. Race condition issue when you try manually route a request for example inside a chatbot webhook 
 
-# 2.1.40.30 -> PROD
+# 2.1.40.30
 - logfix
 
 # 2.1.40.29
