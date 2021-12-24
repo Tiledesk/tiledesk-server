@@ -339,7 +339,9 @@ app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: f
 //Deprecated??
 app.use('/:projectid/faqpub', faqpub);
 
-app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq_kb);
+//deprecated
+app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
+app.use('/:projectid/bot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 
 
 

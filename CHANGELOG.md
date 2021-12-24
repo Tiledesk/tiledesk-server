@@ -1,3 +1,7 @@
+# 2.2.12
+- Add bot endpoint
+- Bot and subscription can manage bots
+
 # 2.2.11 
 - Logfix
 
