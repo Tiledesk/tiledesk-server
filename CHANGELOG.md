@@ -1,3 +1,7 @@
+
+# 2.2.14
+- Fix Tiledesk Queue 1.1.11 with authEvent.queueEnabled = true 
+
 # 2.2.13
 - Send message validation with empty text
 
