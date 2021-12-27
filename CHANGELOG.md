@@ -1,5 +1,8 @@
+# 2.2.13
+- Send message validation with empty text
+
 # 2.2.12
-- Add bot endpoint
+- Add /bot endpoint
 - Bot and subscription can manage bots
 
 # 2.2.11 

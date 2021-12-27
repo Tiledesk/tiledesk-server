@@ -26,13 +26,21 @@ csv.separator = ';';
 // var roleChecker = require('../middleware/has-role');
 
 router.post('/', 
-// se type image text può essere empty validare meglio.
 // [
-//   check('text').notEmpty(),  
+//   check('text').custom(value => {
+//     console.log("value",value);
+//     console.log("req.body.type",this.type);
+//     if (this.type === "text" && (value == undefined || value == "" ) ) {    
+//       // if (this.type === "text" && ( (!value) || (value === "") ) ) {    
+//       console.log("sono qui ",value);
+//       return Promise.reject('Text field is required for text message');
+//     }else {
+//       console.log("sono qua ",value);
+//       return Promise.resolve();
+//     }
+//   })
 // ],
-// 
 async (req, res)  => {
-// function(req, res) {
 
   winston.debug('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
@@ -194,7 +202,15 @@ async (req, res)  => {
                             return res.json(message);
                           });
                         });
-                    });                           
+                    }).catch(function(err){    //pubblica questo
+                      winston.log({
+                        level: 'error',
+                        message: 'Error creating request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+                        label: req.projectid
+                      });
+                      // winston.error("Error creating message", err);
+                      return res.status(500).send({success: false, msg: 'Error creating request', err:err });
+                    });                                
                       
                   });
                             

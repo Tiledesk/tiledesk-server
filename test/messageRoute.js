@@ -91,7 +91,66 @@ describe('MessageRoute', () => {
 });
 
 
+// mocha test/messageRoute.js  --grep 'createSimpleEmptyText'
 
+  it('createSimpleEmptyText', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-message-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+     projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+     
+      var savedProject = savedProjectAndPU.project;
+
+          chai.request(server)
+            .post('/'+ savedProject._id + '/requests/req123/messages')
+            .auth(email, pwd)
+            .set('content-type', 'application/json')
+            .send({"text":""})
+            .end(function(err, res) {
+                //console.log("res",  res);
+                console.log("res.body",  res.body);
+                res.should.have.status(500);                                
+          
+               done();
+            });
+    });
+  });
+});
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createSimpleNoText'
+
+it('createSimpleNoText', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/req123/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(500);                                
+        
+             done();
+          });
+  });
+});
+});
 
 
 
