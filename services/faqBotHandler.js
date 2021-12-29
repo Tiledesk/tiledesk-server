@@ -209,7 +209,13 @@ class FaqBotHandler {
                                 messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
-                                });                                                       
+                                }).catch(function(err){    
+                                    winston.log({
+                                      level: 'error',
+                                      message: 'Error sending message bot: '+ JSON.stringify(err) ,
+                                      label: message.id_project
+                                    });
+                                });                                                                
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
                                 // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
@@ -224,7 +230,13 @@ class FaqBotHandler {
                                 messageService.send(sender, botName, message.recipient, bot_answer.text, 
                                     message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
                                         winston.debug("faqbot message botAns ", savedMessage.toObject());  
-                                });                         
+                                }).catch(function(err){    
+                                    winston.log({
+                                      level: 'error',
+                                      message: 'Error sending message bot: '+ JSON.stringify(err) ,
+                                      label: message.id_project
+                                    });
+                                });                                    
                             // }
                             
                                                     
@@ -315,7 +327,14 @@ class FaqBotHandler {
                                 messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
-                                });                                                       
+                                }).catch(function(err){    
+                                    winston.log({
+                                      level: 'error',
+                                      message: 'Error sending message bot: '+ JSON.stringify(err) ,
+                                      label: message.id_project
+                                    });
+                                });           
+
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
                                 // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
@@ -330,7 +349,13 @@ class FaqBotHandler {
                                     message.id_project, sender, attr, bot_answer.type, bot_answer.metadata, bot_answer.language).then(function(savedMessage){
 
                                         winston.debug("faqbot message sending ", savedMessage.toObject());  
-                                });
+                                }).catch(function(err){    
+                                    winston.log({
+                                      level: 'error',
+                                      message: 'Error sending message bot: '+ JSON.stringify(err) ,
+                                      label: message.id_project
+                                    });
+                                });           
                         });
                         
         
@@ -408,7 +433,13 @@ class FaqBotHandler {
                                 messageService.send(sender, botName, message.recipient, command_parsed.command, 
                                     message.id_project, sender, {subtype: "info"}, 'text', undefined).then(function(savedMessage){
                                         winston.debug("agent_handoff faqs agent sent ", savedMessage.toObject());  
-                                });                                                       
+                                }).catch(function(err){    
+                                    winston.log({
+                                      level: 'error',
+                                      message: 'Error sending message bot: '+ JSON.stringify(err) ,
+                                      label: message.id_project
+                                    });
+                                });                                                      
                                  // PATCH: Chat clients (i.e. web widget) remove messages with text = null
                                 // command_parsed.text contains the eventual text before the \agent command
                                 // or 'all the message text' if \agent was not found
@@ -423,6 +454,13 @@ class FaqBotHandler {
                             messageService.send(sender, botName, message.recipient, botAns.text, 
                                 message.id_project, sender, attr, botAns.type, botAns.metadata, botAns.language).then(function(savedMessage){
                                     winston.debug("faqbot message botAns " ,savedMessage.toObject());  
+                            })
+                            .catch(function(err){    
+                                winston.log({
+                                  level: 'error',
+                                  message: 'Error sending message bot: '+ JSON.stringify(err) + " " + JSON.stringify(botAns.text) ,
+                                  label: message.id_project
+                                });
                             });
                         }
 
