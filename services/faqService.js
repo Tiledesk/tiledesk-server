@@ -85,6 +85,7 @@ class FaqService {
           question: faq.question,
           answer: faq.answer,
           intent_display_name: faq.intent_display_name,
+          language: "en",
           id_project: projectid,
           topic: faq.topic,
           createdBy: created_by,

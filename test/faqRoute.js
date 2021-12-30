@@ -38,7 +38,7 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/'+ savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({"name":"testbot", type: "external"})
+                        .send({"name":"testbot", type: "internal"})
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
@@ -77,6 +77,60 @@ describe('FaqKBRoute', () => {
 
 
 
+    it('createWithLanguage', (done) => {
+
+        
+        //   this.timeout();
+    
+           var email = "test-signup-" + Date.now() + "@email.com";
+           var pwd = "pwd";
+    
+            userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function(savedProject) {                                              
+                        chai.request(server)
+                            .post('/'+ savedProject._id + '/faq_kb')
+                            .auth(email, pwd)
+                            .send({"name":"testbot", type: "internal", language: "it"})
+                            .end((err, res) => {
+                                //console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+                                expect(res.body.name).to.equal("testbot");    
+                                expect(res.body.language).to.equal("it");                                                                              
+                                var id_faq_kb = res.body._id;
+    
+                                 chai.request(server)
+                                    .post('/'+ savedProject._id + '/faq')
+                                    .auth(email, pwd)
+                                    .send({id_faq_kb: id_faq_kb, question: "question1", answer: "answer1"})
+                                    .end((err, res) => {
+                                        //console.log("res",  res);
+                                        console.log("res.body",  res.body);
+                                        res.should.have.status(200);
+                                        res.body.should.be.a('object');
+                                        expect(res.body.id_faq_kb).to.equal(id_faq_kb);                                                                              
+                                        expect(res.body.question).to.equal("question1");                                                                              
+                                        expect(res.body.answer).to.equal("answer1");                                                                              
+                                        expect(res.body.intent_display_name).to.not.equal(undefined);                                                                              
+                                        expect(res.body.webhook_enabled).to.equal(false);                                                                              
+                                        expect(res.body.language).to.equal("it");                                                                              
+                                        done();
+                                    });
+    
+                            });
+    
+                            
+                    });
+                    });
+                    
+        });
+    
+    
+
+
+
+
     it('createWithIntentDisplayNameAndWebhookEnalbed', (done) => {
 
         
@@ -91,7 +145,7 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/'+ savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({"name":"testbot", type: "external"})
+                        .send({"name":"testbot", type: "internal"})
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
@@ -143,7 +197,7 @@ describe('FaqKBRoute', () => {
                             chai.request(server)
                                 .post('/'+ savedProject._id + '/faq_kb')
                                 .auth(email, pwd)
-                                .send({"name":"testbot", type: "external"})
+                                .send({"name":"testbot", type: "internal"})
                                 .end((err, res) => {
                                     //console.log("res",  res);
                                     console.log("res.body",  res.body);
@@ -210,13 +264,67 @@ describe('FaqKBRoute', () => {
                         chai.request(server)
                         .post('/'+ savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({"name":"testbot", type: "external"})
+                        .send({"name":"testbot", type: "internal"})
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");                                                                              
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/'+ savedProject._id + '/faq/uploadcsv')
+                                .auth(email, pwd)
+                                .set('Content-Type', 'text/csv')
+                                .attach('uploadFile',  fs.readFileSync('./test/example-faqs.csv'), 'example-faqs.csv') 
+                                .field('id_faq_kb', id_faq_kb)
+                                .field('delimiter', ';')
+                                // .send({id_faq_kb: id_faq_kb})       
+                                .end((err, res) => {
+                                    console.log("err",  err);
+                                    console.log("res.body",  res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    
+                                            done();
+                                });
+                                        
+                        });
+                                
+                        });
+                        });
+                        
+            });
+        
+
+
+
+
+
+    
+        it('uploadcsvWithLanguage', (done) => {
+
+        
+            //   this.timeout();
+        
+               var email = "test-signup-" + Date.now() + "@email.com";
+               var pwd = "pwd";
+        
+                userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+                    projectService.create("test-uploadcsv", savedUser._id).then(function(savedProject) {            
+                        
+                        chai.request(server)
+                        .post('/'+ savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({"name":"testbot", type: "internal", language: "it"})
+                        .end((err, res) => {
+                            //console.log("res",  res);
+                            console.log("res.body",  res.body);
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");                   
+                            expect(res.body.language).to.equal("it");                                                                      
                             var id_faq_kb = res.body._id;
 
                             chai.request(server)

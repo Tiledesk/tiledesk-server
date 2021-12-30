@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Faq = require("../models/faq");
+var Faq_kb = require("../models/faq_kb");
 var multer = require('multer')
 var upload = multer()
 const faqBotEvent = require('../event/faqBotEvent');
@@ -31,6 +32,16 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
   // PARSE CSV
  
 
+
+  Faq_kb.findById(id_faq_kb).exec(function(err, faq_kb) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    winston.debug('faq_kb ', faq_kb.toJSON());
+
   // getFaqKbKeyById(req.body.id_faq_kb, function (remote_faqkb_key) {
 
     parsecsv.parseString(csv, { headers: false, delimiter: delimiter })
@@ -57,6 +68,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           intent_id:intent_id,
           intent_display_name: intent_display_name,
           webhook_enabled: webhook_enabled_boolean,
+          language: faq_kb.language,
           id_project: req.projectid,
           createdBy: req.user.id,
           updatedBy: req.user.id
@@ -81,45 +93,56 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
         winston.error("PARSE ERROR uploadcsv", err);
         res.json({ success: false, msg: 'Parsing error' });
       });
-  // });
+  });
 });
 
 
 router.post('/', function (req, res) {
 
   winston.debug(req.body);
-  var newFaq = new Faq({
-    id_faq_kb: req.body.id_faq_kb,
-    question: req.body.question,
-    answer: req.body.answer,
-    id_project: req.projectid,
-    topic: req.body.topic,
-    webhook_enabled: req.body.webhook_enabled,
-    intent_display_name: req.body.intent_display_name,
-    createdBy: req.user.id,
-    updatedBy: req.user.id
-  });
 
-  newFaq.save(function (err, savedFaq) {
+  Faq_kb.findById(req.body.id_faq_kb).exec(function(err, faq_kb) {
     if (err) {
-      if (err.code == 11000) {
-        return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
-      } else {
-        winston.debug('--- > ERROR ', err)
-        return res.status(500).send({ success: false, msg: 'Error saving object.' });
-      }     
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
-    winston.debug('1. ID OF THE NEW FAQ CREATED ', savedFaq._id)
-    winston.debug('1. QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
-    winston.debug('1. ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
-    winston.debug('1. ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb);
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    winston.debug('faq_kb ', faq_kb.toJSON());
 
-    faqBotEvent.emit('faq.create', savedFaq);
+    var newFaq = new Faq({
+      id_faq_kb: req.body.id_faq_kb,
+      question: req.body.question,
+      answer: req.body.answer,
+      id_project: req.projectid,
+      topic: req.body.topic,
+      language: faq_kb.language,
+      webhook_enabled: req.body.webhook_enabled,
+      intent_display_name: req.body.intent_display_name,
+      createdBy: req.user.id,
+      updatedBy: req.user.id
+    });
 
-    res.json(savedFaq);
+    newFaq.save(function (err, savedFaq) {
+      if (err) {
+        if (err.code == 11000) {
+          return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
+        } else {
+          winston.debug('--- > ERROR ', err)
+          return res.status(500).send({ success: false, msg: 'Error saving object.' });
+        }     
+      }
+      winston.debug('1. ID OF THE NEW FAQ CREATED ', savedFaq._id)
+      winston.debug('1. QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
+      winston.debug('1. ANSWER OF THE NEW FAQ CREATED ', savedFaq.answer)
+      winston.debug('1. ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb);
 
-  
+      faqBotEvent.emit('faq.create', savedFaq);
 
+      res.json(savedFaq);
+
+    
+    });
   });
 });
 
