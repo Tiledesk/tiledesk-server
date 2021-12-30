@@ -12,6 +12,10 @@ var eventService = require('../pubmodules/events/eventService');
 var mongoose = require('mongoose');
 const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 const ActionsConstants = require('../models/actionsConstants');
+var httpUtil = require('../utils/httpUtil');
+
+var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+winston.debug("webhook_origin: "+webhook_origin);
 
 class FaqBotHandler {
  
@@ -137,7 +141,7 @@ class FaqBotHandler {
 
             Faq.find(query) 
             .lean().               
-             exec(function (err, faqs) {
+             exec(async (err, faqs) => {
                if (err) {
                 return winston.error("Error getting faq object.",err);                
                }
@@ -250,20 +254,57 @@ class FaqBotHandler {
 
                } else {
  
+
                 query = { "id_project": message.id_project, "id_faq_kb": faq_kb._id};
+                var mongoproject = undefined;
+                var sort = undefined;
+
+                //make http request external   
+                if (faq_kb.url) {
+
+                                                                                        
+                    var url = faq_kb.url+"/parse";
+                    winston.verbose("fulltext search external url " + url);   
+
+                    var json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
+                    winston.verbose("fulltext search external json", json);   
+
+                    var headers = {
+                        'Content-Type' : 'application/json', 
+                        'User-Agent': 'tiledesk-bot',
+                        'Origin': webhook_origin
+                        };
+
+                    var res = await httpUtil.call(url, headers, json, "POST")
+                    winston.verbose("res", res);
+                    
+                    if (res && res.intent && res.intent.name) {
+                        var intent_name = res.intent.name;
+                        winston.verbose("intent_name", intent_name);
+                        //filtra su intent name
+                        query.intent_display_name = intent_name;
+                        winston.info("query",query);                        
+                    
+                    }
+                } else {
+
+                    var search_obj = {"$search": message.text};
+
+                    if (faq_kb.language) {
+                        search_obj["$language"] = faq_kb.language;
+                    }
+                    query.$text = search_obj;
+                    winston.info("fulltext search query", query);   
+                    
+                    mongoproject = {score: { $meta: "textScore" } };
+                    sort = { score: { $meta: "textScore" } } //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+                }               
         
-                var search_obj = {"$search": message.text};
-
-                if (faq_kb.language) {
-                    search_obj["$language"] = faq_kb.language;
-                }
-                query.$text = search_obj;
-                winston.debug("fulltext search query", query);   
-
-                Faq.find(query,  {score: { $meta: "textScore" } })  
-                .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+            
+                Faq.find(query,  mongoproject)  
+                .sort(sort) 
                 .lean().               
-                exec(function (err, faqs) {
+                exec(async (err, faqs) => {
                     if (err) {
                         return winston.error('Error getting fulltext objects.', err);      
                     }
@@ -277,6 +318,53 @@ class FaqBotHandler {
                     var answerObj;
                     if (faqs && faqs.length>0 && faqs[0].answer) {
                         answerObj = faqs[0];                
+
+
+                        // non fare la ricerca fulltext 
+                        //make http request external   
+                        /*
+                        if (faq_kb.url) {
+
+                                                                                                
+                            var url = faq_kb.url+"/parse";
+                            winston.verbose("fulltext search external url " + url);   
+
+                            var json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
+                            winston.verbose("fulltext search external json", json);   
+
+                            var headers = {
+                                'Content-Type' : 'application/json', 
+                                'User-Agent': 'tiledesk-bot',
+                                'Origin': webhook_origin
+                                };
+
+                            var res = await httpUtil.call(url, headers, json, "POST")
+                            console.log("res", res);
+                            
+                            if (res && res.intent && res.intent.name) {
+                                var intent_name = res.intent.name;
+                                console.log("intent_name", intent_name);
+                                                        //filtra su intent name
+                                var queryExternal = { id_project: message.id_project, id_faq_kb: faq_kb._id, intent_display_name: intent_name};
+                                winston.verbose("queryExternal",queryExternal);
+
+                                var faqExternal = await Faq.findOne(queryExternal) 
+                                    .lean().               
+                                    exec();
+
+                                winston.verbose("faqExternal",faqExternal);
+
+                                if (faqExternal) {
+                                    answerObj = faqExternal;
+                                }
+                            
+                            }
+                        }
+                        */
+
+
+
+
 
                         // qui
                         faqBotSupport.getParsedMessage(answerObj.answer, message, faq_kb, answerObj).then(function(bot_answer) {

@@ -6,8 +6,10 @@ var Department = require("../models/department");
 var faqService = require("../services/faqService");
 const botEvent = require('../event/botEvent');
 var winston = require('../config/winston');
+var httpUtil = require("../utils/httpUtil");
 
 router.post('/', function (req, res) {
+  winston.info('create BOT ', req.body);
   // create(name, url, projectid, user_id, type, description) {
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined,
     req.body.language).then(function(savedFaq_kb) {
@@ -17,6 +19,104 @@ router.post('/', function (req, res) {
 
 });
 
+router.post('/train', function (req, res) {
+
+  winston.info('train BOT ', req.body);
+
+  Faq_kb.findById(req.body.id_faq_kb).exec(function(err, faq_kb) {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+    winston.debug('faq_kb ', faq_kb.toJSON());
+
+    winston.debug('faq_kb.type :'+ faq_kb.type);
+    if (faq_kb.type =="internal") {
+
+
+
+      var train =   {
+        language:faq_kb.language,
+        nlu:[]
+      };
+      winston.info("train", train);     
+      
+
+      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb};
+
+      Faq.find(query) 
+      .lean().               
+       exec(async (err, faqs) => {
+         if (err) {
+           return res.status(500).send({ success: false, msg: 'Error getting object.' });
+         }
+         if (faqs && faqs.length>0) {
+          winston.info("faqs exact", faqs);              
+
+          faqs.forEach(function(f) {
+            var intent = {
+              intent:f.intent_display_name,
+              examples:[]
+            }
+            var questions = f.question.split("\n");
+            winston.info("questions", questions);
+
+            questions.forEach(function(q) {
+              winston.info("q", q);
+              intent.examples.push(q);
+            });       
+            winston.info("intent", intent);
+            train.nlu.push(intent);            
+          });
+          winston.info("train", train);
+
+          try {
+            var trainHttp = await httpUtil.call(faq_kb.url+"/trainandload", undefined, train, "POST");
+          }catch(e) {
+            winston.error("error training", e);
+          }
+          
+
+          return res.json({train:train, httpResponse:trainHttp});
+          // return res.json(trainHttp);
+         }else {
+          return res.status(400).send({ success: false, msg: 'no faq to  train on external bot.' });
+         }
+        });
+    } else {
+      winston.debug('external query: ');
+      return res.status(400).send({ success: false, msg: 'you can train on external bot.' });
+    }
+
+  });
+
+    /*
+  {
+    "language":"it",
+    "nlu":[
+       {
+          "intent":"eta",
+          "examples":[
+             "quanti anni hai",
+             "dimmi la tua età",
+             "quanto sei grande",
+             "parlami della tua età"
+          ]
+       },
+       {
+          "intent":"brutteparole",
+          "examples":[
+             "non dire parolacce",
+             "le brutte parole non dovrebbero dirsi"
+          ]
+       }
+    ]
+ }
+*/
+
+});
 
 
 router.post('/askbot', function (req, res) {

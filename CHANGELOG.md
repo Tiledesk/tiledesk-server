@@ -1,3 +1,6 @@
+# Last
+- Added catch messageService.send for bot
+- Added external searcher for bot( ex. Rasa proxy) 
 
 # 2.2.14
 - Fix Tiledesk Queue 1.1.11 with authEvent.queueEnabled = true 
