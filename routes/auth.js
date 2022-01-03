@@ -476,8 +476,12 @@ router.get('/pendinginvitationsnoauth/:pendinginvitationid', function (req, res)
 router.put('/requestresetpsw', function (req, res) {
 
   winston.debug('REQUEST RESET PSW - EMAIL REQ BODY ', req.body);
+
+  var email = req.body.email.toLowerCase();
+  winston.debug("email", email);
+
 // auttype
-  User.findOne({ email: req.body.email, status: 100
+  User.findOne({ email: email, status: 100
     // , authType: 'email_password' 
   }, function (err, user) {
     if (err) {
