@@ -34,7 +34,7 @@ router.post('/train', function (req, res) {
     winston.debug('faq_kb ', faq_kb.toJSON());
 
     winston.debug('faq_kb.type :'+ faq_kb.type);
-    if (faq_kb.type =="internal") {
+    if (faq_kb.type =="internal" && faq_kb.url) {
 
 
 
@@ -89,7 +89,7 @@ router.post('/train', function (req, res) {
         });
     } else {
       winston.debug('external query: ');
-      return res.status(400).send({ success: false, msg: 'you can train on external bot.' });
+      return res.status(400).send({ success: false, msg: 'you can train a standard internal bot or an external bot.' });
     }
 
   });
