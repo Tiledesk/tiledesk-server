@@ -19,6 +19,7 @@ router.post('/', function (req, res) {
 
 });
 
+
 router.post('/train', function (req, res) {
 
   winston.info('train BOT ', req.body);
@@ -47,6 +48,7 @@ router.post('/train', function (req, res) {
       var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb};
 
       Faq.find(query) 
+      .limit(10000)
       .lean().               
        exec(async (err, faqs) => {
          if (err) {
