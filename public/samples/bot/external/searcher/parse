@@ -1,0 +1,10 @@
+{
+    "text": "question",
+    "intent": { "name": "brutteparole", "confidence": 0.9257488250732422 },
+    "entities": [],
+    "text_tokens": [ [ 0, 8 ] ],
+    "intent_ranking": [
+      { "name": "brutteparole", "confidence": 0.9257488250732422 },
+      { "name": "eta", "confidence": 0.0742512047290802 }
+    ]
+}
