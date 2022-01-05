@@ -102,6 +102,7 @@ var campaigns = require('./routes/campaigns');
 var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
 var urls = require('./routes/urls');
+var email = require('./routes/email');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -294,7 +295,6 @@ app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), 
 app.use('/logs', logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
-
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
   winston.info(" Transcript view page is disabled");
@@ -374,6 +374,8 @@ app.use('/:projectid/pendinginvitations', [passport.authenticate(['basic', 'jwt'
 app.use('/:projectid/labels', [fetchLabels],labels);
 
 app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], campaigns);
+
+app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], email);
 
 
 
