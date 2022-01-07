@@ -62,6 +62,18 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.email.templates.pooledRequest"]!=undefined) {
     update["settings.email.templates.pooledRequest"] = req.body["settings.email.templates.pooledRequest"];
   }
+  if (req.body["settings.email.templates.pooledEmailMessage"]!=undefined) {
+    update["settings.email.templates.pooledEmailMessage"] = req.body["settings.email.templates.pooledEmailMessage"];
+  }
+  if (req.body["settings.email.templates.newMessage"]!=undefined) {
+    update["settings.email.templates.newMessage"] = req.body["settings.email.templates.newMessage"];
+  }
+  if (req.body["settings.email.templates.ticket"]!=undefined) {
+    update["settings.email.templates.ticket"] = req.body["settings.email.templates.ticket"];
+  }
+  if (req.body["settings.email.templates.sendTranscript"]!=undefined) {
+    update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
+  }
 
   /*
 
@@ -172,6 +184,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
+  
   if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
     update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
   }
@@ -180,6 +193,18 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
   if (req.body["settings.email.templates.pooledRequest"]!=undefined) {
     update["settings.email.templates.pooledRequest"] = req.body["settings.email.templates.pooledRequest"];
+  }
+  if (req.body["settings.email.templates.pooledEmailMessage"]!=undefined) {
+    update["settings.email.templates.pooledEmailMessage"] = req.body["settings.email.templates.pooledEmailMessage"];
+  }
+  if (req.body["settings.email.templates.newMessage"]!=undefined) {
+    update["settings.email.templates.newMessage"] = req.body["settings.email.templates.newMessage"];
+  }
+  if (req.body["settings.email.templates.ticket"]!=undefined) {
+    update["settings.email.templates.ticket"] = req.body["settings.email.templates.ticket"];
+  }
+  if (req.body["settings.email.templates.sendTranscript"]!=undefined) {
+    update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
   }
 
 
