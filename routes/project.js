@@ -75,6 +75,28 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
   }
 
+
+  if (req.body["settings.email.from"]!=undefined) {
+    update["settings.email.from"] = req.body["settings.email.from"];
+  }
+  if (req.body["settings.email.config.host"]!=undefined) {
+    update["settings.email.config.host"] = req.body["settings.email.config.host"];
+  }
+  if (req.body["settings.email.config.port"]!=undefined) {
+    update["settings.email.config.port"] = req.body["settings.email.config.port"];
+  }
+  if (req.body["settings.email.config.secure"]!=undefined) {
+    update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+  }
+  if (req.body["settings.email.config.user"]!=undefined) {
+    update["settings.email.config.user"] = req.body["settings.email.config.user"];
+  }
+  if (req.body["settings.email.config.pass"]!=undefined) {
+    update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+  }
+
+
+  
   /*
 
   if (req.body.settings.email.templates.assignedRequest!=undefined) {
@@ -205,6 +227,26 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
   if (req.body["settings.email.templates.sendTranscript"]!=undefined) {
     update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
+  }
+
+
+  if (req.body["settings.email.from"]!=undefined) {
+    update["settings.email.from"] = req.body["settings.email.from"];
+  }
+  if (req.body["settings.email.config.host"]!=undefined) {
+    update["settings.email.config.host"] = req.body["settings.email.config.host"];
+  }
+  if (req.body["settings.email.config.port"]!=undefined) {
+    update["settings.email.config.port"] = req.body["settings.email.config.port"];
+  }
+  if (req.body["settings.email.config.secure"]!=undefined) {
+    update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+  }
+  if (req.body["settings.email.config.user"]!=undefined) {
+    update["settings.email.config.user"] = req.body["settings.email.config.user"];
+  }
+  if (req.body["settings.email.config.pass"]!=undefined) {
+    update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
   }
 
 
