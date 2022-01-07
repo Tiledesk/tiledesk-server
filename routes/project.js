@@ -50,6 +50,35 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
   }
 
+
+
+
+  if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
+    update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
+  }
+  if (req.body["settings.email.templates.assignedEmailMessage"]!=undefined) {
+    update["settings.email.templates.assignedEmailMessage"] = req.body["settings.email.templates.assignedEmailMessage"];
+  }
+  if (req.body["settings.email.templates.pooledRequest"]!=undefined) {
+    update["settings.email.templates.pooledRequest"] = req.body["settings.email.templates.pooledRequest"];
+  }
+
+  /*
+
+  if (req.body.settings.email.templates.assignedRequest!=undefined) {
+    // if (req.body["settings.email.templates.assignedRequest.html"]!=undefined) {
+    console.log("assignedRequest");
+    update["settings.email.templates.assignedRequest"] = req.body.settings.email.templates.assignedRequest;
+  }
+  if (req.body["settings.email.templates.assignedEmailMessage.html"]!=undefined) {
+    update["settings.email.templates.assignedEmailMessage.html"] = req.body["settings.email.templates.assignedEmailMessage.html"];
+  }
+  if (req.body.settings.email.templates.pooledRequest!=undefined) {
+    console.log("pooledRequest");
+    update["settings.email.templates.pooledRequest"] = req.body.settings.email.templates.pooledRequest;
+  }
+*/
+
   if (req.body["settings.chat_limit_on"]!=undefined) {
     update["settings.chat_limit_on"] = req.body["settings.chat_limit_on"];
   }
@@ -96,7 +125,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   
   winston.debug('UPDATE PROJECT REQ BODY ', update);
 
-
+  // console.log("update",JSON.stringify(update));
 
   Project.findByIdAndUpdate(req.params.projectid, update, { new: true, upsert: true }, function (err, updatedProject) {
     if (err) {
@@ -140,6 +169,17 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
 
   if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
+  }
+
+
+  if (req.body["settings.email.templates.assignedRequest"]!=undefined) {
+    update["settings.email.templates.assignedRequest"] = req.body["settings.email.templates.assignedRequest"];
+  }
+  if (req.body["settings.email.templates.assignedEmailMessage"]!=undefined) {
+    update["settings.email.templates.assignedEmailMessage"] = req.body["settings.email.templates.assignedEmailMessage"];
+  }
+  if (req.body["settings.email.templates.pooledRequest"]!=undefined) {
+    update["settings.email.templates.pooledRequest"] = req.body["settings.email.templates.pooledRequest"];
   }
 
 
