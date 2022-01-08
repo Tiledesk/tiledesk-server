@@ -1,6 +1,7 @@
 # Last
 - Email templates endpoint
 - Created request.updated event for request event and deprecated request.update.comment
+- Added Handlebars template processor for the message transformer module only if message.attributes.templateProcessor=true
 
 # 2.2.15
 - Added catch messageService.send for bot
