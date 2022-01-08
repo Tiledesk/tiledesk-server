@@ -1,0 +1,83 @@
+
+const messagePromiseEvent = require('../../event/messagePromiseEvent');
+const Request = require('../../models/request');
+var winston = require('../../config/winston');
+var cacheUtil = require('../../utils/cacheUtil');
+var handlebars = require('handlebars');
+
+class MessageHandlebarsTransformerInterceptor {
+
+ 
+
+
+    listen() {
+
+        var that = this;
+        winston.info("MessageHandlebarsTransformerInterceptor listener start ");
+ 
+
+        messagePromiseEvent.on('message.create.simple.before', async (data) => {
+            winston.info('MessageHandlebarsTransformerInterceptor message.create.simple.before', data); 
+
+            var message = data.beforeMessage;
+            
+            if (!message.text) { //for image i think
+                return data;
+            }
+            if (message.attributes && message.attributes.templateProcessor == true) { 
+
+                // TODO if variables are presents
+
+                var q1 = Request.findOne({request_id:  message.recipient, id_project: message.id_project});
+
+                // if (message.attributes && message.attributes.populateTemplate == true) {
+                    q1.populate('lead').
+                    populate('department').  
+                    populate('participatingBots').
+                    populate('participatingAgents').       
+                    populate({path:'requester',populate:{path:'id_user'}});
+                // }
+
+                var request = await q1.
+                    cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
+                    exec();
+
+
+
+                var requestJSON = request.toJSON();
+
+                winston.info('request mti: ', requestJSON);
+
+
+                var template = handlebars.compile(message.text);
+                winston.info('template: '+ template);
+
+                // var templateSpec = handlebars.precompile(message.text);
+                // winston.info('templateSpec: ', templateSpec);
+
+
+                var replacements = {        
+                  request: requestJSON,
+                };
+            
+                // {{request.first_text}}
+                // {{request.participatingAgents.0.firstname}}
+
+
+                
+
+                var text = template(replacements);
+                winston.info('text: '+ text);
+                message.text=text;
+
+            }
+            winston.debug('data: ' + JSON.stringify(data) );
+            return data;
+        });
+
+    }
+    
+}
+
+var messageHandlebarsTransformerInterceptor = new MessageHandlebarsTransformerInterceptor();
+module.exports = messageHandlebarsTransformerInterceptor;
