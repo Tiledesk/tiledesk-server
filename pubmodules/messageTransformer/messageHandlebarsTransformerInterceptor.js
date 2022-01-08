@@ -17,7 +17,7 @@ class MessageHandlebarsTransformerInterceptor {
  
 
         messagePromiseEvent.on('message.create.simple.before', async (data) => {
-            winston.info('MessageHandlebarsTransformerInterceptor message.create.simple.before', data); 
+            winston.debug('MessageHandlebarsTransformerInterceptor message.create.simple.before', data); 
 
             var message = data.beforeMessage;
             
@@ -46,11 +46,11 @@ class MessageHandlebarsTransformerInterceptor {
 
                 var requestJSON = request.toJSON();
 
-                winston.info('request mti: ', requestJSON);
+                winston.debug('request mti: ', requestJSON);
 
 
                 var template = handlebars.compile(message.text);
-                winston.info('template: '+ template);
+                winston.debug('template: '+ template);
 
                 // var templateSpec = handlebars.precompile(message.text);
                 // winston.info('templateSpec: ', templateSpec);
@@ -67,7 +67,7 @@ class MessageHandlebarsTransformerInterceptor {
                 
 
                 var text = template(replacements);
-                winston.info('text: '+ text);
+                winston.debug('text: '+ text);
                 message.text=text;
 
             }
