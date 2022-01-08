@@ -1,10 +1,13 @@
-# 2.2.15
+# Last
+- Email templates endpoint
+- Created request.updated event for request event and deprecated request.update.comment
 
+# 2.2.15
 - Added catch messageService.send for bot
 - Added external searcher for bot( ex. Rasa proxy) 
 - Faq language fix taken from bot language for create single and import from csv
 - Lower case reset password fix
-- Added alias /bots for /faq_kb AGGIORNA DOC
+- Added alias /bots for /faq_kb
 
 # 2.2.14
 - Fix Tiledesk Queue 1.1.11 with authEvent.queueEnabled = true 
