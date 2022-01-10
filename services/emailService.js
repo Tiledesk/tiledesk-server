@@ -119,6 +119,7 @@ class EmailService {
   }
 
   readTemplate(templateName, settings) {
+    // aggiunsta questo
     var that = this;
     winston.debug('EmailService readTemplate: '+ templateName + '  ' + JSON.stringify(settings)); 
     
@@ -246,11 +247,19 @@ class EmailService {
 
     // send mail with defined transport object
     this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
-      if (error) {
+      if (error) {    
+        if (mail.callback){
+          mail.callback(error, {info:info});
+        }
         return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
       }
       winston.verbose('Email sent:', {info: info});
       winston.debug('Email sent:', {info: info, mailOptions: mailOptions});
+
+      if (mail.callback){
+        mail.callback(error, {info:info});
+      }
+      
       // Preview only available when sending through an Ethereal account
       // winston.debug('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 
@@ -260,7 +269,7 @@ class EmailService {
   }
 
 
-  async sendTest(to) {      
+  async sendTest(to, configEmail, callback) {      
 
     var that = this;
 
@@ -268,19 +277,12 @@ class EmailService {
 
     var template = handlebars.compile(html);
 
-    var replacements = {        
-      user: {name: "andrea"},
-      enabled: true   
+    var replacements = {              
     };
 
     var html = template(replacements);
-
-    that.send({to:to, subject:`TileDesk test email`,html: html});
-
-    //that.send(that.bcc, `TileDesk test email - notification`, html);
-
-
-
+    
+    return that.send({to:to, subject:`TileDesk test email`, config: configEmail, html: html, callback: callback});
     
   }
 
