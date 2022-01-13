@@ -264,10 +264,10 @@ class FaqBotHandler {
 
                                                                                         
                     var url = faq_kb.url+"/parse";
-                    winston.verbose("fulltext search external url " + url);   
+                    winston.debug("fulltext search external url " + url);   
 
                     var json = {text: message.text, language: faq_kb.language, id_project: message.id_project, id_faq_kb: faq_kb._id};
-                    winston.verbose("fulltext search external json", json);   
+                    winston.debug("fulltext search external json", json);   
 
                     var headers = {
                         'Content-Type' : 'application/json', 
@@ -276,14 +276,14 @@ class FaqBotHandler {
                         };
 
                     var res = await httpUtil.call(url, headers, json, "POST")
-                    winston.verbose("res", res);
+                    winston.debug("res", res);
                     
                     if (res && res.intent && res.intent.name) {
                         var intent_name = res.intent.name;
-                        winston.verbose("intent_name", intent_name);
+                        winston.debug("intent_name", intent_name);
                         //filtra su intent name
                         query.intent_display_name = intent_name;
-                        winston.info("query",query);                        
+                        winston.debug("query",query);                        
                     
                     }
                 } else {
@@ -294,7 +294,7 @@ class FaqBotHandler {
                         search_obj["$language"] = faq_kb.language;
                     }
                     query.$text = search_obj;
-                    winston.info("fulltext search query", query);   
+                    winston.debug("fulltext search query", query);   
                     
                     mongoproject = {score: { $meta: "textScore" } };
                     sort = { score: { $meta: "textScore" } } //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
