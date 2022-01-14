@@ -162,8 +162,9 @@ describe('DepartmentService()', function () {
           
               // winston.info("createdLead", createdLead.toObject());
                 // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-          
-          requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
+                  var now = Date.now();
+
+          requestService.createWithIdAndRequester("request_id1-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
             
           // requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
@@ -172,7 +173,7 @@ describe('DepartmentService()', function () {
               winston.debug("resolve operatorsResult0", operatorsResult0); //time invariant?
 
               // requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
-              requestService.createWithIdAndRequester("request_id2", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
+              requestService.createWithIdAndRequester("request_id2-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
 
             departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
               winston.info("resolve operatorsResult", operatorsResult);
@@ -288,8 +289,8 @@ describe('DepartmentService()', function () {
           
               // winston.info("createdLead", createdLead.toObject());
                 // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-          
-          requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
+                  var now = Date.now();
+          requestService.createWithIdAndRequester("request_id1-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
             
 
             // getOperators(departmentid, projectid, nobot) {
@@ -297,7 +298,7 @@ describe('DepartmentService()', function () {
               winston.debug("resolve operatorsResult0", operatorsResult0); //time invariant?
 
               // requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
-                requestService.createWithIdAndRequester("request_id2", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
+                requestService.createWithIdAndRequester("request_id2-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
 
                 departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
                   winston.info("resolve operatorsResult", operatorsResult);
@@ -371,9 +372,9 @@ describe('DepartmentService()', function () {
 
 
           departmentService.create("PooledDepartment-for-createWithIdWith-createRoundRobinWithAssignedLastOperatorNotAvailableAndOtherNotAvailableDepartment", savedProject._id, routingConstants.ASSIGNED, savedUser._id).then(function(createdDepartment) {
-
+            var now = Date.now();
             leadService.createIfNotExists("request_id1-getallWithLoLead", "email@getallWithLoLead.com", savedProject._id).then(function(createdLead) {            
-              requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
+              requestService.createWithIdAndRequester("request_id1-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest) {
 
           // requestService.createWithId("request_id1", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
 
@@ -387,7 +388,7 @@ describe('DepartmentService()', function () {
 
 
               // requestService.createWithId("request_id2", "requester_id1", savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest2) {
-                requestService.createWithIdAndRequester("request_id2", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
+                requestService.createWithIdAndRequester("request_id2-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text",createdDepartment._id).then(function(savedRequest2) {
 
             departmentService.getOperators(createdDepartment._id, savedProject._id, false).then(function(operatorsResult) {
               winston.info("resolve operatorsResult", operatorsResult);

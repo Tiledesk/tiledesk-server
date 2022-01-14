@@ -277,9 +277,9 @@ it('createWithSenderFromLead', function (done) {
           leadService.createIfNotExistsWithLeadId(uid,"leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
           // console.log("createdLead",createdLead);
 
-          
+          var now = Date.now();
               chai.request(server)
-                .post('/'+ savedProject._id + '/requests/req123-createwithsender/messages')
+                .post('/'+ savedProject._id + '/requests/req123-createwithsender-'+now+'/messages')
                 .auth(email, pwd)
                 .set('content-type', 'application/json')
                 .send({"text":"text", "sender": uid})                
@@ -292,13 +292,13 @@ it('createWithSenderFromLead', function (done) {
                     expect(res.body.sender).to.equal(uid);
                     // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
                     expect(res.body.senderFullname).to.equal("leadfullname");
-                    expect(res.body.recipient).to.equal("req123-createwithsender");
+                    expect(res.body.recipient).to.equal("req123-createwithsender-"+now);
                     expect(res.body.text).to.equal("text");
                     expect(res.body.id_project).to.equal(savedProject._id.toString());
                     expect(res.body.createdBy).to.equal(savedUser._id.toString());
                     expect(res.body.status).to.equal(0);
 
-                    expect(res.body.request.request_id).to.equal("req123-createwithsender");
+                    expect(res.body.request.request_id).to.equal("req123-createwithsender-"+now);
                     expect(res.body.request.requester._id).to.equal(savedProject_user._id.toString());
                     expect(res.body.request.requester.uuid_user).to.equal(uid);
                     // expect(res.body.request.requester.id_user.firstname).to.equal("Test Firstname22");

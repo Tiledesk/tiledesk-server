@@ -41,10 +41,10 @@
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.5",
     "@tiledesk-ent/tiledesk-server-queue": "^1.1.11",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
-    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.51",
+    "@tiledesk-ent/tiledesk-server-resthook": "^1.1.52",
     "@tiledesk-ent/tiledesk-server-routing-queue": "^1.1.11",
     "@tiledesk-ent/tiledesk-server-tags": "^1.1.1",
-    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.81",
+    "@tiledesk-ent/tiledesk-server-triggers": "^1.1.82",
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {

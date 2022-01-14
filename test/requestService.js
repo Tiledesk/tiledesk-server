@@ -49,15 +49,15 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-        
+        var now = Date.now();
         var request = {
-                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      request_id:"request_id-createObjSimple-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                       id_project:savedProject._id, first_text: "first_text",
                       lead:createdLead, requester: savedProjectAndPU.project_user };
 
        requestService.create(request).then(function(savedRequest) {
           winston.info("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createObjSimple-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
@@ -96,10 +96,10 @@ describe('RequestService', function () {
           requestService.create(request).then(function(savedRequest) {
             // assert.isNotOk('No duplicate check index');
             console.log("no index check ???");
-            done();
+            // done();
           }).catch(function(err) {
             console.log("ok duplicate check index ", err);
-            // done();
+            done();
           });
         }).catch(function(err) {
             console.log("test reject",err);
@@ -128,15 +128,15 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-        
+        var now = Date.now();
         var request = {
-                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      request_id:"request_idcreateObjSimpleUpdateLeadUpdateSnapshot-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                       id_project:savedProject._id, first_text: "first_text",
                       lead:createdLead, requester: savedProjectAndPU.project_user };
 
        requestService.create(request).then(function(savedRequest) {
           winston.info("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_idcreateObjSimpleUpdateLeadUpdateSnapshot-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.department).to.not.equal(null);
@@ -179,7 +179,7 @@ describe('RequestService', function () {
 
             Request.findById(savedRequest._id, function(err, request) {
               console.log("err",err);
-              expect(request.request_id).to.equal("request_id1");
+              expect(request.request_id).to.equal("request_idcreateObjSimpleUpdateLeadUpdateSnapshot-"+now);
               expect(request.snapshot.lead.fullname).to.equal("fullname2");
               done();
             });
@@ -218,16 +218,16 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-        
+        var now = Date.now();
         var request = {
-                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      request_id:"request_id-createObjParticipantsAgent-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                       id_project:savedProject._id, first_text: "first_text",
                       lead:createdLead, requester: savedProjectAndPU.project_user,
                       participants: [userid.toString()] };
 
        requestService.create(request).then(function(savedRequest) {
           winston.debug("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createObjParticipantsAgent-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -289,16 +289,16 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-        
+        var now = Date.now();
         var request = {
-                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      request_id:"request_id-createObjTemp-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                       id_project:savedProject._id, first_text: "first_text",
                       lead:createdLead, requester: savedProjectAndPU.project_user,
                       status:50 };
 
        requestService.create(request).then(function(savedRequest) {
           winston.debug("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createObjTemp-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -349,9 +349,10 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        var now = Date.now();
+        requestService.createWithIdAndRequester("request_id-createWithIdAndCreateNewLead-"+now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
           winston.debug("resolve", savedRequest.toObject());
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createWithIdAndCreateNewLead-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -404,18 +405,18 @@ describe('RequestService', function () {
 
      projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-
+      var now = Date.now();
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
 
         requestEvent.on('request.create', function(savedRequest) {
 
-          if (savedRequest.request_id === "createWithIdAndCreateNewLeadAndCheckRequestEvent" ) {
+          if (savedRequest.request_id === "createWithIdAndCreateNewLeadAndCheckRequestEvent-"+now ) {
 
         
               console.log("savedRequest",savedRequest.toJSON());
 
               winston.debug("resolve", savedRequest.toObject());
-              expect(savedRequest.request_id).to.equal("createWithIdAndCreateNewLeadAndCheckRequestEvent");
+              expect(savedRequest.request_id).to.equal("createWithIdAndCreateNewLeadAndCheckRequestEvent-"+now);
               expect(savedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(savedRequest.first_text).to.equal("first_text");
               expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -445,7 +446,7 @@ describe('RequestService', function () {
         }
 
         });
-       requestService.createWithIdAndRequester("createWithIdAndCreateNewLeadAndCheckRequestEvent", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+        requestService.createWithIdAndRequester("createWithIdAndCreateNewLeadAndCheckRequestEvent-"+now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
          
         }).catch(function(err) {
             console.log("test reject",err);
@@ -512,10 +513,11 @@ describe('RequestService', function () {
       var userid = savedUser.id;
      projectService.createAndReturnProjectAndProjectUser("createWithIdAndCreatedBy", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
+      var now = Date.now();
       // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
+        requestService.createWithIdAndRequester("request_id-createWithIdAndCreatedBy-"+now,savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", null, null, null,null,null, "user1").then(function(savedRequest) {
           console.log("test resolve");
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createWithIdAndCreatedBy-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -558,8 +560,9 @@ describe('RequestService', function () {
       var userid = savedUser.id;
      projectService.createAndReturnProjectAndProjectUser("createWithWrongDepartmentId", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
+      var now = Date.now();
       // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", "5ebd890b3f2702001915c89e", null, null,null,null, "user1").then(function(savedRequest) {
+       requestService.createWithIdAndRequester("request_idcreateWithWrongDepartmentId-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", "5ebd890b3f2702001915c89e", null, null,null,null, "user1").then(function(savedRequest) {
                   
         })
         .catch(function(err) {
@@ -584,9 +587,10 @@ describe('RequestService', function () {
      projectService.createAndReturnProjectAndProjectUser("createWithIdWithPooledDepartment", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
       departmentService.create("PooledDepartment-for-createWithIdWith-createWithIdWithPooledDepartment", savedProject._id, 'pooled', userid).then(function(createdDepartment) {
-       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
+        var now = Date.now();
+        requestService.createWithIdAndRequester("request_id-createWithIdWithPooledDepartment-"+now,savedProjectAndPU.project_user._id, null, savedProject._id, "first_text", createdDepartment._id).then(function(savedRequest) {
           winston.debug("resolve savedRequest");
-          expect(savedRequest.request_id).to.equal("request_id1");
+          expect(savedRequest.request_id).to.equal("request_id-createWithIdWithPooledDepartment-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -621,7 +625,8 @@ describe('RequestService', function () {
     var messageSender = "5badfe5d553d1844ad654072";
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-      requestService.createWithIdAndRequester("request_id-waitingTimeRequest", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+      requestService.createWithIdAndRequester("request_id-waitingTimeRequest-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
           setTimeout(function () {
               Promise.all([
                 messageService.create(messageSender, "test sender", savedRequest.request_id,  "hello1",
@@ -674,7 +679,8 @@ describe('RequestService', function () {
 
       projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
         var savedProject = savedProjectAndPU.project;
-        requestService.createWithIdAndRequester("request_id-closeRequest",savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+        var now = Date.now();
+        requestService.createWithIdAndRequester("request_id-closeRequest-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
           Promise.all([
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
             savedProject._id, "5badfe5d553d1844ad654072"),
@@ -714,7 +720,8 @@ describe('RequestService', function () {
       var savedProject = savedProjectAndPU.project;
 
      leadService.createIfNotExists("leadfullname", "andrea.leo@frontiere21.it", savedProject._id).then(function(createdLead) {
-      requestService.createWithIdAndRequester("request_id-closeRequest", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+      requestService.createWithIdAndRequester("request_id-closeRequestAndSendTranscript-"+now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
         Promise.all([
           messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
           savedProject._id, "5badfe5d553d1844ad654072"),
@@ -753,8 +760,9 @@ describe('RequestService', function () {
 
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
+      var now = Date.now();
 
-      requestService.createWithIdAndRequester("request_id-reopenRequest", savedProjectAndPU.project_user._id, null,savedProject._id, "first_text").then(function(savedRequest) {
+      requestService.createWithIdAndRequester("request_id-reopenRequest-"+now, savedProjectAndPU.project_user._id, null,savedProject._id, "first_text").then(function(savedRequest) {
         
             requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
               requestService.reopenRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(reopenedRequest) {
@@ -820,8 +828,8 @@ describe('RequestService', function () {
           console.log("err",err)
         }
 
-
-     requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+      requestService.createWithIdAndRequester("request_id-addparticipant-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
       //  inserisci id valido
       //  var member = 'agent1';
        var member = savedUser2._id.toString();
@@ -829,7 +837,7 @@ describe('RequestService', function () {
       //  addParticipantByRequestId(request_id, id_project, member) {
        requestService.addParticipantByRequestId(savedRequest.request_id, savedProject._id, member).then(function(savedRequestParticipant) {
         winston.info("resolve addParticipantByRequestId", savedRequestParticipant.toObject());
-        expect(savedRequestParticipant.request_id).to.equal("request_id1");
+        expect(savedRequestParticipant.request_id).to.equal("request_id-addparticipant-"+now);
 
         winston.info("savedProjectAndPU.project_user._id.toString():"+savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -903,9 +911,9 @@ projectService.createAndReturnProjectAndProjectUser("setParticipantsByRequestId-
       if (err) {
         console.log("err",err)
       }
+    var now = Date.now();
 
-
-   requestService.createWithIdAndRequester("request_id1-setParticipantsByRequestId", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+    requestService.createWithIdAndRequester("request_id1-setParticipantsByRequestId-"+now,savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
     expect(savedRequest.participants).to.contains(userid);
     expect(savedRequest.participantsAgents).to.contains(userid);
 
@@ -916,7 +924,7 @@ projectService.createAndReturnProjectAndProjectUser("setParticipantsByRequestId-
       // setParticipantsByRequestId(request_id, id_project, newparticipants) {
      requestService.setParticipantsByRequestId(savedRequest.request_id, savedProject._id, [member]).then(function(savedRequestParticipant) {
       winston.info("resolve setParticipantsByRequestId", savedRequestParticipant.toObject());
-      expect(savedRequestParticipant.request_id).to.equal("request_id1-setParticipantsByRequestId");
+      expect(savedRequestParticipant.request_id).to.equal("request_id1-setParticipantsByRequestId-"+now);
 
       winston.info("savedProjectAndPU.project_user._id.toString():"+savedProjectAndPU.project_user._id.toString());
       expect(savedRequestParticipant.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -963,8 +971,8 @@ it('removeparticipant', function (done) {
 
   projectService.createAndReturnProjectAndProjectUser("removeparticipant-project", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
-  
-     requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+    var now = Date.now();
+    requestService.createWithIdAndRequester("request_id-removeparticipant-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
        requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
         winston.info("resolve", savedRequestParticipant.toObject());
         
@@ -972,7 +980,7 @@ it('removeparticipant', function (done) {
         expect(savedRequest.status).to.equal(200);
 
         //savedRequestParticipant is UNASSIGNED -> 100
-        expect(savedRequestParticipant.request_id).to.equal("request_id1");
+        expect(savedRequestParticipant.request_id).to.equal("request_id-removeparticipant-"+now);
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
         // expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
@@ -1012,10 +1020,10 @@ it('removeparticipant', function (done) {
   
      projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentSameDepartmentSkipUpdate", userid).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-  
-       requestService.createWithIdAndRequester("routeDepartmentSameAgentSameDepartmentSkipUpdate", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+       requestService.createWithIdAndRequester("routeDepartmentSameAgentSameDepartmentSkipUpdate-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
           winston.debug("resolve savedRequest");
-          expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate");
+          expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -1033,9 +1041,9 @@ it('removeparticipant', function (done) {
             let dep = savedRequest.department;
   
             // route(request_id, departmentid, id_project, nobot, no_populate) {
-            requestService.route("routeDepartmentSameAgentSameDepartmentSkipUpdate", dep, savedProject._id, false).then(function(routedRequest) {
+            requestService.route("routeDepartmentSameAgentSameDepartmentSkipUpdate-"+now, dep, savedProject._id, false).then(function(routedRequest) {
   
-              expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate");
+              expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentSameDepartmentSkipUpdate-"+now);
               expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(routedRequest.first_text).to.equal("first_text");
               expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -1077,10 +1085,11 @@ it('routeDepartmentSameAgentDifferentDepartment', function (done) {
 
    projectService.createAndReturnProjectAndProjectUser("routeDepartmentSameAgentDifferentDepartment", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
+    var now = Date.now();
 
-     requestService.createWithIdAndRequester("routeDepartmentSameAgentDifferentDepartment", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+     requestService.createWithIdAndRequester("routeDepartmentSameAgentDifferentDepartment-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
         winston.debug("resolve savedRequest");
-        expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment");
+        expect(savedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment-"+now);
         expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequest.first_text).to.equal("first_text");
         expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -1097,9 +1106,9 @@ it('routeDepartmentSameAgentDifferentDepartment', function (done) {
         departmentService.create("AssignedDepartment-for-routeDepartmentSameAgentDifferentDepartment", savedProject._id, 'assigned', userid).then(function(createdDepartment) {
 
           // route(request_id, departmentid, id_project, nobot, no_populate) {
-          requestService.route("routeDepartmentSameAgentDifferentDepartment", createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
+          requestService.route("routeDepartmentSameAgentDifferentDepartment-"+now, createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
 
-            expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment");
+            expect(routedRequest.request_id).to.equal("routeDepartmentSameAgentDifferentDepartment-"+now);
             expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(routedRequest.first_text).to.equal("first_text");
             expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -1169,10 +1178,11 @@ it('routeDepartmentSameAgentDifferentDepartment', function (done) {
           if (err) {
             console.log("err",err)
           }
-  
-       requestService.createWithIdAndRequester("routeDepartmentDifferentAgentDifferentDepartment", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+          var now = Date.now();
+
+       requestService.createWithIdAndRequester("routeDepartmentDifferentAgentDifferentDepartment-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
           winston.debug("resolve savedRequest");
-          expect(savedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment");
+          expect(savedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment-"+now);
           expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
           expect(savedRequest.first_text).to.equal("first_text");
           expect(savedRequest.snapshot.agents).to.have.lengthOf(2);
@@ -1210,9 +1220,9 @@ it('routeDepartmentSameAgentDifferentDepartment', function (done) {
 
   
             // route(request_id, departmentid, id_project, nobot, no_populate) {
-            requestService.route("routeDepartmentDifferentAgentDifferentDepartment", createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
+            requestService.route("routeDepartmentDifferentAgentDifferentDepartment-"+now, createdDepartment._id, savedProject._id, false).then(function(routedRequest) {
   
-              expect(routedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment");
+              expect(routedRequest.request_id).to.equal("routeDepartmentDifferentAgentDifferentDepartment-"+now);
               expect(routedRequest.requester._id.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
               expect(routedRequest.first_text).to.equal("first_text");
               expect(routedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -1260,8 +1270,8 @@ it('reroute', function (done) {
 
   projectService.createAndReturnProjectAndProjectUser("reroute-project", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
-  
-     requestService.createWithIdAndRequester("request_id1-reroute", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+    var now = Date.now();
+     requestService.createWithIdAndRequester("request_id1-reroute-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
 
       // reroute(request_id, id_project, nobot) {
        requestService.reroute(savedRequest.request_id, savedProject._id, true).then(function(savedRequestParticipant) {
@@ -1271,7 +1281,7 @@ it('reroute', function (done) {
         expect(savedRequest.status).to.equal(200);
 
         //savedRequestParticipant is UNASSIGNED -> 100
-        expect(savedRequestParticipant.request_id).to.equal("request_id1-reroute");
+        expect(savedRequestParticipant.request_id).to.equal("request_id1-reroute-"+now);
         // expect(savedRequestParticipant.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
         expect(savedRequestParticipant.first_text).to.equal("first_text");
         expect(savedRequestParticipant.snapshot.agents).to.have.lengthOf(1);
@@ -1313,8 +1323,8 @@ it('closeRequestAndRemoveParticipant', function (done) {
 
   projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
     var savedProject = savedProjectAndPU.project;
-
-    requestService.createWithIdAndRequester("request_id-closeRequestAndRemoveParticipant", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+    var now = Date.now();
+    requestService.createWithIdAndRequester("request_id-closeRequestAndRemoveParticipant-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
       Promise.all([
         messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
         savedProject._id, "5badfe5d553d1844ad654072"),
@@ -1356,15 +1366,15 @@ it('addTag', function (done) {
     var savedProject = savedProjectAndPU.project;
 
     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-
-     requestService.createWithIdAndRequester("request_id1-addTag", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+     requestService.createWithIdAndRequester("request_id1-addTag-"+now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
         winston.debug("resolve", savedRequest.toObject());
-        expect(savedRequest.request_id).to.equal("request_id1-addTag");
+        expect(savedRequest.request_id).to.equal("request_id1-addTag-"+now);
         expect(savedRequest.tags.length).to.equal(0);
         
         var tag = {tag:"tag1"};
-        requestService.addTagByRequestId("request_id1-addTag", savedProject._id, tag).then(function(savedReqTag) {
-          expect(savedReqTag.request_id).to.equal("request_id1-addTag");
+        requestService.addTagByRequestId("request_id1-addTag-"+now, savedProject._id, tag).then(function(savedReqTag) {
+          expect(savedReqTag.request_id).to.equal("request_id1-addTag-"+now);
           expect(savedReqTag.tags.length).to.equal(1);
           expect(savedReqTag.tags[0].tag).to.equal("tag1");
           done();
@@ -1394,20 +1404,20 @@ it('removeTag', function (done) {
     var savedProject = savedProjectAndPU.project;
 
     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-
-     requestService.createWithIdAndRequester("request_id1-addTag", savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
+     requestService.createWithIdAndRequester("request_id1-addTag-"+now, savedProjectAndPU.project_user._id, createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
         winston.debug("resolve", savedRequest.toObject());
-        expect(savedRequest.request_id).to.equal("request_id1-addTag");
+        expect(savedRequest.request_id).to.equal("request_id1-addTag-"+now);
         expect(savedRequest.tags.length).to.equal(0);
         
         var tag = {tag:"tag1"};
-        requestService.addTagByRequestId("request_id1-addTag", savedProject._id, tag).then(function(savedReqTag) {
-          expect(savedReqTag.request_id).to.equal("request_id1-addTag");
+        requestService.addTagByRequestId("request_id1-addTag-"+now, savedProject._id, tag).then(function(savedReqTag) {
+          expect(savedReqTag.request_id).to.equal("request_id1-addTag-"+now);
           expect(savedReqTag.tags.length).to.equal(1);
           expect(savedReqTag.tags[0].tag).to.equal("tag1");
 
-          requestService.removeTagByRequestId("request_id1-addTag", savedProject._id, "tag1").then(function(savedReqTagRem) {
-            expect(savedReqTagRem.request_id).to.equal("request_id1-addTag");
+          requestService.removeTagByRequestId("request_id1-addTag-"+now, savedProject._id, "tag1").then(function(savedReqTagRem) {
+            expect(savedReqTagRem.request_id).to.equal("request_id1-addTag-"+now);
             expect(savedReqTagRem.tags.length).to.equal(0);            
             done();
           });
@@ -1455,9 +1465,9 @@ it('removeTag', function (done) {
             var savedProject = savedProjectAndPU.project;
       
             leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
-              
+              var now = Date.now();
               var request = {
-                            request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                            request_id:"request_idcreateMessageMicroLanguageAttributes-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                             id_project:savedProject._id, first_text: "first_text",
                             participants: [userid],
                             lead:createdLead, requester: savedProjectAndPU.project_user };
@@ -1522,12 +1532,16 @@ it('removeTag', function (done) {
       
             leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
               
+              var now = Date.now();
+
+
               var request = {
-                            request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                            request_id:"request_idcreateMessageMicroLanguageFromBot-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                             id_project:savedProject._id, first_text: "first_text",
                             participants: ["bot_"+userid],
                             lead:createdLead, requester: savedProjectAndPU.project_user };
       
+                            
              requestService.create(request).then(function(savedRequest) {
                 winston.info("resolve", savedRequest.toObject());
 
@@ -1572,8 +1586,10 @@ it('removeTag', function (done) {
 
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
         
+        var now = Date.now();
+
         var request = {
-                      request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+                      request_id:"request_idselectSnapshot-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
                       id_project:savedProject._id, first_text: "first_text",
                       participants: ["bot_"+userid],
                       lead:createdLead, requester: savedProjectAndPU.project_user };

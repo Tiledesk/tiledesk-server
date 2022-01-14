@@ -151,12 +151,12 @@ it('createUpperCaseEmail', function (done) {
     userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
      projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function(savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-
+      var now = Date.now();
 
       // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
       // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
       //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-        requestService.createWithIdAndRequester("request_requestroute-getbyid", savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
+        requestService.createWithIdAndRequester("request_requestroute-getbyid-"+now, savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
           winston.debug("resolve", savedRequest.toObject());
          
 
@@ -173,7 +173,7 @@ it('createUpperCaseEmail', function (done) {
                 
                 res.body.should.have.property('department').not.eql(null);
                 // res.body.should.have.property('lead').eql(null);
-                res.body.should.have.property('request_id').eql("request_requestroute-getbyid");                
+                res.body.should.have.property('request_id').eql("request_requestroute-getbyid-"+now);                
                 res.body.should.have.property('requester').not.eql(null);    
                 
                 expect(res.body.participantsAgents.length).to.equal(1);                
@@ -224,12 +224,13 @@ it('getbyidWithPartecipatingBots', function (done) {
 
           winston.error("err", err);
           winston.info("updatedDepartment", updatedDepartment.toObject());
+          var now = Date.now();
 
 
     // leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
     //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-      requestService.createWithIdAndRequester("request_requestroute-getbyidWithPartecipatingBots", savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
+      requestService.createWithIdAndRequester("request_requestroute-getbyidWithPartecipatingBots-"+now, savedProjectAndPU.project_user._id,null, savedProject._id, "first_text").then(function(savedRequest) {
         winston.debug("resolve", savedRequest.toObject());
        
 
@@ -247,7 +248,7 @@ it('getbyidWithPartecipatingBots', function (done) {
               res.body.should.have.property('department').not.eql(null);
                             
               // res.body.should.have.property('lead').eql(null);
-              res.body.should.have.property('request_id').eql("request_requestroute-getbyidWithPartecipatingBots");                
+              res.body.should.have.property('request_id').eql("request_requestroute-getbyidWithPartecipatingBots-"+now);                
               res.body.should.have.property('requester').not.eql(null);                
               expect(res.body.requester._id).to.not.equal(savedProjectAndPU.project_user._id);
 
@@ -299,9 +300,10 @@ it('getbyidWithPartecipatingBots', function (done) {
 
     console.log("createdLead", createdLead);
 
+    var now = Date.now();
 
     var new_request = {
-      request_id: "request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+      request_id: "request_id-getallSimple-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
       id_project:savedProject._id, first_text: "first_text",
       lead:createdLead, requester: savedProjectAndPU.project_user 
     };
@@ -378,9 +380,10 @@ it('getallNoPopulate', function (done) {
     leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
     // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
     //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+      var now = Date.now();
 
       var request = {
-        request_id:"request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+        request_id:"request_getallNoPopulate-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
         id_project:savedProject._id, first_text: "first_text",
         lead:createdLead, requester: savedProjectAndPU.project_user };
 
@@ -460,10 +463,11 @@ it('getallFilter-snap_department_routing', function (done) {
   leadService.createIfNotExists("leadfullname", "email-getallfilter@email.com", savedProject._id).then(function(createdLead) {
 
   console.log("createdLead", createdLead);
+  var now = Date.now();
 
 
   var new_request = {
-    request_id: "request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+    request_id: "request_id-getallFilter-snap_department_routing-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
     id_project:savedProject._id, first_text: "first_text",
     lead:createdLead, requester: savedProjectAndPU.project_user 
   };
@@ -546,9 +550,10 @@ it('getallFilter-snap_department_default', function (done) {
 
   console.log("createdLead", createdLead);
 
+  var now = Date.now();
 
   var new_request = {
-    request_id: "request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+    request_id: "request_id-getallFilter-snap_department_routing-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
     id_project:savedProject._id, first_text: "first_text",
     lead:createdLead, requester: savedProjectAndPU.project_user 
   };
@@ -631,9 +636,10 @@ it('getallFilter-snap_department_id_bot_exists', function (done) {
 
   console.log("createdLead", createdLead);
 
+  var now = Date.now();
 
   var new_request = {
-    request_id: "request_id1", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
+    request_id: "request_id-getallFilter-snap_department_id_bot_exists-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id,
     id_project:savedProject._id, first_text: "first_text",
     lead:createdLead, requester: savedProjectAndPU.project_user 
   };
@@ -708,8 +714,9 @@ it('getallcsv', function (done) {
 
     winston.info("createdLead", createdLead.toObject());
       // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
+        var now = Date.now();
 
-     requestService.create({request_id: "request_id1", project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id, id_project: savedProject._id, 
+     requestService.create({request_id: "request_id-getallcsv-"+now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id, id_project: savedProject._id, 
      first_text: "first_text", tags: [{tag: "tag1"},{tag: "tag2"}]}).then(function(savedRequest) {
         winston.info("resolve", savedRequest.toObject());
        
@@ -757,8 +764,9 @@ it('getallWithLoLead', function (done) {
   
       winston.info("createdLead", createdLead.toObject());
         // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight, channel, location) {
-  
-       requestService.createWithIdAndRequester("request_id1", savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+          var now = Date.now();
+
+       requestService.createWithIdAndRequester("request_id-getallWithLoLead-"+now, savedProjectAndPU.project_user._id,createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
 
         winston.debug("resolve", savedRequest.toObject());
        
@@ -1044,19 +1052,21 @@ it('removeParticipant', function (done) {
       leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function(createdLead) {
         winston.info("savedProjectAndPU.project_user._id:" +savedProjectAndPU.project_user._id);
         
+        var now = Date.now();
+
   //  projectService.create("request-removeParticipant", savedUser._id).then(function(savedProject) {
     // requestService.removeParticipantByRequestId(savedRequest.request_id, savedProject._id, userid).then(function(savedRequestParticipant) {
       var request = {
-        request_id:"request_id1-removeParticipant", project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
+        request_id:"request_id1-removeParticipant-"+now, project_user_id:savedProjectAndPU.project_user._id, lead_id:createdLead._id, 
         id_project:savedProject._id, first_text: "first_text",
         lead:createdLead, requester: savedProjectAndPU.project_user };
 
         requestService.create(request).then(function(savedRequest) {
         winston.info("savedRequest", savedRequest.toObject());
-        expect(savedRequest.request_id).to.equal("request_id1-removeParticipant");
+        expect(savedRequest.request_id).to.equal("request_id1-removeParticipant-"+now);
 
         chai.request(server)
-          .delete('/'+ savedProject._id + '/requests/'+'request_id1-removeParticipant'+"/participants/"+savedUser._id)
+          .delete('/'+ savedProject._id + '/requests/'+'request_id1-removeParticipant-'+now+"/participants/"+savedUser._id)
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({"text":"first_text"})
