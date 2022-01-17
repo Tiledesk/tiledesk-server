@@ -15,7 +15,7 @@ You can find more info here: https://developer.tiledesk.com
 
 # Prerequisites
 
-* [Nodejs](https://www.npmjs.com/) and npm installed 
+* [Nodejs](https://www.npmjs.com/) and npm installed. Suggested versions are NodeJS 12.20.2 and NPM 6.14.11 
 * [MongoDb](https://www.mongodb.com) installed
 
 # Running Tiledesk Server
