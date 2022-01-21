@@ -1,9 +1,17 @@
-# Last
+
+
+
+
+# 2.2.16
 - Email templates endpoint
 - Created request.updated event for request event and deprecated request.update.comment
 - Added Handlebars template processor for the message transformer module only if message.attributes.templateProcessor=true
+- Email test send endpoint
+- Bugfix widget label
+- Added /intents alias for /faq endpoint
+- The request_id field of the request model has now a unique index
 
-# 2.2.15
+# 2.2.15 -> PROD
 - Added catch messageService.send for bot
 - Added external searcher for bot( ex. Rasa proxy) 
 - Faq language fix taken from bot language for create single and import from csv
