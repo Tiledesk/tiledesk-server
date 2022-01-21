@@ -372,6 +372,7 @@ describe('bot', () => {
 
 
     
+    
     // mocha test-int/bot.js  --grep 'createSimpleFulltext'
     it('createSimpleFulltext', (done) => {
        
@@ -383,7 +384,100 @@ describe('bot', () => {
          userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
              projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                 // create(name, url, projectid, user_id, type) 
-                faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
+                    
+                    var newFaq = new Faq({
+                        id_faq_kb: savedBot._id,
+                        question: 'question number one',
+                        answer: 'answer',
+                        id_project: savedProject._id,
+                        createdBy: savedUser._id,
+                        updatedBy: savedUser._id
+                      });
+              
+                                newFaq.save(function (err, savedFaq) {
+
+
+                                Department.findOneAndUpdate({id_project: savedProject._id, default:true}, {id_bot:savedBot._id}, function (err, updatedDepartment) {
+
+                                        chai.request(server)
+                                        .post('/'+ savedProject._id + '/subscriptions')
+                                        .auth(email, pwd)
+                                        .set('content-type', 'application/json')
+                                        .send({"event":"message.create", "target":"http://localhost:3010/"})
+                                        .end((err, res) => {
+                                            console.log("res.body",  JSON.stringify(res.body));
+                                            // console.dir("res.body 1",  res.body);
+                                            console.log("res.headers",  res.headers);
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.event).to.equal("message.create"); 
+                                            var secret = res.body.secret;
+                                            expect(secret).to.not.equal(null);                     
+                                            expect(res.headers["x-hook-secret"]).to.equal(secret); 
+                                            
+                                        
+                                            let messageReceived = 0;
+                                            var serverClient = express();
+                                            serverClient.use(bodyParser.json());
+                                            serverClient.post('/', function (req, res) {
+                                                console.log('serverClient req', JSON.stringify(req.body));                        
+                                                console.log("serverClient.headers",  JSON.stringify(req.headers));
+                                                messageReceived = messageReceived+1;
+                                                expect(req.body.hook.event).to.equal("message.create");
+                                                expect(req.body.payload.request.request_id).to.equal("request_id-subscription-message-sending");
+                                                expect(req.body.payload.request.department).to.not.equal(null);
+                                                expect(req.body.payload.request.department.bot).to.not.equal(null);
+                                                expect(req.body.payload.request.department.bot.name).to.equal("testbot");
+                                                
+                                                expect(req.headers["x-hook-secret"]).to.equal(secret); 
+                                                res.send('POST request to the homepage');
+                                                expect(req.body.payload.text).to.equal("answer");
+                                                // console.log("savedFaq",savedFaq);
+                                                expect(req.body.payload.sender).to.equal("bot_"+savedBot.id);
+                                                expect(req.body.payload.recipient).to.equal("request_id-subscription-message-sending");
+                                                // expect(req.body.payload.attributes._answer._id.toString()).to.equal(savedFaq._id.toString());
+                                                 expect(req.body.payload.attributes._answerid.toString()).to.equal(savedFaq._id.toString());
+                                                done();
+                                                
+                                               
+                                                
+                                                                    
+                                            });
+                                            var listener = serverClient.listen(3010, '0.0.0.0', function(){ console.log('Node js Express started', listener.address());});
+
+
+                                            leadService.createIfNotExists("leadfullname-subscription-message-sending", "andrea.leo@-subscription-message-sending.it", savedProject._id).then(function(createdLead) {
+                                                requestService.createWithId("request_id-subscription-message-sending", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
+                                                    messageService.create(savedUser._id, "test sender", savedRequest.request_id, "question",
+                                                    savedProject._id, savedUser._id).then(function(savedMessage){
+                                                        expect(savedMessage.text).to.equal("question");     
+                                                        // expect(savedMessage.sender).to.equal("question");     
+                                                    });
+                                                });
+                                            });
+                                        });
+                        });
+                        });
+                    });
+
+            });
+        });
+        }).timeout(20000);    
+
+        
+    // mocha test-int/bot.js  --grep 'createSimpleExternalSearcherBot'
+    it('createSimpleExternalSearcherBot', (done) => {
+       
+        var email = "test-bot-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+ 
+       
+
+         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+             projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
+                // create(name, url, projectid, user_id, type) 
+                faqService.create("testbot", "http://localhost:3001/samples/bot/external/searcher", savedProject._id, savedUser._id, "internal").then(function(savedBot) {  
                     
                     var newFaq = new Faq({
                         id_faq_kb: savedBot._id,
