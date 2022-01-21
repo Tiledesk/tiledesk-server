@@ -333,8 +333,9 @@ app.use('/:projectid/departments', department);
 
 channelManager.useUnderProjects(app);
 
-
+//deprecated
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
+app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
 
 //Deprecated??
 app.use('/:projectid/faqpub', faqpub);

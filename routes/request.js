@@ -184,7 +184,8 @@ router.patch('/:requestid', function (req, res) {
     }
 
     requestEvent.emit("request.update", request);
-    requestEvent.emit("request.update.comment", {comment:"PATCH",request:request});
+    requestEvent.emit("request.update.comment", {comment:"PATCH",request:request}); //Deprecated
+    requestEvent.emit("request.updated", {comment:"PATCH",request:request, patch:  update});
     return res.json(request);
   });
 
@@ -455,7 +456,8 @@ router.patch('/:requestid/attributes',  function (req, res) {
           }
           winston.verbose(" saved request attributes",savedRequest.toObject())
           requestEvent.emit("request.update", savedRequest);
-          requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_PATCH",request:savedRequest});
+          requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_PATCH",request:savedRequest});//Deprecated
+          requestEvent.emit("request.updated", {comment:"ATTRIBUTES_PATCH",request:savedRequest, patch:  {attributes:data}});
           requestEvent.emit("request.attributes.update", savedRequest);
             res.json(savedRequest);
           });
@@ -483,7 +485,9 @@ router.post('/:requestid/notes',  function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error adding request object.' });
     }
     requestEvent.emit("request.update", updatedRequest);
-    requestEvent.emit("request.update.comment", {comment:"NOTE_ADD",request:updatedRequest});
+    requestEvent.emit("request.update.comment", {comment:"NOTE_ADD",request:updatedRequest});//Deprecated
+    requestEvent.emit("request.updated", {comment:"NOTE_ADD",request:updatedRequest, patch:  {notes:note}});
+
     return res.json(updatedRequest);
   });
 
@@ -506,7 +510,9 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error adding request object.' });
     }
     requestEvent.emit("request.update", updatedRequest);
-    requestEvent.emit("request.update.comment", {comment:"NOTE_DELETE",request:updatedRequest});
+    requestEvent.emit("request.update.comment", {comment:"NOTE_DELETE",request:updatedRequest});//Deprecated
+    // requestEvent.emit("request.updated", {comment:"NOTE_DELETE",request:updatedRequest, patch:  {notes:req.params.noteid}});
+
     return res.json(updatedRequest);
   });
 

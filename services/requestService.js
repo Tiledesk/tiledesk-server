@@ -284,7 +284,9 @@ class RequestService {
 
               
               requestEvent.emit('request.update',requestComplete);
-              requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});
+              requestEvent.emit("request.update.comment", {comment:"REROUTE",request:requestComplete});//Deprecated
+              requestEvent.emit("request.updated", {comment:"REROUTE",request:requestComplete, patch:{removedParticipants: removedParticipants, addedParticipants:addedParticipants}});
+
               requestEvent.emit('request.participants.update', {beforeRequest:request, 
                 removedParticipants:removedParticipants, 
                 addedParticipants:addedParticipants,
@@ -726,8 +728,10 @@ class RequestService {
               winston.error(err);
               return reject(err);
             }
-            requestEvent.emit('request.update',updatedRequest);
-            requestEvent.emit("request.update.comment", {comment:"STATUS_CHANGE",request:updatedRequest});
+
+            requestEvent.emit('request.update',updatedRequest); //deprecated
+            requestEvent.emit("request.update.comment", {comment:"STATUS_CHANGE",request:updatedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"STATUS_CHANGE",request:updatedRequest, patch:{status: newstatus}});
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
@@ -765,7 +769,9 @@ class RequestService {
            
             requestEvent.emit('request.update.preflight',updatedRequest); //archive to audit log
             requestEvent.emit('request.update',updatedRequest);
-            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_PREFLIGHT_CHANGE",request:updatedRequest});
+            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_PREFLIGHT_CHANGE",request:updatedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"FIRSTTEXT_PREFLIGHT_CHANGE",request:updatedRequest, patch:  {first_text: first_text, preflight: preflight}});
+
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
@@ -794,7 +800,9 @@ class RequestService {
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
-            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_CHANGE",request:updatedRequest});
+            requestEvent.emit("request.update.comment", {comment:"FIRSTTEXT_CHANGE",request:updatedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"FIRSTTEXT_CHANGE",request:updatedRequest, patch:  {first_text: first_text}});
+
             //TODO emit request.clone or reopen also 
 
             return resolve(updatedRequest);
@@ -825,7 +833,8 @@ class RequestService {
               return reject(err);
             }
             requestEvent.emit('request.update',updatedRequest);
-            requestEvent.emit("request.update.comment", {comment:"PREFLIGHT_CHANGE",request:updatedRequest});
+            requestEvent.emit("request.update.comment", {comment:"PREFLIGHT_CHANGE",request:updatedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"PREFLIGHT_CHANGE",request:updatedRequest, patch:  {preflight: preflight}});
 
             return resolve(updatedRequest);
           });
@@ -1058,7 +1067,9 @@ class RequestService {
             }          
             
             requestEvent.emit('request.update', savedRequest);
-            requestEvent.emit("request.update.comment", {comment:"REOPEN",request:savedRequest});
+            requestEvent.emit("request.update.comment", {comment:"REOPEN",request:savedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"REOPEN",request:savedRequest, patch:  {status: savedRequest.status}});
+
             requestEvent.emit('request.reopen', savedRequest);
 
             winston.verbose("Request reopened", savedRequest);
@@ -1223,10 +1234,6 @@ class RequestService {
               return reject(err);
             }
 
-            requestEvent.emit('request.update', requestComplete);
-            requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:requestComplete});
-
-
             winston.debug("oldParticipants ", oldParticipants);
 
             let newParticipants = requestComplete.participants;
@@ -1237,6 +1244,11 @@ class RequestService {
 
             var addedParticipants = newParticipants.filter(d => !oldParticipants.includes(d));
             winston.debug("addedParticipants ", addedParticipants);
+
+
+            requestEvent.emit('request.update', requestComplete);
+            requestEvent.emit("request.update.comment", {comment:"PARTICIPANTS_SET",request:requestComplete});//Deprecated
+            requestEvent.emit("request.updated", {comment:"PARTICIPANTS_SET",request:requestComplete, patch:  {removedParticipants:removedParticipants, addedParticipants:addedParticipants}});            
 
             requestEvent.emit('request.participants.update', {beforeRequest:request, 
                         removedParticipants:removedParticipants, 
@@ -1338,9 +1350,9 @@ class RequestService {
               winston.debug("populated", requestComplete);
            
               requestEvent.emit('request.update', requestComplete);
-              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_ADD",request:requestComplete});
+              requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_ADD",request:requestComplete});//Deprecated
+              requestEvent.emit("request.updated", {comment:"PARTICIPANT_ADD",request:requestComplete, patch:  {member:member}});
               requestEvent.emit('request.participants.join', {member:member, request: requestComplete});
-              // requestEvent.emit('request.participants.update', {beforeRequest:request, request:savedRequest});
                        
               return resolve(requestComplete);
           });
@@ -1487,9 +1499,9 @@ class RequestService {
 
             
             requestEvent.emit('request.update', requestComplete);
-            requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_REMOVE",request:requestComplete});
+            requestEvent.emit("request.update.comment", {comment:"PARTICIPANT_REMOVE",request:requestComplete});//Deprecated
+            requestEvent.emit("request.updated", {comment:"PARTICIPANT_REMOVE",request:requestComplete, patch:  {member:member}});
             requestEvent.emit('request.participants.leave', {member:member, request: requestComplete});
-            // requestEvent.emit('request.participants.update', {beforeRequest: request, request:savedRequest});
             
 
             return resolve(requestComplete);
@@ -1562,7 +1574,9 @@ class RequestService {
             }
             winston.verbose(" saved request attributes",savedRequest.toObject())
             requestEvent.emit("request.update", savedRequest);
-            requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_UPDATE",request:savedRequest});
+            requestEvent.emit("request.update.comment", {comment:"ATTRIBUTES_UPDATE",request:savedRequest});//Deprecated
+            requestEvent.emit("request.updated", {comment:"ATTRIBUTES_UPDATE",request:savedRequest, patch:  {attributes:data}});
+
             requestEvent.emit("request.attributes.update", savedRequest);
             // allora neanche qui participatingAgent è ok?
               return resolve(savedRequest);
@@ -1621,8 +1635,9 @@ class RequestService {
             }
             
             requestEvent.emit('request.update', savedRequest);      
-            requestEvent.emit("request.update.comment", {comment:"TAG_ADD",request:savedRequest});        
-            
+            requestEvent.emit("request.update.comment", {comment:"TAG_ADD",request:savedRequest});        //Deprecated
+            requestEvent.emit("request.updated", {comment:"TAG_ADD",request:savedRequest, patch:  {tags:tag}});
+
             
             // allora neanche qui participatingAgent è ok?
             return resolve(savedRequest);
@@ -1688,7 +1703,9 @@ class RequestService {
 
             if (!err) {
               requestEvent.emit('request.update', savedRequest);
-              requestEvent.emit("request.update.comment", {comment:"TAG_REMOVE",request:savedRequest});
+              requestEvent.emit("request.update.comment", {comment:"TAG_REMOVE",request:savedRequest});//Deprecated
+              requestEvent.emit("request.updated", {comment:"TAG_REMOVE",request:savedRequest, patch:  {tags:tag}});
+
             }
 
             // allora neanche qui participatingAgent è ok?

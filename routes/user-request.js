@@ -45,7 +45,9 @@ router.patch('/:requestid/rating', function (req, res) {
     }
 
     requestEvent.emit("request.update", request);
-    requestEvent.emit("request.update.comment", {comment:"PATCH",request:request});
+    requestEvent.emit("request.update.comment", {comment:"PATCH",request:request});//Deprecated
+    requestEvent.emit("request.updated", {comment:"PATCH",request:request, patch:  update});
+
     return res.json(request);
   });
 
