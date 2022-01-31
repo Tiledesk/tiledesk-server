@@ -368,7 +368,7 @@ class FaqBotSupport {
                                 // found = true;
                                 // return resolve(bot_answer);
 
-                                if (message.channel.name == "chat21") {    //why this contition on chat21 channel? bacause only chat21 support parsed replies?
+                                // if (message.channel.name == "chat21") {    //why this contition on chat21 channel? bacause only chat21 support parsed replies?
                                     winston.debug("faqBotSupport message.channel.name is chat21",message);
                                     that.getParsedMessage(bot_answer.text,message, bot, faqs[0]).then(function(bot_answerres) {
                                     
@@ -377,10 +377,10 @@ class FaqBotSupport {
                                         return resolve(bot_answerres);
                                     });
 
-                                } else {
-                                    winston.debug("faqBotSupport message.channel.name is not chat21 returning default",message);
-                                    return resolve(bot_answer);
-                                }
+                                // } else {
+                                //     winston.debug("faqBotSupport message.channel.name is not chat21 returning default",message);
+                                //     return resolve(bot_answer);
+                                // }
                                 
                            } else {
                                 var message_key = "DEFAULT_NOTFOUND_NOBOT_SENTENCE_REPLY_MESSAGE";                             
