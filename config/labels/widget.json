@@ -63,8 +63,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"you",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"you have been added ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"joined",
-        "INFO_SUPPORT_USER_ADDED_VERB":"to chat",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"to chat",
+        "INFO_SUPPORT_USER_ADDED_VERB":"joined",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reopened",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat closed",
 
@@ -141,8 +141,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"tu",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"sei stato aggiunto ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"si è unito",
-        "INFO_SUPPORT_USER_ADDED_VERB":"alla chat",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"alla chat",
+        "INFO_SUPPORT_USER_ADDED_VERB":"si è unito",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat riaperta",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa",
 
@@ -217,8 +217,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"toi",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"tu as été ajouté ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"rejoint",
-        "INFO_SUPPORT_USER_ADDED_VERB":"discuter",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"discuter",
+        "INFO_SUPPORT_USER_ADDED_VERB":"rejoint",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat rouvert",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat fermé",
 
@@ -293,8 +293,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"usted",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"usted ha sido agregado ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"unido",
-        "INFO_SUPPORT_USER_ADDED_VERB":"para charlar",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"para charlar",
+        "INFO_SUPPORT_USER_ADDED_VERB":"unido",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reabierto",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat cerrado",
 
@@ -370,8 +370,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "Sie",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "Sie wurden hinzugefügt ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "beigetreten",
-        "INFO_SUPPORT_USER_ADDED_VERB": "zum Chatten",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "zum Chatten",
+        "INFO_SUPPORT_USER_ADDED_VERB": "beigetreten",
         "INFO_SUPPORT_CHAT_REOPENED": "Chat wieder geöffnet",
         "INFO_SUPPORT_CHAT_CLOSED": "Chat geschlossen",
 
@@ -446,8 +446,8 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT": "você",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB": "você foi adicionado ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "aderiu",
-        "INFO_SUPPORT_USER_ADDED_VERB": "para conversar",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "para conversar",
+        "INFO_SUPPORT_USER_ADDED_VERB": "aderiu",
         "INFO_SUPPORT_CHAT_REOPENED": "Chat reaberto",
         "INFO_SUPPORT_CHAT_CLOSED": "Bate-papo fechado",
 
