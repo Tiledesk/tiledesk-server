@@ -63,7 +63,7 @@
 
         "INFO_SUPPORT_USER_ADDED_SUBJECT":"you",
         "INFO_SUPPORT_USER_ADDED_YOU_VERB":"you have been added ",
-        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"to chat",
+        "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"the chat",
         "INFO_SUPPORT_USER_ADDED_VERB":"joined",
         "INFO_SUPPORT_CHAT_REOPENED":"Chat reopened",
         "INFO_SUPPORT_CHAT_CLOSED":"Chat closed",
