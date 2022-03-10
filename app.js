@@ -107,7 +107,7 @@ var email = require('./routes/email');
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
 var schemaMigrationService = require('./services/schemaMigrationService');
-
+var RouterLogger = require('./models/routerLogger');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -222,7 +222,42 @@ app.options('*', cors());
 // const customRedisRateLimiter = require("./rateLimiter").customRedisRateLimiter;
 // app.use(customRedisRateLimiter);
 
+if (process.env.ROUTELOGGER_ENABLED==="true") {
+  winston.info("RouterLogger enabled ");
+  app.use(function (req, res, next) {
+    // winston.error("log ", req);
 
+      try {
+        var projectid = req.projectid;
+        winston.debug("RouterLogger projectIdSetter projectid:" + projectid);
+
+      var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      winston.debug("fullUrl:"+ fullUrl);
+      winston.debug("req.get('origin'):" + req.get('origin'));
+
+      var routerLogger = new RouterLogger({
+        origin: req.get('origin'),
+        fullurl: fullUrl,    
+        url: req.originalUrl.split("?").shift(),    
+        id_project: projectid,      
+      });
+
+      routerLogger.save(function (err, savedRouterLogger) {        
+        if (err) {
+          winston.error('Error saving RouterLogger ', err)
+        }
+        winston.debug("RouterLogger saved "+ savedRouterLogger);
+        next();
+      });
+      }catch(e) {
+        winston.error('Error saving RouterLogger ', e)
+        next();
+      }
+  });
+
+} else {
+  winston.info("RouterLogger disabled ");
+}
 
 app.get('/', function (req, res) {  
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
@@ -276,12 +311,16 @@ var projectSetter = function (req, res, next) {
 }
 
 
+
+
+
 // app.use('/admin', admin);
 
 //oauth2
 // app.get('/dialog/authorize', oauth2.authorization);
 // app.post('/dialog/authorize/decision', oauth2.decision);
 // app.post('/oauth/token', oauth2.token);
+
 
 
 app.use('/auth', auth);
@@ -406,6 +445,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });*/
+
 
 // error handler
 app.use((err, req, res, next) => {
