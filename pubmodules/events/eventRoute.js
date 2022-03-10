@@ -41,8 +41,8 @@ router.post('/', [
     eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id, undefined, req.user).then(function(event) {
     res.json(event);
   }).catch(function(err) {
-    winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
-    return res.status(500).send({success: false, msg: 'Error saving the event '+ JSON.stringify(savedEvent)});
+    winston.error('Error saving the event '+ JSON.stringify(event), err)
+    return res.status(500).send({success: false, msg: 'Error saving the event '+ JSON.stringify(event)});
   });
 
   // var newEvent = new Event({
