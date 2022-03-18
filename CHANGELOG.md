@@ -1,3 +1,6 @@
+# 2.2.19
+- disabled waiting time in widgets endpoint unused
+
 # 2.2.18
 - Router logger module enable with ROUTELOGGER_ENABLED=true
 
