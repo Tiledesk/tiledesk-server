@@ -56,21 +56,20 @@ router.get('/', function(req, res, next) {
 
   var waiting = function() {
     return new Promise(function (resolve, reject) {
-      return resolve([]);
-    //   AnalyticResult.aggregate([
-    //     //last 4
-    //     { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
-    //     { "$group": { 
-    //       "_id": "$id_project", 
-    //       "waiting_time_avg":{"$avg": "$waiting_time"}
-    //     }
-    //   },
+      AnalyticResult.aggregate([
+        //last 4
+        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
+        { "$group": { 
+          "_id": "$id_project", 
+          "waiting_time_avg":{"$avg": "$waiting_time"}
+        }
+      },
       
-    // ])
-    // // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
-    // .exec(function(err, result) {
-    //       return resolve(result);
-    // });
+    ])
+    // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
+    .exec(function(err, result) {
+          return resolve(result);
+    });
   });
   };
 
@@ -124,7 +123,7 @@ router.get('/', function(req, res, next) {
       ,
         getDepartments(req)
       ,
-        waiting()
+        // waiting()unused used 620e87f02e7fda00350ea5a5/publicanalytics/waiting/current
       , 
         getIp()
      
