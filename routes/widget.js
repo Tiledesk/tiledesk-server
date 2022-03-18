@@ -56,20 +56,21 @@ router.get('/', function(req, res, next) {
 
   var waiting = function() {
     return new Promise(function (resolve, reject) {
-      AnalyticResult.aggregate([
-        //last 4
-        { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
-        { "$group": { 
-          "_id": "$id_project", 
-          "waiting_time_avg":{"$avg": "$waiting_time"}
-        }
-      },
+      return resolve([]);
+    //   AnalyticResult.aggregate([
+    //     //last 4
+    //     { $match: {"id_project":req.projectid, "createdAt" : { $gte : new Date((new Date().getTime() - (4 * 60 * 60 * 1000))) }} },
+    //     { "$group": { 
+    //       "_id": "$id_project", 
+    //       "waiting_time_avg":{"$avg": "$waiting_time"}
+    //     }
+    //   },
       
-    ])
-    // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
-    .exec(function(err, result) {
-          return resolve(result);
-    });
+    // ])
+    // // .cache(cacheUtil.longTTL, req.projectid+":analytics:query:waiting:avg:4hours")        
+    // .exec(function(err, result) {
+    //       return resolve(result);
+    // });
   });
   };
 
