@@ -273,7 +273,7 @@ router.get('/', function (req, res, next) {
     query.id_faq_kb = req.query.id_faq_kb;
   }
 
-  var limit = 300; // Number of request per page
+  var limit = 1000; // Number of request per page
 
   if (req.query.limit) {    
     limit = parseInt(req.query.limit);

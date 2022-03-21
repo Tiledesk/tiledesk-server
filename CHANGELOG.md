@@ -1,4 +1,7 @@
-# 2.2.21 -> PROD
+# 2.2.22 -> PROD
+- Increased list answers limit from 300 to 1000
+
+# 2.2.21 
 - Increased list answers limit from 100 to 300
 - enabled again waiting time in widgets endpoint unused
 
