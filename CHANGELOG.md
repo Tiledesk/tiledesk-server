@@ -1,4 +1,7 @@
-# 2.2.22 -> PROD
+# 2.2.23 -> PROD
+- Increased list answers limit from 1000 to 3000
+
+# 2.2.22
 - Increased list answers limit from 300 to 1000
 
 # 2.2.21 
