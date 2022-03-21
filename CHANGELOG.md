@@ -1,11 +1,15 @@
-# 2.2.19
+# 2.2.21 -> PROD
+- Increased list answers limit from 100 to 300
+- enabled again waiting time in widgets endpoint unused
+
+
+# 2.2.20
 - disabled waiting time in widgets endpoint unused
 
 # 2.2.18
 - Router logger module enable with ROUTELOGGER_ENABLED=true
 
-
-# 2.2.17 -> PROD
+# 2.2.17
 - Removed default fallback limit on parse reply
 
 # 2.2.16 
