@@ -117,7 +117,7 @@ router.get('/', function(req, res, next) {
 // TOOD add labels
     Promise.all([
         Project.findOne({_id: req.projectid, status: 100}).select('-settings')
-        .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")        
+        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")        
       ,
         availableUsers()
       ,

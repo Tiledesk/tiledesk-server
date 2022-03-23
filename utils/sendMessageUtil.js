@@ -23,14 +23,14 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             winston.debug("bot id: "+id);
             sender = id; //change sender removing bot_
             var bot = await Faq_kb.findById(id)
-                    .cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id)
+                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id)
                     .exec();
             winston.debug("bot",bot);                 
             senderFullname = bot.name;           
         } else {
             winston.debug("user id: "+sender);
             var user = await User.findById(sender)
-              .cache(cacheUtil.defaultTTL, "users:id:"+sender)
+              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+sender)
               .exec()   
             winston.debug("user", user);        
             senderFullname = user.fullName;

@@ -170,7 +170,7 @@ class RequestService {
 
         return Request       
         .findOne({request_id: request_id, id_project: id_project})     
-        .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
+        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
         .exec( function(err, request) {
 
           if (err) {
@@ -322,7 +322,7 @@ class RequestService {
  
          return Request       
          .findOne({request_id: request_id, id_project: id_project})
-         .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)
+         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)
          .exec( function(err, request) {
  
            if (err) {
@@ -901,7 +901,7 @@ class RequestService {
       .populate('participatingBots')
       .populate('participatingAgents')  
       .populate({path:'requester',populate:{path:'id_user'}})
-      .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
+      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
       .exec(function(err, request) {
         if (err) {
           winston.error(err);

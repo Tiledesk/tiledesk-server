@@ -375,7 +375,7 @@ router.post('/', function (req, res) {
               winston.debug('query:'+ projectId);
               
               return Request.findOne(query)
-              .cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id)
+              //@DISABLED_CACHE cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id)
               .exec(function(err, request) {
 
                 if (err) {

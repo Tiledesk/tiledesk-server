@@ -37,13 +37,13 @@ class MessageTransformerInterceptor {
                 var language = "EN";
 
                 // cacherequest       // requestcachefarequi nocachepopulatereqired
-                var request = await Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+                var request = await Request.findOne({request_id:  message.recipient, id_project: message.id_project})
                     // populate('lead').
                     // populate('department').  
                     // populate('participatingBots').
                     // populate('participatingAgents').       
                     // populate({path:'requester',populate:{path:'id_user'}}).
-                    cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
+                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
                     exec();
               
                 winston.debug('request mti: ', request);

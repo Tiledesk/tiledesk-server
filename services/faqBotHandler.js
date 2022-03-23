@@ -88,7 +88,7 @@ class FaqBotHandler {
          
 
            Faq_kb.findById(botId)
-           .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
+           //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
            .exec(function(err, faq_kb) {
             if (err) {
               return winston.error("Error getting bot object.",err);

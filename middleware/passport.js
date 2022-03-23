@@ -129,7 +129,7 @@ module.exports = function(passport) {
 
                       winston.debug("project id: "+ AudienceId );
                       Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
-                      .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret")
+                      //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret")
                       .exec(function (err, project){
                         if (err) {
                           winston.error("auth Project err: ", {error:err, decoded: decoded} );
@@ -317,7 +317,7 @@ module.exports = function(passport) {
     } else {
       winston.debug("Passport JWT generic user");
       User.findOne({_id: identifier, status: 100})
-        .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
         .exec(function(err, user) {
           if (err) {
             winston.error("Passport JWT generic err ", err);
@@ -349,7 +349,7 @@ module.exports = function(passport) {
       winston.debug("email lowercase: " + email);
 
       User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id')
-      .cache(cacheUtil.defaultTTL, "users:email:"+email)
+      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:email:"+email)
       .exec(function (err, user) {
        
         if (err) {

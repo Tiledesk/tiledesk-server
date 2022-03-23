@@ -74,7 +74,7 @@ getAll(id_project) {
 
 
                 return Label.findOne(query).lean()
-                .cache(cacheUtil.longTTL, id_project+":labels:query:all")
+                //@DISABLED_CACHE .cache(cacheUtil.longTTL, id_project+":labels:query:all")
                 .exec(function (err, labels) {
                     if (err) {
                         winston.error('Label ROUTE - REQUEST FIND ERR ', err)

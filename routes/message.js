@@ -66,7 +66,7 @@ async (req, res)  => {
         // .populate('participatingBots')
         // .populate('participatingAgents')  
         // .populate({path:'requester',populate:{path:'id_user'}})
-        .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id)
+       //@DISABLED_CACHE  .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id)
         .exec(async(err, request) => {
 
         if (err) {

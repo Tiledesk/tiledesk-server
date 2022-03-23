@@ -38,8 +38,8 @@ class MessageHandlebarsTransformerInterceptor {
                     populate({path:'requester',populate:{path:'id_user'}});
                 // }
 
-                var request = await q1.
-                    cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
+                var request = await q1
+                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
                     exec();
 
 

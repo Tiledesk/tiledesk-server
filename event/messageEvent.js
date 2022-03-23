@@ -60,13 +60,13 @@ function populateMessageWithRequest(message, eventPrefix) {
   populate('participatingBots').
   populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
-  lean().
+  lean()
   //perche lean?
   // TODO availableAgentsCount nn c'è per il lean problema trigger
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
+  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
   exec(function (err, request) {
 
     if (err) {
@@ -83,7 +83,7 @@ function populateMessageWithRequest(message, eventPrefix) {
       if (request.department && request.department.id_bot) {
         // if (request.department) {
         Faq_kb.findById(request.department.id_bot)
-        .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+request.department.id_bot)
+        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+request.department.id_bot)
         .exec(function(err, bot) {
           winston.debug('bot', bot);
           requestJson.department.bot = bot

@@ -376,7 +376,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                      }                  
                       
                        User.findOne({_id: userid , status: 100})
-                        .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+                        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
                         .exec(function (err, user) {
                          if (err) {
                          //  winston.debug(err);
@@ -430,7 +430,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                           }
         
                           User.findOne({_id: assignedId, status: 100})
-                            .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
                             .exec(function (err, user) {
                             if (err) {
                               winston.error("Error sending email to " + savedRequest.participants[0], err);
@@ -707,7 +707,7 @@ sendAgentEmail(projectid, savedRequest) {
                    }                  
                     
                      User.findOne({_id: userid , status: 100})
-                      .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+                      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
                       .exec(function (err, user) {
                        if (err) {
                        //  winston.debug(err);
@@ -769,7 +769,7 @@ sendAgentEmail(projectid, savedRequest) {
                           return winston.warn("RequestNotification email notification for the user with id : " + assignedId + " not found project_user");
                         }
                         User.findOne({_id: assignedId, status: 100})
-                          .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
                           .exec(function (err, user) {
                           if (err) {
                             winston.error("Error sending email to " + savedRequest.participants[0], err);

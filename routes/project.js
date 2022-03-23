@@ -313,7 +313,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
   Project.findOne({_id: req.params.projectid, status:100})
-  .cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)
+  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)
   .exec(function (err, project) {
     if (err) {
       winston.error('Error getting project ', err);
