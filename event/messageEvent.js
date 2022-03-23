@@ -66,8 +66,8 @@ function populateMessageWithRequest(message, eventPrefix) {
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
-  exec(function (err, request) {
+  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient)
+  .exec(function (err, request) {
 
     if (err) {
       winston.error("Error getting request on messageEvent.populateMessage",err );

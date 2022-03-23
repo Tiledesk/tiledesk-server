@@ -39,8 +39,8 @@ class MessageHandlebarsTransformerInterceptor {
                 // }
 
                 var request = await q1
-                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient).
-                    exec();
+                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient)
+                    .exec();
 
 
 
