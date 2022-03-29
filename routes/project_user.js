@@ -462,8 +462,8 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  * RETURN THE PROJECT-USERS OBJECTS FILTERD BY PROJECT-ID AND WITH NESTED THE USER OBJECT
  * WF: 1. GET PROJECT-USER by the passed project ID
  *     2. POPULATE THE user_id OF THE PROJECT-USER object WITH THE USER OBJECT
- */
-router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], function (req, res) {
+ */                                                                                       
+router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
 
   var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
