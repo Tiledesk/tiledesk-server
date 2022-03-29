@@ -429,7 +429,7 @@ RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); /
 
 RequestSchema.index({ id_project: 1, preflight:1, updatedAt: -1 }); // used query ws (topic.endsWith('/requests'))
 
-
+RequestSchema.index({ hasBot: 1, createdAt: 1 }); // suggested by atlas
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv

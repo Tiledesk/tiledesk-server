@@ -1,3 +1,8 @@
+
+# 2.2.24
+- webhook subscription can fetch temmates endpoint
+- Added hasBot and createdAt index to the request model
+
 # 2.2.23 -> PROD
 - Increased list answers limit from 1000 to 3000
 
