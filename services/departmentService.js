@@ -283,6 +283,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
               return resolve ({ 
                               department: department, available_agents: _available_agents, agents: project_users, 
                               id_bot:department.id_bot, project: project,
+                              context: context,
                               // botprefix
                               operators: [{ id_user: 'bot_' + department.id_bot }] 
                              });
@@ -386,7 +387,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
                 selectedoperator = that.getRandomAvailableOperator(_available_agents);
               }
 
-              let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid, project: project };
+              let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid, project: project,  context: context };
 
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
@@ -409,7 +410,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
            
           } else {
             // here subscription notifier??
-            var objectToReturn = { available_agents: [], agents: [], operators: [] };
+            var objectToReturn = { available_agents: [], agents: [], operators: [], context: context };
             return resolve(objectToReturn);
           }
 
@@ -447,7 +448,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
             selectedoperator = that.getRandomAvailableOperator(_available_agents);
           }
 
-          let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project };
+          let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project, context: context };
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
             winston.debug("context2",context);
@@ -474,7 +475,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
        
       } else {
         // here subscription notifier??
-        let objectToReturn = { available_agents: [], agents: [], operators: [] };
+        let objectToReturn = { available_agents: [], agents: [], operators: [], context: context };
         return resolve(objectToReturn);
       }
 
