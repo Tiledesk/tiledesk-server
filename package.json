@@ -109,7 +109,7 @@
     "chai-string": "^1.5.0",
     "loadtest": "^5.1.2",
     "mocha": "^8.4.0",
-    "mongodb-runner": "4.8.1",
+    "mongodb-runner": "4.8.3",
     "nodemon": "^2.0.12",
     "sinon": "^9.2.4",
     "sinon-mongoose": "^2.3.0"
