@@ -1,9 +1,18 @@
+# untagged
+- Operator.select returns context object that contains the temp request..TEST IT
+- Added Serbian language to the widget
+- Added tag field to the project_user
+- Removed default BCC from email
 
-# 2.2.24
+# 2.2.25
+- New label prechat form
+- Updated mongodb-runner from 4.8.1 to 4.8.3 to fix ssh key error
+
+# 2.2.24 -> PROD
 - webhook subscription can fetch temmates endpoint
 - Added hasBot and createdAt index to the request model
 
-# 2.2.23 -> PROD
+# 2.2.23 
 - Increased list answers limit from 1000 to 3000
 
 # 2.2.22

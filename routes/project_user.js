@@ -196,7 +196,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,         
-    user_available: false, 
+    user_available: false,
+    tags: req.body.tags, 
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
@@ -234,6 +235,10 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   if (req.body["settings.email.notification.conversation.pooled"]!=undefined) {
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
   }
+  if (req.body.tags!=undefined) {
+    update.tags = req.body.tags;
+  }
+
 
 
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
@@ -289,7 +294,9 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update["settings.email.notification.conversation.pooled"] = req.body["settings.email.notification.conversation.pooled"];
   }
   
-
+  if (req.body.tags!=undefined) {
+    update.tags = req.body.tags;
+  }
 
   winston.debug("project_userid update", update);
 

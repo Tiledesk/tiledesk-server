@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 var RoleConstants = require('./roleConstants');
 var PresenceSchema = require('./presence');
+var TagSchema = require("../models/tag");
 
 
 
@@ -58,6 +59,7 @@ var PresenceSchema = require('./presence');
     settings: {
       type: Object,
     },
+    tags: [TagSchema],
     createdBy: {
       type: String,
       required: true
