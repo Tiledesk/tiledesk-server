@@ -48,9 +48,15 @@ scheduleUnresponsiveRequests() {
   // }
 
  //https://crontab.guru/examples.html
- var s= schedule.scheduleJob(this.cronExp, function(fireDate){
-    winston.debug('CloseBotUnresponsiveRequestTask scheduleUnresponsiveRequests job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());
-    that.findUnresponsiveRequests(); 
+ var s= schedule.scheduleJob(this.cronExp, function(fireDate){   //TODO aggiungi un bias random
+
+    let timeInMs = Math.random() * (1000);  // avoid cluster concurrent jobs in multiple nodes between 0 and 1sec
+    winston.info('timeInMs => '+ timeInMs);
+
+    setTimeout(function () {
+      winston.debug('CloseBotUnresponsiveRequestTask scheduleUnresponsiveRequests job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());
+      that.findUnresponsiveRequests(); 
+    },timeInMs );
   });
 }
 
@@ -64,6 +70,8 @@ findUnresponsiveRequests() {
     if (this.queryProject) {
       query.id_project = JSON.parse(this.queryProject);
     }
+
+
 
     winston.debug("CloseBotUnresponsiveRequestTask query",query);
 
@@ -84,6 +92,7 @@ findUnresponsiveRequests() {
       winston.debug("CloseBotUnresponsiveRequestTask: found unresponsive requests ", requests);
       
       requests.forEach(request => {
+
         winston.debug("********unresponsive request ", request);
 
         return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {

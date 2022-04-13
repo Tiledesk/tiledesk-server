@@ -3,6 +3,7 @@
 - Added Serbian language to the widget
 - Added tag field to the project_user
 - Removed default BCC from email
+- BugFix: Avoid cluster concurrent jobs in multiple nodes
 
 # 2.2.25
 - New label prechat form
