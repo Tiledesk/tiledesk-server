@@ -10,9 +10,8 @@ var httpUtil = require("../utils/httpUtil");
 
 router.post('/', function (req, res) {
   winston.info('create BOT ', req.body);
-  // create(name, url, projectid, user_id, type, description) {
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined,
-    req.body.language).then(function(savedFaq_kb) {
+              // create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template)
+    faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined, req.body.language, req.body.template).then(function(savedFaq_kb) {
     res.json(savedFaq_kb);
   });
 
