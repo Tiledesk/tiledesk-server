@@ -18,6 +18,11 @@ You can find more info here: https://developer.tiledesk.com
 * [Nodejs](https://www.npmjs.com/) and npm installed. Suggested versions are NodeJS 12.20.2 and NPM 6.14.11 
 * [MongoDb](https://www.mongodb.com) installed
 
+# Run Tiledesk with Docker Compose
+
+Do you want to install all the Tiledesk components on your server with just one click?
+Use [Docker Compose Tiledesk installation guide](https://github.com/Tiledesk/tiledesk-deployment/blob/master/docker-compose/README.md)
+
 # Running Tiledesk Server
 
 ## Run locally with npm
