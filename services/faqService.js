@@ -37,12 +37,14 @@ class FaqService {
       
           botEvent.emit('faqbot.create', savedFaq_kb);
           
+          winston.debug('type '+ type)      
+
           if (type==="internal") {      
             
             if (!template) {
               template = "example";
             }
-
+            winston.debug('template '+ template);
             that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template);
           } else {
             winston.debug('external bot: ', savedFaq_kb);
@@ -60,6 +62,8 @@ class FaqService {
     return new Promise(function (resolve, reject) {
 
       // aggiungi esempio tdAction con intent_id
+
+      winston.debug('template: '+ template);
 
       var faqsArray;
 
