@@ -20,7 +20,7 @@ class OrgUtil {
 
         winston.info("Organization enabled: "+ this.ORGANIZATION_ENABLED );
 
-        this.ORGANIZATION_BASE_URL = global.organizationBaseUrl;
+        this.ORGANIZATION_BASE_URL = process.env.ORGANIZATION_BASE_URL || global.organizationBaseUrl;
         winston.info("Organization base url: "+ this.ORGANIZATION_BASE_URL );
 
     }
