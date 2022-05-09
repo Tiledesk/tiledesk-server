@@ -330,6 +330,9 @@ function customDetection (req)  {
 
 var projectGetIpForIpFilter = async function (req, res, next) {
 
+  if (!req.project) {
+    return next();
+  }
   var projectIpFilterEnabled = req.project.ipFilterEnabled;
   winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
 
