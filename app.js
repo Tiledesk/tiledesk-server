@@ -333,6 +333,7 @@ var projectGetIpForIpFilter = async function (req, res, next) {
   if (!req.project) {
     return next();
   }
+
   var projectIpFilterEnabled = req.project.ipFilterEnabled;
   winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
 
@@ -372,6 +373,10 @@ var projectIpFilter = function (req, res, next) {
   }
 
 
+  if (!req.project) {
+    return next();
+  }
+  
   var projectIpFilterEnabled = req.project.ipFilterEnabled;
   winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
 
