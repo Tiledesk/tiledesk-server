@@ -4,6 +4,12 @@
 - Added tag field to the project_user
 - Removed default BCC from email
 - BugFix: Avoid cluster concurrent jobs in multiple nodes
+- Faq template now support blank and example
+- Organizzation support added
+- ipFilter related to the project is now supported
+
+# 2.2.26
+- Tag fix for 2.2.25
 
 # 2.2.25
 - New label prechat form

@@ -101,6 +101,16 @@ var ProjectSchema = new Schema({
       return [new Channel({ name: 'chat21' })];
     }
   },
+  organization: {
+    type: String,
+  },
+  ipFilterEnabled:{
+    type: Boolean,
+    default: false
+  },
+  ipFilter: [{
+    type: String
+  }],
   // defaultLanguage: {
   //   type: String,
   //   required: true,

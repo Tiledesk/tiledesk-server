@@ -15,6 +15,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
+var orgUtil = require("../utils/orgUtil");
 
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
@@ -151,6 +152,15 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.channels!=undefined) {
     update.channels = req.body.channels; 
   }
+
+  if (req.body.ipFilterEnabled!=undefined) {
+    update.ipFilterEnabled = req.body.ipFilterEnabled;
+  }
+
+  if (req.body.ipFilter!=undefined) {
+    update.ipFilter = req.body.ipFilter;
+  }
+
   
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
@@ -291,6 +301,13 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
     update.channels = req.body.channels; 
   }
   
+  if (req.body.ipFilterEnabled!=undefined) {
+    update.ipFilterEnabled = req.body.ipFilterEnabled;
+  }
+
+  if (req.body.ipFilter!=undefined) {
+    update.ipFilter = req.body.ipFilter;
+  }
     
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
@@ -361,6 +378,61 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         winston.error('Error getting project_users: ', err);
         return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }       
+
+
+
+      //organization: if third sub domain iterate and put only project with organization==subdomain otherwise remove projects with org
+      winston.info("orgUtil.ORGANIZATION_ENABLED: " + orgUtil.ORGANIZATION_ENABLED);
+      if (orgUtil.ORGANIZATION_ENABLED == true ) {
+
+              // winston.info("project_users", project_users);
+        winston.info("project_users.length:"+ project_users.length);
+
+        let org = orgUtil.getOrg(req);
+        winston.info("org:"+ org);
+        
+        if (org!=undefined) {
+          winston.info("org!=undefined");
+
+          var project_users = project_users.filter(function (projectUser) {
+            if (projectUser.id_project.organization && projectUser.id_project.organization === org ) {
+              winston.info("keep");
+              return true;
+            }
+          });
+
+        /* for (var i = 0; i < project_users.length; i++) { 
+            winston.info("project_users[i].id_project.organization: " + project_users[i].id_project.organization);
+            if (project_users[i].id_project.organization && project_users[i].id_project.organization === org ) {
+              //keep
+              winston.info("keep");
+            } else {
+              // project_users.splice(i, 1); // 2nd parameter means remove one item only
+              winston.info("splice");
+            }
+          }*/
+        } else {
+
+            var project_users = project_users.filter(function (projectUser) {
+              if (projectUser.id_project.organization == undefined ) {
+                // winston.info("keep");
+                return true;
+              }
+            });        
+          
+
+          /*
+          for (var i = 0; i < project_users.length; i++) { 
+            winston.info("project_users[i].id_project.organization: " + project_users[i].id_project.organization);
+            if (project_users[i].id_project.organization) {
+              project_users.splice(i, 1); // 2nd parameter means remove one item only
+            }
+          }*/
+        }
+      } else {
+        winston.info("no")
+      }
+
 
       project_users.sort((a, b) => (a.id_project && b.id_project && a.id_project.updatedAt > b.id_project.updatedAt) ? 1 : -1)
       project_users.reverse(); 

@@ -32,7 +32,10 @@ webSocketServer.init(httpServer);
  * Listen on provided port, on all network interfaces.
  */
 
-var listener = httpServer.listen(port,function(){
+// use ipv4 or ipv6 https://stackoverflow.com/questions/50855419/get-only-ipv4-ips-via-nodejs-express
+// var listener = httpServer.listen(port,'0.0.0.0', function(){      
+
+var listener = httpServer.listen(port, function(){      
     console.log('Listening tiledesk-server ver:'+version+' on port ' + listener.address().port); //Listening on port 8888
 });
 

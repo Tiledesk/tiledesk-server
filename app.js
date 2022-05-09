@@ -96,6 +96,7 @@ var faqpub = require('./routes/faqpub');
 var labels = require('./routes/labels');
 var fetchLabels = require('./middleware/fetchLabels');
 var cacheUtil = require("./utils/cacheUtil");
+var orgUtil = require("./utils/orgUtil");
 var images = require('./routes/images');
 var files = require('./routes/files');
 var campaigns = require('./routes/campaigns');
@@ -127,6 +128,9 @@ var pubModulesManager = require('./pubmodules/pubModulesManager');
   
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
+
+const ipfilter = require('express-ipfilter').IpFilter
+// const IpDeniedError = require('express-ipfilter').IpDeniedError;
 
 var modulesManager = undefined;
 try {
@@ -233,7 +237,10 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
 
       var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
       winston.debug("fullUrl:"+ fullUrl);
+      winston.debug(" req.get('host'):"+  req.get('host'));
+     
       winston.debug("req.get('origin'):" + req.get('origin'));
+      winston.debug("req.get('referer'):" + req.get('referer'));
 
       var routerLogger = new RouterLogger({
         origin: req.get('origin'),
@@ -291,7 +298,7 @@ var projectSetter = function (req, res, next) {
       if (err) {
         winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }
-  
+
       winston.debug("projectSetter project:" + project);
       if (!project) {
         winston.warn("ProjectSetter project not found with id: " + projectid);
@@ -310,7 +317,40 @@ var projectSetter = function (req, res, next) {
 
 }
 
+var projectIpFilter = function (req, res, next) {
+  // var projectIpFilter = function (err, req, res, next) {
 
+    var ip = require('ip');
+    winston.info("projectIpFilter ip2: " + ip.address() );
+
+
+    const nextIp = function(err) {
+      winston.info("projectIpFilter next",err);
+
+        if (err && err.name === "IpDeniedError") {
+          winston.info("IpDeniedError");
+          return res.status(401).json({ err: "error project ip filter" });
+          // next(err) 
+        } 
+
+      next();
+
+  }
+
+  var projectIpFilter =  req.project.ipFilter
+  winston.info("project ipFilter: " + projectIpFilter)
+
+  var projectIpFilterEnabled = req.project.ipFilterEnabled;
+  winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
+
+  if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
+    var ip = ipfilter(projectIpFilter, { mode: 'allow' })
+    ip(req, res, nextIp);
+  } else {
+    next();
+  }
+
+}
 
 
 
@@ -322,6 +362,7 @@ var projectSetter = function (req, res, next) {
 // app.post('/oauth/token', oauth2.token);
 
 
+// const ips = ['::1'];
 
 app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
@@ -355,7 +396,7 @@ if (modulesManager) {
 }
 
 
-app.use('/:projectid/', [projectIdSetter, projectSetter]);
+app.use('/:projectid/', [projectIdSetter, projectSetter, projectIpFilter]);
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
@@ -447,8 +488,22 @@ app.use(function (err, req, res, next) {
 });*/
 
 
+
+
+
+
+
+
+
 // error handler
 app.use((err, req, res, next) => {
+
+  winston.info("err.name", err.name)
+  if (err.name === "IpDeniedError") {
+    winston.info("IpDeniedError");
+    return res.status(401).json({ err: "error ip filter" });
+  } 
+
   winston.error("General error", err);
   return res.status(500).json({ err: "error" });
 });
