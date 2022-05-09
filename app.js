@@ -131,6 +131,8 @@ channelManager.listen();
 
 const ipfilter = require('express-ipfilter').IpFilter
 // const IpDeniedError = require('express-ipfilter').IpDeniedError;
+const extIP = require("ext-ip")();
+
 
 var modulesManager = undefined;
 try {
@@ -317,11 +319,40 @@ var projectSetter = function (req, res, next) {
 
 }
 
+
+function customDetection (req)  {
+ 
+  console.log("req.publicIpAddress", req.publicIpAddress);
+  if (req.publicIpAddress) {
+    return req.publicIpAddress;
+  }
+}
+
+var projectGetIpForIpFilter = async function (req, res, next) {
+
+  var projectIpFilterEnabled = req.project.ipFilterEnabled;
+  winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
+
+  var projectIpFilter =  req.project.ipFilter
+  winston.debug("project ipFilter: " + projectIpFilter)
+
+  if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
+    var ipAddress = await extIP.get();
+    req.publicIpAddress = ipAddress;
+
+    // console.log("setted ip public")
+    
+  }
+
+  next();
+
+}
+
 var projectIpFilter = function (req, res, next) {
   // var projectIpFilter = function (err, req, res, next) {
 
-    var ip = require('ip');
-    winston.info("projectIpFilter ip2: " + ip.address() );
+    // var ip = require('ip');
+    // winston.info("projectIpFilter ip2: " + ip.address() );
 
 
     const nextIp = function(err) {
@@ -337,14 +368,16 @@ var projectIpFilter = function (req, res, next) {
 
   }
 
-  var projectIpFilter =  req.project.ipFilter
-  winston.info("project ipFilter: " + projectIpFilter)
 
   var projectIpFilterEnabled = req.project.ipFilterEnabled;
   winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
 
+  var projectIpFilter =  req.project.ipFilter
+  winston.info("project ipFilter: " + projectIpFilter)
+  
   if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
-    var ip = ipfilter(projectIpFilter, { mode: 'allow' })
+    var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
+    // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
     ip(req, res, nextIp);
   } else {
     next();
@@ -396,7 +429,7 @@ if (modulesManager) {
 }
 
 
-app.use('/:projectid/', [projectIdSetter, projectSetter, projectIpFilter]);
+app.use('/:projectid/', [projectIdSetter, projectSetter, projectGetIpForIpFilter, projectIpFilter]);
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
