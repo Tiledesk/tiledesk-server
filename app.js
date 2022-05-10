@@ -131,7 +131,6 @@ channelManager.listen();
 
 const ipfilter = require('express-ipfilter').IpFilter
 // const IpDeniedError = require('express-ipfilter').IpDeniedError;
-const extIP = require("ext-ip")();
 
 
 var modulesManager = undefined;
@@ -341,11 +340,12 @@ var projectGetIpForIpFilter = async function (req, res, next) {
   winston.debug("project ipFilter: " + projectIpFilter)
 
   if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
-    var ipAddress = await extIP.get();
-    req.publicIpAddress = ipAddress;
+    // var ipAddress = await extIP.get();
+    // req.publicIpAddress = ipAddress;
 
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     winston.info("standard ip: "+ip); // ip address of the user
+    req.publicIpAddress = ip;
 
     // console.log("setted ip public")
     
