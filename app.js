@@ -344,6 +344,9 @@ var projectGetIpForIpFilter = async function (req, res, next) {
     var ipAddress = await extIP.get();
     req.publicIpAddress = ipAddress;
 
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    winston.info("standard ip: ",ip); // ip address of the user
+
     // console.log("setted ip public")
     
   }
