@@ -320,40 +320,11 @@ var projectSetter = function (req, res, next) {
 
 
 function customDetection (req)  {
- 
-  console.log("req.publicIpAddress", req.publicIpAddress);
-  if (req.publicIpAddress) {
-    return req.publicIpAddress;
-  }
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  winston.info("standard ip: "+ip); // ip address of the user
+  return ip;
 }
 
-var projectGetIpForIpFilter = async function (req, res, next) {
-
-  if (!req.project) {
-    return next();
-  }
-
-  var projectIpFilterEnabled = req.project.ipFilterEnabled;
-  winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
-
-  var projectIpFilter =  req.project.ipFilter
-  winston.debug("project ipFilter: " + projectIpFilter)
-
-  if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
-    // var ipAddress = await extIP.get();
-    // req.publicIpAddress = ipAddress;
-
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    winston.info("standard ip: "+ip); // ip address of the user
-    req.publicIpAddress = ip;
-
-    // console.log("setted ip public")
-    
-  }
-
-  next();
-
-}
 
 var projectIpFilter = function (req, res, next) {
   // var projectIpFilter = function (err, req, res, next) {
@@ -440,7 +411,7 @@ if (modulesManager) {
 }
 
 
-app.use('/:projectid/', [projectIdSetter, projectSetter, projectGetIpForIpFilter, projectIpFilter]);
+app.use('/:projectid/', [projectIdSetter, projectSetter, projectIpFilter]);
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
