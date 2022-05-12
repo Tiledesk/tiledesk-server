@@ -798,6 +798,12 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
   }
 
+  if (req.query.channel) {
+    query["channel.name"] =  req.query.channel
+    winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
+  }
+
+
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
