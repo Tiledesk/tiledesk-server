@@ -27,6 +27,8 @@ router.get('/default', function (req, res) {
 });
 // curl -v -X POST -H 'Content-Type:application/json'  -d '{"lang":"IT"}' http://localhost:3000/123/labels/default/clone
 
+// curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 -d '{"lang":"IT"}' http://localhost:3001/624c78e27b91d2a2ab49543a/labels/default/clone
+
 router.post('/default/clone', 
   [
     passport.authenticate(['basic', 'jwt'], { session: false }), 
