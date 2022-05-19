@@ -70,8 +70,11 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                         //TESTA QUESTO
 
                                 winston.debug("message.request.status: "+message.request.status);
-                                winston.debug("message.request.department.id_bot: "+message.request.department.id_bot);
-                                if (message.request.status === 50 &&  message.request.department.id_bot == undefined) { 
+                                
+                                winston.debug("message.request.hasBot: "+message.request.hasBot);
+                                // winston.info("message.request.department.id_bot: "+message.request.department.id_bot);
+                                if (message.request.status === 50 &&  message.request.hasBot === false) { 
+                                    // if (message.request.status === 50 &&  message.request.department.id_bot == undefined) { 
                                     //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
