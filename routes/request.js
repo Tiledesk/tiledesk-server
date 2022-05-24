@@ -802,6 +802,11 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
   }
 
+  if (req.query.snap_lead_lead_id) {
+    query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
+    winston.debug('REQUEST ROUTE - QUERY snap_lead_lead_id', query.snap_lead_lead_id);
+  }
+
   if (req.query.channel) {
     query["channel.name"] =  req.query.channel
     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
