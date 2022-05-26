@@ -4,6 +4,7 @@ var Request = require("../models/request");
 var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const { check, validationResult } = require('express-validator');
+var requestService = require('../services/requestService');
 
 
 router.patch('/:requestid/rating', function (req, res) {
@@ -54,5 +55,19 @@ router.patch('/:requestid/rating', function (req, res) {
 });
 
 
+router.put('/:requestid/closeg', function (req, res) {
+  winston.debug(req.body);
+  
+  // closeRequestByRequestId(request_id, id_project)
+  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid).then(function(closedRequest) {
+
+      winston.verbose("request closed", closedRequest);
+
+        return res.json(closedRequest);
+      
+  });
+
+
+});
 
 module.exports = router;
