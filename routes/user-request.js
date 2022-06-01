@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const { check, validationResult } = require('express-validator');
 var requestService = require('../services/requestService');
+var mongoose = require('mongoose');
 
 
 router.patch('/:requestid/rating', function (req, res) {
@@ -104,8 +105,22 @@ router.get('/me', function (req, res, next) {
   var user_id = req.user._id;
   winston.debug('REQUEST ROUTE - user_id:  '+user_id);
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false,
-  $or:[{"snapshot.requester.id_user": user_id}, {"snapshot.requester.uuid_user": user_id}]};  
+  var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
+  winston.debug("isObjectId:"+ isObjectId);
+
+
+  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
+
+    
+  if (isObjectId) {
+    query["snapshot.requester.id_user"] = user_id;
+    // query.id_user = mongoose.Types.ObjectId(contact_id);
+  } else {
+    query["snapshot.requester.uuid_user"] = user_id;
+  }
+
+
+  // $or:[{"snapshot.requester.id_user": user_id}, {"snapshot.requester.uuid_user": user_id}]};  
 
   winston.debug('REQUEST ROUTE - query ', query);
 
