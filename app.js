@@ -352,10 +352,10 @@ var projectIpFilter = function (req, res, next) {
   }
   
   var projectIpFilterEnabled = req.project.ipFilterEnabled;
-  winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
+  winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
 
   var projectIpFilter =  req.project.ipFilter
-  winston.info("project ipFilter: " + projectIpFilter)
+  winston.debug("project ipFilter: " + projectIpFilter)
   
   if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
     var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })

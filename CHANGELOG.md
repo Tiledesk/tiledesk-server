@@ -1,5 +1,10 @@
-# untagged
-- Operator.select returns context object that contains the temp request..TEST IT
+
+# 2.2.29 
+- Added endpoint to find requests created by users and guests
+- Log fix
+
+# 2.2.28 (compatible with dasboard ver. 2.2.36)
+- Operator.select returns context object that contains the temp request
 - Added Serbian language to the widget
 - Added tag field to the project_user
 - Removed default BCC from email
@@ -7,15 +12,22 @@
 - Faq template now support blank and example
 - Organizzation support added
 - ipFilter related to the project is now supported
+- Added filter channel name for the request
+- Added edit card for payment
+- Fix concierge concierge bot for department selection
+- Added filter to find a request by ticket_id
+- Added filter to snap_lead_lead_id for request
+- Added endpoint to close a request by guest
 
-# 2.2.26
+
+# 2.2.26 -> PROD (compatible with dasboard ver. 2.2.35)
 - Tag fix for 2.2.25
 
 # 2.2.25
 - New label prechat form
 - Updated mongodb-runner from 4.8.1 to 4.8.3 to fix ssh key error
 
-# 2.2.24 -> PROD
+# 2.2.24 
 - webhook subscription can fetch temmates endpoint
 - Added hasBot and createdAt index to the request model
 
