@@ -139,7 +139,7 @@ async (req, res)  => {
               .then(function(createdLead) {
 
                
-              
+            
                 var new_request = {                                     
                   request_id: req.params.request_id, 
                   project_user_id: project_user._id, 
@@ -312,9 +312,20 @@ async (req, res)  => {
 //     });
 //   });
 
+  router.get('/csv', function(req, res) {
+
+    // console.log("csv");
+
+
+    return Message.find({"recipient": req.params.request_id, id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+      if (err) return next(err);
+      res.csv(messages, true);
+    });
+  });
+
   router.get('/:messageid', function(req, res) {
   
-    console.log(req.body);
+    // console.log(req.body);
     
     Message.findById(req.params.messageid, function(err, message) {
       if (err) {
@@ -337,13 +348,7 @@ router.get('/', function(req, res) {
     });
 });
 
-router.get('/csv', function(req, res) {
 
-  return Message.find({"recipient": req.params.request_id, id_project: req.projectid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
-      if (err) return next(err);
-      res.csv(messages, true);
-    });
-});
 
 
 module.exports = router;

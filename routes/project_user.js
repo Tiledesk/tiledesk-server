@@ -367,7 +367,7 @@ router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
 
 router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], async (req, res, next) => {
-  winston.info("--> users search  ");
+  winston.debug("--> users search  ");
 
   if (!req.project) {
     return res.status(404).send({ success: false, msg: 'Project not found.' });
@@ -376,10 +376,10 @@ router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: 
 
   let query =  {email: req.query.email};
   
-  winston.info('query: ', query);
+  winston.debug('query: ', query);
   
   let user = await User.findOne(query).exec();
-  winston.info('user: ', user);
+  winston.debug('user: ', user);
   
   if (!user) {
     return res.status(404).send({ success: false, msg: 'Object not found.' });
@@ -387,7 +387,7 @@ router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: 
  
 
   let project_user = await Project_user.findOne({id_user: user._id, id_project: req.projectid}).exec();
-  winston.info('project_user: ', project_user);
+  winston.debug('project_user: ', project_user);
   
   if (!project_user) {
     return res.status(403).json({msg: "Unauthorized. This is not a your teammate." });
