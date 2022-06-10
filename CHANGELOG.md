@@ -1,3 +1,5 @@
+# 2.2.30 -> PROD 
+- Log fix
 
 # 2.2.29 
 - Added endpoint to find requests created by users and guests
@@ -20,7 +22,7 @@
 - Added endpoint to close a request by guest
 
 
-# 2.2.26 -> PROD (compatible with dasboard ver. 2.2.35)
+# 2.2.26 (compatible with dasboard ver. 2.2.35)
 - Tag fix for 2.2.25
 
 # 2.2.25
