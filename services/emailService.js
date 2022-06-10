@@ -98,13 +98,13 @@ class EmailService {
     this.host = process.env.EMAIL_HOST || config.host;
     winston.info('EmailService host: ' + this.host);
 
-    this.secure  = process.env.EMAIL_SECURE || false;
+    this.secure  = process.env.EMAIL_SECURE || false;     
     winston.info('EmailService secure: ' + this.secure);
 
     this.user  = process.env.EMAIL_USERNAME || config.username;
     winston.info('EmailService username: ' + this.user);
 
-    this.port  = process.env.EMAIL_PORT;
+    this.port  = process.env.EMAIL_PORT;  //default is 587
     winston.info('EmailService port: ' + this.port);
 
 
@@ -123,11 +123,19 @@ class EmailService {
     var that = this;
     winston.debug('EmailService readTemplate: '+ templateName + '  ' + JSON.stringify(settings)); 
     
+
       if (settings && settings.email && settings.email.templates) {
+
        var templates = settings.email.templates;
        winston.debug('EmailService templates: ',templates); 
-       var template = templates[templateName];
+
+       var templateDbName = templateName.replace(".html", "");
+       winston.debug('EmailService templateDbName: '+templateDbName); 
+
+
+       var template = templates[templateDbName];
        winston.debug('EmailService template: '+template); 
+
         if (template) {
         // that.callback(template);
           return new Promise(function (resolve, reject) {
@@ -240,7 +248,6 @@ class EmailService {
     };
 
     winston.debug('mailOptions', mailOptions);
-
     if (!mail.to) {
       return winston.warn("EmailService send method. to field is not defined", mailOptions);
     }
@@ -273,7 +280,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('test.html');
+    var html = await this.readTemplate('test.html',{ "email" : {"templates": {test: "123"}}});
 
     var template = handlebars.compile(html);
 
@@ -282,7 +289,7 @@ class EmailService {
 
     var html = template(replacements);
     
-    return that.send({to:to, subject:`TileDesk test email`, config: configEmail, html: html, callback: callback});
+    return that.send({to:to, subject:`Tiledesk test email`, config: configEmail, html: html, callback: callback});
     
   }
 
@@ -399,10 +406,12 @@ class EmailService {
       }
     }
 
-    let subject = `[TileDesk ${project ? project.name : '-'}] New Assigned Chat`;
+
+
+    let subject = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
 
     if (request.subject) {
-      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     // if (request.ticket_id) {
@@ -546,10 +555,10 @@ class EmailService {
     }
 
 
-    let subject = `[TileDesk ${project ? project.name : '-'}] New message`;
+    let subject = `[Tiledesk ${project ? project.name : '-'}] New message`;
 
     if (request.subject) {
-      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
       subject = `[Ticket #${request.ticket_id}] New message`;
@@ -690,10 +699,10 @@ class EmailService {
       }
     }
 
-    let subject = `[TileDesk ${project ? project.name : '-'}] New Pooled Chat`;
+    let subject = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
 
     if (request.subject) {
-      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
     // if (request.ticket_id) {
     //   subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
@@ -831,10 +840,10 @@ class EmailService {
     }
 
 
-    let subject = `[TileDesk ${project ? project.name : '-'}] New Message`;
+    let subject = `[Tiledesk ${project ? project.name : '-'}] New Message`;
 
     if (request.subject) {
-      subject = `[TileDesk ${project ? project.name : '-'}] ${request.subject}`;
+      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
       subject = `[Ticket #${request.ticket_id}] New Message`;
@@ -982,7 +991,7 @@ class EmailService {
       replyTo: replyTo, 
       inReplyTo: inReplyTo,
       references: references,
-      subject:`[TileDesk ${project ? project.name : '-'}] New Offline Message`, 
+      subject:`[Tiledesk ${project ? project.name : '-'}] New Offline Message`, 
       html:html, 
       config:configEmail, 
       headers: headers
@@ -997,7 +1006,7 @@ class EmailService {
       replyTo: replyTo,
       inReplyTo: inReplyTo, 
       references: references,
-      subject: `[TileDesk ${project ? project.name : '-'}] New Offline Message - notification`, 
+      subject: `[Tiledesk ${project ? project.name : '-'}] New Offline Message - notification`, 
       html:html, 
       headers: headers
     });
@@ -1247,8 +1256,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({to: to, subject: '[TileDesk] Password reset request', html:html});
-    that.send({to:that.bcc, subject: '[TileDesk] Password reset request - notification', html:html });
+    that.send({to: to, subject: '[Tiledesk] Password reset request', html:html});
+    that.send({to:that.bcc, subject: '[Tiledesk] Password reset request - notification', html:html });
 
   }
 
@@ -1285,8 +1294,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({to: to, subject:'[TileDesk] Your password has been changed', html:html });
-    that.send({to: that.bcc, subject: '[TileDesk] Your password has been changed - notification', html: html });
+    that.send({to: to, subject:'[Tiledesk] Your password has been changed', html:html });
+    that.send({to: that.bcc, subject: '[Tiledesk] Your password has been changed - notification', html: html });
 
   }
 
@@ -1332,8 +1341,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html});
-    that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
+    that.send({to:to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html:html});
+    that.send({to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html});
   }
 
     // ok
@@ -1376,8 +1385,8 @@ class EmailService {
 
     var html = template(replacements);
 
-    that.send({to:to, subject: `[TileDesk] You have been invited to the '${projectName}' project`, html:html });
-    that.send({to: that.bcc, subject: `[TileDesk] You have been invited to the '${projectName}' project - notification`, html: html});
+    that.send({to:to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html:html });
+    that.send({to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html});
 
   }
 
@@ -1415,8 +1424,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({to: to, subject: `[TileDesk] Verify your email address`, html:html });
-    that.send({to: that.bcc, subject: `[TileDesk] Verify your email address `+to + " - notification", html:html });
+    that.send({to: to, subject: `[Tiledesk] Verify your email address`, html:html });
+    that.send({to: that.bcc, subject: `[Tiledesk] Verify your email address `+to + " - notification", html:html });
 
   }
 
@@ -1483,8 +1492,8 @@ async sendRequestTranscript(to, messages, request, project) {
       winston.verbose("custom email setting found: ", configEmail);
     }
 
-    that.send({to:to, subject: '[TileDesk] Transcript', html:html, config: configEmail});
-    that.send({to: that.bcc, subject: '[TileDesk] Transcript - notification', html:html });
+    that.send({to:to, subject: '[Tiledesk] Transcript', html:html, config: configEmail});
+    that.send({to: that.bcc, subject: '[Tiledesk] Transcript - notification', html:html });
 
 }
 
@@ -1496,6 +1505,6 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
-//emailService.sendTest("al@f21.it");
+// emailService.sendTest("al@f21.it");
 
 module.exports = emailService;
