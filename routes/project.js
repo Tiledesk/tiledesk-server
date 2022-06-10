@@ -382,21 +382,21 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 
       //organization: if third sub domain iterate and put only project with organization==subdomain otherwise remove projects with org
-      winston.info("orgUtil.ORGANIZATION_ENABLED: " + orgUtil.ORGANIZATION_ENABLED);
+      winston.debug("orgUtil.ORGANIZATION_ENABLED: " + orgUtil.ORGANIZATION_ENABLED);
       if (orgUtil.ORGANIZATION_ENABLED == true ) {
 
               // winston.info("project_users", project_users);
-        winston.info("project_users.length:"+ project_users.length);
+        winston.debug("project_users.length:"+ project_users.length);
 
         let org = orgUtil.getOrg(req);
-        winston.info("org:"+ org);
+        winston.debug("org:"+ org);
         
         if (org!=undefined) {
-          winston.info("org!=undefined");
+          winston.debug("org!=undefined");
 
           var project_users = project_users.filter(function (projectUser) {
             if (projectUser.id_project.organization && projectUser.id_project.organization === org ) {
-              winston.info("keep");
+              winston.debug("keep");
               return true;
             }
           });
@@ -430,7 +430,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
           }*/
         }
       } else {
-        winston.info("no")
+        winston.debug("no")
       }
 
 
