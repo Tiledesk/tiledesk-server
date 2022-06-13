@@ -320,7 +320,11 @@ var projectSetter = function (req, res, next) {
 
 
 function customDetection (req)  {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const ip = (req) =>     //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
+    req.headers['x-forwarded-for']?.split(',').shift()
+    || req.socket?.remoteAddress
+
   winston.info("standard ip: "+ip); // ip address of the user
   return ip;
 }
