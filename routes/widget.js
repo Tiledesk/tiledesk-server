@@ -114,10 +114,37 @@ router.get('/', function(req, res, next) {
 
   }
 
+
+  var getProject = function(req) {
+    winston.info('getProject.');
+
+    return new Promise(function (resolve, reject) {
+
+       //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")            
+      
+      Project.findOne({_id: req.projectid, status: 100}).select('-settings -ipFilter -ipFilterEnabled').exec(function(err, project) {
+        // not use .lean I need project.trialExpired 
+
+          if (err) {
+            return reject({err: "Project Not Found"});        
+          }
+
+          if (project && project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
+            winston.info('getProject remove poweredBy tag', project);
+            project.widget.poweredBy = undefined;
+          }
+
+        return resolve(project);
+      });        
+
+    });
+
+  }
+
 // TOOD add labels
     Promise.all([
-        Project.findOne({_id: req.projectid, status: 100}).select('-settings')
-        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")        
+
+        getProject(req)
       ,
         availableUsers()
       ,
