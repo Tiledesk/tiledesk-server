@@ -132,6 +132,7 @@ router.get('/', function(req, res, next) {
           if (project && project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
             winston.info('getProject remove poweredBy tag', project);
             project.widget.poweredBy = undefined;
+            project.widget.baloonImage = undefined;            
           }
 
         return resolve(project);
