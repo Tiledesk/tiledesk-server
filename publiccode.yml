@@ -1,0 +1,110 @@
+# This repository adheres to the publiccode.yml standard by including this 
+# metadata file that makes public software easily discoverable.
+# More info at https://github.com/italia/publiccode.yml
+
+publiccodeYmlVersion: '0.2'
+categories:
+  - customer-service-and-support
+  - communications
+  - marketing
+  - mobile-marketing
+description:
+  it:
+    apiDocumentation: 'https://developer.tiledesk.com/apis/rest-api'
+    documentation: 'https://gethelp.tiledesk.com'
+    features:
+      - live chat widget
+      - chatbot
+      - 'integration with DialogFlow, Rasa and all major AI solutions'
+      - ticketing
+      - multi-project management
+      - SLAs setting
+      - 'smart assignment of the queues '
+      - seamless conversation
+      - dashboard
+      - knowledge base
+      - mobile apps
+    genericName: Live chat with integrated chatbots
+    longDescription: |
+      To have fully satisfied customers is complex. Conversation’s actors
+      (chatbots and humans) should handoff to each other many times during a
+      chat to address customers needs. 
+
+
+      Tiledesk provides a solution **orchestrating instant, asynchronous and
+      multichannel communication among all stakeholders of a typical
+      conversational architecture**: chatbots, support operators, end users,
+      colleagues, applications, etc.  
+
+
+      **Main Features**: 
+
+
+      - Live Chat Widget with full multichannel experience on Web and Mobile; 
+
+      - Resolution Bot to automate customer support; 
+
+      - Easy Integration with all major AI-platforms, cloud and Open source,
+      from DialogFlow to RASA; 
+
+      - Ticketing Management system fully integrated into the platform and
+      instant conversation flow; 
+
+      - Team Organization with multi-project management, SLAs setting, smart
+      assignment of the 
+       queues, departments organization and much more; 
+      - Seamless conversation to “jump” between different channels in a
+      transparent way for end 
+       customers and agents; 
+      - Chat Tools like typing indicator, off-line access, delivery receipts,
+      contact list and much more; 
+
+      - Dashboard with real time analytics; 
+
+      - Knowledge base.
+
+           
+
+      Tiledesk is an **open source **project, made with passion in Salento
+      (Southern Italy).
+    shortDescription: |-
+      Tiledesk delivers scalable customer service to your mobile apps and your
+      website. It is a conversational platform that connects chatbots and
+      humans 
+developmentStatus: stable
+it:
+  conforme:
+    gdpr: false
+    lineeGuidaDesign: false
+    misureMinimeSicurezza: false
+    modelloInteroperabilita: false
+  countryExtensionVersion: '0.2'
+  piattaforme:
+    anpr: false
+    cie: false
+    pagopa: false
+    spid: false
+landingURL: 'https://tiledesk.com/install'
+legal:
+  license: AGPL-3.0-only
+localisation:
+  availableLanguages:
+    - it
+    - en
+    - es
+    - fr
+    - pt
+    - de
+    - ru
+    - tr
+  localisationReady: true
+maintenance:
+  contacts:
+    - name: Andrea Sponziello
+  type: internal
+name: Tiledesk
+platforms:
+  - web
+releaseDate: '2022-06-15'
+softwareType: standalone/web
+url: 'https://github.com/Tiledesk/tiledesk-deployment'
