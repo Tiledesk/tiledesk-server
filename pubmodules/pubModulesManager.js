@@ -18,6 +18,8 @@ class PubModulesManager {
         this.messageTransformer = undefined;
 
         this.scheduler = undefined;
+
+        this.rasa = undefined;
     }
 
   
@@ -138,6 +140,21 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing init scheduler module", err);
             }
         }
+
+
+        try {
+            this.rasa = require('./rasa');
+            winston.debug("this.rasa:"+ this.rasa);    
+            this.rasa.listener.listen();      
+            winston.info("PubModulesManager initialized rasa.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init rasa module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init rasa module", err);
+            }
+        }
+
 
 
       
