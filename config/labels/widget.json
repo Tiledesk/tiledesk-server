@@ -696,9 +696,7 @@
     },
 
 
-    {
-        "default":false,
-        "_id":"6245d677f3058400357d1091",
+    {       
         "lang":"SR",
         "data":{
            "LABEL_PLACEHOLDER":"откуцај своју поруку..",
@@ -776,7 +774,88 @@
            "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY":"Слазем се",
            "PRECHAT_REQUIRED_ERROR":"Ово поље је захтевано"
         }
-     }
+     },
+
+
+     {
+     "lang":"TR",
+        "data": {
+            "LABEL_PLACEHOLDER": "اكتب رسالتك ..",
+            "LABEL_START_NW_CONV": "محادثة جديدة",
+            "LABEL_FIRST_MSG": "صِف مشكلتك بعد قليل ، وسيتواصل معك أحد الوكلاء.",
+            "LABEL_FIRST_MSG_NO_AGENTS": "🤔 جميع المشغلين غير متصلين في الوقت الحالي. يمكنك على أي حال وصف مشكلتك. سيتم تعيينه لفريق الدعم الذي سيعود إليك في أقرب وقت ممكن.",
+            "LABEL_FIRST_MSG_OPERATING_HOURS_CLOSED": "🤔 مكاتبنا مغلقة. يمكنك على أي حال وصف مشكلتك. سيتم تعيينه لفريق الدعم الذي سيعود إليك في أقرب وقت ممكن.",
+            "LABEL_SELECT_TOPIC": "اختر عنوانا",
+            "LABEL_COMPLETE_FORM": "أكمل النموذج لبدء محادثة مع الوكيل المتاح التالي.",
+            "LABEL_FIELD_NAME": "اسم",
+            "LABEL_ERROR_FIELD_NAME": "حقل مطلوب (بحد أدنى 5 أحرف).",
+            "LABEL_FIELD_EMAIL": "البريد الإلكتروني",
+            "LABEL_ERROR_FIELD_EMAIL": "أدخل عنوان بريد إلكتروني صالح.",
+            "LABEL_WRITING": "يكتب...",
+            "AGENT_NOT_AVAILABLE": " غير متصل على الانترنت",
+            "AGENT_AVAILABLE": " متصل",
+            "GUEST_LABEL": "زائر",
+            "ALL_AGENTS_OFFLINE_LABEL": "جميع المشغلين غير متصلون في الوقت الحالي",
+            "LABEL_LOADING": "جار التحميل...",
+            "CALLOUT_TITLE_PLACEHOLDER": "🖐 بحاجة الى مساعدة؟",
+            "CALLOUT_MSG_PLACEHOLDER": "انقر هنا وابدأ الدردشة معنا!",
+            "CUSTOMER_SATISFACTION": "رضا العملاء",
+            "YOUR_OPINION_ON_OUR_CUSTOMER_SERVICE": "رأيك في خدمة العملاء لدينا",
+            "DOWNLOAD_TRANSCRIPT": "تنزيل النص",
+            "BACK": "خلف",
+            "YOUR_RATING": "تقييمك",
+            "WRITE_YOUR_OPINION": "أكتب رأيك ... (اختياري)",
+            "SUBMIT": "يُقدِّم",
+            "THANK_YOU_FOR_YOUR_EVALUATION": "شكرا لتقييمك",
+            "YOUR_RATING_HAS_BEEN_RECEIVED": "لقد تم استلام تقييمك",
+            "ALERT_LEAVE_CHAT": "هل تريد مغادرة الدردشة؟",
+            "YES": "نعم",
+            "NO": "لا",
+            "BUTTON_CLOSE_TO_ICON": "تصغير الدردشة",
+            "BUTTON_EDIT_PROFILE": "تحديث الملف",
+            "BUTTON_DOWNLOAD_TRANSCRIPT": "تنزيل النص",
+            "RATE_CHAT": "معدل الدردشة",
+            "WELLCOME_TITLE": "مرحبًا ، مرحبًا بك في Tiledesk 👋",
+            "WELLCOME_MSG": "كيف يمكن أن نساعد؟",
+            "WELLCOME": "أهلا وسهلا",
+            "WELCOME_TITLE": "مرحبًا ، مرحبًا بك في Tiledesk 👋",
+            "WELCOME_MSG": "كيف يمكن أن نساعد؟",
+            "WELCOME": "أهلا وسهلا",
+            "OPTIONS": "والخيارات",
+            "SOUND_OFF": "الصوت مقفل",
+            "SOUND_ON": "الصوت مفعل",
+            "LOGOUT": "تسجيل خروج",
+            "CLOSE": "قريب",
+            "PREV_CONVERSATIONS": "محادثاتك",
+            "YOU": "أنت",
+            "SHOW_ALL_CONV": "عرض الكل",
+            "START_A_CONVERSATION": "بدء محادثة",
+            "NO_CONVERSATION": "لا محادثة",
+            "SEE_PREVIOUS": "انظر السابق",
+            "WAITING_TIME_FOUND": "يرد الفريق عادةً بـ $reply_time",
+            "WAITING_TIME_NOT_FOUND": "سيقوم الفريق بالرد في أقرب وقت ممكن",
+            "CLOSED": "مغلق",
+            "INFO_SUPPORT_USER_ADDED_SUBJECT": "أنت",
+            "INFO_SUPPORT_USER_ADDED_YOU_VERB": "لقد تم اضافتك ",
+            "INFO_SUPPORT_USER_ADDED_COMPLEMENT": "المحادثة",
+            "INFO_SUPPORT_USER_ADDED_VERB": "انضم",
+            "INFO_SUPPORT_CHAT_REOPENED": "تمت إعادة فتح الدردشة",
+            "INFO_SUPPORT_CHAT_CLOSED": "الدردشة مغلقة",
+            "TICKET_TAKING": "تم استلام الطلب ويقوم طاقم المساعدة بالتعامل معه.\nلإضافة المزيد من التعليقات ، قم بالرد على هذا البريد الإلكتروني.",
+            "LABEL_ERROR_FIELD_REQUIRED": "يتطلب حقلا",
+            "SENT_AN_ATTACHMENT": "أرسل مرفقًا",
+            "SENT_AN_IMAGE": "أرسل صورة",
+            "LABEL_PRECHAT_USER_FULLNAME": "الاسم الكامل",
+            "LABEL_PRECHAT_USER_EMAIL": "البريد الإلكتروني",
+            "LABEL_PRECHAT_USER_EMAIL_ERROR": "عنوان البريد الإلكتروني غير صالح",
+            "LABEL_PRECHAT_USER_PHONE": "هاتف",
+            "LABEL_PRECHAT_USER_PHONE_ERROR": "الهاتف مطلوب",
+            "LABEL_PRECHAT_FIRST_MESSAGE": "رسالتك لفريق الدعم",
+            "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "قبل متابعة المحادثة ، يرجى الموافقة على سياسة الخصوصية الخاصة بشروط <a href='https://tiledesk.com/termsofservice/' target='_blank'></a> و <a href='https://tiledesk.com/privacy.html' target='_blank'></a>",
+            "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "أنا موافق",
+            "PRECHAT_REQUIRED_ERROR": "هذه الخانة مطلوبه"
+        }
+    }
      
     ]
     
