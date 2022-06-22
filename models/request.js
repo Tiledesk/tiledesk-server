@@ -254,6 +254,7 @@ var RequestSchema = new Schema({
     required: false
   },
   location: LocationSchema,
+  
   id_project: {
     type: String,
     required: true,
@@ -417,7 +418,9 @@ RequestSchema.index({ id_project: 1, request_id: 1 }
 // https://docs.mongodb.com/manual/reference/text-search-languages/#text-search-languages
 
 //TODO cambiare dummy con language? attento che il codice deve essere compatibile
-RequestSchema.index({transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text'},  
+
+
+RequestSchema.index({transcript: 'text', rating_message: 'text', subject: 'text', "tags.tag": 'text', "notes.text": 'text', "snapshot.lead.email": 'text', "snapshot.lead.fullname": 'text' },  
  {"name":"request_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
 //  let query = {id_project: operatorSelectedEvent.id_project, participants: { $exists: true, $ne: [] }};
@@ -430,6 +433,9 @@ RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); /
 RequestSchema.index({ id_project: 1, preflight:1, updatedAt: -1 }); // used query ws (topic.endsWith('/requests'))
 
 RequestSchema.index({ hasBot: 1, createdAt: 1 }); // suggested by atlas
+
+RequestSchema.index({ id_project: 1, ticket_id: 1 });
+
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv
