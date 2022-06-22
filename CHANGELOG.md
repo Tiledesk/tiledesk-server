@@ -1,3 +1,16 @@
+
+
+
+# 2.2.31 (compatible with: Dashboard 2.2.37, Widget 5.0.25)
+- Fix email template reading from project.
+- Added transcript webpage for users without system messages
+- Fix export messages to csv
+- Fix ip address resolver
+- Exclude poweredBy field from widget endpoint
+- Bugfix when a conversation has a first_text with \agent
+- Added rasa chatbot chatbot type 
+- Added visitor email and fullname in the fulltext index 
+
 # 2.2.30 -> PROD 
 - Log fix
 
