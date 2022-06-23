@@ -841,7 +841,6 @@ router.get('/', function (req, res, next) {
   var q1 = Request.find(query).
     skip(skip).limit(limit);
 
-
    
     winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
 
@@ -863,7 +862,13 @@ router.get('/', function (req, res, next) {
     //   // q1.select({ "snapshot": 1});
     // }
 
-    q1.sort(sortQuery);
+    if (req.query.full_text) {     
+      winston.info('fulltext sort'); 
+      q1.sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+    } else {
+      q1.sort(sortQuery);
+    }
+    
 
     // winston.info('q1',q1);
 
@@ -1008,8 +1013,6 @@ router.get('/csv', function (req, res, next) {
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
-
-
 
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
