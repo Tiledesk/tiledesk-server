@@ -219,7 +219,7 @@ describe('LabelRoute', () => {
                                 chai.request(server)
                                         .post('/'+ savedProject._id + '/labels/default/clone')
                                         .auth(email, pwd)
-                                        .send({lang: "AR"})
+                                        .send({lang: "ARR"}) //not exists
                                         .end((err, res) => {
                                             //console.log("res",  res);
                                             console.log("res.body",  res.body);
@@ -227,18 +227,18 @@ describe('LabelRoute', () => {
                                             res.body.should.be.a('object');
                                             // expect(res.body.jwtSecret).to.not.equal(null);                                                                              
                                             expect(res.body.id_project).to.equal(savedProject.id);     
-                                            expect(res.body.data[0].lang).to.equal("AR");          
+                                            expect(res.body.data[0].lang).to.equal("ARR");          
             
             
                                             chai.request(server)
-                                            .get('/'+ savedProject._id + '/labels/AR')
+                                            .get('/'+ savedProject._id + '/labels/ARR')
                                             .auth(email, pwd)
                                             .send()
                                             .end((err, res) => {
                                                 //console.log("res",  res);
                                                 console.log("res.body ar",  res.body);
                                                 expect(res.body.data.LABEL_PLACEHOLDER).to.equal("type your message..");  
-                                                expect(res.body.lang).to.equal("AR");   
+                                                expect(res.body.lang).to.equal("ARR");   
                                                 expect(res.body.default).to.equal(true);     
                                                 done();
                                             });
