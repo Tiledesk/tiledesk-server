@@ -321,8 +321,13 @@ router.get('/me', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
 
+  if (req.query.full_text) {  
+    winston.info('fulltext projection'); 
+
+    projection = {score: { $meta: "textScore" } };
+  }
   // requestcachefarequi populaterequired
-  var q1 = Request.find(query).
+  var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
 

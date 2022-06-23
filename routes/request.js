@@ -837,11 +837,21 @@ router.get('/', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
 
+  var projection = undefined;
+
+  if (req.query.full_text) {  
+    winston.info('fulltext projection'); 
+
+    projection = {score: { $meta: "textScore" } };
+  }
   // requestcachefarequi populaterequired
-  var q1 = Request.find(query).
+  var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
-   
+
+     
+
+
     winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
 
     if (req.query.no_populate != "true" && req.query.no_populate != true) {        
@@ -1013,6 +1023,7 @@ router.get('/csv', function (req, res, next) {
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
+
 
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
