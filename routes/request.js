@@ -807,6 +807,11 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY snap_lead_lead_id', query.snap_lead_lead_id);
   }
 
+  if (req.query.snap_lead_email) {
+    query["snapshot.lead.email"] = req.query.snap_lead_email;
+    winston.debug('REQUEST ROUTE - QUERY snap_lead_email', query.snap_lead_email);
+  }
+
   if (req.query.channel) {
     query["channel.name"] =  req.query.channel
     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
@@ -835,6 +840,7 @@ router.get('/', function (req, res, next) {
   // requestcachefarequi populaterequired
   var q1 = Request.find(query).
     skip(skip).limit(limit);
+
 
    
     winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
@@ -1003,6 +1009,9 @@ router.get('/csv', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
+
+
+
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript -status -__v').
     skip(skip).limit(limit).
@@ -1111,7 +1120,6 @@ router.get('/csv', function (req, res, next) {
           // };
           // console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
           return res.csv(requests, true);
-          // return res.csv([ { name: "joe", id: 1 }])
         });
        
       // });
