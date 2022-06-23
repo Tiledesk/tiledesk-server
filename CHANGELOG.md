@@ -1,7 +1,10 @@
 
 
 
-# # 2.2.32  -> PROD  
+# 2.2.33  -> PROD  
+- Request fulltext sort fix
+
+# 2.2.32
 - Added Arabic language for the widget
 - Updated dependencies with npm update
 - Filter requests by lead email
@@ -15,8 +18,6 @@
 - Bugfix when a conversation has a first_text with \agent
 - Added rasa chatbot chatbot type
 - Added visitor email and fullname in the fulltext index 
-
-
 
 # 2.2.30
 - Log fix
