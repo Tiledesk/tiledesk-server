@@ -1,6 +1,11 @@
 
 
 
+# # 2.2.32  -> PROD  
+- Added Arabic language for the widget
+- Updated dependencies with npm update
+- Filter requests by lead email
+
 # 2.2.31 (compatible with: Dashboard 2.2.37, Widget 5.0.25)
 - Fix email template reading from project.
 - Added transcript webpage for users without system messages
@@ -8,10 +13,12 @@
 - Fix ip address resolver
 - Exclude poweredBy field from widget endpoint
 - Bugfix when a conversation has a first_text with \agent
-- Added rasa chatbot chatbot type 
+- Added rasa chatbot chatbot type
 - Added visitor email and fullname in the fulltext index 
 
-# 2.2.30 -> PROD 
+
+
+# 2.2.30
 - Log fix
 
 # 2.2.29 
