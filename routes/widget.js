@@ -116,7 +116,7 @@ router.get('/', function(req, res, next) {
 
 
   var getProject = function(req) {
-    winston.info('getProject.');
+    winston.debug('getProject.');
 
     return new Promise(function (resolve, reject) {
 
@@ -130,7 +130,7 @@ router.get('/', function(req, res, next) {
           }
 
           if (project && project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
-            winston.info('getProject remove poweredBy tag', project);
+            winston.debug('getProject remove poweredBy tag', project);
             project.widget.poweredBy = undefined;
             project.widget.baloonImage = undefined;            
           }
