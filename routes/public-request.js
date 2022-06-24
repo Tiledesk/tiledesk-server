@@ -49,4 +49,25 @@ var winston = require('../config/winston');
   });
 
 
+  router.get('/:requestid/messages-user.html', function(req, res) {
+  
+    winston.debug(req.params);
+    winston.debug("here");    
+    return Message.find({"recipient": req.params.requestid}).sort({createdAt: 'asc'}).exec(function(err, messages) { 
+      if (err) {
+        return res.status(500).send({success: false, msg: 'Error getting object.'});
+      }
+
+      var messages = messages.filter(m => m.sender != "system" );
+
+      //skip info message
+      if(!messages){
+        return res.status(404).send({success: false, msg: 'Object not found.'});
+      }
+
+      return res.render('messages', { title: 'Tiledesk', messages: messages});
+    });
+
+  });
+
 module.exports = router;
