@@ -1,7 +1,11 @@
 
+# 2.2.35  -> PROD  
+- BugFix projection for /me service
 
+# 2.2.34  
+- Added transcript webpage for users without system messages
 
-# 2.2.33  -> PROD  
+# 2.2.33
 - Request fulltext sort fix
 
 # 2.2.32
@@ -11,7 +15,6 @@
 
 # 2.2.31 (compatible with: Dashboard 2.2.37, Widget 5.0.25)
 - Fix email template reading from project.
-- Added transcript webpage for users without system messages
 - Fix export messages to csv
 - Fix ip address resolver
 - Exclude poweredBy field from widget endpoint
