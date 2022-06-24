@@ -321,8 +321,10 @@ router.get('/me', function (req, res, next) {
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
 
+  var projection = undefined;
+
   if (req.query.full_text) {  
-    winston.info('fulltext projection'); 
+    winston.debug('fulltext projection'); 
 
     projection = {score: { $meta: "textScore" } };
   }
@@ -352,7 +354,7 @@ router.get('/me', function (req, res, next) {
     // }
 
     if (req.query.full_text) {     
-      winston.info('fulltext sort'); 
+      winston.debug('fulltext sort'); 
       q1.sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
     } else {
       q1.sort(sortQuery);
