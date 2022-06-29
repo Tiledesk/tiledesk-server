@@ -1,5 +1,8 @@
 
-# 2.2.35  -> PROD  
+# 2.2.36  -> PROD  
+- Ukraine translations
+
+# 2.2.35 
 - BugFix projection for /me service
 
 # 2.2.34  
