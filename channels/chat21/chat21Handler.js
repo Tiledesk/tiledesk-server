@@ -56,8 +56,9 @@ class Chat21Handler {
     typing(message, timestamp) {
         return new Promise(function (resolve, reject) {
 
+            // if privateFor skip typing
             //no typing for subtype info
-            if (message.attributes && message.attributes.subtype && message.attributes.subtype==='info') {
+            if (message.attributes && message.attributes.subtype && (message.attributes.subtype==='info' || message.attributes.subtype==='private')) {
                 return resolve();
             }else {
                 chat21.conversations.typing(message.recipient, message.sender, message.text, timestamp).finally(function() {

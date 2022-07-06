@@ -58,6 +58,10 @@ listen() {
 
           if (message.sender != message.request.lead.lead_id) {
             winston.verbose("sending sendToUserEmailChannelEmail for EMAIL or FORM channel");
+
+            if (message.attributes && message.attributes.subtype==='private') {
+              return winston.debug("not sending sendToUserEmailChannelEmail for attributes.subtype private messages");
+            }            
             return that.sendToUserEmailChannelEmail(message.id_project, message);           
           } else {
 
@@ -132,6 +136,9 @@ listen() {
          that.sendAgentEmail(request.id_project, request);
       });
      });
+
+
+
 
     //  requestEvent.on("request.update.preflight", function(request) {
       
@@ -335,7 +342,10 @@ sendToAgentEmailChannelEmail(projectid, message) {
             }
   
             winston.debug("savedRequest", savedRequest);
+
   
+
+
                 // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                    if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
   
