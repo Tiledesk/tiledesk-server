@@ -1,5 +1,12 @@
 
-# 2.2.36  -> PROD  
+
+# 2.2.38  
+- Unlocked departments, groups, multi-tenant, tags and canned resposes modules
+
+# 2.2.37  -> PROD 
+- skip subtype private message for notification
+
+# 2.2.36
 - Ukraine translations
 
 # 2.2.35 
