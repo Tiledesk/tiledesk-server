@@ -10,7 +10,6 @@ var BotFromParticipant = require("../utils/botFromParticipant");
 var cacheUtil = require('../utils/cacheUtil');
 var eventService = require('../pubmodules/events/eventService');
 var mongoose = require('mongoose');
-const { TiledeskChatbotUtil } = require('@tiledesk/tiledesk-chatbot-util');
 const ActionsConstants = require('../models/actionsConstants');
 var httpUtil = require('../utils/httpUtil');
 
@@ -138,7 +137,7 @@ class FaqBotHandler {
 
            
 
-
+            // EXACT MATCH
             Faq.find(query) 
             .lean().               
              exec(async (err, faqs) => {
@@ -301,6 +300,7 @@ class FaqBotHandler {
                 }               
         
             
+                
                 Faq.find(query,  mongoproject)  
                 .sort(sort) 
                 .lean().               

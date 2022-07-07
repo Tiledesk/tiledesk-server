@@ -53,6 +53,7 @@ class ModulesManager {
         this.visitorCounterRoute = undefined;
         this.visitorCounterMiddleware = undefined;
         this.widgetsRoute = undefined;
+        this.enterprise = undefined;
     }
 
     injectBefore(app) {
@@ -171,6 +172,20 @@ class ModulesManager {
    
     init(config) {
         winston.debug("ModulesManager init");
+
+
+        try {
+            this.enterprise = require('@tiledesk-ent/tiledesk-server-enterprise');
+            winston.debug("this.enterprise:"+ this.enterprise);            
+            winston.info("ModulesManager enterprise initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init enterprise module not found");
+            }else {
+                winston.error("ModulesManager error initializing init enterprise module", err);
+            }
+        }
+
 
 
         try {
