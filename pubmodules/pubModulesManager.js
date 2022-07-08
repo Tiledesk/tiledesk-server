@@ -20,12 +20,18 @@ class PubModulesManager {
         this.scheduler = undefined;
 
         this.rasa = undefined;
+        this.rasaRoute = undefined;
     }
 
   
 
     use(app) {
         
+        if (this.rasaRoute) {
+            app.use('/modules/rasa', this.rasaRoute);
+            winston.info("ModulesManager rasaRoute controller loaded");       
+        }
+
     }
     useUnderProjects(app) {
         var that = this;
@@ -42,7 +48,7 @@ class PubModulesManager {
     }
 
    
-    init() {
+    init(config) {
         winston.debug("PubModulesManager init");
 
         try {
@@ -145,7 +151,10 @@ class PubModulesManager {
         try {
             this.rasa = require('./rasa');
             winston.debug("this.rasa:"+ this.rasa);    
-            this.rasa.listener.listen();      
+            this.rasa.listener.listen(config);      
+
+            this.rasaRoute = this.rasa.rasaRoute;
+
             winston.info("PubModulesManager initialized rasa.");
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') { 

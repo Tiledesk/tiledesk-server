@@ -1,25 +1,46 @@
 const botEvent = require('../../event/botEvent');
 var Faq_kb = require("../../models/faq_kb");
 var winston = require('../../config/winston');
+const rasa = require("@tiledesk/tiledesk-rasa-connector");
+var configGlobal = require('../../config/global');
 
-const BOT_RASA_ENDPOINT = process.env.BOT_RASA_ENDPOINT;
+var port = process.env.PORT || '3000';
+
+const BOT_RASA_ENDPOINT = "http://localhost:" + port+ "/modules/rasa/rasabot" ||  process.env.BOT_RASA_ENDPOINT;
 winston.debug("BOT_RASA_ENDPOINT: " + BOT_RASA_ENDPOINT);
 
-if (BOT_RASA_ENDPOINT) {
+// if (BOT_RASA_ENDPOINT) {
   winston.info("Rasa endpoint: " + BOT_RASA_ENDPOINT);
-} else {
-   winston.info("Rasa endpoint not configured");
-}
+// } else {
+//    winston.info("Rasa endpoint not configured");
+// }
 
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+winston.info('Rasa apiUrl: '+ apiUrl);
 
 class Listener {
 
-    listen() {
+    listen(config) {
 
-        winston.debug('rasa Listener listen');   
+        winston.info('Rasa Listener listen');
+        winston.debug("config databaseUri: " + config.databaseUri);  
+        
 
         var that = this;
 
+
+        rasa.startRasa(
+            {
+                KVBASE_COLLECTION : process.env.KVBASE_COLLECTION,
+                MONGODB_URI: config.databaseUri,          
+                API_ENDPOINT: apiUrl,   
+                log: true
+            }, () => {
+                winston.info("RASA proxy server successfully started.");   
+            });
+
+
+      
         botEvent.on('faqbot.create', function(bot) {
             if (BOT_RASA_ENDPOINT) {
 

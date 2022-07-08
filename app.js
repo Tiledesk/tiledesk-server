@@ -30,6 +30,7 @@ var Project = require("./models/project");
 var validtoken = require('./middleware/valid-token');
 var roleChecker = require('./middleware/has-role');
 
+const MaskData = require("maskdata");
 var winston = require('./config/winston');
 
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
@@ -43,7 +44,18 @@ if (process.env.NODE_ENV == 'test')  {
   databaseUri = config.databasetest;
 }
 
-winston.info("DatabaseUri: " + databaseUri);
+const masked_databaseUri = MaskData.maskPhone(databaseUri, {
+        maskWith : "*",
+        unmaskedStartDigits: 15, 
+        unmaskedEndDigits: 5
+      });
+
+if (process.env.DISABLE_MONGO_PASSWORD_MASK ==true || process.env.DISABLE_MONGO_PASSWORD_MASK == "true")  {
+  winston.info("DatabaseUri: " + databaseUri);
+}else {
+  winston.info("DatabaseUri: " + masked_databaseUri);
+}
+
 
 var autoIndex = true;
 if (process.env.MONGOOSE_AUTOINDEX) {
@@ -123,14 +135,14 @@ var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
 var pubModulesManager = require('./pubmodules/pubModulesManager');
-  pubModulesManager.init();
-
+pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}});
   
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
 const ipfilter = require('express-ipfilter').IpFilter
 // const IpDeniedError = require('express-ipfilter').IpDeniedError;
+
 
 
 var modulesManager = undefined;
