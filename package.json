@@ -51,7 +51,7 @@
   "dependencies": {
     "@tiledesk/tiledesk-chat21-app": "^1.1.4",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
-    "@tiledesk/tiledesk-rasa-connector": "^1.0.3",
+    "@tiledesk/tiledesk-rasa-connector": "^1.0.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.20.0",
