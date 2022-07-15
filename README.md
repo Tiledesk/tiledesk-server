@@ -25,23 +25,6 @@ Use [Docker Compose Tiledesk installation guide](https://github.com/Tiledesk/til
 
 # Running Tiledesk Server
 
-## Run locally with npm
-
-Steps to run with npm:
-
-```
-npm install -g @tiledesk/tiledesk-server mongodb-runner
-mongodb-runner start
-curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/master/.env.sample --output .env
-nano .env #configure .env file properly
-tiledesk-server  
-```
-
-If you want to load .env file from another path: `DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server`
-
-Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
-
-
 ## Using Docker
 
 
@@ -64,6 +47,24 @@ Otherwise if you want to run tiledesk only with docker run :
 ```
 docker run -p 3000:3000 --env DATABASE_URI="mongodb://YOUR_MONGO_INSTALLATION_ENDPOINT/tiledesk-server" --env-file .env tiledesk/tiledesk-server
 ```
+
+
+
+## Run locally with npm
+
+Steps to run with npm:
+
+```
+npm install -g @tiledesk/tiledesk-server mongodb-runner
+mongodb-runner start
+curl https://raw.githubusercontent.com/Tiledesk/tiledesk-server/master/.env.sample --output .env
+nano .env #configure .env file properly
+tiledesk-server  
+```
+
+If you want to load .env file from another path: `DOTENV_PATH=/MY/ABSOLUTE/PATH/.env tiledesk-server`
+
+Note: If installation with -g fails due to permission problems (npm ERR! code 'EACCES'), please refer to this [link](https://docs.npmjs.com/getting-started/fixing-npm-permissions).
 
 ## Install from source code
 
