@@ -50,8 +50,8 @@ scheduleUnresponsiveRequests() {
  //https://crontab.guru/examples.html
  var s= schedule.scheduleJob(this.cronExp, function(fireDate){   //TODO aggiungi un bias random
 
-    let timeInMs = Math.random() * (1000);  // avoid cluster concurrent jobs in multiple nodes between 0 and 1sec
-    winston.info('timeInMs => '+ timeInMs);
+    let timeInMs = Math.random() * (1000);  // avoid cluster concurrent jobs in multiple nodes delay between 0 and 1sec
+    winston.debug('timeInMs => '+ timeInMs);
 
     setTimeout(function () {
       winston.debug('CloseBotUnresponsiveRequestTask scheduleUnresponsiveRequests job was supposed to run at ' + fireDate + ', but actually ran at ' + new Date());

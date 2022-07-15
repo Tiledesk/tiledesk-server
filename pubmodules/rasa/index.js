@@ -1,3 +1,10 @@
 const listener = require("./listener");
 
-module.exports = {listener:listener };
+const rasa = require("@tiledesk/tiledesk-rasa-connector");
+const rasaRoute = rasa.router;
+
+
+
+
+
+module.exports = { listener: listener, rasaRoute: rasaRoute };

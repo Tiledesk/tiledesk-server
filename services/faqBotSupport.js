@@ -4,7 +4,6 @@
 
 const Faq = require('../models/faq');
 const Faq_kb = require('../models/faq_kb');
-const MessageConstants = require('../models/messageConstants');
 var winston = require('../config/winston');
 
 var jwt = require('jsonwebtoken');
