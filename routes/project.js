@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var Project = require("../models/project");
 var projectEvent = require("../event/projectEvent");
+var projectService = require("../services/projectService");
+
 var Project_user = require("../models/project_user");
 
 var operatingHoursService = require("../services/operatingHoursService");
@@ -16,6 +18,56 @@ var validtoken = require('../middleware/valid-token')
 var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
+
+
+router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
+  
+  // create(name, createdBy, settings) 
+  return projectService.create(req.body.name, req.user.id, undefined, req.body.defaultLanguage).then(function(savedProject) {
+      res.json(savedProject);
+  });
+  
+});
+
+// DOWNGRADE PLAN. UNUSED
+router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
+  winston.debug('downgradeplan - UPDATE PROJECT REQ BODY ', req.body);
+  Project.findByIdAndUpdate(req.params.projectid, req.body, { new: true, upsert: true }, function (err, updatedProject) {
+      if (err) {
+          winston.error('Error putting project ', err);
+          return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
+      projectEvent.emit('project.downgrade', updatedProject );
+      res.json(updatedProject);
+  });
+});
+
+
+router.delete('/:projectid/physical', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
+  winston.debug(req.body);
+  // TODO delete also department, faq_kb, faq, group, label, lead, message, project_users, requests, subscription
+  Project.remove({ _id: req.params.projectid }, function (err, project) {
+      if (err) {
+          winston.error('Error deleting project ', err);
+          return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      }
+      projectEvent.emit('project.delete', project );
+      res.json(project);
+  });
+});
+
+router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
+  winston.debug(req.body);
+  // TODO delete also department, faq_kb, faq, group, label, lead, message, project_users, requests, subscription
+  Project.findByIdAndUpdate(req.params.projectid, {status:0}, { new: true, upsert: true }, function (err, project) {
+      if (err) {
+          winston.error('Error deleting project ', err);
+          return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      }
+      projectEvent.emit('project.delete', project );
+      res.json(project);
+  });
+});
 
 router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
