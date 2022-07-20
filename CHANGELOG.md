@@ -1,5 +1,17 @@
 
 
+# 2.3.1
+- changed tiledesk logo for emails
+- open modules: analytics, activity log, multi tenancy, departments, groups, canned responses, tags, triggers, webhooks
+
+# 2.2.39
+- Added enterprise module
+- Log fix
+- Added DISABLE_MONGO_PASSWORD_MASK env variable
+- Embedded rasa  proxy
+- Added Swedish, Uzbek and Kazakh languages
+- Added Azerbaijani language
+
 # 2.2.38  
 - Unlocked departments, groups, multi-tenant, tags and canned resposes modules
 
