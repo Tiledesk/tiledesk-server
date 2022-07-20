@@ -1,10 +1,9 @@
 
 var winston = require('../config/winston');
-// var validtoken = require('../middleware/valid-token');
-// var roleChecker = require('../middleware/has-role');
-// var passport = require('passport');
-// require('../middleware/passport')(passport);
-
+var validtoken = require('../middleware/valid-token');
+var roleChecker = require('../middleware/has-role');
+var passport = require('passport');
+require('../middleware/passport')(passport);
 
 class PubModulesManager {
 
@@ -21,6 +20,17 @@ class PubModulesManager {
 
         this.rasa = undefined;
         this.rasaRoute = undefined;
+
+        this.activityArchiver = undefined;
+        this.activityRoute = undefined;
+
+        this.analyticsRoute = undefined;
+
+        this.cannedResponseRoute = undefined;
+
+        this.trigger = undefined;
+        this.triggerRoute = undefined;
+
     }
 
   
@@ -45,6 +55,27 @@ class PubModulesManager {
             winston.info("ModulesManager eventsRoute controller loaded");       
         }
         
+
+        if (this.activityRoute) {
+            app.use('/:projectid/activities', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.activityRoute);
+             winston.info("ModulesManager activities controller loaded");       
+        }
+
+        if (this.analyticsRoute) {
+            app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.analyticsRoute);
+             winston.info("ModulesManager analytics controller loaded");       
+         }
+
+         if (this.cannedResponseRoute) {            
+            app.use('/:projectid/canned', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.cannedResponseRoute);
+            winston.info("ModulesManager canned controller loaded");       
+        }
+
+        if (this.triggerRoute) {
+            app.use('/:projectid/modules/triggers', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.triggerRoute);
+            winston.info("ModulesManager trigger controller loaded");       
+        }
+
     }
 
    
@@ -166,7 +197,65 @@ class PubModulesManager {
 
 
 
+
+        try {
+            this.activityArchiver = require('./activities').activityArchiver;
+            // this.activityArchiver.listen();
+            winston.debug("this.activityArchiver:"+ this.activityArchiver);   
+            
+            this.activityRoute = require('./activities').activityRoute;
+            winston.debug("this.activityRoute:"+ this.activityRoute);
+
+            winston.info("ModulesManager activities initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init activities module not found");
+            }else {
+                winston.error("ModulesManager error initializing init activities module", err);
+            }
+        }
+
+
+        try {
+            this.analyticsRoute = require('./analytics').analyticsRoute;
+            winston.debug("this.analyticsRoute:"+ this.analyticsRoute);        
+            winston.info("ModulesManager analyticsRoute initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init analytics module not found");
+            }else {
+                winston.error("ModulesManager error initializing init analytics module", err);
+            }
+        }
+
+
+
+        try {
+            this.cannedResponseRoute = require('./canned').cannedResponseRoute;
+            winston.debug("this.cannedResponseRoute:"+ this.cannedResponseRoute);        
+            winston.info("ModulesManager cannedResponseRoute initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init canned module not found");
+            }else {
+                winston.error("ModulesManager error initializing init canned module", err);
+            }
+        }
+
       
+        try {
+            this.trigger = require('./trigger').start;
+            winston.debug("this.trigger:"+ this.trigger);
+            this.triggerRoute = require('./trigger').triggerRoute;
+            winston.debug("this.triggerRoute:"+ this.triggerRoute);       
+            winston.info("ModulesManager trigger initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("ModulesManager init trigger module not found");
+            }else {
+                winston.error("ModulesManager error initializing init trigger module", err);
+            }
+        }
         
     }
 
@@ -219,6 +308,16 @@ class PubModulesManager {
                 winston.info("PubModulesManager error starting scheduler module", err);            
             }
         } 
+
+
+        if (this.activityArchiver) {
+            try {
+                this.activityArchiver.listen();
+                winston.info("ModulesManager activityArchiver started");
+            } catch(err) {        
+                winston.info("ModulesManager error starting activityArchiver module", err);            
+            }
+        }
 
 
     }

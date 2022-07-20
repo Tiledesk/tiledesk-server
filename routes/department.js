@@ -14,6 +14,40 @@ var cacheUtil = require('../utils/cacheUtil');
 var departmentEvent = require("../event/departmentEvent");
 
 
+router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+  winston.debug("DEPT REQ BODY ", req.body);
+  var newDepartment = new Department({
+      routing: req.body.routing,
+      name: req.body.name,
+      description: req.body.description,
+      default: req.body.default,
+      status: req.body.status,
+      id_group: req.body.id_group,
+      id_project: req.projectid,
+      createdBy: req.user.id,
+      updatedBy: req.user.id
+  });
+
+  if (req.body.id_bot) {
+      newDepartment.id_bot = req.body.id_bot;
+      newDepartment.bot_only = req.body.bot_only;
+  }
+
+
+  newDepartment.save(function (err, savedDepartment) {
+      if (err) {
+      winston.error('Error creating the department ', err);
+      return res.status(500).send({ success: false, msg: 'Error saving object.' });
+      }
+      winston.debug('NEW DEPT SAVED ', savedDepartment);
+      departmentEvent.emit('department.create', savedDepartment);
+      res.json(savedDepartment);
+  });
+});
+
+
+
 router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
@@ -265,6 +299,23 @@ router.get('/', function (req, res) {
   }
 });
 
+router.delete('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+
+  winston.debug(req.body);
+  winston.debug("req.params.departmentid: "+req.params.departmentid);
+
+  Department.findOneAndRemove({_id: req.params.departmentid}, function (err, department) {
+  // Department.remove({ _id: req.params.departmentid }, function (err, department) {
+      
+      if (err) {
+      winston.error('Error deleting the department ', err);
+      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      }
+      // nn funziuona perchje nn c'è id_project
+      departmentEvent.emit('department.delete', department);
+      res.json(department);
+  });
+});
 
 
 module.exports = router;

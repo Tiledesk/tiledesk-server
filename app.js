@@ -87,6 +87,9 @@ var lead = require('./routes/lead');
 var message = require('./routes/message');
 var messagesRootRoute = require('./routes/messagesRoot');
 var department = require('./routes/department');
+var group = require('./routes/group');
+var resthook = require('./routes/subscription');
+var tag = require('./routes/tag');
 var faq = require('./routes/faq');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
@@ -123,6 +126,9 @@ var schemaMigrationService = require('./services/schemaMigrationService');
 var RouterLogger = require('./models/routerLogger');
 
 require('./services/mongoose-cache-fn')(mongoose);
+
+var subscriptionNotifier = require('./services/subscriptionNotifier');
+subscriptionNotifier.start();
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -441,7 +447,13 @@ app.use('/:projectid/departments', department);
 
 
 
+
+
 channelManager.useUnderProjects(app);
+
+app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], group);
+app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], tag);
+app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], resthook);
 
 //deprecated
 app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], faq);
