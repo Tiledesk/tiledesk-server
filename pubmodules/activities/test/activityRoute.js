@@ -2,15 +2,15 @@
 process.env.NODE_ENV = 'test';
 
 var Activity = require('../models/activity');
-var projectService = require('../../../../services/projectService');
-var userService = require('../../../../services/userService');
+var projectService = require('../../../services/projectService');
+var userService = require('../../../services/userService');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../../../../app');
+let server = require('../../../app');
 let should = chai.should();
-var winston = require('../../../../config/winston');
+var winston = require('../../../config/winston');
 
 // chai.config.includeStack = true;
 
