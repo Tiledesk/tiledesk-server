@@ -58,7 +58,7 @@ var RequestSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'project_user',
     required: false, //ENABLEIT,
-    index: true
+    // index: true //unused
   },
 
 
@@ -100,7 +100,7 @@ var RequestSchema = new Schema({
     type: Number,
     required: false,
     default: RequestConstants.UNASSIGNED,
-    index: true
+    // index: true //unused
   }, 
 
 
@@ -139,12 +139,12 @@ var RequestSchema = new Schema({
   participantsAgents: {  
     type: Array,
     required: false,
-    index: true,
+    // index: true, //i think unused
   },
   participantsBots: {  
     type: Array,
     required: false,
-    index: true,
+    // index: true, //i think unused
   },
   department: {
     type: Schema.Types.ObjectId,
@@ -161,20 +161,20 @@ var RequestSchema = new Schema({
   // First reply time is the time between ticket creation and the first public comment from an agent, displayed in minutes. Some qualifications include:
   first_response_at: {
     type: Date,
-    index: true
+    // index: true // unused
   },
 
   //timestamp when the agent reply the first time to a visitor
   assigned_at: {
     type: Date,
-    index: true
+    // index: true //unused
   },
 
   // Wait Time (Average and Longest): The average and longest times visitors have been waiting for their chats to be served.
   // Wait time is calculated as duration between the first visitor message in the chat and the first agent message. Wait time will be 0 for agent initiated or trigger initiated chats.
   waiting_time: {
     type: Number,
-    index: true
+    // index: true // why?
   },
 
 
@@ -187,8 +187,11 @@ var RequestSchema = new Schema({
   //   default: 0
   // },
 
-  closed_at: {
+  closed_at: { 
     type: Date
+  },
+  closed_by: { 
+    type: String
   },
 
   tags: [TagSchema],
@@ -205,7 +208,11 @@ var RequestSchema = new Schema({
   }, 
   snapshot: {
     type: RequestSnapshotSchema,
-    select: true
+    select: true,
+    //index: false,
+    // includeIndices: false,
+    excludeIndexes: true //testa bene
+
     // select: false
   }, 
 
@@ -254,7 +261,10 @@ var RequestSchema = new Schema({
     required: false
   },
   location: LocationSchema,
-  
+  auto_close: {
+    type: Number,
+    index: true
+  },
   id_project: {
     type: String,
     required: true,
@@ -434,8 +444,22 @@ RequestSchema.index({ id_project: 1, preflight:1, updatedAt: -1 }); // used quer
 
 RequestSchema.index({ hasBot: 1, createdAt: 1 }); // suggested by atlas
 
+// suggested by atlas
+RequestSchema.index({ lead: 1, id_project: 1, participants: 1, preflight: 1, createdAt: -1 });
+// suggested by atlas
+RequestSchema.index({ lead: 1, id_project: 1, preflight: 1, createdAt: -1 });
+
+// suggested by atlas
+RequestSchema.index({ lead: 1, "snapshot.agents.id_user": 1, id_project: 1, preflight: 1, createdAt: -1 });
+
+// suggested by atlas
 RequestSchema.index({ id_project: 1, ticket_id: 1 });
 
+// suggested by atlas
+RequestSchema.index({ id_project: 1, createdAt: 1, preflight: 1});
+
+//suggested by atlas profiler. Used by auto closing requests
+RequestSchema.index({ hasBot: 1, status: 1, createdAt: 1});
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv
