@@ -201,12 +201,21 @@ router.post('/', function (req, res) {
                         return winston.error("project_user not found with query: ", queryProjectUser);                        
                       }
 
+
+                      // var auto_close;
+
+                      // // qui projecy nn c'è devi leggerlo
+                      // if (req.project.attributes.auto_close === false) {
+                      //   auto_close = 10;
+                      // }
+
                       
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
+                        // , auto_close: auto_close
                       };
     
                       winston.debug("new_request", new_request);
@@ -398,7 +407,9 @@ router.post('/', function (req, res) {
                       // winston.debug('updatedParticipantsRequest', updatedParticipantsRequest);
                       // manca id
 
-                      return requestService.closeRequestByRequestId(recipient_id, projectId).then(function(updatedStatusRequest) {
+                      // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+                      const closed_by = user_id;
+                      return requestService.closeRequestByRequestId(recipient_id, projectId, false, true,closed_by ).then(function(updatedStatusRequest) {
                         
                         winston.debug('updatedStatusRequest', updatedStatusRequest.toObject());
                         return res.json(updatedStatusRequest);                      

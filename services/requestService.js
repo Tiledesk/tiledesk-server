@@ -400,6 +400,8 @@ class RequestService {
     var notes = request.notes;
     var priority = request.priority;
 
+    // var auto_close = request.auto_close;
+
     if (!departmentid) {
       departmentid ='default';
     }
@@ -421,7 +423,9 @@ class RequestService {
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location,
           participants:participants, tags: tags, notes:notes,
-          priority: priority}};
+          priority: priority,
+          // auto_close: auto_close
+          }};
 
           winston.debug("context",context);
 
@@ -549,7 +553,8 @@ class RequestService {
                 snapshot: snapshot,
                 tags: tags,
                 notes: notes,
-                priority: priority
+                priority: priority,
+                // auto_close: auto_close
               });
                     
 
@@ -842,14 +847,14 @@ class RequestService {
 
   }
 
-  setClosedAtByRequestId(request_id, id_project, closed_at) {
+  setClosedAtByRequestId(request_id, id_project, closed_at, closed_by) {
 
     return new Promise(function (resolve, reject) {
      // winston.debug("request_id", request_id);
      // winston.debug("newstatus", newstatus);
 
         return Request        
-        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at}, {new: true, upsert:false})
+        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {closed_at: closed_at, closed_by: closed_by}, {new: true, upsert:false})
         .populate('lead')
         .populate('department')
         .populate('participatingBots')
@@ -934,7 +939,7 @@ class RequestService {
   }
 
 
-  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify) {
+  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -991,7 +996,8 @@ class RequestService {
                   return resolve(updatedRequest);
                 }
                 
-                return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime()).then(function(updatedRequest) {
+                // setClosedAtByRequestId(request_id, id_project, closed_at, closed_by)
+                return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime(), closed_by).then(function(updatedRequest) {
                   
                     winston.verbose("Request closed with id: " + updatedRequest.id);
                     winston.debug("Request closed ", updatedRequest);

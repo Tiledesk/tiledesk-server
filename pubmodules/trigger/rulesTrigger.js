@@ -341,8 +341,9 @@ class RulesTrigger {
                   var id_project = eventTrigger.event.id_project;
                   winston.debug('runAction action id_project: ' + id_project);
       
-                  //   closeRequestByRequestId(request_id, id_project) {
-                  requestService.closeRequestByRequestId(request_id, id_project);
+                  // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+                  const closed_by = "_trigger";
+                  requestService.closeRequestByRequestId(request_id, id_project, false, true, closed_by);
                                       
                 } catch(e) {
                   winston.error("Error runAction", e);

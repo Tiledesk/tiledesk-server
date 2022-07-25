@@ -686,13 +686,15 @@ describe('RequestService', function () {
             savedProject._id, "5badfe5d553d1844ad654072"),
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
             savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
-              requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id).then(function(closedRequest) {
+              // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+              requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id, false, true, "user1").then(function(closedRequest) {
                     winston.debug("resolve closedRequest", closedRequest.toObject());
                     expect(closedRequest.status).to.equal(1000);
                     expect(closedRequest.closed_at).to.not.equal(null);
                     expect(closedRequest.transcript).to.contains("hello1");
                     expect(closedRequest.transcript).to.contains("hello2");
                     expect(closedRequest.snapshot.agents).to.equal(undefined);
+                    expect(closedRequest.closed_by).to.equal("user1");
 
                     done();                         
                   }).catch(function(err){

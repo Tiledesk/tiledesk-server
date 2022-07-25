@@ -196,8 +196,9 @@ router.patch('/:requestid', function (req, res) {
 router.put('/:requestid/close', function (req, res) {
   winston.debug(req.body);
   
-  // closeRequestByRequestId(request_id, id_project)
-  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid).then(function(closedRequest) {
+  // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+  const closed_by = req.user.id;
+  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by).then(function(closedRequest) {
 
       winston.verbose("request closed", closedRequest);
 
@@ -1025,8 +1026,7 @@ router.get('/csv', function (req, res, next) {
   winston.debug("sort query", sortQuery);
 
 
-
-
+  
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript -status -__v').
     skip(skip).limit(limit).

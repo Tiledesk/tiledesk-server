@@ -149,8 +149,10 @@ class MessageActionsInterceptor {
             if (request) {
                 // setTimeout(function() {
                     // winston.info("delayed")
-                     // closeRequestByRequestId(request_id, id_project, notify) {
-                    requestService.closeRequestByRequestId(request.request_id, request.id_project );
+                    
+                    // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+                    const closed_by = message.sender;
+                    requestService.closeRequestByRequestId(request.request_id, request.id_project, false, true, closed_by );
                 //   }, 1500);
 
                

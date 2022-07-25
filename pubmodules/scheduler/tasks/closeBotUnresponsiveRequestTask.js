@@ -95,7 +95,9 @@ findUnresponsiveRequests() {
 
         winston.debug("********unresponsive request ", request);
 
-        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false).then(function(updatedStatusRequest) {
+         //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+        const closed_by = "_bot_unresponsive";
+        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
           winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
