@@ -40,7 +40,6 @@
     "@tiledesk-ent/tiledesk-server-enterprise": "^1.0.0"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^8.2.1",
     "@tiledesk/tiledesk-chat21-app": "^1.1.4",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
