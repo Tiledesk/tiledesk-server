@@ -51,6 +51,7 @@ async (req, res)  => {
     return res.status(422).json({ errors: errors.array() });
   }
   
+ 
   var project_user = req.projectuser;
   var sender = req.body.sender;
   var fullname = req.body.senderFullname || req.user.fullName;
@@ -159,7 +160,8 @@ async (req, res)  => {
                   location: req.body.location,
                   participants: req.body.participants,
                   lead: createdLead, requester: project_user,
-                  priority: req.body.priority
+                  priority: req.body.priority,
+                  followers: req.body.followers,
                 };
   
                 return requestService.create(new_request).then(function (savedRequest) {
@@ -188,7 +190,8 @@ async (req, res)  => {
                             .populate('lead')
                             .populate('department')
                             .populate('participatingBots')
-                            .populate('participatingAgents')  
+                            .populate('participatingAgents') 
+                            // .populate('followers')  
                             .populate({path:'requester',populate:{path:'id_user'}})
                             .execPopulate(function (err, savedRequestPopulated){    
 
@@ -247,6 +250,7 @@ async (req, res)  => {
                       .populate('department')
                       .populate('participatingBots')
                       .populate('participatingAgents')  
+                      // .populate('followers')  
                       .populate({path:'requester',populate:{path:'id_user'}})
                       .execPopulate(function (err, requestPopulated){    
 
@@ -283,7 +287,6 @@ async (req, res)  => {
 
 
 });
-
 
 
 

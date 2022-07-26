@@ -519,6 +519,72 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
 
 });
 
+
+
+
+
+
+router.post('/:requestid/followers', 
+[
+  check('member').notEmpty(),  
+],
+function (req, res) {
+  winston.info("followers add", req.body);
+  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
+  //addParticipantByRequestId(request_id, id_project, member)
+  return requestService.addFollowerByRequestId(req.params.requestid, req.projectid, req.body.member ).then(function(updatedRequest) {
+
+      winston.verbose("participant added", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
+});
+
+
+router.put('/:requestid/followers', function (req, res) {
+  winston.debug("req.body", req.body);
+
+  var followers = [];
+  req.body.forEach(function(follower,index) {
+    followers.push(follower);
+  });
+  winston.debug("var followers", followers);
+  
+  // setFollowersByRequestId(request_id, id_project, newfollowers)
+  return requestService.setFollowersByRequestId(req.params.requestid, req.projectid, followers ).then(function(updatedRequest) {
+
+      winston.debug("followers set", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
+});
+
+router.delete('/:requestid/followers/:followerid', function (req, res) {
+  winston.debug(req.body);
+  
+   //removeFollowerByRequestId(request_id, id_project, member)
+  return requestService.removeFollowerByRequestId(req.params.requestid, req.projectid, req.params.followerid ).then(function(updatedRequest) {
+
+      winston.verbose("follower removed", updatedRequest);
+
+      return res.json(updatedRequest);
+  });
+  
+  
+});
+
+
+
+
+
+
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid',  function (req, res) {
   
@@ -902,6 +968,7 @@ router.get('/', function (req, res, next) {
       count: results[1],
       requests: results[0]
     };
+    winston.debug('REQUEST ROUTE - objectToReturn ');
     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
     return res.json(objectToReturn);
 
@@ -1026,7 +1093,12 @@ router.get('/csv', function (req, res, next) {
   winston.debug("sort query", sortQuery);
 
 
-  
+  // TODO ORDER BY SCORE
+  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
+  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+
+  // aggiungi filtro per data marco
+
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
     return Request.find(query, '-transcript -status -__v').
     skip(skip).limit(limit).

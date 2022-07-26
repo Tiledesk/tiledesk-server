@@ -142,6 +142,7 @@ class RequestService {
             request.snapshot = {}
           }
 
+          
           request.snapshot.department = result.department;
           request.snapshot.agents = result.agents;
           request.snapshot.availableAgentsCount = that.getAvailableAgentsCount(result.agents);
@@ -400,7 +401,9 @@ class RequestService {
     var notes = request.notes;
     var priority = request.priority;
 
-    // var auto_close = request.auto_close;
+    var auto_close = request.auto_close;
+
+    var followers = request.followers;
 
     if (!departmentid) {
       departmentid ='default';
@@ -423,9 +426,7 @@ class RequestService {
           first_text:first_text, departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:userAgent, status:status, 
           createdBy:createdBy, attributes:attributes, subject:subject, preflight: preflight, channel: channel, location: location,
           participants:participants, tags: tags, notes:notes,
-          priority: priority,
-          // auto_close: auto_close
-          }};
+          priority: priority, auto_close: auto_close, followers: followers}};
 
           winston.debug("context",context);
 
@@ -509,6 +510,7 @@ class RequestService {
             snapshot.department = result.department;
           }
           
+          // console.log("result.agents",result.agents);
           snapshot.agents = agents;
           snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
 
@@ -554,7 +556,8 @@ class RequestService {
                 tags: tags,
                 notes: notes,
                 priority: priority,
-                // auto_close: auto_close
+                auto_close: auto_close,
+                followers: followers
               });
                     
 
@@ -1730,6 +1733,298 @@ class RequestService {
       });
     });
   }
+
+
+
+
+
+
+
+
+  addFollowerByRequestId(request_id, id_project, member) {
+    winston.debug("request_id: " + request_id);
+    winston.debug("id_project: " + id_project);
+    winston.debug("addFollowerByRequestId member: " + member);
+
+ 
+
+//TODO control if member is a valid project_user of the project
+// validate member is string
+    return new Promise(function (resolve, reject) {
+
+      if (member==undefined) {
+        var err = "addFollowerByRequestId error, member field is null";
+        winston.error(err);
+        return reject(err);
+      }
+
+      return Request       
+      .findOne({request_id: request_id, id_project: id_project})     
+      // qui cache         
+      .exec( function(err, request) {
+        if (err){
+          winston.error("Error adding follower ", err);
+          return reject(err);
+        }
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+
+        winston.debug("assigned_operator here1");
+
+      // return Request.findById(id).then(function (request) {
+        if (request.followers.indexOf(member)==-1){
+          request.followers.push(member);
+
+          request.save(function(err, savedRequest) {
+            if (err) {
+              winston.error(err);
+              return reject(err);
+            }
+
+            winston.debug("saved", savedRequest);
+
+            return savedRequest
+            .populate('lead')
+            .populate('department')
+            .populate('participatingBots')
+            .populate('participatingAgents')  
+            .populate({path:'requester',populate:{path:'id_user'}})
+            .execPopulate( function(err, requestComplete) {
+
+              if (err) {
+                winston.error("Error getting addFollowerByRequestId", err);
+                return reject(err);
+              }
+
+
+              winston.debug("populated", requestComplete);
+           
+              requestEvent.emit('request.update', requestComplete);
+              requestEvent.emit("request.update.comment", {comment:"FOLLOWER_ADD",request:requestComplete});//Deprecated
+              requestEvent.emit("request.updated", {comment:"FOLLOWER_ADD",request:requestComplete, patch:  {member:member}});
+              requestEvent.emit('request.followers.join', {member:member, request: requestComplete});
+                       
+              return resolve(requestComplete);
+          });
+        });
+          // qui assignetat
+        } else {
+          winston.debug('Request member '+ member+ ' already added for request_id '+ request_id + ' and id_project '+ id_project);
+          return request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
+        }
+                       
+      });
+   });
+  }
+
+
+
+
+
+
+
+
+
+  setFollowersByRequestId(request_id, id_project, newfollowers) {
+    
+    //TODO validate participants
+    // validate if array of string newparticipants
+    return new Promise(function (resolve, reject) {
+      
+      var isArray = Array.isArray(newfollowers);
+
+      if(isArray==false) {
+        winston.error('setFollowersByRequestId error  newfollowers is not an array for request_id '+ request_id + ' and id_project '+ id_project);
+        return reject('setFollowersByRequestId error  newfollowers is not an array for request_id '+ request_id + ' and id_project '+ id_project);
+      }
+
+      return Request
+       
+      .findOne({request_id: request_id, id_project: id_project})     
+      // qui cache ok
+      .exec( function(err, request) {
+        if (err) {
+          winston.error("Error setFollowersByRequestId", err);
+          return reject(err);
+        }       
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+        var oldfollowers = request.followers;
+        winston.debug('oldParticipants', oldfollowers);
+        winston.debug('newparticipants', newfollowers);
+        
+        if (requestUtil.arraysEqual(oldfollowers, newfollowers)){
+        //if (oldParticipants === newparticipants) {
+          winston.verbose('Request members '+ oldfollowers+ ' already equal to ' + newfollowers + ' for request_id '+ request_id + ' and id_project '+ id_project);
+          return request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
+
+        }
+
+        request.followers = newfollowers;
+
+          //cacheinvalidation
+        return request.save(function(err, updatedRequest) {
+          // dopo save non aggiorna participating
+          if (err) {
+            winston.error("Error setFollowersByRequestId", err);
+            return reject(err);
+          }
+        
+         return updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+
+
+            if (err) {
+              winston.error("Error getting setFollowersByRequestId", err);
+              return reject(err);
+            }
+
+            winston.debug("oldfollowers ", oldfollowers);
+
+            requestEvent.emit('request.update', requestComplete);
+            requestEvent.emit("request.update.comment", {comment:"FOLLOWERS_SET",request:requestComplete});//Deprecated
+            requestEvent.emit("request.updated", {comment:"FOLLOWERS_SET",request:requestComplete, patch:  {}});            
+
+            // requestEvent.emit('request.followers.update', {beforeRequest:request, 
+            //             removedParticipants:removedParticipants, 
+            //             addedParticipants:addedParticipants,
+            //             request:requestComplete});
+
+            return resolve(requestComplete);
+           });
+        });
+       
+      });
+
+
+    });
+  }
+
+
+
+
+
+
+  removeFollowerByRequestId(request_id, id_project, member) {
+    winston.debug("request_id", request_id);
+    winston.debug("id_project", id_project);
+    winston.debug("member", member);
+
+    return new Promise(function (resolve, reject)  {
+
+
+
+      if (member==undefined) {
+        var err = "removeFollowerByRequestId error, member field is null";
+        winston.error(err);
+        return reject(err);
+      }
+
+    
+      return Request        
+        .findOne({request_id: request_id, id_project: id_project})
+        // .populate('participatingAgents')  //for abandoned_by_project_users
+        // qui cache    
+        .exec( async (err, request) => {
+        
+        if (err){
+          winston.error("Error removing follower ", err);
+          return reject(err);
+        }
+
+        if (!request) {
+          winston.error('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+          return reject('Request not found for request_id '+ request_id + ' and id_project '+ id_project);
+        }
+
+        var index = request.followers.indexOf(member);
+        winston.debug("index", index);
+
+        if (index > -1) {
+          request.followers.splice(index, 1);
+          // winston.debug(" request.participants",  request.participants);
+         
+
+          // winston.debug(" request",  request);
+         //cacheinvalidation
+         return request.save(function(err, savedRequest) {
+            if (err){
+              winston.error("Error saving removed follower ", err);
+              return reject(err);
+            }
+            
+            return savedRequest
+            .populate('lead')
+            .populate('department')
+            .populate('participatingBots')
+            .populate('participatingAgents')  
+            .populate({path:'requester',populate:{path:'id_user'}})
+            .execPopulate( function(err, requestComplete) {
+
+            if (err){
+              winston.error("Error getting removed follower ", err);
+              return reject(err);
+            }
+
+            
+            requestEvent.emit('request.update', requestComplete);
+            requestEvent.emit("request.update.comment", {comment:"FOLLOWER_REMOVE",request:requestComplete});//Deprecated
+            requestEvent.emit("request.updated", {comment:"FOLLOWER_REMOVE",request:requestComplete, patch:  {member:member}});
+            requestEvent.emit('request.followers.leave', {member:member, request: requestComplete});
+            
+
+            return resolve(requestComplete);
+
+          });
+        });
+
+
+        }else {
+          winston.verbose('Request member '+ member+ ' already not found for request_id '+ request_id + ' and id_project '+ id_project);
+
+          return request
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')  
+          .populate({path:'requester',populate:{path:'id_user'}})
+          .execPopulate( function(err, requestComplete) {
+            return resolve(requestComplete);
+          });
+        }
+                          
+      });
+    });
+  }
+
+
+
+
 
 
 

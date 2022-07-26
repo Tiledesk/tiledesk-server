@@ -134,7 +134,10 @@ var RequestSchema = new Schema({
     index: true,
     default: "medium" //translate on client side
   },
-  
+
+  followers: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'project_user' }],
 
   participantsAgents: {  
     type: Array,
