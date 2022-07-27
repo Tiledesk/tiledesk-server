@@ -776,6 +776,7 @@ router.get('/', function (req, res, next) {
    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
    */
+                                                                        //secondo me qui manca un parentesi tonda per gli or
   if ( history_search === true && req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
 
@@ -880,7 +881,14 @@ router.get('/', function (req, res, next) {
   }
 
   if (req.query.channel) {
-    query["channel.name"] =  req.query.channel
+    if (req.query.channel === "offline") {
+      query["channel.name"] =  {"$in" : ["email", "form"]}
+    } else  if (req.query.channel === "online") {
+      query["channel.name"] =  {"$nin" : ["email", "form"]}
+    } else {
+      query["channel.name"] =  req.query.channel
+    }
+    
     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
   }
 
@@ -1198,14 +1206,6 @@ router.get('/csv', function (req, res, next) {
 
           winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
 
-        // return Request.count(query, function(err, totalRowCount) {
-
-          // var objectToReturn = {
-          //   perPage: limit,
-          //   count: totalRowCount,
-          //   requests : requests
-          // };
-          // console.log('REQUEST ROUTE - objectToReturn ', objectToReturn);
           return res.csv(requests, true);
         });
        
