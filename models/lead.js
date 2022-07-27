@@ -96,6 +96,8 @@ var LeadSchema = new Schema({
 LeadSchema.index({fullname: 'text', email: 'text'},
  {"name":"lead_fulltext","default_language": defaultFullTextLanguage,"language_override": "dummy"}); // schema level
 
+  // suggested by atlas
+LeadSchema.index({status: 1, id_project: 1, createdAt: -1});
 
  var lead = mongoose.model('lead', LeadSchema);
 
