@@ -175,8 +175,6 @@ if (process.env.CREATE_INITIAL_DATA !== "false") {
 
 
 
-
-
 var app = express();
 
 
@@ -404,6 +402,8 @@ app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
 
 app.use('/widgets', widgetsLoader);
+app.use('/w', widgetsLoader);
+
 app.use('/images', images);
 app.use('/files', files);
 app.use('/urls', urls);
