@@ -83,9 +83,12 @@ module.exports = function(passport) {
               // qui arriva questo 
               // decoded:  {"_id":"5ce3ee855c520200176c189e","updatedAt":"2019-05-31T09:50:22.949Z","createdAt":"2019-05-21T12:26:45.192Z","name":"botext","url":"https://tiledesk-v2-simple--andrealeo83.repl.co","id_project":"5ce3d1ceb25ad30017274bc5","trashed":false,"createdBy":"5ce3d1c7b25ad30017274bc2","__v":0,"external":true,"iat":1559297130,"aud":"https://tiledesk.com","iss":"https://tiledesk.com","sub":"5ce3ee855c520200176c189e@tiledesk.com/bot"}
 
-              winston.debug("decoded.aud: "+ decoded.aud );
 
               if (decoded && decoded.aud) {
+
+                winston.debug("decoded.aud: "+ decoded.aud );
+
+                
                 const audUrl  = new URL(decoded.aud);
                 winston.debug("audUrl: "+ audUrl );
                 const path = audUrl.pathname;

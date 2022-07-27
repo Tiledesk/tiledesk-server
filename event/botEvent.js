@@ -123,7 +123,7 @@ messageEvent.on('message.create', function(message) {
             if (bot.type==="internal") {
                 botEvent.emit('bot.message.received.notify.internal', message);
                
-            }else {
+            }else {  //external 
                 if (bot.url) {
                     var botNotification = {bot: bot, message: message};
                     botEvent.emit('bot.message.received.notify.external', botNotification);
