@@ -93,7 +93,7 @@ Deploy with button:
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Tiledesk/tiledesk-server)
 
 # Community? Questions? Support ?
-If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/WQPfqShJ) server.
+If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/nERZEZ7SmG) server.
 
 # REST API
 
