@@ -21,6 +21,7 @@ class RequestService {
 
   listen() {
     this.updateSnapshotLead();
+    this.sendMessageUpdateLead();
   }
   updateSnapshotLead() {
     leadEvent.on('lead.update', function(lead) {
@@ -58,6 +59,62 @@ class RequestService {
           });
         });
   }
+
+
+  sendMessageUpdateLead() {
+    leadEvent.on('lead.fullname.update', function(lead) {
+      // leadEvent.on('lead.update', function(lead) {
+      
+      setImmediate(() => {
+          winston.debug("sendMessageUpdateLead on lead.update ",  lead);
+          
+          Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
+
+            if (err) {
+                winston.error("Error getting sendMessageUpdateLead request by lead", err);
+                return 0;
+            }
+            if (!requests || (requests && requests.length==0)) {
+                winston.warn("sendMessageUpdateLead No request found for lead id " +lead._id );
+                return 0;
+            }
+            
+            // winston.info("sendMessageUpdateLead requests ", requests);
+
+            requests.forEach(function(request) {
+
+              winston.debug("sendMessageUpdateLead request ", request);
+
+              // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language)
+              messageService.send(
+                  'system', 
+                  // 'Bot',     
+                  lead.fullname,                                
+                  request.request_id,
+                  "Lead updated", 
+                  request.id_project,
+                  'system', 
+                  { 
+                    // subtype:"info/support",
+                    // "updateconversation" : false, 
+                    messagelabel: {key: "LEAD_UPDATED"},
+                    updateUserEmail: lead.email,
+                    updateUserFullname: lead.fullname
+                  },
+                  undefined,
+                  request.language
+
+              ); 
+
+            });
+
+          });          
+         
+        });
+    });
+  }
+
+
   getAvailableAgentsCount(agents) {
      
       var project_users_available = agents.filter(function (projectUser) {
@@ -1789,7 +1846,8 @@ class RequestService {
             .populate('lead')
             .populate('department')
             .populate('participatingBots')
-            .populate('participatingAgents')  
+            .populate('participatingAgents') 
+            // .populate('followers')  
             .populate({path:'requester',populate:{path:'id_user'}})
             .execPopulate( function(err, requestComplete) {
 
@@ -1817,6 +1875,7 @@ class RequestService {
           .populate('department')
           .populate('participatingBots')
           .populate('participatingAgents')  
+          // .populate('followers')  
           .populate({path:'requester',populate:{path:'id_user'}})
           .execPopulate( function(err, requestComplete) {
             return resolve(requestComplete);
@@ -1826,10 +1885,6 @@ class RequestService {
       });
    });
   }
-
-
-
-
 
 
 
@@ -1983,6 +2038,7 @@ class RequestService {
             .populate('department')
             .populate('participatingBots')
             .populate('participatingAgents')  
+            // .populate('followers')  
             .populate({path:'requester',populate:{path:'id_user'}})
             .execPopulate( function(err, requestComplete) {
 
@@ -2011,7 +2067,8 @@ class RequestService {
           .populate('lead')
           .populate('department')
           .populate('participatingBots')
-          .populate('participatingAgents')  
+          .populate('participatingAgents') 
+          // .populate('followers')   
           .populate({path:'requester',populate:{path:'id_user'}})
           .execPopulate( function(err, requestComplete) {
             return resolve(requestComplete);

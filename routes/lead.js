@@ -80,6 +80,15 @@ router.put('/:leadid', function (req, res) {
   
 
     leadEvent.emit('lead.update', updatedLead);
+
+    if (req.body.fullname!=undefined) {
+      leadEvent.emit('lead.fullname.update', updatedLead);
+    }
+    
+    if (req.body.email!=undefined) {
+      leadEvent.emit('lead.email.update', updatedLead);
+    }
+  
     res.json(updatedLead);
   });
 });
@@ -187,6 +196,11 @@ router.get('/csv', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
+  // TODO ORDER BY SCORE
+  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
+  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+
+
   // Lead.find({ "id_project": req.projectid }, function (err, leads, next) {
   return Lead.find(query, '-attributes -__v').
     skip(skip).limit(limit).
@@ -258,6 +272,8 @@ router.get('/', function (req, res) {
     query.fullname = { "$exists": true };
   }
 
+  // aggiungi filtro per data
+
   if (req.query.status) {
     query.status = req.query.status;
   }
@@ -277,6 +293,13 @@ router.get('/', function (req, res) {
 
   winston.debug("sort query", sortQuery);
 
+  // TODO ORDER BY SCORE
+  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
+  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+
+
+  // aggiungi filtro per data marco
+
   return Lead.find(query).
     skip(skip).limit(limit).
     sort(sortQuery).
@@ -288,7 +311,7 @@ router.get('/', function (req, res) {
 
       // blocked to 1000 TODO increases it
       //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
-      return Lead.count(query, function (err, totalRowCount) {
+      return Lead.countDocuments(query, function (err, totalRowCount) {
 
         var objectToReturn = {
           perPage: limit,
