@@ -88,15 +88,15 @@ class RequestService {
               // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language)
               messageService.send(
                   'system', 
-                  // 'Bot',     
-                  lead.fullname,                                
+                  'Bot',     
+                  // lead.fullname,                                
                   request.request_id,
                   "Lead updated", 
                   request.id_project,
                   'system', 
                   { 
-                    // subtype:"info/support",
-                    // "updateconversation" : false, 
+                    subtype:"info/support",
+                    "updateconversation" : false, 
                     messagelabel: {key: "LEAD_UPDATED"},
                     updateUserEmail: lead.email,
                     updateUserFullname: lead.fullname
