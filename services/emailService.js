@@ -191,7 +191,10 @@ class EmailService {
         user: configEmail.user,
         pass: configEmail.pass
       },
-     
+      // secureConnection: false,
+      // tls:{
+      //   ciphers:'SSLv3'
+      // },
 
 // openssl genrsa -out dkim_private.pem 2048   
 // openssl rsa -in dkim_private.pem -pubout -outform der 2>/dev/null | openssl base64 -A
@@ -199,6 +202,13 @@ class EmailService {
 // v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL
 // testdkim._domainkey.tiledesk.com. 86400 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL"
 
+      // dkim: {
+      //   domainName: "example.com",
+      //   keySelector: "2017",
+      //   privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBg...",
+      //   cacheDir: "/tmp",
+      //   cacheTreshold: 100 * 1024
+      // }
     };
 
     winston.debug("getTransport transport: ",transport);
@@ -400,7 +410,9 @@ class EmailService {
       }
     }
 
-   
+    // troncare nome utnete e nome progetto a max 10 caratteri
+    // cambiare in [Nicky:Dashboard Support] Assigned Chat
+    // serve per aggiornare native... fai aggiornamento 
 
     let subject = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
 
@@ -952,11 +964,12 @@ class EmailService {
 
     let inReplyTo;
     let references;
+    winston.debug("message.request.attributes", message.request.attributes);
     if (message.request.attributes) {
       if (message.request.attributes.email_messageId) {
         inReplyTo = message.request.attributes.email_messageId;
       }
-      if (message.attributes.email_references) {
+      if (message.request.attributes.email_references) {
         references = message.request.attributes.email_references;
       }
     }

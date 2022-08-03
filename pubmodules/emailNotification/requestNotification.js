@@ -347,6 +347,15 @@ sendToUserEmailChannelEmail(projectid, message) {
 
 
 async notifyFollowers(savedRequest, project, message) {
+
+  if (message.attributes && message.attributes.subtype==='info/support') {
+    return winston.debug("not sending notifyFollowers for attributes.subtype info/support messages");
+  }     
+
+  if (message.attributes && message.attributes.subtype==='info') {
+    return winston.debug("not sending notifyFollowers for attributes.subtype info messages");
+  }
+
   var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();
   winston.debug("reqWithFollowers");
   winston.debug("reqWithFollowers",reqWithFollowers);
@@ -677,10 +686,18 @@ sendUserEmail(projectid, message) {
       if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
         return winston.info("DISABLE_SEND_OFFLINE_EMAIL disabled");
       }
+      if (message.attributes && message.attributes.subtype==='info/support') {
+        return winston.debug("not sending sendUserEmail for attributes.subtype info/support messages");
+      }     
+    
+      if (message.attributes && message.attributes.subtype==='info') {
+        return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
+      }
+
 
       
       if (!message.request.lead || !message.request.lead.email) {
-        return winston.debug("The lead object is undefined or has empty email");
+        return winston.info("The lead object is undefined or has empty email");
       }
 
       if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
