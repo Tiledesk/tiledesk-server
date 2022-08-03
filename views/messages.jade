@@ -10,7 +10,7 @@ block content
 
       each message in messages
         p(class="transcript-p") 
-          span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('it', { timeZone: 'UTC' })}] 
+          span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('en', { timeZone: 'UTC' })}] 
           span(class="transcript-chat-sender") #{message.senderFullname}: 
           span(class="transcript-chat-msg") #{message.text}
       

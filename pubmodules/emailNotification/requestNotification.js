@@ -47,7 +47,7 @@ listen() {
     messageEvent.on(messageCreateKey, function(message) {
 
       setImmediate(() => {      
-        winston.debug("sendUserEmail", message);
+        winston.debug("messageEvent.on(messageCreateKey", message);
         
         if (message.attributes && message.attributes.subtype==='info') {
           return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
@@ -56,17 +56,18 @@ listen() {
 
         if (message.request && (message.request.channel.name===ChannelConstants.EMAIL || message.request.channel.name===ChannelConstants.FORM)) {
 
+          //messages sent from admins or agents to requester
           if (message.sender != message.request.lead.lead_id) {
             winston.verbose("sending sendToUserEmailChannelEmail for EMAIL or FORM channel");
-
-            if (message.attributes && message.attributes.subtype==='private') {
-              return winston.debug("not sending sendToUserEmailChannelEmail for attributes.subtype private messages");
-            }            
-            return that.sendToUserEmailChannelEmail(message.id_project, message);           
-          } else {
+             
+            //send email notification to requester (send also to followers)
+            return that.sendToUserEmailChannelEmail(message.id_project, message);        
+          } else { //messages sent from requester to agents or admins
 
             if (message.text != message.request.first_text) {              
               winston.verbose("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel");
+
+              //send email notification to admins and agents(send also to followers)
               return that.sendToAgentEmailChannelEmail(message.id_project, message);           
             } else {
               winston.debug("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel disabled for first text message")
@@ -76,16 +77,23 @@ listen() {
           
         } else {
           winston.debug("sendUserEmail chat channel");
-              // controlla se sta funzionando
-          if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
-            return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
-          }
-            // mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
+                       
+            //TODO  mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
+
+            
+            
+            //messages sent from admins or agents
+            //send email notification to requester
           if (message.request && message.request.lead && message.sender != message.request.lead.lead_id) {
+            winston.debug("sendUserEmail");
             winston.debug("sendUserEmail", message);
 
-            // send an email only if offline and has an email 
+            // send an email only if offline and has an email (send also to followers)
             return that.sendUserEmail(message.id_project, message);
+          } else { //send email  to followers
+
+            that.sendToFollower(message.id_project, message);
+
           }
           
         }
@@ -136,7 +144,6 @@ listen() {
          that.sendAgentEmail(request.id_project, request);
       });
      });
-
 
 
 
@@ -227,15 +234,19 @@ listen() {
 
 
 sendToUserEmailChannelEmail(projectid, message) {
+  winston.debug("sendToUserEmailChannelEmail");
+  var that = this;
   try {
 
     if (!message.request) {
       return winston.debug("This is a direct message");
     }
 
-    if (!message.request.lead || !message.request.lead.email) {
-      return winston.debug("The lead object is undefined or has empty email");
-    }
+
+    
+
+
+    
 
     Project.findOne({_id: projectid, status: 100}).select("+settings").exec(function(err, project){
       if (err) {
@@ -245,6 +256,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       if (!project) {
        return winston.warn("Project not found", projectid);
       } 
+      
 
       // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
       //   return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for  the conversations is blocked");
@@ -256,7 +268,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       // }
 
       let lead = message.request.lead;
-      winston.debug("sending channel emaol email to lead ", lead);
+      winston.debug("sending channel email to lead ", lead);
 
       
       winston.debug("sending user email to  "+ lead.email);
@@ -307,8 +319,24 @@ sendToUserEmailChannelEmail(projectid, message) {
       }
       winston.debug("tokenQueryString:  "+tokenQueryString);
       
+
+
+       // winston.info("savedRequest.followers", savedRequest.followers);
+      // winston.info("savedRequest.followers.length:"+ savedRequest.followers.length);
+      that.notifyFollowers(message.request, project, message);
+
+
+      if (message.attributes && message.attributes.subtype==='private') {
+        return winston.debug("not sending sendToUserEmailChannelEmail for attributes.subtype private messages");
+      }           
+
+      // nn va bene qui
+      if (!message.request.lead || !message.request.lead.email) {
+        return winston.debug("The lead object is undefined or has empty email");
+      }
+
       emailService.sendEmailChannelNotification(message.request.lead.email, message, project, tokenQueryString, sourcePage);
-    
+
 
     });
 
@@ -318,9 +346,105 @@ sendToUserEmailChannelEmail(projectid, message) {
 }
 
 
+async notifyFollowers(savedRequest, project, message) {
 
+  if (message.attributes && message.attributes.subtype==='info/support') {
+    return winston.debug("not sending notifyFollowers for attributes.subtype info/support messages");
+  }     
+
+  if (message.attributes && message.attributes.subtype==='info') {
+    return winston.debug("not sending notifyFollowers for attributes.subtype info messages");
+  }
+
+  var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();
+  winston.debug("reqWithFollowers");
+  winston.debug("reqWithFollowers",reqWithFollowers);
+  // console.log("reqWithFollowers",reqWithFollowers);
+
+  if (reqWithFollowers.followers && reqWithFollowers.followers.length>0) {
+
+    winston.debug("reqWithFollowers.followers.length: "+reqWithFollowers.followers.length);
+
+    reqWithFollowers.followers.forEach(project_user => {
+       winston.debug("project_user", project_user); 
+        //TODO skip participants from followers
+
+      var userid = project_user.id_user;
+      
+       if (project_user.settings && project_user.settings.email && project_user.settings.email.notification && project_user.settings.email.notification.conversation && project_user.settings.email.notification.conversation.ticket && project_user.settings.email.notification.conversation.ticket.follower == false ) {
+         return winston.verbose("RequestNotification email notification for the user with id " +  userid+ " the follower conversation ticket is disabled");
+       }                  
+        
+         User.findOne({_id: userid , status: 100})
+          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+          .exec(function (err, user) {
+           if (err) {
+           //  winston.debug(err);
+           }
+           if (!user) {
+            winston.warn("User not found", userid);
+           } else {
+             winston.info("Sending notifyFollowers to user with email: "+ user.email);
+             if (user.emailverified) {
+              emailService.sendFollowerNotification(user.email, message, project);
+              // emailService.sendEmailChannelNotification(user.email, message, project);
+              
+              // emailService.sendNewAssignedAgentMessageEmailNotification(user.email, savedRequest, project, message);
+
+             }else {
+               winston.info("User email not verified", user.email);
+             }
+           }
+         });
+
+         
+       });
+
+
+  }
+}
+
+sendToFollower(projectid, message) {
+  winston.debug("sendToFollower");            
+  var that = this;
+    let savedRequest = message.request;
+      // send email
+      try {
+     
+     
+      Project.findOne({_id: projectid, status: 100}).select("+settings").exec(async function(err, project){
+         if (err) {
+           return winston.error(err);
+         }
+     
+         if (!project) {
+          return winston.warn("Project not found", projectid);
+         } else {
+           
+            winston.debug("project", project);            
+  
+            // if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.blocked == true ) {
+            //   return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for all the conversations is blocked");
+            // }
+  
+            winston.debug("savedRequest", savedRequest);
+
+
+
+            // winston.info("savedRequest.followers", savedRequest.followers);
+            // winston.info("savedRequest.followers.length:"+ savedRequest.followers.length);
+            that.notifyFollowers(message.request, project, message);
+
+
+          }
+        })
+    } catch (e) {
+      winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+    }
+}
 
 sendToAgentEmailChannelEmail(projectid, message) {
+  var that = this;
     let savedRequest = message.request;
       // send email
       try {
@@ -343,8 +467,16 @@ sendToAgentEmailChannelEmail(projectid, message) {
   
             winston.debug("savedRequest", savedRequest);
 
-  
 
+
+            // winston.info("savedRequest.followers", savedRequest.followers);
+            // winston.info("savedRequest.followers.length:"+ savedRequest.followers.length);
+            that.notifyFollowers(message.request, project, message);
+
+
+  
+    //         UnhandledPromiseRejectionWarning: TypeError: Cannot read property 'status' of undefined
+    // at /Users/andrealeo/dev/chat21/ti
 
                 // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                    if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
@@ -523,15 +655,19 @@ sendEmailChannelTakingNotification(projectid, request) {
 
 
 sendUserEmail(projectid, message) {
+  winston.debug("sendUserEmail");
+  var that = this;
+
+ 
   try {
 
     if (!message.request) {
       return winston.debug("This is a direct message");
     }
+   
 
-    if (!message.request.lead || !message.request.lead.email) {
-      return winston.debug("The lead object is undefined or has empty email");
-    }
+
+    
 
     Project.findOne({_id: projectid, status: 100}).select("+settings").exec(function(err, project){
       if (err) {
@@ -542,6 +678,28 @@ sendUserEmail(projectid, message) {
        return winston.warn("Project not found", projectid);
       } 
 
+      winston.debug("notifyFollowers");
+      that.notifyFollowers(message.request, project, message);
+
+
+
+      if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
+        return winston.info("DISABLE_SEND_OFFLINE_EMAIL disabled");
+      }
+      if (message.attributes && message.attributes.subtype==='info/support') {
+        return winston.debug("not sending sendUserEmail for attributes.subtype info/support messages");
+      }     
+    
+      if (message.attributes && message.attributes.subtype==='info') {
+        return winston.debug("not sending sendUserEmail for attributes.subtype info messages");
+      }
+
+
+      
+      if (!message.request.lead || !message.request.lead.email) {
+        return winston.info("The lead object is undefined or has empty email");
+      }
+
       if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
         return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for  the conversations is blocked");
       }
@@ -550,8 +708,8 @@ sendUserEmail(projectid, message) {
       if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.enabled == false ) {
         return winston.info("RequestNotification offline email notification for the project with id : " + projectid + " for the offline conversation is disabled");
       }
-
-
+      
+      
 
         var recipient = message.request.lead.lead_id;
         winston.debug("recipient:"+ recipient);
@@ -678,7 +836,7 @@ sendAgentEmail(projectid, savedRequest) {
                   }
 
 
-
+                 
                   var snapshotAgents = savedRequest; //riassegno varibile cosi nn cambio righe successive
 
                   
