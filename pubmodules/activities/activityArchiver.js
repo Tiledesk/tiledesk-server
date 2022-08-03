@@ -76,7 +76,7 @@ class ActivityArchiver {
       
        authEvent.on('project_user.update',  function(event) { 
         setImmediate(() => {         
-          console.log("project_user.update");
+          // console.log("project_user.update");
          /*
          2019-11-20T10:40:52.686991+00:00 app[web.1]: TypeError: Cannot read property '_id' of undefined
 */

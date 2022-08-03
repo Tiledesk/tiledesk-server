@@ -191,20 +191,14 @@ class EmailService {
         user: configEmail.user,
         pass: configEmail.pass
       },
+     
 
-// openssl genrsa -out dkim_private.pem 2048
+// openssl genrsa -out dkim_private.pem 2048   
 // openssl rsa -in dkim_private.pem -pubout -outform der 2>/dev/null | openssl base64 -A
 // -> 
 // v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL
 // testdkim._domainkey.tiledesk.com. 86400 IN TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAunT2EopDAYnHwAOHd33KhlzjUXJfhmA+fK+cG85i9Pm33oyv1NoGrOynsni0PO6j7oRxxHqs6EMDOw4I/Q0C7aWn20oBomJZehTOkCV2xpuPKESiRktCe/MIZqbkRdypis4jSkFfFFkBHwgkAg5tb11E9elJap0ed/lN5/XlpGedqoypKxp+nEabgYO5mBMMNKRvbHx0eQttRYyIaNkTuMbAaqs4y3TkHOpGvZTJsvUonVMGAstSCfUmXnjF38aKpgyTausTSsxHbaxh3ieUB4ex+svnvsJ4Uh5Skklr+bxLVEHeJN55rxmV67ytLg5XCRWqdKIcJHFvSlm2YwJfcwIDAQABMacAL"
 
-      dkim: {
-        domainName: "example.com",
-        keySelector: "2017",
-        privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBg...",
-        cacheDir: "/tmp",
-        cacheTreshold: 100 * 1024
-      }
     };
 
     winston.debug("getTransport transport: ",transport);
@@ -406,7 +400,7 @@ class EmailService {
       }
     }
 
-
+   
 
     let subject = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
 
@@ -1176,6 +1170,177 @@ class EmailService {
   }
 
 
+
+
+
+
+
+
+
+
+  
+  async sendFollowerNotification(to, message, project) {
+
+    var that = this;
+
+
+    if (project.toJSON) {
+      project = project.toJSON();
+    }
+
+    var html = await this.readTemplate('newMessageFollower.html', project.settings);
+
+
+    var envTemplate = process.env.EMAIL_FOLLOWER_HTML_TEMPLATE;
+      winston.debug("envTemplate: " + envTemplate);
+
+    if (envTemplate) {
+        html = envTemplate;
+    }
+
+    winston.debug("html: " + html);
+
+    var template = handlebars.compile(html);
+
+    var baseScope = JSON.parse(JSON.stringify(that));
+    delete baseScope.pass;
+
+
+    let msgText = message.text;//.replace(/[\n\r]/g, '<br>');
+    msgText = encode(msgText);
+    if (this.markdown) {
+      msgText = marked(msgText);
+    }
+    
+    winston.debug("msgText: " + msgText);
+    winston.debug("baseScope: " + JSON.stringify(baseScope));
+    
+
+    var replacements = {        
+      message: message,
+      project: project,
+      msgText: msgText,
+      baseScope: baseScope    
+    };
+
+    var html = template(replacements); 
+    winston.debug("html: " + html);
+
+    const fs = require('fs');
+    fs.writeFileSync('tem1111.html', html);
+
+  
+    
+    let messageId = message._id + "@" + MESSAGE_ID_DOMAIN;
+
+    let replyTo;
+    if (this.replyEnabled) {
+      replyTo = message.request.request_id + this.inboundDomainDomainWithAt;
+    }
+
+    let headers;
+    if (message.request) { 
+      
+        messageId = message.request.request_id + "+" + messageId;
+
+        if (message.request.attributes && message.request.attributes.email_replyTo) {
+          replyTo = message.request.attributes.email_replyTo;
+        }
+     
+      headers = {"X-TILEDESK-PROJECT-ID": project._id, "X-TILEDESK-REQUEST-ID": message.request.request_id, "X-TILEDESK-TICKET-ID":message.request.ticket_id };
+
+      winston.verbose("messageId: " + messageId);
+      winston.verbose("replyTo: " + replyTo);
+      winston.verbose("email headers", headers);
+    }
+    
+
+    let inReplyTo;
+    let references;
+    let cc;
+    let ccString;
+
+    if (message.request && message.request.attributes) {
+      winston.debug("email message.request.attributes: ", message.request.attributes);
+
+      if (message.request.attributes.email_messageId) {
+        inReplyTo = message.request.attributes.email_messageId;
+      }
+      if (message.request.attributes.email_references) {
+        references = message.request.attributes.email_references;
+      }        
+
+      if (message.request.attributes.email_cc) {
+        cc = message.request.attributes.email_cc;       
+      }
+      winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
+      if (message.request.attributes.email_ccStr!=undefined) {
+        ccString = message.request.attributes.email_ccStr;
+        winston.debug("email set ccString");
+      }
+    }
+    winston.verbose("email inReplyTo: "+ inReplyTo);
+    winston.verbose("email references: "+ references);
+    winston.verbose("email cc: ", cc);
+    winston.verbose("email ccString: "+ ccString);
+
+    let from;
+    let configEmail;
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
+      }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
+    }
+
+
+  
+    
+    that.send({
+      messageId: messageId,
+      // sender: message.senderFullname, //must be an email
+      from:from, 
+      to:to, 
+      cc: ccString,
+      replyTo: replyTo, 
+      inReplyTo: inReplyTo,
+      references: references,
+      // subject:`${message.request ? message.request.subject : '-'}`, 
+      subject:`${message.request ? message.request.ticket_id : '-'}`,  //gmail uses subject
+      text:html, 
+      html:html,
+      config:configEmail, 
+      headers:headers 
+    }); 
+    
+    // // messageId =  "notification" + messageId;
+
+    // // that.send({
+    // //   messageId: messageId,
+    // //   // sender: message.senderFullname, //must be an email
+    // //   to: that.bcc, 
+    // //   replyTo: replyTo, 
+    // //   inReplyTo: inReplyTo,
+    // //   references: references,
+    // //   // subject: `${message.request ? message.request.subject : '-'} - notification`, 
+    // //   subject: `${message.request ? message.request.subject : '-'} - notification`, 
+    // //   text:html, 
+    // //   html:html,
+    // //   headers:headers
+    // // });
+
+
+  }
+
+
+
+
+
+
 /*
   sendEmailChannelTakingNotification(to, request, project, tokenQueryString) {
 
@@ -1505,6 +1670,6 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
-// emailService.sendTest("al@f21.it");
+//  emailService.sendTest("asd.");
 
 module.exports = emailService;

@@ -1,5 +1,17 @@
 
 
+# 2.3.2
+- Dowload trascript as csv, pdf and txt endpoint
+- Added closed_by field to the request model
+- Added followers field to the request model 
+- Added lead index
+- Added widget v5 code loader /widgets/v5/:project_id -> heroku blocca cache-control 
+- Bugfix  Cannot read property 'profile' of null 
+- Added filter by channel offline and online 
+- Updated Rasa Connector to 1.0.7  
+- Send info message on lead.fullaname.update
+
+
 # 2.3.1
 - changed tiledesk logo for emails
 - open modules: analytics, activity log, multi tenancy, departments, groups, canned responses, tags, triggers, webhooks

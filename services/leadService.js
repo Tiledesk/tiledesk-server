@@ -128,6 +128,8 @@ class LeadService {
 
       
         leadEvent.emit('lead.update', updatedLead);
+        leadEvent.emit('lead.email.update', updatedLead);
+        leadEvent.emit('lead.fullname.update', updatedLead);
         return resolve(updatedLead);
       });
     });
