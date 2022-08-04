@@ -656,6 +656,8 @@ router.delete('/id/:id',  function (req, res) {
 
 router.get('/', function (req, res, next) {
 
+  const startExecTime = new Date();
+
   winston.debug("req projectid", req.projectid);
   winston.debug("req.query.sort", req.query.sort);
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
@@ -910,14 +912,17 @@ router.get('/', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
-  winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
+  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
 
   var projection = undefined;
 
   if (req.query.full_text) {  
-    winston.debug('fulltext projection'); 
 
-    projection = {score: { $meta: "textScore" } };
+    if (req.query.no_textscore!= "true" && req.query.no_textscore!= true) {
+      winston.info('fulltext projection on'); 
+      projection = {score: { $meta: "textScore" } };
+    } 
+    
   }
   // requestcachefarequi populaterequired
   var q1 = Request.find(query, projection).
@@ -965,6 +970,11 @@ router.get('/', function (req, res, next) {
 
   var q2 =  Request.countDocuments(query).exec();
 
+  if (req.query.no_count && req.query.no_count =="true") {
+    winston.info('REQUEST ROUTE - no_count ');
+    q2 = 0;
+  }
+
   var promises = [
     q1,
     q2
@@ -978,6 +988,10 @@ router.get('/', function (req, res, next) {
     };
     winston.debug('REQUEST ROUTE - objectToReturn ');
     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
+
+    const endExecTime = new Date();
+    winston.info('REQUEST ROUTE - exec time:  ' + (endExecTime-startExecTime));
+
     return res.json(objectToReturn);
 
   }).catch(function(err){
