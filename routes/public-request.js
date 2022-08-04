@@ -86,6 +86,9 @@ var printer = new PdfPrinter(fonts);
         delete element.attributes;
       });
 
+      res.setHeader('Content-Type', 'applictext/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
+
       return res.csv(messages, true);
     });
 
@@ -336,6 +339,9 @@ var printer = new PdfPrinter(fonts);
         delete element.attributes;
       });
 
+
+      res.setHeader('Content-Type', 'applictext/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=transcript.csv');
 
       return res.csv(messages, true);
     });
