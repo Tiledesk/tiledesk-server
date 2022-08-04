@@ -954,7 +954,9 @@ router.get('/', function (req, res, next) {
 
     if (req.query.full_text) {     
       winston.debug('fulltext sort'); 
-      q1.sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+      if (req.query.no_textscore!= "true" && req.query.no_textscore!= true) {
+        q1.sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+      }
     } else {
       q1.sort(sortQuery);
     }
