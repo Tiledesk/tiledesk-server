@@ -202,20 +202,14 @@ router.post('/', function (req, res) {
                       }
 
 
-                      // var auto_close;
-
-                      // // qui projecy nn c'è devi leggerlo
-                      // if (req.project.attributes.auto_close === false) {
-                      //   auto_close = 10;
-                      // }
-
+                     
                       
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                        // , auto_close: auto_close
+                       
                       };
     
                       winston.debug("new_request", new_request);
@@ -543,9 +537,9 @@ router.post('/', function (req, res) {
     });
   }
   
-  else if (req.body.event_type == "deleted-archivedconversation") {
+  else if (req.body.event_type == "deleted-archivedconversation" || req.body.event_type == "conversation-unarchived") {
 
-    winston.debug("event_type","deleted-archivedconversation");
+    winston.info("event_type","deleted-archivedconversation");
 
     winston.debug("req.body",req.body);
 
@@ -559,21 +553,21 @@ router.post('/', function (req, res) {
       // winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
-      winston.debug("user_id",user_id);
+      winston.info("user_id",user_id);
 
       var recipient_id = req.body.recipient_id;
-      winston.debug("recipient_id",recipient_id);
+      winston.info("recipient_id",recipient_id);
 
      
 //   TODO leggi projectid from support-group
 
       if (!recipient_id.startsWith("support-group")){
-        winston.debug("not a support conversation");
+        winston.info("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
       if (user_id!="system"){
-        winston.debug("not a system conversation");
+        winston.info("not a system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
@@ -582,9 +576,10 @@ router.post('/', function (req, res) {
       if (conversation && conversation.attributes) {
         id_project = conversation.attributes.projectId;
       }else {
+        winston.info( "not a support deleting archived conversation" );
         return res.status(400).send({success: false, msg: "not a support deleting archived conversation" });
       }
-      winston.debug("id_project", id_project);
+      winston.info("id_project", id_project);
 
 
       return requestService.reopenRequestByRequestId(recipient_id, id_project).then(function(updatedRequest) {

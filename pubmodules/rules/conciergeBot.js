@@ -188,7 +188,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
 
             setImmediate(() => {
                                       
-                        winston.debug("ConciergeBot send close bot message");     
+                        winston.debug("ConciergeBot send close bot message",request);     
                                             
                         // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) 
                             messageService.send(
@@ -198,7 +198,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 "Chat closed", 
                                 request.id_project,
                                 'system', 
-                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}},
+                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}},  
                                 undefined,
                                 request.language
                             );
@@ -228,8 +228,8 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 request.request_id,
                                 "Chat reopened", 
                                 request.id_project,
-                                'system', 
-                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_REOPENED"}},
+                                'system',                                      
+                                {subtype:"info/support", "updateconversation" : true, messagelabel: {key: "CHAT_REOPENED"}},
                                 undefined,
                                 request.language
 
