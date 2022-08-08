@@ -299,9 +299,16 @@ router.get('/', function (req, res, next) {
     query.id_project = req.projectid
   }
 
+  if (req.query.intent_display_name) {
+    query.intent_display_name=req.query.intent_display_name
+  }
+  
+
   winston.debug("GET FAQ query", query);
 
   // query.$text = {"$search": "question"};
+
+
 
   return Faq.find(query).
   skip(skip).limit(limit).
