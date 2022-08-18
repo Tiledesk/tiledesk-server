@@ -6,7 +6,7 @@ var configGlobal = require('../../config/global');
 
 var port = process.env.PORT || '3000';
 
-const BOT_RASA_ENDPOINT = "http://localhost:" + port+ "/modules/rasa/rasabot" ||  process.env.BOT_RASA_ENDPOINT;
+const BOT_RASA_ENDPOINT = process.env.BOT_RASA_ENDPOINT || "http://localhost:" + port+ "/modules/rasa/rasabot";
 winston.debug("BOT_RASA_ENDPOINT: " + BOT_RASA_ENDPOINT);
 
 // if (BOT_RASA_ENDPOINT) {
