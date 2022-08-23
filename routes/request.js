@@ -778,8 +778,8 @@ router.get('/', function (req, res, next) {
    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
    */
-                                                                        //secondo me qui manca un parentesi tonda per gli or
-  if ( history_search === true && req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
+                                                                        //fixato. secondo me qui manca un parentesi tonda per gli or
+  if ( history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
 
 
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
@@ -992,7 +992,7 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
 
     const endExecTime = new Date();
-    winston.info('REQUEST ROUTE - exec time:  ' + (endExecTime-startExecTime));
+    winston.verbose('REQUEST ROUTE - exec time:  ' + (endExecTime-startExecTime));
 
     return res.json(objectToReturn);
 
