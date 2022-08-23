@@ -1,15 +1,89 @@
 
+# untagged 
+- Added tilebot submodule
+
+# 2.3.9 -> PROD
+- Rasa process env variable read fix
+
+# 2.3.8
+- @tiledesk/tiledesk-rasa-connector": "^1.0.10
+
+# 2.3.7
+- Find by intent_display_name parameter intents
+
+# 2.3.5
+- CHAT_REOPENED updated conversation true
+
+# 2.3.4
+- download pdf fix
+- added no_count and no_textscore fields query parameters to request search endpoint
+
+# 2.3.3
+- Follower notification fix by email
 
 # 2.3.2
 - Dowload trascript as csv, pdf and txt endpoint
 - Added closed_by field to the request model
-- Added followers field to the request model 
+- Added followers field to the request model
 - Added lead index
-- Added widget v5 code loader /widgets/v5/:project_id -> heroku blocca cache-control 
+- Added widget v5 code loader /widgets/v5/:project_id -> heroku blocca cache-control PROVA IN PROD
 - Bugfix  Cannot read property 'profile' of null 
 - Added filter by channel offline and online 
-- Updated Rasa Connector to 1.0.7  
+- Updated Rasa Connector to 1.0.7   -- QUANDO PORTI IN PROD AGGIORNA SUL DB PER FARLI PUNTARE QUI..
 - Send info message on lead.fullaname.update
+- Follower email notification
+
+https://support.zendesk.com/hc/en-us/articles/4408822451482-Using-CCs-followers-and-mentions#topic_wm2_zgq_qgb
+
+Followers allow you to include additional internal users (agents or administrators) on ticket notifications. Internal users can add followers to tickets. There's no limit to the number of followers you can include on a ticket.
+
+Agents and administrators can use the Followers field in the properties panel of the ticket interface to add internal users to a ticket. 
+
+Internal users who can view the ticket can add followers to the ticket.
+
+Followers can:
+
+* Receive public comments and private comments added to the ticket conversation.
+* Ability to make a private comments and public comment.
+* Replying to a private comment creates a private comment and likewise for public comments.
+* Remove themselves from the ticket conversation.
+* Remain hidden from end users copied on the ticket.
+* Access any ticket that they are following, even if they would not normally be allowed to access the ticket.
+
+# Adding agents as followers from the ticket interface
+If followers have been enabled by the administrator, internal users (your company's agents and administrators) can add followers from the Followers field from the properties panel in the ticket interface. Followers are internal users such as agents, light agents, and administrators that receive email notifications when a ticket is updated.
+
+Note these things about using followers:
+
+* Followers can add and receive public comments and private comments.
+* Followers can reply to a public comment with a public comment, and reply to a private comment with a private comment.
+* Followers can remove themselves from the ticket.
+* Followers are hidden from copied (CC'd) end users and other followers on email notifications. Their name and email address don't appear in email notifications sent to other users. For more information about the email notifications that followers receive, see Best practices for using email clients with CCs and followers.
+* If your administrator has enabled Automatically make an agent a follower, you can added internal users, such as agents and admins, to tickets as followers from ticket notifications by adding them to the reply as a CC. In this case, the agent becomes both a CC and a follower.
+## To add agents as followers from the ticket interface
+* Select a ticket from one of your views.
+The Followers field appears in the ticket properties panel on the left side.
+
+* In the Followers field, enter a user's name, email domain, or organization name and the relevant results appear.
+Internal users such as agents, light agents, and administrators can be followers.
+
+* To quickly add yourself as a follower, click follow.
+
+
+
+## To remove a follower from the ticket interface
+* Click the delete button (X) in the person's name box in the Followers list
+
+
+* To quickly remove yourself as a follower, click unfollow.
+
+* To add agents as followers from ticket notifications
+
+* From your email client, open the ticket notification.
+* Open the CC line, per your email provider’s instructions.
+* Add the name of the user you want to add as a follower. Repeat as necessary.
+* Add your comment and send the email.
+
 
 
 # 2.3.1
