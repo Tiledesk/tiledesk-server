@@ -78,7 +78,6 @@ listen() {
         } else {
           winston.debug("sendUserEmail chat channel");
                        
-            //TODO  mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
 
             
             
@@ -684,7 +683,7 @@ sendUserEmail(projectid, message) {
 
 
       if (process.env.DISABLE_SEND_OFFLINE_EMAIL === "true" || process.env.DISABLE_SEND_OFFLINE_EMAIL === true ) {
-        return winston.info("DISABLE_SEND_OFFLINE_EMAIL disabled");
+        return winston.debug("DISABLE_SEND_OFFLINE_EMAIL disabled");
       }
       if (message.attributes && message.attributes.subtype==='info/support') {
         return winston.debug("not sending sendUserEmail for attributes.subtype info/support messages");
@@ -697,7 +696,7 @@ sendUserEmail(projectid, message) {
 
       
       if (!message.request.lead || !message.request.lead.email) {
-        return winston.info("The lead object is undefined or has empty email");
+        return winston.debug("The lead object is undefined or has empty email");
       }
 
       if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.offline && project.settings.email.notification.conversation.offline.blocked == true ) {
