@@ -175,6 +175,7 @@ if (process.env.CREATE_INITIAL_DATA !== "false") {
 
 
 
+
 var app = express();
 
 
@@ -340,7 +341,7 @@ function customDetection (req)  {
   // const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
   //   req.socket.remoteAddress
 
-    const ip = (req) =>
+    const ip = 
     req.headers['x-forwarded-for']?.split(',').shift()
     || req.socket?.remoteAddress
 
