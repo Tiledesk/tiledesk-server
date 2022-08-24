@@ -1,8 +1,25 @@
+curl --location --request POST 'https://console.native.tiledesk.com/api/62ea3c58cd9923001a6ccdf3/requests/support-group-62ea3c58cd9923001a6ccdf3-088a9b9d28d3427ea99ab928a7aeb9d4/messages' \
+--header 'Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJob29rX2VuYWJsZWQiOmZhbHNlLCJ0eXBlIjoiZXh0ZXJuYWwiLCJsYW5ndWFnZSI6ImVuIiwiX2lkIjoiNjJlYTNkOGFjZDk5MjMwMDFhNmNjZjQ1IiwibmFtZSI6IkhlbGxvQm90IiwidXJsIjoiaHR0cHM6Ly9Cb3RUaW1lc3RhbXAuZ2FicmllbGVwYW5pY28ucmVwbC5jby9ib3QiLCJpZF9wcm9qZWN0IjoiNjJlYTNjNThjZDk5MjMwMDFhNmNjZGYzIiwidHJhc2hlZCI6ZmFsc2UsImNyZWF0ZWRCeSI6IjYxYmRkMGM0ZDBhMmE3MDAxYTI4YjliNCIsImNyZWF0ZWRBdCI6IjIwMjItMDgtMDNUMDk6MTk6MDYuNDMyWiIsInVwZGF0ZWRBdCI6IjIwMjItMDgtMDNUMDk6MTk6MDYuNDMyWiIsIl9fdiI6MCwiaWF0IjoxNjU5NTE4NzI1LCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbS9ib3RzLzYyZWEzZDhhY2Q5OTIzMDAxYTZjY2Y0NSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoiYm90IiwianRpIjoiMzY3ZWI4YzAtNjczZi00NzUwLThhNmEtNzUyMzA4YmNhMGIyIn0.B4cq9b9V__S0uR9xYkuxykBKfQ4vU0DyO278KAJG4Us' \
+--header 'Content-Type: application/json' \
+--data-raw '{"text":"Cheers! You said:"}'
 
-# untagged 
+curl --location --request POST 'https://console.native.tiledesk.com/api/62ea3c58cd9923001a6ccdf3/requests/support-group-62ea3c58cd9923001a6ccdf3-088a9b9d28d3427ea99ab928a7aeb9d3/messages' \
+--header 'Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3ZWJob29rX2VuYWJsZWQiOmZhbHNlLCJ0eXBlIjoiZXh0ZXJuYWwiLCJsYW5ndWFnZSI6ImVuIiwiX2lkIjoiNjJlYTNkOGFjZDk5MjMwMDFhNmNjZjQ1IiwibmFtZSI6IkhlbGxvQm90IiwidXJsIjoiaHR0cHM6Ly9Cb3RUaW1lc3RhbXAuZ2FicmllbGVwYW5pY28ucmVwbC5jby9ib3QiLCJpZF9wcm9qZWN0IjoiNjJlYTNjNThjZDk5MjMwMDFhNmNjZGYzIiwidHJhc2hlZCI6ZmFsc2UsImNyZWF0ZWRCeSI6IjYxYmRkMGM0ZDBhMmE3MDAxYTI4YjliNCIsImNyZWF0ZWRBdCI6IjIwMjItMDgtMDNUMDk6MTk6MDYuNDMyWiIsInVwZGF0ZWRBdCI6IjIwMjItMDgtMDNUMDk6MTk6MDYuNDMyWiIsIl9fdiI6MCwiaWF0IjoxNjU5NTE4NzI1LCJhdWQiOiJodHRwczovL3RpbGVkZXNrLmNvbS9ib3RzLzYyZWEzZDhhY2Q5OTIzMDAxYTZjY2Y0NSIsImlzcyI6Imh0dHBzOi8vdGlsZWRlc2suY29tIiwic3ViIjoiYm90IiwianRpIjoiMzY3ZWI4YzAtNjczZi00NzUwLThhNmEtNzUyMzA4YmNhMGIyIn0.B4cq9b9V__S0uR9xYkuxykBKfQ4vU0DyO278KAJG4Us' \
+--header 'Content-Type: application/json' \
+--data-raw '{"text":"Cheers! You said:"}'
+
+- ABILITA REOPEN CHAT IN PROD IN PRE C?é GIA ????? VALUTARE VEDI INTERCOM
+https://www.intercom.com/help/en/articles/3449698-prevent-replies-after-you-close-a-conversation
+
+visitor counter fa uscire errore mongo
+
+# # 2.3.10 -> PROD
 - Added tilebot submodule
+- Askbot endpoint fix for tilebot and auto create faqs for tilebot
+- Added /widgets/ip endpoint   TESTARE IN PROD PER VEDERE PROBLEMA BLOCK IP
+- Added bot and subscription as permission check for /intents or /faq
 
-# 2.3.9 -> PROD
+# 2.3.9
 - Rasa process env variable read fix
 
 # 2.3.8
