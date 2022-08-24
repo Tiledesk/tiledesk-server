@@ -16,7 +16,7 @@ visitor counter fa uscire errore mongo
 # # 2.3.10 -> PROD
 - Added tilebot submodule
 - Askbot endpoint fix for tilebot and auto create faqs for tilebot
-- Added /widgets/ip endpoint   TESTARE IN PROD PER VEDERE PROBLEMA BLOCK IP
+- Added /widgets/ip endpoint   
 - Added bot and subscription as permission check for /intents or /faq
 
 # 2.3.9
