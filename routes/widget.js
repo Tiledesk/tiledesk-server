@@ -224,11 +224,26 @@ router.get('/', function(req, res, next) {
 
 
 
-    const parseIp = (req) =>
-    req.headers['x-forwarded-for']?.split(',').shift()
-    || req.socket?.remoteAddress
+    // const parseIp = (req) =>
+    // req.headers['x-forwarded-for']?.split(',').shift()
+    // || req.socket?.remoteAddress
 
+    
+
+    const parseIp = req.socket.remoteAddress;
+
+    const xFor =  req.headers['x-forwarded-for'];
+    winston.info("parseIp xFor: "+xFor);
+
+    if (xFor ) {
+      const xForArr = xFor.split(',');
+      if (xForArr && xForArr.length>0) {
+        ip = xForArr.shift();
+        winston.info("parseIp ip: "+ip);
+      }
+    }
     winston.info("parseIp: "+parseIp); // ip address of the user
+
 
     res.json( {ip:ip, ipStandard:ipStandard, parseIp: parseIp} );
 

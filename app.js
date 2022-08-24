@@ -337,9 +337,19 @@ var projectSetter = function (req, res, next) {
 
 function customDetection (req)  {
   // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;  
-  const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
-    req.socket.remoteAddress
+  // const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
+  //   req.socket.remoteAddress
 
+
+  const ip = req.socket.remoteAddress;
+
+    const xFor =  req.headers['x-forwarded-for'];
+    if (xFor ) {
+      const xForArr = xFor.split(',');
+      if (xForArr && xForArr.length>0) {
+        ip = xForArr.shift();
+      }
+    }
     // const ip = 
     // req.headers['x-forwarded-for']?.split(',').shift()
     // || req.socket?.remoteAddress
