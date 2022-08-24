@@ -1,3 +1,4 @@
+git pull
 npm version patch
 version=`node -e 'console.log(require("./package.json").version)'`
 echo "version $version"
@@ -8,3 +9,4 @@ if [ "$version" != "" ]; then
     git push --tags
     npm publish --access public
 fi
+git push
