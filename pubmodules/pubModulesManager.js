@@ -31,6 +31,8 @@ class PubModulesManager {
         this.trigger = undefined;
         this.triggerRoute = undefined;
 
+        this.tilebot = undefined;
+
     }
 
   
@@ -257,6 +259,24 @@ class PubModulesManager {
             }
         }
         
+
+
+
+        try {
+            this.tilebot = require('./tilebot');
+            winston.debug("this.tilebot:"+ this.tilebot);    
+            this.tilebot.listener.listen(config);      
+
+            winston.info("PubModulesManager initialized tilebot.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init tilebot module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init tilebot module", err);
+            }
+        }
+
+
     }
 
     start() {

@@ -133,7 +133,7 @@ router.post('/askbot', function (req, res) {
     }
     winston.debug('faq_kb ', faq_kb.toJSON());
     winston.debug('faq_kb.type :'+ faq_kb.type);
-    if (faq_kb.type =="internal") {
+    if (faq_kb.type =="internal" || faq_kb.type =="tilebot") {
 
 
 

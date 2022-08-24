@@ -190,7 +190,42 @@ router.get('/', function(req, res, next) {
   
 
 
+  router.get('/ip', function(req, res, next) {
   
+     var xforwarded = req.headers['x-forwarded-for'];
+     winston.info('xforwarded'+ xforwarded);
+
+     var connectionRemoteAddress  = req.connection.remoteAddress;
+     winston.info('connectionRemoteAddress'+ connectionRemoteAddress);
+
+     var socketRemoteAddress = req.socket.remoteAddress;
+     winston.info('socketRemoteAddress'+ socketRemoteAddress);
+
+    if (req.connection.socket ) {
+      var connectionSocketRemoteAddress = req.connection.socket.remoteAddress;
+      winston.info('connectionSocketRemoteAddress'+ connectionSocketRemoteAddress);
+
+    }
+    
+
+    var ip = req.headers['x-forwarded-for'] || 
+     req.connection.remoteAddress || 
+     req.socket.remoteAddress ||
+     (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    winston.info("ip:"+ ip);
+
+
+
+
+    const ipStandard = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
+    req.socket.remoteAddress
+
+    winston.info("standard ip: "+ipStandard); // ip address of the user
+
+    res.json( {ip:ip, ipStandard:ipStandard} );
+
+
+  });
 
   
 

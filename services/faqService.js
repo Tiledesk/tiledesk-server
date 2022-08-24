@@ -39,7 +39,7 @@ class FaqService {
           
           winston.debug('type '+ type)      
 
-          if (type==="internal") {      
+          if (type==="internal" || type==="tilebot") {      
             
             if (!template) {
               template = "example";
