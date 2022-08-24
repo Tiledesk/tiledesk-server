@@ -217,12 +217,20 @@ router.get('/', function(req, res, next) {
 
 
 
-    const ipStandard = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
+    const ipStandard = (req.headers['x-forwarded-for'] || '').split(',').shift().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
     req.socket.remoteAddress
 
     winston.info("standard ip: "+ipStandard); // ip address of the user
 
-    res.json( {ip:ip, ipStandard:ipStandard} );
+
+
+    const parseIp = (req) =>
+    req.headers['x-forwarded-for']?.split(',').shift()
+    || req.socket?.remoteAddress
+
+    winston.info("parseIp: "+parseIp); // ip address of the user
+
+    res.json( {ip:ip, ipStandard:ipStandard, parseIp: parseIp} );
 
 
   });
