@@ -238,8 +238,8 @@ router.get('/', function(req, res, next) {
     if (xFor ) {
       const xForArr = xFor.split(',');
       if (xForArr && xForArr.length>0) {
-        ip = xForArr.shift();
-        winston.info("parseIp ip: "+ip);
+        parseIp = xForArr.shift();
+        winston.info("parseIp xFor parseIp: "+parseIp);
       }
     }
     winston.info("parseIp: "+parseIp); // ip address of the user
