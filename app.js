@@ -146,8 +146,7 @@ pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, d
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
-const ipfilter = require('express-ipfilter').IpFilter
-// const IpDeniedError = require('express-ipfilter').IpDeniedError;
+var IPFilter = require('./middleware/ipFilter');
 
 
 
@@ -172,6 +171,7 @@ schemaMigrationService.checkSchemaMigration();
 if (process.env.CREATE_INITIAL_DATA !== "false") {
    bootDataLoader.create();
 }
+
 
 
 
@@ -335,70 +335,182 @@ var projectSetter = function (req, res, next) {
 }
 
 
-function customDetection (req)  {
-  // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;  
-  // const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
-  //   req.socket.remoteAddress
+
+// function customDetection (req)  {
+//   // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;  
+//   // const ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||        //https://stackoverflow.com/questions/8107856/how-to-determine-a-users-ip-address-in-node
+//   //   req.socket.remoteAddress
 
 
-  let ip = req.socket.remoteAddress;
+//   let ip = req.socket.remoteAddress;
 
-    const xFor =  req.headers['x-forwarded-for'];
-    if (xFor ) {
-      const xForArr = xFor.split(',');
-      if (xForArr && xForArr.length>0) {
-        ip = xForArr.shift();
-      }
-    }
-    // const ip = 
-    // req.headers['x-forwarded-for']?.split(',').shift()
-    // || req.socket?.remoteAddress
+//     const xFor =  req.headers['x-forwarded-for'];
+//     if (xFor ) {
+//       const xForArr = xFor.split(',');
+//       if (xForArr && xForArr.length>0) {
+//         ip = xForArr.shift();
+//       }
+//     }
+//     // const ip = 
+//     // req.headers['x-forwarded-for']?.split(',').shift()
+//     // || req.socket?.remoteAddress
 
-  winston.info("standard ip: "+ip); // ip address of the user
-  return ip;
-}
-
-
-var projectIpFilter = function (req, res, next) {
-  // var projectIpFilter = function (err, req, res, next) {
-
-    // var ip = require('ip');
-    // winston.info("projectIpFilter ip2: " + ip.address() );
+//   winston.info("standard ip: "+ip); // ip address of the user
+//   return ip;
+// }
 
 
-    const nextIp = function(err) {
-      winston.info("projectIpFilter next",err);
-
-        if (err && err.name === "IpDeniedError") {
-          winston.info("IpDeniedError");
-          return res.status(401).json({ err: "error project ip filter" });
-          // next(err) 
-        } 
-
-      next();
-
-  }
 
 
-  if (!req.project) {
-    return next();
-  }
+// var projectIpFilter = function (req, res, next) {
+
+
+//   const nextIp = function(err) {
+//     winston.debug("projectIpFilter next",err);
   
-  var projectIpFilterEnabled = req.project.ipFilterEnabled;
-  winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
-
-  var projectIpFilter =  req.project.ipFilter
-  winston.debug("project ipFilter: " + projectIpFilter)
+//       if (err && err.name === "IpDeniedError") {
+//         winston.info("IpDeniedError for projectIpFilter");
+//         return res.status(401).json({ err: "error project ip filter" });
+//         // next(err) 
+//       } 
   
-  if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
-    var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
-    // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
-    ip(req, res, nextIp);
-  } else {
-    next();
-  }
+//     next();
+  
+//   }
 
-}
+
+//   if (!req.project) {
+//     return next();
+//   }
+  
+//   var projectIpFilterEnabled = req.project.ipFilterEnabled;
+//   winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
+
+//   var projectIpFilter =  req.project.ipFilter
+//   winston.info("project ipFilter: " + projectIpFilter)
+  
+//   if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
+//     winston.info("filtering project IpFilter with ", projectIpFilter );
+//     var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
+//     // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
+//      ip(req, res, nextIp);
+//   } else {
+//     next();
+//   }
+
+// }
+
+// var projectIpFilterDeny = function (req, res, next) {
+
+//   const nextIp = function(err) {
+//     winston.debug("projectIpFilter next",err);
+  
+//       if (err && err.name === "IpDeniedError") {
+//         winston.info("IpDeniedError for projectIpFilterDeny");
+//         return res.status(401).json({ err: "error project deny ip filter" });
+//         // next(err) 
+//       } 
+  
+//     next();
+  
+//   }
+
+//   if (!req.project) {
+//     return next();
+//   }
+  
+//   var projectIpFilterDenyEnabled = req.project.ipFilterDenyEnabled;
+//   winston.info("project projectIpFilterDenyEnabled: " +projectIpFilterDenyEnabled)
+
+//   var projectIpFilterDeny =  req.project.ipFilterDeny
+//   winston.info("project IpFilterDeny: " + projectIpFilterDeny)
+
+
+//   if (projectIpFilterDenyEnabled === true && projectIpFilterDeny && projectIpFilterDeny.length > 0) {
+//     winston.info("filtering project projectIpFilterDeny with ", projectIpFilterDeny );
+//     var ip = ipfilter(projectIpFilterDeny, { detectIp: customDetection, mode: 'deny' })
+//     ip(req, res, nextIp);
+//   } else {
+//     next();
+//   }
+
+// }
+
+
+
+// var projectBanUserFilter = function (req, res, next) {
+
+//   const nextIp = function(err) {
+//     winston.debug("projectBanUserFilter next",err);
+  
+//       if (err && err.name === "IpDeniedError") {
+//         winston.info("IpDeniedError for projectBanUserFilter");
+//         return res.status(401).json({ err: "error projectBanUserFilter" });
+//         // next(err) 
+//       } 
+  
+//     next();
+  
+//   }
+
+//   if (!req.project) {
+//     return next();
+//   }
+  
+//   var bannedUsers =  req.project.bannedUsers
+//   winston.info("project bannedUsers: " + bannedUsers)
+
+//   if (bannedUsers && bannedUsers.length > 0) {
+
+//     let bannedUsersArr = [];
+//     for (var i =0; i < bannedUsers.length; i++) {
+//       bannedUsersArr.push(bannedUsers[i].ip);
+//     }
+  
+//     winston.info("filtering project bannedUsers with ", bannedUsersArr );
+//     var ip = ipfilter(bannedUsersArr, { detectIp: customDetection, mode: 'deny' })
+//     ip(req, res, nextIp);
+//   } else {
+//     next();
+//   }
+
+// }
+
+
+
+
+
+
+
+
+  
+  // if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
+  //   var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
+  //   // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
+  //   ip(req, res, nextIp);
+  // } else {
+
+  //   var projectIpFilterDenyEnabled = req.project.ipFilterDenyEnabled;
+  //   winston.debug("project projectIpFilterDenyEnabled: " +projectIpFilterDenyEnabled)
+  
+  //   var projectIpFilterDeny =  req.project.ipFilterDeny
+  //   winston.info("project IpFilterDeny: " + projectIpFilterDeny)
+
+
+  //   if (projectIpFilterDenyEnabled === true && projectIpFilterDeny && projectIpFilterDeny.length > 0) {
+  //     winston.info("project IpFilterDeny here ");
+  //     var ip = ipfilter(projectIpFilterDeny, { detectIp: customDetection, mode: 'deny' })
+  //     ip(req, res, nextIp);
+
+  //   }else {
+  //     next();
+  //   }
+  // }
+
+
+
+
+
 
 
 
@@ -446,7 +558,7 @@ if (modulesManager) {
 }
 
 
-app.use('/:projectid/', [projectIdSetter, projectSetter, projectIpFilter]);
+app.use('/:projectid/', [projectIdSetter, projectSetter, IPFilter.projectIpFilter, IPFilter.projectIpFilterDeny, IPFilter.projectBanUserFilter]);
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
@@ -554,7 +666,7 @@ app.use(function (err, req, res, next) {
 // error handler
 app.use((err, req, res, next) => {
 
-  winston.info("err.name", err.name)
+  winston.debug("err.name", err.name)
   if (err.name === "IpDeniedError") {
     winston.info("IpDeniedError");
     return res.status(401).json({ err: "error ip filter" });

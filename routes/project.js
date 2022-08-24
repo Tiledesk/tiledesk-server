@@ -213,6 +213,22 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update.ipFilter = req.body.ipFilter;
   }
 
+  if (req.body.ipFilterDenyEnabled!=undefined) {
+    update.ipFilterDenyEnabled = req.body.ipFilterDenyEnabled;
+  }
+
+  if (req.body.ipFilterDeny!=undefined) {
+    update.ipFilterDeny = req.body.ipFilterDeny;
+  }
+
+  if (req.body.bannedUsers!=undefined) {
+    update.bannedUsers = req.body.bannedUsers;
+  }
+
+  
+
+  
+  
   
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
@@ -360,6 +376,19 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   if (req.body.ipFilter!=undefined) {
     update.ipFilter = req.body.ipFilter;
   }
+
+  if (req.body.ipFilterDenyEnabled!=undefined) {
+    update.ipFilterDenyEnabled = req.body.ipFilterDenyEnabled;
+  }
+
+  if (req.body.ipFilterDeny!=undefined) {
+    update.ipFilterDeny = req.body.ipFilterDeny;
+  }
+
+  if (req.body.bannedUsers!=undefined) {
+    update.bannedUsers = req.body.bannedUsers;
+  }
+  
     
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
