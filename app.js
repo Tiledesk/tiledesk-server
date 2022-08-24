@@ -341,7 +341,7 @@ function customDetection (req)  {
   //   req.socket.remoteAddress
 
 
-  const ip = req.socket.remoteAddress;
+  let ip = req.socket.remoteAddress;
 
     const xFor =  req.headers['x-forwarded-for'];
     if (xFor ) {

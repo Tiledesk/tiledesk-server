@@ -230,7 +230,7 @@ router.get('/', function(req, res, next) {
 
     
 
-    const parseIp = req.socket.remoteAddress;
+    let parseIp = req.socket.remoteAddress;
 
     const xFor =  req.headers['x-forwarded-for'];
     winston.info("parseIp xFor: "+xFor);
