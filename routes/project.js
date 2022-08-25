@@ -407,6 +407,42 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   });
 });
 
+
+router.post('/:projectid/ban', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  winston.debug('PATCH PROJECT REQ BODY ', req.body);
+
+  var ban = {};
+  ban.id = req.body.id;
+  ban.ip = req.body.ip;
+
+  Project.findByIdAndUpdate(req.params.projectid, { $push: { bannedUsers: ban } }, { new: true, upsert: false }, function (err, updatedProject) {
+    if (err) {
+      winston.error('Error putting project ', err);
+      return res.status(500).send({ success: false, msg: 'Error patching object.' });
+    }
+    projectEvent.emit('project.update', updatedProject );
+    res.json(updatedProject);
+  });
+
+});
+
+router.delete('/:projectid/ban/:banid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  
+  // winston.info('quiiiiii');
+  //cacheinvalidation
+Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id": req.params.banid }}}, { new: true, upsert: false }, function (err, updatedProject) {
+  if (err) {
+    winston.error('Error putting project ', err);
+    return res.status(500).send({ success: false, msg: 'Error patching object.' });
+  }
+  projectEvent.emit('project.update', updatedProject );
+  res.json(updatedProject);
+});
+
+});
+
+
+
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
