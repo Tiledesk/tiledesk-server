@@ -111,6 +111,16 @@ var ProjectSchema = new Schema({
   ipFilter: [{
     type: String
   }],
+  ipFilterDenyEnabled:{
+    type: Boolean,
+    default: false
+  },
+  ipFilterDeny: [{
+    type: String
+  }],
+  bannedUsers: [{
+     id: String, ip: String
+  }],
   // defaultLanguage: {
   //   type: String,
   //   required: true,
