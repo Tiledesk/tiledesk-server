@@ -421,11 +421,11 @@ router.post('/:projectid/ban', [passport.authenticate(['basic', 'jwt'], { sessio
       return res.status(500).send({ success: false, msg: 'Error patching object.' });
     }
     projectEvent.emit('project.update', updatedProject );
+    projectEvent.emit('project.update.user.ban', updatedProject );
     res.json(updatedProject);
   });
 
 });
-
 router.delete('/:projectid/ban/:banid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   
   // winston.info('quiiiiii');
@@ -436,6 +436,7 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
     return res.status(500).send({ success: false, msg: 'Error patching object.' });
   }
   projectEvent.emit('project.update', updatedProject );
+  projectEvent.emit('project.update.user.unban', updatedProject );
   res.json(updatedProject);
 });
 

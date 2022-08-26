@@ -148,7 +148,8 @@ channelManager.listen();
 
 var IPFilter = require('./middleware/ipFilter');
 
-
+var BanUserNotifier = require('./services/banUserNotifier');
+BanUserNotifier.listen();
 
 var modulesManager = undefined;
 try {
