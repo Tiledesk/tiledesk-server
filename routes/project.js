@@ -421,7 +421,7 @@ router.post('/:projectid/ban', [passport.authenticate(['basic', 'jwt'], { sessio
       return res.status(500).send({ success: false, msg: 'Error patching object.' });
     }
     projectEvent.emit('project.update', updatedProject );
-    projectEvent.emit('project.update.user.ban', updatedProject );
+    projectEvent.emit('project.update.user.ban', {banInfo: ban, project: updatedProject });
     res.json(updatedProject);
   });
 
@@ -436,7 +436,7 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
     return res.status(500).send({ success: false, msg: 'Error patching object.' });
   }
   projectEvent.emit('project.update', updatedProject );
-  projectEvent.emit('project.update.user.unban', updatedProject );
+  projectEvent.emit('project.update.user.ban', {banInfo: ban, project: updatedProject});
   res.json(updatedProject);
 });
 

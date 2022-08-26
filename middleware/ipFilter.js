@@ -1,5 +1,6 @@
 const ipfilter = require('express-ipfilter').IpFilter
 var winston = require('../config/winston');
+var jwt = require('jsonwebtoken');
 
 
 var customDetection = function (req)  {
@@ -24,6 +25,20 @@ var customDetection = function (req)  {
     winston.info("standard ip: "+ip); // ip address of the user
     return ip;
 }
+
+var getToken = function (headers) {
+  winston.debug("getToken",headers);
+  if (headers && headers.authorization) {
+    var parted = headers.authorization.split(' ');
+    if (parted.length === 2) {
+      return parted[1];
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
+};
   
 
 class IPFilter {
@@ -120,6 +135,8 @@ projectIpFilter (req, res, next) {
   
 projectBanUserFilter(req, res, next) {
   
+  winston.debug("projectBanUserFilter hereee*********** ")
+
     const nextIp = function(err) {
       winston.debug("projectBanUserFilter next",err);
     
@@ -138,18 +155,31 @@ projectBanUserFilter(req, res, next) {
     }
     
     var bannedUsers =  req.project.bannedUsers
-    winston.info("project bannedUsers: " + bannedUsers)
+    winston.debug("project bannedUsers: " + bannedUsers)
   
     if (bannedUsers && bannedUsers.length > 0) {
   
       let bannedUsersArr = [];
+      let bannedUsersIdUserArr = [];
       for (var i =0; i < bannedUsers.length; i++) {
         bannedUsersArr.push(bannedUsers[i].ip);
+        bannedUsersIdUserArr.push(bannedUsers[i].id);
       }
     
-      winston.info("filtering project bannedUsers with ", bannedUsersArr );
-      var ip = ipfilter(bannedUsersArr, { detectIp: customDetection, mode: 'deny' })
-      ip(req, res, nextIp);
+      winston.debug("project req.preDecodedJwt: ", req.preDecodedJwt)
+      winston.debug("project req.preDecodedJwt._id: "+ req.preDecodedJwt._id)
+
+
+      if (req.preDecodedJwt && req.preDecodedJwt._id && bannedUsersIdUserArr.indexOf(req.preDecodedJwt._id) > -1) {
+        winston.info("filtering project bannedUsers with id: " + req.preDecodedJwt._id)
+        return res.status(401).json({ err: "error projectBanUserFilter by id" });
+      }
+
+
+      // winston.debug("filtering project bannedUsers with ", bannedUsersArr );
+      // var ip = ipfilter(bannedUsersArr, { detectIp: customDetection, mode: 'deny' })
+      // ip(req, res, nextIp);
+      next();
     } else {
       next();
     }
@@ -157,6 +187,29 @@ projectBanUserFilter(req, res, next) {
   }
   
   
+
+  
+
+  decodeJwt(req, res, next) {
+  
+    let token = getToken(req.headers);
+    winston.info("filtering token " + token); 
+
+    if (token) {
+
+      try {
+        var decoded = jwt.decode(token);
+        winston.info("filtering decoded " + decoded);
+        req.preDecodedJwt = decoded;
+      }catch(e) {
+        winston.debug("Error decoding jwt");
+      }
+     
+    }
+   
+    
+    next();
+  }
   
   
 
