@@ -202,14 +202,14 @@ router.post('/', function (req, res) {
                       }
 
 
-                     
+                   
                       
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                       
+                      
                       };
     
                       winston.debug("new_request", new_request);
@@ -229,10 +229,10 @@ router.post('/', function (req, res) {
                        // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language)
                         return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
                           projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata, language).then(function(savedMessage){
-                                                                
-                            return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-                              return res.json(savedRequestWithIncrement);
-                            });
+                            return res.json(savedRequest);                                  
+                            // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+                              // return res.json(savedRequestWithIncrement);
+                            // });
                           
                         
                       }).catch(function (err) {
@@ -289,11 +289,11 @@ router.post('/', function (req, res) {
 
                 // TOOD update also request attributes and sourcePage
                 
-                    return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
+                    // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
                        
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
-                      if (savedRequest.participants && savedRequest.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
+                      if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId");
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
                           return res.json(upRequest);
@@ -301,9 +301,10 @@ router.post('/', function (req, res) {
                       }else {
                         return res.json(savedRequest);
                       }
-                    });
+                    // });
                   }).catch(function(err){
-                    winston.error("Error creating message", {err: err, message: message});
+                    // console.log(err);
+                    winston.error("Error creating chat21 webhook message", {err: err, message: message});
                     return res.status(500).send({success: false, msg: 'Error creating message', err:err });
                   });
 
@@ -539,7 +540,7 @@ router.post('/', function (req, res) {
   
   else if (req.body.event_type == "deleted-archivedconversation" || req.body.event_type == "conversation-unarchived") {
 
-    winston.info("event_type","deleted-archivedconversation");
+    winston.debug("event_type","deleted-archivedconversation");
 
     winston.debug("req.body",req.body);
 
@@ -549,37 +550,43 @@ router.post('/', function (req, res) {
     }
 
 
-      var conversation = req.body.data;
+      var conversation = req.body.data; 
       // winston.debug("conversation",conversation);
 
       var user_id = req.body.user_id;
-      winston.info("user_id",user_id);
+      winston.debug("user_id",user_id);
 
       var recipient_id = req.body.recipient_id;
-      winston.info("recipient_id",recipient_id);
+      winston.debug("recipient_id",recipient_id);
 
      
 //   TODO leggi projectid from support-group
 
       if (!recipient_id.startsWith("support-group")){
-        winston.info("not a support conversation");
+        winston.debug("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
 
+
       if (user_id!="system"){
-        winston.info("not a system conversation");
+        winston.debug("not a system conversation");
         return res.status(400).send({success: false, msg: "not a system conversation" });
       }
 
+
+
+     // scrivo... nuova viene popolato projectid in attributes poi chiudo ed in archived c'è projectid 
+      // quando scrivo viene cancellato archived e nuovo messaggio crea conv ma senza project id... lineare che è cosi
+      // si verifica solo se admin (da ionic ) archivia di nuovo senza che widget abbia scritto nulla (widget risetta projectid in properties)
 
       var id_project;
       if (conversation && conversation.attributes) {
         id_project = conversation.attributes.projectId;
       }else {
-        winston.info( "not a support deleting archived conversation" );
+        winston.debug( "not a support deleting archived conversation" );
         return res.status(400).send({success: false, msg: "not a support deleting archived conversation" });
       }
-      winston.info("id_project", id_project);
+      winston.debug("id_project", id_project);
 
 
       return requestService.reopenRequestByRequestId(recipient_id, id_project).then(function(updatedRequest) {

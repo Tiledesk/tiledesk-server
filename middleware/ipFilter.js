@@ -167,7 +167,7 @@ projectBanUserFilter(req, res, next) {
       }
     
       winston.debug("project req.preDecodedJwt: ", req.preDecodedJwt)
-      winston.debug("project req.preDecodedJwt._id: "+ req.preDecodedJwt._id)
+      // winston.debug("project req.preDecodedJwt._id: "+ req.preDecodedJwt._id)
 
 
       if (req.preDecodedJwt && req.preDecodedJwt._id && bannedUsersIdUserArr.indexOf(req.preDecodedJwt._id) > -1) {

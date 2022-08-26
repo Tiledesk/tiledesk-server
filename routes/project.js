@@ -436,7 +436,7 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
     return res.status(500).send({ success: false, msg: 'Error patching object.' });
   }
   projectEvent.emit('project.update', updatedProject );
-  projectEvent.emit('project.update.user.ban', {banInfo: ban, project: updatedProject});
+  projectEvent.emit('project.update.user.unban', {banInfo: req.params.banid, project: updatedProject});
   res.json(updatedProject);
 });
 
