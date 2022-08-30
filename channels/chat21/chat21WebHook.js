@@ -202,14 +202,15 @@ router.post('/', function (req, res) {
                       }
 
 
-                   
+                    
+
                       
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                      
+                       
                       };
     
                       winston.debug("new_request", new_request);
@@ -299,7 +300,7 @@ router.post('/', function (req, res) {
                           return res.json(upRequest);
                         });
                       }else {
-                        return res.json(savedRequest);
+                        return res.json(upRequest);
                       }
                     // });
                   }).catch(function(err){
@@ -566,7 +567,6 @@ router.post('/', function (req, res) {
         winston.debug("not a support conversation");
         return res.status(400).send({success: false, msg: "not a support conversation" });
       }
-
 
       if (user_id!="system"){
         winston.debug("not a system conversation");

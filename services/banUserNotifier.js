@@ -24,7 +24,7 @@ class BanUserNotifier {
                 undefined
             );
         });
-        projectEvent.on("project.update.user.unban", function(project) {
+        projectEvent.on("project.update.user.unban", function(data) {
             var project=data.project;
             var banInfo = data.banInfo;
 
