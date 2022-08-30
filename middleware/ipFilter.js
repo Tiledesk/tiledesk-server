@@ -58,7 +58,7 @@ class IPFilter {
   
 projectIpFilter (req, res, next) {
     var that = this;
-    console.log("that", that)
+    // console.log("that", that)
   
     const nextIp = function(err) {
       winston.debug("projectIpFilter next",err);
