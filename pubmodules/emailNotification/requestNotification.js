@@ -355,6 +355,13 @@ async notifyFollowers(savedRequest, project, message) {
     return winston.debug("not sending notifyFollowers for attributes.subtype info messages");
   }
 
+  if (!savedRequest) {
+    return winston.debug("not sending notifyFollowers for direct messages");
+  }
+
+  // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
+  // forse meglio .id
+  
   var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();
   winston.debug("reqWithFollowers");
   winston.debug("reqWithFollowers",reqWithFollowers);
