@@ -22,7 +22,7 @@ class BanUserNotifier {
                 text: "User Banned",
                 id_project: project._id,
                 createdBy: "system",
-                // attributes: {subtype:"info"},
+                attributes: {subtype:"info", messagelabel: {key: "USER_BANNED"} },
                 channel_type: MessageConstants.CHANNEL_TYPE.DIRECT,
                 status: MessageConstants.CHAT_MESSAGE_STATUS.SENDING,
                 // channel: {name: "chat21"}
@@ -45,7 +45,7 @@ class BanUserNotifier {
             var project=data.project;
             var banInfo = data.banInfo;
 
-            winston.debug("User UnBanned");
+            winston.debug("User UnBanned: "+banInfo);
 
             var message = {
                 sender: 'system',
@@ -55,7 +55,7 @@ class BanUserNotifier {
                 text: "User Unbanned",
                 id_project: project._id,
                 createdBy: "system",
-                // attributes: {subtype:"info"},
+                attributes: {subtype:"info", messagelabel: {key: "USER_BANNED"}},
                 channel_type: MessageConstants.CHANNEL_TYPE.DIRECT,
                 status: MessageConstants.CHAT_MESSAGE_STATUS.SENDING,
             };
