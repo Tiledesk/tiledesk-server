@@ -79,13 +79,13 @@ projectIpFilter (req, res, next) {
     }
     
     var projectIpFilterEnabled = req.project.ipFilterEnabled;
-    winston.info("project projectIpFilterEnabled: " +projectIpFilterEnabled)
+    winston.debug("project projectIpFilterEnabled: " +projectIpFilterEnabled)
   
     var projectIpFilter =  req.project.ipFilter
-    winston.info("project ipFilter: " + projectIpFilter)
+    winston.debug("project ipFilter: " + projectIpFilter)
     
     if (projectIpFilterEnabled === true && projectIpFilter && projectIpFilter.length > 0) {
-      winston.info("filtering project IpFilter with ", projectIpFilter );
+      winston.debug("filtering project IpFilter with ", projectIpFilter );
       var ip = ipfilter(projectIpFilter, { detectIp: customDetection, mode: 'allow' })
       // var ip = ipfilter(projectIpFilter, { mode: 'allow' })
        ip(req, res, nextIp);
@@ -115,14 +115,14 @@ projectIpFilter (req, res, next) {
     }
     
     var projectIpFilterDenyEnabled = req.project.ipFilterDenyEnabled;
-    winston.info("project projectIpFilterDenyEnabled: " +projectIpFilterDenyEnabled)
+    winston.debug("project projectIpFilterDenyEnabled: " +projectIpFilterDenyEnabled)
   
     var projectIpFilterDeny =  req.project.ipFilterDeny
-    winston.info("project IpFilterDeny: " + projectIpFilterDeny)
+    winston.debug("project IpFilterDeny: " + projectIpFilterDeny)
   
   
     if (projectIpFilterDenyEnabled === true && projectIpFilterDeny && projectIpFilterDeny.length > 0) {
-      winston.info("filtering project projectIpFilterDeny with ", projectIpFilterDeny );
+      winston.debug("filtering project projectIpFilterDeny with ", projectIpFilterDeny );
       var ip = ipfilter(projectIpFilterDeny, { detectIp: customDetection, mode: 'deny' })
       ip(req, res, nextIp);
     } else {
@@ -193,13 +193,13 @@ projectBanUserFilter(req, res, next) {
   decodeJwt(req, res, next) {
   
     let token = getToken(req.headers);
-    winston.info("filtering token " + token); 
+    winston.debug("filtering token " + token); 
 
     if (token) {
 
       try {
         var decoded = jwt.decode(token);
-        winston.info("filtering decoded " + decoded);
+        winston.debug("filtering decoded ", decoded);
         req.preDecodedJwt = decoded;
       }catch(e) {
         winston.debug("Error decoding jwt");
