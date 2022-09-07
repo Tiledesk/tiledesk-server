@@ -25,7 +25,7 @@ router.put('/', function (req, res) {
 
   User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
     if (err) {
-      winston.error(err);
+      winston.error("Error putting user",err);
       return res.status(500).send({ success: false, msg: err });
     }
 
