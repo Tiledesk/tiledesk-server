@@ -1,25 +1,43 @@
 const botEvent = require('../../event/botEvent');
 var Faq_kb = require("../../models/faq_kb");
 var winston = require('../../config/winston');
+var configGlobal = require('../../config/global');
 
 var port = process.env.PORT || '3000';
 
-const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/";
+const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 winston.info("Tilebot endpoint: " + TILEBOT_ENDPOINT);
+
+
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+winston.info('Rasa apiUrl: '+ apiUrl);
+
+const tybot = require("@tiledesk/tiledesk-tybot-connector");
+
 
 class Listener {
 
     listen(config) {
 
         winston.info('Tilebot Listener listen');
-        // winston.debug("config databaseUri: " + config.databaseUri);  
+        winston.debug("Tilebot config databaseUri: " + config.databaseUri);  
         
 
         var that = this;
+       
+        tybot.startApp(
+            {              
+              MONGODB_URI: config.databaseUri,
+              API_ENDPOINT: apiUrl,
+              log: process.env.TILEBOT_LOG
+            }, () => {
+              winston.info("TileBot proxy server successfully started.");                 
+            }
+          );
 
-      
+
         botEvent.on('faqbot.create', function(bot) {
             if (TILEBOT_ENDPOINT) {
 

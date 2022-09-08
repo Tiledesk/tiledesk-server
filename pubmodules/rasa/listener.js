@@ -23,7 +23,7 @@ class Listener {
     listen(config) {
 
         winston.info('Rasa Listener listen');
-        winston.debug("config databaseUri: " + config.databaseUri);  
+        winston.debug("rasa config databaseUri: " + config.databaseUri);  
         
 
         var that = this;
@@ -34,7 +34,7 @@ class Listener {
                 KVBASE_COLLECTION : process.env.KVBASE_COLLECTION,
                 MONGODB_URI: config.databaseUri,          
                 API_ENDPOINT: apiUrl,   
-                log: true
+                log: process.env.RASABOT_LOG
             }, () => {
                 winston.info("RASA proxy server successfully started.");   
             });
@@ -44,10 +44,10 @@ class Listener {
         botEvent.on('faqbot.create', function(bot) {
             if (BOT_RASA_ENDPOINT) {
 
-                winston.info('bot.type:'+bot.type); 
+                winston.debug('bot.type:'+bot.type); 
                 if (bot.type==="rasa") {
 
-                    winston.info('qui.type:'+bot.type); 
+                    winston.debug('qui.type:'+bot.type); 
 
 
                     Faq_kb.findByIdAndUpdate(bot.id, {"url":BOT_RASA_ENDPOINT}, { new: true, upsert: true }, function (err, savedFaq_kb) {

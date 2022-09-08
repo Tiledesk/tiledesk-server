@@ -1,3 +1,11 @@
 const listener = require("./listener");
 
-module.exports = { listener: listener };
+const tilebot = require("@tiledesk/tiledesk-tybot-connector");
+const tilebotRoute = tilebot.router;
+
+
+
+
+
+module.exports = { listener: listener, tilebotRoute: tilebotRoute };
+

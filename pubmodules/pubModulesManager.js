@@ -32,7 +32,7 @@ class PubModulesManager {
         this.triggerRoute = undefined;
 
         this.tilebot = undefined;
-
+        this.tilebotRoute = undefined;
     }
 
   
@@ -42,6 +42,10 @@ class PubModulesManager {
         if (this.rasaRoute) {
             app.use('/modules/rasa', this.rasaRoute);
             winston.info("ModulesManager rasaRoute controller loaded");       
+        }
+        if (this.tilebotRoute) {
+            app.use('/modules/tilebot', this.tilebotRoute);
+            winston.info("ModulesManager tilebot controller loaded");       
         }
 
     }
@@ -266,6 +270,7 @@ class PubModulesManager {
             this.tilebot = require('./tilebot');
             winston.debug("this.tilebot:"+ this.tilebot);    
             this.tilebot.listener.listen(config);      
+            this.tilebotRoute = this.tilebot.tilebotRoute;
 
             winston.info("PubModulesManager initialized tilebot.");
         } catch(err) {
