@@ -47,20 +47,23 @@ class BanUserNotifier {
 
             winston.debug("User UnBanned: "+banInfo);
 
-            var message = {
-                sender: 'system',
-                senderFullname: 'Bot',
-                recipient: banInfo,
-                recipientFullname: banInfo,
-                text: "User Unbanned",
-                id_project: project._id,
-                createdBy: "system",
-                attributes: {subtype:"info", messagelabel: {key: "USER_BANNED"}},
-                channel_type: MessageConstants.CHANNEL_TYPE.DIRECT,
-                status: MessageConstants.CHAT_MESSAGE_STATUS.SENDING,
-            };
-            messageService.save(message);
-            winston.info("User UnBanned", message);
+            // var message = {
+            //     sender: 'system',
+            //     senderFullname: 'Bot',
+            //     recipient: banInfo,
+            //     recipientFullname: banInfo,
+            //     text: "User Unbanned",
+            //     id_project: project._id,
+            //     createdBy: "system",
+            //     attributes: {subtype:"info", messagelabel: {key: "USER_BANNED"}},
+            //     channel_type: MessageConstants.CHANNEL_TYPE.DIRECT,
+            //     status: MessageConstants.CHAT_MESSAGE_STATUS.SENDING,
+            // };
+            // messageService.save(message);
+            // winston.info("User UnBanned", message);
+
+
+            
 
             // messageService.send(
             //     'system', 

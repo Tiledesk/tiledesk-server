@@ -36,10 +36,10 @@ class OrgUtil {
         // winston.info("host: "+ host );
 
         let origin = req.get('origin');
-        winston.info("origin: "+ origin );
+        winston.debug("origin: "+ origin );
 
         // winston.info("email: " + email.baseUrl);
-        winston.info("this.ORGANIZATION_BASE_URL: " + this.ORGANIZATION_BASE_URL); 
+        winston.debug("this.ORGANIZATION_BASE_URL: " + this.ORGANIZATION_BASE_URL); 
         // global.organizationBaseUrl
         // if (host !=email.baseUrl ) {
         if (origin && origin.indexOf(this.ORGANIZATION_BASE_URL)>-1) {
@@ -49,7 +49,7 @@ class OrgUtil {
             winston.info("origin found: "+ origin );
             return origin;
         }
-        winston.info("origin not found: "+ origin );
+        winston.debug("origin not found: "+ origin );
         
         // winston.info("host not found: "+ host );
         // if (host.indexOf("localhost1")>-1) {
