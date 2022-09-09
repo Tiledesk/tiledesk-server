@@ -1,4 +1,14 @@
-# 2.3.14 -> PROD
+# 2.3.17 -> PROD
+- Webhook chat21 fix return
+
+# 2.3.16
+- Request close activity added as event
+- Log fix webhook chat21
+
+# 2.3.15
+- Endpoint Widget fix undefined project.widget
+
+# 2.3.14 
 - Added ip filter with Deny roles and ban User roles
 - Ban notifier
 - Middleware decodeJwt before passport with passport fallback
