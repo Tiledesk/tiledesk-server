@@ -76,7 +76,6 @@ class ActivityArchiver {
       
        authEvent.on('project_user.update',  function(event) { 
         setImmediate(() => {         
-          // console.log("project_user.update");
          /*
          2019-11-20T10:40:52.686991+00:00 app[web.1]: TypeError: Cannot read property '_id' of undefined
 */
@@ -260,6 +259,26 @@ class ActivityArchiver {
                 }
                 var activity = new Activity({actor: {type:"user", id: request.requester_id}, 
                 verb: "REQUEST_CREATE", actionObj: request, 
+                target: {type:"request", id:request._id, object: request }, 
+                id_project: request.id_project });
+                that.save(activity);    
+              } catch(e) {
+                winston.error('ActivityArchiver error saving activity',e);
+              }
+          
+                
+          });                           
+        });
+
+
+        requestEvent.on('request.close',  function(request) {   
+          setImmediate(() => {           
+       
+              try {
+                winston.error('ActivityArchiver close');
+               
+                var activity = new Activity({actor: {type:"user", id: request.closed_by}, 
+                verb: "REQUEST_CLOSE", actionObj: request, 
                 target: {type:"request", id:request._id, object: request }, 
                 id_project: request.id_project });
                 that.save(activity);    
