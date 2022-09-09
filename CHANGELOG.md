@@ -1,5 +1,12 @@
+# 2.3.14 -> PROD
+- Added ip filter with Deny roles and ban User roles
+- Ban notifier
+- Middleware decodeJwt before passport with passport fallback
+- Removed unused requestService.incrementMessagesCountByRequestId from chat21Webhook
+- Enable agent to manage groups endpoint
+- Added tilebot chat server
 
-# 2.3.11 -> PROD
+# 2.3.13 
 - Getting ip fix
 
 # 2.3.10
