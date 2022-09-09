@@ -275,7 +275,7 @@ class ActivityArchiver {
           setImmediate(() => {           
        
               try {
-                winston.error('ActivityArchiver close');
+                winston.debug('ActivityArchiver close');
                
                 var activity = new Activity({actor: {type:"user", id: request.closed_by}, 
                 verb: "REQUEST_CLOSE", actionObj: request, 
