@@ -146,8 +146,12 @@ router.get('/', function(req, res, next) {
                                               //secondo me qui manca un parentesi tonda per gli or
           if (project  && project.profile && ((project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false))) {
             winston.debug('getProject remove poweredBy tag', project);
-            project.widget.poweredBy = undefined;
-            project.widget.baloonImage = undefined;            
+
+            if (project.widget) {
+              project.widget.poweredBy = undefined;
+              project.widget.baloonImage = undefined;            
+            }
+            
           }
 
         return resolve(project);
