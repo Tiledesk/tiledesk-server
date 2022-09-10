@@ -102,8 +102,12 @@ projectEvent.on('project.create', async (project) => {
 */
 
         
-        winston.info("triggers created for new project");
+        winston.debug("triggers created for new project");
 
+
+
+
+        // cc
 
     });
 });
