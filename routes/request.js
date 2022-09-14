@@ -162,6 +162,10 @@ router.patch('/:requestid', function (req, res) {
     update.priority = req.body.priority;
   }
 
+  if (req.body.smartAssignmentEnabled) {
+    update.smartAssignmentEnabled = req.body.smartAssignmentEnabled;
+  }
+
   
   winston.verbose("Request patch update",update);
 
@@ -709,6 +713,8 @@ router.get('/', function (req, res, next) {
     query.department = req.query.dept_id;
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
+
+
 
   if (req.query.full_text) {
     winston.debug('req.query.fulltext', req.query.full_text);
