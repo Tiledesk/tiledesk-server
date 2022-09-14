@@ -104,7 +104,7 @@ router.get('/:cannedResponseid', function (req, res) {
 });
 
 router.get('/', function (req, res) {
-  var limit = 40; // Number of CannedResponses per page
+  var limit = 1000; // Number of CannedResponses per page
   var page = 0;
 
   if (req.query.page) {

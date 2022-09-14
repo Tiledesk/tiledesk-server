@@ -220,6 +220,10 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   if (req.body.user_available!=undefined) {
     update.user_available = req.body.user_available;
   }
+
+  if (req.body.profileStatus!=undefined) {
+    update.profileStatus = req.body.profileStatus;
+  }
   
   if (req.body.max_assigned_chat!=undefined) {
     update.max_assigned_chat = req.body.max_assigned_chat;
@@ -274,6 +278,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.user_available = req.body.user_available;
   }
 
+  if (req.body.profileStatus!=undefined) {
+    update.profileStatus = req.body.profileStatus;
+  }
+  
   if (req.body.max_assigned_chat!=undefined) {
     update.max_assigned_chat = req.body.max_assigned_chat;
   }

@@ -273,7 +273,11 @@ var RequestSchema = new Schema({
     required: true,
     index: true
   },
-
+  smartAssignmentEnabled: {
+    type: Boolean,
+    default: true,
+    index: true
+  },
   createdBy: {
     type: String,
     required: true
@@ -463,6 +467,7 @@ RequestSchema.index({ id_project: 1, createdAt: 1, preflight: 1});
 
 //suggested by atlas profiler. Used by auto closing requests
 RequestSchema.index({ hasBot: 1, status: 1, createdAt: 1});
+
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv
