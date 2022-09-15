@@ -162,9 +162,14 @@ router.patch('/:requestid', function (req, res) {
     update.priority = req.body.priority;
   }
 
-  if (req.body.smartAssignmentEnabled) {
+  if (req.body.smartAssignmentEnabled!=undefined) {
     update.smartAssignmentEnabled = req.body.smartAssignmentEnabled;
   }
+
+  if (req.body.channelName) {
+    update["channel.name"] = req.body.channelName;
+  }
+
 
   
   winston.verbose("Request patch update",update);
@@ -714,7 +719,9 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
-
+  if (req.query.requester_email) {
+    query["snapshot.lead.email"] = req.query.requester_email;
+  }
 
   if (req.query.full_text) {
     winston.debug('req.query.fulltext', req.query.full_text);
