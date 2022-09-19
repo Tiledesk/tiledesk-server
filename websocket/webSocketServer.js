@@ -169,7 +169,17 @@ class WebSocketServer {
           
             winston.debug(' req.user._id: '+ req.user);
 
+            if (!topic) {
+                winston.error('WebSocket - Error getting  topic. Topic can t be null');  
+                return reject('WebSocket - Error getting  topic. Topic can t be null');
+            }
             var urlSub = topic.split('/');  
+
+            if (!urlSub || (urlSub && urlSub.length==0)) { 
+              winston.error('WebSocket - Error getting  topic. Topic is not properly configured');  
+              return reject('WebSocket - Error getting  topic. Topic is not properly configured');
+          }
+            // Error getting Project Cast to ObjectId failed for value "N7VJlLZ1" (type string) at path "_id" for model "project" {"kind":"ObjectId","path":"_id","reason":{},"stack":"CastError: Cast to ObjectId failed for value \"N7VJlLZ1\" (type string) at path \"_id\" for model \"project\"\n at model.Query.exec (/usr/src/app/node_modules/mongoose/lib/query.js:4498:21)\n at /usr/src/app/websocket/webSocketServer.js:180:14\n at new Promise (<anonymous>)\n at Object.onSubscribeCallback [as onSubscribe] (/usr/src/app/websocket/webSocketServer.js:167:14)\n at PubSub.handleReceivedClientMessage (/usr/src/app/websocket/pubsub.js:358:57)\n at runMicrotasks (<anonymous>)\n at processTicksAndRejections (internal/process/task_queues.js:97:5)","stringValue":"\"N7VJlLZ1\"","value":"N7VJlLZ1","valueType":"string"}
 
             var projectId = urlSub[1];
             winston.debug('projectId: '+projectId);
@@ -590,11 +600,12 @@ class WebSocketServer {
     winston.debug('messageCreateKey: ' + messageCreateKey);
 
     messageEvent.on(messageCreateKey, function (message) {
+      setImmediate(async () => {
       winston.debug('messageEvent websocket server: '+messageCreateKey, message);
         if (message.request) {
           pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
         }
-        
+      });
     });
 
     // var reconnect = require('./reconnect');
@@ -604,7 +615,8 @@ class WebSocketServer {
     }
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, async function (request) {
-        // TODO setImmediate(() => { 
+        setImmediate(async () =>  {
+
         winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
 
@@ -643,7 +655,7 @@ class WebSocketServer {
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, request, undefined, true, "CREATE");
         }
-          
+      });
       });
 
       var requestUpdateKey = 'request.update';
@@ -653,6 +665,8 @@ class WebSocketServer {
 
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, async function(request) {
+        setImmediate(async () => {
+
         // TODO setImmediate(() => {        
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
@@ -694,7 +708,7 @@ class WebSocketServer {
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
           pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
         }
-     
+      });
       });
 
 
@@ -709,6 +723,8 @@ class WebSocketServer {
       }
       winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
+        setImmediate(async () => {
+
         var pu = data.updatedProject_userPopulated;
         winston.debug('ws pu', pu);
         
@@ -724,7 +740,7 @@ class WebSocketServer {
         }
         winston.debug('userId:'+ userId);
         pubSubServer.handlePublishMessage ('/'+pu.id_project+'/project_users/users/'+userId, pu, undefined, true, "UPDATE");
-
+      });
       });
       
 
@@ -735,6 +751,7 @@ class WebSocketServer {
       }
       winston.debug('eventEmitKey: ' + eventEmitKey);
       eventEvent.on(eventEmitKey,function(event) {
+        setImmediate(async () => {
         winston.debug('event', event);
         if (event.project_user === undefined) {
           //with "faqbot.answer_not_found" project_user is undefined but it's ok 
@@ -742,6 +759,7 @@ class WebSocketServer {
           return ;
         }
         pubSubServer.handlePublishMessage ('/'+event.id_project+'/events/'+event.project_user._id, event, undefined, true, "CREATE");
+      });
       });
 
 

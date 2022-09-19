@@ -38,6 +38,8 @@ class GeoService {
 
   requestEvent.on('request.create', function(request) {
 
+    setImmediate(() => { 
+
     winston.debug("request", request.toObject());
 
     var ip = (request.location && request.location.ipAddress) || (request.attributes && request.attributes.ipAddress);
@@ -114,11 +116,15 @@ class GeoService {
                 }
                 return winston.verbose("Saved location metadata for request with id " + request._id);
             }); 
+
+            //TODO AGGIORNA ANCHE LEAD e req.snapshot.lead?
+            // leggi ip da request e nn da attributes
                
         }
     }
     });
-  }
+    });
+}
 
 
 }
