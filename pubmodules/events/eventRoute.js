@@ -37,6 +37,7 @@ router.post('/', [
       pu = req.projectuser.id
     }   
     
+
     // emit(name, attributes, id_project, project_user, createdBy, status, user) {
     eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id, undefined, req.user).then(function(event) {
     res.json(event);
@@ -137,7 +138,7 @@ router.get('/',   [passport.authenticate(['basic', 'jwt'],
       }
 
       //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
-      return Event.count(query, function (err, totalRowCount) {
+      return Event.countDocuments(query, function (err, totalRowCount) {
 
         var objectToReturn = {
           perPage: limit,

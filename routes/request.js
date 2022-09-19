@@ -162,8 +162,8 @@ router.patch('/:requestid', function (req, res) {
     update.priority = req.body.priority;
   }
 
-  if (req.body.smartAssignmentEnabled!=undefined) {
-    update.smartAssignmentEnabled = req.body.smartAssignmentEnabled;
+  if (req.body.smartAssignment!=undefined) {
+    update.smartAssignment = req.body.smartAssignment;
   }
 
   if (req.body.channelName) {

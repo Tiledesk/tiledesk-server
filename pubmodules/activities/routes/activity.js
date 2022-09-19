@@ -154,7 +154,7 @@ router.get('/', function (req, res) {
         return (err);
       }
 
-      return Activity.count(query, function (err, totalRowCount) {
+      return Activity.countDocuments(query, function (err, totalRowCount) {
         if (err) {
           winston.error('Activity ROUTE - REQUEST FIND ERR ', err)
           return (err);
