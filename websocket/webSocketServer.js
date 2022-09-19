@@ -175,7 +175,7 @@ class WebSocketServer {
             }
             var urlSub = topic.split('/');  
 
-            if (!urlSub || (urlSub && urlSub.length==0)) { //da testare
+            if (!urlSub || (urlSub && urlSub.length==0)) { 
               winston.error('WebSocket - Error getting  topic. Topic is not properly configured');  
               return reject('WebSocket - Error getting  topic. Topic is not properly configured');
           }
