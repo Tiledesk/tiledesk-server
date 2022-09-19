@@ -273,9 +273,14 @@ var RequestSchema = new Schema({
     required: true,
     index: true
   },
-  smartAssignmentEnabled: {
+  smartAssignment: {
     type: Boolean,
     default: true,
+    index: true
+  },
+  workingStatus: { //new, pending
+    type: String,
+    required: true,
     index: true
   },
   createdBy: {
@@ -467,6 +472,7 @@ RequestSchema.index({ id_project: 1, createdAt: 1, preflight: 1});
 
 //suggested by atlas profiler. Used by auto closing requests
 RequestSchema.index({ hasBot: 1, status: 1, createdAt: 1});
+
 
 
 
