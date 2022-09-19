@@ -37,6 +37,9 @@ var TagSchema = require("../models/tag");
       index: true
       // required: true
     },
+    profileStatus: {
+      type: String,
+    },
     presence: PresenceSchema,
     attributes: {
       type: Object,
@@ -108,5 +111,6 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
   // Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} })
   Project_userSchema.index({ id_project: 1, id_user:1, role: 1 }); 
 
+ 
   module.exports = mongoose.model('project_user', Project_userSchema);;
 
