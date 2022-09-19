@@ -280,7 +280,7 @@ var RequestSchema = new Schema({
   },
   workingStatus: { //new, pending
     type: String,
-    required: true,
+    required: false,
     index: true
   },
   createdBy: {
