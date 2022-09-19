@@ -600,7 +600,7 @@ class WebSocketServer {
     winston.debug('messageCreateKey: ' + messageCreateKey);
 
     messageEvent.on(messageCreateKey, function (message) {
-      setImmediate(() => {
+      setImmediate(async () => {
       winston.debug('messageEvent websocket server: '+messageCreateKey, message);
         if (message.request) {
           pubSubServer.handlePublishMessage ('/'+message.id_project+'/requests/'+message.request.request_id+'/messages', message, undefined, true, "CREATE");
@@ -615,7 +615,7 @@ class WebSocketServer {
     }
     winston.debug('requestCreateKey: ' + requestCreateKey);
       requestEvent.on(requestCreateKey, async function (request) {
-        setImmediate(() => {
+        setImmediate(async () =>  {
 
         winston.debug('requestEvent websocket server: '+requestCreateKey, request);
         // TODO scarta riquesta se agente (req.user._id) non sta ne in participants ne in agents
@@ -665,7 +665,7 @@ class WebSocketServer {
 
       winston.debug('requestUpdateKey: ' + requestUpdateKey);
       requestEvent.on(requestUpdateKey, async function(request) {
-        setImmediate(() => {
+        setImmediate(async () => {
 
         // TODO setImmediate(() => {        
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
@@ -723,7 +723,7 @@ class WebSocketServer {
       }
       winston.debug('projectuserUpdateKey: ' + projectuserUpdateKey);
       authEvent.on(projectuserUpdateKey,function(data) {
-        setImmediate(() => {
+        setImmediate(async () => {
 
         var pu = data.updatedProject_userPopulated;
         winston.debug('ws pu', pu);
@@ -751,7 +751,7 @@ class WebSocketServer {
       }
       winston.debug('eventEmitKey: ' + eventEmitKey);
       eventEvent.on(eventEmitKey,function(event) {
-        setImmediate(() => {
+        setImmediate(async () => {
         winston.debug('event', event);
         if (event.project_user === undefined) {
           //with "faqbot.answer_not_found" project_user is undefined but it's ok 
