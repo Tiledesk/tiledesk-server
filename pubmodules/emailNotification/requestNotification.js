@@ -813,7 +813,12 @@ sendAgentEmail(projectid, savedRequest) {
     // send email
     try {
    
-   
+  //  console.log("sendAgentEmail")
+    if (savedRequest.preflight === true) {
+      winston.debug("preflight request sendAgentEmail disabled")
+      return 0;
+    }
+
     Project.findOne({_id: projectid, status: 100}).select("+settings").exec( async function(err, project){
        if (err) {
          return winston.error(err);
@@ -833,6 +838,8 @@ sendAgentEmail(projectid, savedRequest) {
 
               // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                  if (savedRequest.status==RequestConstants.UNASSIGNED) { //POOLED
+
+                  winston.debug("savedRequest.status==RequestConstants.UNASSIGNED");        
 
                   if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.pooled == false ) {
                     return winston.info("RequestNotification email notification for the project with id : " + projectid + " for the pooled conversation is disabled");
@@ -905,6 +912,8 @@ sendAgentEmail(projectid, savedRequest) {
 
                    // TODO fare il controllo anche sul dipartimento con modalità assigned o pooled
                    else if (savedRequest.status==RequestConstants.ASSIGNED) { //ASSIGNED
+
+                    winston.debug("savedRequest.status==RequestConstants.ASSIGNED");        
 
                     if (project.settings && project.settings.email && project.settings.email.notification && project.settings.email.notification.conversation && project.settings.email.notification.conversation.assigned == false ) {
                       return winston.verbose("RequestNotification email notification for the project with id : " + projectid + " for the assigned conversation is disabled");
