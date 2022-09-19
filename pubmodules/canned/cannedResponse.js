@@ -14,6 +14,10 @@ var CannedResponseSchema = new Schema({
     type: String,
     required: true,
   },
+  shared: {
+    type: Boolean,
+    required: true
+  },
   attributes: {
     type: Object,
   },

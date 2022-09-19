@@ -12,11 +12,17 @@ router.post('/', function (req, res) {
 
   var newCannedResponse = new CannedResponse({
     title: req.body.title,  
-    text: req.body.text,  
+    text: req.body.text,
     id_project: req.projectid,
     createdBy: req.user.id,
     updatedBy: req.user.id
   });
+
+  if (req.projectuser.role == 'owner' || req.projectuser.role == 'admin') {
+    newCannedResponse.shared = true;
+  } else {
+    newCannedResponse.shared = false;
+  }
 
   newCannedResponse.save(function (err, savedCannedResponse) {
     if (err) {
@@ -114,14 +120,14 @@ router.get('/', function (req, res) {
   var skip = page * limit;
   winston.debug('CannedResponse ROUTE - SKIP PAGE ', skip);
 
-
-  var query = { "id_project": req.projectid, "status": {$lt:1000}};
+  // var query = { "id_project": req.projectid, "status": {$lt:1000}};
+  console.log("canned_req.user: ", req.user);
+  var query = {"id_project": req.projectid, "status": { $lt:1000 }, $or:[ { shared: true }, { createdBy: req.user._id } ] }
 
   if (req.query.full_text) {
     winston.debug('CannedResponse ROUTE req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
-
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
