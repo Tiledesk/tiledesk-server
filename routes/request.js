@@ -165,6 +165,11 @@ router.patch('/:requestid', function (req, res) {
   if (req.body.smartAssignment!=undefined) {
     update.smartAssignment = req.body.smartAssignment;
   }
+  
+  if (req.body.workingStatus!=undefined) {
+    update.workingStatus = req.body.workingStatus;
+  }
+  
 
   if (req.body.channelName) {
     update["channel.name"] = req.body.channelName;

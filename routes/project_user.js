@@ -245,6 +245,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 
 
+
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
