@@ -112,13 +112,18 @@ function (req, res) {
     winston.error("SigninAnonymously validation error", {errors: errors, reqBody: req.body, reqUrl: req.url });
     return res.status(422).json({ errors: errors.array() });
   }
-  var firstname = req.body.firstname || "Guest";
+
+  let uid = uuidv4();
+  let shortuid = uid.substring(0,4); 
+  var firstname = req.body.firstname || "guest#"+shortuid; // guest_here
+  // var firstname = req.body.firstname || "Guest"; // guest_here
+  
   
 
   //TODO togli trattini da uuidv4()
   
 // TODO remove email.sec?
-  let userAnonym = {_id: uuidv4(), firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
+  let userAnonym = {_id: uid, firstname:firstname, lastname: req.body.lastname, email: req.body.email, attributes: req.body.attributes};
 
   req.user = UserUtil.decorateUser(userAnonym);
 
