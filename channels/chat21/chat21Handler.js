@@ -246,7 +246,18 @@ class Chat21Handler {
         });
 
 
+        messageEvent.on('message.test', function(message) {
+        
+            winston.info("Chat21Sender message.test");
 
+            chat21.auth.setAdminToken(adminToken);
+
+            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
+                message.recipient_fullname, message.text, message.sender, message.attributes, message.type, message.metadata, message.timestamp, message.group)
+                        .then(function(data){
+                            winston.info("Chat21Sender sendToGroup test: "+ JSON.stringify(data));
+                        });
+        });
        
 
         messageEvent.on('message.sending', function(message) {
@@ -299,7 +310,8 @@ class Chat21Handler {
                             }
 
                             var recipient_fullname = "Guest"; 
-                            // TODO qui va message.recipient_fullname ma nn c'è
+                            // guest_here
+                        
                             if (message.request && message.request.lead && message.request.lead.fullname) {
                                 recipient_fullname = message.request.lead.fullname;
                             }
@@ -332,6 +344,7 @@ class Chat21Handler {
                             }    
                             */   
                          
+
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
@@ -339,7 +352,7 @@ class Chat21Handler {
                                     
 
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);
-    
+
                                             chat21Event.emit('message.sent', data);
     
                                                 messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
@@ -563,13 +576,15 @@ class Chat21Handler {
                         var groupId = request.request_id;
 
                         var group_name = "Guest"; 
-
+                        // guest_here
+                        
                         if (request.lead && request.lead.fullname) {
                             group_name = request.lead.fullname;
                         }
                         if (request.subject) {
                             group_name = request.subject;
                         }
+
                         //TODO racecondition?
                         return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
                                 winston.verbose("Chat21 group created: " + JSON.stringify(data));      
