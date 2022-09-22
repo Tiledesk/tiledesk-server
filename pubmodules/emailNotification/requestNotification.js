@@ -31,10 +31,24 @@ winston.debug('********* RequestNotification apiUrl: ' + apiUrl);
 
 class RequestNotification {
 
+  constructor() {
+    this.enabled = true;
+    if (process.env.EMAIL_NOTIFICATION_ENABLED=="false" || process.env.EMAIL_NOTIFICATION_ENABLED==false) {
+        this.enabled = false;
+    }
+    winston.debug("RequestNotification this.enabled: "+ this.enabled);
+}
 
 listen() {
-    var that = this;
+    var that = this; 
     
+
+      
+    if (this.enabled==true) {
+      winston.info("RequestNotification listener started");
+    } else {
+        return winston.info("RequestNotification listener disabled");
+    }
 
 
     var messageCreateKey = 'message.create';
@@ -814,7 +828,7 @@ sendAgentEmail(projectid, savedRequest) {
     try {
    
   //  console.log("sendAgentEmail")
-    if (savedRequest.preflight === true) {
+    if (savedRequest.preflight === true) {   //only for channel email and form preflight is false otherwise request.participants.update is used i think?
       winston.debug("preflight request sendAgentEmail disabled")
       return 0;
     }

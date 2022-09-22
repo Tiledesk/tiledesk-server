@@ -8,6 +8,13 @@ var geoip = require('geoip-lite');
 
 class GeoService {
 
+    constructor() {
+        this.enabled = true;
+        if (process.env.GEO_SERVICE_ENABLED=="false" || process.env.GEO_SERVICE_ENABLED==false) {
+            this.enabled = false;
+        }
+        winston.debug("GeoService this.enabled: "+ this.enabled);
+    }
 
 
   // https://medium.com/@rossbulat/node-js-client-ip-location-with-geoip-lite-fallback-c25833c94a76
@@ -16,7 +23,12 @@ class GeoService {
 
   listen() {
     
-    winston.info("GeoService listener started");
+    if (this.enabled==true) {
+        winston.info("GeoService listener started");
+    } else {
+        return winston.info("GeoService listener disabled");
+    }
+    
 
 
  
@@ -36,11 +48,19 @@ class GeoService {
   //     area: 200 }
 
 
-  requestEvent.on('request.create', function(request) {
+
+  var requestCreateKey = 'request.create';
+//   if (requestEvent.queueEnabled) {
+//     requestCreateKey = 'request.create.queue';
+//   }
+//   winston.debug('GeoService requestCreateKey: ' + requestCreateKey);
+
+
+  requestEvent.on(requestCreateKey, function(request) {
 
     setImmediate(() => { 
 
-    winston.debug("request", request.toObject());
+    winston.debug("request", request);
 
     var ip = (request.location && request.location.ipAddress) || (request.attributes && request.attributes.ipAddress);
     winston.debug("ip" + ip);
