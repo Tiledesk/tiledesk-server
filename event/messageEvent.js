@@ -7,7 +7,7 @@ var MessageConstants = require("../models/messageConstants");
 var message2Event = require("../event/message2Event");
 
 var cacheUtil = require('../utils/cacheUtil');
-
+// var requestService = require("../services/requestService");
 
 
 class MessageEvent extends EventEmitter { 
@@ -40,7 +40,8 @@ function populateMessageCreate(message) {
   return populateMessageWithRequest(message, 'message.create');
 }
 function populateMessageUpdate(message) {
-  return populateMessageWithRequest(message, 'message.update');
+  // return populateMessageWithRequest(message, 'message.update');
+  return; // do not populate message.update it's not used by anyone. Not used by webhook. populate for message.update is slow.
 }
 
 
@@ -48,6 +49,7 @@ function populateMessageWithRequest(message, eventPrefix) {
 
   
   winston.debug("populateMessageWithRequest "+eventPrefix, message.toObject());
+  winston.debug("populateMessageWithRequest "+eventPrefix +" "+ message.text);
   
   var messageJson = message.toJSON();
 
@@ -157,6 +159,84 @@ function populateMessageWithRequest(message, eventPrefix) {
 
 messageEvent.on('message.create.simple', populateMessageCreate);
 messageEvent.on('message.update.simple', populateMessageUpdate);
+
+
+
+// riattiva commentato per performance
+
+
+// var messageCreateKey = 'message.create';
+// if (messageEvent.queueEnabled) {
+//   messageCreateKey = 'message.create.queue';
+// }
+// winston.debug("messageEvent.queueEnabled: "+messageEvent.queueEnabled); 
+
+// winston.debug("messageCreateKey: "+messageCreateKey); 
+
+// messageEvent.on(messageCreateKey, function(message) {
+//   setImmediate(() => {      
+//     winston.debug("message.create before");
+//     if (!message.request) {
+//       return;
+//     }
+//     let request_id = message.request.request_id;
+//     let id_project = message.request.id_project;
+
+
+//     //update waiitng time if write an  agent (member of participants)
+//     let visitor_sent_last_message = false;
+//     // winston.info(" message.request.snapshot.lead.lead_id: "+  message.request.snapshot.lead.lead_id);
+//     // winston.info(" message.sender: "+  message.sender);
+
+//     if (message.request.snapshot && message.request.snapshot.lead.lead_id == message.sender) { 
+//       visitor_sent_last_message = true;
+//     }
+
+
+
+//     // don't work for recursive call
+//     // requestService.incrementMessagesCountByRequestId(message.request._id, message.request.id_project).then(function (savedRequest) {
+//     //   winston.info("incremented request", savedRequest);
+//     // });
+//     let clonedmessage = Object.assign({}, message);
+//     delete clonedmessage.request
+    
+    
+//     let data = {
+//       $push: {
+//         "snapshot.messages.data": {
+//               $each: [ clonedmessage ],
+//               $slice: -30
+//             }
+//       },
+//       $inc : {'snapshot.messages.messages_count' : 1},
+//       "snapshot.messages.visitor_sent_last_message": visitor_sent_last_message,
+//       "snapshot.messages.last_message_timestamp": message.createdAt
+//     };
+
+//     // db.getCollection('requests').find({"$expr": { "$gt": [ "$snapshot.messages.visitor_last_message_timestamp", "$snapshot.messages.agent_last_message_timestamp"]}})
+    
+    
+//     if (visitor_sent_last_message) {
+//       data["snapshot.messages.visitor_last_message_timestamp"]= message.createdAt;
+//     } else {
+//       data["snapshot.messages.agent_last_message_timestamp"]= message.createdAt;
+//     }
+//     // db.getCollection('requests').updateOne({"request_id":"support-group-630600bfaf7cd942116bc993-3da378ec63924bb9b4934b2835b37a7c"},{"$push":{"snapshot.messages.data":{"$each":["s"],"$slice":-5}}}}})
+//     winston.debug("data", data);
+
+//     return Request       
+//             .findOneAndUpdate({request_id: request_id, id_project: id_project}, data, {new: true, upsert:false}, function(err, updatedRequest) {
+//                 if (err) {
+//                   winston.error(err);
+//                   return reject(err);
+//                 }
+//                 winston.info("Message count +1");
+                
+//               });
+
+//   });
+// });
 
 
 module.exports = messageEvent;
