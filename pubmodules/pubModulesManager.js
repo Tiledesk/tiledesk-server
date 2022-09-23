@@ -33,6 +33,12 @@ class PubModulesManager {
 
         this.tilebot = undefined;
         this.tilebotRoute = undefined;
+
+        this.queue = undefined;
+
+        this.jobsManager = undefined;
+
+        this.routingQueue = undefined;
     }
 
   
@@ -88,6 +94,8 @@ class PubModulesManager {
     init(config) {
         winston.debug("PubModulesManager init");
 
+        // this.jobsManager = config.jobsManager;
+
         try {
             this.appRules = require('./rules/appRules');
             // this.appRules.start();
@@ -126,7 +134,6 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing init messageTransformer module", err);
             }
         }
-        
         
         
          try {
@@ -200,7 +207,6 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing init rasa module", err);
             }
         }
-
 
 
 
@@ -282,6 +288,39 @@ class PubModulesManager {
         }
 
 
+
+
+        try {
+            this.queue = require('./queue');
+            winston.debug("this.queue:"+ this.queue);                
+
+            winston.info("PubModulesManager initialized queue.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init queue module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init queue module", err);
+            }
+        }
+
+
+
+
+        try {
+            this.routingQueue = require('./routing-queue').listener;
+            // this.routingQueue.listen();
+            winston.debug("this.routingQueue:"+ this.routingQueue);           
+
+            winston.info("PubModulesManager routing queue initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init routing queue module not found");
+            }else {
+                winston.error("PubModulesManager error initializing init routing queue module", err);
+            }
+        }
+
+
     }
 
     start() {
@@ -316,9 +355,11 @@ class PubModulesManager {
             
         }
         
+        // job_here
         if (this.emailNotification) {
             try {
                 this.emailNotification.requestNotification.listen();
+                // this.jobsManager.listenEmailNotification(this.emailNotification);
                 winston.info("PubModulesManager emailNotification started.");   
             } catch(err) {        
                 winston.info("PubModulesManager error starting requestNotification module", err);            
@@ -334,13 +375,24 @@ class PubModulesManager {
             }
         } 
 
-
+        // job_here
         if (this.activityArchiver) {
             try {
                 this.activityArchiver.listen();
-                winston.info("ModulesManager activityArchiver started");
+                // this.jobsManager.listenActivityArchiver(this.activityArchiver);
+                winston.info("PubModulesManager activityArchiver started");
             } catch(err) {        
-                winston.info("ModulesManager error starting activityArchiver module", err);            
+                winston.info("PubModulesManager error starting activityArchiver module", err);            
+            }
+        }
+
+
+        if (this.routingQueue) {
+            try {
+                this.routingQueue.listen();
+                winston.info("PubModulesManager routingQueue started");
+            } catch(err) {        
+                winston.info("PubModulesManager error starting routingQueue module", err);            
             }
         }
 

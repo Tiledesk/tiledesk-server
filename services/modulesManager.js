@@ -24,6 +24,7 @@ var licenseKey = process.env.LICENSE_KEY;
 if (licenseKey) {
     var maskedLicenseKey = MaskData.maskPhone(licenseKey, maskOptions);
     winston.info("LicenseKey: " + maskedLicenseKey);    
+    // winston.info("LicenseKey: " + licenseKey);    
 }
 
 class ModulesManager {
@@ -38,8 +39,8 @@ class ModulesManager {
         this.dialogflowListener = undefined;
         this.requestHistoryArchiver = undefined;
         this.requestHistoryRoute = undefined;
-        this.routingQueue = undefined;
-        this.queue = undefined;
+        // this.routingQueue = undefined;
+        // this.queue = undefined;
         this.cache = undefined;
         this.visitorCounterRoute = undefined;
         this.visitorCounterMiddleware = undefined;
@@ -216,34 +217,34 @@ class ModulesManager {
         }
 
 
-        try {
-            this.routingQueue = require('@tiledesk-ent/tiledesk-server-routing-queue').listener;
-            // this.routingQueue.listen();
-            winston.debug("this.routingQueue:"+ this.routingQueue);           
+        // try {
+        //     this.routingQueue = require('@tiledesk-ent/tiledesk-server-routing-queue').listener;
+        //     // this.routingQueue.listen();
+        //     winston.debug("this.routingQueue:"+ this.routingQueue);           
 
-            winston.info("ModulesManager routing queue initialized");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init routing queue module not found");
-            }else {
-                winston.error("ModulesManager error initializing init routing queue module", err);
-            }
-        }
+        //     winston.info("ModulesManager routing queue initialized");
+        // } catch(err) {
+        //     if (err.code == 'MODULE_NOT_FOUND') {
+        //         winston.info("ModulesManager init routing queue module not found");
+        //     }else {
+        //         winston.error("ModulesManager error initializing init routing queue module", err);
+        //     }
+        // }
 
 
 
-        try {
-            this.queue = require('@tiledesk-ent/tiledesk-server-queue');            
-            winston.debug("this.queue:"+ this.queue);           
+        // try {
+        //     this.queue = require('@tiledesk-ent/tiledesk-server-queue');            
+        //     winston.debug("this.queue:"+ this.queue);           
 
-            winston.info("ModulesManager queue initialized");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init queue module not found");
-            }else {
-                winston.error("ModulesManager error initializing init queue module", err);
-            }
-        }
+        //     winston.info("ModulesManager queue initialized");
+        // } catch(err) {
+        //     if (err.code == 'MODULE_NOT_FOUND') {
+        //         winston.info("ModulesManager init queue module not found");
+        //     }else {
+        //         winston.error("ModulesManager error initializing init queue module", err);
+        //     }
+        // }
 
 
         try {            
@@ -329,14 +330,14 @@ class ModulesManager {
                 winston.info("ModulesManager error starting requestHistoryArchiver module", err);            
             }
         }
-        if (this.routingQueue) {
-            try {
-                this.routingQueue.listen();
-                winston.info("ModulesManager routingQueue started");
-            } catch(err) {        
-                winston.info("ModulesManager error starting routingQueue module", err);            
-            }
-        }
+        // if (this.routingQueue) {
+        //     try {
+        //         this.routingQueue.listen();
+        //         winston.info("ModulesManager routingQueue started");
+        //     } catch(err) {        
+        //         winston.info("ModulesManager error starting routingQueue module", err);            
+        //     }
+        // }
         if (this.dialogflowListener) {
             try {
                 this.dialogflowListener.listen();
