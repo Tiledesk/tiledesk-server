@@ -39,8 +39,10 @@ router.post('/', [
       pu = req.projectuser.id
     }   
     
-    console.log("************* emit event"+new Date().toISOString());
 
+
+    // // da qui
+    // console.log("************* emit event"+new Date().toISOString());
     // // message.senderFullname,     message.recipient, 
     //             // message.recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp, message.group
     // var recipient = req.body.attributes.request_id;
@@ -48,8 +50,7 @@ router.post('/', [
     // var sender = req.user.id;
     // console.log("sender",sender);
 
-    // messageEvent.emit("message.test", 
-    // {
+    // let message = {
     //   recipient: recipient,
     //   recipient_fullname: "pluto",
     //   // sender:"bb0d809b-b093-419b-8b48-11a192cc3619",
@@ -59,14 +60,21 @@ router.post('/', [
     //   group: {
     //     members: {
     //       // "bb0d809b-b093-419b-8b48-11a192cc3619": 1,
-    //       sender: 1
+    //       // sender: 1
           
     //     }
     //   }
-    // }
-    // );
+    // };
+    // message.group.members[sender]= 1;
+    // console.log("message", message)
 
-    // emit(name, attributes, id_project, project_user, createdBy, status, user) {
+    // messageEvent.emit("message.test", message);
+    // res.json({"event":"1"});
+
+    // //fino qui
+
+ 
+    // // emit(name, attributes, id_project, project_user, createdBy, status, user) {
     eventService.emit(req.body.name, req.body.attributes, req.projectid, pu, req.user.id, undefined, req.user).then(function(event) {
 
       res.json(event);
@@ -75,22 +83,6 @@ router.post('/', [
       return res.status(500).send({success: false, msg: 'Error saving the event '+ JSON.stringify(event)});
     });
 
-  // var newEvent = new Event({
-  //   name: req.body.name,
-  //   attributes: req.body.attributes,
-  //   id_project: req.projectid,
-  //   createdBy: req.user.id,
-  //   updatedBy: req.user.id
-  // });
-
-  // newEvent.save(function(err, savedEvent) {
-  //   if (err) {
-  //     winston.error('Error saving the event '+ JSON.stringify(savedEvent), err)
-  //     return res.status(500).send({success: false, msg: 'Error saving the event '+ JSON.stringify(savedEvent)});
-  //   }
-
-  //   res.json(savedEvent);
-  // });
 });
 
 
