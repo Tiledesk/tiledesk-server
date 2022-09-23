@@ -1016,7 +1016,7 @@ describe('/SendMessageSigninAnonym', () => {
                           var userId = res.body.user._id;
                           expect(res.body.success).to.equal(true);                                                                                                                     
                           expect(res.body.user.email).to.equal(undefined);  
-                          expect(res.body.user.firstname).to.equal("Guest");                                               
+                          expect(res.body.user.firstname).to.contains("guest#");      // guest_here                                          
                          
                           expect(res.body.token).to.not.equal(undefined);  
                                           
@@ -1065,7 +1065,7 @@ describe('/SendMessageSigninAnonym', () => {
                                         console.log("res.body",  res.body);
                                         expect(res.body.lead.lead_id).to.equal(userId);
                                         expect(res.body.lead.email).to.equal(undefined);
-                                        expect(res.body.lead.fullname).to.equal("Guest ");
+                                        expect(res.body.lead.fullname).to.contains("guest#"); // guest_here
                                         expect(res.body.requester.role).to.equal("guest");
                                         expect(res.body.requester.uuid_user).to.equal(userId);
                                         expect(res.body.requester.id_user).to.equal(undefined);
