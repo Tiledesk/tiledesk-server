@@ -1,20 +1,62 @@
-# 2.3.17 -> PROD
-- Webhook chat21 fix return
+
+
+# 2.3.21
+- filter request by smartAssignment
+
+# 2.3.20
+- Performance: Removed populate for message.update messages. This event is not used by anyone. 
+
+# 2.3.19
+- Moved queue module to public module
+- Moved route-queue to public module
+- Disable queue module if JOB_WORKER_ENABLED is true
+
+
+
+💥 TILEDESK SERVER v2.3.18 💥
+🚀        TAGGED AND PUBLISHED ON NPM           🚀
+🚀        IN PRODUCTION                        🚀
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
+
+# 2.3.18 -> PROD
+- Added profileStatus field to the project_user model
+- Added smartAssignment field to the request model                      
+- Canned responses default limit value increased from 40 to 1000
+- Now you change channel name from REST endpoint
+- New Tybot 0.1.5
+- GeoService setImmediate added
+- Websocket setImmediate and topic validation
+- Do not trigger requestNotification send email method for preflight request
+- Removed deprecated .count with .countDocument
+- Added workingStatus to request model                                     
+- Changed Anonymous signin from Guest to guest#shortuid
+- Updated chat21/chat21-node-sdk to 1.1.7. Now group parameter is supported.
+- Moved queue module to public modules folder
+- Created JobManager and Job runner files
+- Now activity archiver module uses queue engine
+- Now geoService uses queue engine
+- Added GEO_SERVICE_ENABLED to enable disable ip lookup to latitude and longitude
+- Added EMAIL_NOTIFICATION_ENABLED to enable disable email notification
+
+
+# 2.3.17 
+- Webhook chat21 fix
+- Chat21 Cloud Function: when an agent leaves a conversation an info message is sent to notify it to the visitor 
 
 # 2.3.16
-- Request close activity added as event
-- Log fix webhook chat21
+- Request close activity added as event. Now you can see from the Activity menu who has closed the conversation and when.
+- Log fix for webhook chat21
 
 # 2.3.15
-- Endpoint Widget fix undefined project.widget
+- BugFix: Endpoint Widget fix for undefined of the project.widget object
 
 # 2.3.14 
 - Added ip filter with Deny roles and ban User roles
-- Ban notifier
-- Middleware decodeJwt before passport with passport fallback
-- Removed unused requestService.incrementMessagesCountByRequestId from chat21Webhook
-- Enable agent to manage groups endpoint
-- Added tilebot chat server
+- Ban notifier module
+- Created a new Middleware decodeJwt before passport with passport fallback
+- Removed unused requestService.incrementMessagesCountByRequestId code from chat21Webhook
+- Allow agents to manage groups endpoint
+- Embedded the new Tilebot chat server
 
 # 2.3.13 
 - Getting ip fix
