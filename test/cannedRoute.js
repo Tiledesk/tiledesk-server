@@ -32,7 +32,6 @@ describe('CannedRoute', () => {
                     .set('content-type', 'application/json')
                     .send({ "title": "Test Title", "text": "Test Text" })
                     .end((err, res) => {
-                        console.log("res.body", res.body);
                         res.should.have.status(200);
                         res.body.should.be.a('object');
                         res.body.should.have.property('title').eql("Test Title");
@@ -53,7 +52,6 @@ describe('CannedRoute', () => {
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(savedUser => {
             projectService.create("test1", savedUser._id).then(savedProject => {
 
-                console.log("RoleConstants.AGENT: ", RoleConstants.AGENT);
                 Project_user.findOneAndUpdate({id_project: savedProject._id, id_user: savedUser._id }, { role: RoleConstants.AGENT }, function(err, savedProject_user){
                     chai.request(server)
                     .post('/' + savedProject._id + '/canned/')
@@ -61,7 +59,6 @@ describe('CannedRoute', () => {
                     .set('content-type', 'application/json')
                     .send({ title: "Test Title", text: "Test Text" })
                     .end((err, res) => {
-                        console.log("res.body", res.body);
                         res.body.should.be.a('object');
                         res.body.should.have.property('title').eql("Test Title");
                         res.body.should.have.property('text').eql("Test Text");
@@ -92,7 +89,6 @@ describe('CannedRoute', () => {
                         .set('content-type', 'application/json')
                         .send({ email: email_agent, role: "agent", userAvailable: false })
                         .end((err, res) => {
-                            console.log("res.boy", res.body)
                             res.should.have.status(200);
 
 
@@ -103,7 +99,6 @@ describe('CannedRoute', () => {
                                 .send({ title: "Test1 Title", text: "Test1 Text" })
                                 .end((err, res) => {
 
-                                    console.log("res.body", res.body);
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
 
@@ -114,7 +109,6 @@ describe('CannedRoute', () => {
                                         .send({ title: "Test2 Title", text: "Test2 Text" })
                                         .end((err, res) => {
                                             
-                                            console.log("res.body",  res.body);
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
 
@@ -125,7 +119,6 @@ describe('CannedRoute', () => {
                                                 .send()
                                                 .end((err, res) => {
 
-                                                    console.log("res.body",  res.body);
                                                     res.should.have.status(200);
                                                     //res.body.should.be.a('array');
                                                     
@@ -139,8 +132,6 @@ describe('CannedRoute', () => {
                                                         .send()
                                                         .end((err, res) => {
 
-                                                        console.log("res.body",  res.body);
-                                                        console.log("\n --> body.length", res.body.length);
                                                         res.should.have.status(200);
                                                         //res.body.should.be.a('array');
                                                         

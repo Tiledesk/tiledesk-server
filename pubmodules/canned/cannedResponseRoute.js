@@ -121,7 +121,6 @@ router.get('/', function (req, res) {
   winston.debug('CannedResponse ROUTE - SKIP PAGE ', skip);
 
   // var query = { "id_project": req.projectid, "status": {$lt:1000}};
-  console.log("canned_req.user: ", req.user);
   var query = {"id_project": req.projectid, "status": { $lt:1000 }, $or:[ { shared: true }, { createdBy: req.user._id } ] }
 
   if (req.query.full_text) {
