@@ -29,7 +29,6 @@
     "tiledesk-server": "./bin/www"
   },
   "optionalDependencies": {
-    "@tiledesk-ent/tiledesk-server-cache": "^1.1.10",
     "@tiledesk-ent/tiledesk-server-dialogflow": "^1.1.6",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.9",
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.6",
@@ -49,6 +48,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "csv-express": "^1.2.2",
+    "cachegoose": "^8.0.0",
     "debug": "^4.3.4",
     "dotenv": "^8.6.0",
     "email-templates": "^8.1.0",

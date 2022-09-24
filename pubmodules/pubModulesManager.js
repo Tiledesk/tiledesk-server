@@ -39,6 +39,8 @@ class PubModulesManager {
         this.jobsManager = undefined;
 
         this.routingQueue = undefined;
+
+        this.cache = undefined;
     }
 
   
@@ -318,6 +320,19 @@ class PubModulesManager {
             }else {
                 winston.error("PubModulesManager error initializing init routing queue module", err);
             }
+        }
+
+
+        try {            
+            this.cache = require('./cache').cachegoose(config.mongoose);            
+            winston.debug("this.cache:"+ this.cache);           
+            winston.info("PubModulesManager cache initialized");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init cache module not found");
+            }else {
+                winston.error("PubModulesManager error initializing init cache module", err);
+            } 
         }
 
 

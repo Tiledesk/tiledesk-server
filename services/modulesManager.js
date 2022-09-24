@@ -41,7 +41,7 @@ class ModulesManager {
         this.requestHistoryRoute = undefined;
         // this.routingQueue = undefined;
         // this.queue = undefined;
-        this.cache = undefined;
+        // this.cache = undefined;
         this.visitorCounterRoute = undefined;
         this.visitorCounterMiddleware = undefined;
         this.widgetsRoute = undefined;
@@ -247,17 +247,17 @@ class ModulesManager {
         // }
 
 
-        try {            
-            this.cache = require('@tiledesk-ent/tiledesk-server-cache').cachegoose(config.mongoose);            
-            winston.debug("this.cache:"+ this.cache);           
-            winston.info("ModulesManager cache initialized");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init cache module not found");
-            }else {
-                winston.error("ModulesManager error initializing init cache module", err);
-            }
-        }
+    //    try {            
+    //         this.cache = require('@tiledesk-ent/tiledesk-server-cache').cachegoose(config.mongoose);            
+    //         winston.debug("this.cache:"+ this.cache);           
+    //         winston.info("ModulesManager cache initialized");
+    //     } catch(err) {
+    //         if (err.code == 'MODULE_NOT_FOUND') {
+    //             winston.info("ModulesManager init cache module not found");
+    //         }else {
+    //             winston.error("ModulesManager error initializing init cache module", err);
+    //         } 
+    //     }
 
 
         
