@@ -33,6 +33,9 @@ var roleChecker = require('./middleware/has-role');
 const MaskData = require("maskdata");
 var winston = require('./config/winston');
 
+
+// DATABASE CONNECTION
+
 // https://bretkikehara.wordpress.com/2013/05/02/nodejs-creating-your-first-global-module/
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
@@ -78,7 +81,7 @@ mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', false); 
 
 
-
+// ROUTES DECLARATION
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
 var authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
@@ -124,8 +127,10 @@ var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
 var schemaMigrationService = require('./services/schemaMigrationService');
 var RouterLogger = require('./models/routerLogger');
+var cacheEnabler = require("./services/cacheEnabler");
 
 require('./services/mongoose-cache-fn')(mongoose);
+
 
 var subscriptionNotifier = require('./services/subscriptionNotifier');
 subscriptionNotifier.start();
@@ -133,9 +138,14 @@ subscriptionNotifier.start();
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
  
+// job_here
+
 
 var geoService = require('./services/geoService');
 geoService.listen();
+
+
+
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
@@ -148,6 +158,7 @@ channelManager.listen();
 
 var IPFilter = require('./middleware/ipFilter');
 
+// job_here
 var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 

@@ -23,7 +23,7 @@ var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
-
+var cacheEnabler = require("../services/cacheEnabler");
 
 
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;

@@ -18,7 +18,7 @@ var validtoken = require('../middleware/valid-token')
 var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
-
+var cacheEnabler = require("../services/cacheEnabler");
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
   
@@ -432,6 +432,7 @@ router.delete('/:projectid/ban/:banid', [passport.authenticate(['basic', 'jwt'],
   //cacheinvalidation
 
   
+  // devi prendere id utente prima di eliminarlo
 Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id": req.params.banid }}}, { new: true, upsert: false }, function (err, updatedProject) {
   if (err) {
     winston.error('Error putting project ', err);
