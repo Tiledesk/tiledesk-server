@@ -19,6 +19,7 @@ var LeadConstants = require('../../models/leadConstants');
 var operatingHoursService = require("../../services/operatingHoursService");
 var sendMessageUtil = require("../../utils/sendMessageUtil");
 var cacheUtil = require("../../utils/cacheUtil");
+var cacheEnabler = require("../../services/cacheEnabler");
 
 
 
@@ -54,6 +55,8 @@ class RulesTrigger {
      setImmediate(() => {
 
           requestEvent.on('request.support_group.created', function(request) {
+
+
             // requestEvent.on('request.create', function(request) {
             var requestJson = request.toJSON();
             operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {       
@@ -865,11 +868,12 @@ class RulesTrigger {
                     return requestService.create(new_request).then(function (savedRequest) {                   
 
 
+
                         if (attributes) {
                           attributes.sendnotification = false; //  sembra nn funzionae
                         }
                         
-                        var senderFullname = fullname || 'Guest';
+                        var senderFullname = fullname || 'Guest'; // guest_here
 
                         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
                         return messageService.create( id_user, senderFullname , savedRequest.request_id, text,
@@ -925,9 +929,17 @@ class RulesTrigger {
 
             winston.debug('trigger query', query);
 
-            Trigger.find(query)
-              .cache(cacheUtil.longTTL, event.id_project+":triggers:trigger.key:"+eventKey)
-              .exec(function(err, triggers) {
+            let q = Trigger.find(query);
+
+            if (cacheEnabler.trigger) {
+              q.cache(cacheUtil.longTTL, event.id_project+":triggers:trigger.key:"+eventKey) //CACHE_TRIGGER
+              winston.debug('trigger cache enabled');
+
+            }
+
+            q.exec(function(err, triggers) {
+              
+              
                 if (err) {
                     winston.error('Error gettting bots ', err);
                     return 0;

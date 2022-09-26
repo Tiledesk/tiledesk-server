@@ -21,6 +21,7 @@ var jwt = require('jsonwebtoken');
 var config = require('../config/database'); // get db config file
 var cacheUtil = require("../utils/cacheUtil");
 
+var cacheEnabler = require("../services/cacheEnabler");
 
 var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
@@ -36,9 +37,13 @@ class SubscriptionNotifier {
    
   findSubscriber(event, id_project) {
     return new Promise(function (resolve, reject) {
-      Subscription.find({event:event, $or:[{id_project: id_project}, {global: true}]})
-      .cache(cacheUtil.longTTL, id_project+":subscriptions:event:"+event)
-      .select("+secret +global")
+      let q = Subscription.find({event:event, $or:[{id_project: id_project}, {global: true}]});
+      if (cacheEnabler.subscription) {
+        q.cache(cacheUtil.longTTL, id_project+":subscriptions:event:"+event);  //CACHE_SUBSCRIPTION
+        winston.debug('subscription cache enabled');
+      }
+      
+      q.select("+secret +global")
       .exec(function (err, subscriptions) {
         // if (subscriptions && subscriptions.length>0) {
         //   winston.debug("Subscription.notify", event, item , "length", subscriptions.length);
