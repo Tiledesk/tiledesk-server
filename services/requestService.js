@@ -12,6 +12,7 @@ var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
 var cacheUtil = require("../utils/cacheUtil");
 var arrayUtil = require("../utils/arrayUtil");
+var cacheEnabler = require("../services/cacheEnabler");
 
 class RequestService {
 
@@ -226,10 +227,14 @@ class RequestService {
      winston.debug("id_project:" + id_project);
      winston.debug("nobot:"+ nobot);
 
-        return Request       
-        .findOne({request_id: request_id, id_project: id_project})     
-        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
-        .exec( function(err, request) {
+        let q= Request       
+        .findOne({request_id: request_id, id_project: id_project});
+
+        if (cacheEnabler.request) {
+          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)      //request_cache
+          winston.debug('request cache enabled');
+        }
+        return q.exec( function(err, request) {
 
           if (err) {
             winston.error(err);
@@ -378,10 +383,15 @@ class RequestService {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
  
-         return Request       
-         .findOne({request_id: request_id, id_project: id_project})
-         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)
-         .exec( function(err, request) {
+         let q = Request       
+         .findOne({request_id: request_id, id_project: id_project});
+
+         if (cacheEnabler.request) {
+          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)      //request_cache
+          winston.debug('request cache enabled');
+        }
+
+         return q.exec( function(err, request) {
  
            if (err) {
              winston.error(err);
@@ -502,6 +512,8 @@ class RequestService {
            try {
             //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
               var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+              console.log("************* after get operator: "+new Date().toISOString());
+
               winston.debug("getOperators", result);
            } catch(err) {
             return reject(err);
@@ -933,25 +945,27 @@ class RequestService {
 
   }
 
-  // unused
-  incrementMessagesCountByRequestId(request_id, id_project) {
 
-    return new Promise(function (resolve, reject) {
-     // winston.debug("request_id", request_id);
-     // winston.debug("newstatus", newstatus);
 
-        return Request       
-        .findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
-            if (err) {
-              winston.error(err);
-              return reject(err);
-            }
-            winston.debug("Message count +1");
-            return resolve(updatedRequest);
-          });
-    });
+    // unused
+    incrementMessagesCountByRequestId(request_id, id_project) {
 
-  }
+      return new Promise(function (resolve, reject) {
+       // winston.debug("request_id", request_id);
+       // winston.debug("newstatus", newstatus);
+  
+          return Request       
+          .findOneAndUpdate({request_id: request_id, id_project: id_project}, {$inc : {'messages.messages_count' : 1}}, {new: true, upsert:false}, function(err, updatedRequest) {
+              if (err) {
+                winston.error(err);
+                return reject(err);
+              }
+              winston.debug("Message count +1");
+              return resolve(updatedRequest);
+            });
+      });
+  
+    }
 
   updateWaitingTimeByRequestId(request_id, id_project) {
 
@@ -959,15 +973,19 @@ class RequestService {
      // winston.debug("request_id", request_id);
      // winston.debug("newstatus", newstatus);
 
-      return Request       
+      let q = Request       
       .findOne({request_id: request_id, id_project: id_project})
       .populate('lead')
       .populate('department')
       .populate('participatingBots')
       .populate('participatingAgents')  
-      .populate({path:'requester',populate:{path:'id_user'}})
-      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)     
-      .exec(function(err, request) {
+      .populate({path:'requester',populate:{path:'id_user'}});
+
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)           //request_cache
+        winston.debug('request cache enabled');
+      }
+      q.exec(function(err, request) {
         if (err) {
           winston.error(err);
           return reject(err);

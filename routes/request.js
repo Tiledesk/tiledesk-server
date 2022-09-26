@@ -16,7 +16,7 @@ var MessageConstants = require("../models/messageConstants");
 var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
-
+var cacheEnabler = require("../services/cacheEnabler");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -1257,17 +1257,22 @@ router.get('/:requestid', function (req, res) {
   var requestid = req.params.requestid;
   winston.debug("get request by id: "+requestid);
 
-  // cacherequest       // requestcachefarequi populaterequired
-  Request.findOne({request_id: requestid, id_project: req.projectid})
+  
+  let q = Request.findOne({request_id: requestid, id_project: req.projectid})
   // .select("+snapshot.agents")
   .populate('lead')
   .populate('department')
   .populate('participatingBots')
   .populate('participatingAgents')  
-  .populate({path:'requester',populate:{path:'id_user'}})
-  // .cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+requestid)
+  .populate({path:'requester',populate:{path:'id_user'}});
+
+  if (cacheEnabler.request) {
+    q.cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+requestid) //request_cache
+    winston.debug('request cache enabled');
+  }
+  // 
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
-  .exec(function(err, request) {  
+  q.exec(function(err, request) {  
     if (err) {
       winston.error("error getting request by id ", err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

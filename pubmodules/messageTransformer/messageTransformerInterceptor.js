@@ -5,6 +5,7 @@ const Request = require('../../models/request');
 var winston = require('../../config/winston');
 var i8nUtil = require("../../utils/i8nUtil");
 var cacheUtil = require('../../utils/cacheUtil');
+var cacheEnabler = require("../../services/cacheEnabler");
 
 //TODO rename to LabelMessageTransformerInterceptor
 class MessageTransformerInterceptor {
@@ -36,15 +37,20 @@ class MessageTransformerInterceptor {
 
                 var language = "EN";
 
-                // cacherequest       // requestcachefarequi nocachepopulatereqired
-                var request = await Request.findOne({request_id:  message.recipient, id_project: message.id_project})
+                let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project});
                     // populate('lead').
                     // populate('department').  
                     // populate('participatingBots').
                     // populate('participatingAgents').       
                     // populate({path:'requester',populate:{path:'id_user'}}).
-                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient)
-                    .exec();
+                    
+                if (cacheEnabler.request) {
+                    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache nocachepopulatereqired
+                    winston.debug('request cache enabled');
+                }
+
+
+                var request = await q.exec();
               
                 winston.debug('request mti: ', request);
 

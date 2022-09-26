@@ -4,6 +4,7 @@ const Request = require('../../models/request');
 var winston = require('../../config/winston');
 var cacheUtil = require('../../utils/cacheUtil');
 var handlebars = require('handlebars');
+var cacheEnabler = require("../../services/cacheEnabler");
 
 class MessageHandlebarsTransformerInterceptor {
 
@@ -38,8 +39,12 @@ class MessageHandlebarsTransformerInterceptor {
                     populate({path:'requester',populate:{path:'id_user'}});
                 // }
 
+                if (cacheEnabler.request) {
+                    q1.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache
+                    winston.debug('request cache enabled');
+                }
+
                 var request = await q1
-                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient)
                     .exec();
 
 

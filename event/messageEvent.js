@@ -7,7 +7,7 @@ var MessageConstants = require("../models/messageConstants");
 var message2Event = require("../event/message2Event");
 
 var cacheUtil = require('../utils/cacheUtil');
-// var requestService = require("../services/requestService");
+var cacheEnabler = require("../services/cacheEnabler");
 
 
 class MessageEvent extends EventEmitter { 
@@ -56,20 +56,27 @@ function populateMessageWithRequest(message, eventPrefix) {
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
     
-  Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
+  let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
   populate('department').  
   populate('participatingBots').
   populate('participatingAgents').       
   populate({path:'requester',populate:{path:'id_user'}}).
-  lean()
+  lean();
+
+  
   //perche lean?
   // TODO availableAgentsCount nn c'è per il lean problema trigger
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient)
-  .exec(function (err, request) {
+
+
+  if (cacheEnabler.request) {
+    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache ma con lean????attento metti a parte
+    winston.debug('request cache enabled');
+  }
+  q.exec(function (err, request) {
 
     if (err) {
       winston.error("Error getting request on messageEvent.populateMessage",err );
@@ -163,6 +170,7 @@ messageEvent.on('message.update.simple', populateMessageUpdate);
 
 
 // riattiva commentato per performance
+// // spostare su classe
 
 
 // var messageCreateKey = 'message.create';

@@ -13,7 +13,9 @@ var leadService = require('../services/leadService');
 var winston = require('../config/winston');
 
 var MessageConstants = require("../models/messageConstants");
+
 var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
 
 const { check, validationResult } = require('express-validator');
 
@@ -60,15 +62,19 @@ async (req, res)  => {
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
 
+      let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
+      if (cacheEnabler.request) {
+        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id) //request_cache
+        winston.debug('request cache enabled');
+      }
       // cacherequest       // requestcachefarequi nocachepopulatereqired
-      return Request.findOne({request_id: req.params.request_id, id_project: req.projectid})
+      return 
         // .populate('lead')
         // .populate('department')
         // .populate('participatingBots')
         // .populate('participatingAgents')  
         // .populate({path:'requester',populate:{path:'id_user'}})
-       //@DISABLED_CACHE  .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id)
-        .exec(async(err, request) => {
+        q.exec(async(err, request) => {
 
         if (err) {
           winston.log({
@@ -268,7 +274,7 @@ async (req, res)  => {
                 }).catch(function(err){
                   winston.log({
                     level: 'error',
-                    message: 'Error creating message: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+                    message: 'Error creating message endpoint: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
                     label: req.projectid
                   });
                   // winston.error("Error creating message", err);
@@ -287,6 +293,7 @@ async (req, res)  => {
 
 
 });
+
 
 
 
