@@ -53,7 +53,7 @@ async (req, res)  => {
     return res.status(422).json({ errors: errors.array() });
   }
   
- 
+  
   var project_user = req.projectuser;
   var sender = req.body.sender;
   var fullname = req.body.senderFullname || req.user.fullName;
@@ -68,13 +68,13 @@ async (req, res)  => {
         winston.debug('request cache enabled');
       }
       // cacherequest       // requestcachefarequi nocachepopulatereqired
-      return 
+      return q.exec(async(err, request) => {
         // .populate('lead')
         // .populate('department')
         // .populate('participatingBots')
         // .populate('participatingAgents')  
         // .populate({path:'requester',populate:{path:'id_user'}})
-        q.exec(async(err, request) => {
+        
 
         if (err) {
           winston.log({
@@ -293,8 +293,6 @@ async (req, res)  => {
 
 
 });
-
-
 
 
 // router.put('/:messageid', function(req, res) {
