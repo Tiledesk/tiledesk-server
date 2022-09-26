@@ -11,9 +11,12 @@ class OperatingHoursService {
   projectIsOpenNow(projectId, callback) {
 
     // winston.debug('O ---> [ OHS ] -> PROJECT ID ', projectId)
-    Project.findOne({_id: projectId, status: 100})
-    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "projects:id:"+projectId)
-    .exec(function (err, project) {
+    let q = Project.findOne({_id: projectId, status: 100});
+    if (cacheEnabler.trigger) {
+      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectId)  //project_cache
+      winston.debug('project cache enabled');
+    }
+    q.exec(function (err, project) {
       // winston.debug("XXXXXXXX project", project);
       if (err) {
         winston.error("O ---> [ OHS ] -> ERROR GETTING PROJECT ", err);
@@ -36,6 +39,7 @@ class OperatingHoursService {
 
         // IF THE TRIAL IS EXPIRED OR IF THE SUBSCIPTION IS NOT ACTIVE THE PROJECT IS ALWAYS OPEN EVEN IF activeOperatingHours IS SETTED TO true AND, FOR EXAMPLE,
         // THE USER HAS SETTED ALL DAYS TO CLOSED
+
         if (project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
           winston.debug('O ---> [ OHS ] -> trial Expired OR Subscription NOT Active - PROJECT ALWAYS OPEN') 
           callback(true, null) ;

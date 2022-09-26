@@ -430,6 +430,8 @@ router.delete('/:projectid/ban/:banid', [passport.authenticate(['basic', 'jwt'],
   
   // winston.info('quiiiiii');
   //cacheinvalidation
+
+  
 Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id": req.params.banid }}}, { new: true, upsert: false }, function (err, updatedProject) {
   if (err) {
     winston.error('Error putting project ', err);
@@ -447,9 +449,12 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
-  Project.findOne({_id: req.params.projectid, status:100})
-  //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)
-  .exec(function (err, project) {
+  let q = Project.findOne({_id: req.params.projectid, status:100});
+  if (cacheEnabler.trigger) {
+    q.cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)  //project_cache
+    winston.debug('project cache enabled');
+  }
+  q.exec(function (err, project) {
     if (err) {
       winston.error('Error getting project ', err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });

@@ -185,9 +185,14 @@ class WebSocketServer {
             winston.debug('projectId: '+projectId);
 
 
-            return Project.findOne({ _id: projectId, status: 100})
-            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "projects:id:"+projectId)
-            .exec(function(err, project) {
+            let q = Project.findOne({ _id: projectId, status: 100})
+
+            if (cacheEnabler.trigger) {
+              q.cache(cacheUtil.defaultTTL, "projects:id:"+projectId) //project_cache
+              winston.debug('project cache enabled');
+            }
+            
+            return q.exec(function(err, project) {
               if (err) {
                 winston.error('WebSocket - Error getting  Project', err);  
                 return reject(err);

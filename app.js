@@ -310,9 +310,13 @@ var projectSetter = function (req, res, next) {
   winston.debug("projectSetter projectid:" + projectid);
 
   if (projectid) {
-    Project.findOne({_id: projectid, status: 100})
-      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "projects:id:"+projectid)
-      .exec(function(err, project){
+    
+    let q =  Project.findOne({_id: projectid, status: 100});
+    if (cacheEnabler.trigger) {
+      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
+      winston.debug('project cache enabled');
+    }
+    q.exec(function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }

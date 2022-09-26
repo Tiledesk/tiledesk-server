@@ -138,7 +138,7 @@ module.exports = function(passport) {
 
                       winston.debug("project id: "+ AudienceId );
                       Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
-                      //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret")
+                      //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret") //project_cache
                       .exec(function (err, project){
                         if (err) {
                           winston.error("auth Project err: ", {error:err, decoded: decoded} );
