@@ -202,7 +202,7 @@ router.post('/', function (req, res) {
                       }
 
 
-                    
+                     
 
                       
                       var new_request = {
@@ -210,7 +210,7 @@ router.post('/', function (req, res) {
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                        
+                       
                       };
     
                       winston.debug("new_request", new_request);
@@ -296,12 +296,10 @@ router.post('/', function (req, res) {
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId");
-                        
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
                           return res.json(upRequest);
                         });
                       }else {
-                       
                         return res.json(savedMessage);
                       }
                     // });
@@ -380,9 +378,12 @@ router.post('/', function (req, res) {
               var query = {request_id: recipient_id, id_project: projectId};
               winston.debug('query:'+ projectId);
               
-              return Request.findOne(query)
-              //@DISABLED_CACHE cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id)
-              .exec(function(err, request) {
+              let q = Request.findOne(query);
+              if (cacheEnabler.trigger) {
+                q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id); //request_cache
+                winston.debug('project cache enabled');
+              }
+              return q.exec(function(err, request) {
 
                 if (err) {
                   winston.error("Error finding request with query ", query);
