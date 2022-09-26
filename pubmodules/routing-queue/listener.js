@@ -157,7 +157,7 @@ class Listener {
             // departmentEvent.prependListener('operator.select', async (data) => {
             
               var operatorsResult = res.result;
-              winston.info('operator.select.base2 res', res);   
+              winston.debug('operator.select.base2 res', res);   
           
           
               var disableWebHookCall = res.disableWebHookCall;
