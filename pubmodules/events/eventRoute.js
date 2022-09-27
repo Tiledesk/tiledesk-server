@@ -39,7 +39,7 @@ router.post('/', [
       pu = req.projectuser.id
     }   
     
-    console.log("************* emit event"+new Date().toISOString());
+//    console.log("************* emit event"+new Date().toISOString());
 
     // // message.senderFullname,     message.recipient, 
     //             // message.recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp, message.group
