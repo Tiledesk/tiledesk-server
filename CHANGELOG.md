@@ -1,6 +1,32 @@
+- fast message test                                                         ++++++ REMOVEITTTTTTTT
+CONTROLLI SU 2.3.18
+**************************
+- Added smartAssignment field to the request model                          +++++ attento controlla INDICE in PRE e PROD
+- Added workingStatus to request model                                      +++++ attento controlla INDICE in PRE e PROD
+**************************
 
 
+DA FARE:
+/widget cache
+user cache
+circle ci redis
+
+
+
+# 2.3.23
+- cacheEnabler + trigger cache + subscription cache
+- project cache with cacheEnabler
+- request cache with cacheEnabler
+- Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.10
+- Added trigger and subscription invalidation rules
+
+# 2.3.22
+- added cacheoose dep package.json
+- Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.8
 # 2.3.21
+- log fix
+- Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.7
+- Moved cache module to public module
 - filter request by smartAssignment
 
 # 2.3.20
