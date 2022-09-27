@@ -6,7 +6,8 @@
  var authEvent = require("../../event/authEvent");   
  var labelEvent = require("../../event/labelEvent");
 
-//  var subscriptionEvent = require("");   
+ var triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
+ var subscriptionEvent = require("../../event/subscriptionEvent");   
 
  var winston = require('../../config/winston');
 
@@ -448,8 +449,82 @@
 
     // fai cache per subscription.create, .update .delete
 
-    // fai cache per trigger.create, .update .delete
 
+    if (subscriptionEvent) {
+        subscriptionEvent.on('subscription.create', function(trigger) {   
+            setImmediate(() => {    
+                
+                var key =trigger.id_project+":subscriptions:*";        
+                winston.verbose("Deleting cache for subscription.create with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for subscription.create",reply);
+                    winston.verbose("Deleted cache for subscription.create",{err:err});
+                });   
+            });
+        });
+    
+        subscriptionEvent.on('subscription.update', function(trigger) {   
+            setImmediate(() => {         
+                var key =trigger.id_project+":subscriptions:*";        
+                winston.verbose("Deleting cache for subscription.update with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for subscription.update",reply);
+                    winston.verbose("Deleted cache for subscription.update",{err:err});
+                });   
+            });
+        });
+    
+        subscriptionEvent.on("subscription.delete", function(trigger) {     
+            setImmediate(() => {         
+                var key =trigger.id_project+":subscriptions:*";         
+                winston.verbose("Deleting cache for subscription.delete with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for subscription.delete",reply);
+                    winston.verbose("Deleted cache for subscription.delete",{err:err});
+                });   
+            });
+        });
+    
+    }
+
+
+    if (triggerEventEmitter) {
+        triggerEventEmitter.on('trigger.create', function(trigger) {   
+            setImmediate(() => {    
+                
+                var key =trigger.id_project+":triggers:*";        
+                winston.verbose("Deleting cache for trigger.create with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for trigger.create",reply);
+                    winston.verbose("Deleted cache for trigger.create",{err:err});
+                });   
+            });
+        });
+    
+        triggerEventEmitter.on('trigger.update', function(trigger) {   
+            setImmediate(() => {         
+                var key =trigger.id_project+":triggers:*";        
+                winston.verbose("Deleting cache for trigger.update with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for trigger.update",reply);
+                    winston.verbose("Deleted cache for trigger.update",{err:err});
+                });   
+            });
+        });
+    
+        triggerEventEmitter.on("trigger.delete", function(trigger) {     
+            setImmediate(() => {         
+                var key =trigger.id_project+":triggers:*";         
+                winston.verbose("Deleting cache for trigger.delete with key: " + key);
+                client.del(key, function (err, reply) {
+                    winston.debug("Deleted cache for trigger.delete",reply);
+                    winston.verbose("Deleted cache for trigger.delete",{err:err});
+                });   
+            });
+        });
+    
+    }
+    
     //jwt
 
     // fai cache faq
