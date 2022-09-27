@@ -1,15 +1,4 @@
-- fast message test                                                         ++++++ REMOVEITTTTTTTT
-CONTROLLI SU 2.3.18
-**************************
-- Added smartAssignment field to the request model                          +++++ attento controlla INDICE in PRE e PROD
-- Added workingStatus to request model                                      +++++ attento controlla INDICE in PRE e PROD
-**************************
 
-
-DA FARE:
-/widget cache
-user cache
-circle ci redis
 
 
 
