@@ -1,6 +1,10 @@
 
 
 
+💥 TILEDESK SERVER v2.3.23 💥
+🚀        TAGGED AND PUBLISHED ON NPM           🚀
+🚀        IN PRODUCTION                        🚀
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
 # 2.3.23
 - cacheEnabler + trigger cache + subscription cache
@@ -26,13 +30,6 @@
 - Moved queue module to public module
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
-
-
-
-💥 TILEDESK SERVER v2.3.18.2 💥
-🚀        TAGGED AND PUBLISHED ON NPM           🚀
-🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
 # 2.3.18.2 -> PROD
 - logfix
