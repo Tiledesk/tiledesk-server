@@ -12,6 +12,7 @@
 # 2.3.22
 - added cacheoose dep package.json
 - Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.8
+
 # 2.3.21
 - log fix
 - Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.7
@@ -28,12 +29,18 @@
 
 
 
-💥 TILEDESK SERVER v2.3.18 💥
+💥 TILEDESK SERVER v2.3.18.2 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
-# 2.3.18 -> PROD
+# 2.3.18.2 -> PROD
+- logfix
+
+# 2.3.18.1 
+- Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.10
+
+# 2.3.18
 - Added profileStatus field to the project_user model
 - Added smartAssignment field to the request model                      
 - Canned responses default limit value increased from 40 to 1000
