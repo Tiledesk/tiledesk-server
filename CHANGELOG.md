@@ -1,17 +1,16 @@
 
 
-
 💥 TILEDESK SERVER v2.3.23 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
-# 2.3.23
+# 2.3.23 -> PROD
 - cacheEnabler + trigger cache + subscription cache
 - project cache with cacheEnabler
 - request cache with cacheEnabler
 - Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.10
-- Added trigger and subscription invalidation rules
+- Added trigger and subscription cache invalidation rules
 
 # 2.3.22
 - added cacheoose dep package.json
@@ -31,7 +30,7 @@
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
 
-# 2.3.18.2 -> PROD
+# 2.3.18.2
 - logfix
 
 # 2.3.18.1 
