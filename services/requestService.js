@@ -981,10 +981,10 @@ class RequestService {
       .populate('participatingAgents')  
       .populate({path:'requester',populate:{path:'id_user'}});
 
-      if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)           //request_cache
-        winston.debug('request cache enabled');
-      }
+      // if (cacheEnabler.request) {  //attention this cache is not usable bacause cacheoose don't support populate without .lean.. so if cached populated field is not returned with cacheoose, updateWaitingTime is only used in chat21webhook but i thik it is important for messages route
+      //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)           //request_cache
+      //   winston.debug('request cache enabled');
+      // }
       q.exec(function(err, request) {
         if (err) {
           winston.error(err);

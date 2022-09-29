@@ -1266,10 +1266,10 @@ router.get('/:requestid', function (req, res) {
   .populate('participatingAgents')  
   .populate({path:'requester',populate:{path:'id_user'}});
 
-  if (cacheEnabler.request) {
-    q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) //request_cache
-    winston.debug('request cache enabled');
-  }
+  // if (cacheEnabler.request) {  cache disabled beacuse cacheoose don't support .populate without lean. here cache is not important
+  //   q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) //request_cache
+  //   winston.debug('request cache enabled');
+  // }
   // 
   //  .populate({path:'requester',populate:{path:'id_user', select:{'firstname':1, 'lastname':1}}})
   q.exec(function(err, request) {  
