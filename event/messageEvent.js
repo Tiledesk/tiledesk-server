@@ -34,14 +34,18 @@ function emitCompleteMessage(message) {
 }
 
 messageEvent.on('message.create', emitCompleteMessage);
-messageEvent.on('message.update', emitCompleteMessage);
+
+// messageEvent.on('message.update.simple', emitCompleteMessage);     //if populateMessageUpdate is disabled then you must forward message.update event from message.update.simple
+messageEvent.on('message.update', emitCompleteMessage);         // i must restore populateMessageWithRequest. see below
 
 function populateMessageCreate(message) {
   return populateMessageWithRequest(message, 'message.create');
 }
 function populateMessageUpdate(message) {
-  // return populateMessageWithRequest(message, 'message.update');
-  return; // do not populate message.update it's not used by anyone. Not used by webhook. populate for message.update is slow.
+  return populateMessageWithRequest(message, 'message.update');
+  // return; // do not populate message.update it's not used by anyone. 
+        ///it is used by \agent interceptor. Without populateMessageWithRequest \agent sent by bot doesn't work. i must restore populateMessageWithRequest
+          //  Not used by webhook. populate for message.update is slow.
 }
 
 
@@ -169,7 +173,7 @@ messageEvent.on('message.update.simple', populateMessageUpdate);
 
 
 
-// riattiva commentato per performance
+// // riattiva commentato per performance
 // // spostare su classe
 
 
