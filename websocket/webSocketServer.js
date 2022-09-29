@@ -93,7 +93,7 @@ class WebSocketServer {
                           // winston.debug('ok websocket');
 
                           User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')
-                            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+                            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                             .exec(function (err, user) {
                            
                     
@@ -187,7 +187,7 @@ class WebSocketServer {
 
             let q = Project.findOne({ _id: projectId, status: 100})
 
-            if (cacheEnabler.trigger) {
+            if (cacheEnabler.project) {
               q.cache(cacheUtil.defaultTTL, "projects:id:"+projectId) //project_cache
               winston.debug('project cache enabled');
             }

@@ -53,7 +53,7 @@ async (req, res)  => {
     return res.status(422).json({ errors: errors.array() });
   }
   
-  
+
   var project_user = req.projectuser;
   var sender = req.body.sender;
   var fullname = req.body.senderFullname || req.user.fullName;
@@ -64,7 +64,7 @@ async (req, res)  => {
 
       let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
       if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id) //request_cache
+        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":simple") //request_cache
         winston.debug('request cache enabled');
       }
       // cacherequest       // requestcachefarequi nocachepopulatereqired
@@ -293,6 +293,9 @@ async (req, res)  => {
 
 
 });
+
+
+
 
 
 // router.put('/:messageid', function(req, res) {

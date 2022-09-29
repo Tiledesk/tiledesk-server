@@ -451,7 +451,7 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
 router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   winston.debug(req.body);
   let q = Project.findOne({_id: req.params.projectid, status:100});
-  if (cacheEnabler.trigger) {
+  if (cacheEnabler.project) {
     q.cache(cacheUtil.defaultTTL, "projects:id:"+req.params.projectid)  //project_cache
     winston.debug('project cache enabled');
   }

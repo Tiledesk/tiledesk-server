@@ -203,14 +203,12 @@ router.post('/', function (req, res) {
 
 
                      
-
-                      
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                       
+                        
                       };
     
                       winston.debug("new_request", new_request);
@@ -379,8 +377,8 @@ router.post('/', function (req, res) {
               winston.debug('query:'+ projectId);
               
               let q = Request.findOne(query);
-              if (cacheEnabler.trigger) {
-                q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id); //request_cache
+              if (cacheEnabler.request) {
+                q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id+":simple"); //request_cache
                 winston.debug('project cache enabled');
               }
               return q.exec(function(err, request) {
@@ -465,7 +463,7 @@ router.post('/', function (req, res) {
       
       // requestcachefarequi populaterequired
       return Request.findOne({request_id: request_id, id_project: id_project})
-          .populate('lead') //TODO posso prenderlo da snapshot senza populate
+          .populate('lead') //TODO posso prenderlo da snapshot senza populate cache_attention
           .exec(function(err, request) {
         if (err){
           winston.error(err);
@@ -632,7 +630,7 @@ else if (req.body.event_type == "typing-start") {
   // requestcachefarequi nocachepopulatereqired
   return Request.findOne({request_id: recipient_id})
                              //TOD  errore cache sistemare e riabbilitare->
-  // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)
+  // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+recipient_id)   cache_attention
   .exec(function(err, request) {
   if (err){
     winston.error(err);

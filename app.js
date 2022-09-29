@@ -142,8 +142,7 @@ botSubscriptionNotifier.start();
 
 
 var geoService = require('./services/geoService');
-geoService.listen();
-
+ geoService.listen();
 
 
 
@@ -323,7 +322,7 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     
     let q =  Project.findOne({_id: projectid, status: 100});
-    if (cacheEnabler.trigger) {
+    if (cacheEnabler.project) {
       q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
       winston.debug('project cache enabled');
     }

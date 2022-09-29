@@ -231,7 +231,7 @@ class RequestService {
         .findOne({request_id: request_id, id_project: id_project});
 
         if (cacheEnabler.request) {
-          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)      //request_cache
+          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
           winston.debug('request cache enabled');
         }
         return q.exec( function(err, request) {
@@ -387,7 +387,7 @@ class RequestService {
          .findOne({request_id: request_id, id_project: id_project});
 
          if (cacheEnabler.request) {
-          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)      //request_cache
+          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
           winston.debug('request cache enabled');
         }
 

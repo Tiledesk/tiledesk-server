@@ -203,6 +203,26 @@
 
 
 
+    requestEvent.on("request.create.simple", function(request) {
+        setImmediate(() => {
+            var key = request.id_project+":requests:id:"+request.id+":simple";
+            winston.verbose("Creating cache for request.create.simple with key: " + key);
+
+            client.set(key, request, defaultTTL, (err, reply) => {
+                winston.debug("Created cache for request.create.simple",reply);
+                winston.verbose("Created cache for request.create.simple",{err:err});
+            });
+
+            var key = request.id_project+":requests:request_id:"+request.request_id+":simple";
+            winston.verbose("Creating cache for request.create.simple with key: " + key);
+            client.set(key, request, defaultTTL, (err, reply) => {
+                winston.debug("Created cache for request.create.simple",reply);
+                winston.verbose("Created cache for request.create.simple",{err:err});
+            });
+
+        })
+    });
+
     requestEvent.on("request.create", function(request) {
         setImmediate(() => {
             var key = request.id_project+":requests:id:"+request.id;

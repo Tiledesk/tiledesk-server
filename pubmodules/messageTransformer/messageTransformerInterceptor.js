@@ -45,7 +45,7 @@ class MessageTransformerInterceptor {
                     // populate({path:'requester',populate:{path:'id_user'}}).
                     
                 if (cacheEnabler.request) {
-                    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache nocachepopulatereqired
+                    q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient+":simple") //request_cache nocachepopulatereqired
                     winston.debug('request cache enabled');
                 }
 

@@ -1267,7 +1267,7 @@ router.get('/:requestid', function (req, res) {
   .populate({path:'requester',populate:{path:'id_user'}});
 
   if (cacheEnabler.request) {
-    q.cache(cacheUtil.defaultTTL, "/"+req.projectid+"/requests/request_id/"+requestid) //request_cache
+    q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) //request_cache
     winston.debug('request cache enabled');
   }
   // 
