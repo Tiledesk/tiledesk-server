@@ -9,6 +9,8 @@ var Project_user = require("../../models/project_user");
 var RequestConstants = require("../../models/requestConstants");
 
 var cacheUtil = require('../../utils/cacheUtil');
+var cacheEnabler = require("../../services/cacheEnabler");
+
 
 var mongoose = require('mongoose');
 var winston = require('../../config/winston');
@@ -73,11 +75,17 @@ router.post('/', function (req, res) {
     winston.debug("Chat21 message", message);
 
         // requestcachefarequi nocachepopulatereqired        
-        return Request.findOne({request_id: message.recipient}) 
+        let q = Request.findOne({request_id: message.recipient}) 
+
+        if (cacheEnabler.request) {
+          q.cache(cacheUtil.defaultTTL, "requests:request_id:"+message.recipient+":simple"); //request_cache
+                                                                                            // project_id not available
+          winston.debug('request cache enabled');
+        }
+        return q.exec(function(err, request) {
+
         // before request_id id_project unique - commented
-        // return Request.findOne({request_id: message.recipient, id_project: projectid})      
-          // .cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+requestid) project_id not available
-          .exec(function(err, request) {
+               
 
           if (err) {
             return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
@@ -202,7 +210,9 @@ router.post('/', function (req, res) {
                       }
 
 
-                     
+                    
+
+                      
                       var new_request = {
                         request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
@@ -377,10 +387,10 @@ router.post('/', function (req, res) {
               winston.debug('query:'+ projectId);
               
               let q = Request.findOne(query);
-              if (cacheEnabler.request) {
-                q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id+":simple"); //request_cache
-                winston.debug('project cache enabled');
-              }
+              // if (cacheEnabler.request) {
+              //   q.cache(cacheUtil.defaultTTL, projectId+":requests:request_id:"+recipient_id+":simple"); //request_cache NOT IMPORTANT HERE
+              //   winston.debug('project cache enabled');
+              // }
               return q.exec(function(err, request) {
 
                 if (err) {

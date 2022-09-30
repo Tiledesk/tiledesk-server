@@ -8,6 +8,8 @@ var winston = require('../config/winston');
 const departmentEvent = require('../event/departmentEvent');
 const Request = require('../models/request');
 const RoleConstants = require ('../models/roleConstants')
+var cacheEnabler = require("../services/cacheEnabler");
+var cacheUtil = require("../utils/cacheUtil");
 
 class DepartmentService {
 
@@ -86,7 +88,7 @@ roundRobin(operatorSelectedEvent) {
 
       // let lastRequests = await 
       // requestcachefarequi nocachepopulatereqired
-      Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {
+      Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {  // cache_attention
           if (err) {
               winston.error('Error getting request for RoundRobinOperator', err); 
               return reject(err);
@@ -190,7 +192,12 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
        // console.log("»»» »»» --> DEPT ID ", departmentid);
 
 
-    return Project.findOne({_id: projectid, status: 100}, function(err, project) {
+    let q = Project.findOne({_id: projectid, status: 100})
+    if (cacheEnabler.project) {
+      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
+      winston.debug('project cache enabled');
+    }
+    return q.exec(function(err, project){
       if (err) {
         winston.error('Project findById ', err);
         return reject(err);
@@ -205,6 +212,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
       // TODO questo lo abiliterei solo esplicitamete se si flagga opzione su progetto per performance
       if (disableWebHookCall==undefined) {
               //if pro enabled disableWebHookCall = false
+                              //secondo me qui manca un parentesi tonda per gli or
         if (project.profile && (project.profile.type === 'free' && project.trialExpired === false) || (project.profile.type === 'payment' && project.isActiveSubscription === true)) {
           // winston.info('disableWebHookCall pro');
           disableWebHookCall = false;
@@ -389,6 +397,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
               let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, group: group, id_project: projectid, project: project,  context: context };
 
+              // var objectToReturnRoundRobin = objectToReturn;
               that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin){
 
                 winston.debug("context2",context);
@@ -449,6 +458,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           }
 
           let objectToReturn = { available_agents: _available_agents, agents: project_users, operators: selectedoperator, department: department, id_project: projectid, project: project, context: context };
+
+          // var objectToReturnRoundRobin = objectToReturn;
 
           that.roundRobin(objectToReturn).then(function(objectToReturnRoundRobin) {
             winston.debug("context2",context);
@@ -543,8 +554,19 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
   // console.log('-- > OPERATORS [ getRandomAvailableOperator ] - PROJECT USER AVAILABLE LENGHT ', project_users_available.length);
   if (project_users_available.length > 0) {
+
+
+    // new
+                                  // num between 0 and 1 * es 3 -> 
+    // let randomIndex =  Math.round(Math.random() * project_users_available.length);
+    // // let randomIndex =  Math.floor(Math.random() * project_users_available.length);
+    
+    // console.log("randomIndex",randomIndex);
+    // var operator = project_users_available[randomIndex];
+    // // console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
+
     var operator = project_users_available[Math.floor(Math.random() * project_users_available.length)];
-    // console.log('OPERATORS - SELECTED MEMBER ID', operator.id_user);
+
 
     return [{ id_user: operator.id_user }];
     // return [operator];

@@ -21,6 +21,12 @@ class CacheEnabler {
             this.request = false;
         }
 
+        this.faq_kb = true;
+        if (process.env.CACHE_FAQ_KB_ENABLED=="false" || process.env.CACHE_FAQ_KB_ENABLED==false) {
+            this.faq_kb = false;
+        }
+
+        
         // this.project_user = true;
         // if (process.env.CACHE_PROJECT_USER_ENABLED=="false" || process.env.CACHE_PROJECT_USER_ENABLED==false) {
         //     this.project_user = false;
