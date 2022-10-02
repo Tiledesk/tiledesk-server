@@ -36,12 +36,8 @@ class ModulesManager {
         this.facebookRoute = undefined;
         this.jwthistoryArchiver = undefined;
         this.jwthistoryRoute = undefined;
-        this.dialogflowListener = undefined;
         this.requestHistoryArchiver = undefined;
-        this.requestHistoryRoute = undefined;
-        // this.routingQueue = undefined;
-        // this.queue = undefined;
-        // this.cache = undefined;
+        this.requestHistoryRoute = undefined;    
         this.visitorCounterRoute = undefined;
         this.visitorCounterMiddleware = undefined;
         this.widgetsRoute = undefined;
@@ -202,62 +198,19 @@ class ModulesManager {
         
 
 
-        try {
-            this.dialogflowListener = require('@tiledesk-ent/tiledesk-server-dialogflow').listener;
-            // this.dialogflowListener.listen();
-            winston.debug("this.dialogflowListener:"+ this.dialogflowListener);           
-
-            winston.info("ModulesManager dialogflow initialized");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init dialogflow module not found");
-            }else {
-                winston.error("ModulesManager error initializing init dialogflow module", err);
-            }
-        }
-
-
         // try {
-        //     this.routingQueue = require('@tiledesk-ent/tiledesk-server-routing-queue').listener;
-        //     // this.routingQueue.listen();
-        //     winston.debug("this.routingQueue:"+ this.routingQueue);           
+        //     this.dialogflowListener = require('@tiledesk-ent/tiledesk-server-dialogflow').listener;
+        //     // this.dialogflowListener.listen();
+        //     winston.debug("this.dialogflowListener:"+ this.dialogflowListener);           
 
-        //     winston.info("ModulesManager routing queue initialized");
+        //     winston.info("ModulesManager dialogflow initialized");
         // } catch(err) {
         //     if (err.code == 'MODULE_NOT_FOUND') {
-        //         winston.info("ModulesManager init routing queue module not found");
+        //         winston.info("ModulesManager init dialogflow module not found");
         //     }else {
-        //         winston.error("ModulesManager error initializing init routing queue module", err);
+        //         winston.error("ModulesManager error initializing init dialogflow module", err);
         //     }
-        // }
-
-
-
-        // try {
-        //     this.queue = require('@tiledesk-ent/tiledesk-server-queue');            
-        //     winston.debug("this.queue:"+ this.queue);           
-
-        //     winston.info("ModulesManager queue initialized");
-        // } catch(err) {
-        //     if (err.code == 'MODULE_NOT_FOUND') {
-        //         winston.info("ModulesManager init queue module not found");
-        //     }else {
-        //         winston.error("ModulesManager error initializing init queue module", err);
-        //     }
-        // }
-
-
-    //    try {            
-    //         this.cache = require('@tiledesk-ent/tiledesk-server-cache').cachegoose(config.mongoose);            
-    //         winston.debug("this.cache:"+ this.cache);           
-    //         winston.info("ModulesManager cache initialized");
-    //     } catch(err) {
-    //         if (err.code == 'MODULE_NOT_FOUND') {
-    //             winston.info("ModulesManager init cache module not found");
-    //         }else {
-    //             winston.error("ModulesManager error initializing init cache module", err);
-    //         } 
-    //     }
+        // }        
 
 
         
@@ -330,22 +283,15 @@ class ModulesManager {
                 winston.info("ModulesManager error starting requestHistoryArchiver module", err);            
             }
         }
-        // if (this.routingQueue) {
+
+        // if (this.dialogflowListener) {
         //     try {
-        //         this.routingQueue.listen();
-        //         winston.info("ModulesManager routingQueue started");
+        //         this.dialogflowListener.listen();
+        //         winston.info("ModulesManager dialogflowListener started");
         //     } catch(err) {        
-        //         winston.info("ModulesManager error starting routingQueue module", err);            
+        //         winston.info("ModulesManager error starting dialogflowListener module", err);            
         //     }
         // }
-        if (this.dialogflowListener) {
-            try {
-                this.dialogflowListener.listen();
-                winston.info("ModulesManager dialogflowListener started");
-            } catch(err) {        
-                winston.info("ModulesManager error starting dialogflowListener module", err);            
-            }
-        }
 
 
         

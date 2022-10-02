@@ -13,7 +13,7 @@
 
  var cachegoose = require('cachegoose');
 
- var defaultTTL = process.env.CACHE_DEFAULT_TTL || 120;
+ var defaultTTL = process.env.CACHE_DEFAULT_TTL || 300;
  
 
  function listen(client) {

@@ -29,7 +29,6 @@
     "tiledesk-server": "./bin/www"
   },
   "optionalDependencies": {
-    "@tiledesk-ent/tiledesk-server-dialogflow": "^1.1.6",
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.9",
     "@tiledesk-ent/tiledesk-server-payments": "^1.1.6",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
@@ -42,6 +41,7 @@
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-tybot-connector": "^0.1.14",
+    "@tiledesk/tiledesk-dialogflow-connector": "^1.7.3",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.20.0",

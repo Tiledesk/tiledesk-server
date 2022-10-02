@@ -41,6 +41,8 @@ class PubModulesManager {
         this.routingQueue = undefined;
 
         this.cache = undefined;
+
+        this.dialogFlow = undefined;
     }
 
   
@@ -335,7 +337,20 @@ class PubModulesManager {
             } 
         }
 
+        
 
+        try {
+            this.dialogFlow = require('./dialogflow').listener;
+            winston.debug("this.dialogFlow:"+ this.dialogFlow);           
+            this.dialogFlow.listen(config);
+            winston.info("PubModulesManager dialogFlow  initialized");
+        } catch(err) {
+            // if (err.code == 'MODULE_NOT_FOUND') {
+            //     winston.info("PubModulesManager init dialogFlow module not found");
+            // }else {
+                winston.error("PubModulesManager error initializing init dialogFlow module", err);
+            // }
+        }
     }
 
     start() {
@@ -411,11 +426,20 @@ class PubModulesManager {
             }
         }
 
+        // if (this.dialogFlow) {
+        //     try {
+        //         this.dialogFlow.listen();
+        //         winston.info("PubModulesManager dialogFlow started");
+        //     } catch(err) {        
+        //         winston.info("PubModulesManager error starting dialogFlow module", err);            
+        //     }
+        // }
+
 
     }
 
 
-    
+     
 }
 
 var pubModulesManager = new PubModulesManager();
