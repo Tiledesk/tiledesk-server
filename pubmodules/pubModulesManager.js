@@ -57,6 +57,11 @@ class PubModulesManager {
             app.use('/modules/tilebot', this.tilebotRoute);
             winston.info("ModulesManager tilebot controller loaded");       
         }
+        
+        if (this.dialogFlow) {
+            app.use("/modules/dialogFlow", this.dialogFlow.dialogflowRoute);
+            winston.info("ModulesManager dialogFlow controller loaded");       
+        }
 
     }
     useUnderProjects(app) {
@@ -340,16 +345,16 @@ class PubModulesManager {
         
 
         try {
-            this.dialogFlow = require('./dialogflow').listener;
+            this.dialogFlow = require('./dialogflow');
             winston.debug("this.dialogFlow:"+ this.dialogFlow);           
-            this.dialogFlow.listen(config);
+            this.dialogFlow.listener.listen(config);
             winston.info("PubModulesManager dialogFlow  initialized");
         } catch(err) {
-            // if (err.code == 'MODULE_NOT_FOUND') {
-            //     winston.info("PubModulesManager init dialogFlow module not found");
-            // }else {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init dialogFlow module not found");
+            }else {
                 winston.error("PubModulesManager error initializing init dialogFlow module", err);
-            // }
+            }
         }
     }
 
