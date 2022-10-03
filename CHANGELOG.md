@@ -1,4 +1,17 @@
+# 2.3.25
+- Emebedded DialogFlow connector to 1.7.4
 
+# 2.3.24
+- Increased cache TTL from: standardTTL from 120 to 300, longTTL from 1200 to 3600
+- Added cache request.create.simple, + cacheEnabler. name fix
+- Disabled unapplicable cache for updateWaitingTimeByRequestId and find request by id REST API
+- Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.14
+- Restored populateMessageWithRequest. Bug with \agent command. Try to resolve performance with cache
+- Added cache for chat21 webhook event type message. The cache key is without the project id
+- Disabled cache for chat21 webhook conversation archived method
+- Added cache for message event lookup
+- Added cache for chat21 webhook event type message
+- Added cache for getoperator method of department service
 
 💥 TILEDESK SERVER v2.3.23 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
@@ -30,7 +43,7 @@
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
 
-# 2.3.18.2
+# 2.3.18.6 -> PROD
 - logfix
 
 # 2.3.18.1 
