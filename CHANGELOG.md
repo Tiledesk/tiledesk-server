@@ -1,3 +1,7 @@
+
+# 2.3.26
+- DialogFlow connector fix /tdbot
+
 # 2.3.25
 - Emebedded DialogFlow connector to 1.7.4
 

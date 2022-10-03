@@ -6,7 +6,7 @@ var configGlobal = require('../../config/global');
 
 var port = process.env.PORT || '3000';
 
-const BOT_DIALOGFLOW_ENDPOINT = process.env.BOT_DIALOGFLOW_ENDPOINT || "http://localhost:" + port+ "/modules/dialogflow";
+const BOT_DIALOGFLOW_ENDPOINT = process.env.BOT_DIALOGFLOW_ENDPOINT || "http://localhost:" + port+ "/modules/dialogflow/tdbot/";
 winston.debug("BOT_DIALOGFLOW_ENDPOINT: " + BOT_DIALOGFLOW_ENDPOINT);
 
 // if (BOT_DIALOGFLOW_ENDPOINT) {
