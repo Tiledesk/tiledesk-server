@@ -13,7 +13,8 @@
 
  var cachegoose = require('cachegoose');
 
- var defaultTTL = process.env.CACHE_DEFAULT_TTL || 300;
+ var cacheUtil = require('../../utils/cacheUtil');
+
  
 
  function listen(client) {
@@ -22,7 +23,7 @@
         setImmediate(() => {
             var key = "projects:id:"+project.id;
             winston.verbose("Creating cache for project.create with key: " + key);
-            client.set(key, project, defaultTTL, (err, reply) => {
+            client.set(key, project, cacheUtil.longTTL, (err, reply) => {
                 winston.verbose("Created cache for project.create",{err:err});
                 winston.debug("Created cache for project.create reply",reply);
             });
@@ -41,7 +42,7 @@
         setImmediate(() => {
             var key = "projects:id:"+project.id;
             winston.verbose("Updating cache for project.update with key: " + key);
-            client.set(key, project, defaultTTL, (err, reply) => {
+            client.set(key, project, cacheUtil.longTTL, (err, reply) => {
                 winston.verbose("Updated cache for project.update",{err:err});
                 winston.debug("Updated cache for project.update",reply);
 
@@ -80,7 +81,7 @@
             var key = "projects:id:"+project.id;
             winston.verbose("Updating cache for project.downgrade with key: " + key);
 
-            client.set(key, project, defaultTTL, (err, reply) => {
+            client.set(key, project, cacheUtil.longTTL, (err, reply) => {
                 winston.debug("Updated cache for project.downgrade",reply);
                 winston.verbose("Updated cache for project.downgrade",{err:err});
             });
@@ -106,7 +107,7 @@
 
             var key = project_user.id_project+":project_users:id:"+project_user.id;
             winston.verbose("Updating cache for project_user.update with key: " + key);
-            client.set(key, project_user, defaultTTL, (err, reply) => {
+            client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Updated cache for project_user.update",reply);
                 winston.verbose("Updated cache for project_user.update",{err:err});
             });
@@ -127,7 +128,7 @@
 
                 var key = project_user.id_project+":project_users:role:teammate:"+project_user.id;
                 winston.verbose("Updating cache for project_user.update with key: " + key);
-                client.set(key, project_user, defaultTTL, (err, reply) => {
+                client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
                     winston.debug("Updated cache for project_user.update",reply);
                     winston.verbose("Updated cache for project_user.update",{err:err});
                 });
@@ -145,14 +146,14 @@
 
             var key = "users:id:"+user.id;
             winston.verbose("Creating cache for user.signup with key: " + key);
-            client.set(key, user, defaultTTL, (err, reply) => {
+            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for user.signup",reply);
                 winston.verbose("Created cache for user.signup",{err:err});
             });
 
             var key = "users:email:"+user.email;
             winston.verbose("Creating cache for user.signup with key: " + key);
-            client.set(key, user, defaultTTL, (err, reply) => {
+            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for user.signup",reply);
                 winston.verbose("Created cache for user.signup",{err:err});
             });
@@ -166,14 +167,14 @@
 
             var key = "users:id:"+user.id;
             winston.verbose("Updating cache for user.update with key: " + key);
-            client.set(key, user, defaultTTL, (err, reply) => {
+            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Updated cache for user.update",reply);
                 winston.verbose("Updated cache for user.update",{err:err});
             });
 
             var key = "users:email:"+user.email;
             winston.verbose("Updating cache for user.update with key: " + key);
-            client.set(key, user, defaultTTL, (err, reply) => {
+            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Updated cache for user.update",reply);
                 winston.verbose("Updated cache for user.update",{err:err});
             });
@@ -208,7 +209,7 @@
             var key = request.id_project+":requests:id:"+request.id+":simple";
             winston.verbose("Creating cache for request.create.simple with key: " + key);
 
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create.simple",reply);
                 winston.verbose("Created cache for request.create.simple",{err:err});
             });
@@ -217,14 +218,14 @@
             var key = "requests:id:"+request.request_id+":simple";  //without project for chat21 webhook
             winston.verbose("Creating cache for request.create.simple with key: " + key);
 
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create.simple",reply);
                 winston.verbose("Created cache for request.create.simple",{err:err});
             });
 
             var key = request.id_project+":requests:request_id:"+request.request_id+":simple";
             winston.verbose("Creating cache for request.create.simple with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create.simple",reply);
                 winston.verbose("Created cache for request.create.simple",{err:err});
             });
@@ -237,14 +238,14 @@
             var key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.create with key: " + key);
 
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create",reply);
                 winston.verbose("Created cache for request.create",{err:err});
             });
 
             var key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.create with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create",reply);
                 winston.verbose("Created cache for request.create",{err:err});
             });
@@ -264,14 +265,14 @@
         setImmediate(() => {
             var key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.update with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.update",reply);
                 winston.verbose("Created cache for request.update",{err:err});
             });
 
             var key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.update with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.update",reply);
                 winston.verbose("Created cache for request.update",{err:err});
             });
@@ -290,14 +291,14 @@
         setImmediate(() => {
             var key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.close with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.close",reply);
                 winston.verbose("Created cache for request.close",{err:err});
             });
 
             var key = request.id_project+":requests:request_id:"+request.request_id;
             winston.verbose("Creating cache for request.close with key: " + key);
-            client.set(key, request, defaultTTL, (err, reply) => {
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.close",reply);
                 winston.verbose("Created cache for request.close",{err:err});
             });
@@ -319,13 +320,13 @@
     //     setImmediate(() => {
     //         var key = message.id_project+":requests:id:"+message.request._id + ":messages:id:" + message._id;
     //         winston.verbose("Creating cache for message.create with key: " + key);
-    //         client.set(key, message, defaultTTL, (err, reply) => {
+    //         client.set(key, message, cacheUtil.defaultTTL, (err, reply) => {
     //             winston.verbose("Created cache for message.create",{err:err, reply:reply});
     //         });
 
     //         var key = message.id_project+":requests:request_id:"+message.request.request_id + ":messages:id:" + message._id;        
     //         winston.verbose("Creating cache for message.create with key: " + key);
-    //         client.set(key, message, defaultTTL, (err, reply) => {
+    //         client.set(key, message, cacheUtil.defaultTTL, (err, reply) => {
     //             winston.verbose("Created cache for message.create",{err:err, reply:reply});
     //         });
     //     });
@@ -337,7 +338,7 @@
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faq_kb.create with key: " + key);
-            client.set(key, faq_kb, defaultTTL, (err, reply) => {
+            client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
                 winston.verbose("Created cache for faq_kb.create",{err:err});
             });
@@ -350,7 +351,7 @@
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faq_kb.update with key: " + key);
-            client.set(key, faq_kb, defaultTTL, (err, reply) => {
+            client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
                 winston.verbose("Created cache for faq_kb.update",{err:err});
             });       
@@ -362,7 +363,7 @@
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faqbot.delete with key: " + key);
-            client.set(key, faq_kb, defaultTTL, (err, reply) => {
+            client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faqbot.delete",reply);
                 winston.verbose("Created cache for faqbot.delete",{err:err});
             });
@@ -374,7 +375,7 @@
         setImmediate(() => {
             var key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Creating cache for department.create with key: " + key);
-            client.set(key, department, defaultTTL, (err, reply) => {
+            client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for department.create",reply);
                 winston.verbose("Created cache for department.create",{err:err});
             });
@@ -394,7 +395,7 @@
         setImmediate(() => {
             var key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Creating cache for department.update with key: " + key);
-            client.set(key, department, defaultTTL, (err, reply) => {
+            client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for department.update",reply);
                 winston.verbose("Created cache for department.update",{err:err});
             });    
@@ -413,7 +414,7 @@
         setImmediate(() => {
             var key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Creating cache for department.delete with key: " + key);
-            client.set(key, department, defaultTTL, (err, reply) => {
+            client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for department.delete",reply);
                 winston.verbose("Created cache for department.delete",{err:err});
             });
@@ -578,7 +579,7 @@ module.exports = function (mongoose, option) {
         var password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
         
-        winston.info("Mongoose Cachegoose fn initialized, engine: " + engine + ", port: "+ port + ", host: "+ host  + " defaultTTL: " +defaultTTL + ", password: "+ password);
+        winston.info("Mongoose Cachegoose fn initialized, engine: " + engine + ", port: "+ port + ", host: "+ host  + " defaultTTL: " +cacheUtil.defaultTTL + ", password: "+ password);
         // winston.info("Mongoose Cachegoose fn initialized, engine: " + engine + ", endpoint: "+endPoint +", port: "+ port + ", host: "+ host + ", password: "+ password);
 
 
