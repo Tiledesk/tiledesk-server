@@ -900,6 +900,11 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY snap_lead_email', query.snap_lead_email);
   }
 
+  if (req.query.smartAssignment) {
+    query.smartAssignment = req.query.smartAssignment;
+    winston.debug('REQUEST ROUTE - QUERY smartAssignment', query.smartAssignment);
+  }
+  
   if (req.query.channel) {
     if (req.query.channel === "offline") {
       query["channel.name"] =  {"$in" : ["email", "form"]}
