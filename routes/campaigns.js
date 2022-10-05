@@ -6,8 +6,7 @@ var winston = require('../config/winston');
 var requestService = require("../services/requestService");
 var messageService = require("../services/messageService");
 var MessageConstants = require("../models/messageConstants");
-const uuidv4 = require('uuid/v4');
-
+var UIDGenerator = require("../utils/UIDGenerator");
 
 
 
@@ -19,7 +18,7 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
-  var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + uuidv4();
+  var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();  //uuid_here
 
   // TODO cicla su segment
 
@@ -73,6 +72,7 @@ router.post('/direct', async function (req, res) {
 
   }
 
+  
   winston.info("recipients", recipients);
   winston.info("recipients.length: " + recipients.length);
 

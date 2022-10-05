@@ -7,12 +7,12 @@ var messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
 const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
-const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
 var cacheUtil = require("../utils/cacheUtil");
 var arrayUtil = require("../utils/arrayUtil");
 var cacheEnabler = require("../services/cacheEnabler");
+var UIDGenerator = require("../utils/UIDGenerator");
 
 class RequestService {
 
@@ -417,7 +417,7 @@ class RequestService {
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
-    var request_id = 'support-group-'+ id_project + "-" + uuidv4();
+    var request_id = 'support-group-'+ id_project + "-" + UIDGenerator.generate();  
     winston.debug("request_id: "+request_id);
     
     return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
