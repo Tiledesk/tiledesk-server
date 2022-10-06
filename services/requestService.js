@@ -230,10 +230,10 @@ class RequestService {
         let q= Request       
         .findOne({request_id: request_id, id_project: id_project});
 
-        if (cacheEnabler.request) {
-          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
-          winston.debug('request cache enabled');
-        }
+        // if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+        //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+        //   winston.debug('request cache enabled');
+        // }
         return q.exec( function(err, request) {
 
           if (err) {
@@ -241,6 +241,7 @@ class RequestService {
             return reject(err);
           }
                    
+          winston.debug('request return',request);
 
           // cambia var in let
 

@@ -18,7 +18,7 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
   winston.debug("req.user", req.user);
-  var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();  //uuid_here
+  var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
 
   // TODO cicla su segment
 

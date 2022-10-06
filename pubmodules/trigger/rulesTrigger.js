@@ -20,7 +20,7 @@ var operatingHoursService = require("../../services/operatingHoursService");
 var sendMessageUtil = require("../../utils/sendMessageUtil");
 var cacheUtil = require("../../utils/cacheUtil");
 var cacheEnabler = require("../../services/cacheEnabler");
-var UIDGenerator = require("../utils/UIDGenerator");
+var UIDGenerator = require("../../utils/UIDGenerator");
 
 
 class RulesTrigger {
@@ -680,7 +680,7 @@ class RulesTrigger {
 
           
 
-          var request_id = 'support-group-'+id_project+"-"+UIDGenerator.generate(); //uuid_here
+          var request_id = 'support-group-'+id_project+"-"+UIDGenerator.generate();
           var id_user;
           var fullname;
           var email;
