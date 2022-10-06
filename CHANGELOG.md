@@ -1,4 +1,7 @@
 
+# 2.3.28
+- UIDGenerator renamed fix
+
 # 2.3.27
 - CacheUtil fix with new values
 - UIDGenerator class replacement
