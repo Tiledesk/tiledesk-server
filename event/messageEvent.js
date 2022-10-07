@@ -74,7 +74,7 @@ function populateMessageWithRequest(message, eventPrefix) {
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  winston.info('message Event populate');
+  winston.debug('message Event populate');
   if (cacheEnabler.request) {
     q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache ma con lean????attento metti a parte
     winston.debug('request cache enabled');

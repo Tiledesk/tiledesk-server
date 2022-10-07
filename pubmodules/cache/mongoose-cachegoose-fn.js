@@ -112,6 +112,26 @@
                 winston.verbose("Updated cache for project_user.update",{err:err});
             });
 
+            if (project_user.id_user) {
+                var key = project_user.id_project+":project_users:iduser:"+project_user.id_user;
+                winston.verbose("Updating cache for project_user.update with key: " + key);
+                client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Updated cache for project_user.update",reply);
+                    winston.verbose("Updated cache for project_user.update",{err:err});
+                });
+            }
+
+            if (project_user.uuid_user) {
+                var key = project_user.id_project+":project_users:uuid_user:"+project_user.uuid_user;
+                winston.verbose("Updating cache for project_user.update with key: " + key);
+                client.set(key, project_user, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Updated cache for project_user.update",reply);
+                    winston.verbose("Updated cache for project_user.update",{err:err});
+                });
+            }
+            
+
+
             var role = project_user.role;
 
             var TEAMMATE_ROLES =  {       
