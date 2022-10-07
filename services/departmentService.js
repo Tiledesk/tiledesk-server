@@ -88,7 +88,7 @@ roundRobin(operatorSelectedEvent) {
 
       // let lastRequests = await 
       // requestcachefarequi nocachepopulatereqired
-      Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {  // cache_attention
+      Request.find(query).sort({_id:-1}).limit(1).exec(function (err, lastRequests) {  // cache_attention  use_lean use_select
           if (err) {
               winston.error('Error getting request for RoundRobinOperator', err); 
               return reject(err);
@@ -193,8 +193,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
     let q = Project.findOne({_id: projectid, status: 100})
-    if (cacheEnabler.project) {
-      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
+    if (cacheEnabler.project) {    //cache_virtual_problem
+      q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
       winston.debug('project cache enabled');
     }
     return q.exec(function(err, project){

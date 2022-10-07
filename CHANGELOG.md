@@ -1,4 +1,12 @@
 
+# 2.3.28
+- UIDGenerator renamed fix
+
+# 2.3.27
+- CacheUtil fix with new values
+- UIDGenerator class replacement
+- Disabled cache for requestService route. Bug:  No matching document found for id "XYZ" 
+
 # 2.3.26
 - DialogFlow connector fix /tdbot
 
@@ -47,7 +55,10 @@
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
 
-# 2.3.18.6 -> PROD
+# 2.3.18.7 -> PROD
+- filter request by smartAssignment
+
+# 2.3.18.6
 - logfix
 
 # 2.3.18.1 

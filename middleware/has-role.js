@@ -4,6 +4,7 @@ var Subscription = require("../models/subscription");
 var winston = require('../config/winston');
 
 var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
 
 class RoleChecker {
     
@@ -131,15 +132,21 @@ class RoleChecker {
 
           // JWT_HERE
           var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
+          let cache_key = req.params.projectid+":project_users:iduser:"+req.user._id
 
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
             query = { id_project: req.params.projectid, uuid_user: req.user._id, status: "active"};
+            cache_key = req.params.projectid+":project_users:uuid_user:"+req.user._id
           }
           winston.debug("hasRoleOrType query " + JSON.stringify(query));
 
-          Project_user.findOne(query)
-            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, req.params.projectid+":project_users:id:"+req.user.id) 
-            .exec(function (err, project_user) {
+          let q = Project_user.findOne(query);
+          if (cacheEnabler.project_user) { 
+            q.cache(cacheUtil.defaultTTL, cache_key);
+            winston.debug("cacheEnabler.project_user enabled");
+
+          }
+            q.exec(function (err, project_user) {
               if (err) {
                 winston.error("Error getting project_user for hasrole",err);
                 return next(err);

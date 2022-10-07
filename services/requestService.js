@@ -7,12 +7,12 @@ var messageService = require('../services/messageService');
 const requestEvent = require('../event/requestEvent');
 const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
-const uuidv4 = require('uuid/v4');
 var RequestConstants = require("../models/requestConstants");
 var requestUtil = require("../utils/requestUtil");
 var cacheUtil = require("../utils/cacheUtil");
 var arrayUtil = require("../utils/arrayUtil");
 var cacheEnabler = require("../services/cacheEnabler");
+var UIDGenerator = require("../utils/UIDGenerator");
 
 class RequestService {
 
@@ -230,10 +230,10 @@ class RequestService {
         let q= Request       
         .findOne({request_id: request_id, id_project: id_project});
 
-        if (cacheEnabler.request) {
-          q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
-          winston.debug('request cache enabled');
-        }
+        // if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+        //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+        //   winston.debug('request cache enabled');
+        // }
         return q.exec( function(err, request) {
 
           if (err) {
@@ -241,6 +241,7 @@ class RequestService {
             return reject(err);
           }
                    
+          winston.debug('request return',request);
 
           // cambia var in let
 
@@ -417,7 +418,7 @@ class RequestService {
 
   createWithRequester(project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight) {
 
-    var request_id = 'support-group-'+ id_project + "-" + uuidv4();
+    var request_id = 'support-group-'+ id_project + "-" + UIDGenerator.generate();  
     winston.debug("request_id: "+request_id);
     
     return this.createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes, subject, preflight);
