@@ -61,6 +61,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
         // var row = {question: element.question, answer: element.answer, 
         //   intent_id: element.intent_id, intent_display_name: element.intent_display_name,
         //   webhook_enabled: element.webhook_enabled || false }
+
         var newFaq = new Faq({
           id_faq_kb: id_faq_kb,
           question: question,
@@ -114,6 +115,8 @@ router.post('/', function (req, res) {
       id_faq_kb: req.body.id_faq_kb,
       question: req.body.question,
       answer: req.body.answer,
+      reply: req.body.reply,
+      enabled: true,
       id_project: req.projectid,
       topic: req.body.topic,
       language: faq_kb.language,
@@ -122,6 +125,10 @@ router.post('/', function (req, res) {
       createdBy: req.user.id,
       updatedBy: req.user.id
     });
+
+    if (req.body.enabled != undefined) {
+      newFaq.enabled = req.body.enabled;
+    }
 
     newFaq.save(function (err, savedFaq) {
       if (err) {
@@ -176,6 +183,12 @@ router.put('/:faqid', function (req, res) {
   }
   if (req.body.webhook_enabled!=undefined) {
     update.webhook_enabled = req.body.webhook_enabled;
+  }
+  if (req.body.enabled!=undefined) {
+    update.enabled = req.body.enabled;
+  }
+  if (req.body.reply!=undefined) {
+    updated.reply = req.body.enabled;
   }
   
 
