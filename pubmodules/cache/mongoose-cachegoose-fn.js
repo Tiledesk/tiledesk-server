@@ -583,7 +583,7 @@
 
 module.exports = function (mongoose, option) {
 
-    if (process.env.CACHE_ENABLED == "true") {
+    if (process.env.CACHE_ENABLED == true || process.env.CACHE_ENABLED == "true") {
         var engine = process.env.CACHE_ENGINE;
         winston.debug("Redis engine: "+ engine);
 

@@ -20,6 +20,10 @@ class BotSubscriptionNotifier {
 
       var url = bot.url;
 
+      // if (url.startsWith("$ext_url")) {
+      //   // url = url.replace ("$res_bot_url", prendi da env)
+      // }
+
       var json = {timestamp: Date.now(), payload: payload};
     
 
@@ -53,6 +57,7 @@ class BotSubscriptionNotifier {
 
           }, function(err, result, json){            
             winston.verbose("SENT notify for bot with url " + url +  " with err " + err);
+            winston.debug("SENT notify for bot with url ", result);
             if (err) {
               winston.error("Error sending notify for bot with url " + url + " with err " + err);
               //TODO Reply with error

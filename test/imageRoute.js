@@ -146,7 +146,7 @@ it('upload-avatar', (done) => {
         });              
             
     });
-});
+}).timeout(1000);
 
 
 
