@@ -7,6 +7,11 @@
 - Created cache test for project_user and project
 - Enabled project_user cache for hasRole method
 - Log fix
+- add fields reply and enabled to faq model 
+- field answer in faq model is no longer required
+- add field public to faq_kb model (IGNORA PER IL MOMENTO)
+- when template is undefined the empty template is now created
+- add test
 
 # 2.3.28
 - UIDGenerator renamed fix
