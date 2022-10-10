@@ -308,6 +308,9 @@ router.get('/', function (req, res, next) {
 
   // query.$text = {"$search": "question"};
 
+// TODO ORDER BY SCORE
+  // return Faq.find(query,  {score: { $meta: "textScore" } }) 
+  // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
 
 
   return Faq.find(query).

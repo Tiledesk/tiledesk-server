@@ -63,6 +63,7 @@ class FaqService {
 
       // aggiungi esempio tdAction con intent_id
 
+      // TODO non scatta i trigger sui rest hook. fare?
       winston.debug('template: '+ template);
 
       var faqsArray;
