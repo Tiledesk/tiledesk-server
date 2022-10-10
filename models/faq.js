@@ -39,7 +39,17 @@ var FaqSchema = new Schema({
   },
   answer: {
     type: String,
-    required: true
+    //required: true
+    required: false
+  },
+  reply: {
+    type: Object,
+    required: false,
+  },
+  enabled: {
+    type: Boolean,
+    required: false,
+    default: true,
   },
   id_project: {
     type: String,

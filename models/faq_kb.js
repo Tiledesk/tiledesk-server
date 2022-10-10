@@ -65,6 +65,11 @@ var Faq_kbSchema = new Schema({
   createdBy: {
     type: String,
     required: true
+  },
+  public: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 },{
   timestamps: true

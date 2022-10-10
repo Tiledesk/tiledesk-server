@@ -22,6 +22,7 @@ class FaqService {
           webhook_enabled: webhook_enabled,
           type: type,
           language: language,
+          public: false,
           trashed: false,
           createdBy: user_id,
           updatedBy: user_id
@@ -42,7 +43,7 @@ class FaqService {
           if (type==="internal" || type==="tilebot") {      
             
             if (!template) {
-              template = "example";
+              template = "empty";
             }
             winston.debug('template '+ template);
             that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template);
@@ -114,6 +115,10 @@ class FaqService {
         ]
 
       }
+
+      if (template === "empty") {
+        faqsArray = [];
+      }
       
       
       faqsArray.forEach(faq => {
@@ -122,6 +127,7 @@ class FaqService {
           id_faq_kb: faq_kb_id,
           question: faq.question,
           answer: faq.answer,
+          reply: faq.reply,
           intent_display_name: faq.intent_display_name,
           language: "en",
           id_project: projectid,
