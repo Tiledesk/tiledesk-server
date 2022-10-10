@@ -1,4 +1,13 @@
 
+# Untagged
+- UIDGenerator class replacement for request route
+- Added hasRole cache for project_user
+- Added index { id_project: 1, role: 1, status: 1, createdAt: 1  } for  Project_user schema
+- Enabled project_user for cacheEnabler class
+- Created cache test for project_user and project
+- Enabled project_user cache for hasRole method
+- Log fix
+
 # 2.3.28
 - UIDGenerator renamed fix
 
