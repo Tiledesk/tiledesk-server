@@ -48,12 +48,16 @@ async (req, res)  => {
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
+  if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
+    return res.status(422).json({ errors: ["text field is required"] });
+  } 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
   
-
+  // TODO se sei agent non puoi cambiare sender
+  // verificare validazione invio immagine senza caption 
   var project_user = req.projectuser;
   var sender = req.body.sender;
   var fullname = req.body.senderFullname || req.user.fullName;
@@ -296,6 +300,157 @@ async (req, res)  => {
 
 
 
+
+
+
+// router.post('/multi2', async (req, res, next)  => {
+
+//       if ( !req.body instanceof Array ) {
+//               return res.status(422).json({ errors: ["request body is not array"] });
+//       }
+//           req.url =  '/';
+//           winston.info('--- > req.url'+req.url);
+
+//           req.method = 'POST';  
+
+//           let promises = [];
+
+//           req.body.forEach(function(message,index) {
+//             promises.push(router.handle(req, res, next));
+//           });
+//           winston.info('--- >promises', promises);
+
+//           Promise.all(promises).then((values) => {
+//             console.log("finito",values);
+//             return res.status(200).json({ "success": true });
+//           }).catch((err) => {
+//             console.log("errore",err);
+//           });
+// });
+
+
+
+
+router.post('/multi', 
+async (req, res)  => {
+
+  winston.debug('req.body post message', req.body);
+  winston.debug('req.params: ', req.params);
+  winston.debug('req.params.request_id: ' + req.params.request_id);
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  
+  var project_user = req.projectuser;
+
+  let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
+  // if (cacheEnabler.request) {
+  //   q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":simple") //request_cache
+  //   winston.debug('request cache enabled');
+  // }
+  return q.exec(async(err, request) => {
+    
+
+    if (err) {
+      winston.log({
+          level: 'error',
+          message: 'Error getting the request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
+          label: req.projectid
+        });
+      // winston.error('Error getting the request.', err);
+      return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
+    }
+
+    if (!request) { //the request doen't exists create it
+      return res.status(404).send({success: false, msg: 'Request doesn\'t exist.', err:err});
+    } else {
+
+  
+
+      winston.debug("request  exists", request.toObject());
+  
+      
+      let promises = [];
+
+      let sender;
+      let fullname;
+      let email;
+      let text;
+      let attributes;
+      let type;
+      let metadata;
+      let language;
+      let channel;
+      let messageStatus;
+      
+      req.body.forEach(function(message,index) {
+
+        sender = message.sender;
+        fullname = message.senderFullname || req.user.fullName;
+        email = message.email || req.user.email;
+
+        text = message.text;
+        attributes = message.attributes;
+        type = message.type;
+        metadata = message.metadata;
+        language = message.language;
+        channel = message.channel;
+        messageStatus = message.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
+            // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
+        let promise =  messageService.create(sender || req.user._id, fullname, req.params.request_id, text,
+                request.id_project, null, messageStatus, attributes, type, metadata, language, undefined, channel);
+
+          promises.push(promise);
+      });
+      winston.debug('--- >promises', promises);
+
+      Promise.all(promises).then((values) => {
+        winston.info('Inserted multiple messages with values: ', values);
+        return res.status(200).json(values);
+      }).catch((err) => {
+        winston.error('Error inserting multiple messages.', err);
+        return res.status(500).send({success: false, msg: 'Error inserting multiple messages.', err:err});
+
+      });
+
+      
+
+
+
+
+    }
+  
+
+
+  });
+
+
+
+
+});
+
+
+
+
+
+
+
+
+
+
+// router.patch('/:messageid', function(req, res) {
+  
+//   winston.info(req.body);
+  
+//   Message.findByIdAndUpdate(req.params.messageid, req.body, {new: true, upsert:true}, function(err, updatedMessage) {
+//     if (err) {
+//       return res.status(500).send({success: false, msg: 'Error updating object.'});
+//     }
+//     res.json(updatedMessage);
+//   });
+// });
 
 
 // router.put('/:messageid', function(req, res) {

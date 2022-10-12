@@ -17,6 +17,10 @@ var Message = require("../models/message");
 var cacheUtil = require('../utils/cacheUtil');
 var RequestConstants = require("../models/requestConstants");
 var cacheEnabler = require("../services/cacheEnabler");
+var Project_user = require("../models/project_user");
+var Lead = require("../models/lead");
+var UIDGenerator = require("../utils/UIDGenerator");
+
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -32,9 +36,9 @@ const { check, validationResult } = require('express-validator');
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.create
 router.post('/', 
 [
-  check('text').notEmpty(),  
+  check('first_text').notEmpty(),  
 ],
-function (req, res) {
+async (req, res)  => {
 
   var startTimestamp = new Date();
   winston.debug("request create timestamp: " + startTimestamp);
@@ -54,41 +58,113 @@ function (req, res) {
       winston.debug("req.projectuser", req.projectuser);                                     
     }
     
-        
+    var project_user = req.projectuser;
+
+    var sender = req.body.sender;
+    var fullname = req.body.senderFullname || req.user.fullName;
+    var email = req.body.email || req.user.email;
+     
     let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
     winston.debug('messageStatus: ' + messageStatus);
 
-    var request_id = req.params.request_id || 'support-group-' + req.projectid + "-" + uuidv4();
+    var request_id = req.params.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
+    winston.debug('request_id: ' + request_id);
+
+    if (sender) {
+
+      var isObjectId = mongoose.Types.ObjectId.isValid(sender);
+      winston.debug("isObjectId:"+ isObjectId);
+  
+       var queryProjectUser = {id_project:req.projectid, status: "active" };
+  
+      if (isObjectId) {
+        queryProjectUser.id_user = sender;
+      } else {
+        queryProjectUser.uuid_user = sender;
+      }
+  
+      winston.debug("queryProjectUser", queryProjectUser);
+      
+      project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
+      winston.debug("project_user", project_user);
+  
+      if (!project_user) {
+        return res.status(403).send({success: false, msg: 'Unauthorized. Project_user not found with user id  : '+ sender });
+      }
+
+      if ( project_user.id_user) {
+        fullname = project_user.id_user.fullName;
+        winston.debug("pu fullname: "+ fullname);
+        email = project_user.id_user.email;
+        winston.debug("pu email: "+ email);
+      } else if (project_user.uuid_user) {
+        var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
+        winston.debug("lead: ",lead);
+        if (lead) {
+          fullname = lead.fullname;
+          winston.debug("lead fullname: "+ fullname);
+          email = lead.email;
+          winston.debug("lead email: "+ email);
+        }else {
+          winston.warn("lead not found: " + JSON.stringify({lead_id: project_user.uuid_user, id_project: req.projectid}));
+        }
+        
+      } else {
+        winston.warn("pu fullname and email empty");
+      }
+      
+    }
+
 
     // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy, attributes) {
-    return leadService.createIfNotExistsWithLeadId(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName , req.body.email || req.user.email, req.projectid, null, req.body.attributes || req.user.attributes)
-    .then(function(createdLead) {
+    return leadService.createIfNotExistsWithLeadId(sender || req.user._id, fullname, email, req.projectid, null, req.body.attributes || req.user.attributes)
+      .then(function(createdLead) {  
 
-      // TODO USE NEW .create()
+
+
+        var new_request = {                                     
+          request_id: request_id, 
+          project_user_id: req.projectuser._id,
+          lead_id: createdLead._id, 
+          id_project:req.projectid,
+          first_text: req.body.first_text, 
+          departmentid: req.body.departmentid, 
+          sourcePage:req.body.sourcePage, 
+          language: req.body.language, 
+          userAgent:req.body.userAgent, 
+          status:null, 
+          createdBy: req.user._id,
+          attributes: req.body.attributes, 
+          subject: req.body.subject, 
+          preflight:undefined, 
+          channel: req.body.channel, 
+          location: req.body.location,
+          participants: req.body.participants,
+          lead: createdLead, requester: project_user,
+          priority: req.body.priority,
+          followers: req.body.followers,
+        };
+
+        return requestService.create(new_request).then(function (savedRequest) {
         // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-      return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
-        req.body.text, req.body.departmentid, req.body.sourcePage, 
-        req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
+      // return requestService.createWithIdAndRequester(request_id, req.projectuser._id, createdLead._id, req.projectid, 
+      //   req.body.text, req.body.departmentid, req.body.sourcePage, 
+      //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject).then(function (savedRequest) {
 
 
-      // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, createdBy, attributes) {
-        // return requestService.createWithId(req.params.request_id, req.body.sender, req.projectid, 
-        //     req.body.text, req.body.departmentid, req.body.sourcePage, 
-        //     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes).then(function (savedRequest) {
-
-
+          // return messageService.create(sender || req.user._id, fullname, request_id, req.body.text,
+          // req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
+            
           // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata) {
-          return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
-            req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
+          // return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, request_id, req.body.text,
+          //   req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata).then(function(savedMessage){                    
               
-              // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-
             
                 winston.debug('res.json(savedRequest)'); 
                 var endTimestamp = new Date();
                 winston.verbose("request create end: " + (endTimestamp - startTimestamp));
                 return res.json(savedRequest);
-              });
+              // });
             // });
           });                           
             

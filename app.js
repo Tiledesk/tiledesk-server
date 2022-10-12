@@ -97,6 +97,7 @@ var faq = require('./routes/faq');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
 var project_user = require('./routes/project_user');
+var project_users_test = require('./routes/project_user_test');
 var request = require('./routes/request');
 // var setting = require('./routes/setting');
 var users = require('./routes/users');
@@ -142,7 +143,9 @@ botSubscriptionNotifier.start();
 
 
 var geoService = require('./services/geoService');
- geoService.listen();
+geoService.listen();
+
+
 
 
 
@@ -322,8 +325,8 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     
     let q =  Project.findOne({_id: projectid, status: 100});
-    if (cacheEnabler.project) {
-      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
+    if (cacheEnabler.project) { 
+      q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
       winston.debug('project cache enabled');
     }
     q.exec(function(err, project){
@@ -400,6 +403,8 @@ app.use('/:projectid/', [projectIdSetter, projectSetter, IPFilter.projectIpFilte
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
 
+app.use('/:projectid/project_users_test', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], project_users_test);
+
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], lead);
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['bot','subscription'])] , message);
 
@@ -442,6 +447,8 @@ app.use('/:projectid/project_users', project_user);
 
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
+
+//passport double check this and the next
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('guest', ['bot','subscription'])], userRequest);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], request);
