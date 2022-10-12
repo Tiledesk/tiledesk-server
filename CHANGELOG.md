@@ -11,7 +11,13 @@
 - field answer in faq model is no longer required
 - add field public to faq_kb model (IGNORA PER IL MOMENTO)
 - when template is undefined the empty template is now created
-- add test
+- Add unit test for project and project_user
+- Added project_user test
+- Created new endpoint for creating new requests with unit test
+- Created new endpoint for inserting multiple messages at once with unit test
+- New validation for empty text for new message endpoint 
+- Added project_user_test route 
+- Unit test fix
 
 # 2.3.28
 - UIDGenerator renamed fix
