@@ -1,5 +1,5 @@
 
-# Untagged
+# 2.3.29
 - UIDGenerator class replacement for request route
 - Added hasRole cache for project_user
 - Added index { id_project: 1, role: 1, status: 1, createdAt: 1  } for  Project_user schema
@@ -9,10 +9,9 @@
 - Log fix
 - add fields reply and enabled to faq model 
 - field answer in faq model is no longer required
-- add field public to faq_kb model (IGNORA PER IL MOMENTO)
+- add field public to faq_kb model
 - when template is undefined the empty template is now created
 - Add unit test for project and project_user
-- Added project_user test
 - Created new endpoint for creating new requests with unit test
 - Created new endpoint for inserting multiple messages at once with unit test
 - New validation for empty text for new message endpoint 
@@ -35,7 +34,7 @@
 
 # 2.3.24
 - Increased cache TTL from: standardTTL from 120 to 300, longTTL from 1200 to 3600
-- Added cache request.create.simple, + cacheEnabler. name fix
+- Added cache request.create.simple + cacheEnabler. name fix
 - Disabled unapplicable cache for updateWaitingTimeByRequestId and find request by id REST API
 - Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.14
 - Restored populateMessageWithRequest. Bug with \agent command. Try to resolve performance with cache
