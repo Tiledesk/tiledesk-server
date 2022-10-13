@@ -21,6 +21,7 @@ const { check, validationResult } = require('express-validator');
 
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
+var PromiseUtil = require("../utils/promiseUtil");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -406,7 +407,8 @@ async (req, res)  => {
       });
       winston.debug('--- >promises', promises);
 
-      Promise.all(promises).then((values) => {
+      //Promise.all(promises).then((values) => {
+      PromiseUtil.doAllSequentually(promises).then((values) => {
         winston.info('Inserted multiple messages with values: ', values);
         return res.status(200).json(values);
       }).catch((err) => {
