@@ -147,13 +147,11 @@ geoService.listen();
 
 
 
-
-
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
 var pubModulesManager = require('./pubmodules/pubModulesManager');
-pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}});
+pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager});
   
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -225,7 +223,10 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 // https://stackoverflow.com/questions/18710225/node-js-get-raw-request-body-using-express
 
-app.use(bodyParser.json({
+const JSON_BODY_LIMIT = process.envJSON_BODY_LIMIT || '500KB';
+winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
+
+app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
     // var url = req.originalUrl;
     // if (url.indexOf('/stripe/')) {
@@ -235,7 +236,7 @@ app.use(bodyParser.json({
   }
 }));
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: false }));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
