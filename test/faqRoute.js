@@ -16,6 +16,7 @@ var fs = require('fs');
 
 var expect = chai.expect;
 var assert = chai.assert;
+var path = require('path');
 
 chai.use(chaiHttp);
 
@@ -393,7 +394,7 @@ describe('FaqKBRoute', () => {
                                 .post('/'+ savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname,'./example-faqs.csv'), 'example-faqs.csv') 
+                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname,'./example-faqs.csv')))
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
@@ -447,7 +448,7 @@ describe('FaqKBRoute', () => {
                                 .post('/'+ savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname, './example-faqs.csv'), 'example-faqs.csv') 
+                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname, './example-faqs.csv')))
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
