@@ -1,5 +1,8 @@
 
 
+# 2.3.31
+- logfix
+
 # 2.3.30
 - save multiple messages fix with sequential promises
 - JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
