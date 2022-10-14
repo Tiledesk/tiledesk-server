@@ -305,11 +305,11 @@ class PubModulesManager {
 
             winston.info("PubModulesManager initialized queue.");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init queue module not found");
-            }else {
+            // if (err.code == 'MODULE_NOT_FOUND') { 
+            //     winston.info("PubModulesManager init queue module not found");
+            // }else {
                 winston.info("PubModulesManager error initializing init queue module", err);
-            }
+            // }
         }
 
 
