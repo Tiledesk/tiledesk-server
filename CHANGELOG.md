@@ -1,11 +1,21 @@
 
+💥 TILEDESK SERVER v2.3.32 💥
+🚀        TAGGED AND PUBLISHED ON NPM           🚀
+🚀        IN PRODUCTION                        🚀
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.32) 
+
+# 2.3.33
+- aqmp depenency fix
+
+# 2.3.32
+- log pub module queue
 
 # 2.3.31
 - logfix
 
 # 2.3.30
 - save multiple messages fix with sequential promises
-- JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
+- Default JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
 
 # 2.3.29
 - UIDGenerator class replacement for request route
@@ -52,12 +62,8 @@
 - Added cache for chat21 webhook event type message
 - Added cache for getoperator method of department service
 
-💥 TILEDESK SERVER v2.3.23 💥
-🚀        TAGGED AND PUBLISHED ON NPM           🚀
-🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
-# 2.3.23 -> PROD
+# 2.3.23
 - cacheEnabler + trigger cache + subscription cache
 - project cache with cacheEnabler
 - request cache with cacheEnabler
@@ -82,7 +88,7 @@
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
 
-# 2.3.18.7 -> PROD
+# 2.3.18.7
 - filter request by smartAssignment
 
 # 2.3.18.6
