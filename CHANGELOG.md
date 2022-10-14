@@ -1,4 +1,10 @@
 
+# 2.3.32
+- JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
+
+# 2.3.31
+- save multiple messages fix with sequential promises
+
 # 2.3.29
 - UIDGenerator class replacement for request route
 - Added hasRole cache for project_user
