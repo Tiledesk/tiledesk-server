@@ -1,9 +1,8 @@
 
-# 2.3.32
-- JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
 
-# 2.3.31
+# 2.3.30
 - save multiple messages fix with sequential promises
+- JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
 
 # 2.3.29
 - UIDGenerator class replacement for request route
