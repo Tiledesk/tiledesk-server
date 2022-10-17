@@ -1,10 +1,13 @@
 
-💥 TILEDESK SERVER v2.3.32 💥
+💥 TILEDESK SERVER v2.3.35 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.32) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.35) 
 
-# 2.3.33
+# 2.3.35
+- Added user util endpoint for contact lookup from chat21
+
+# 2.3.34
 - aqmp depenency fix
 
 # 2.3.32
