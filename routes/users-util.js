@@ -2,16 +2,18 @@ var express = require('express');
 var router = express.Router();
 
 var User = require("../models/user");
+var winston = require('../config/winston');
 
 
 
 
 
-router.get('/', function (req, res) {
+
+router.get('/:userid', function (req, res) {
   winston.debug("users");
-  var userid = req.user.id;
+  var userid = req.params.userid;
 
-  User.findById(userid, 'email firstname lastname _id emailverified', function (err, user) {
+  User.findById(userid, 'firstname lastname _id', function (err, user) {
     if (err) {
       winston.error('Error getting object.',err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
