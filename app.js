@@ -101,6 +101,7 @@ var project_users_test = require('./routes/project_user_test');
 var request = require('./routes/request');
 // var setting = require('./routes/setting');
 var users = require('./routes/users');
+var usersUtil = require('./routes/users-util');
 var publicRequest = require('./routes/public-request');
 var userRequest = require('./routes/user-request');
 var publicAnalytics = require('./routes/public-analytics');
@@ -377,6 +378,7 @@ app.use('/images', images);
 app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+app.use('/users_util', usersUtil);
 app.use('/logs', logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
