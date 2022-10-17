@@ -8,7 +8,7 @@ var winston = require('../config/winston');
 
 
 
-
+// sponz: realizza mini servizio senza sec
 router.get('/:userid', function (req, res) {
   winston.debug("users");
   var userid = req.params.userid;
