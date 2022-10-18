@@ -14,7 +14,7 @@ class LeadService {
     var that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({email: email, id_project: id_project})
-      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:email:"+email)
+      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:email:"+email)  //lead_cache
       .exec(function(err, lead)  {
           if (err) {
             return reject(err);
@@ -58,7 +58,7 @@ class LeadService {
     var that = this;
     return new Promise(function (resolve, reject) {
       return Lead.findOne({lead_id: lead_id, id_project: id_project})
-        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:lead_id:"+lead_id)
+        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":leads:lead_id:"+lead_id) //lead_cache
         .exec(function(err, lead)  {
           if (err) {
             winston.error("Error createIfNotExistsWithLeadId", err);

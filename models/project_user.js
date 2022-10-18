@@ -111,6 +111,12 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
   // Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} })
   Project_userSchema.index({ id_project: 1, id_user:1, role: 1 }); 
 
- 
+  // suggested by atlas
+  Project_userSchema.index({ id_project: 1, role: 1, status: 1, createdAt: 1  }); 
+
+
+
+
+
   module.exports = mongoose.model('project_user', Project_userSchema);;
 

@@ -97,9 +97,11 @@ var faq = require('./routes/faq');
 var faq_kb = require('./routes/faq_kb');
 var project = require('./routes/project');
 var project_user = require('./routes/project_user');
+var project_users_test = require('./routes/project_user_test');
 var request = require('./routes/request');
 // var setting = require('./routes/setting');
 var users = require('./routes/users');
+var usersUtil = require('./routes/users-util');
 var publicRequest = require('./routes/public-request');
 var userRequest = require('./routes/user-request');
 var publicAnalytics = require('./routes/public-analytics');
@@ -142,7 +144,8 @@ botSubscriptionNotifier.start();
 
 
 var geoService = require('./services/geoService');
- geoService.listen();
+geoService.listen();
+
 
 
 
@@ -222,7 +225,10 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 // https://stackoverflow.com/questions/18710225/node-js-get-raw-request-body-using-express
 
-app.use(bodyParser.json({
+const JSON_BODY_LIMIT = process.envJSON_BODY_LIMIT || '500KB';
+winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
+
+app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   verify: function (req, res, buf) {
     // var url = req.originalUrl;
     // if (url.indexOf('/stripe/')) {
@@ -232,7 +238,7 @@ app.use(bodyParser.json({
   }
 }));
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: false }));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -322,8 +328,8 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     
     let q =  Project.findOne({_id: projectid, status: 100});
-    if (cacheEnabler.project) {
-      q.cache(cacheUtil.defaultTTL, "projects:id:"+projectid)  //project_cache
+    if (cacheEnabler.project) { 
+      q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
       winston.debug('project cache enabled');
     }
     q.exec(function(err, project){
@@ -372,6 +378,7 @@ app.use('/images', images);
 app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
+app.use('/users_util', usersUtil);
 app.use('/logs', logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
@@ -399,6 +406,8 @@ app.use('/:projectid/', [projectIdSetter, projectSetter, IPFilter.projectIpFilte
 
 
 app.use('/:projectid/authtestWithRoleCheck', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtestWithRoleCheck);
+
+app.use('/:projectid/project_users_test', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], project_users_test);
 
 app.use('/:projectid/leads', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], lead);
 app.use('/:projectid/requests/:request_id/messages', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes(null, ['bot','subscription'])] , message);
@@ -442,6 +451,8 @@ app.use('/:projectid/project_users', project_user);
 
 // app.use('/:projectid/project_users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], project_user);
 
+
+//passport double check this and the next
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('guest', ['bot','subscription'])], userRequest);
 
 app.use('/:projectid/requests', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], request);

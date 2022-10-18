@@ -30,7 +30,7 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
         } else {
             winston.debug("user id: "+sender);
             var user = await User.findById(sender)
-              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+sender)
+              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+sender)     //user_cache
               .exec()   
             winston.debug("user", user);        
             senderFullname = user.fullName;

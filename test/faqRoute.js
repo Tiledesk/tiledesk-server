@@ -18,6 +18,7 @@ const path = require('path');
 
 var expect = chai.expect;
 var assert = chai.assert;
+var path = require('path');
 
 chai.use(chaiHttp);
 

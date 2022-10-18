@@ -112,13 +112,14 @@ describe('MessageRoute', () => {
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
-                res.should.have.status(500);                                
+                res.should.have.status(422);                                
           
                done();
             });
     });
   });
-});
+}).timeout(20000);
+
 
 
 
@@ -144,7 +145,7 @@ it('createSimpleNoText', function (done) {
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
-              res.should.have.status(500);                                
+              res.should.have.status(422);                                
         
              done();
           });
@@ -784,6 +785,387 @@ it('createSimpleWithFollowers', function (done) {
   });
 });
 });
+
+
+
+
+
+
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createMultiTextNoSender1'
+
+it('createMultiTextNoSender1', function (done) {
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+
+    chai.request(server)
+    .post('/'+ savedProject._id + '/requests')
+    .auth(email, pwd)
+    .set('content-type', 'application/json')
+    .send({"first_text":"first_text"})
+    .end(function(err, res) {
+
+      console.log("res.body",  res.body);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property('first_text').eql('first_text');
+
+      var request_id = res.body.request_id;
+      console.log("request_id",request_id);
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/'+request_id+'/messages/multi')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send([{"text":"text1"}, {"text":"text2"}])
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('array');                          
+
+              expect(res.body[0].sender).to.equal(savedUser._id.toString());
+              expect(res.body[0].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[0].recipient).to.equal(request_id);
+              expect(res.body[0].text).to.equal("text1");
+              expect(res.body[0].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[0].createdBy).to.equal(savedUser._id.toString());
+              expect(res.body[0].status).to.equal(0);            
+              expect(res.body[0].channel_type).to.equal("group");
+              expect(res.body[0].channel.name).to.equal("chat21");             
+        
+
+
+              expect(res.body[1].sender).to.equal(savedUser._id.toString());
+              expect(res.body[0].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[1].recipient).to.equal(request_id);
+              expect(res.body[1].text).to.equal("text2");
+              expect(res.body[1].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[1].createdBy).to.equal(savedUser._id.toString());
+              expect(res.body[1].status).to.equal(0);            
+              expect(res.body[1].channel_type).to.equal("group");
+              expect(res.body[1].channel.name).to.equal("chat21");             
+
+             done();
+          });
+        });
+  });
+});
+});
+
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createMultiTextNoSenderNoText'
+
+it('createMultiTextNoSenderNoText', function (done) {
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+
+    chai.request(server)
+    .post('/'+ savedProject._id + '/requests')
+    .auth(email, pwd)
+    .set('content-type', 'application/json')
+    .send({"first_text":"first_text"})
+    .end(function(err, res) {
+
+      console.log("res.body",  res.body);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+      res.body.should.have.property('first_text').eql('first_text');
+
+      var request_id = res.body.request_id;
+      console.log("request_id",request_id);
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/'+request_id+'/messages/multi')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send([{}, {"text":"text2"}])
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(500);
+              
+             done();
+          });
+        });
+  });
+});
+});
+
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createMultiTextWithSender'
+
+it('createMultiTextWithSender', function (done) {
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+    var email2 = "test-message-createwithsender22-" + Date.now() + "@email.com";
+    var pwd2 = "pwd";
+  
+    userService.signup( email2 ,pwd2, "Test Firstname22", "Test lastname22").then(function(savedUser2) {
+                 
+
+   projectService.createAndReturnProjectAndProjectUser("message-createMultiText", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+
+
+    var pu2 = new Project_user({
+      // _id: new mongoose.Types.ObjectId(),
+      id_project: savedProject._id,
+      id_user: savedUser2._id,
+      role: roleConstants.USER,
+      user_available: true,
+      createdBy: savedUser2._id,
+      updatedBy: savedUser2._id,
+    });
+    pu2.save(function (err, savedProject_user2) {
+
+
+    chai.request(server)
+    .post('/'+ savedProject._id + '/requests')
+    .auth(email, pwd)
+    .set('content-type', 'application/json')
+    .send({"first_text":"first_text"})
+    .end(function(err, res) {
+
+      console.log("res.body",  res.body);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+
+      res.body.should.have.property('first_text').eql('first_text');
+
+      var request_id = res.body.request_id;
+      console.log("request_id",request_id);
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/'+request_id+'/messages/multi')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send([{"sender":savedUser2._id,"text":"text1"}, {"sender":savedUser2._id,"text":"text2"}])
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('array');                          
+
+              expect(res.body[0].sender).to.equal(savedUser2._id.toString());
+              expect(res.body[0].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[0].recipient).to.equal(request_id);
+              expect(res.body[0].text).to.equal("text1");
+              expect(res.body[0].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[0].createdBy).to.equal(savedUser2._id.toString());
+              expect(res.body[0].status).to.equal(0);
+              expect(res.body[0].channel_type).to.equal("group");
+              expect(res.body[0].channel.name).to.equal("chat21");    
+              
+              
+
+              expect(res.body[1].sender).to.equal(savedUser2._id.toString());
+              expect(res.body[1].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[1].recipient).to.equal(request_id);
+              expect(res.body[1].text).to.equal("text2");
+              expect(res.body[1].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[1].createdBy).to.equal(savedUser2._id.toString());
+              expect(res.body[1].status).to.equal(0);
+              expect(res.body[1].channel_type).to.equal("group");
+              expect(res.body[1].channel.name).to.equal("chat21");    
+        
+             done();
+          });
+        });
+  });
+});
+});
+  });
+});
+
+
+
+
+
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createMultiTextWithHardcodedSender'
+
+it('createMultiTextWithHardcodedSender', function (done) {
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+    
+                 
+
+   projectService.createAndReturnProjectAndProjectUser("message-createMultiTextWithHardcodedSender", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+    chai.request(server)
+    .post('/'+ savedProject._id + '/requests')
+    .auth(email, pwd)
+    .set('content-type', 'application/json')
+    .send({"first_text":"first_text"})
+    .end(function(err, res) {
+
+      console.log("res.body",  res.body);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+
+      res.body.should.have.property('first_text').eql('first_text');
+
+      var request_id = res.body.request_id;
+      console.log("request_id",request_id);
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/'+request_id+'/messages/multi')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send([{"sender":"andrealeo","text":"text1"}, {"sender":"rocco","text":"text2"}])
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('array');                          
+
+              expect(res.body[0].sender).to.equal("andrealeo");
+              expect(res.body[0].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[0].recipient).to.equal(request_id);
+              expect(res.body[0].text).to.equal("text1");
+              expect(res.body[0].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[0].createdBy).to.equal("andrealeo");
+              expect(res.body[0].status).to.equal(0);
+              expect(res.body[0].channel_type).to.equal("group");
+              expect(res.body[0].channel.name).to.equal("chat21");    
+              
+              
+
+              expect(res.body[1].sender).to.equal("rocco");
+              expect(res.body[1].senderFullname).to.equal("Test Firstname Test lastname");
+              expect(res.body[1].recipient).to.equal(request_id);
+              expect(res.body[1].text).to.equal("text2");
+              expect(res.body[1].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[1].createdBy).to.equal("rocco");
+              expect(res.body[1].status).to.equal(0);
+              expect(res.body[1].channel_type).to.equal("group");
+              expect(res.body[1].channel.name).to.equal("chat21");    
+        
+             done();
+          });
+    });
+});
+});
+});
+
+
+
+
+
+
+
+// mocha test/messageRoute.js  --grep 'createMultiTextWithHardcodedSenderAndSenderFullname'
+
+it('createMultiTextWithHardcodedSenderAndSenderFullname', function (done) {
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+
+    
+                 
+
+   projectService.createAndReturnProjectAndProjectUser("message-createMultiTextWithHardcodedSenderAndSenderFullname", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+    chai.request(server)
+    .post('/'+ savedProject._id + '/requests')
+    .auth(email, pwd)
+    .set('content-type', 'application/json')
+    .send({"first_text":"first_text"})
+    .end(function(err, res) {
+
+      console.log("res.body",  res.body);
+      res.should.have.status(200);
+      res.body.should.be.a('object');
+
+      res.body.should.have.property('first_text').eql('first_text');
+
+      var request_id = res.body.request_id;
+      console.log("request_id",request_id);
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/'+request_id+'/messages/multi')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send([{"sender":"andrealeo", "senderFullname":"Andrea","text":"text1"}, {"sender":"rocco", "senderFullname":"Rocco", "text":"text2"}])
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('array');                          
+
+              expect(res.body[0].sender).to.equal("andrealeo");
+              expect(res.body[0].senderFullname).to.equal("Andrea");
+              expect(res.body[0].recipient).to.equal(request_id);
+              expect(res.body[0].text).to.equal("text1");
+              expect(res.body[0].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[0].createdBy).to.equal("andrealeo");
+              expect(res.body[0].status).to.equal(0);
+              expect(res.body[0].channel_type).to.equal("group");
+              expect(res.body[0].channel.name).to.equal("chat21");    
+              
+              
+
+              expect(res.body[1].sender).to.equal("rocco");
+              expect(res.body[1].senderFullname).to.equal("Rocco");
+              expect(res.body[1].recipient).to.equal(request_id);
+              expect(res.body[1].text).to.equal("text2");
+              expect(res.body[1].id_project).to.equal(savedProject._id.toString());
+              expect(res.body[1].createdBy).to.equal("rocco");
+              expect(res.body[1].status).to.equal(0);
+              expect(res.body[1].channel_type).to.equal("group");
+              expect(res.body[1].channel.name).to.equal("chat21");    
+        
+             done();
+          });
+    });
+});
+});
+});
+
+
 
 
 

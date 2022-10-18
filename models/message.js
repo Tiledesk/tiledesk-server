@@ -20,7 +20,7 @@ var MessageSchema = new Schema({
   senderFullname: {
     type: String,
     required: false,
-    default: "Guest"
+    default: "Guest" // guest_here
   },
   recipient: {
     type: String,

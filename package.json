@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.28",
+  "version": "2.3.36",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -51,6 +51,7 @@
     "csv-express": "^1.2.2",
     "debug": "^4.3.4",
     "dotenv": "^8.6.0",
+    "amqplib": "^0.5.5",
     "email-templates": "^8.1.0",
     "eventemitter2": "^6.4.4",
     "express": "^4.17.3",

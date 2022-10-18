@@ -1,4 +1,44 @@
 
+💥 TILEDESK SERVER v2.3.35 💥
+🚀        TAGGED AND PUBLISHED ON NPM           🚀
+🚀        IN PRODUCTION                        🚀
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.35) 
+
+# 2.3.35
+- Added user util endpoint for contact lookup from chat21
+
+# 2.3.34
+- aqmp depenency fix
+
+# 2.3.32
+- log pub module queue
+
+# 2.3.31
+- logfix
+
+# 2.3.30
+- save multiple messages fix with sequential promises
+- Default JSON_BODY_LIMIT increased to 500KB. Added JSON_BODY_LIMIT env variable
+
+# 2.3.29
+- UIDGenerator class replacement for request route
+- Added hasRole cache for project_user
+- Added index { id_project: 1, role: 1, status: 1, createdAt: 1  } for  Project_user schema
+- Enabled project_user for cacheEnabler class
+- Created cache test for project_user and project
+- Enabled project_user cache for hasRole method
+- Log fix
+- add fields reply and enabled to faq model 
+- field answer in faq model is no longer required
+- add field public to faq_kb model
+- when template is undefined the empty template is now created
+- Add unit test for project and project_user
+- Created new endpoint for creating new requests with unit test
+- Created new endpoint for inserting multiple messages at once with unit test
+- New validation for empty text for new message endpoint 
+- Added project_user_test route 
+- Unit test fix
+
 # 2.3.28
 - UIDGenerator renamed fix
 
@@ -15,7 +55,7 @@
 
 # 2.3.24
 - Increased cache TTL from: standardTTL from 120 to 300, longTTL from 1200 to 3600
-- Added cache request.create.simple, + cacheEnabler. name fix
+- Added cache request.create.simple + cacheEnabler. name fix
 - Disabled unapplicable cache for updateWaitingTimeByRequestId and find request by id REST API
 - Updated dependency @tiledesk/tiledesk-tybot-connector to 0.1.14
 - Restored populateMessageWithRequest. Bug with \agent command. Try to resolve performance with cache
@@ -25,12 +65,8 @@
 - Added cache for chat21 webhook event type message
 - Added cache for getoperator method of department service
 
-💥 TILEDESK SERVER v2.3.23 💥
-🚀        TAGGED AND PUBLISHED ON NPM           🚀
-🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.17) 
 
-# 2.3.23 -> PROD
+# 2.3.23
 - cacheEnabler + trigger cache + subscription cache
 - project cache with cacheEnabler
 - request cache with cacheEnabler
@@ -55,7 +91,7 @@
 - Moved route-queue to public module
 - Disable queue module if JOB_WORKER_ENABLED is true
 
-# 2.3.18.7 -> PROD
+# 2.3.18.7
 - filter request by smartAssignment
 
 # 2.3.18.6

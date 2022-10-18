@@ -513,7 +513,7 @@ class RequestService {
            try {
             //  getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
               var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
-              console.log("************* after get operator: "+new Date().toISOString());
+              // console.log("************* after get operator: "+new Date().toISOString());
 
               winston.debug("getOperators", result);
            } catch(err) {

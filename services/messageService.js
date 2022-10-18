@@ -173,6 +173,8 @@ class MessageService {
   }
 
 //   TODO must update also message.attributes from chat21
+// attento già scatta su chat21handler
+
   changeStatus(message_id, newstatus) {
     var that = this;
     return new Promise(function (resolve, reject) {
@@ -188,7 +190,6 @@ class MessageService {
            // winston.debug("updatedMessage", updatedMessage);
 
            that.emitMessage(updatedMessage);
-
             return resolve(updatedMessage);
           });
     });

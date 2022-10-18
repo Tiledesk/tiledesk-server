@@ -47,7 +47,7 @@ describe('RequestRoute', () => {
             .post('/'+ savedProject._id + '/requests/')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"text":"first_text"})
+            .send({"first_text":"first_text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
@@ -102,7 +102,7 @@ it('createUpperCaseEmail', function (done) {
           .post('/'+ savedProject._id + '/requests/')
           .auth("test-request-create-" + now + "@email.com", pwd)
           .set('content-type', 'application/json')
-          .send({"text":"first_text"})
+          .send({"first_text":"first_text"})
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
@@ -528,7 +528,7 @@ it('getallFilter-snap_department_routing', function (done) {
 
 
 
-// mocha test/requestRoute.js  --grep 'getallSimple'
+// mocha test/requestRoute.js  --grep 'getallFilter-snap_department_default'
 
 it('getallFilter-snap_department_default', function (done) {
   // this.timeout(10000);
@@ -819,7 +819,7 @@ it('getallWithLoLead', function (done) {
             .post('/'+ savedProject._id + '/requests/')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"text":"first_text"})
+            .send({"first_text":"first_text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
@@ -898,7 +898,7 @@ it('getallWithLoLead', function (done) {
             .post('/'+ savedProject._id + '/requests/')
             .auth(email, pwd)
             .set('content-type', 'application/json')
-            .send({"text":"first_text"})
+            .send({"first_text":"first_text"})
             .end(function(err, res) {
                 //console.log("res",  res);
                 console.log("res.body",  res.body);
@@ -976,7 +976,7 @@ it('createAndAssign2', function (done) {
           .post('/'+ savedProject._id + '/requests/')
           .auth(email, pwd)
           .set('content-type', 'application/json')
-          .send({"text":"first_text"})
+          .send({"first_text":"first_text"})
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);

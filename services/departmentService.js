@@ -193,7 +193,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
     let q = Project.findOne({_id: projectid, status: 100})
-    if (cacheEnabler.project) {    //cache_virtual_problem
+    if (cacheEnabler.project) { 
       q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
       winston.debug('project cache enabled');
     }

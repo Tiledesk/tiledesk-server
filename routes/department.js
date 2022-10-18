@@ -176,6 +176,7 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
   winston.debug("## GET ALL DEPTS req.project ", req.project)
 
   var query = { "id_project": req.projectid };
+                                            //secondo me qui manca un parentesi tonda per gli or
   if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
     query.default = true;
@@ -270,7 +271,7 @@ router.get('/', function (req, res) {
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ',  req.project.trialExpired);
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.isActiveSubscription ',  req.project.isActiveSubscription);
   
-
+                                            //secondo me qui manca un parentesi tonda per gli or
   if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
     query.default = true;
