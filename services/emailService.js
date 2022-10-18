@@ -98,7 +98,11 @@ class EmailService {
     this.host = process.env.EMAIL_HOST || config.host;
     winston.info('EmailService host: ' + this.host);
 
-    this.secure  = process.env.EMAIL_SECURE || false;     
+    this.secure  = false;     
+    if (process.env.EMAIL_SECURE == "true" || process.env.EMAIL_SECURE ==true) {
+      this.secure  = true;     
+    }
+    // this.secure  = process.env.EMAIL_SECURE || false;     
     winston.info('EmailService secure: ' + this.secure);
 
     this.user  = process.env.EMAIL_USERNAME || config.username;
@@ -108,7 +112,11 @@ class EmailService {
     winston.info('EmailService port: ' + this.port);
 
 
-    this.markdown = process.env.EMAIL_MARKDOWN || true;
+    this.markdown = true;
+    if (process.env.EMAIL_MARKDOWN =="false" || process.env.EMAIL_MARKDOWN ==false) {
+      this.markdown = false;
+    }
+    // this.markdown = process.env.EMAIL_MARKDOWN || true;
     winston.info('EmailService markdown: '+ this.markdown);
 
     this.headers = {
@@ -252,6 +260,8 @@ class EmailService {
     };
 
     winston.debug('mailOptions', mailOptions);
+    winston.debug(' mail.config',  mail.config);
+   
     if (!mail.to) {
       return winston.warn("EmailService send method. to field is not defined", mailOptions);
     }
@@ -1683,6 +1693,6 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
-//  emailService.sendTest("asd.");
+ emailService.sendTest("abc@abc.it");
 
 module.exports = emailService;
