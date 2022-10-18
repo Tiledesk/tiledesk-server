@@ -116,6 +116,7 @@ router.post('/', function (req, res) {
       question: req.body.question,
       answer: req.body.answer,
       reply: req.body.reply,
+      form: req.body.form,
       enabled: true,
       id_project: req.projectid,
       topic: req.body.topic,
@@ -188,7 +189,10 @@ router.put('/:faqid', function (req, res) {
     update.enabled = req.body.enabled;
   }
   if (req.body.reply!=undefined) {
-    updated.reply = req.body.enabled;
+    update.reply = req.body.enabled;
+  }
+  if (req.body.form!=undefined) {
+    update.form = req.body.form;
   }
   
 

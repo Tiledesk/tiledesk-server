@@ -5,16 +5,20 @@ var Faq= require("../models/faq");
 var Department = require("../models/department");
 var faqService = require("../services/faqService");
 const botEvent = require('../event/botEvent');
+const faqBotEvent = require('../event/faqBotEvent');
 var winston = require('../config/winston');
 var httpUtil = require("../utils/httpUtil");
+const { forEach } = require('lodash');
+var multer = require('multer')
+var upload = multer()
+
 
 router.post('/', function (req, res) {
-  winston.info('create BOT ', req.body);
-              // create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template)
+    winston.info('create BOT ', req.body);
+    //create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template)
     faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined, req.body.language, req.body.template).then(function(savedFaq_kb) {
-    res.json(savedFaq_kb);
-  });
-
+      res.json(savedFaq_kb);
+    });
 
 });
 
@@ -334,5 +338,127 @@ router.get('/', function (req, res) {
   });
 
 });
+
+router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) => {
+
+  let id_faq_kb = req.params.id_faq_kb;
+  winston.debug('id_faq_kb: ', id_faq_kb);
+
+  let json_string = req.file.buffer.toString('utf-8');
+  winston.debug("json_string: ", json_string);
+
+  Faq_kb.findById(id_faq_kb, (err, faq_kb) => {
+    if (err) {
+      winston.error("GET FAQ-KB ERROR", err);
+      return res.status(500).send({ success: false, msg: "Error getting bot." }); 
+    }
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Bot not found.'});
+    }
+
+    const json = JSON.parse(json_string);
+
+    if (json.webhook_enabled) {
+      faq_kb.webhook_enabled = json.webhook_enabled;
+    }
+    if (json.webhook_url) {
+      faq_kb.webhook_url = json.webhook_url;
+    }
+    if (json.language) {
+      faq_kb.language = json.language;
+    }
+    if (json.name) {
+      faq_kb.name = json.name;
+    }
+    if (json.description) {
+      faq_kb.description = json.description;
+    }
+
+    Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, (err, updatedFaq_kb) => {
+      if (err) {
+        return res.status(500).send({ success: false, msg: "Error updating bot." }); 
+      }
+      
+      botEvent.emit('faqbot.update', updatedFaq_kb);
+
+      json.intents.forEach((intent) => {
+        
+        var new_faq = new Faq({
+          id_faq_kb: updatedFaq_kb._id,
+          id_project: req.projectid,
+          createdBy: req.user.id,
+          question: intent.question,
+          answer: intent.answer,
+          reply: intent.reply,
+          form: intent.form,
+          enabled: intent.enabled,
+          webhook_enabled: intent.webhook_enabled,
+          language: intent.language,
+          
+        })
+        
+        new_faq.save((err, savedFaq) => {
+          if (err) {
+            winston.error("GET FAQ-KB ERROR", err);
+            if (err.code == 11000) {
+              return res.status(409).send({ success: false, msg: 'Duplicate intent_display_name.' });
+            } else {
+              winston.debug('--- > ERROR ', err)
+              return res.status(500).send({ success: false, msg: 'Error saving intent.' });
+            }  
+          }
+          winston.debug("NEW FAQ CREATED WITH ID: ", savedFaq._id);
+          faqBotEvent.emit('faq.create', savedFaq);
+        })
+        
+      })
+
+      res.send(updatedFaq_kb);
+
+    })
+    
+  }) 
+
+})
+
+router.get('/exportjson/:id_faq_kb', (req, res) => {
+
+  let id_faq_kb = req.params.id_faq_kb;
+
+  Faq_kb.findById(id_faq_kb, (err, faq_kb) => {
+    if (err){
+      winston.error('GET FAQ-KB ERROR ', err)
+      return res.status(500).send({ success: false, msg: 'Error getting bot.' });
+    } else {
+      winston.debug('FAQ-KB: ', faq_kb)
+
+
+      faqService.getAll(id_faq_kb).then((faqs) => {
+        
+        const intents = faqs.map(({_id, id_project, topic, status, id_faq_kb, createdBy, intent_id, createdAt, updatedAt, __v, ...keepAttrs}) => keepAttrs)
+      
+        let json = {
+          webhook_enabled: faq_kb.webhook_enabled,
+          webhook_url: faq_kb.webhook_url,
+          language: faq_kb.language,
+          name: faq_kb.name,
+          description: faq_kb.description,
+          intents: intents
+        }
+
+        let json_string = JSON.stringify(json);
+
+        res.set({"Content-Disposition":"attachment; filename=\"bot.txt\""});
+        return res.send(json_string);
+
+      }).catch((err) => {
+        winston.error('GET FAQ ERROR: ', err)
+        return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
+      })
+    }
+  })
+  
+})
+
 
 module.exports = router;

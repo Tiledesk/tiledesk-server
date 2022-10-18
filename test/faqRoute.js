@@ -11,6 +11,8 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
+const path = require('path');
+
 
 // chai.config.includeStack = true;
 
@@ -68,128 +70,74 @@ describe('FaqKBRoute', () => {
 
                         
                 });
-                });
+            });
                 
     });
 
-    it('create with template example', (done) => {
-
-        var email = "test-signup-" + Date.now() + "@email.com";
-        var pwd = "pwd";
-
-        userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-            projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
-
-                chai.request(server)
-                    .post('/'+ savedProject._id + '/faq_kb')
-                    .auth(email, pwd)
-                    .send({"name":"testbot", type: "internal", template: "example" })
-                    .end((err, res) => {
-                        //console.log("res",  res);
-                        console.log("res.body",  res.body);
-                        res.should.have.status(200);
-                        res.body.should.be.a('object');
-                        expect(res.body.name).to.equal("testbot");                                                                              
-                        var id_faq_kb = res.body._id;
-
-                        chai.request(server)
-                            .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                            .auth(email, pwd)
-                            .end((err, res) => {
-                                console.log("faq_list: ", res.body);
-                                res.should.have.status(200);
-                                res.body.should.be.an('array').that.is.not.empty;
-
-                                done();
-
-                            })
-
-                        
-
-                    });
-            })
-        })
-    })
+    it('create with form (createFaqKb function)', (done) => {
 
 
-    it('create with template empty', (done) => {
-
-        
         //   this.timeout();
 
         var email = "test-signup-" + Date.now() + "@email.com";
         var pwd = "pwd";
+        let example_form = {
+            fields: [
+                {
+                    name: "userFullname",
+                    type: "text",
+                    label: "What is your name?"
+                },
+                {
+                    name: "userEmail",
+                    type: "text",
+                    regex: "/^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'+/0-9=?A-Z^_`a-z{|}~]+(.[-!#$%&'+/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/",
+                    label: "Your email?",
+                    errorLabel: "This email address is invalid\n\nCan you insert a correct email address?"
+                }
+            ]
+        }
 
-        userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
-            projectService.create("test-faqkb-create", savedUser._id).then(function(savedProject) {                                              
-                    chai.request(server)
-                        .post('/'+ savedProject._id + '/faq_kb')
-                        .auth(email, pwd)
-                        .send({"name":"testbot", type: "tilebot"})
-                        .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body (faqkb)",  res.body);
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.name).to.equal("testbot");
-                            expect(res.body.type).to.equal("tilebot");
-                            var id_faq_kb = res.body._id;
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+            projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                            chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
-                                    console.log("faq_list: ", res.body);
-                                    res.should.have.status(200);
-                                    res.body.should.be.an('array').that.is.empty;
+                chai.request(server)
+                    .post('/' + savedProject._id + '/faq_kb')
+                    .auth(email, pwd)
+                    .send({ "name": "testbot", type: "external", language: 'fr' })
+                    .end((err, res) => {
+                        //console.log("res",  res);
+                        console.log("res.body", res.body);
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.name).to.equal("testbot");
+                        expect(res.body.language).to.equal("fr");
+                        var id_faq_kb = res.body._id;
 
-                                    var reply_example = {
-                                        type: "text",
-                                        text: "Hello with buttons",
-                                        attributes: {
-                                            attachment: {
-                                                type:"template",
-                                                buttons: [
-                                                    {
-                                                        type: "text",
-                                                        value: "REPLY ONE"
-                                                    },
-                                                    {
-                                                        type: "text",
-                                                        value: "REPLY TWO"
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
+                        chai.request(server)
+                            .post('/'+ savedProject._id + '/faq')
+                            .auth(email, pwd)
+                            .send({id_faq_kb: id_faq_kb, form: example_form})
+                            .end((err, res) => {
+                                //console.log("res",  res);
+                                console.log("res.body",  res.body);
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+                                expect(res.body.id_faq_kb).to.equal(id_faq_kb);                                                                              
+                                expect(res.body.form).to.exist;
+                                res.body.form.should.be.a('object');                                                                           
+                                expect(res.body.intent_display_name).to.not.equal(undefined);                                                                              
+                                expect(res.body.webhook_enabled).to.equal(false);                                                                              
+                                
+                                done();
+                            });
+                    });
 
-                                    chai.request(server)
-                                        .post('/'+ savedProject._id + '/faq')
-                                        .auth(email, pwd)
-                                        .send({id_faq_kb: id_faq_kb, question: "question1", reply: reply_example })
-                                        .end((err, res) => {
-                                            //console.log("res",  res);
-                                            console.log("res.body (faq reply)",  res.body);
-                                            res.should.have.status(200);
-                                            res.body.should.be.a('object');
-                                            res.body.reply.should.be.a('object');
-                                            expect(res.body.id_faq_kb).to.equal(id_faq_kb);
-                                            expect(res.body.question).to.equal("question1");
-                                            expect(res.body.reply.type).to.equal(reply_example.type);
-                                            expect(res.body.reply.text).to.equal(reply_example.text);
-                                            expect(res.body.intent_display_name).to.not.equal(undefined);
-                                            expect(res.body.webhook_enabled).to.equal(false);
-                                            
-                                            done();
-                                        });
 
-                                })
-                        });
-                });
             });
-    });
+        });
 
-
+    }).timeout(20000);
 
 
 
@@ -393,7 +341,7 @@ describe('FaqKBRoute', () => {
                                 .post('/'+ savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile',  fs.readFileSync('./example-faqs.csv'), 'example-faqs.csv') 
+                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname, './example-faqs.csv')), 'example-faqs.csv') 
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
@@ -447,7 +395,7 @@ describe('FaqKBRoute', () => {
                                 .post('/'+ savedProject._id + '/faq/uploadcsv')
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/csv')
-                                .attach('uploadFile',  fs.readFileSync('./example-faqs.csv'), 'example-faqs.csv') 
+                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname, './example-faqs.csv')), 'example-faqs.csv') 
                                 .field('id_faq_kb', id_faq_kb)
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       

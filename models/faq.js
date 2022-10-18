@@ -29,7 +29,7 @@ var FaqSchema = new Schema({
   },
   question: {
     type: String,
-    required: true 
+    required: false
   },
 
   webhook_enabled: { //usa questo
@@ -83,6 +83,10 @@ var FaqSchema = new Schema({
   createdBy: {
     type: String,
     required: true
+  },
+  form: {
+    type: Object,
+    required: false
   }
 },{
   timestamps: true,
