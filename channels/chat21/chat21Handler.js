@@ -266,7 +266,8 @@ class Chat21Handler {
                 // TODO perche nn c'è setImmedite? per performace
 
 
-                    winston.verbose("Chat21Sender on message.sending ",  message);
+                    winston.verbose("Chat21Sender on message.sending: "+  message.text);
+                    winston.debug("Chat21Sender on message.sending ",  message);
                    
                    if (message && 
                     message.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING &&
@@ -293,7 +294,8 @@ class Chat21Handler {
                        
 
 
-                        winston.verbose("Chat21Sender sending message.sending ",  message);
+                        winston.verbose("Chat21Sender sending message.sending: "+  message.text);
+                        winston.debug("Chat21Sender sending message.sending ",  message);
 
                         // chat21Util.getParsedMessage().then(function(messageData) {
                         //     message = messageData;
@@ -344,6 +346,8 @@ class Chat21Handler {
                             }    
                             */   
                          
+                            // performance console log
+                            // console.log("************* send message chat21: "+new Date().toISOString(), message.text );
 
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
@@ -352,6 +356,10 @@ class Chat21Handler {
                                     
 
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);
+                                            
+                                            
+                                            // performance console log
+                                            // console.log("************* senttt message chat21: "+new Date().toISOString(), message.text );
 
                                             chat21Event.emit('message.sent', data);
     
@@ -379,6 +387,7 @@ class Chat21Handler {
 
                             chat21.auth.setAdminToken(adminToken);
 
+                            winston.debug("Chat21Sender");
                             // send: function(sender_fullname, recipient_id, recipient_fullname, text, sender_id, attributes, type, metadata){
                            return  chat21.messages.send(message.senderFullname,     message.recipient, 
                             message.recipientFullname, message.text, message.sender, message.attributes, message.type, message.metadata)
@@ -584,10 +593,17 @@ class Chat21Handler {
                         if (request.subject) {
                             group_name = request.subject;
                         }
+                        
+                        // performance console log
+                        // console.log("************* before request.support_group.created: "+new Date().toISOString());
 
                         //TODO racecondition?
                         return chat21.groups.create(group_name, members, gAttributes, groupId).then(function(data) {
-                                winston.verbose("Chat21 group created: " + JSON.stringify(data));      
+                                winston.verbose("Chat21 group created: " + JSON.stringify(data));     
+
+                                // performance console log
+                                // console.log("************* after request.support_group.created: "+new Date().toISOString()); 
+
                                 requestEvent.emit('request.support_group.created', request);
 
                                 chat21Event.emit('group.create', data);      

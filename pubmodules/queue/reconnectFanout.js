@@ -19,7 +19,7 @@ var exchange = 'ws';
 function start() {
   amqp.connect(url, function(err, conn) {
     if (err) {
-      winston.error("[AMQP Fanout]", err.message);
+      winston.error("[AMQP Fanout]", err);
       return setTimeout(start, 1000);
     }
     conn.on("error", function(err) {
@@ -115,7 +115,7 @@ function startWorker() {
       //MOD4 
         ch.bindQueue(_ok.queue, exchange, '', {}, function(err3, oka) {
           winston.info("Queue Fanout bind: "+_ok.queue+ " err: "+err3);
-          winston.info("Data Queue", oka)
+          winston.info("Data Queue Fanout", oka)
         });
 
         // ch.bindQueue(_ok.queue, exchange, "request_create", {}, function(err3, oka) {
@@ -163,20 +163,20 @@ function work(msg, cb) {
   winston.debug("Got Fanout msg:"+ message_string +  " topic:" + topic);
 
   if (topic === 'request_create') {
-    winston.debug("here topic:" + topic);
-    winston.info("reconnect request.update")
+    winston.debug("reconnectfanout here topic:" + topic);
+    winston.debug("reconnect request.update")
     requestEvent.emit('request.create.queue.pubsub', JSON.parse(message_string));
   }
   if (topic === 'request_update') {
-    winston.debug("here topic:" + topic);
+    winston.debug("reconnectfanout here topic:" + topic);
     requestEvent.emit('request.update.queue.pubsub',  JSON.parse(message_string));
   }
   if (topic === 'message_create') {
-    winston.debug("here topic:" + topic);
+    winston.debug("reconnectfanout here topic:" + topic);
     messageEvent.emit('message.create.queue.pubsub', JSON.parse(message_string));
   }
   if (topic === 'project_user_update') {
-    winston.debug("here topic:" + topic);
+    winston.debug("reconnectfanout here topic:" + topic);
     authEvent.emit('project_user.update.queue.pubsub', JSON.parse(message_string));
   }
   cb(true);
@@ -227,12 +227,18 @@ function listen() {
   
   authEvent.on('project_user.update',function(data) {
     setImmediate(() => {
-
       let user = undefined;
-      if (data.req && data.req.user) { //i think is null from chat21webhook 
-        user = data.req.user;
-      }
-      var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user}}; //remove request
+      let body = undefined;
+        if (data.req ) {
+          if (data.req.user) { //i think is null from chat21webhook 
+            user = data.req.user;
+          }
+          if (data.req.body) {
+            body = data.req.body;
+          }
+        }
+        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        winston.debug("dat",dat);
 
       publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
     });

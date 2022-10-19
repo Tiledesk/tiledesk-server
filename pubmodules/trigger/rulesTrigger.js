@@ -53,6 +53,8 @@ class RulesTrigger {
 
           requestEvent.on('request.support_group.created', function(request) {
 
+            // performance console log
+            // console.log("************* request.support_group.created: "+new Date().toISOString());
 
             // requestEvent.on('request.create', function(request) {
             var requestJson = request.toJSON();
@@ -174,6 +176,9 @@ class RulesTrigger {
             //   attributes
             // );
             
+            // performance console log
+            // console.log("************* send message trigger: "+new Date().toISOString(), text);
+
             // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
             sendMessageUtil.send(
               sender, 
@@ -864,7 +869,8 @@ class RulesTrigger {
       
                     return requestService.create(new_request).then(function (savedRequest) {                   
 
-
+                      // performance console log
+                      // console.log("************* request created trigger: "+new Date().toISOString());
 
                         if (attributes) {
                           attributes.sendnotification = false; //  sembra nn funzionae

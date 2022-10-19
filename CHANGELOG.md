@@ -4,6 +4,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.35) 
 
+# Untagged
+- Created a job worker for geo db, activities and email notification
+
+# 2.3.36
+- BugFix email secure with false value. https://tiledesk.discourse.group/t/error-sending-email/180
+
 # 2.3.35
 - Added user util endpoint for contact lookup from chat21
 

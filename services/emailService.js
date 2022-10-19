@@ -1693,6 +1693,6 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
- emailService.sendTest("abc@abc.it");
+//  emailService.sendTest("abc@abc.it");
 
 module.exports = emailService;
