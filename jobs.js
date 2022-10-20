@@ -17,7 +17,7 @@ require('dotenv').config({ path: dotenvPath});
 var mongoose = require('mongoose');
 
 let winston = require('./config/winston');
-let JobsManager = require('./JobsManager');
+let JobsManager = require('./jobsManager');
 
 
 let geoService = require('./services/geoService');
