@@ -354,7 +354,7 @@ sendToUserEmailChannelEmail(projectid, message) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -459,7 +459,7 @@ sendToFollower(projectid, message) {
           }
         })
     } catch (e) {
-      winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+      winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
     }
 }
 
@@ -595,7 +595,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)    //user_cache
                             .exec(function (err, user) {
                             if (err) {
-                              winston.error("Error sending email to " + savedRequest.participants[0], err);
+                              winston.error("Error sending requestNotification email to " + savedRequest.participants[0], err);
                             }
                             if (!user) {
                               winston.warn("User not found",  savedRequest.participants[0]);
@@ -625,7 +625,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
      });
      
      } catch (e) {
-       winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+       winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
      }
      //end send email
      
@@ -666,7 +666,7 @@ sendEmailChannelTakingNotification(projectid, request) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -820,7 +820,7 @@ sendUserEmail(projectid, message) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -970,7 +970,7 @@ sendAgentEmail(projectid, savedRequest) {
                           //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)    //user_cache
                           .exec(function (err, user) {
                           if (err) {
-                            winston.error("Error sending email to " + savedRequest.participants[0], err);
+                            winston.error("Error sending requestNotification email to " + savedRequest.participants[0], err);
                           }
                           if (!user) {
                             winston.warn("User not found",  savedRequest.participants[0]);
@@ -1018,7 +1018,7 @@ sendAgentEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     winston.warn("Error sending email", {error:e, projectid:projectid, savedRequest:savedRequest}); //it's better to view error email at this stage
+     winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, savedRequest:savedRequest}); //it's better to view error email at this stage
    }
    //end send email
    

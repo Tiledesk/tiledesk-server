@@ -272,7 +272,7 @@ class EmailService {
         if (mail.callback){
           mail.callback(error, {info:info});
         }
-        return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
+        return winston.error("Error sending email ", {error:error,  mailConfig: mail.config, mailOptions:mailOptions});
       }
       winston.verbose('Email sent:', {info: info});
       winston.debug('Email sent:', {info: info, mailOptions: mailOptions});
