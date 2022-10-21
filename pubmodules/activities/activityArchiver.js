@@ -110,10 +110,10 @@ class ActivityArchiver {
             project_user = event.updatedProject_userPopulated;
           }
 
-          winston.info('ActivityArchiver authProjectUserUpdateKey event: ', event);
+          winston.debug('ActivityArchiver authProjectUserUpdateKey event: ', event);
 
           if (!event.req.user) {
-            return  winston.info('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
+            return  winston.debug('ActivityArchiver skipping archive empty user'); //from i think chat21webhook
           }
           var activity = new Activity({actor: {type:"user", id: event.req.user._id, name: event.req.user.fullName }, 
                 verb: "PROJECT_USER_UPDATE", actionObj: event.req.body, 
