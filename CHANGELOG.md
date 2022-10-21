@@ -1,11 +1,18 @@
 
-💥 TILEDESK SERVER v2.3.35 💥
+💥 TILEDESK SERVER v2.3.39 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.35) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.39) 
 
-# Untagged
+# 2.3.39
+- logfix
+
+# 2.3.38
+- JobManager require fix
+
+# 2.3.37
 - Created a job worker for geo db, activities and email notification
+- users_util lookup fix
 
 # 2.3.36
 - BugFix email secure with false value. https://tiledesk.discourse.group/t/error-sending-email/180
