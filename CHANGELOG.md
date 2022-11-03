@@ -1,8 +1,15 @@
 
+
 💥 TILEDESK SERVER v2.3.39 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.39) 
+
+# 2.3.41
+- Added force parameter to close request 
+
+# 2.3.40
+- logfix
 
 # 2.3.39
 - logfix

@@ -1019,12 +1019,19 @@ class RequestService {
   }
 
 
-  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by) {
+  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by, force) {
 
     var that = this;
     return new Promise(function (resolve, reject) {
      // winston.debug("request_id", request_id);
      
+     if (force==undefined) {
+      winston.debug("force is undefined ");
+      force = false;
+     } 
+    //  else {
+    //   winston.info("force is: " + force);
+    //  }
 
      return Request      
      .findOne({request_id: request_id, id_project: id_project})
@@ -1045,12 +1052,14 @@ class RequestService {
          winston.error("Request not found for request_id "+ request_id + " and id_project " + id_project);
          return reject({"success":false, msg:"Request not found for request_id "+ request_id + " and id_project " + id_project});
        }      
-       if (request.status == RequestConstants.CLOSED) {
+       if (force == false && request.status == RequestConstants.CLOSED) {
          // qui1000
       //  if (request.statusObj.closed) {
         winston.debug("Request already closed for request_id "+ request_id + " and id_project " + id_project);
         return resolve(request);
        }
+
+       winston.debug("sono qui");
 
       //  un utente può chiudere se appartiene a participatingAgents oppure meglio agents del progetto?
       

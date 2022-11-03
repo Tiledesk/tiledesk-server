@@ -288,7 +288,7 @@ router.put('/:requestid/close', function (req, res) {
   
   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
   const closed_by = req.user.id;
-  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by).then(function(closedRequest) {
+  return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function(closedRequest) {
 
       winston.verbose("request closed", closedRequest);
 
