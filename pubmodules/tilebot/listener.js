@@ -29,13 +29,17 @@ class Listener {
        
         tybot.startApp(
             {              
-              MONGODB_URI: config.databaseUri,
-              API_ENDPOINT: apiUrl,
-              log: process.env.TILEBOT_LOG
+                MONGODB_URI: config.databaseUri,
+                API_ENDPOINT: apiUrl,
+                REDIS_HOST: process.env.CACHE_REDIS_HOST,
+                REDIS_PORT: process.env.CACHE_REDIS_PORT,
+                REDIS_PASSWORD: process.env.CACHE_REDIS_PASSWORD,
+                CACHE_ENABLED: process.env.CACHE_ENABLED,
+                log: process.env.TILEBOT_LOG
             }, () => {
-              winston.info("TileBot proxy server successfully started.");                 
+                winston.info("TileBot proxy server successfully started.");                 
             }
-          );
+        );
 
 
         botEvent.on('faqbot.create', function(bot) {
