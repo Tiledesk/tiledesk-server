@@ -26,7 +26,9 @@ class Listener {
         
 
         var that = this;
-       
+        console.log("Using: REDIS_HOST:", process.env.CACHE_REDIS_HOST);
+        console.log("Using: REDIS_PORT", process.env.CACHE_REDIS_PORT);
+        console.log("Using: REDIS_PASSWORD", process.env.CACHE_REDIS_PASSWORD);
         tybot.startApp(
             {              
                 MONGODB_URI: config.databaseUri,
