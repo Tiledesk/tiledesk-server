@@ -26,16 +26,26 @@ class Listener {
         
 
         var that = this;
-        console.log("Using: REDIS_HOST:", process.env.CACHE_REDIS_HOST);
-        console.log("Using: REDIS_PORT", process.env.CACHE_REDIS_PORT);
-        console.log("Using: REDIS_PASSWORD", process.env.CACHE_REDIS_PASSWORD);
+
+        var port = process.env.CACHE_REDIS_PORT || 6379;
+        winston.debug("Redis port: "+ port);
+
+        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        winston.debug("Redis host: "+ host);
+
+        var password = process.env.CACHE_REDIS_PASSWORD;
+        winston.debug("Redis password: "+ password);
+
+        // console.log("Using: REDIS_HOST:", process.env.CACHE_REDIS_HOST);
+        // console.log("Using: REDIS_PORT", process.env.CACHE_REDIS_PORT);
+        // console.log("Using: REDIS_PASSWORD", process.env.CACHE_REDIS_PASSWORD);
         tybot.startApp(
             {              
                 MONGODB_URI: config.databaseUri,
                 API_ENDPOINT: apiUrl,
-                REDIS_HOST: process.env.CACHE_REDIS_HOST,
-                REDIS_PORT: process.env.CACHE_REDIS_PORT,
-                REDIS_PASSWORD: process.env.CACHE_REDIS_PASSWORD,
+                REDIS_HOST: host,
+                REDIS_PORT: port,
+                REDIS_PASSWORD: password,
                 CACHE_ENABLED: process.env.CACHE_ENABLED,
                 log: process.env.TILEBOT_LOG
             }, () => {
