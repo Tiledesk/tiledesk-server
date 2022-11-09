@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.42",
+  "version": "2.3.43",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
