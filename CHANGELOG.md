@@ -1,11 +1,13 @@
 
-
-💥 TILEDESK SERVER v2.3.42 💥
+💥 TILEDESK SERVER v2.3.43 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.42) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.43) 
 
-# 2.3.42 -> PROD
+# 2.3.43 -> PROD
+- Package-lock fix
+
+# 2.3.42
 - Labels update 
 
 # 2.3.41
