@@ -1,13 +1,16 @@
 
-💥 TILEDESK SERVER v2.3.41 💥
+
+💥 TILEDESK SERVER v2.3.42 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.41) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.42) 
 
-# 2.3.41 -> PROD
+# 2.3.42 -> PROD
+- Labels update 
+
+# 2.3.41
 - Added force parameter to close request 
 - Updated dependency tiledesk/tiledesk-tybot-connector": 0.1.16
-- Labels update 
 
 # 2.3.40
 - logfix
