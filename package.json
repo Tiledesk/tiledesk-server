@@ -106,9 +106,7 @@
     "loadtest": "^5.2.0",
     "mocha": "^8.4.0",
     "mongodb-runner": "4.8.3",
-    "nodemon": "^2.0.16",
-    "sinon": "^9.2.4",
-    "sinon-mongoose": "^2.3.0"
+    "nodemon": "^2.0.16"
   },
   "bugs": {
     "url": "https://github.com/Tiledesk/tiledesk-server/issues"
