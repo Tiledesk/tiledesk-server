@@ -345,7 +345,7 @@ class ActivityArchiver {
 
         
         requestEvent.on(requestUpdatePreflightKey,  function(request) {
-          winston.info('ActivityArchiver request.update.preflight: ');
+          winston.debug('ActivityArchiver request.update.preflight: ');
    
           setImmediate(() => {           
        
