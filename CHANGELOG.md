@@ -1,11 +1,13 @@
 
-
-💥 TILEDESK SERVER v2.3.44 💥
+💥 TILEDESK SERVER v2.3.45 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.44) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.45) 
 
-# 2.3.44 -> PROD
+# # 2.3.45 -> PROD 
+- process.env.GLOBAL_SECRET fix
+
+# 2.3.44
 - Removed unused "sinon": "^9.2.4",
 - Removed unused "sinon-mongoose": "^2.3.0"
 - Update @tiledesk/tiledesk-tybot-connector: 0.1.19
