@@ -1,10 +1,14 @@
 
-💥 TILEDESK SERVER v2.3.45 💥
+
+💥 TILEDESK SERVER v2.3.46 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.45) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.46) 
 
-# # 2.3.45 -> PROD 
+# 2.3.46 -> PROD 
+- @tiledesk/tiledesk-tybot-connector": "^0.1.21
+
+# 2.3.45
 - process.env.GLOBAL_SECRET fix
 
 # 2.3.44
