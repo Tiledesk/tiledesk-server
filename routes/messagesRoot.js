@@ -65,6 +65,35 @@ router.post('/',
 
 
 
+router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
+
+  const DEFAULT_LIMIT = 40;
+
+  var limit = DEFAULT_LIMIT; // Number of rows per page
+
+  if (req.query.limit) {
+    limit = parseInt(req.query.limit);
+  }
+  if (limit > 100) {
+    limit = DEFAULT_LIMIT;
+  }
+
+
+  var page = 0;
+
+  if (req.query.page) {
+    page = req.query.page;
+  }
+
+  var skip = page * limit;
+
+  return Message.find({id_project: req.projectid}).sort({createdAt: 'desc'}).
+    skip(skip).limit(limit).exec(function(err, messages) { 
+      if (err) return next(err);
+      res.json(messages);
+    });
+});
+
 router.get('/csv', roleChecker.hasRoleOrTypes('owner'), function(req, res) {
 
 
