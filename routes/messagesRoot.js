@@ -5,6 +5,7 @@ var router = express.Router({mergeParams: true});
 
 var MessageConstants = require("../models/messageConstants");
 var Message = require("../models/message");
+var Request = require("../models/request");
 var messageService = require("../services/messageService");
 var winston = require('../config/winston');
 var fastCsv = require("fast-csv");
@@ -67,14 +68,15 @@ router.post('/',
 
 router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
 
-  const DEFAULT_LIMIT = 40;
+  const DEFAULT_LIMIT = 10;
 
   var limit = DEFAULT_LIMIT; // Number of rows per page
 
+  // console.log("req.query.populate_request",req.query.populate_request);
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
   }
-  if (limit > 100) {
+  if (limit > 50) {
     limit = DEFAULT_LIMIT;
   }
 
@@ -88,8 +90,16 @@ router.get('/',roleChecker.hasRoleOrTypes('owner'), function(req, res) {
   var skip = page * limit;
 
   return Message.find({id_project: req.projectid}).sort({createdAt: 'desc'}).
-    skip(skip).limit(limit).exec(function(err, messages) { 
+    skip(skip).limit(limit).lean().exec(async (err, messages) => { 
       if (err) return next(err);
+
+      if (req.query.populate_request) {  
+        // console.log("pupulate")
+        for (var i = 0; i < messages.length; i++) {
+          messages[i].request = await Request.findOne({request_id:messages[i].recipient, id_project: messages[i].id_project }).exec();
+        }
+      }
+
       res.json(messages);
     });
 });
