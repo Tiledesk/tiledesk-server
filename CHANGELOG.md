@@ -1,14 +1,20 @@
 
 
-💥 TILEDESK SERVER v2.3.47 💥
+💥 TILEDESK SERVER v2.3.48 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.47) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.48) 
 
-# 2.3.47 -> PROD 
+# 2.3.49 -> PROD 
+- @tiledesk/tiledesk-tybot-connector": "^0.1.22
+
+# 2.3.48
+- added populate_request to root message endpoint for descending 
+
+# 2.3.47
 - added root message endpoint for descending 
 
-# 2.3.46
+# 2.3.46 
 - @tiledesk/tiledesk-tybot-connector": "^0.1.21
 
 # 2.3.45
