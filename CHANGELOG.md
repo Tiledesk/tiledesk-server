@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.48) 
 
+# Untagged
+- Added new email sending endpoint 
+- Emails endpoint is now usable by agents
+
 # 2.3.49 -> PROD 
 - @tiledesk/tiledesk-tybot-connector": "^0.1.22
 
