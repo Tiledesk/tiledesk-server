@@ -19,7 +19,7 @@ var exchange = 'amq.topic';
 function start() {
   amqp.connect(url, function(err, conn) {
     if (err) {
-      winston.error("[AMQP]", err.message);
+      winston.error("[AMQP]", err);
       return setTimeout(start, 1000);
     }
     conn.on("error", function(err) {
@@ -117,10 +117,30 @@ function startWorker() {
             winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_create");
             winston.info("Data queue", oka)
         });
-        ch.bindQueue(_ok.queue, exchange, "request_update", {}, function(err3, oka) {
-            winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update");
+        ch.bindQueue(_ok.queue, exchange, "request_update_preflight", {}, function(err3, oka) {
+            winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update_preflight");
             winston.info("Data queue", oka)
         });
+        ch.bindQueue(_ok.queue, exchange, "request_participants_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_participants_update");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "request_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "request_close", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_close");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "request_close_extended", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_close_extended");
+          winston.info("Data queue", oka)
+        });
+
         ch.bindQueue(_ok.queue, exchange, "message_create", {}, function(err3, oka) {
               winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: message_create");
               winston.info("Data queue", oka)
@@ -158,22 +178,47 @@ function work(msg, cb) {
   winston.debug("Got msg:"+ message_string +  " topic:" + topic);
 
   if (topic === 'request_create') {
-    winston.info("here topic:" + topic);
+    winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.create.queue', msg.content);
     requestEvent.emit('request.create.queue', JSON.parse(message_string));
   }
   if (topic === 'request_update') {
-    winston.info("here topic:" + topic);
+    winston.debug("reconnect here topic:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
     requestEvent.emit('request.update.queue',  JSON.parse(message_string));
   }
+
+  if (topic === 'request_update_preflight') {
+    winston.debug("reconnect here topic:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    requestEvent.emit('request.update.preflight.queue',  JSON.parse(message_string));
+  }    
+  
+  if (topic === 'request_participants_update') {
+    winston.debug("reconnect here topic:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    requestEvent.emit('request.participants.update.queue',  JSON.parse(message_string));
+  }   
+  
+  if (topic === 'request_close') {
+    winston.debug("reconnect here topic:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    requestEvent.emit('request.close.queue',  JSON.parse(message_string));
+  }     
+  
+  if (topic === 'request_close_extended') {
+    winston.debug("reconnect here topic:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    requestEvent.emit('request.close.extended.queue',  JSON.parse(message_string));
+  }     
+
   if (topic === 'message_create') {
-    winston.debug("here topic:" + topic);
+    winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
     messageEvent.emit('message.create.queue', JSON.parse(message_string));
   }
   if (topic === 'project_user_update') {
-    winston.debug("here topic:" + topic);
+    winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
     authEvent.emit('project_user.update.queue', JSON.parse(message_string));
   }
@@ -204,17 +249,49 @@ function listen() {
 
     requestEvent.on('request.create', function(request) {
       setImmediate(() => {
-        winston.info("reconnect request.create")
+        winston.debug("reconnect request.create")
         publish(exchange, "request_create", Buffer.from(JSON.stringify(request)));
       });
     });
 
     requestEvent.on('request.update', function(request) {
       setImmediate(() => {
-        winston.info("reconnect request.update")
+        winston.debug("reconnect request.update")
         publish(exchange, "request_update", Buffer.from(JSON.stringify(request)));
       });
     });
+
+
+    
+
+    requestEvent.on('request.participants.update', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_participants_update", Buffer.from(JSON.stringify(request)));
+        winston.debug("reconnect participants.update published")
+      });
+    });
+
+    requestEvent.on('request.update.preflight', function(request) {
+      setImmediate(() => {
+        // winston.info("reconnect request.update.preflight")
+        publish(exchange, "request_update_preflight", Buffer.from(JSON.stringify(request)));
+        winston.debug("reconnect request.update.preflight published")
+      });
+    });
+
+
+    requestEvent.on('request.close', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_close", Buffer.from(JSON.stringify(request)));
+      });
+    });
+
+    requestEvent.on('request.close.extended', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_close_extended", Buffer.from(JSON.stringify(request)));
+      });
+    });
+
 
 
     messageEvent.on('message.create', function(message) {
@@ -226,10 +303,17 @@ function listen() {
     authEvent.on('project_user.update',function(data) {
       setImmediate(() => {
         let user = undefined;
-        if (data.req && data.req.user) { //i think is null from chat21webhook 
-          user = data.req.user;
+        let body = undefined;
+        if (data.req ) {
+          if (data.req.user) { //i think is null from chat21webhook 
+            user = data.req.user;
+          }
+          if (data.req.body) { 
+            body = data.req.body;
+          }
         }
-        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user}}; //remove request
+        var dat = {updatedProject_userPopulated: data.updatedProject_userPopulated, req: {user: user, body: body}}; //remove request
+        winston.debug("dat",dat);
         publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
       });
     });

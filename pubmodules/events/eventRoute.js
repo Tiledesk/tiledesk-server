@@ -42,7 +42,10 @@ router.post('/', [
 
 
     // // da qui
+    
+    // performance log
     // console.log("************* emit event"+new Date().toISOString());
+
     // // message.senderFullname,     message.recipient, 
     //             // message.recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp, message.group
     // var recipient = req.body.attributes.request_id;

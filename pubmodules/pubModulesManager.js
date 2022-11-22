@@ -124,7 +124,7 @@ class PubModulesManager {
     init(config) {
         winston.debug("PubModulesManager init");
 
-        // this.jobsManager = config.jobsManager;
+        this.jobsManager = config.jobsManager;
 
         try {
             this.appRules = require('./rules/appRules');
@@ -460,8 +460,8 @@ class PubModulesManager {
         // job_here
         if (this.emailNotification) {
             try {
-                this.emailNotification.requestNotification.listen();
-                // this.jobsManager.listenEmailNotification(this.emailNotification);
+                // this.emailNotification.requestNotification.listen();
+                this.jobsManager.listenEmailNotification(this.emailNotification);
                 winston.info("PubModulesManager emailNotification started.");   
             } catch(err) {        
                 winston.info("PubModulesManager error starting requestNotification module", err);            
@@ -480,8 +480,8 @@ class PubModulesManager {
         // job_here
         if (this.activityArchiver) {
             try {
-                this.activityArchiver.listen();
-                // this.jobsManager.listenActivityArchiver(this.activityArchiver);
+                // this.activityArchiver.listen();
+                this.jobsManager.listenActivityArchiver(this.activityArchiver);
                 winston.info("PubModulesManager activityArchiver started");
             } catch(err) {        
                 winston.info("PubModulesManager error starting activityArchiver module", err);            

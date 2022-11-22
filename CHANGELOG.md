@@ -1,8 +1,62 @@
 
-💥 TILEDESK SERVER v2.3.35 💥
+
+💥 TILEDESK SERVER v2.3.48 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.35) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.48) 
+
+# Untagged
+- Added new email sending endpoint 
+- Emails endpoint is now usable by agents
+
+# 2.3.49 -> PROD 
+- @tiledesk/tiledesk-tybot-connector": "^0.1.22
+
+# 2.3.48
+- added populate_request to root message endpoint for descending 
+
+# 2.3.47
+- added root message endpoint for descending 
+
+# 2.3.46 
+- @tiledesk/tiledesk-tybot-connector": "^0.1.21
+
+# 2.3.45
+- process.env.GLOBAL_SECRET fix
+
+# 2.3.44
+- Removed unused "sinon": "^9.2.4",
+- Removed unused "sinon-mongoose": "^2.3.0"
+- Update @tiledesk/tiledesk-tybot-connector: 0.1.19
+
+
+# 2.3.43
+- Package-lock fix
+- @tiledesk/tiledesk-tybot-connector: 0.1.17
+
+
+# 2.3.42
+- Labels update 
+
+# 2.3.41
+- Added force parameter to close request 
+- Updated dependency tiledesk/tiledesk-tybot-connector": 0.1.16
+
+# 2.3.40
+- logfix
+
+# 2.3.39
+- logfix
+
+# 2.3.38
+- JobManager require fix
+
+# 2.3.37
+- Created a job worker for geo db, activities and email notification
+- users_util lookup fix
+
+# 2.3.36
+- BugFix email secure with false value. https://tiledesk.discourse.group/t/error-sending-email/180
 
 # 2.3.35
 - Added user util endpoint for contact lookup from chat21

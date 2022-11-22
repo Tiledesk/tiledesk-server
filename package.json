@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.36",
+  "version": "2.3.49",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -43,7 +43,7 @@
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
-    "@tiledesk/tiledesk-tybot-connector": "^0.1.14",
+    "@tiledesk/tiledesk-tybot-connector": "^0.1.22",
     "@tiledesk/tiledesk-dialogflow-connector": "^1.7.4",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
@@ -109,9 +109,7 @@
     "loadtest": "^5.2.0",
     "mocha": "^8.4.0",
     "mongodb-runner": "4.8.3",
-    "nodemon": "^2.0.16",
-    "sinon": "^9.2.4",
-    "sinon-mongoose": "^2.3.0"
+    "nodemon": "^2.0.16"
   },
   "bugs": {
     "url": "https://github.com/Tiledesk/tiledesk-server/issues"

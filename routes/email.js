@@ -17,15 +17,39 @@ router.get('/templates/:templateid',
 router.post('/test/send', 
  async (req, res) => {
   let to = req.body.to;
-  winston.info("to",to);
+  winston.debug("to",to);
 
   let configEmail = req.body.config;
-  winston.info("configEmail", configEmail);
+  winston.debug("configEmail", configEmail);
 
   emailService.sendTest(to, configEmail, function(err,obj) {
     // winston.info("sendTest rest", err, obj);
     res.json({error: err, response:obj});
   });
+    
+});
+
+
+router.post('/send', 
+ async (req, res) => {
+  let to = req.body.to;
+  winston.info("to: " + to);
+
+  let text = req.body.text;
+  winston.info("text: " + text);
+
+  let request_id = req.body.request_id;
+  winston.info("request_id: " + request_id);
+
+  let subject = req.body.subject;
+  winston.info("subject: " + subject);
+
+  winston.info("req.project", req.project);
+
+             //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage)
+  emailService.sendEmailDirect(to, text, req.project, request_id, subject, undefined, undefined);
+  
+  res.json({"queued": true});
     
 });
 

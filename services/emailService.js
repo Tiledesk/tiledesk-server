@@ -272,7 +272,7 @@ class EmailService {
         if (mail.callback){
           mail.callback(error, {info:info});
         }
-        return winston.error("Error sending email ", {error:error,  mailOptions:mailOptions});
+        return winston.error("Error sending email ", {error:error,  mailConfig: mail.config, mailOptions:mailOptions});
       }
       winston.verbose('Email sent:', {info: info});
       winston.debug('Email sent:', {info: info, mailOptions: mailOptions});
@@ -1030,7 +1030,7 @@ class EmailService {
 
   }
 
-
+  
   
   async sendEmailChannelNotification(to, message, project, tokenQueryString, sourcePage) {
 
@@ -1360,10 +1360,6 @@ class EmailService {
   }
 
 
-
-
-
-
 /*
   sendEmailChannelTakingNotification(to, request, project, tokenQueryString) {
 
@@ -1410,6 +1406,102 @@ class EmailService {
     });
   }
 */
+
+
+
+
+
+
+  
+async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
+
+  var that = this;
+
+
+  if (project.toJSON) {
+    project = project.toJSON();
+  }
+
+  var html = await this.readTemplate('emailDirect.html', project.settings);
+
+  var envTemplate = process.env.EMAIL_DIRECT_HTML_TEMPLATE;
+    winston.debug("envTemplate: " + envTemplate);
+
+  if (envTemplate) {
+      html = envTemplate;
+  }
+
+  winston.debug("html: " + html);
+
+  var template = handlebars.compile(html);
+
+  var baseScope = JSON.parse(JSON.stringify(that));
+  delete baseScope.pass;
+
+
+  let msgText = text;
+  msgText = encode(msgText);
+  if (this.markdown) {
+    msgText = marked(msgText);
+  }
+  
+  winston.debug("msgText: " + msgText);
+  winston.debug("baseScope: " + JSON.stringify(baseScope));
+  
+
+  var replacements = {        
+    project: project,
+    seamlessPage: sourcePage,
+    msgText: msgText,
+    tokenQueryString: tokenQueryString,
+    baseScope: baseScope    
+  };
+
+  var html = template(replacements);
+  winston.debug("html: " + html);
+
+  
+  let replyTo;
+  if (this.replyEnabled) {
+    replyTo = request_id + this.inboundDomainDomainWithAt;
+  }
+
+  let from;
+  let configEmail;
+  if (project && project.settings && project.settings.email) {
+    if (project.settings.email.config) {
+      configEmail = project.settings.email.config;
+      winston.verbose("custom email configEmail setting found: ", configEmail);
+    }
+    if (project.settings.email.from) {
+      from = project.settings.email.from;
+      winston.verbose("custom from email setting found: "+ from);
+    }
+  }
+
+
+  // if (message.request && message.request.lead && message.request.lead.email) {
+  //   winston.info("message.request.lead.email: " + message.request.lead.email);
+  //   replyTo = replyTo + ", "+ message.request.lead.email;
+  // }
+
+  // if (!subject) {
+  //   subject = "Tiledesk"
+  // }
+  
+  that.send({
+    from:from, 
+    to:to, 
+    replyTo: replyTo, 
+    subject:subject,
+    text:html, 
+    html:html,
+    config:configEmail, 
+  }); 
+  
+}
+
+
 
   // ok
   async sendPasswordResetRequestEmail(to, resetPswRequestId, userFirstname, userLastname) {
@@ -1693,6 +1785,5 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
- emailService.sendTest("abc@abc.it");
 
 module.exports = emailService;

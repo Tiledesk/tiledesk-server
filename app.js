@@ -144,8 +144,18 @@ botSubscriptionNotifier.start();
 
 
 var geoService = require('./services/geoService');
-geoService.listen();
+// geoService.listen();
 
+let JobsManager = require('./jobsManager');
+
+let jobWorkerEnabled = false;
+if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == true) {
+    jobWorkerEnabled = true;
+}
+winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
+
+let jobsManager = new JobsManager(jobWorkerEnabled,geoService);
+jobsManager.listen();
 
 
 
@@ -153,7 +163,7 @@ var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
 
 var pubModulesManager = require('./pubmodules/pubModulesManager');
-pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}});
+pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager});
   
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -471,7 +481,8 @@ app.use('/:projectid/labels', [fetchLabels],labels);
 
 app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], campaigns);
 
-app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], email);
+app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], email);
+
 
 
 

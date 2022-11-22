@@ -92,6 +92,7 @@ listen() {
         } else {
           winston.debug("sendUserEmail chat channel");
                        
+            //TODO     mandare email se ultimo messaggio > X MINUTI configurato in Notification . potresti usare request.updated_at ?
 
             
             
@@ -123,7 +124,7 @@ listen() {
      winston.debug('RequestNotification requestCreateKey: ' + requestCreateKey);
 
      requestEvent.on(requestCreateKey, function(request) {
-      // winston.info('quiiiiiiiiiiiii');
+      winston.debug('requestEvent.on(requestCreateKey');
       setImmediate(() => {
    
         /*
@@ -140,10 +141,9 @@ listen() {
 
 
      var requestParticipantsUpdateKey = 'request.participants.update';
-    //  this is not queued
-    //  if (requestEvent.queueEnabled) {
-    //   requestParticipantsUpdateKey = 'request.participants.update.queue';
-    //  }
+     if (requestEvent.queueEnabled) {
+      requestParticipantsUpdateKey = 'request.participants.update.queue';
+     }
      winston.debug('RequestNotification requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
 
      requestEvent.on(requestParticipantsUpdateKey, function(data) {
@@ -176,12 +176,12 @@ listen() {
     //  TODO Send email also for addAgent and reassign. Alessio request for pooled only?
 
     var requestCloseExtendedKey = 'request.close.extended';
-        //  this is not queued
-    // if (requestEvent.queueEnabled) {
-    //   requestCloseExtendedKey = 'request.close.extended.queue';
-    // }
+    if (requestEvent.queueEnabled) {
+      requestCloseExtendedKey = 'request.close.extended.queue';
+    }
     winston.debug('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
     requestEvent.on(requestCloseExtendedKey, function(data) {
+      winston.debug('requestEvent.on(requestCloseExtendedKey ' + requestCloseExtendedKey);
       setImmediate(() => {
         var request = data.request;
         var notify = data.notify;
@@ -354,7 +354,7 @@ sendToUserEmailChannelEmail(projectid, message) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -376,7 +376,7 @@ async notifyFollowers(savedRequest, project, message) {
   // Cannot read property '_id' of undefined at RequestNotification.notifyFollowers (/usr/src/app/pubmodules/emailNotification/requestNotification.js:358:62) at /usr/src/app
   // forse meglio .id
   
-  var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();
+  var reqWithFollowers = await Request.findById(savedRequest._id).populate('followers').exec();  // cache_attention
   winston.debug("reqWithFollowers");
   winston.debug("reqWithFollowers",reqWithFollowers);
   // console.log("reqWithFollowers",reqWithFollowers);
@@ -396,7 +396,7 @@ async notifyFollowers(savedRequest, project, message) {
        }                  
         
          User.findOne({_id: userid , status: 100})
-          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)  //user_cache
           .exec(function (err, user) {
            if (err) {
            //  winston.debug(err);
@@ -459,7 +459,7 @@ sendToFollower(projectid, message) {
           }
         })
     } catch (e) {
-      winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+      winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
     }
 }
 
@@ -538,7 +538,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                      }                  
                       
                        User.findOne({_id: userid , status: 100})
-                        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+                        //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)   //user_cache
                         .exec(function (err, user) {
                          if (err) {
                          //  winston.debug(err);
@@ -592,10 +592,10 @@ sendToAgentEmailChannelEmail(projectid, message) {
                           }
         
                           User.findOne({_id: assignedId, status: 100})
-                            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)    //user_cache
                             .exec(function (err, user) {
                             if (err) {
-                              winston.error("Error sending email to " + savedRequest.participants[0], err);
+                              winston.error("Error sending requestNotification email to " + savedRequest.participants[0], err);
                             }
                             if (!user) {
                               winston.warn("User not found",  savedRequest.participants[0]);
@@ -625,7 +625,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
      });
      
      } catch (e) {
-       winston.warn("Error sending email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
+       winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, message: message, savedRequest:savedRequest}); //it's better to view error email at this stage
      }
      //end send email
      
@@ -666,7 +666,7 @@ sendEmailChannelTakingNotification(projectid, request) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -806,6 +806,7 @@ sendUserEmail(projectid, message) {
                   }
                   winston.debug("tokenQueryString:  "+tokenQueryString);
                   
+                  //send email unverified so spam check?
                   emailService.sendNewMessageNotification(lead.email, message, project, tokenQueryString, sourcePage);
               } 
                 
@@ -819,7 +820,7 @@ sendUserEmail(projectid, message) {
     });
 
   } catch(e) {
-    winston.error("Error sending email", {error:e, projectid:projectid, message:message});
+    winston.error("Error sending requestNotification email", {error:e, projectid:projectid, message:message});
   }
 }
 
@@ -902,7 +903,7 @@ sendAgentEmail(projectid, savedRequest) {
                    }                  
                     
                      User.findOne({_id: userid , status: 100})
-                      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)
+                      //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+userid)    //user_cache
                       .exec(function (err, user) {
                        if (err) {
                        //  winston.debug(err);
@@ -966,10 +967,10 @@ sendAgentEmail(projectid, savedRequest) {
                           return winston.warn("RequestNotification email notification for the user with id : " + assignedId + " not found project_user");
                         }
                         User.findOne({_id: assignedId, status: 100})
-                          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)
+                          //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+assignedId)    //user_cache
                           .exec(function (err, user) {
                           if (err) {
-                            winston.error("Error sending email to " + savedRequest.participants[0], err);
+                            winston.error("Error sending requestNotification email to " + savedRequest.participants[0], err);
                           }
                           if (!user) {
                             winston.warn("User not found",  savedRequest.participants[0]);
@@ -1017,7 +1018,7 @@ sendAgentEmail(projectid, savedRequest) {
    });
    
    } catch (e) {
-     winston.warn("Error sending email", {error:e, projectid:projectid, savedRequest:savedRequest}); //it's better to view error email at this stage
+     winston.warn("Error sending requestNotification email", {error:e, projectid:projectid, savedRequest:savedRequest}); //it's better to view error email at this stage
    }
    //end send email
    

@@ -50,10 +50,10 @@ class GeoService {
 
 
   var requestCreateKey = 'request.create';
-//   if (requestEvent.queueEnabled) {
-//     requestCreateKey = 'request.create.queue';
-//   }
-//   winston.debug('GeoService requestCreateKey: ' + requestCreateKey);
+  if (requestEvent.queueEnabled) {
+    requestCreateKey = 'request.create.queue';
+  }
+  winston.debug('GeoService requestCreateKey: ' + requestCreateKey);
 
 
   requestEvent.on(requestCreateKey, function(request) {
@@ -66,7 +66,7 @@ class GeoService {
     winston.debug("ip" + ip);
     if (ip) {
         var geo = geoip.lookup(ip);  
-        winston.verbose("Geo result", geo);
+        winston.debug("Geo result", geo);
 
         // var update = {};
         if (geo) {
