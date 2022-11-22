@@ -21,6 +21,15 @@ class PubModulesManager {
         this.rasa = undefined;
         this.rasaRoute = undefined;
 
+        this.apps = undefined;
+        this.appsRoute = undefined;
+
+        this.whatsapp = undefined;
+        this.whatsappRoute = undefined;
+
+        this.kaleyra = undefined;
+        this.kaleyraRoute = undefined;
+
         this.activityArchiver = undefined;
         this.activityRoute = undefined;
 
@@ -52,6 +61,18 @@ class PubModulesManager {
         if (this.rasaRoute) {
             app.use('/modules/rasa', this.rasaRoute);
             winston.info("ModulesManager rasaRoute controller loaded");       
+        }
+        if (this.appsRoute) {
+            app.use('/modules/apps', this.appsRoute);
+            winston.info("ModulesManager appsRoute controller loaded");       
+        }
+        if (this.whatsappRoute) {
+            app.use('/modules/whatsapp', this.whatsappRoute);
+            winston.info("ModulesManager whatsappRoute controller loaded");
+        }
+        if (this.kaleyraRoute) {
+            app.use('/modules/kaleyra', this.kaleyraRoute);
+            winston.info("ModulesManager kaleyraRoute controller loaded");
         }
         if (this.tilebotRoute) {
             app.use('/modules/tilebot', this.tilebotRoute);
@@ -217,7 +238,53 @@ class PubModulesManager {
             }
         }
 
+        try {
+            this.apps = require('./apps');
+            winston.debug("this.apps: " + this.apps);
+            this.apps.listener.listen(config);
 
+            this.appsRoute = this.apps.appsRoute;
+
+            winston.info("PubModulesManager initialized apps.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init apps module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.whatsapp = require('./whatsapp');
+            winston.debug("this.whatsapp: " + this.whatsapp);
+            this.whatsapp.listener.listen(config);
+
+            this.whatsappRoute = this.whatsapp.whatsappRoute;
+
+            winston.info("PubModulesManager initialized apps.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init apps module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.kaleyra = require('./kaleyra');
+            winston.debug("this.kaleyra: " + this.kaleyra);
+            this.kaleyra.listener.listen(config);
+
+            this.kaleyraRoute = this.kaleyra.kaleyraRoute;
+
+            winston.info("PubModulesManager initialized apps.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init apps module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
 
         try {
             this.activityArchiver = require('./activities').activityArchiver;
