@@ -14,7 +14,7 @@
     "enable-ent": "echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc"
   },
   "private": false,
-  "author": "Andrea Leo - Frontiere21 SRL",
+  "author": "Andrea Leo - Tiledesk SRL",
   "license": "AGPL-3.0",
   "homepage": "https://www.tiledesk.com",
   "repository": {

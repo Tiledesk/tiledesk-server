@@ -63,7 +63,8 @@ class RequestService {
 
 
   sendMessageUpdateLead() {
-    leadEvent.on('lead.fullname.update', function(lead) {
+    leadEvent.on('lead.fullname.email.update', function(lead) {
+      winston.debug("lead.fullname.email.update ");
       // leadEvent.on('lead.update', function(lead) {
       
       setImmediate(() => {
