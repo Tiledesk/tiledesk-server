@@ -1,13 +1,23 @@
 
 
-💥 TILEDESK SERVER v2.3.48 💥
+💥 TILEDESK SERVER v2.3.51 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.48) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.51) 
 
-# Untagged
+# 2.3.51
+- Added message.received as trigger event
+- Added import chatbot
+- Fix lead.fullname.email.update event
+
+# 2.3.50
 - Added new email sending endpoint 
 - Emails endpoint is now usable by agents
+- Added route for tiledesk-apps
+- Added route for tiledesk-whatsapp
+- Added route for tiledesk-kaleyra
+- Updated widget.json file
+- Fixed template for: beenInvitedNewUser.html beenInvitedExistingUser.html
 
 # 2.3.49 -> PROD 
 - @tiledesk/tiledesk-tybot-connector": "^0.1.22
