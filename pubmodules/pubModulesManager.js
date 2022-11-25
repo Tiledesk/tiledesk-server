@@ -27,9 +27,6 @@ class PubModulesManager {
         this.whatsapp = undefined;
         this.whatsappRoute = undefined;
 
-        this.kaleyra = undefined;
-        this.kaleyraRoute = undefined;
-
         this.activityArchiver = undefined;
         this.activityRoute = undefined;
 
@@ -69,10 +66,6 @@ class PubModulesManager {
         if (this.whatsappRoute) {
             app.use('/modules/whatsapp', this.whatsappRoute);
             winston.info("ModulesManager whatsappRoute controller loaded");
-        }
-        if (this.kaleyraRoute) {
-            app.use('/modules/kaleyra', this.kaleyraRoute);
-            winston.info("ModulesManager kaleyraRoute controller loaded");
         }
         if (this.tilebotRoute) {
             app.use('/modules/tilebot', this.tilebotRoute);
@@ -269,22 +262,7 @@ class PubModulesManager {
                 winston.info("PubModulesManager error initializing init apps module", err);
             }
         }
-
-        try {
-            this.kaleyra = require('./kaleyra');
-            winston.debug("this.kaleyra: " + this.kaleyra);
-            this.kaleyra.listener.listen(config);
-
-            this.kaleyraRoute = this.kaleyra.kaleyraRoute;
-
-            winston.info("PubModulesManager initialized apps.");
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') { 
-                winston.info("PubModulesManager init apps module not found");
-            }else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
-        }
+        
 
         try {
             this.activityArchiver = require('./activities').activityArchiver;

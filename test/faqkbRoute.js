@@ -148,6 +148,54 @@ describe('FaqKBRoute', () => {
             })
         })
 
+        it('import json (intents only)', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                    
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", language: 'fr' })
+                        .end((err, res) => {
+                            console.log("res.body: ", res.body);
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("fr");
+                            let id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true')
+                                .auth(email, pwd)
+                                .set('Content-Type', 'text/plain')
+                                .attach('uploadFile',  fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt') 
+                                .end((err, res) => {
+                                    console.log("import (intents only) json res: ", res.body);
+                                    res.should.have.status(200);
+                                    //res.should.be.a('object');
+                                    //expect(res.body.success).to.equal(true);
+
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            console.log("faq_list: ", res.body);
+                                            res.should.have.status(200);
+                                            res.body.should.be.an('array').that.is.not.empty;
+            
+                                            done();
+            
+                                        })
+                                })
+                        })
+                })
+            })
+        })
+
 
         it('export json', (done) => {
 
@@ -184,6 +232,56 @@ describe('FaqKBRoute', () => {
 
                                     chai.request(server)
                                         .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            console.log("export json res: ", res.body);
+                                            res.should.have.status(200);
+                                            //res.body.should.be.a('string');
+
+                                            done();
+                                        })
+                                })
+                        });
+                });
+            });
+
+        }).timeout(20000);
+
+        it('export json (intents only)', (done) => {
+
+
+            //   this.timeout();
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                    
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", language: 'fr' })
+                        .end((err, res) => {
+                            //console.log("res",  res);
+                            console.log("res.body", res.body);
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("fr");
+                            let id_faq_kb = res.body._id;
+                            console.log("res.body._id: ", res.body._id)
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    console.log("faq_list: ", res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb + "?intentsOnly=true")
                                         .auth(email, pwd)
                                         .end((err, res) => {
                                             console.log("export json res: ", res.body);
