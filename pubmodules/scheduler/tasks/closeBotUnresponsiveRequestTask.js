@@ -65,6 +65,7 @@ findUnresponsiveRequests() {
     
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()
     
+
     var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
@@ -101,7 +102,12 @@ findUnresponsiveRequests() {
           winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
-          winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
+          if (process.env.HIDE_CLOSE_REQUEST_ERRORS == true || process.env.HIDE_CLOSE_REQUEST_ERRORS == "true" ) {
+
+          } else {
+            winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
+          }
+          
         })
 
       });
