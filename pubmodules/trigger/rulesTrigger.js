@@ -65,6 +65,9 @@ class RulesTrigger {
             });
           });
 
+
+
+          // da aggiungere in dashboard
           requestEvent.on('request.participants.join',  function(data) {      
             let request = data.request;
             let member = data.member;
@@ -82,10 +85,10 @@ class RulesTrigger {
             // operatingHoursService.projectIsOpenNow(request.id_project, function (isOpen, err) {   
             that.exec(message, 'message.create.from.requester', success, error);
           });
-  // not in use
-          // messageEvent.on('message.received', function(request) {
-          //   that.exec(request, 'message.received', success, error);
-          // });
+  
+          messageEvent.on('message.received', function(message) {
+            that.exec(message, 'message.received', success, error);
+          });
 
           // event2Event.on('*', function(event){
           //   winston.verbose('event2Event this.event: ' + this.event);

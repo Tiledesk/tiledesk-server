@@ -88,6 +88,10 @@ router.put('/:leadid', function (req, res) {
     if (req.body.email!=undefined) {
       leadEvent.emit('lead.email.update', updatedLead);
     }
+
+    if (req.body.email!=undefined || req.body.fullname!=undefined) {
+      leadEvent.emit('lead.fullname.email.update', updatedLead);
+    }
   
     res.json(updatedLead);
   });

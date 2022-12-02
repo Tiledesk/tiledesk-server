@@ -198,7 +198,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 "Chat closed", 
                                 request.id_project,
                                 'system', 
-                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}},  
+                                {subtype:"info/support", "updateconversation" : false, messagelabel: {key: "CHAT_CLOSED"}},   // TODO send request.closed_by <- c'è il campo l'ho verificato
                                 undefined,
                                 request.language
                             );
@@ -228,7 +228,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                 request.request_id,
                                 "Chat reopened", 
                                 request.id_project,
-                                'system',                                      
+                                'system',                                       //changed from false to true 6Aug22 because reopen from dashboard history doesn't update convs in ionic
                                 {subtype:"info/support", "updateconversation" : true, messagelabel: {key: "CHAT_REOPENED"}},
                                 undefined,
                                 request.language

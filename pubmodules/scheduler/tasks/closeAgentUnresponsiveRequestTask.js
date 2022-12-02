@@ -90,7 +90,12 @@ findUnresponsiveRequests() {
           winston.verbose("CloseAgentUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
           // winston.info("Request closed",updatedStatusRequest);
         }).catch(function(err) {
-          winston.error("CloseAgentUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
+          if (process.env.HIDE_CLOSE_REQUEST_ERRORS == true || process.env.HIDE_CLOSE_REQUEST_ERRORS == "true" ) {
+
+          } else {
+            winston.error("CloseAgentUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
+          }
+          
         })
      
       });
