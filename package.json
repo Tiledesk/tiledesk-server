@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.51",
+  "version": "2.3.52",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -36,7 +36,7 @@
     "@tiledesk-ent/tiledesk-server-enterprise": "^1.0.0"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-apps": "^1.0.6",
+    "@tiledesk/tiledesk-apps": "^1.0.9",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.19",
     "@tiledesk/tiledesk-chat21-app": "^1.1.7",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
