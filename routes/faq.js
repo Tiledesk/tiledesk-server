@@ -189,7 +189,7 @@ router.put('/:faqid', function (req, res) {
     update.enabled = req.body.enabled;
   }
   if (req.body.reply!=undefined) {
-    update.reply = req.body.enabled;
+    update.reply = req.body.reply;
   }
   if (req.body.form!=undefined) {
     update.form = req.body.form;
