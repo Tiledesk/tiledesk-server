@@ -11,6 +11,11 @@ var httpUtil = require("../utils/httpUtil");
 const { forEach } = require('lodash');
 var multer = require('multer')
 var upload = multer()
+var config = require("../config/global");
+const axios = require("axios").default;
+const uuidv4 = require('uuid/v4');
+
+var chatbot_templates_api_url = "https://chatbot-templates.herokuapp.com/chatbots/public/templates"
 
 
 router.post('/', function (req, res) {
@@ -339,55 +344,129 @@ router.get('/', function (req, res) {
 
 });
 
+router.post('/fork/:id_faq_kb', async (req, res) => {
+
+  let id_faq_kb = req.params.id_faq_kb;
+  winston.info('id_faq_kb: ' + id_faq_kb);
+
+  let api_url = config.apiUrl;
+  winston.info("fork --> base_url: " + api_url); // check if correct
+
+  let current_project_id = req.projectid;
+  winston.info("current project id: " + current_project_id);
+
+  let landing_project_id = req.query.projectid;
+  winston.info("landing project id " + landing_project_id)
+
+  let new_bot_name = req.query.name;
+  winston.info("new bot name: " + new_bot_name);
+
+  let public = req.query.public;
+  winston.info("public " + public);
+
+  let token = req.headers.authorization;
+
+  let cs = req.app.get('chatbot_service')
+
+  let chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id);
+  winston.debug("chatbot: ", chatbot)
+
+  if (!chatbot) {
+    return res.status(500).send({ success: false, message: "Unable to get chatbot" });
+  }
+
+  //chatbot.name = new_bot_name;
+
+  let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
+  winston.info("savedChatbot: ", savedChatbot)
+
+  if (!savedChatbot) {
+    return res.status(500).send({ success: false, message: "Unable to create new chatbot" });
+  }
+
+  let import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
+  winston.info("imported: ", import_result);
+
+  if (import_result.success == "false") {
+    return res.status(500).send({ success: false, message: "Unable to import intents in the new chatbot" });
+  }
+
+  return res.status(200).send({ message: "Chatbot forked successfully", bot_id: savedChatbot._id });
+
+})
+
+
 router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.debug('id_faq_kb: ', id_faq_kb);
 
-  let json_string = req.file.buffer.toString('utf-8');
-  winston.debug("json_string: ", json_string);
+  let json_string;
+  let json;
+  if (req.file) {
+    json_string = req.file.buffer.toString('utf-8');
+    json = JSON.parse(json_string);
+  } else {
+    json = req.body;
+  }
+
+  winston.info("json_string: " + json_string);
 
   if (req.query.intentsOnly == "true") {
 
     winston.info("intents only")
 
-    const json = JSON.parse(json_string)
-    console.log("\n intents --> \n")
-    console.log(json)
-
     json.intents.forEach((intent) => {
 
-      var new_faq = new Faq({
+      let new_faq = {
         id_faq_kb: id_faq_kb,
         id_project: req.projectid,
         createdBy: req.user.id,
+        intent_display_name: intent.intent_display_name,
         question: intent.question,
         answer: intent.answer,
         reply: intent.reply,
         form: intent.form,
         enabled: intent.enabled,
         webhook_enabled: intent.webhook_enabled,
-        language: intent.language,
+        language: intent.language
+      }
 
-      })
-
-      new_faq.save((err, savedFaq) => {
-        if (err) {
-          winston.error("GET FAQ-KB ERROR", err);
-          if (err.code == 11000) {
-            return res.status(409).send({ success: false, msg: 'Duplicate intent_display_name.' });
+      // overwrite duplicated intents
+      if (req.query.overwrite == "true") {
+        Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
+          if (err) {
+            winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
           } else {
-            winston.debug('--- > ERROR ', err)
-            return res.status(500).send({ success: false, msg: 'Error saving intent.' });
+            if (savingResult.lastErrorObject.updatedExisting == true) {
+              winston.info("updated existing intent")
+              faqBotEvent.emit('faq.update', savingResult.value);
+            } else {
+              winston.info("new intent crated")
+              faqBotEvent.emit('faq.create', savingResult.value);
+            }
           }
-        }
-        winston.debug("NEW FAQ CREATED WITH ID: ", savedFaq._id);
-        faqBotEvent.emit('faq.create', savedFaq);
-      })
+        })
+
+      // don't overwrite duplicated intents
+      } else {
+        Faq.create(new_faq, (err, savedFaq) => {
+          if (err) {
+            winston.debug("create new FAQ ERROR ", err);
+            if (err.code == 11000) {
+              winston.error("Duplicate intent_display_name.");
+              winston.info("Skip duplicated intent_display_name");
+            } else {
+              winston.info("new intent crated")
+              faqBotEvent.emit('faq.create', savedFaq);
+            }
+          }
+        })
+      }
 
     })
 
-    return res.status(200).send({ success: true, msg: "Intents imported successfully"})
+    return res.status(200).send({ success: true, msg: "Intents imported successfully" })
 
   } else {
 
@@ -427,33 +506,54 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
 
         json.intents.forEach((intent) => {
 
-          var new_faq = new Faq({
+          let new_faq = {
             id_faq_kb: updatedFaq_kb._id,
             id_project: req.projectid,
             createdBy: req.user.id,
+            intent_display_name: intent.intent_display_name,
             question: intent.question,
             answer: intent.answer,
             reply: intent.reply,
             form: intent.form,
             enabled: intent.enabled,
             webhook_enabled: intent.webhook_enabled,
-            language: intent.language,
+            language: intent.language
+          }
 
-          })
-
-          new_faq.save((err, savedFaq) => {
-            if (err) {
-              winston.error("GET FAQ-KB ERROR", err);
-              if (err.code == 11000) {
-                return res.status(409).send({ success: false, msg: 'Duplicate intent_display_name.' });
+          // overwrite duplicated intents
+          if (req.query.overwrite == "true") {
+            Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
+              if (err) {
+                winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
               } else {
-                winston.debug('--- > ERROR ', err)
-                return res.status(500).send({ success: false, msg: 'Error saving intent.' });
+
+                if (savingResult.lastErrorObject.updatedExisting == true) {
+                  winston.info("updated existing intent")
+                  faqBotEvent.emit('faq.update', savingResult.value);
+                } else {
+                  winston.info("new intent crated")
+                  faqBotEvent.emit('faq.create', savingResult.value);
+                }
+
               }
-            }
-            winston.debug("NEW FAQ CREATED WITH ID: ", savedFaq._id);
-            faqBotEvent.emit('faq.create', savedFaq);
-          })
+
+            })
+
+            // don't overwrite duplicated intents
+          } else {
+            Faq.create(new_faq, (err, savedFaq) => {
+              if (err) {
+                winston.debug("create new FAQ ERROR ", err);
+                if (err.code == 11000) {
+                  winston.error("Duplicate intent_display_name.");
+                  winston.info("Skip duplicated intent_display_name");
+                } else {
+                  winston.info("new intent crated")
+                  faqBotEvent.emit('faq.create', savedFaq);
+                }
+              }
+            })
+          }
 
         })
 
@@ -499,12 +599,16 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
             intents: intents
           }
           let intents_string = JSON.stringify(intents_obj);
-          res.set({ "Content-Disposition": "attachment; filename=\"intents.txt\"" });
+          res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
           return res.send(intents_string);
 
         } else {
+
+          // if (req.query.file == "false") {
+          //   return res.status(200).send(json);
+          // }
           let json_string = JSON.stringify(json);
-          res.set({ "Content-Disposition": "attachment; filename=\"bot.txt\"" });
+          res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
           return res.send(json_string);
         }
 
