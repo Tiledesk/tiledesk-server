@@ -175,7 +175,7 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
 
   winston.debug("## GET ALL DEPTS req.project ", req.project)
 
-  var query = { "id_project": req.projectid };
+  var query = { "id_project": req.projectid, status: { $gte:  0 } }; // nascondi quelli con status = hidden (-1) for dashboard
                                             //secondo me qui manca un parentesi tonda per gli or
   if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
