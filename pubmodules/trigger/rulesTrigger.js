@@ -206,7 +206,7 @@ class RulesTrigger {
         triggerEventEmitter.on('email.send', function(eventTrigger) {
 
           try {
-  
+
             winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
             var trigger = eventTrigger.trigger;         
             winston.debug('runAction trigger', trigger.toObject());
@@ -848,7 +848,8 @@ class RulesTrigger {
                 departmentid = eventAttributes.department;
               }
 
-              if (eventAttributes.participants) { 
+              // console.log("eventAttributes.participants.length"+ eventAttributes.participants.length);
+              if (eventAttributes.participants && eventAttributes.participants.length>0) { 
                 participants = eventAttributes.participants;
                 status = RequestConstants.ASSIGNED;
                 // console.log("eventAttributes.participants",eventAttributes.participants);
