@@ -260,12 +260,15 @@ class RulesTrigger {
             winston.debug('runAction action id_project: ' + id_project);
   
 
+            var message = eventTrigger.event;
+            winston.debug('runAction action message: ', message);
+
             if (eventTrigger.event.request && eventTrigger.event.request.lead && eventTrigger.event.request.lead.email) {
               var to = eventTrigger.event.request.lead.email;
               winston.debug('to ' + to);
   
               // sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
-              sendEmailUtil.sendEmailDirect(to, text, id_project, recipient, subject, undefined, undefined);              
+              sendEmailUtil.sendEmailDirect(to, text, id_project, recipient, subject, message);              
             } else {
               winston.info('email.send trigger. Lead email is undefined ');
             }
