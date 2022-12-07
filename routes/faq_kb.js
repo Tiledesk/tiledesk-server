@@ -11,9 +11,7 @@ var httpUtil = require("../utils/httpUtil");
 const { forEach } = require('lodash');
 var multer = require('multer')
 var upload = multer()
-var config = require("../config/global");
-const axios = require("axios").default;
-const uuidv4 = require('uuid/v4');
+var configGlobal = require('../config/global');
 
 var chatbot_templates_api_url = "https://chatbot-templates.herokuapp.com/chatbots/public/templates"
 
@@ -349,7 +347,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
   let id_faq_kb = req.params.id_faq_kb;
   winston.info('id_faq_kb: ' + id_faq_kb);
 
-  let api_url = config.apiUrl;
+  const api_url = process.env.API_URL || configGlobal.apiUrl;
   winston.info("fork --> base_url: " + api_url); // check if correct
 
   let current_project_id = req.projectid;
