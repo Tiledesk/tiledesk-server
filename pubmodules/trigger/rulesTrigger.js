@@ -18,9 +18,11 @@ var leadService = require('../../services/leadService');
 var LeadConstants = require('../../models/leadConstants');
 var operatingHoursService = require("../../services/operatingHoursService");
 var sendMessageUtil = require("../../utils/sendMessageUtil");
+var sendEmailUtil = require("../../utils/sendEmailUtil");
 var cacheUtil = require("../../utils/cacheUtil");
 var cacheEnabler = require("../../services/cacheEnabler");
 var UIDGenerator = require("../../utils/UIDGenerator");
+const RequestConstants = require('../../models/requestConstants');
 
 
 class RulesTrigger {
@@ -200,6 +202,82 @@ class RulesTrigger {
         });
       
 
+
+        triggerEventEmitter.on('email.send', function(eventTrigger) {
+
+          try {
+  
+            winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
+            var trigger = eventTrigger.trigger;         
+            winston.debug('runAction trigger', trigger.toObject());
+  
+  
+            var action = eventTrigger.action;
+            winston.debug('runAction action', action.toObject());
+  
+
+            var fullname = action.parameters.fullName || "BOT";
+            winston.debug('runAction action fullname: ' + fullname);
+  
+            var subject = action.parameters.fullName || "New Email";
+            winston.debug('runAction action subject: ' + subject);
+
+            var sender = "system";
+            
+            if (action.parameters.sender) {
+              sender = action.parameters.sender;
+            }
+            winston.debug('runAction action sender: ' + sender);
+  
+            var text = action.parameters.text;
+            winston.debug('runAction action text: ' + text);
+  
+            var attributes = {};
+  
+            // var attributes = action.parameters.attributes;
+            // winston.debug('runAction action attributes: ' + attributes);
+
+  
+            var recipient;
+            if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
+              recipient = eventTrigger.event.request_id;
+            }
+            if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {
+              recipient = eventTrigger.event.recipient;
+            }
+            if (eventTrigger.eventKey=="event.emit") {
+              winston.debug('runAction action event.emit: ', eventTrigger.event.toObject());
+  
+              //TODO funziona?
+              recipient = eventTrigger.event.project_user.id_user;
+            }
+
+            // console.log("eventTrigger.event", eventTrigger.event);
+            
+            winston.debug('runAction action recipient: ' + recipient);
+  
+            var id_project = eventTrigger.event.id_project;
+            winston.debug('runAction action id_project: ' + id_project);
+  
+
+            if (eventTrigger.event.request && eventTrigger.event.request.lead && eventTrigger.event.request.lead.email) {
+              var to = eventTrigger.event.request.lead.email;
+              winston.debug('to ' + to);
+  
+              // sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
+              sendEmailUtil.sendEmailDirect(to, text, id_project, recipient, subject, undefined, undefined);              
+            } else {
+              winston.info('email.send trigger. Lead email is undefined ');
+            }
+              
+  
+          } catch(e) {
+            winston.error("Error runAction", e);
+          }
+  
+          });
+        
+  
 
 
 
@@ -683,6 +761,8 @@ class RulesTrigger {
           var departmentid = action.parameters.departmentid;
           winston.debug('runAction action departmentid: ' + departmentid);
 
+          var participants = action.parameters.participants;
+          winston.debug('runAction action participants: ' + participants);
           // var attributes = action.parameters.attributes;
           // winston.debug('runAction action attributes: ' + attributes);
 
@@ -768,6 +848,12 @@ class RulesTrigger {
                 departmentid = eventAttributes.department;
               }
 
+              if (eventAttributes.participants) { 
+                participants = eventAttributes.participants;
+                status = RequestConstants.ASSIGNED;
+                // console.log("eventAttributes.participants",eventAttributes.participants);
+              }
+              
               if (eventAttributes.text) {
                 text = eventAttributes.text;
               }
@@ -864,7 +950,7 @@ class RulesTrigger {
 
                     var new_request = {
                       request_id: request_id, project_user_id: project_user_id, lead_id: createdLead._id, id_project: id_project,
-                      first_text: text, departmentid: departmentid, sourcePage: sourcePage,
+                      first_text: text, participants: participants, departmentid: departmentid, sourcePage: sourcePage,
                       language: language, userAgent: userAgent, status: status, createdBy: id_user,
                       attributes: attributes, subject: undefined, preflight: preflight, channel: undefined, location: undefined,
                       lead: createdLead, requester: puser
