@@ -848,16 +848,23 @@ class RulesTrigger {
                 departmentid = eventAttributes.department;
               }
 
-              // console.log("eventAttributes.participants.length"+ eventAttributes.participants.length);
-              if (eventAttributes.participants && eventAttributes.participants.length>0) { 
-                participants = eventAttributes.participants;
-                status = RequestConstants.ASSIGNED;
-                // console.log("eventAttributes.participants",eventAttributes.participants);
-              }
+             
               
               if (eventAttributes.text) {
                 text = eventAttributes.text;
               }
+
+               // console.log("eventAttributes.participants.length"+ eventAttributes.participants.length);
+               if (eventAttributes.participants && eventAttributes.participants.length>0) { 
+                participants = eventAttributes.participants;
+                if (participants[0].indexOf("bot_")>-1) {
+                  text = "\\start";  //if participants is passed than the bot reply to the first message "welcome" so I changed "welcome" with "\start"
+                }              
+                // status = RequestConstants.ASSIGNED;
+                // console.log("eventAttributes.participants",eventAttributes.participants);
+              }
+
+              // console.log("text", text);
 
               if (eventAttributes.status) {
                 status = eventAttributes.status;
