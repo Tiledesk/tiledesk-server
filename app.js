@@ -172,6 +172,7 @@ var IPFilter = require('./middleware/ipFilter');
 
 // job_here
 var BanUserNotifier = require('./services/banUserNotifier');
+const { ChatbotService } = require('./services/chatbotService');
 BanUserNotifier.listen();
 
 var modulesManager = undefined;
@@ -206,6 +207,8 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+app.set('chatbot_service', new ChatbotService())
 
 
 // TODO DELETE IT IN THE NEXT RELEASE
