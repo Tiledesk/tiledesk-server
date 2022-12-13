@@ -50,7 +50,7 @@ var DepartmentSchema = new Schema({
   tags: [TagSchema],
   status: {
     type: Number,
-    default: 1,
+    default: 1,     // 1: enabled; 0 hidden for widget; -1 hidden for the dashboard; 
     index: true
     // required: true
   },

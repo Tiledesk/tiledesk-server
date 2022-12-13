@@ -1,9 +1,19 @@
 
 
-💥 TILEDESK SERVER v2.3.51 💥
+💥 TILEDESK SERVER v2.3.55 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.51) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.55) 
+
+# 2.3.55 -> PROD 
+- Tybot updated to 0.1.28
+
+# 2.3.54
+- Added HIDE_CLOSE_REQUEST_ERRORS env variable
+- Added email.send trigger action 
+- Added participants parameter for trigger action
+- Added status -1 for department model to hide department for dashboard and widget. It can be used for chatbot
+- Added template engine to send email trigger action
 
 # 2.3.51
 - Added message.received as trigger event
@@ -19,7 +29,7 @@
 - Updated widget.json file
 - Fixed template for: beenInvitedNewUser.html beenInvitedExistingUser.html
 
-# 2.3.49 -> PROD 
+# 2.3.49 
 - @tiledesk/tiledesk-tybot-connector": "^0.1.22
 
 # 2.3.48

@@ -67,7 +67,7 @@ async (req, res)  => {
     let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
     winston.debug('messageStatus: ' + messageStatus);
 
-    var request_id = req.params.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
+    var request_id = req.body.request_id || 'support-group-' + req.projectid + "-" + UIDGenerator.generate();
     winston.debug('request_id: ' + request_id);
 
     if (sender) {
