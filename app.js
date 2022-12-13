@@ -139,6 +139,9 @@ subscriptionNotifier.start();
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
+
+var trainingService = require('./services/trainingService');
+trainingService.start();
  
 // job_here
 
@@ -172,8 +175,8 @@ var IPFilter = require('./middleware/ipFilter');
 
 // job_here
 var BanUserNotifier = require('./services/banUserNotifier');
-const { ChatbotService } = require('./services/chatbotService');
 BanUserNotifier.listen();
+const { ChatbotService } = require('./services/chatbotService');
 
 var modulesManager = undefined;
 try {

@@ -70,6 +70,20 @@ var Faq_kbSchema = new Schema({
     type: Boolean,
     required: false,
     default: false
+  },
+  certified: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  mainCategory: {
+    type: String,
+    required: false
+  },
+  intentsEngine: {
+    type: String,
+    required: false,
+    default: 'none'
   }
 },{
   timestamps: true

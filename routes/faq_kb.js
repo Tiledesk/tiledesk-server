@@ -15,11 +15,10 @@ var configGlobal = require('../config/global');
 
 var chatbot_templates_api_url = "https://chatbot-templates.herokuapp.com/chatbots/public/templates"
 
-
 router.post('/', function (req, res) {
   winston.info('create BOT ', req.body);
   //create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template)
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined, req.body.language, req.body.template).then(function (savedFaq_kb) {
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine).then(function (savedFaq_kb) {
     res.json(savedFaq_kb);
   });
 
@@ -232,12 +231,23 @@ router.put('/:faq_kbid', function (req, res) {
   if (req.body.webhook_enabled != undefined) {
     update.webhook_enabled = req.body.webhook_enabled;
   }
-
   if (req.body.type != undefined) {
     update.type = req.body.type;
   }
   if (req.body.trashed != undefined) {
     update.trashed = req.body.trashed;
+  }
+  if (req.body.public != undefined) {
+    update.public = req.body.public;
+  }
+  if (req.body.certified != undefined) {
+    update.certified = req.body.certified;
+  }
+  if (req.body.mainCategory != undefined) {
+    update.mainCategory = req.body.mainCategory;
+  }
+  if (req.body.intentsEngine != undefined) {
+    update.intentsEngine = req.body.intentsEngine;
   }
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
@@ -356,9 +366,6 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
   let landing_project_id = req.query.projectid;
   winston.info("landing project id " + landing_project_id)
 
-  let new_bot_name = req.query.name;
-  winston.info("new bot name: " + new_bot_name);
-
   let public = req.query.public;
   winston.info("public " + public);
 
@@ -372,8 +379,6 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
   if (!chatbot) {
     return res.status(500).send({ success: false, message: "Unable to get chatbot" });
   }
-
-  //chatbot.name = new_bot_name;
 
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.info("savedChatbot: ", savedChatbot)

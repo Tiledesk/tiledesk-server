@@ -147,7 +147,7 @@ describe('FaqKBRoute', () => {
                                 let id_faq_kb = res.body._id;
 
                                 chai.request(server)
-                                    .post('/' + currentProject._id + '/faq_kb/fork/' + id_faq_kb + "?public=false&name=privateBotForked&projectid=" + landingProject._id)
+                                    .post('/' + currentProject._id + '/faq_kb/fork/' + id_faq_kb + "?public=false&projectid=" + landingProject._id)
                                     .auth(email, pwd)
                                     .set('Content-Type', 'application/json')
                                     .end((err, res) => {
@@ -179,6 +179,9 @@ describe('FaqKBRoute', () => {
                 userService.signup(email_user2, pwd, "User2 Firstname", "User2 lastname").then(function (user2) {
                     projectService.create("current-project", user1._id).then(function (currentProject) {
                         projectService.create("landing-project", user2._id).then(function (landingProject) {
+
+                            console.log("\n[TEST]")
+                            console.log("mock: ", chatbot_mock.existing_chatbot_mock);
 
                             class chatbot_service {
                                 async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {

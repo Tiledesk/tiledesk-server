@@ -194,8 +194,6 @@ router.put('/:faqid', function (req, res) {
   if (req.body.form!=undefined) {
     update.form = req.body.form;
   }
-  
-
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
     if (err) {
@@ -329,7 +327,11 @@ router.get('/', function (req, res, next) {
   // return Faq.find(query,  {score: { $meta: "textScore" } }) 
   // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
 
-
+  // in testing...
+  // return Faq.search('a closer', (err, result) => {
+  //   console.log("result: ", result);
+  // })
+  
   return Faq.find(query).
   skip(skip).limit(limit).
   populate({path:'faq_kb'})//, match: { trashed: { $in: [null, false] } }}).
