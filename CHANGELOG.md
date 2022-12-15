@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.59) 
 
+# 2.3.60
+- Tybot updated to 0.1.34
+
 # 2.3.59
 - Tybot updated to 0.1.32
 
