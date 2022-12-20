@@ -16,7 +16,7 @@ class TrainingService {
         Faq_kb.findById(faq.id_faq_kb, (err, faq_kb) => {
             winston.debug("faq_kb: ", faq_kb)
 
-            if (!faq_kb.intentsEngine) {
+            if (faq_kb.intentsEngine !== 'tiledesk-ai') {
                 winston.info("intentsEngine: off")
                 return null;
             }
