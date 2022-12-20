@@ -460,6 +460,47 @@ describe('FaqKBRoute', () => {
             })
         });
 
+        it('intentsEngine on', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
+                    
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .end((err, res) => {
+                            if (log) {
+                                console.log("res.body", res.body);
+                            }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq')
+                                .auth(email, pwd)
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .end((err, res) => {
+                                    // if (log) {
+                                    // }
+
+                                    console.log("intentEngin on resbody (create faq): \n", res.body);
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                })
+                        })
+                })
+            })
+        });
+
 
     });
 
