@@ -128,7 +128,11 @@ class GeoService {
 
             winston.debug("geo request saving", request);
 
-            request.markModified('location');
+
+            if (request.markModified) {
+                request.markModified('location');
+            }
+            
             request.save(function(err, reqL) {            
             // return Request.findByIdAndUpdate("5fb297bd1d838b14607b3b62", update, { new: true, upsert: false }).exec( function(err, reqL) {                
                 if (err) {

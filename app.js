@@ -82,6 +82,7 @@ mongoose.set('useUnifiedTopology', false);
 
 
 // ROUTES DECLARATION
+var troubleshooting = require('./routes/troubleshooting');
 var auth = require('./routes/auth');
 var authtest = require('./routes/authtest');
 var authtestWithRoleCheck = require('./routes/authtestWithRoleCheck');
@@ -384,6 +385,7 @@ var projectSetter = function (req, res, next) {
 
 // const ips = ['::1'];
 
+app.use('/troubleshooting', troubleshooting);
 app.use('/auth', auth);
 app.use('/testauth', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], authtest);
 
