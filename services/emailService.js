@@ -129,7 +129,7 @@ class EmailService {
     if (process.env.EMAIL_CC_ENABLED ==="true" || process.env.EMAIL_CC_ENABLED === true ) {
       this.ccEnabled = true;
     }
-    winston.info('EmailService ccEnabled: ' + ccEnabled);
+    winston.info('EmailService ccEnabled: ' + this.ccEnabled);
 
   }
 
@@ -1131,7 +1131,7 @@ class EmailService {
         references = message.request.attributes.email_references;
       }        
 
-      if (this.ccEnabled==true) {
+      if (that.ccEnabled==true) {
         if (message.request.attributes.email_cc) {
           cc = message.request.attributes.email_cc;       
         }
@@ -1303,7 +1303,7 @@ class EmailService {
         references = message.request.attributes.email_references;
       }        
 
-      if (this.ccEnabled==true) {
+      if (that.ccEnabled==true) {
         if (message.request.attributes.email_cc) {
           cc = message.request.attributes.email_cc;       
         }
