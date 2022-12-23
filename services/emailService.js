@@ -124,6 +124,13 @@ class EmailService {
     }
     winston.info('EmailService headers: ' + JSON.stringify(this.headers));
 
+    this.ccEnabled = false 
+
+    if (process.env.EMAIL_CC_ENABLED ==="true" || process.env.EMAIL_CC_ENABLED === true ) {
+      this.ccEnabled = true;
+    }
+    winston.info('EmailService ccEnabled: ' + ccEnabled);
+
   }
 
   readTemplate(templateName, settings) {
@@ -1124,14 +1131,17 @@ class EmailService {
         references = message.request.attributes.email_references;
       }        
 
-      if (message.request.attributes.email_cc) {
-        cc = message.request.attributes.email_cc;       
+      if (this.ccEnabled==true) {
+        if (message.request.attributes.email_cc) {
+          cc = message.request.attributes.email_cc;       
+        }
+        winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
+        if (message.request.attributes.email_ccStr!=undefined) {
+          ccString = message.request.attributes.email_ccStr;
+          winston.debug("email set ccString");
+        }
       }
-      winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
-      if (message.request.attributes.email_ccStr!=undefined) {
-        ccString = message.request.attributes.email_ccStr;
-        winston.debug("email set ccString");
-      }
+      
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
     winston.verbose("email references: "+ references);
@@ -1293,13 +1303,15 @@ class EmailService {
         references = message.request.attributes.email_references;
       }        
 
-      if (message.request.attributes.email_cc) {
-        cc = message.request.attributes.email_cc;       
-      }
-      winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
-      if (message.request.attributes.email_ccStr!=undefined) {
-        ccString = message.request.attributes.email_ccStr;
-        winston.debug("email set ccString");
+      if (this.ccEnabled==true) {
+        if (message.request.attributes.email_cc) {
+          cc = message.request.attributes.email_cc;       
+        }
+        winston.debug("email message.request.attributes.email_ccStr: "+ message.request.attributes.email_ccStr);
+        if (message.request.attributes.email_ccStr!=undefined) {
+          ccString = message.request.attributes.email_ccStr;
+          winston.debug("email set ccString");
+        }
       }
     }
     winston.verbose("email inReplyTo: "+ inReplyTo);
