@@ -1,12 +1,29 @@
 
 
-💥 TILEDESK SERVER v2.3.61 💥
+💥 TILEDESK SERVER v2.3.65 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.61) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.65) 
+
+# 2.3.65
+- Updated tiledesk-tybot-connector 0.1.38
+- chatbot and subscription can use send email endpoint
+- Added EMAIL_CC_ENABLED env variable to disable CCs email inboud notification
+
+# 2.3.64
+- log fix
+- Tybot updated to 0.1.37
 
 # 2.3.63
 - Tybot updated to 0.1.36
+- ChangeLog degli ultimi due commit:
+- added trainingService.js file 
+- added certified, mainCategory and intentsEngine fields for faq_kb model 
+- deleted new_bot_name for forked chatbot 
+- updated faq and faq_kb tests
+- edit trainingService.js
+- add test for bot with intentsEngine (training) 
+
 
 # 2.3.62
 - if (request.markModified) fix webhook in queue
