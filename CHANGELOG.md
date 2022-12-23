@@ -1,9 +1,12 @@
 
 
-💥 TILEDESK SERVER v2.3.65 💥
+💥 TILEDESK SERVER v2.3.67 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.65) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.67) 
+
+# 2.3.67
+- Tybot updated to 0.1.39
 
 # 2.3.66
 - ccEnabled fix
