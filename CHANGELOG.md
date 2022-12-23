@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.65) 
 
+# 2.3.66
+- ccEnabled fix
+
 # 2.3.65
 - Updated tiledesk-tybot-connector 0.1.38
 - chatbot and subscription can use send email endpoint
