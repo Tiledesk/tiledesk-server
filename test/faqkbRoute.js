@@ -232,6 +232,50 @@ describe('FaqKBRoute', () => {
             })
         })
 
+        it('create bot and import json', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb/importjson/' + null + "?create=true")
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example.json')), 'example.json')
+                        .end((err, res) => {
+                            if (log) {
+                                console.log("import json res: ", res.body);
+                            }
+                            res.should.have.status(200);
+                            res.should.be.a('object');
+                            expect(res.body.name).to.equal("examplebot");
+                            expect(res.body.language).to.equal("en");
+
+                            let id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    if (log) {
+                                        console.log("faq_list: ", res.body);
+                                    }
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+
+                                    done();
+
+                                })
+                        })
+
+                })
+            })
+
+        })
+
 
         it('import json (overwrite true)', (done) => {
 
@@ -259,7 +303,7 @@ describe('FaqKBRoute', () => {
                                 .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + "?overwrite=true")
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json.txt')), 'example-json.txt')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example.json')), 'example.json')
                                 .end((err, res) => {
                                     if (log) {
                                         console.log("import json res: ", res.body);
