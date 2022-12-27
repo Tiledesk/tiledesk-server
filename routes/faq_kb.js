@@ -414,7 +414,6 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
   }
 
   winston.info("json source " + json_string)
-  console.log("\njson: ", json)
 
   if (req.query.intentsOnly && req.query.intentsOnly == "true") {
 
