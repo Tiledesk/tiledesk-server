@@ -413,7 +413,10 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
     json = req.body;
   }
 
-  if (req.query.intentsOnly == "true") {
+  winston.info("json source " + json_string)
+  console.log("\njson: ", json)
+
+  if (req.query.intentsOnly && req.query.intentsOnly == "true") {
 
     winston.info("intents only")
 
@@ -471,7 +474,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
 
   } else {
 
-    if (req.query.create == 'true') {
+    if (req.query.create && req.query.create == 'true') {
       faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined).then((savedFaq_kb) => {
         winston.debug("saved (and imported) faq kb: ", savedFaq_kb);
         botEvent.emit('faqbot.create', savedFaq_kb);
@@ -511,7 +514,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
 
             })
 
-            // don't overwrite duplicated intents
+          // don't overwrite duplicated intents
           } else {
             Faq.create(new_faq, (err, savedFaq) => {
               if (err) {
