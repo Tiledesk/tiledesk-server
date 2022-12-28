@@ -533,7 +533,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
         return res.status(200).send(savedFaq_kb);
 
       }).catch((err) => {
-        console.error("error saving faq_kb: ", err);
+        winston.error("error saving faq_kb: ", err);
         return res.status(500).send(err);
       })
 
