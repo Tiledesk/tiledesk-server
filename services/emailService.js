@@ -124,7 +124,7 @@ class EmailService {
     }
     winston.info('EmailService headers: ' + JSON.stringify(this.headers));
 
-    this.ccEnabled = false 
+    this.ccEnabled = false //cc creates loop when you send an email with cc: support@tiledesk.com -> Tiledesk generates an email with ticket id with in cc support@tiledesk.com that loop 
 
     if (process.env.EMAIL_CC_ENABLED ==="true" || process.env.EMAIL_CC_ENABLED === true ) {
       this.ccEnabled = true;
@@ -1463,6 +1463,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
 
   var replacements = {        
     project: project,
+    request_id: request_id,
     seamlessPage: sourcePage,
     msgText: msgText,
     tokenQueryString: tokenQueryString,
@@ -1474,7 +1475,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
 
   
   let replyTo;
-  if (this.replyEnabled) {
+  if (this.replyEnabled && request_id) {
     replyTo = request_id + this.inboundDomainDomainWithAt;
   }
 
@@ -1730,7 +1731,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
 // ok
 
 async sendRequestTranscript(to, messages, request, project) {
-
+  winston.debug("sendRequestTranscript: "+to); 
 
      //if the request came from rabbit mq?
      if (request.toJSON) {
