@@ -633,7 +633,7 @@ describe('RequestService', function () {
                 savedProject._id, messageSender),
                 messageService.create(messageSender, "test sender", savedRequest.request_id, "hello2",
                 savedProject._id, messageSender)]).then(function(all) {
-                  requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id).then(function(upRequest) {
+                  requestService.updateWaitingTimeByRequestId(savedRequest.request_id, savedProject._id, true).then(function(upRequest) {
                         var maxWaitingTime  = Date.now() - upRequest.createdAt;
                         console.log("resolve closedRequest", upRequest.toObject(),maxWaitingTime);
 
@@ -669,7 +669,52 @@ describe('RequestService', function () {
     // mocha test/requestService.js  --grep 'closeRequest'
 
 
-  it('closeRequest', function (done) {
+    it('closeRequest', function (done) {
+
+      var email = "test-request-create-" + Date.now() + "@email.com";
+      var pwd = "pwd";
+  
+      userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+        var userid = savedUser.id;
+  
+        projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function(savedProjectAndPU) {
+          var savedProject = savedProjectAndPU.project;
+          var now = Date.now();
+          requestService.createWithIdAndRequester("request_id-closeRequest-"+now, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function(savedRequest) {
+            Promise.all([
+              messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id,  "hello1",
+              savedProject._id, "5badfe5d553d1844ad654072"),
+              messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
+              savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
+                // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+                requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id, false, true, "user1").then(function(closedRequest) {
+                      winston.debug("resolve closedRequest", closedRequest.toObject());
+                      expect(closedRequest.status).to.equal(1000);
+                      expect(closedRequest.closed_at).to.not.equal(null);
+                      expect(closedRequest.transcript).to.contains("hello1");
+                      expect(closedRequest.transcript).to.contains("hello2");
+                      expect(closedRequest.snapshot.agents).to.equal(undefined);
+                      expect(closedRequest.closed_by).to.equal("user1");
+  
+                      done();                         
+                    }).catch(function(err){
+                      winston.error("test reject", err);
+                      assert.isNotOk(err,'Promise error');
+                      done();
+                    });
+                });
+              });
+            });
+      });
+    });
+  
+  
+
+
+    // mocha test/requestService.js  --grep 'closeRequestForce'
+
+
+  it('closeRequestForce', function (done) {
 
     var email = "test-request-create-" + Date.now() + "@email.com";
     var pwd = "pwd";
@@ -686,7 +731,7 @@ describe('RequestService', function () {
             savedProject._id, "5badfe5d553d1844ad654072"),
             messageService.create("5badfe5d553d1844ad654072", "test sender", savedRequest.request_id, "hello2",
             savedProject._id, "5badfe5d553d1844ad654072")]).then(function(all) {
-              // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+              // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by, force)
               requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id, false, true, "user1").then(function(closedRequest) {
                     winston.debug("resolve closedRequest", closedRequest.toObject());
                     expect(closedRequest.status).to.equal(1000);
@@ -696,7 +741,11 @@ describe('RequestService', function () {
                     expect(closedRequest.snapshot.agents).to.equal(undefined);
                     expect(closedRequest.closed_by).to.equal("user1");
 
-                    done();                         
+                    requestService.closeRequestByRequestId(savedRequest.request_id, savedProject._id, false, true, "user1", true).then(function(closedRequest) {
+                      expect(closedRequest.status).to.equal(1000);
+                      done();                         
+                    });
+                    
                   }).catch(function(err){
                     winston.error("test reject", err);
                     assert.isNotOk(err,'Promise error');
@@ -707,6 +756,8 @@ describe('RequestService', function () {
           });
     });
   });
+
+
 
 
 

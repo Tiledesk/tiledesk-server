@@ -247,7 +247,7 @@ async (req, res)  => {
                      
                     if (request.participants && request.participants.indexOf(sender) > -1) { //update waiitng time if write an  agent (member of participants)
                       winston.debug("updateWaitingTimeByRequestId");
-                      return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
+                      return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {
                           let message = savedMessage.toJSON();
                           message.request = upRequest;
 
@@ -257,13 +257,26 @@ async (req, res)  => {
                     }else {
                       let message = savedMessage.toJSON();
 
-                      request.populate('lead')
+                      winston.debug("getting request for response");
+
+                      let q =
+                      Request.findOne({request_id:  request.request_id, id_project: request.id_project})
+                      // request
+                      .populate('lead')
                       .populate('department')
                       .populate('participatingBots')
                       .populate('participatingAgents')  
                       // .populate('followers')  
-                      .populate({path:'requester',populate:{path:'id_user'}})
-                      .execPopulate(function (err, requestPopulated){    
+                      .populate({path:'requester',populate:{path:'id_user'}});
+
+
+                      if (cacheEnabler.request) {
+                        q.cache(cacheUtil.defaultTTL, request.id_project+":requests:request_id:"+request.request_id)
+                        winston.debug('request cache enabled for messages');
+                      }
+
+                      q.exec(function (err, requestPopulated){    
+                        // q.execPopulate(function (err, requestPopulated){    
 
                         if (err) {
                           return winston.error("Error gettting savedRequestPopulated for send Message", err);
@@ -282,7 +295,7 @@ async (req, res)  => {
                     message: 'Error creating message endpoint: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
                     label: req.projectid
                   });
-                  // winston.error("Error creating message", err);
+                  winston.error("Error creating message", err);
                   return res.status(500).send({success: false, msg: 'Error creating message', err:err });
                 });
 

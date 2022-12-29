@@ -970,19 +970,25 @@ class RequestService {
   
     }
 
-  updateWaitingTimeByRequestId(request_id, id_project) {
+  updateWaitingTimeByRequestId(request_id, id_project, enable_populate) {
 
     return new Promise(function (resolve, reject) {
      // winston.debug("request_id", request_id);
      // winston.debug("newstatus", newstatus);
 
       let q = Request       
-      .findOne({request_id: request_id, id_project: id_project})
-      .populate('lead')
-      .populate('department')
-      .populate('participatingBots')
-      .populate('participatingAgents')  
-      .populate({path:'requester',populate:{path:'id_user'}});
+      .findOne({request_id: request_id, id_project: id_project});
+
+      if (enable_populate==true) {
+        winston.debug("updateWaitingTimeByRequestId  enable_populate");
+
+        q.populate('lead')
+        .populate('department')
+        .populate('participatingBots')
+        .populate('participatingAgents')  
+        .populate({path:'requester',populate:{path:'id_user'}});
+      }
+      
 
       // if (cacheEnabler.request) {  //attention this cache is not usable bacause cacheoose don't support populate without .lean.. so if cached populated field is not returned with cacheoose, updateWaitingTime is only used in chat21webhook but i thik it is important for messages route
       //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id)           //request_cache

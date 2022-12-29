@@ -17,7 +17,7 @@ class MessageService {
        if (!id) {
            return this.create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language);
        } else {
-            winston.debug("Message changeStatus", status);
+            winston.debug("Message upsert changeStatus:"+ status);
             return this.changeStatus(id, status);
        }
    }
@@ -176,6 +176,7 @@ class MessageService {
 // attento già scatta su chat21handler
 
   changeStatus(message_id, newstatus) {
+    winston.debug("changeStatus. "+message_id + " "+ newstatus);
     var that = this;
     return new Promise(function (resolve, reject) {
      // winston.debug("request_id", request_id);

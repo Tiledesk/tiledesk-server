@@ -210,7 +210,12 @@ router.post('/', function (req, res) {
                       }
 
 
-                    
+                      // var auto_close;
+
+                      // // qui projecy nn c'è devi leggerlo
+                      // // if (req.project.attributes.auto_close === false) {
+                      // //   auto_close = 10;
+                      // // }
 
                       
                       var new_request = {
@@ -218,7 +223,7 @@ router.post('/', function (req, res) {
                         departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
                         attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
                         lead:createdLead, requester:project_user
-                        
+                        // , auto_close: auto_close
                       };
     
                       winston.debug("new_request", new_request);
@@ -303,8 +308,8 @@ router.post('/', function (req, res) {
                        
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
-                        winston.debug("updateWaitingTimeByRequestId");
-                        return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project).then(function(upRequest) {
+                        winston.debug("updateWaitingTimeByRequestId*******");
+                        return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, false).then(function(upRequest) {
                           return res.json(upRequest);
                         });
                       }else {
@@ -486,6 +491,10 @@ router.post('/', function (req, res) {
 
           winston.debug("request",request.toObject());
                    // lead_id used. Change it?
+
+          // winston.info("request.snapshot.lead",request.snapshot.lead);
+          // if (request.snapshot.lead && request.snapshot.lead.lead_id==new_member) {   
+
           if (request.lead && request.lead.lead_id==new_member) {            
             winston.debug("don't  joining request.lead or a lead");
             return res.status(400).send({success: false, msg: "don't  joining request.lead or a lead" });
@@ -612,7 +621,7 @@ router.post('/', function (req, res) {
 }
 else if (req.body.event_type == "typing-start") {
 
-  winston.debug("event_type","typing-start");
+  winston.debug("event_type typing-start");
 
   winston.debug("typing-start req.body",req.body);
 
