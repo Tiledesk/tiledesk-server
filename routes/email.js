@@ -4,6 +4,9 @@ var router = express.Router();
 
 var emailService = require("../services/emailService");
 var winston = require('../config/winston');
+const recipientEmailUtil = require("../utils/recipientEmailUtil");
+
+
 
 router.get('/templates/:templateid', 
  async (req, res) => {
@@ -29,25 +32,28 @@ router.post('/test/send',
     
 });
 
-
+//TODO add cc
 router.post('/send', 
  async (req, res) => {
   let to = req.body.to;
-  winston.info("to: " + to);
+  winston.debug("to: " + to);
 
   let text = req.body.text;
-  winston.info("text: " + text);
+  winston.debug("text: " + text);
 
   let request_id = req.body.request_id;
-  winston.info("request_id: " + request_id);
+  winston.debug("request_id: " + request_id);
 
   let subject = req.body.subject;
-  winston.info("subject: " + subject);
+  winston.debug("subject: " + subject);
 
-  winston.info("req.project", req.project);
+  winston.debug("req.project", req.project);
+
+  let newto = await recipientEmailUtil.process(to, req.projectid);
+  winston.debug("newto: " + newto);
 
              //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage)
-  emailService.sendEmailDirect(to, text, req.project, request_id, subject, undefined, undefined);
+  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined);
   
   res.json({"queued": true});
     
