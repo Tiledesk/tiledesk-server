@@ -53,10 +53,13 @@ async (req, res)  => {
   // if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
   //   return res.status(422).json({ errors: ["text field is required"] });
   // } 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
-  }
+  // const errors = validationResult(req);
+  // if (!errors.isEmpty()) {
+  //   return res.status(422).json({ errors: errors.array() });
+  // }
+
+
+
   
   // TODO se sei agent non puoi cambiare sender
   // verificare validazione invio immagine senza caption 
