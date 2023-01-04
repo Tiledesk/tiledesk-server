@@ -130,6 +130,9 @@ router.post('/', function (req, res) {
     if (req.body.enabled != undefined) {
       newFaq.enabled = req.body.enabled;
     }
+    if (req.body.actions) {
+      newFaq.actions = req.body.actions
+    }
 
     newFaq.save(function (err, savedFaq) {
       if (err) {
@@ -193,6 +196,9 @@ router.put('/:faqid', function (req, res) {
   }
   if (req.body.form!=undefined) {
     update.form = req.body.form;
+  }
+  if (req.body.actions != undefined) {
+    update.actions = req.body.actions;
   }
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {

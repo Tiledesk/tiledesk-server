@@ -432,7 +432,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
         form: intent.form,
         enabled: intent.enabled,
         webhook_enabled: intent.webhook_enabled,
-        language: intent.language
+        language: intent.language,
+        actions: intent.actions
       }
 
       // overwrite duplicated intents
@@ -491,7 +492,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
             form: intent.form,
             enabled: intent.enabled,
             webhook_enabled: intent.webhook_enabled,
-            language: intent.language
+            language: intent.language,
+            actions: intent.actions
           }
 
           // TO DELETE: no used when req.query.create = 'true'
@@ -587,7 +589,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
               form: intent.form,
               enabled: intent.enabled,
               webhook_enabled: intent.webhook_enabled,
-              language: intent.language
+              language: intent.language,
+              actions: intent.actions
             }
   
             // overwrite duplicated intents

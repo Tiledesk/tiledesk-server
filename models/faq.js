@@ -87,6 +87,10 @@ var FaqSchema = new Schema({
   form: {
     type: Object,
     required: false
+  },
+  actions: {
+    type: Array,
+    required: false
   }
 }, {
   timestamps: true,
