@@ -1,9 +1,19 @@
 
 
-💥 TILEDESK SERVER v2.3.70 💥
+💥 TILEDESK SERVER v2.3.71 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.70) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.71) 
+
+# 2.3.71
+- Email service send email direct fit without request_id
+- Removed strong from transcript email template
+- Added for updateWaitingTimeByRequestId the field enable_populate
+- Added cache for message send endpoint 
+- Added support to mention and group to mail endpoint
+- Now user role can use /users/search (for smtp)
+- Disable text validation for send message
+- Logo email fix
 
 # 2.3.70
 - Update tiledesk-tybot-connector to 0.1.42
