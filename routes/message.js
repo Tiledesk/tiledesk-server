@@ -49,9 +49,10 @@ async (req, res)  => {
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
-  if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
-    return res.status(422).json({ errors: ["text field is required"] });
-  } 
+  // sponz: 4/01/23 disable it
+  // if (!req.body.text &&  (!req.body.type || req.body.type=="text") ) {
+  //   return res.status(422).json({ errors: ["text field is required"] });
+  // } 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
