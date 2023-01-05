@@ -76,7 +76,6 @@
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.33",
     "mongoose": "^5.13.14",
-    "mongoose-auto-increment": "^5.0.1",
     "mongoose-sequence": "^5.3.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
