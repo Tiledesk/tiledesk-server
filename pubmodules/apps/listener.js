@@ -14,6 +14,7 @@ class Listener {
         apps.startApp({
             ACCESS_TOKEN_SECRET: process.env.APPS_ACCESS_TOKEN_SECRET || 'nodeauthsecret',
             MONGODB_URI: process.env.APPS_MONGODB_URI || config.databaseUri,
+            KALEYRA_ENABLED: process.env.KALEYRA_ENABLED || config.kaleyra_enabled
         }, () => {
             winston.info("Tiledesk Apps proxy server succesfully started.")
         })
