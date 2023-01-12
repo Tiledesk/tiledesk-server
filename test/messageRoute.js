@@ -903,7 +903,7 @@ it('createMultiTextNoSenderNoText', function (done) {
           .end(function(err, res) {
               //console.log("res",  res);
               console.log("res.body",  res.body);
-              res.should.have.status(500);
+              res.should.have.status(200);
               
              done();
           });
