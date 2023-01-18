@@ -58,6 +58,9 @@ router.get('/', async (req, res, next) => {
         winston.debug("Getted cache for widgets key: " + cacheKey + " value:", value);   
 
         value.ip = await getIp(); //calculate ip each time without getting it from cache 
+        
+        winston.debug("value",value);
+
         res.json(value);
         // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
         next();      // <=== call next for following middleware 
@@ -207,20 +210,23 @@ router.get('/', async (req, res, next) => {
         availableUsers()
       ,
         getDepartments(req)
-      ,
+      // ,
         // waiting()unused used 620e87f02e7fda00350ea5a5/publicanalytics/waiting/current
       , 
         getIp()
      
 
     ]).then(function(all) {
-      let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3], ip: all[4]};
+      // console.log("all", all);
+      let result = {project: all[0], user_available: all[1], departments: all[2], ip: all[3]};
+      // let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3], ip: all[4]};
 
       
-      if (cacheEnabler.widgets && cacheClient) {        
-        delete result.ip; //removing uncachable ip from cache
+      if (cacheEnabler.widgets && cacheClient) {   
+        let cloned_result = Object.assign({}, result);     
+        delete cloned_result.ip; //removing uncachable ip from cache
         winston.debug("Creating cache for widgets key: " + cacheKey);       
-        cacheClient.set(cacheKey, result, cacheUtil.longTTL, (err, reply) => {
+        cacheClient.set(cacheKey, cloned_result, cacheUtil.longTTL, (err, reply) => {
             winston.verbose("Created cache for widgets",{err:err});
             winston.debug("Created cache for widgets reply:"+reply);
         });
