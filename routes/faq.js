@@ -225,10 +225,11 @@ router.delete('/:faqid', function (req, res) {
   // deleteRemoteFaq(req.params.faqid)
   winston.debug('DELETE FAQ - FAQ ID ', req.params.faqid);
 
-  Faq.remove({ _id: req.params.faqid }, function (err, faq) {
+  Faq.findByIdAndRemove({ _id: req.params.faqid }, function (err, faq) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+    winston.debug('Deleted FAQ ', faq);
 
     faqBotEvent.emit('faq.delete', faq);
 

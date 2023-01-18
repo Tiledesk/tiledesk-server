@@ -95,6 +95,11 @@ Faq_kbSchema.virtual('fullName').get(function () {
   return (this.name);
 });
 
+Faq_kbSchema.index({certified: 1, public: 1}); //suggested by atlas
+
+
+
+
 var faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
