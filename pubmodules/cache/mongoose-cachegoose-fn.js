@@ -174,9 +174,9 @@
             // only if role is agent, owner, admin ATTENTION
             if (role == RoleConstants.OWNER || role == RoleConstants.ADMIN || role == RoleConstants.SUPERVISOR || role == RoleConstants.AGENT) {
                 winston.verbose("Deleting widgets cache for project_user.update");
-                invalidateWidgets(client, project_user.id_project);    //ATTENTO DA TESTARE IN PRE
+                invalidateWidgets(client, project_user.id_project);    //tested
             }else {
-                winston.verbose("NOT invalidating widget cache for non admins project_user role");
+                winston.verbose("NOT invalidating widget cache for non admins project_user role");//tested
             }
             
         });

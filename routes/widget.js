@@ -11,6 +11,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
 var pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
 // console.log("pubModulesManager.cache", pubModulesManager.cache);
+const Faq_kb = require("../models/faq_kb");
 
 router.get('/load', function(req, res, next) {
 
@@ -126,6 +127,29 @@ router.get('/', async (req, res, next) => {
 
   
 
+  var botsRules = function() {
+    return new Promise(function (resolve, reject) {
+      Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, bots) {
+        winston.info("bots",bots);
+        let rules = [];
+        bots.forEach(function(bot) { 
+          winston.info("bot.attributes",bot.attributes);
+          // && bot.attributes.rules.length > 0
+          if (bot.attributes && bot.attributes.rules) {
+            winston.info("bot.attributes.rules",bot.attributes.rules);
+            bot.attributes.rules.forEach(function(rule) {
+              rules.push(rule);
+            });
+            // rules.concat(bot.attributes.rules);
+          }
+        });
+        winston.info("resolve",rules);
+        // return resolve(bots);
+        return resolve(rules);
+        
+      });
+    });
+  }
 
   
   var getDepartments = function(req) {
@@ -214,11 +238,13 @@ router.get('/', async (req, res, next) => {
         // waiting()unused used 620e87f02e7fda00350ea5a5/publicanalytics/waiting/current
       , 
         getIp()
+      ,
+        botsRules()
      
 
     ]).then(function(all) {
       // console.log("all", all);
-      let result = {project: all[0], user_available: all[1], departments: all[2], ip: all[3]};
+      let result = {project: all[0], user_available: all[1], departments: all[2], ip: all[3], botsRules: all[4]};
       // let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3], ip: all[4]};
 
       
