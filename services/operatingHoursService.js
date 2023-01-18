@@ -14,7 +14,7 @@ class OperatingHoursService {
     let q = Project.findOne({_id: projectId, status: 100});
     if (cacheEnabler.project) { 
       q.cache(cacheUtil.longTTL, "projects:id:"+projectId)  //project_cache
-      winston.debug('project cache enabled');
+      winston.debug('project cache enabled for projectIsOpenNow');
     }
     q.exec(function (err, project) {
       // winston.debug("XXXXXXXX project", project);

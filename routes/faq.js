@@ -229,6 +229,10 @@ router.delete('/:faqid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
+
+    faqBotEvent.emit('faq.delete', faq);
+
+
     res.json(faq);
 
   });

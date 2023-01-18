@@ -501,7 +501,7 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   let q = Project.findOne({_id: req.params.projectid, status:100});
   if (cacheEnabler.project) { 
     q.cache(cacheUtil.longTTL, "projects:id:"+req.params.projectid)  //project_cache
-    winston.debug('project cache enabled');
+    winston.debug('project cache enabled for /project detail');
   }
   q.exec(function (err, project) {
     if (err) {

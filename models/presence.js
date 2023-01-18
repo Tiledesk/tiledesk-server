@@ -5,7 +5,7 @@ var winston = require('../config/winston');
 var PresenceSchema = new Schema({
   status: {
     type: String,
-    default: 'offline',
+    default: 'offline',  //online
     required: true,
     index: true
   },

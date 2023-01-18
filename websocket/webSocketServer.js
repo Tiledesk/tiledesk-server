@@ -189,7 +189,7 @@ class WebSocketServer {
 
             if (cacheEnabler.project) {
               q.cache(cacheUtil.defaultTTL, "projects:id:"+projectId) //project_cache
-              winston.debug('project cache enabled');
+              winston.debug('project cache enabled for websocket');
             }
             
             return q.exec(function(err, project) {
