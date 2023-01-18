@@ -130,20 +130,20 @@ router.get('/', async (req, res, next) => {
   var botsRules = function() {
     return new Promise(function (resolve, reject) {
       Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, bots) {
-        winston.info("bots",bots);
+        winston.debug("bots",bots);
         let rules = [];
         bots.forEach(function(bot) { 
-          winston.info("bot.attributes",bot.attributes);
+          winston.debug("bot.attributes",bot.attributes);
           // && bot.attributes.rules.length > 0
           if (bot.attributes && bot.attributes.rules) {
-            winston.info("bot.attributes.rules",bot.attributes.rules);
+            winston.debug("bot.attributes.rules",bot.attributes.rules);
             bot.attributes.rules.forEach(function(rule) {
               rules.push(rule);
             });
             // rules.concat(bot.attributes.rules);
           }
         });
-        winston.info("resolve",rules);
+        winston.debug("resolve",rules);
         // return resolve(bots);
         return resolve(rules);
         
