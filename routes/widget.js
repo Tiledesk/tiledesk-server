@@ -8,8 +8,12 @@ var AnalyticResult = require("../models/analyticResult");
 var Department = require("../models/department");
 var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
+var pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
+// console.log("pubModulesManager.cache", pubModulesManager.cache);
 
 router.get('/load', function(req, res, next) {
+
   winston.debug(req.projectid);
   
   // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
@@ -17,9 +21,53 @@ router.get('/load', function(req, res, next) {
   // redirect to widget
 });
 
-router.get('/', function(req, res, next) {
+router.get('/', async (req, res, next) => {
+
     winston.debug(req.projectid);
 
+
+    var getIp = function() {
+      return new Promise(function (resolve, reject) {
+        // console.log("getIp")
+      //  var ip = req.ip;
+      var ip = req.headers['x-forwarded-for'] || 
+       req.connection.remoteAddress || 
+       req.socket.remoteAddress ||
+       (req.connection.socket ? req.connection.socket.remoteAddress : null);
+        winston.debug("ip:"+ ip);
+        return resolve(ip);
+      });
+    };
+
+
+    
+    // console.log("pubModulesManager.cache",pubModulesManager.cache);
+    // console.log("cacheClient",cacheClient);
+    let cacheClient = undefined;
+    if (pubModulesManager.cache) {
+      cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
+    }
+
+    var cacheKey = req.projectid+":widgets";
+    
+    if (cacheEnabler.widgets && cacheClient) {
+      winston.debug("Getting cache for widgets key: " + cacheKey);       
+      const value = await cacheClient.get(cacheKey);
+
+      if (value) {
+        winston.debug("Getted cache for widgets key: " + cacheKey + " value:", value);   
+
+        value.ip = await getIp(); //calculate ip each time without getting it from cache 
+        res.json(value);
+        // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
+        next();      // <=== call next for following middleware 
+        return;
+      } else {
+          winston.debug("Widget cache NOT found");
+      }
+      
+    }
+    // console.log("/widgets without cache found");
 
     var availableUsers = function() {
       winston.debug('availableUsers:');
@@ -74,17 +122,7 @@ router.get('/', function(req, res, next) {
   };
 
   
-  var getIp = function() {
-    return new Promise(function (resolve, reject) {
-    //  var ip = req.ip;
-    var ip = req.headers['x-forwarded-for'] || 
-     req.connection.remoteAddress || 
-     req.socket.remoteAddress ||
-     (req.connection.socket ? req.connection.socket.remoteAddress : null);
-      winston.debug("ip:"+ ip);
-      return resolve(ip);
-  });
-  };
+
 
   
   var getDepartments = function(req) {
@@ -177,6 +215,18 @@ router.get('/', function(req, res, next) {
 
     ]).then(function(all) {
       let result = {project: all[0], user_available: all[1], departments: all[2], waiting: all[3], ip: all[4]};
+
+      
+      if (cacheEnabler.widgets && cacheClient) {        
+        delete result.ip; //removing uncachable ip from cache
+        winston.debug("Creating cache for widgets key: " + cacheKey);       
+        cacheClient.set(cacheKey, result, cacheUtil.longTTL, (err, reply) => {
+            winston.verbose("Created cache for widgets",{err:err});
+            winston.debug("Created cache for widgets reply:"+reply);
+        });
+
+      }
+      
       res.json(result);
       // https://stackoverflow.com/questions/24258782/node-express-4-middleware-after-routes
       next();      // <=== call next for following middleware 
