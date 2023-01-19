@@ -505,7 +505,7 @@ router.put('/requestresetpsw', function (req, res) {
 
       winston.debug('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 
-      User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }, function (err, updatedUser) {
+      User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }).select("+resetpswrequestid").exec(function (err, updatedUser) {
 
         if (err) {
           winston.error(err);
@@ -532,7 +532,10 @@ router.put('/requestresetpsw', function (req, res) {
 
           
 
-          return res.json({ success: true, user: updatedUser });
+          let userWithoutResetPassword = updatedUser.toJSON();
+          delete userWithoutResetPassword.resetpswrequestid;
+          
+          return res.json({ success: true, user: userWithoutResetPassword });
           // }
           // catch (err) {
           //   winston.debug('PSW RESET REQUEST - SEND EMAIL ERR ', err)
