@@ -24,7 +24,7 @@ var configGlobal = require('../../config/global');
 
 var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
-let configSecret = process.env.GLOBAL_SECRET || config.secret;
+let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
 
 let apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.debug('********* RequestNotification apiUrl: ' + apiUrl);
@@ -301,7 +301,7 @@ sendToUserEmailChannelEmail(projectid, message) {
       winston.debug("userEmail  ",userEmail);
 
 
-      var token = jwt.sign(userEmail, configSecret, signOptions);
+      var token = jwt.sign(userEmail, configSecret, signOptions); //priv_jwt pp_jwt
       winston.debug("token  "+token);
 
       var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 
@@ -776,7 +776,7 @@ sendUserEmail(projectid, message) {
                   winston.debug("userAnonym  ",userAnonym);
 
         
-                  var token = jwt.sign(userAnonym, configSecret, signOptions);
+                  var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
                   winston.debug("token  "+token);
 
                   var sourcePage = widgetTestLocation + "?tiledesk_projectid=" 

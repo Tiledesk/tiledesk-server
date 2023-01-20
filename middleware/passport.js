@@ -34,7 +34,7 @@ const maskOptions = {
   };
 
 
-var configSecret = process.env.GLOBAL_SECRET || config.secret;
+var configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
 
 var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
 winston.info('Authentication Global Secret : ' + maskedconfigSecret);
@@ -179,17 +179,17 @@ module.exports = function(passport) {
 
                     else if (decoded.aud == "https://tiledesk.com") {                
                       winston.debug("configSecret: "+ maskedconfigSecret );
-                      done(null, configSecret);
+                      done(null, configSecret); //priv_jwt pp_jwt 
                     }
 
                     else {                
                       winston.debug("configSecret: "+ maskedconfigSecret );
-                      done(null, configSecret);
+                      done(null, configSecret); //priv_jwt pp_jwt
                     }
               }
               else {
                 winston.debug("configSecret: "+ maskedconfigSecret );
-                done(null, configSecret);
+                done(null, configSecret); //priv_jwt pp_jwt
               }             
             }
        }

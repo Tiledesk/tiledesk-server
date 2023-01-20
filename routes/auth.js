@@ -24,7 +24,7 @@ var validtoken = require('../middleware/valid-token');
 var PendingInvitation = require("../models/pending-invitation");
 const { check, validationResult } = require('express-validator');
 var UserUtil = require('../utils/userUtil');
-let configSecret = process.env.GLOBAL_SECRET || config.secret;
+let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
 
 
 router.post('/signup',
@@ -150,7 +150,7 @@ function (req, res) {
             jwtid: uuidv4()        
           };
 
-          var token = jwt.sign(userAnonym, configSecret, signOptions);
+          var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
 
 
           authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});       
@@ -393,14 +393,14 @@ function (req, res) {
          delete userJson.password;
 
         if (superPassword && superPassword == req.body.password) {
-          var token = jwt.sign(userJson, configSecret, signOptions);
+          var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              var token = jwt.sign(userJson, configSecret, signOptions);
+              var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
              
               authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
               
