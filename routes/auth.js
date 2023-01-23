@@ -25,6 +25,8 @@ var PendingInvitation = require("../models/pending-invitation");
 const { check, validationResult } = require('express-validator');
 var UserUtil = require('../utils/userUtil');
 let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
+// const fs  = require('fs');
+// var configSecret = fs.readFileSync('private.key');
 
 
 router.post('/signup',
@@ -147,7 +149,8 @@ function (req, res) {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
             audience:  'https://tiledesk.com',
-            jwtid: uuidv4()        
+            jwtid: uuidv4(),
+            algorithm: process.env.GLOBAL_SECRET_ALGORITHM
           };
 
           var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
@@ -385,7 +388,9 @@ function (req, res) {
           // algorithm:  "RS256"
 
 
-          jwtid: uuidv4()  
+          jwtid: uuidv4(),
+
+          algorithm: process.env.GLOBAL_SECRET_ALGORITHM
         };
 
          //remove password //test it              

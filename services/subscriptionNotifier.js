@@ -86,6 +86,7 @@ class SubscriptionNotifier {
 
           if (s.global==true){
             signOptions.audience = 'https://tiledesk.com';
+            signOptions.algorithm = process.env.GLOBAL_SECRET_ALGORITHM;
             secret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;   
           }
     

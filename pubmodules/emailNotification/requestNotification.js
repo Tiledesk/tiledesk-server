@@ -290,7 +290,8 @@ sendToUserEmailChannelEmail(projectid, message) {
         issuer:  'https://tiledesk.com',
         subject:  'userexternal',
         audience:  'https://tiledesk.com',
-        jwtid: uuidv4()        
+        jwtid: uuidv4(),
+        algorithm: process.env.GLOBAL_SECRET_ALGORITHM        
       };
 
 
@@ -769,7 +770,8 @@ sendUserEmail(projectid, message) {
                     issuer:  'https://tiledesk.com',
                     subject:  'guest',
                     audience:  'https://tiledesk.com',
-                    jwtid: uuidv4()        
+                    jwtid: uuidv4(),
+                    algorithm: process.env.GLOBAL_SECRET_ALGORITHM 
                   };
 
                   let userAnonym = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
