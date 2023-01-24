@@ -24,6 +24,9 @@ class BotSubscriptionNotifier {
       //   // url = url.replace ("$res_bot_url", prendi da env)
       // }
 
+      //TODO
+      delete payload.snapshot
+      
       var json = {timestamp: Date.now(), payload: payload};
     
 
