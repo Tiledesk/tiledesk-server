@@ -290,9 +290,13 @@ sendToUserEmailChannelEmail(projectid, message) {
         issuer:  'https://tiledesk.com',
         subject:  'userexternal',
         audience:  'https://tiledesk.com',
-        jwtid: uuidv4(),
-        algorithm: process.env.GLOBAL_SECRET_ALGORITHM        
+        jwtid: uuidv4()
       };
+
+      var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+      if (alg) {
+        signOptions.algorithm = alg;
+      }
 
 
       var recipient = lead.lead_id;
@@ -770,9 +774,13 @@ sendUserEmail(projectid, message) {
                     issuer:  'https://tiledesk.com',
                     subject:  'guest',
                     audience:  'https://tiledesk.com',
-                    jwtid: uuidv4(),
-                    algorithm: process.env.GLOBAL_SECRET_ALGORITHM 
+                    jwtid: uuidv4()
                   };
+
+                  var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                  if (alg) {
+                    signOptions.algorithm = alg;
+                  }
 
                   let userAnonym = {_id: recipient, firstname: lead.fullname, lastname: lead.fullname, email: lead.email, attributes: lead.attributes};
                   winston.debug("userAnonym  ",userAnonym);
