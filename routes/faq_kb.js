@@ -13,7 +13,7 @@ var multer = require('multer')
 var upload = multer()
 var configGlobal = require('../config/global');
 
-var chatbot_templates_api_url = "https://chatbot-templates-v2-pre.herokuapp.com/chatbots/public/templates"
+let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
 router.post('/', function (req, res) {
   winston.info('create BOT ', req.body);
