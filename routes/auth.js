@@ -149,9 +149,13 @@ function (req, res) {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
             audience:  'https://tiledesk.com',
-            jwtid: uuidv4(),
-            algorithm: process.env.GLOBAL_SECRET_ALGORITHM
+            jwtid: uuidv4() 
           };
+
+          var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+          if (alg) {
+            signOptions.algorithm = alg;
+          }
 
           var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
 
@@ -388,10 +392,14 @@ function (req, res) {
           // algorithm:  "RS256"
 
 
-          jwtid: uuidv4(),
+          jwtid: uuidv4()
 
-          algorithm: process.env.GLOBAL_SECRET_ALGORITHM
         };
+
+        var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+        if (alg) {
+          signOptions.algorithm = alg;
+        }
 
          //remove password //test it              
          let userJson = user.toObject();
