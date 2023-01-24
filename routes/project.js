@@ -407,6 +407,54 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   });
 });
 
+router.patch('/:projectid/attributes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
+  var data = req.body;
+
+  // TODO use service method
+
+  Project.findById(req.params.projectid, function (err, updatedProject) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+     if (!updatedProject) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      
+      if (!updatedProject.attributes) {
+        winston.debug("empty attributes")
+        updatedProject.attributes = {};
+      }
+
+      winston.debug(" updatedProject attributes", updatedProject.attributes)
+        
+        Object.keys(data).forEach(function(key) {
+          var val = data[key];
+          winston.debug("data attributes "+key+" " +val)
+          updatedProject.attributes[key] = val;
+        });     
+        
+        winston.debug(" updatedProject attributes", updatedProject.attributes)
+
+        // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+        updatedProject.markModified('attributes');
+
+          //cacheinvalidation
+          updatedProject.save(function (err, savedProject) {
+          if (err) {
+            winston.error("error saving project attributes",err)
+            return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          }
+          winston.verbose(" saved project attributes",savedProject.toObject())
+          projectEvent.emit('project.update', savedProject);
+
+            res.json(savedProject);
+        });
+  });
+  
+});
+
 
 router.post('/:projectid/ban', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('PATCH PROJECT REQ BODY ', req.body);
@@ -453,7 +501,7 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   let q = Project.findOne({_id: req.params.projectid, status:100});
   if (cacheEnabler.project) { 
     q.cache(cacheUtil.longTTL, "projects:id:"+req.params.projectid)  //project_cache
-    winston.debug('project cache enabled');
+    winston.debug('project cache enabled for /project detail');
   }
   q.exec(function (err, project) {
     if (err) {

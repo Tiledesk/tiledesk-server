@@ -37,6 +37,11 @@ class CacheEnabler {
             this.project_user = false;
         }
 
+        this.widgets = true;
+        if (process.env.CACHE_WIDGETS_ENABLED=="false" || process.env.CACHE_WIDGETS_ENABLED==false) {
+            this.widgets = false;
+        }
+
         // this.user = true;
         // if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
         //     this.user = false;

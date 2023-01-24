@@ -60,28 +60,28 @@ class PubModulesManager {
         
         if (this.rasaRoute) {
             app.use('/modules/rasa', this.rasaRoute);
-            winston.info("ModulesManager rasaRoute controller loaded");       
+            winston.info("PubModulesManager rasaRoute controller loaded");       
         }
         if (this.appsRoute) {
             app.use('/modules/apps', this.appsRoute);
-            winston.info("ModulesManager appsRoute controller loaded");       
+            winston.info("PubModulesManager appsRoute controller loaded");       
         }
         if (this.whatsappRoute) {
             app.use('/modules/whatsapp', this.whatsappRoute);
-            winston.info("ModulesManager whatsappRoute controller loaded");
+            winston.info("PubModulesManager whatsappRoute controller loaded");
         }
         if (this.kaleyraRoute) {
             app.use('/modules/kaleyra', this.kaleyraRoute);
-            winston.info("ModulesManager kaleyraRoute controller loaded");
+            winston.info("PubModulesManager kaleyraRoute controller loaded");
         }
         if (this.tilebotRoute) {
             app.use('/modules/tilebot', this.tilebotRoute);
-            winston.info("ModulesManager tilebot controller loaded");       
+            winston.info("PubModulesManager tilebot controller loaded");       
         }
 
         if (this.dialogFlow) {
             app.use("/modules/dialogFlow", this.dialogFlow.dialogflowRoute);
-            winston.info("ModulesManager dialogFlow controller loaded");       
+            winston.info("PubModulesManager dialogFlow controller loaded");       
         }
 
     }

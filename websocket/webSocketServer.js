@@ -22,7 +22,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
-let configSecret = process.env.GLOBAL_SECRET || config.secret;
+let configSecretOrPubicKay = process.env.GLOBAL_SECRET_OR_PUB_KEY || process.env.GLOBAL_SECRET || config.secret;   
 var cacheEnabler = require("../services/cacheEnabler");
 
 
@@ -71,14 +71,14 @@ class WebSocketServer {
 
           var token = queryParameter.token;
           winston.debug('token:'+ token);
-          winston.debug('configSecret:'+ configSecret);
+          winston.debug('configSecretOrPubicKay:'+ configSecretOrPubicKay);
 
         
           if (!token)
               cb(false, 401, 'Unauthorized');
           else {
             token = token.replace('JWT ', '');            
-              jwt.verify(token, configSecret, function (err, decoded) {
+              jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
                   if (err) {
                      winston.error('WebSocket error verifing websocket jwt token ', err);
                      return cb(false, 401, 'Unauthorized');
@@ -189,7 +189,7 @@ class WebSocketServer {
 
             if (cacheEnabler.project) {
               q.cache(cacheUtil.defaultTTL, "projects:id:"+projectId) //project_cache
-              winston.debug('project cache enabled');
+              winston.debug('project cache enabled for websocket');
             }
             
             return q.exec(function(err, project) {

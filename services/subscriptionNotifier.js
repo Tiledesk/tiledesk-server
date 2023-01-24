@@ -86,10 +86,11 @@ class SubscriptionNotifier {
 
           if (s.global==true){
             signOptions.audience = 'https://tiledesk.com';
-            secret = process.env.GLOBAL_SECRET || config.secret;
+            signOptions.algorithm = process.env.GLOBAL_SECRET_ALGORITHM;
+            secret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;   
           }
     
-          var token = jwt.sign(sJson, secret, signOptions);
+          var token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt
           json["token"] = token;
 
 

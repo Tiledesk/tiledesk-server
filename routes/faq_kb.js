@@ -261,6 +261,55 @@ router.put('/:faq_kbid', function (req, res) {
 });
 
 
+
+
+router.patch('/:faq_kbid/attributes', function (req, res) {
+  var data = req.body;
+
+  // TODO use service method
+
+  Faq_kb.findById(req.params.faq_kbid, function (err, updatedBot) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+     if (!updatedBot) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      
+      if (!updatedBot.attributes) {
+        winston.debug("empty attributes")
+        updatedBot.attributes = {};
+      }
+
+      winston.debug(" updatedBot attributes", updatedBot.attributes)
+        
+        Object.keys(data).forEach(function(key) {
+          var val = data[key];
+          winston.debug("data attributes "+key+" " +val)
+          updatedBot.attributes[key] = val;
+        });     
+        
+        winston.debug("updatedBot attributes", updatedBot.attributes)
+
+        // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+        updatedBot.markModified('attributes');
+
+          //cacheinvalidation
+          updatedBot.save(function (err, savedProject) {
+          if (err) {
+            winston.error("error saving bot attributes",err)
+            return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          }
+          winston.verbose(" saved bot attributes",updatedBot.toObject())
+          botEvent.emit('faqbot.update', updatedBot);
+            res.json(updatedBot);
+        });
+  });
+  
+});
+
 router.delete('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);

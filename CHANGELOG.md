@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.71) 
 
+# Untagged
+- Removed unused mongoose-auto-increment dependency
+- Removed version versions files
+- Added attributes field to the project model and relative patch endpoint 
+
 # 2.3.71
 - Email service send email direct fit without request_id
 - Removed strong from transcript email template

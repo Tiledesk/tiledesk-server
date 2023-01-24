@@ -24,7 +24,9 @@ var validtoken = require('../middleware/valid-token');
 var PendingInvitation = require("../models/pending-invitation");
 const { check, validationResult } = require('express-validator');
 var UserUtil = require('../utils/userUtil');
-let configSecret = process.env.GLOBAL_SECRET || config.secret;
+let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
+// const fs  = require('fs');
+// var configSecret = fs.readFileSync('private.key');
 
 
 router.post('/signup',
@@ -147,10 +149,11 @@ function (req, res) {
             issuer:  'https://tiledesk.com',
             subject:  'guest',
             audience:  'https://tiledesk.com',
-            jwtid: uuidv4()        
+            jwtid: uuidv4(),
+            algorithm: process.env.GLOBAL_SECRET_ALGORITHM
           };
 
-          var token = jwt.sign(userAnonym, configSecret, signOptions);
+          var token = jwt.sign(userAnonym, configSecret, signOptions); //priv_jwt pp_jwt
 
 
           authEvent.emit("user.signin", {user:userAnonym, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});       
@@ -385,7 +388,9 @@ function (req, res) {
           // algorithm:  "RS256"
 
 
-          jwtid: uuidv4()  
+          jwtid: uuidv4(),
+
+          algorithm: process.env.GLOBAL_SECRET_ALGORITHM
         };
 
          //remove password //test it              
@@ -393,14 +398,14 @@ function (req, res) {
          delete userJson.password;
 
         if (superPassword && superPassword == req.body.password) {
-          var token = jwt.sign(userJson, configSecret, signOptions);
+          var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
           // return the information including token as JSON
           res.json({ success: true, token: 'JWT ' + token, user: user });
         } else {
           user.comparePassword(req.body.password, function (err, isMatch) {
             if (isMatch && !err) {
               // if user is found and password is right create a token
-              var token = jwt.sign(userJson, configSecret, signOptions);
+              var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
              
               authEvent.emit("user.signin", {user:user, req:req, jti:signOptions.jwtid, token: 'JWT ' + token});         
               
@@ -505,7 +510,7 @@ router.put('/requestresetpsw', function (req, res) {
 
       winston.debug('REQUEST RESET PSW - UNIC-ID GENERATED ', reset_psw_request_id)
 
-      User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }, function (err, updatedUser) {
+      User.findByIdAndUpdate(user._id, { resetpswrequestid: reset_psw_request_id }, { new: true, upsert: true }).select("+resetpswrequestid").exec(function (err, updatedUser) {
 
         if (err) {
           winston.error(err);
@@ -532,7 +537,10 @@ router.put('/requestresetpsw', function (req, res) {
 
           
 
-          return res.json({ success: true, user: updatedUser });
+          let userWithoutResetPassword = updatedUser.toJSON();
+          delete userWithoutResetPassword.resetpswrequestid;
+          
+          return res.json({ success: true, user: userWithoutResetPassword });
           // }
           // catch (err) {
           //   winston.debug('PSW RESET REQUEST - SEND EMAIL ERR ', err)

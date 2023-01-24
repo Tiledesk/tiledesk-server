@@ -2,6 +2,7 @@
  var messageEvent = require("../../event/messageEvent");   
  var projectEvent = require("../../event/projectEvent");   
  var botEvent = require("../../event/botEvent");   
+ const faqBotEvent = require('../../event/faqBotEvent');
  var departmentEvent = require("../../event/departmentEvent");   
  var authEvent = require("../../event/authEvent");   
  var labelEvent = require("../../event/labelEvent");
@@ -14,6 +15,7 @@
  var cachegoose = require('cachegoose');
 
  var cacheUtil = require('../../utils/cacheUtil');
+ var RoleConstants = require("../../models/roleConstants");
 
  
 
@@ -49,11 +51,15 @@
             });
 
             key = "projects:query:*";
-            winston.verbose("Deleting cache for project.create with key: " + key);
+            winston.verbose("Deleting cache for project.update with key: " + key);
             client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for project.create",reply);
-                winston.verbose("Deleted cache for project.create",{err:err});
+                winston.debug("Deleted cache for project.update",reply);
+                winston.verbose("Deleted cache for project.update",{err:err});
             });   
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for project.update");
+            invalidateWidgets(client, project.id); //tested
         });
 
     });
@@ -74,6 +80,10 @@
                 winston.verbose("Deleted cache for project.create",{err:err});
             });   
         });
+
+        // TODO invalidate widgets here
+        winston.verbose("Deleting widgets cache for project.delete");
+        invalidateWidgets(client, project.id);
     });
 
     projectEvent.on("project.downgrade", function(project) {
@@ -87,11 +97,15 @@
             });
 
             key = "projects:query:*";
-            winston.verbose("Deleting cache for project.create with key: " + key);
+            winston.verbose("Deleting cache for project.downgrade with key: " + key);
             client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for project.create",reply);
-                winston.verbose("Deleted cache for project.create",{err:err});
-            });   
+                winston.debug("Deleted cache for project.downgrade",reply);
+                winston.verbose("Deleted cache for project.downgrade",{err:err});
+            }); 
+            
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for project.downgrade");
+            invalidateWidgets(client, project.id);
         });
     });
 
@@ -153,6 +167,18 @@
                     winston.verbose("Updated cache for project_user.update",{err:err});
                 });
             }
+
+
+            
+            // TODO invalidate widgets headers
+            // only if role is agent, owner, admin ATTENTION
+            if (role == RoleConstants.OWNER || role == RoleConstants.ADMIN || role == RoleConstants.SUPERVISOR || role == RoleConstants.AGENT) {
+                winston.verbose("Deleting widgets cache for project_user.update");
+                invalidateWidgets(client, project_user.id_project);    //tested
+            }else {
+                winston.verbose("NOT invalidating widget cache for non admins project_user role");//tested
+            }
+            
         });
     });
    
@@ -362,6 +388,10 @@
                 winston.debug("Created cache for faq_kb.create",reply);
                 winston.verbose("Created cache for faq_kb.create",{err:err});
             });
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faqbot.create");
+            invalidateWidgets(client, faq_kb.id_project); //tested
         });
     });
 
@@ -374,7 +404,11 @@
             client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
                 winston.verbose("Created cache for faq_kb.update",{err:err});
-            });       
+            }); 
+            
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faqbot.update");
+            invalidateWidgets(client, faq_kb.id_project); //TESTED
         });
     });
 
@@ -382,11 +416,41 @@
     botEvent.on("faqbot.delete", function(faq_kb) { 
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
-            winston.verbose("Creating cache for faqbot.delete with key: " + key);
-            client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Created cache for faqbot.delete",reply);
-                winston.verbose("Created cache for faqbot.delete",{err:err});
+            winston.verbose("Deleting cache for faqbot.delete with key: " + key);
+            client.del(key, (err, reply) => {
+                winston.debug("Deleted cache for faqbot.delete",reply);
+                winston.verbose("Deleted cache for faqbot.delete",{err:err});
             });
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faqbot.delete");
+            invalidateWidgets(client, faq_kb.id_project); //tested
+        });
+    });
+
+
+
+    faqBotEvent.on("faq.create", function(faq) { 
+        setImmediate(() => {            
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faq.create");
+            invalidateWidgets(client, faq.id_project); //tested
+        });
+    });
+
+    faqBotEvent.on("faq.update", function(faq) { 
+        setImmediate(() => {            
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faq.update");
+            invalidateWidgets(client, faq.id_project);//tested
+        });
+    });
+
+    faqBotEvent.on("faq.delete", function(faq) { 
+        setImmediate(() => {            
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for faq.delete",faq);
+            invalidateWidgets(client, faq.id_project);//tested
         });
     });
 
@@ -406,6 +470,10 @@
                 winston.debug("Deleted cache for department.create",reply);
                 winston.verbose("Deleted cache for department.create",{err:err});
             });   
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for department.create");
+            invalidateWidgets(client, department.id_project); 
         });
     });
 
@@ -426,6 +494,10 @@
                 winston.debug("Deleted cache for department.update",reply);
                 winston.verbose("Deleted cache for department.update",{err:err});
             });   
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for department.update");
+            invalidateWidgets(client, department.id_project); //tested
         });
     });
 
@@ -433,10 +505,10 @@
     departmentEvent.on("department.delete", function(department) { 
         setImmediate(() => {
             var key = department.id_project+":departments:id:"+department._id;
-            winston.verbose("Creating cache for department.delete with key: " + key);
-            client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Created cache for department.delete",reply);
-                winston.verbose("Created cache for department.delete",{err:err});
+            winston.verbose("Deleting cache for department.delete with key: " + key);
+            client.del(key, (err, reply) => {
+                winston.debug("Deleted cache for department.delete",reply);
+                winston.verbose("Deleted cache for department.delete",{err:err});
             });
 
             key = department.id_project+":departments:query:*";        
@@ -445,6 +517,10 @@
                 winston.debug("Deleted cache for department.delete",reply);
                 winston.verbose("Deleted cache for department.delete",{err:err});
             });   
+
+            // TODO invalidate widgets here
+            winston.verbose("Deleting widgets cache for department.delete");
+            invalidateWidgets(client, department.id_project);
         });
     });
 
@@ -575,6 +651,17 @@
     
     }
     
+
+    function invalidateWidgets(client, project_id) {
+        key = project_id+":widgets";
+        winston.verbose("Deleting cache for widgets with key: " + key);
+        client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for widgets",reply);
+            winston.verbose("Deleted cache for widgets",{err:err});
+        });   
+    }
+
+
     //jwt
 
     // fai cache faq
@@ -616,8 +703,12 @@ module.exports = function (mongoose, option) {
 
         var client = cachegoose._cache;
         listen(client);
+
+        return cachegoose;
     }else {
         winston.info("Mongoose Cachegoose disabled");
+
+        return;
     }
 
     // console.log("init",init);  
