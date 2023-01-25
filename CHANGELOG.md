@@ -5,10 +5,29 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.71) 
 
-# Untagged
+# 2.3.73
 - Removed unused mongoose-auto-increment dependency
 - Removed version versions files
 - Added attributes field to the project model and relative patch endpoint 
+- Message text validation only for the first message
+- Updated tiledesk/tiledesk-tybot-connector@0.1.46
+- Added an endpoint to patch the bot attributes
+- Added Faq_kbSchema index({certified: 1, public: 1});
+- Added ActivitySchema index({id_project: 1, createdAt: -1});
+- Changed from .remove to findByIdAndRemove for faq remove endpoint to fix event emitter payload
+- Updated tiledesk/tiledesk-tybot-connector@0.1.47
+- Added caching for /widgets endpoint with invalidations
+- Added bot rules to /widgets endpoint
+- Select false for resetpswrequestid field of user model
+- Added support for Public Private Key for JWT Auth with GLOBAL_SECRET_OR_PRIVATE_KEY and GLOBAL_SECRET_OR_PUB_KEY and GLOBAL_SECRET_ALGORITHM environments variables. If these properties are configured Public Private Key method is enabled otherwise if GLOBAL_SECRET env varible is configured the shared secret method is used. algorithm (default: HS256)
+- Updated tiledesk/tiledesk-tybot-connector@0.1.48
+- Removed “snapshot” from request payload for external chatbot
+
+
+
+# 2.3.72
+- Added Kaleyra module
+- Updated tiledesk-apps to 1.0.12
 
 # 2.3.71
 - Email service send email direct fit without request_id
