@@ -324,10 +324,10 @@
             });
 
             key = request.id_project+":requests:query:*";
-            winston.verbose("Deleting cache for request.create with key: " + key);
+            winston.verbose("Deleting cache for request.update with key: " + key);
             client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for request.create",reply);
-                winston.verbose("Deleted cache for request.create",{err:err});
+                winston.debug("Deleted cache for request.update",reply);
+                winston.verbose("Deleted cache for request.update",{err:err});
             });   
         });
     });
@@ -352,8 +352,8 @@
             key = request.id_project+":requests:query:*";
             winston.verbose("Deleting cache for request.create with key: " + key);
             client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for request.create",reply);
-                winston.verbose("Deleted cache for request.create",{err:err});
+                winston.debug("Deleted cache for request.close",reply);
+                winston.verbose("Deleted cache for request.close",{err:err});
             });   
         });
     });
