@@ -30,6 +30,7 @@
                 winston.debug("Created cache for project.create reply",reply);
             });
 
+            // TODO COMMENTA NON USATO
             key = "projects:query:*";
             winston.verbose("Deleting cache for project.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -50,6 +51,7 @@
 
             });
 
+            // TODO COMMENTA NON USATO
             key = "projects:query:*";
             winston.verbose("Deleting cache for project.update with key: " + key);
             client.del(key, function (err, reply) {
@@ -73,6 +75,7 @@
                 winston.verbose("Deleted cache for project.delete",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = "projects:query:*";
             winston.verbose("Deleting cache for project.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -96,6 +99,7 @@
                 winston.verbose("Updated cache for project.downgrade",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = "projects:query:*";
             winston.verbose("Deleting cache for project.downgrade with key: " + key);
             client.del(key, function (err, reply) {
@@ -261,8 +265,8 @@
             });
 
 
-            var key = "requests:id:"+request.request_id+":simple";  //without project for chat21 webhook
-            winston.verbose("Creating cache for request.create.simple with key: " + key);
+            var key = "requests:request_id:"+request.request_id+":simple";  //without project for chat21 webhook
+            winston.verbose("Creating cache for request.create.simple without project with key : " + key);
 
             client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for request.create.simple",reply);
@@ -296,6 +300,7 @@
                 winston.verbose("Created cache for request.create",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = request.id_project+":requests:query:*";
             winston.verbose("Deleting cache for request.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -323,6 +328,7 @@
                 winston.verbose("Created cache for request.update",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = request.id_project+":requests:query:*";
             winston.verbose("Deleting cache for request.update with key: " + key);
             client.del(key, function (err, reply) {
@@ -349,6 +355,7 @@
                 winston.verbose("Created cache for request.close",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = request.id_project+":requests:query:*";
             winston.verbose("Deleting cache for request.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -464,6 +471,7 @@
                 winston.verbose("Created cache for department.create",{err:err});
             });
             
+            // TODO COMMENTA NON USATO
             key = department.id_project+":departments:query:*";        
             winston.verbose("Deleting cache for department.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -488,6 +496,7 @@
                 winston.verbose("Created cache for department.update",{err:err});
             });    
 
+            // TODO COMMENTA NON USATO
             key = department.id_project+":departments:query:*";        
             winston.verbose("Deleting cache for department.update with key: " + key);
             client.del(key, function (err, reply) {
@@ -511,6 +520,7 @@
                 winston.verbose("Deleted cache for department.delete",{err:err});
             });
 
+            // TODO COMMENTA NON USATO
             key = department.id_project+":departments:query:*";        
             winston.verbose("Deleting cache for department.delete with key: " + key);
             client.del(key, function (err, reply) {
@@ -527,6 +537,8 @@
 
     labelEvent.on("label.create", function(label) { 
         setImmediate(() => {    
+
+            // TODO COMMENTA NON USATO
             var key = label.id_project+":labels:query:*";        
             winston.verbose("Deleting cache for label.create with key: " + key);
             client.del(key, function (err, reply) {
@@ -540,6 +552,8 @@
 
     labelEvent.on("label.update", function(label) {        
         setImmediate(() => {    
+
+            // TODO COMMENTA NON USATO
             var key = label.id_project+":labels:query:*";        
             winston.verbose("Deleting cache for label.update with key: " + key);
             client.del(key, function (err, reply) {
@@ -551,7 +565,9 @@
 
 
     labelEvent.on("label.clone", function(label) {    
-        setImmediate(() => {         
+        setImmediate(() => {       
+            
+            // TODO COMMENTA NON USATO
             var key = label.id_project+":labels:query:*";        
             winston.verbose("Deleting cache for label.clone with key: " + key);
             client.del(key, function (err, reply) {
@@ -564,6 +580,8 @@
 
     labelEvent.on("label.delete", function(label) {     
         setImmediate(() => {         
+
+            // TODO COMMENTA NON USATO
             var key = label.id_project+":labels:query:*";        
             winston.verbose("Deleting cache for label.delete with key: " + key);
             client.del(key, function (err, reply) {
