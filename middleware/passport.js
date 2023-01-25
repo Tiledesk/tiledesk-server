@@ -180,17 +180,17 @@ module.exports = function(passport) {
 
                     else if (decoded.aud == "https://tiledesk.com") {                
                       winston.debug("configSecret: "+ maskedconfigSecret );
-                      done(null, configSecret); //priv_jwt pp_jwt 
+                      done(null, configSecret); //pub_jwt pp_jwt 
                     }
 
                     else {                
                       winston.debug("configSecret: "+ maskedconfigSecret );
-                      done(null, configSecret); //priv_jwt pp_jwt
+                      done(null, configSecret); //pub_jwt pp_jwt
                     }
               }
               else {
                 winston.debug("configSecret: "+ maskedconfigSecret );
-                done(null, configSecret); //priv_jwt pp_jwt
+                done(null, configSecret); //pub_jwt pp_jwt
               }             
             }
        }
