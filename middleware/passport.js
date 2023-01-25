@@ -18,7 +18,7 @@ var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
 var cacheUtil = require('../utils/cacheUtil');
-
+var cacheEnabler = require("../services/cacheEnabler");
 
 const MaskData = require("maskdata");
 
@@ -114,8 +114,18 @@ module.exports = function(passport) {
                         return done(null, null);
                       }
 
-                      winston.debug("bot id: "+ AudienceId );
-                      Faq_kb.findById(AudienceId).select('+secret').exec(function (err, faq_kb){
+                      winston.debug("bot id AudienceId: "+ AudienceId );
+                      let qbot = Faq_kb.findById(AudienceId).select('+secret');
+                      
+                      if (cacheEnabler.faq_kb) {
+                        let id_project = decoded.id_project;
+                        winston.debug("decoded.id_project:"+decoded.id_project);
+                        qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+AudienceId+":secret")
+                        winston.debug('faq_kb AudienceId cache enabled');
+                      }
+
+
+                      qbot.exec(function (err, faq_kb){ //TODO add cache_bot_here
                         if (err) {
                           winston.error("auth Faq_kb err: ", {error: err, decoded:decoded} );
                           return done(null, null);
@@ -247,7 +257,18 @@ module.exports = function(passport) {
 
     if (subject == "bot") {
       winston.debug("Passport JWT bot");
-      Faq_kb.findOne({_id: identifier}, function(err, faq_kb) {
+
+        let qbot = Faq_kb.findOne({_id: identifier}); //TODO add cache_bot_here
+
+          if (cacheEnabler.faq_kb) {
+            let id_project = jwt_payload.id_project;
+            winston.debug("jwt_payload.id_project:"+jwt_payload.id_project);
+            qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+identifier)
+            winston.debug('faq_kb cache enabled');
+          }
+  
+          qbot.exec(function(err, faq_kb) {
+
           if (err) {
             winston.error("Passport JWT bot err", err);
             return done(err, false);
@@ -326,7 +347,7 @@ module.exports = function(passport) {
 
     } else {
       winston.debug("Passport JWT generic user");
-      User.findOne({_id: identifier, status: 100})
+      User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
         .exec(function(err, user) {
           if (err) {
@@ -358,7 +379,7 @@ module.exports = function(passport) {
       var email = userid.toLowerCase();
       winston.debug("email lowercase: " + email);
 
-      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id')
+      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id') //TODO user_cache_here ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
       //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:email:"+email)
       .exec(function (err, user) {
        

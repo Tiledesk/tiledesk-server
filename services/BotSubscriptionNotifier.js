@@ -11,6 +11,9 @@ var request = require('retry-request', {
 var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
 winston.debug("webhook_origin: "+webhook_origin);
 
+var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
+
 class BotSubscriptionNotifier {
    
   
@@ -76,7 +79,17 @@ class BotSubscriptionNotifier {
     //modify to async
     botEvent.on('bot.message.received.notify.external', function(botNotification) {
       var bot = botNotification.bot;
-      Faq_kb.findById(bot._id).select('+secret').exec(function (err, botWithSecret){
+      winston.debug('getting botWithSecret');
+      let qbot = Faq_kb.findById(bot._id).select('+secret')
+
+      if (cacheEnabler.faq_kb) {
+        let id_project = bot.id_project;
+        winston.debug("id_project.id_project:"+id_project);
+        qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+bot._id+":secret")
+        winston.debug('faq_kb BotSubscriptionNotifier cache enabled');
+      }
+
+      qbot.exec(function (err, botWithSecret){   //TODO add cache_bot_here????
         if (err) {
           winston.debug('Error getting botWithSecret', err);
         }

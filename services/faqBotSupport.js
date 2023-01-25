@@ -126,7 +126,7 @@ class FaqBotSupport {
                     return resolve(messageReply);
                 }
                     
-                var botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();
+                var botWithSecret = await Faq_kb.findById(bot._id).select('+secret').exec();  //TODO add cache_bot_nOT_here?? it's internal bot that is deprecated-> skip caching
 
                 var signOptions = {
                     issuer:  'https://tiledesk.com',

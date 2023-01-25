@@ -86,7 +86,7 @@ class FaqBotHandler {
            winston.debug("message.text "+ message.text);
          
 
-           Faq_kb.findById(botId)
+           Faq_kb.findById(botId)  //TODO add cache_bot_NOT_here it's internal bot that is deprecated-> skip caching
            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
            .exec(function(err, faq_kb) {
             if (err) {

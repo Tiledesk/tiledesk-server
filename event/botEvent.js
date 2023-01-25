@@ -4,6 +4,8 @@ const Faq_kb = require('../models/faq_kb');
 var winston = require('../config/winston');
 
 class BotEvent extends EventEmitter {}
+const cacheUtil = require("../utils/cacheUtil");
+const cacheEnabler = require("../services/cacheEnabler");
 
 const botEvent = new BotEvent();
 
@@ -108,7 +110,17 @@ messageEvent.on('message.create', function(message) {
     }
 
 
-    Faq_kb.findById(botId).exec(function(err, bot) {
+    let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
+
+        if (cacheEnabler.faq_kb) {
+          qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
+          winston.debug('faq_kb cache enabled');
+        }
+
+        qbot.exec(function(err, bot) {
+
+
+    
         if (err) {
           winston.error('Error getting object.', err);
           return 0;
