@@ -347,9 +347,15 @@ module.exports = function(passport) {
 
     } else {
       winston.debug("Passport JWT generic user");
-      User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
+      let quser = User.findOne({_id: identifier, status: 100})   //TODO user_cache_here
         //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)
-        .exec(function(err, user) {
+
+        if (cacheEnabler.user) {
+          quser.cache(cacheUtil.defaultTTL, "users:id:"+identifier)
+          winston.debug('user cache enabled');
+        }
+
+        quser.exec(function(err, user) {
           if (err) {
             winston.error("Passport JWT generic err ", err);
             return done(err, false);
@@ -379,7 +385,7 @@ module.exports = function(passport) {
       var email = userid.toLowerCase();
       winston.debug("email lowercase: " + email);
 
-      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id') //TODO user_cache_here ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
+      User.findOne({ email: email, status: 100}, 'email firstname lastname password emailverified id') //TODO user_cache_here. NOT used frequently. ma attento select. ATTENTO QUI NN USEREI LA SELECT altrimenti con JWT ho tuttto USER mentre con basich auth solo aluni campi
       //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:email:"+email)
       .exec(function (err, user) {
        

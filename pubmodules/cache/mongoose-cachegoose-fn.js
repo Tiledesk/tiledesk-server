@@ -201,12 +201,13 @@
                 winston.verbose("Created cache for user.signup",{err:err});
             });
 
-            var key = "users:email:"+user.email;
-            winston.verbose("Creating cache for user.signup with key: " + key);
-            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Created cache for user.signup",reply);
-                winston.verbose("Created cache for user.signup",{err:err});
-            });
+            // NOT IN USE (TESTED)
+            // var key = "users:email:"+user.email;
+            // winston.verbose("Creating cache for user.signup with key: " + key);
+            // client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
+            //     winston.debug("Created cache for user.signup",reply);
+            //     winston.verbose("Created cache for user.signup",{err:err});
+            // });
         });
     });
 
@@ -222,12 +223,13 @@
                 winston.verbose("Updated cache for user.update",{err:err});
             });
 
-            var key = "users:email:"+user.email;
-            winston.verbose("Updating cache for user.update with key: " + key);
-            client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
-                winston.debug("Updated cache for user.update",reply);
-                winston.verbose("Updated cache for user.update",{err:err});
-            });
+            // NOT IN USE (TESTED)
+            // var key = "users:email:"+user.email;
+            // winston.verbose("Updating cache for user.update with key: " + key);
+            // client.set(key, user, cacheUtil.defaultTTL, (err, reply) => {
+            //     winston.debug("Updated cache for user.update",reply);
+            //     winston.verbose("Updated cache for user.update",{err:err});
+            // });
         });
     });
    
@@ -242,12 +244,13 @@
                 winston.verbose("Deleted cache for user.delete",{err:err});
             });
 
-            var key = "users:email:"+user.email;
-            winston.verbose("Deleting cache for user.delete with key: " + key);
-            client.del(key, (err, reply) => {
-                winston.debug("Deleted cache for user.delete",reply);
-                winston.verbose("Deleted cache for user.delete",{err:err});
-            });
+            // NOT IN USE (TESTED)
+            // var key = "users:email:"+user.email;
+            // winston.verbose("Deleting cache for user.delete with key: " + key);
+            // client.del(key, (err, reply) => {
+            //     winston.debug("Deleted cache for user.delete",reply);
+            //     winston.verbose("Deleted cache for user.delete",{err:err});
+            // });
         });
     });
 
@@ -413,6 +416,14 @@
                 winston.verbose("Created cache for faq_kb.update",{err:err});
             }); 
             
+
+            key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id+":secret";
+            winston.verbose("Deleting cache for faq_kb.update secret with key: " + key);
+            client.del(key, function (err, reply) {  //tested
+                winston.debug("Deleted cache for faq_kb.update secret",reply);
+                winston.verbose("Deleted cache for faq_kb.update secret",{err:err});
+            });   
+            
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faqbot.update");
             invalidateWidgets(client, faq_kb.id_project); //TESTED
@@ -420,7 +431,7 @@
     });
 
 
-    botEvent.on("faqbot.delete", function(faq_kb) { 
+    botEvent.on("faqbot.delete", function(faq_kb) {   //LOGIC deletion for chatbot is used
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Deleting cache for faqbot.delete with key: " + key);
@@ -428,6 +439,14 @@
                 winston.debug("Deleted cache for faqbot.delete",reply);
                 winston.verbose("Deleted cache for faqbot.delete",{err:err});
             });
+
+
+            key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id+":secret";
+            winston.verbose("Deleting cache for faq_kb.delete secret with key: " + key);
+            client.del(key, function (err, reply) {
+                winston.debug("Deleted cache for faq_kb.delete secret",reply);
+                winston.verbose("Deleted cache for faq_kb.delete secret",{err:err});
+            });   
 
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faqbot.delete");
