@@ -84,7 +84,10 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: false,
     default: 'none'
-  }
+  },
+  tags: [{
+      type: String
+    }]
 },{
   timestamps: true
 }
