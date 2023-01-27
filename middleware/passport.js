@@ -35,7 +35,7 @@ const maskOptions = {
 
 
 var configSecret = process.env.GLOBAL_SECRET_OR_PUB_KEY || process.env.GLOBAL_SECRET || config.secret;
-
+console.log("configSecret",configSecret);
 
 var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
 winston.info('Authentication Global Secret : ' + maskedconfigSecret);
