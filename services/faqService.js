@@ -101,9 +101,55 @@ class FaqService {
 
       if (template==="blank") {
 
+        // faqsArray = [         
+        //   { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
+        //   { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
+        // ]
         faqsArray = [         
-          { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
-          { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
+          {
+            'question': '\\start',
+            "actions" : [ 
+              {
+                  "_tdActionType" : "reply",
+                  "text" : "Hi, how can I help you?",
+                  "attributes" : {
+                      "commands" : [ 
+                          {
+                              "type" : "message",
+                              "message" : {
+                                  "type" : "text",
+                                  "text" : "Hi, how can I help you?"
+                              }
+                          }
+                      ]
+                  }
+              }
+            ],
+            'intent_display_name': 'start',
+            'topic': 'internal'
+          },            
+          {
+            'question': 'defaultFallback',
+            "actions" : [ 
+              {
+                  "_tdActionType" : "reply",
+                  "text" : "I didn't understand. Can you rephrase your question?",
+                  "attributes" : {
+                      "commands" : [ 
+                          {
+                              "type" : "message",
+                              "message" : {
+                                  "type" : "text",
+                                  "text" : "I didn't understand. Can you rephrase your question?"
+                              }
+                          }
+                      ]
+                  }
+              }
+            ],
+            'intent_display_name': 'defaultFallback',
+            'topic': 'internal'
+          }, //TODO se metto spazio n * nn va              
         ]
 
       }
