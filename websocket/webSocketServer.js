@@ -29,7 +29,7 @@ var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
-  configSecret = pKey.replace(/\\n/g, '\n');
+  configSecretOrPubicKay = pKey.replace(/\\n/g, '\n');
 }
 
 var cacheEnabler = require("../services/cacheEnabler");
@@ -101,7 +101,7 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
-                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')    
+                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
                             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                             .exec(function (err, user) {
                            
