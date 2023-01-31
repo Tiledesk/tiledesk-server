@@ -24,7 +24,15 @@ var validtoken = require('../middleware/valid-token');
 var PendingInvitation = require("../models/pending-invitation");
 const { check, validationResult } = require('express-validator');
 var UserUtil = require('../utils/userUtil');
-let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
+
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
+var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+// console.log("pKey",pKey);
+
+if (pKey) {
+  configSecret = pKey.replace(/\\n/g, '\n');
+}
+
 // const fs  = require('fs');
 // var configSecret = fs.readFileSync('private.key');
 
@@ -540,7 +548,7 @@ router.put('/requestresetpsw', function (req, res) {
           emailService.sendPasswordResetRequestEmail(updatedUser.email, updatedUser.resetpswrequestid, updatedUser.firstname, updatedUser.lastname);
 
 
-         
+        //  TODO emit user.update?
           authEvent.emit('user.requestresetpassword', {updatedUser:updatedUser, req:req});
 
           
@@ -598,7 +606,7 @@ router.put('/resetpsw/:resetpswrequestid', function (req, res) {
 
         emailService.sendYourPswHasBeenChangedEmail(saveUser.email, saveUser.firstname, saveUser.lastname);
 
-            
+            //  TODO emit user.update?
         authEvent.emit('user.resetpassword', {saveUser:saveUser, req:req});
  
 

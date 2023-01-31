@@ -33,9 +33,26 @@ const maskOptions = {
   unmaskedEndDigits : 3 // Should be positive Integer
   };
 
+var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+winston.info('Authentication Global Algorithm : ' + alg);
 
-var configSecret = process.env.GLOBAL_SECRET_OR_PUB_KEY || process.env.GLOBAL_SECRET || config.secret;
-console.log("configSecret",configSecret);
+// TODO STAMPA ANCHE PUBLIC
+
+var configSecret = process.env.GLOBAL_SECRET || config.secret;
+
+var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+// console.log("pKey",pKey);
+
+if (pKey) {
+  configSecret = pKey.replace(/\\n/g, '\n');
+}
+// console.log("configSecret",configSecret);
+// if (process.env.GLOBAL_SECRET_OR_PUB_KEY) {
+//   console.log("GLOBAL_SECRET_OR_PUB_KEY defined");
+
+// }else {
+//   console.log("GLOBAL_SECRET_OR_PUB_KEY undefined");
+// }
 
 var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
 winston.info('Authentication Global Secret : ' + maskedconfigSecret);

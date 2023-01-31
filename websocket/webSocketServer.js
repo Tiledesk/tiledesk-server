@@ -22,7 +22,16 @@ var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
-let configSecretOrPubicKay = process.env.GLOBAL_SECRET_OR_PUB_KEY || process.env.GLOBAL_SECRET || config.secret;   
+
+let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;   
+
+var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+// console.log("pKey",pKey);
+
+if (pKey) {
+  configSecret = pKey.replace(/\\n/g, '\n');
+}
+
 var cacheEnabler = require("../services/cacheEnabler");
 
 
@@ -92,7 +101,7 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
-                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')
+                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')    
                             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                             .exec(function (err, user) {
                            

@@ -92,7 +92,15 @@ class SubscriptionNotifier {
               signOptions.algorithm = alg;
             }
 
-            secret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;   
+            secret = process.env.GLOBAL_SECRET || config.secret;   
+            var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+            // console.log("pKey",pKey);
+
+            if (pKey) {
+              secret = pKey.replace(/\\n/g, '\n');
+            }
+
+
           }
     
           var token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt

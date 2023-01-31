@@ -24,7 +24,16 @@ var configGlobal = require('../../config/global');
 
 var widgetConfig = require('../../config/widget');
 var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
-let configSecret = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY || process.env.GLOBAL_SECRET || config.secret;
+
+
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
+
+var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+// console.log("pKey",pKey);
+
+if (pKey) {
+  configSecret = pKey.replace(/\\n/g, '\n');
+}
 
 let apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.debug('********* RequestNotification apiUrl: ' + apiUrl);
