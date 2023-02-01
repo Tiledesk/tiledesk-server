@@ -241,17 +241,17 @@ class RulesTrigger {
   
             var recipient;
             if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
-              recipient = eventTrigger.event.request_id;
-
-              //custom ocf here
-              if (eventTrigger.event.id_project =="636a63070d942d001950c023") {
-                subject = "Apertura richiesta di supporto #" + eventTrigger.event.ticket_id;
-                console.log("subject",subject);
-              }
-
+              recipient = eventTrigger.event.request_id;             
             }
             if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {
               recipient = eventTrigger.event.recipient;
+
+               //custom ocf here
+               if (eventTrigger.event.id_project =="636a63070d942d001950c023") {
+                subject = "Apertura richiesta di supporto #" + eventTrigger.event.request.ticket_id;
+                console.log("subject",subject);
+              }
+
             }
             if (eventTrigger.eventKey=="event.emit") {
               winston.debug('runAction action event.emit: ', eventTrigger.event.toObject());
