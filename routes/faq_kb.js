@@ -12,6 +12,7 @@ const { forEach } = require('lodash');
 var multer = require('multer')
 var upload = multer()
 var configGlobal = require('../config/global');
+const faq = require('../models/faq');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -480,6 +481,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
         id_project: req.projectid,
         createdBy: req.user.id,
         intent_display_name: intent.intent_display_name,
+        intent_id: intent.intent_id,
         question: intent.question,
         answer: intent.answer,
         reply: intent.reply,
@@ -529,7 +531,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
   } else {
 
     if (req.query.create && req.query.create == 'true') {
-      faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined).then((savedFaq_kb) => {
+      faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes).then((savedFaq_kb) => {
         winston.debug("saved (and imported) faq kb: ", savedFaq_kb);
         botEvent.emit('faqbot.create', savedFaq_kb);
 
@@ -540,6 +542,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
             id_project: req.projectid,
             createdBy: req.user.id,
             intent_display_name: intent.intent_display_name,
+            intent_id: intent.intent_id,
             question: intent.question,
             answer: intent.answer,
             reply: intent.reply,
@@ -622,6 +625,9 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
         if (json.description) {
           faq_kb.description = json.description;
         }
+        if (json.attributes) {
+          faq_kb.attributes = json.attributes;
+        }
   
         Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, (err, updatedFaq_kb) => {
           if (err) {
@@ -637,6 +643,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
               id_project: req.projectid,
               createdBy: req.user.id,
               intent_display_name: intent.intent_display_name,
+              intent_id: intent.intent_id,
               question: intent.question,
               answer: intent.answer,
               reply: intent.reply,
@@ -692,7 +699,6 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
     }
 
   }
-
 })
 
 router.get('/exportjson/:id_faq_kb', (req, res) => {
@@ -709,10 +715,10 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
     } else {
       winston.debug('FAQ-KB: ', faq_kb)
 
-
       faqService.getAll(id_faq_kb).then((faqs) => {
 
-        const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, intent_id, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+        // delete from exclude map intent_id
+        const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
         let json = {
           webhook_enabled: faq_kb.webhook_enabled,
@@ -720,6 +726,7 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
           language: faq_kb.language,
           name: faq_kb.name,
           description: faq_kb.description,
+          attributes: faq_kb.attributes,
           intents: intents
         }
 
