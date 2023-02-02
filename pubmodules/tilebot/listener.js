@@ -69,6 +69,7 @@ class Listener {
                         if (err) {
                          return winston.error('error saving faqkb tilebot ', err)
                         }
+                        botEvent.emit("faqbot.update",savedFaq_kb); //cache invalidation
                         winston.verbose('Saved faqkb tilebot', savedFaq_kb.toObject())      
                     });
                 }

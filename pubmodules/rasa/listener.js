@@ -56,6 +56,7 @@ class Listener {
                         if (err) {
                          return winston.error('error saving faqkb rasa ', err)
                         }
+                        botEvent.emit("faqbot.update",savedFaq_kb); //cache invalidation
                         winston.verbose('Saved faqkb rasa', savedFaq_kb.toObject())      
                     });
                 }

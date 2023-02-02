@@ -50,6 +50,7 @@ class Listener {
                         if (err) {
                          return winston.error('error saving faqkb dialogflow ', err)
                         }
+                        botEvent.emit("faqbot.update",savedFaq_kb); //cache invalidation
                         winston.verbose('Saved faqkb dialogflow', savedFaq_kb.toObject())      
                     });
                 }

@@ -192,11 +192,11 @@ uploadAvatar.single('file'), (req, res, next) => {
     
 
      var destinationFolder = 'uploads/users/' + userid + "/images/";
-     winston.info("destinationFolder:"+destinationFolder);
+     winston.debug("destinationFolder:"+destinationFolder);
 
      var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
 
-     winston.info("req.file.filename:"+req.file.filename);
+     winston.debug("req.file.filename:"+req.file.filename);
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
       sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
