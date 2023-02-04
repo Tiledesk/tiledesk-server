@@ -423,7 +423,15 @@
                 winston.debug("Deleted cache for faq_kb.update secret",reply);
                 winston.verbose("Deleted cache for faq_kb.update secret",{err:err});
             });   
-            
+
+            // without project for tilebot
+            key = "faq_kbs:id:"+faq_kb._id;
+            winston.verbose("Deleting cache for faq_kb.update without project for tilebot with key: " + key);
+            client.del(key, function (err, reply) {  
+                winston.debug("Deleted cache for faq_kb.update  without project for tilebot ",reply);
+                winston.verbose("Deleted cache for faq_kb.update  without project for tilebot ",{err:err});
+            });   
+
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faqbot.update");
             invalidateWidgets(client, faq_kb.id_project); //TESTED
@@ -446,6 +454,15 @@
             client.del(key, function (err, reply) {
                 winston.debug("Deleted cache for faq_kb.delete secret",reply);
                 winston.verbose("Deleted cache for faq_kb.delete secret",{err:err});
+            });  
+            
+
+            // without project for tilebot
+            key = "faq_kbs:id:"+faq_kb._id;
+            winston.verbose("Deleting cache for faq_kb.update without project for tilebot with key: " + key);
+            client.del(key, function (err, reply) {  
+                winston.debug("Deleted cache for faq_kb.update  without project for tilebot ",reply);
+                winston.verbose("Deleted cache for faq_kb.update  without project for tilebot ",{err:err});
             });   
 
             // TODO invalidate widgets here
