@@ -104,7 +104,7 @@ Faq_kbSchema.virtual('fullName').get(function () {
 Faq_kbSchema.index({certified: 1, public: 1}); //suggested by atlas
 
 
-Faq_kbSchema.index({name: 'text', description: 'text', subject: 'text', "tags.tag": 'text'},  
+Faq_kbSchema.index({name: 'text', description: 'text', subject: 'text', "tags": 'text'},  
  {"name":"faqkb_fulltext","default_language": defaultFullTextLanguage,"language_override": "language"}); // schema level
 
 
