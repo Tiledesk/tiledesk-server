@@ -319,7 +319,6 @@ router.delete('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);
 
- 
   Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -393,12 +392,23 @@ router.get('/', function (req, res) {
     query.type = { $ne: "identity" }
   }
 
-  winston.debug("query", query);
+  var search_obj = {"$search": req.query.text};
+
+  if (req.query.text) {    
+    if (req.query.language) {
+      search_obj["$language"] = req.query.language;
+    }
+    query.$text = search_obj;    
+  }
+
+                    
+
+  winston.info("query", query);
 
   Faq_kb.find(query, function (err, faq_kb) {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
-      return (err);
+      return res.status(500).send({ success: false, message: "Unable to get chatbots" });
     }
 
     res.json(faq_kb);

@@ -3,6 +3,9 @@ var Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
 var winston = require('../config/winston');
 
+var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+
+
 var Faq_kbSchema = new Schema({
   name: {
     type: String,
@@ -101,6 +104,8 @@ Faq_kbSchema.virtual('fullName').get(function () {
 Faq_kbSchema.index({certified: 1, public: 1}); //suggested by atlas
 
 
+Faq_kbSchema.index({name: 'text', description: 'text', subject: 'text', "tags.tag": 'text'},  
+ {"name":"faqkb_fulltext","default_language": defaultFullTextLanguage,"language_override": "language"}); // schema level
 
 
 var faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
