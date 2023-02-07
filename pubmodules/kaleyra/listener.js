@@ -13,17 +13,21 @@ class Listener {
             winston.debug("kaleyra config databaseUri: " + config.databaseUri);
         }
 
-        kaleyra.startApp({
-            MONGODB_URL: config.databaseUri,
-            API_URL: apiUrl,
-            BASE_URL: apiUrl + "/modules/kaleyra",
-            APPS_API_URL: apiUrl + "/modules/apps",
-            KALEYRA_API_URL: process.env.KALEYRA_API_URL,
-            API_KEY: process.env.API_KEY,
-            log: process.env.KALEYRA_LOG
-        }, () => {
-            winston.info("Tiledesk Kaleyra proxy server succesfully started.");
-        })
+        if (!process.env.KALEYRA_API_URL || !process.env.API_KEY) {
+            winston.info("Skip Kaleyra startApp")
+        } else {
+            kaleyra.startApp({
+                MONGODB_URL: config.databaseUri,
+                API_URL: apiUrl,
+                BASE_URL: apiUrl + "/modules/kaleyra",
+                APPS_API_URL: apiUrl + "/modules/apps",
+                KALEYRA_API_URL: process.env.KALEYRA_API_URL,
+                API_KEY: process.env.API_KEY,
+                log: process.env.KALEYRA_LOG
+            }, () => {
+                winston.info("Tiledesk Kaleyra proxy server succesfully started.");
+            })
+        }
     }
 }
 
