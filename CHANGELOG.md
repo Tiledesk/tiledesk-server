@@ -1,9 +1,31 @@
 
 
-💥 TILEDESK SERVER v2.3.71 💥
+💥 TILEDESK SERVER v2.3.77 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.71) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
+
+
+# 2.3.77 -> PROD v3
+- Updated tiledesk/tiledesk-whatsapp-connector dependency to 0.1.24
+- Added KALEYRA_API_URL environment variable
+- Now GRAPH_URL environment variable is optional 
+- Added bot cache invalidation for new radis key without project for tilebot
+- Added chatbot fulltext endpoint 
+
+# 2.3.76
+- Adedd tag to bot model
+- \\n fix for public private key
+- Chatbot invalidation fix when created
+- @tiledesk/tiledesk-tybot-connector@0.1.53
+
+# 2.3.75
+- @tiledesk/tiledesk-tybot-connector@0.1.51
+
+# 2.3.74
+- Added cache for bot 
+- @tiledesk/tiledesk-tybot-connector@0.1.50
+- Added cache for user 
 
 # 2.3.73
 - Removed unused mongoose-auto-increment dependency
@@ -19,9 +41,12 @@
 - Added caching for /widgets endpoint with invalidations
 - Added bot rules to /widgets endpoint
 - Select false for resetpswrequestid field of user model
-- Added support for Public Private Key for JWT Auth with GLOBAL_SECRET_OR_PRIVATE_KEY and GLOBAL_SECRET_OR_PUB_KEY and GLOBAL_SECRET_ALGORITHM environments variables. If these properties are configured Public Private Key method is enabled otherwise if GLOBAL_SECRET env varible is configured the shared secret method is used. algorithm (default: HS256)
+- Added support for Public Private Key for JWT Auth with GLOBAL_SECRET_OR_PRIVATE_KEY and GLOBAL_SECRET_OR_PUB_KEY and GLOBAL_SECRET_ALGORITHM(default: HS256, RS256 for pub private key) environments variables. If these properties are configured Public/Private Key method is enabled otherwise if only GLOBAL_SECRET env varible is configured the shared secret method is used. 
 - Updated tiledesk/tiledesk-tybot-connector@0.1.48
 - Removed “snapshot” from request payload for external chatbot
+- Added CHATBOT_TEMPLATES_API_URL env varible
+- Updated tiledesk/tiledesk-tybot-connector@0.1.49
+
 
 
 
@@ -29,7 +54,10 @@
 - Added Kaleyra module
 - Updated tiledesk-apps to 1.0.12
 
-# 2.3.71
+# 2.3.71.1 -> PROD v2
+- ocf email fix
+
+# 2.3.71 
 - Email service send email direct fit without request_id
 - Removed strong from transcript email template
 - Added for updateWaitingTimeByRequestId the field enable_populate
