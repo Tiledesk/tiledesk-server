@@ -72,12 +72,14 @@ var Faq_kbSchema = new Schema({
   public: {
     type: Boolean,
     required: false,
-    default: false
+    default: false,
+    index:true
   },
   certified: {
     type: Boolean,
     required: false,
-    default: false
+    default: false,
+    index:true
   },
   mainCategory: {
     type: String,
