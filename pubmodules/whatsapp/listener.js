@@ -13,29 +13,17 @@ class Listener {
             winston.debug("whatsapp config databaseUri: " + config.databaseUri);
         }
 
-        // Johnny
-        let port = process.env.REDIS_PORT;
-        winston.debug("Redis port: "+ port);
+        var port = process.env.CACHE_REDIS_PORT || 6379;
+        winston.debug("-Redis port: "+ port);
 
-        let host = process.env.REDIS_HOST;
-        winston.debug("Redis host: "+ host);
+        var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
+        winston.debug("-Redis host: "+ host);
 
-        let password = process.env.REDIS_PASSWORD;
-        winston.debug("Redis password: "+ password);
-        // Johnny - END
+        var password = process.env.REDIS_PASSWORD;
+        winston.debug("-Redis password: "+ password);
 
-        // Andrea
-        // var port = process.env.CACHE_REDIS_PORT || 6379;
-        // winston.info("-Redis port: "+ port);
 
-        // var host = process.env.CACHE_REDIS_HOST || "127.0.0.1"
-        // winston.info("-Redis host: "+ host);
-
-        // var password = process.env.CACHE_REDIS_PASSWORD;
-        // winston.info("-Redis password: "+ password);
-        // Andrea - END
-
-        let graph_url = process.env.GRAPH_URL || config.graphUrl || "https://graph.facebook.com/v14.0/"
+        let graph_url = process.env.META_GRAPH_URL || config.graphUrl || "https://graph.facebook.com/v14.0/"
         winston.debug("Whatsapp graph_url: "+ password);
 
         let log = process.env.WHATSAPP_LOG || false
