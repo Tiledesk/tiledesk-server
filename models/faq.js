@@ -155,6 +155,7 @@ FaqSchema.index({ question: 'text' },
 
 
 FaqSchema.index({ id_project: 1, id_faq_kb: 1, intent_display_name: 1 }, { unique: true });
+FaqSchema.index({ id_project: 1, id_faq_kb: 1, intent_id: 1 }, { unique: true });
 
 
 var faq = mongoose.model('faq', FaqSchema);

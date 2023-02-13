@@ -255,6 +255,7 @@ router.put('/:faq_kbid', function (req, res) {
     update.tags = req.body.tags;
   }
 
+ 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -319,6 +320,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);
 
+  
   Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -401,6 +403,13 @@ router.get('/', function (req, res) {
     query.$text = search_obj;    
   }
 
+  if (req.query.public) {
+    query.public = req.query.public;
+  }
+
+  if (req.query.certified) {
+    query.certified = req.query.certified;
+  }
                     
 
   winston.info("query", query);

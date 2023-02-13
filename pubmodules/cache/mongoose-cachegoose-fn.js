@@ -475,6 +475,7 @@
 
     faqBotEvent.on("faq.create", function(faq) { 
         setImmediate(() => {            
+            
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faq.create");
             invalidateWidgets(client, faq.id_project); //tested
@@ -483,6 +484,8 @@
 
     faqBotEvent.on("faq.update", function(faq) { 
         setImmediate(() => {            
+            invalidateFaq(client, faq);
+
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faq.update");
             invalidateWidgets(client, faq.id_project);//tested
@@ -491,6 +494,8 @@
 
     faqBotEvent.on("faq.delete", function(faq) { 
         setImmediate(() => {            
+            invalidateFaq(client, faq);           
+
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for faq.delete",faq);
             invalidateWidgets(client, faq.id_project);//tested
@@ -705,6 +710,17 @@
     
     }
     
+
+    function invalidateFaq(client, faq) {
+        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
+        winston.info("Deleting cache for faq with key: " + key);
+        client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for faq",reply);
+            winston.info("Deleted cache for faq",{err:err});
+        });   
+
+        
+    }
 
     function invalidateWidgets(client, project_id) {
         key = project_id+":widgets";
