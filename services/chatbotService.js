@@ -8,6 +8,26 @@ class ChatbotService {
     
   }
 
+  async fork(id_faq_kb, api_url, token, project_id) {
+    winston.debug("[CHATBOT SERVICE] fork");
+
+    return await axios({
+      url: api_url + '/' + project_id + '/faq_kb/fork/'+id_faq_kb+"?projectid="+project_id+"&public=false",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token
+      },
+      // data: chatbot,
+      method: 'POST'
+    }).then((resbody) => {
+      winston.debug("(CHATBOT SERVICE) fork resbody: ", resbody.data);
+      return resbody.data;
+    }).catch((err) => {
+      winston.error("(CHATBOT SERVICE) fork error " + err);
+      return err;
+    })
+
+  }
 
   async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id) {
 

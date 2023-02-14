@@ -212,6 +212,60 @@ router.post('/askbot', function (req, res) {
 
 
 
+router.put('/:faq_kbid/publish', async (req, res) => {
+
+  let id_faq_kb = req.params.faq_kbid;
+  winston.debug('id_faq_kb: ' + id_faq_kb);
+
+  const api_url = process.env.API_URL || configGlobal.apiUrl;
+  winston.debug("fork --> base_url: " + api_url); // check if correct
+
+  let current_project_id = req.projectid;
+  winston.debug("current project id: " + current_project_id);
+
+  let token = req.headers.authorization;
+
+  let cs = req.app.get('chatbot_service')
+
+  try {
+      //  fork(id_faq_kb, api_url, token, project_id)
+    let forked = await cs.fork(id_faq_kb, api_url, token, current_project_id);
+  // winston.debug("forked: ", forked)
+
+    let forkedChatBotId = forked.bot_id;
+    winston.debug("forkedChatBotId: "+forkedChatBotId);
+
+
+    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, {trashed: true}, { new: true, upsert: true }).exec();
+    winston.debug("updatedForkedChabot: ",updatedForkedChabot);
+    botEvent.emit('faqbot.update', updatedForkedChabot);
+
+
+    const port = process.env.PORT || '3000';
+    const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+    winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
+
+    let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();
+    winston.debug("updatedOriginalChabot: ",updatedOriginalChabot);
+
+    botEvent.emit('faqbot.update', updatedOriginalChabot);
+
+
+    return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
+
+  } catch(e) {
+    winston.error("Error Unable publish chatbot: ", e);
+    return res.status(500).send({ success: false, message: "Unable publish chatbot" });
+  }
+
+     
+
+
+});
+
+
+
+
 router.put('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);
@@ -255,7 +309,7 @@ router.put('/:faq_kbid', function (req, res) {
     update.tags = req.body.tags;
   }
 
- 
+
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -265,8 +319,6 @@ router.put('/:faq_kbid', function (req, res) {
     res.json(updatedFaq_kb);
   });
 });
-
-
 
 
 router.patch('/:faq_kbid/attributes', function (req, res) {
@@ -320,7 +372,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);
 
-  
+   
   Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });

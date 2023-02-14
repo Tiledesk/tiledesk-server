@@ -19,9 +19,15 @@ class BotSubscriptionNotifier {
   
   notify(bot,botWithSecret, payload) {
   
-      winston.verbose("BotSubscriptionNotifier bot", bot.toObject(), 'payload', payload );
+      winston.verbose("BotSubscriptionNotifier bot", bot.toObject());
+      winston.debug("BotSubscriptionNotifier payload", payload );
 
       var url = bot.url;
+
+      if (bot.type == "tilebot" && payload.request && payload.request.attributes && payload.request.attributes.sourcePage  && payload.request.attributes.sourcePage.indexOf("/assets/twp/index.html")>-1) {
+        url = url + "?forced_bot_id="+bot.id;   
+        winston.verbose("BotSubscriptionNotifier it is a tilebot test page. Switch to current chabot id: "+ url);              
+      }
 
       // if (url.startsWith("$ext_url")) {
       //   // url = url.replace ("$res_bot_url", prendi da env)
