@@ -173,7 +173,7 @@ async (req, res)  => {
                   createdBy: req.user._id,
                   attributes: req.body.attributes, 
                   subject: req.body.subject, 
-                  preflight:undefined, 
+                  preflight:req.body.preflight, 
                   channel: req.body.channel, 
                   location: req.body.location,
                   participants: req.body.participants,
