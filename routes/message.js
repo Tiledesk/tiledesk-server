@@ -169,7 +169,7 @@ async (req, res)  => {
                   sourcePage:req.body.sourcePage, 
                   language: req.body.language, 
                   userAgent:req.body.userAgent, 
-                  status:null, 
+                  status:req.body.request_status, 
                   createdBy: req.user._id,
                   attributes: req.body.attributes, 
                   subject: req.body.subject, 
