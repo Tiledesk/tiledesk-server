@@ -6,8 +6,10 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
+# 2.3.82 -> PROD v3
+- Enable current chabot when &td_draft=true query parameter is passed in the url
 
-# 2.3.81 -> PROD v3
+# 2.3.81
 - Added publish method to the chatbot endpoint and fix for SubscriptionNotifier
 - Added request_status and preflight body parameters to send (post) message endpoint
 
