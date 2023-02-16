@@ -7,7 +7,11 @@
 
 
 
-# 2.3.80 -> PROD v3
+# 2.3.81 -> PROD v3
+- Added publish method to the chatbot endpoint and fix for SubscriptionNotifier
+- Added request_status and preflight body parameters to send (post) message endpoint
+
+# 2.3.80
 - Updated dep tiledesk/tiledesk-whatsapp-connector to 0.1.31
 
 # 2.3.79
