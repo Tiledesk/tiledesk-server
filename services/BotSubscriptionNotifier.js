@@ -24,8 +24,7 @@ class BotSubscriptionNotifier {
 
       var url = bot.url;
 
-      //if (bot.type == "tilebot" && payload.request && payload.request.attributes && payload.request.attributes.sourcePage  && payload.request.attributes.sourcePage.indexOf("/assets/twp/index.html")>-1) {
-      if (bot.type == "tilebot" && payload.request && payload.request.attributes && payload.request.attributes.sourcePage  && payload.request.attributes.sourcePage.indexOf("/assets/twp/chatbot-panel.html")>-1) {
+      if (bot.type == "tilebot" && payload.request && payload.request.attributes && payload.request.attributes.sourcePage  && payload.request.attributes.sourcePage.indexOf("&draft=true")>-1) {
           url = url.substr(0,url.lastIndexOf("/")+1)+bot.id;
         // url = url + "?forced_bot_id="+bot.id;   
         winston.verbose("BotSubscriptionNotifier it is a tilebot test page. Switch to current chabot id: "+ url);              
