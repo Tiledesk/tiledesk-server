@@ -44,7 +44,7 @@
     "@tiledesk/tiledesk-kaleyra-proxy": "^0.1.6",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-tybot-connector": "^0.1.55",
-    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.31",
+    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.32",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
