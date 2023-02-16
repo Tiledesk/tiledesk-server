@@ -6,7 +6,27 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
-# 2.3.77 -> PROD v3
+# 2.3.82 -> PROD v3
+- Enable current chabot when &td_draft=true query parameter is passed in the url
+
+# 2.3.81
+- Added publish method to the chatbot endpoint and fix for SubscriptionNotifier
+- Added request_status and preflight body parameters to send (post) message endpoint
+
+# 2.3.80
+- Updated dep tiledesk/tiledesk-whatsapp-connector to 0.1.31
+
+# 2.3.79
+- Env fix
+
+# 2.3.78 
+- Updated dep tiledesk/tiledesk-whatsapp-connector to 0.1.30
+- Added FaqSchema.index({ id_project: 1, id_faq_kb: 1, intent_id: 1 }, { unique: true });
+- Added filter by public and certified to the bot endpoint
+- Added cache invalidation for intent edit and delete
+- Added score field to the bot model
+
+# 2.3.77 
 - Updated tiledesk/tiledesk-whatsapp-connector dependency to 0.1.24
 - Added KALEYRA_API_URL environment variable
 - Now GRAPH_URL environment variable is optional 
