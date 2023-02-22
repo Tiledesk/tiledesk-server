@@ -6,11 +6,15 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
-# 2.3.83 -> PROD v3
+# 2.3.84 -> PROD v3
+- Dependency updated tiledesk-tybot-connector 0.1.58
+- Dependency updated tiledesk/tiledesk-kaleyra-proxy 0.1.7
+
+# 2.3.83
 - Dependency updated tiledesk-tybot-connector 0.1.56
 - Dependency updated tiledesk-whatsapp-connector 0.1.32
 
-# 2.3.82 -> PROD v3
+# 2.3.82
 - Enable current chabot when &td_draft=true query parameter is passed in the url
 
 # 2.3.81
