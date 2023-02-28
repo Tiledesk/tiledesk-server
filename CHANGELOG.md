@@ -6,7 +6,13 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
-# 2.3.84 -> PROD v3
+# 2.3.86 -> PROD v3
+- Geo Service fix with queue enabled
+
+# 2.3.85
+- Dependency updated tiledesk-whatsapp-connector 0.1.33
+
+# 2.3.84 
 - Dependency updated tiledesk-tybot-connector 0.1.58
 - Dependency updated tiledesk/tiledesk-kaleyra-proxy 0.1.7
 
