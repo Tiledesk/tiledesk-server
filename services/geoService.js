@@ -74,9 +74,9 @@ class GeoService {
         if (geo) {
             var update = {};
 
-            // if (!request.location) {
-            //     request.location = {};
-            // }
+            if (!request.location) {
+                request.location = {};
+            }
 
             if (geo.country && !request.location.country) {
                 winston.debug("geo.country:"+ geo.country);
@@ -98,7 +98,7 @@ class GeoService {
             if (!request.location.ipAddress) {
                 winston.debug("request.location.ipAddress: " + request.location.ipAddress);
                 // request.location.ipAddress = ip;
-                update["location.city"] = geo.city;
+                update["location.ipAddress"] = ip;
             }
 
             // console.log(request.location.toString());
