@@ -91,22 +91,20 @@ class SubscriptionNotifier {
             if (alg) {
               signOptions.algorithm = alg;
             }
-
-            secret = process.env.GLOBAL_SECRET || config.secret;   
+            var tokensecret = process.env.GLOBAL_SECRET || config.secret;   
             var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
             // console.log("pKey",pKey);
 
             if (pKey) {
-              secret = pKey.replace(/\\n/g, '\n');
+              tokensecret = pKey.replace(/\\n/g, '\n');
             }
-
 
           }
     
-          var token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt
+          var token = jwt.sign(sJson, tokensecret, signOptions); //priv_jwt pp_jwt
           json["token"] = token;
 
-
+          winston.debug("Calling subscription " + s.event + " TO " + s.target + " with secret " +secret+ " with json " , json);
           // for sync use no retry 
           
           request({
@@ -120,14 +118,15 @@ class SubscriptionNotifier {
             json: json,
             method: 'POST'
 
-          }, function(err, response, json){
-            winston.debug("SENT " + s.event + " TO " + s.target,  "with error " , err);
+          }, function(err, response, jsonResponse){
+            winston.debug("subscription notifier SENT " + s.event + " TO " + s.target +  " with error " , err);
             winston.debug("SubscriptionLog response", response);
-            winston.debug("SubscriptionLog json", json);
+            winston.debug("SubscriptionLog jsonResponse", jsonResponse);
 
               var subscriptionLog = new SubscriptionLog({event: s.event, target: s.target, 
                 response: JSON.stringify(response),
-                body: JSON.stringify(json),
+                body: JSON.stringify(jsonResponse),
+                jsonRequest: JSON.stringify(json),
                 err: err, id_project:s.id_project});
 
               subscriptionLog.save(function (errSL, sl) {           
@@ -139,9 +138,9 @@ class SubscriptionNotifier {
               });
 
             if (err) {
-              winston.error("Error sending webhook for event " + s.event + " TO " + s.target,  "with error " , err);
+              winston.error("Error sending webhook for event " + s.event + " TO " + s.target +  " with error " , err);
               if (callback) {
-                callback(err, json);
+                callback(err, jsonResponse);
               }
               
             }
@@ -149,7 +148,7 @@ class SubscriptionNotifier {
               // console.log("callback qui1", callback);
             if (callback) {
               // console.log("callback qui", json);
-              callback(null, json);
+              callback(null, jsonResponse);
             }
 
           });
@@ -480,7 +479,7 @@ class SubscriptionNotifier {
     subscriptionNotifier.findSubscriber(eventName, payload.id_project).then(function(subscriptions) { 
       //winston.debug("Subscription.notify subscriptionNotifier", subscriptions.length);
       if (subscriptions && subscriptions.length>0) {
-        winston.debug("Subscription.notify", eventName, payload , "length", subscriptions.length);
+        winston.debug("found Subscription.notify", eventName, payload , "length", subscriptions.length);
         subscriptionNotifier.notify(subscriptions, payload, callback);           
       } else {
         if (callback) {

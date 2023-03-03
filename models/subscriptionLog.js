@@ -15,6 +15,9 @@ var SubscriptionLogSchema = new Schema({
   response: {
     type: String,
   },
+  jsonRequest:{
+    type: String,
+  },
   body: {
     type: String,
   },
