@@ -31,7 +31,7 @@ class ChatbotService {
 
   async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id) {
 
-    winston.info("[CHATBOT SERVICE] getBotById");
+    winston.debug("[CHATBOT SERVICE] getBotById");
 
     // private bot
     if (published == "false") {
@@ -44,7 +44,7 @@ class ChatbotService {
         },
         method: 'GET'
       }).then((resbody) => {
-        winston.info("(CHATBOT SERVICE) forking private chatbot " + resbody.data.name)
+        winston.debug("(CHATBOT SERVICE) forking private chatbot " + resbody.data.name)
         let chatbot = resbody.data;
         return chatbot;
       }).catch((err) => {
@@ -97,7 +97,7 @@ class ChatbotService {
 
   async importFaqs(api_url, id_faq_kb, token, chatbot, project_id) {
   
-    winston.info("[CHATBOT SERVICE] importFaqs");
+    winston.debug("[CHATBOT SERVICE] importFaqs");
 
     return await axios({
       url: api_url + '/' + project_id + '/faq_kb/importjson/' + id_faq_kb + "?intentsOnly=true",
