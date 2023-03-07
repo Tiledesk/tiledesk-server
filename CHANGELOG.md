@@ -5,8 +5,26 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.3.93 -> PROD v3
+- subscriptionNotifier secret fix
 
-# 2.3.87 -> PROD v3
+# 2.3.92
+- Apps module fix for public secret key
+
+# 2.3.91
+- subscription webhook fix for global webhook secret creation for token
+- added jsonRequest field to subscriptionLog to save request body payload
+
+# 2.3.90
+- Dependency updated tiledesk-tybot-connector 0.1.59
+
+# 2.3.89 
+- added as_attachment query parameter to images endpoint to download the images
+
+# 2.3.88
+- added score, publishedBy and publishedAt to bot model 
+
+# 2.3.87
 - Geo Service fix with queue enabled
 
 # 2.3.86 
