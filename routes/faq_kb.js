@@ -525,7 +525,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 })
 
 
-router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) => {
+router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.info('import on id_faq_kb: ', id_faq_kb);
@@ -545,7 +545,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
 
     winston.info("intents only")
 
-    json.intents.forEach((intent) => {
+    await json.intents.forEach((intent) => {
 
       let new_faq = {
         id_faq_kb: id_faq_kb,
@@ -573,7 +573,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
               winston.info("updated existing intent")
               faqBotEvent.emit('faq.update', savingResult.value);
             } else {
-              winston.info("new intent crated")
+              winston.info("new intent created")
               faqBotEvent.emit('faq.create', savingResult.value);
             }
           }
@@ -588,7 +588,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
               winston.error("Duplicate intent_display_name.");
               winston.info("Skip duplicated intent_display_name");
             } else {
-              winston.info("new intent crated")
+              winston.info("new intent created")
               faqBotEvent.emit('faq.create', savedFaq);
             }
           }
@@ -596,17 +596,17 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
       }
 
     })
-
+    faqBotEvent.emit('faq_train.importedall', id_faq_kb);
     return res.status(200).send({ success: true, msg: "Intents imported successfully" })
 
   } else {
 
     if (req.query.create && req.query.create == 'true') {
-      faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes).then((savedFaq_kb) => {
+      faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes).then( async (savedFaq_kb) => {
         winston.debug("saved (and imported) faq kb: ", savedFaq_kb);
         botEvent.emit('faqbot.create', savedFaq_kb);
 
-        json.intents.forEach((intent) => {
+        await json.intents.forEach((intent) => {
   
           let new_faq = {
             id_faq_kb: savedFaq_kb._id,
@@ -635,7 +635,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
                   winston.info("updated existing intent")
                   faqBotEvent.emit('faq.update', savingResult.value);
                 } else {
-                  winston.info("new intent crated")
+                  winston.info("new intent created")
                   faqBotEvent.emit('faq.create', savingResult.value);
                 }
 
@@ -652,7 +652,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
                   winston.error("Duplicate intent_display_name.");
                   winston.info("Skip duplicated intent_display_name");
                 } else {
-                  winston.info("new intent crated")
+                  winston.info("new intent created")
                   faqBotEvent.emit('faq.create', savedFaq);
                 }
               }
@@ -660,6 +660,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
           }
 
         })
+        faqBotEvent.emit('faq_train.importedall', savedFaq_kb._id);
         return res.status(200).send(savedFaq_kb);
 
       }).catch((err) => {
@@ -699,15 +700,19 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
         if (json.attributes) {
           faq_kb.attributes = json.attributes;
         }
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (json.intentsEngine) {
+          faq_kb.intentsEngine = json.intentsEngine;
+        }
   
-        Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, (err, updatedFaq_kb) => {
+        Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {
           if (err) {
             return res.status(500).send({ success: false, msg: "Error updating bot." });
           }
   
           botEvent.emit('faqbot.update', updatedFaq_kb);
   
-          json.intents.forEach((intent) => {
+          await json.intents.forEach((intent) => {
   
             let new_faq = {
               id_faq_kb: updatedFaq_kb._id,
@@ -736,7 +741,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
                     winston.info("updated existing intent")
                     faqBotEvent.emit('faq.update', savingResult.value);
                   } else {
-                    winston.info("new intent crated")
+                    winston.info("new intent created")
                     faqBotEvent.emit('faq.create', savingResult.value);
                   }
   
@@ -753,7 +758,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
                     winston.error("Duplicate intent_display_name.");
                     winston.info("Skip duplicated intent_display_name");
                   } else {
-                    winston.info("new intent crated")
+                    winston.info("new intent created")
                     faqBotEvent.emit('faq.create', savedFaq);
                   }
                 }
@@ -761,7 +766,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), (req, res) =>
             }
   
           })
-  
+          faqBotEvent.emit('faq_train.importedall', id_faq_kb);
           return res.send(updatedFaq_kb);
   
         })
@@ -796,7 +801,7 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
           webhook_url: faq_kb.webhook_url,
           language: faq_kb.language,
           name: faq_kb.name,
-          description: faq_kb.description,
+          type: faq_kb.type,
           attributes: faq_kb.attributes,
           intents: intents
         }

@@ -30,7 +30,8 @@ describe('FaqKBRoute', () => {
     describe('/create', () => {
 
 
-        it('create', (done) => {
+
+        it('simplecreate', (done) => {
 
 
             //   this.timeout();
@@ -53,7 +54,15 @@ describe('FaqKBRoute', () => {
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
 
-                            done();
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq_kb/' + res.body._id)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    console.log("res.body", res.body);
+                                    res.should.have.status(200);
+
+                                    done();
+                                });
                         });
 
 

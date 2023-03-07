@@ -1,10 +1,10 @@
 const existing_chatbot_mock = {
     _id: "63234fd6c69f188814749e1b",
     webhook_enabled: false,
-    type: "identity",
+    type: "tilebot",
     secret: "a3577185-a8bf-4547-a000-6ba81ccb0460",
     language: "en",
-    description: "An identity bot",
+    description: "A Tiledesk bot",
     id_project: "63234fd6c69f188814749e15",
     trashed: false,
     createdBy: "system",
@@ -104,7 +104,7 @@ const existing_chatbot_mock = {
 
 const empty_chatbot_mock = {
     webhook_enabled: false,
-    type: 'internal',
+    type: 'tilebot',
     secret: '0896478d-8eb3-4240-a6eb-cf2ea27b1a8e',
     language: 'en',
     public: false,

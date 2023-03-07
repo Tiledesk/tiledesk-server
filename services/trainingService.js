@@ -10,11 +10,19 @@ let chatbot_training_api_url = "http://34.65.210.38/model/train"
 class TrainingService {
 
 
+    train(eventName, id_faq_kb) {
 
-    train(eventName, faq) {
+        Faq_kb.findById(id_faq_kb, (err, faq_kb) => {
 
-        Faq_kb.findById(faq.id_faq_kb, (err, faq_kb) => {
-            winston.debug("faq_kb: ", faq_kb)
+            if (err) {
+                winston.error("train error: ", err)
+                return null;
+            }
+
+            if (!faq_kb) {
+                winston.error("faq_kb is undefined");
+                return null;
+            }
 
             if (faq_kb.intentsEngine !== 'tiledesk-ai') {
                 winston.info("intentsEngine: off")
@@ -22,7 +30,7 @@ class TrainingService {
             }
 
             winston.info("intentsEngine: on")
-            Faq.find({ id_faq_kb: faq.id_faq_kb }, (err, faqs) => {
+            Faq.find({ id_faq_kb: id_faq_kb }, (err, faqs) => {
 
                 if (err) {
                     winston.error("[Training] find all error: ", err);
@@ -31,7 +39,7 @@ class TrainingService {
                     let json = {
                         "configuration": {
                             "language": faq_kb.language,
-                            "pipeline": [""]
+                            "pipeline":["lstm"]
                         },
                         "model": faq_kb._id,
                         "nlu": []
@@ -76,23 +84,27 @@ class TrainingService {
     start() {
         winston.info('TrainingService start');
 
-        faqBotEvent.on('faq.create', (faq) => {
+        faqBotEvent.on('faq_train.importedall', (id_faq_kb) => {
             setImmediate(() => {
-                trainingService.train('faq.create', faq);
+                trainingService.train('faq.importedall', id_faq_kb);
             })
         })
 
-        faqBotEvent.on('faq.update', (faq) => {
-            winston.debug("--> event faq: ", faq);
+        faqBotEvent.on('faq_train.create', (id_faq_kb) => {
             setImmediate(() => {
-                trainingService.train('faq.update', faq);
+                trainingService.train('faq_train.create', id_faq_kb);
             })
         })
 
-        faqBotEvent.on('faq.delete', (faq) => {
-            console.log("--> event faq: ", faq);
+        faqBotEvent.on('faq_train.update', (id_faq_kb) => {
             setImmediate(() => {
-                trainingService.train('faq.delete', faq);
+                trainingService.train('faq_train.update', id_faq_kb);
+            })
+        })
+
+        faqBotEvent.on('faq_train.delete', (id_faq_kb) => {
+            setImmediate(() => {
+                trainingService.train('faq_train.delete', id_faq_kb);
             })
         })
 
