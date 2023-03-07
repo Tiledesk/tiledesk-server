@@ -92,7 +92,19 @@ var Faq_kbSchema = new Schema({
   },
   tags: [{
       type: String
-    }]
+    }],
+  score: {
+      type: Number,
+      required: false,
+      index: true,
+      default: 0
+    },
+  publishedBy: {
+    type: String,
+  },
+  publishedAt: { 
+    type: Date
+  },
 },{
   timestamps: true
 }
@@ -106,7 +118,7 @@ Faq_kbSchema.virtual('fullName').get(function () {
 Faq_kbSchema.index({certified: 1, public: 1}); //suggested by atlas
 
 
-Faq_kbSchema.index({name: 'text', description: 'text', subject: 'text', "tags": 'text'},  
+Faq_kbSchema.index({name: 'text', description: 'text', "tags": 'text'},  
  {"name":"faqkb_fulltext","default_language": defaultFullTextLanguage,"language_override": "language"}); // schema level
 
 

@@ -236,7 +236,7 @@ router.put('/:faq_kbid/publish', async (req, res) => {
     winston.debug("forkedChatBotId: "+forkedChatBotId);
 
 
-    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, {trashed: true}, { new: true, upsert: true }).exec();
+    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, {trashed: true, publishedBy: req.user.id, publishedAt: new Date().getTime()}, { new: true, upsert: true }).exec();
     winston.debug("updatedForkedChabot: ",updatedForkedChabot);
     botEvent.emit('faqbot.update', updatedForkedChabot);
 
@@ -372,7 +372,7 @@ router.delete('/:faq_kbid', function (req, res) {
 
   winston.debug(req.body);
 
-   
+
   Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });

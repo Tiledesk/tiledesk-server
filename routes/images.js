@@ -424,6 +424,12 @@ router.get('/thumbnails', (req, res) => {
 
 router.get("/", (req, res) => {
   winston.debug('path', req.query.path);
+
+  if (req.query.as_attachment) {
+    res.set({ "Content-Disposition": "attachment; filename=\""+req.query.path+"\"" });
+  }
+
+
   // try {
     fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
       if (e.code == "ENOENT") {

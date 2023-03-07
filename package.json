@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.84",
+  "version": "2.3.92",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -43,7 +43,7 @@
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
     "@tiledesk/tiledesk-kaleyra-proxy": "^0.1.7",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
-    "@tiledesk/tiledesk-tybot-connector": "^0.1.58",
+    "@tiledesk/tiledesk-tybot-connector": "^0.1.59",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.33",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
