@@ -17,11 +17,11 @@ class TrainingService {
             winston.debug("faq_kb: ", faq_kb)
 
             if (faq_kb.intentsEngine !== 'tiledesk-ai') {
-                winston.info("intentsEngine: off")
+                winston.debug("intentsEngine: off")
                 return null;
             }
 
-            winston.info("intentsEngine: on")
+            winston.debug("intentsEngine: on")
             Faq.find({ id_faq_kb: faq.id_faq_kb }, (err, faqs) => {
 
                 if (err) {
