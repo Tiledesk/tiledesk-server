@@ -464,7 +464,7 @@ router.get('/', function (req, res) {
   }
                     
 
-  winston.info("query", query);
+  winston.debug("query", query);
 
   Faq_kb.find(query, function (err, faq_kb) {
     if (err) {
