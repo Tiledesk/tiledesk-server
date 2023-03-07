@@ -481,19 +481,19 @@ router.get('/', function (req, res) {
 router.post('/fork/:id_faq_kb', async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
-  winston.info('id_faq_kb: ' + id_faq_kb);
+  winston.debug('id_faq_kb: ' + id_faq_kb);
 
   const api_url = process.env.API_URL || configGlobal.apiUrl;
-  winston.info("fork --> base_url: " + api_url); // check if correct
+  winston.debug("fork --> base_url: " + api_url); // check if correct
 
   let current_project_id = req.projectid;
-  winston.info("current project id: " + current_project_id);
+  winston.debug("current project id: " + current_project_id);
 
   let landing_project_id = req.query.projectid;
-  winston.info("landing project id " + landing_project_id)
+  winston.debug("landing project id " + landing_project_id)
 
   let public = req.query.public;
-  winston.info("public " + public);
+  winston.debug("public " + public);
 
   let token = req.headers.authorization;
 
@@ -507,14 +507,14 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
   }
 
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
-  winston.info("savedChatbot: ", savedChatbot)
+  winston.debug("savedChatbot: ", savedChatbot)
 
   if (!savedChatbot) {
     return res.status(500).send({ success: false, message: "Unable to create new chatbot" });
   }
 
   let import_result = await cs.importFaqs(api_url, savedChatbot._id, token, chatbot, landing_project_id);
-  winston.info("imported: ", import_result);
+  winston.debug("imported: ", import_result);
 
   if (import_result.success == "false") {
     return res.status(500).send({ success: false, message: "Unable to import intents in the new chatbot" });
@@ -528,7 +528,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
-  winston.info('import on id_faq_kb: ', id_faq_kb);
+  winston.debug('import on id_faq_kb: ', id_faq_kb);
 
   let json_string;
   let json;
@@ -539,11 +539,11 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
     json = req.body;
   }
 
-  winston.info("json source " + json_string)
+  winston.debug("json source " + json_string)
 
   if (req.query.intentsOnly && req.query.intentsOnly == "true") {
 
-    winston.info("intents only")
+    winston.debug("intents only")
 
     await json.intents.forEach((intent) => {
 
@@ -570,10 +570,10 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
             winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
           } else {
             if (savingResult.lastErrorObject.updatedExisting == true) {
-              winston.info("updated existing intent")
+              winston.debug("updated existing intent")
               faqBotEvent.emit('faq.update', savingResult.value);
             } else {
-              winston.info("new intent created")
+              winston.debug("new intent created")
               faqBotEvent.emit('faq.create', savingResult.value);
             }
           }
@@ -586,9 +586,9 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
             winston.debug("create new FAQ ERROR ", err);
             if (err.code == 11000) {
               winston.error("Duplicate intent_display_name.");
-              winston.info("Skip duplicated intent_display_name");
+              winston.debug("Skip duplicated intent_display_name");
             } else {
-              winston.info("new intent created")
+              winston.debug("new intent created")
               faqBotEvent.emit('faq.create', savedFaq);
             }
           }
@@ -632,10 +632,10 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
               } else {
 
                 if (savingResult.lastErrorObject.updatedExisting == true) {
-                  winston.info("updated existing intent")
+                  winston.debug("updated existing intent")
                   faqBotEvent.emit('faq.update', savingResult.value);
                 } else {
-                  winston.info("new intent created")
+                  winston.debug("new intent created")
                   faqBotEvent.emit('faq.create', savingResult.value);
                 }
 
@@ -650,9 +650,9 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
                 winston.debug("create new FAQ ERROR ", err);
                 if (err.code == 11000) {
                   winston.error("Duplicate intent_display_name.");
-                  winston.info("Skip duplicated intent_display_name");
+                  winston.debug("Skip duplicated intent_display_name");
                 } else {
-                  winston.info("new intent created")
+                  winston.debug("new intent created")
                   faqBotEvent.emit('faq.create', savedFaq);
                 }
               }
