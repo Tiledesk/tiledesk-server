@@ -700,10 +700,9 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
         if (json.attributes) {
           faq_kb.attributes = json.attributes;
         }
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (json.intentsEngine) {
-          faq_kb.intentsEngine = json.intentsEngine;
-        }
+        // if (json.intentsEngine) {
+        //   faq_kb.intentsEngine = json.intentsEngine;
+        // }
   
         Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {
           if (err) {

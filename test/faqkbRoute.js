@@ -31,7 +31,7 @@ describe('FaqKBRoute', () => {
 
 
 
-        it('simplecreate', (done) => {
+        it('create', (done) => {
 
 
             //   this.timeout();
