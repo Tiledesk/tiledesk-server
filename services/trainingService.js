@@ -25,7 +25,7 @@ class TrainingService {
             }
 
             if (faq_kb.intentsEngine !== 'tiledesk-ai') {
-                winston.info("intentsEngine: off")
+                winston.debug("intentsEngine: off")
                 return null;
             }
 
