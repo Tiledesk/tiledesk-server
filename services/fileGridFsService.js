@@ -56,6 +56,17 @@ class FileGridFsService extends FileService {
           });
     }
 
+    async find(filename) {
+        return new Promise(async (resolve, reject) => {
+            let files = await this.gfs.find({filename: filename}).toArray();
+            winston.debug("files", files);
+                if (files.length>0) {                     
+                        return resolve(files[0]);                                       
+                } else {
+                    return reject({msg:"File not found"});
+                }
+        });
+    }
     async deleteFile(filename) {
         return new Promise(async (resolve, reject) => {
             let files = await this.gfs.find({filename: filename}).toArray();
