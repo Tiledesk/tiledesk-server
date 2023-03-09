@@ -69,6 +69,7 @@ class SubscriptionNotifier {
           
         // winston.debug("s",s);
           var secret = s.secret;
+          var xHookSecret = secret;
 
           let sJson = s.toObject();
           delete sJson.secret;
@@ -91,17 +92,17 @@ class SubscriptionNotifier {
             if (alg) {
               signOptions.algorithm = alg;
             }
-            var tokensecret = process.env.GLOBAL_SECRET || config.secret;   
+            secret = process.env.GLOBAL_SECRET || config.secret;   
             var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
             // console.log("pKey",pKey);
 
             if (pKey) {
-              tokensecret = pKey.replace(/\\n/g, '\n');
+              secret = pKey.replace(/\\n/g, '\n');
             }
 
           }
     
-          var token = jwt.sign(sJson, tokensecret, signOptions); //priv_jwt pp_jwt
+          var token = jwt.sign(sJson, secret, signOptions); //priv_jwt pp_jwt
           json["token"] = token;
 
           winston.debug("Calling subscription " + s.event + " TO " + s.target + " with secret " +secret+ " with json " , json);
@@ -111,7 +112,7 @@ class SubscriptionNotifier {
             url: s.target,
             headers: {
              'Content-Type' : 'application/json',        
-              'x-hook-secret': secret,
+              'x-hook-secret': xHookSecret,
               'User-Agent': 'tiledesk-webhooks',
               'Origin': webhook_origin
             },

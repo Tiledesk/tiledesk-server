@@ -422,15 +422,22 @@ router.get('/thumbnails', (req, res) => {
 })
 
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   winston.debug('path', req.query.path);
 
   if (req.query.as_attachment) {
     res.set({ "Content-Disposition": "attachment; filename=\""+req.query.path+"\"" });
+
   }
 
 
   // try {
+    let file = await fileService.find(req.query.path);
+    // console.log("file", file);
+
+    res.set({ "Content-Length": file.length});
+    res.set({ "Content-Type": file.contentType});
+
     fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
       if (e.code == "ENOENT") {
         winston.debug('Image not found: '+req.query.path);

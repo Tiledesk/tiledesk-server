@@ -338,7 +338,12 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                     if (request.subject) {
                         touchText = request.subject;
                     }
-                    touchText.replace("\\",""); //Bugfix when a conversation has a first_text with \agent
+
+                    
+                    // touchText.replace(String.fromCharCode(92),""); //Bugfix when a conversation has a first_text with \agent
+                    touchText = touchText.replace(/\\/g, "");
+
+                    winston.debug("touchText: " + touchText);
 
                         // messageService.send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type);
                         messageService.send(
