@@ -154,6 +154,10 @@ class RulesTrigger {
           var recipient;
           if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
             recipient = eventTrigger.event.request_id;
+
+            // console.log("eventTrigger.event",eventTrigger.event);
+            // console.log("eventTrigger.event.id_project",eventTrigger.event.id_project);
+            
           }
           if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {
             recipient = eventTrigger.event.recipient;
@@ -219,7 +223,8 @@ class RulesTrigger {
             var fullname = action.parameters.fullName || "BOT";
             winston.debug('runAction action fullname: ' + fullname);
   
-            var subject = action.parameters.fullName || "New Email";
+            var subject = action.parameters.subject || "New Email";                                   
+
             winston.debug('runAction action subject: ' + subject);
 
             var sender = "system";
@@ -241,6 +246,13 @@ class RulesTrigger {
             var recipient;
             if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
               recipient = eventTrigger.event.request_id;
+
+              //custom ocf here
+              if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6") {
+                subject = "Apertura richiesta di supporto #" + eventTrigger.event.ticket_id;
+                // console.log("subject",subject);
+              }
+
             }
             if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {
               recipient = eventTrigger.event.recipient;

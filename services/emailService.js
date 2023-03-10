@@ -12,6 +12,9 @@ handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
 });
 
+handlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
+
+
 // var options = {};
 // handlebars.registerHelper('markdown', markdown(options));
 
@@ -44,6 +47,8 @@ const maskOptions = {
 // const X_PROJECT_ID_HEADER_KEY = "X-TILEDESK-PROJECT-ID";
 
 const MESSAGE_ID_DOMAIN = "tiledesk.com";
+
+// const hcustomization = require('../utils/hcustomization');
 
 class EmailService {
 
@@ -1015,7 +1020,7 @@ class EmailService {
       replyTo: replyTo, 
       inReplyTo: inReplyTo,
       references: references,
-      subject:`[Tiledesk ${project ? project.name : '-'}] New Offline Message`, 
+      subject:`[Tiledesk ${project ? project.name : '-'}] New Offline Message`,    //TODO (anche per il cloud) aggiungere variabile env per cambiare i subjects
       html:html, 
       config:configEmail, 
       headers: headers
@@ -1779,13 +1784,33 @@ async sendRequestTranscript(to, messages, request, project) {
 
     var html = template(replacements);
 
+  
+
+    let from;
     let configEmail;
-    if (project && project.settings && project.settings.email && project.settings.email.config) {
-      configEmail = project.settings.email.config;
-      winston.verbose("custom email setting found: ", configEmail);
+    if (project && project.settings && project.settings.email) {
+      if (project.settings.email.config) {
+        configEmail = project.settings.email.config;
+        winston.verbose("custom email configEmail setting found: ", configEmail);
+      }
+      if (project.settings.email.from) {
+        from = project.settings.email.from;
+        winston.verbose("custom from email setting found: "+ from);
+      }
     }
 
-    that.send({to:to, subject: '[Tiledesk] Transcript', html:html, config: configEmail});
+
+
+    //custom ocf here
+    // console.log("ocf",project._id);
+    let subject = '[Tiledesk] Transcript';
+    if (project._id =="6406e34727b57500120b1bd6") {
+      subject = "Chiusura richiesta di supporto #" + request.ticket_id;
+      // console.log("subject",subject);
+    }
+    // hcustomization.emailTranscript(to, subject, html, configEmail)
+
+    that.send({from:from, to:to, subject: subject, html:html, config: configEmail});
     that.send({to: that.bcc, subject: '[Tiledesk] Transcript - notification', html:html });
 
 }
@@ -1798,5 +1823,8 @@ async sendRequestTranscript(to, messages, request, project) {
 
 var emailService = new EmailService();
 
+// var subject = "abc";
+// hcustomization.emailTranscript({subject: subject});
+// console.log("subject", subject);
 
 module.exports = emailService;
