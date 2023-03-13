@@ -60,7 +60,10 @@ var LeadSchema = new Schema({
     type: String,
     required: false
   },
-  tags: [TagSchema],
+  // tags: [TagSchema],
+  tags: [{
+    type: String
+  }],
   // aggiungi location e togli flat fields
   attributes: {
     type: Object,
