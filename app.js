@@ -56,7 +56,7 @@ const masked_databaseUri = MaskData.maskPhone(databaseUri, {
 if (process.env.DISABLE_MONGO_PASSWORD_MASK ==true || process.env.DISABLE_MONGO_PASSWORD_MASK == "true")  {
   winston.info("DatabaseUri: " + databaseUri);
 }else {
-  winston.info("DatabaseUri: " + masked_databaseUri);
+  winston.info("DatabaseUri masked: " + masked_databaseUri);
 }
 
 
@@ -125,6 +125,7 @@ var logs = require('./routes/logs');
 var requestUtilRoot = require('./routes/requestUtilRoot');
 var urls = require('./routes/urls');
 var email = require('./routes/email');
+var property = require('./routes/property');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -242,7 +243,7 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 // https://stackoverflow.com/questions/18710225/node-js-get-raw-request-body-using-express
 
-const JSON_BODY_LIMIT = process.envJSON_BODY_LIMIT || '500KB';
+const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
 
 app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
@@ -491,6 +492,7 @@ app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { sessi
 
 app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], email);
 
+app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('owner', ['bot','subscription'])], property);
 
 
 
@@ -542,7 +544,6 @@ app.use((err, req, res, next) => {
   winston.error("General error", err);
   return res.status(500).json({ err: "error" });
 });
-
 
 
 
