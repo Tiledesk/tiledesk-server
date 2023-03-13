@@ -334,6 +334,11 @@ router.get('/', function (req, res) {
     query.status = req.query.status;
   }
 
+  if (req.query.tags) {
+    winston.debug('req.query.tags', req.query.tags);
+    query["tags"] = req.query.tags;
+  }
+
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
