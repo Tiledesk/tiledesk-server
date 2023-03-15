@@ -431,14 +431,24 @@ router.get("/", async (req, res) => {
   }
 
 
-  // try {
+  try {
     let file = await fileService.find(req.query.path);
     // console.log("file", file);
 
     res.set({ "Content-Length": file.length});
     res.set({ "Content-Type": file.contentType});
 
-    fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
+  } catch (e) {
+    if (e.code == "ENOENT") {
+      winston.debug('Image not found: '+req.query.path);
+      return res.status(404).send({success: false, msg: 'Image not found.'});
+    }else {
+      winston.error('Error getting the image', e);
+      return res.status(500).send({success: false, msg: 'Error getting image.'});
+    }      
+  }
+
+  fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
       if (e.code == "ENOENT") {
         winston.debug('Image not found: '+req.query.path);
         return res.status(404).send({success: false, msg: 'Image not found.'});
