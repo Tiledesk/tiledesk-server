@@ -63,7 +63,7 @@ class FileGridFsService extends FileService {
                 if (files.length>0) {                     
                         return resolve(files[0]);                                       
                 } else {
-                    return reject({msg:"File not found"});
+                    return reject({code:"ENOENT", msg:"File not found"});
                 }
         });
     }
