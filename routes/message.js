@@ -184,6 +184,8 @@ async (req, res)  => {
   
                 return requestService.create(new_request).then(function (savedRequest) {
 
+                  winston.debug("returning savedRequest to", savedRequest.toJSON());
+
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
                   //  createdBy, attributes, subject, preflight, channel, location) {
                     
@@ -204,26 +206,41 @@ async (req, res)  => {
 
                           winston.debug("returning message to", message);
                           
-                          savedRequest
+                          winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
+
+
+                          // savedRequest //bug
+                          Request.findById(savedRequest.id)
                             .populate('lead')
                             .populate('department')
                             .populate('participatingBots')
                             .populate('participatingAgents') 
                             // .populate('followers')  
                             .populate({path:'requester',populate:{path:'id_user'}})
-                            .execPopulate(function (err, savedRequestPopulated){    
+                            .exec(function (err, savedRequestPopulated){    
+                              // .execPopulate(function (err, savedRequestPopulated){   //bug with  execPopulate request.attributes are invalid (NOT real data)
 
                             if (err) {
                               return winston.error("Error gettting savedRequestPopulated for send Message", err);
-                            }            
+                            }       
+                            
+                            winston.debug("returning savedRequest221 to", savedRequest.toJSON());
+
+
+                            winston.debug("savedRequestPopulated", savedRequestPopulated.toJSON());
+
+                            winston.debug("returning savedRequest22 to", savedRequest.toJSON());
+
 
                             message.request = savedRequestPopulated;
+                            winston.debug("returning2 message to", message);
 
 
                             return res.json(message);
                           });
                         });
                     }).catch(function(err){    //pubblica questo
+                      winston.error('Error creating request: '+ JSON.stringify(err));
                       winston.log({
                         level: 'error',
                         message: 'Error creating request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
