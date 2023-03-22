@@ -183,14 +183,14 @@ it('createSimpleWithAttributes', function (done) {
               expect(res.body.sender).to.equal(savedUser._id.toString());
               // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
               // expect(res.body.senderFullname).to.equal("senderFullname");
-              expect(res.body.recipient).to.equal("req123");
+              expect(res.body.recipient).to.equal("req123-createSimpleWithAttributes");
               expect(res.body.text).to.equal("text");
               expect(res.body.id_project).to.equal(savedProject._id.toString());
               expect(res.body.createdBy).to.equal(savedUser._id.toString());
               expect(res.body.status).to.equal(0);
               expect(res.body.attributes.a).to.equal("b");
 
-              expect(res.body.request.request_id).to.equal("req123");
+              expect(res.body.request.request_id).to.equal("req123-createSimpleWithAttributes");
               expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
               // expect(res.body.request.requester_id).to.equal("sender");
               expect(res.body.request.first_text).to.equal("text");
