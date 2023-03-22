@@ -6,6 +6,7 @@ var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
 var requestService = require('../services/requestService');
+var departmentService = require('../services/departmentService');
 var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 var Subscription = require("../models/subscription");
@@ -454,6 +455,40 @@ router.put('/:requestid/departments', function (req, res) {
 });
 
 
+router.put('/:requestid/agent', async (req, res) => {
+  winston.debug(req.body);
+   //route(request_id, departmentid, id_project) { 
+   
+   
+   var request = await Request.findOne({"request_id":req.params.requestid, id_project:req.projectid})   
+   .exec();
+    
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+
+    var departmentid = request.department;
+    winston.debug("departmentid before: "+ departmentid);
+
+    if (!departmentid) {
+      var defaultDepartment = await departmentService.getDefaultDepartment(req.projectid);
+      winston.debug("defaultDepartment: ", defaultDepartment);
+      departmentid = defaultDepartment.id;
+    }
+    winston.debug("departmentid after: "+ departmentid);
+
+    requestService.route(req.params.requestid, departmentid, req.projectid, true, undefined).then(function(updatedRequest) {
+      
+        winston.debug("department changed", updatedRequest);
+
+        return res.json(updatedRequest);
+    }).catch(function(error)  {
+      winston.error('Error changing the department.', error)
+      return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+    })
+
+
+});
 
 // router.post('/:requestid/attributes', function (req, res) {
 //   winston.debug(req.body);
@@ -691,6 +726,7 @@ router.delete('/:requestid',  function (req, res) {
           }
           winston.verbose('Messages deleted for the recipient: '+ req.params.requestid );
    });
+
 
   Request.remove({ request_id: req.params.requestid }, function (err, request) {
     if (err) {

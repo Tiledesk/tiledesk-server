@@ -548,7 +548,29 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
  
+getDefaultDepartment(projectid) {
+  return new Promise(function (resolve, reject) {
+    let query = { default: true, id_project: projectid };
+    winston.debug('query ', query)
+    // console.log('query', query);
+    return Department.findOne(query).exec(function (err, department) {
+      // return Department.findOne(query).exec().then(function (department) {
 
+      if (err) {
+        winston.error('-- > 1 DEPT FIND BY ID ERR ', err)
+        return reject(err);
+      }
+      // console.log("department", department);
+      if (!department) {
+        winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+        return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
+      }
+      winston.debug('department ', department);
+
+      return resolve(department);
+    });
+  });
+}
 
  getRandomAvailableOperator(project_users_available) {
 
