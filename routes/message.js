@@ -209,16 +209,16 @@ async (req, res)  => {
                           winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
 
 
-                          // savedRequest //bug
-                          Request.findById(savedRequest.id)
+                          savedRequest //bug
+                          // Request.findById(savedRequest.id)
                             .populate('lead')
                             .populate('department')
                             .populate('participatingBots')
                             .populate('participatingAgents') 
                             // .populate('followers')  
                             .populate({path:'requester',populate:{path:'id_user'}})
-                            .exec(function (err, savedRequestPopulated){    
-                              // .execPopulate(function (err, savedRequestPopulated){   //bug with  execPopulate request.attributes are invalid (NOT real data)
+                            // .exec(function (err, savedRequestPopulated){    
+                              .execPopulate(function (err, savedRequestPopulated){   //bug with  execPopulate request.attributes are invalid (NOT real data). but this bug is related to chat21 listener changes by reference. i think populate suffer from this problem bacause it it the same obect passed by reference 
 
                             if (err) {
                               return winston.error("Error gettting savedRequestPopulated for send Message", err);
