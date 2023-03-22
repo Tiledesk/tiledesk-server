@@ -23,7 +23,7 @@ const fileService = new FileGridFsService("images");
 
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' || file.mimetype == 'image/vnd.microsoft.icon') {
+  if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' || file.mimetype == 'image/gif'|| file.mimetype == 'image/vnd.microsoft.icon') {
       cb(null, true);
   } else {
       cb(null, false);
@@ -422,6 +422,7 @@ router.get('/thumbnails', (req, res) => {
 })
 
 
+// curl -X GET 'http://localhost:3000/images?path=123'
 router.get("/", async (req, res) => {
   winston.debug('path', req.query.path);
 
