@@ -399,8 +399,16 @@ class RequestService {
              winston.error(err);
              return reject(err);
            }
-                 
+
            winston.debug("here reroute1 ");
+
+            //  Cannot read property 'toString' of undefined at /usr/src/app/services/requestService.js:404:61 at /usr/src/app/node_modules/cachegoose/out/extend-query.js:44:13 at Command.cb [as callback] (/usr/src/app/node_modules/cacheman-redis/node/index.js:142:9) at normal_reply (/usr/src/app/node_modules/redis/index.js:655:21) at RedisClient.return_reply (/usr/src/app/node_modules/redis/index.js:753:9) at JavascriptRedisParser.returnReply (/usr/src/app/node_modules/redis/index.js:138:18) at JavascriptRedisParser.execute (/usr/src/app/node_modules/redis-parser/lib/parser.js:544:14) at Socket.<anonymous> (/usr/src/app/node_modules/redis/index.js:219:27) at Socket.emit (events.js:314:20) at addChunk (_stream_readable.js:297:12) at readableAddChunk (_stream_readable.js:272:9) at Socket.Readable.push (_stream_readable.js:213:10) at TCP.onStreamRead (internal/stream_base_commons.js:188:23) {"date":"Tue Mar 21 2023 18:45:47 GMT+0000 (Coordinated Unive
+           if (request.department === undefined) {
+            winston.error("Request with request_id " + request_id + "  has empty department. So I can't reroute");
+            return reject("Request with request_id " + request_id + "  has empty department. So I can't reroute");
+           }
+
+            
            return that.route(request_id, request.department.toString(), id_project, nobot).then(function(routedRequest){
 
             var endDate = new Date();
@@ -525,7 +533,6 @@ class RequestService {
           
            agents = result.agents;
 
-
           if (status == 50) {
                 // skip assignment
                 if (participants.length == 0 ) {
@@ -630,7 +637,6 @@ class RequestService {
                 auto_close: auto_close,
                 followers: followers
               });
-                    
 
               winston.debug('newRequest.',newRequest);
 
