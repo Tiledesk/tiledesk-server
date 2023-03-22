@@ -636,7 +636,10 @@ class WebSocketServer {
 
         if (request.preflight===false) {
 
-          var requestJSON = request;
+          //TODO ATTENTION change value by reference requestJSON.snapshot
+          let requestJSON = Object.assign({}, request);
+          // var requestJSON = request;
+
           if (request.toObject) {
              requestJSON = request.toObject();
           }
@@ -659,6 +662,7 @@ class WebSocketServer {
               snapshotAgents.snapshot.agents.forEach(a => {
                 agentsnew.push({id_user: a.id_user}) 
               });
+              //TODO ATTENTION change value by reference  requestJSON.snapshot.agents. but it's fixed with line 640
               requestJSON.snapshot.agents = agentsnew;
             }
             winston.debug('requestJSON',requestJSON);  
@@ -685,7 +689,10 @@ class WebSocketServer {
         winston.debug('requestEvent websocket server: '+requestUpdateKey, request);  
         if (request.preflight===false && request.status > requestConstants.TEMP) {     
 
-          var requestJSON = request;
+          //TODO ATTENTION change value by reference requestJSON.snapshot
+          let requestJSON = Object.assign({}, request);
+          // var requestJSON = request;
+
           if (request.toObject) {
              requestJSON = request.toObject();
           }
@@ -706,6 +713,7 @@ class WebSocketServer {
               snapshotAgents.snapshot.agents.forEach(a => {
                 agentsnew.push({id_user: a.id_user}) 
               });
+               //TODO ATTENTION change value by reference requestJSON.snapshot.agents . fixed with line 693
               requestJSON.snapshot.agents = agentsnew;
             }
             winston.debug('requestJSON',requestJSON);  
