@@ -155,6 +155,75 @@ it('createSimpleNoText', function (done) {
 
 
 
+
+// mocha test/messageRoute.js  --grep 'createSimpleWithAttributes'
+
+it('createSimpleWithAttributes', function (done) {
+  // this.timeout(10000);
+
+  var email = "test-message-create-" + Date.now() + "@email.com";
+  var pwd = "pwd";
+
+  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+   projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function(savedProjectAndPU) {
+   
+    var savedProject = savedProjectAndPU.project;
+
+        chai.request(server)
+          .post('/'+ savedProject._id + '/requests/req123/messages')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({"text":"text","attributes": {"a":"b"}})
+          .end(function(err, res) {
+              //console.log("res",  res);
+              console.log("res.body",  res.body);
+              res.should.have.status(200);
+              res.body.should.be.a('object');                          
+
+              expect(res.body.sender).to.equal(savedUser._id.toString());
+              // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
+              // expect(res.body.senderFullname).to.equal("senderFullname");
+              expect(res.body.recipient).to.equal("req123");
+              expect(res.body.text).to.equal("text");
+              expect(res.body.id_project).to.equal(savedProject._id.toString());
+              expect(res.body.createdBy).to.equal(savedUser._id.toString());
+              expect(res.body.status).to.equal(0);
+              expect(res.body.attributes.a).to.equal("b");
+
+              expect(res.body.request.request_id).to.equal("req123");
+              expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
+              // expect(res.body.request.requester_id).to.equal("sender");
+              expect(res.body.request.first_text).to.equal("text");
+              expect(res.body.request.id_project).to.equal(savedProject._id.toString());
+              expect(res.body.request.createdBy).to.equal(savedUser._id.toString());
+
+              // expect(res.body.request.messages_count).to.equal(1);
+
+              expect(res.body.request.status).to.equal(200);                                
+              expect(res.body.request.snapshot.agents.length).to.equal(1);
+              expect(res.body.request.participants.length).to.equal(1);
+              expect(res.body.request.department).to.not.equal(null);
+              expect(res.body.request.lead).to.not.equal(null);               
+              
+              expect(res.body.request.attributes.a).to.equal("b");
+
+              expect(res.body.channel_type).to.equal("group");
+              expect(res.body.channel.name).to.equal("chat21");
+              expect(res.body.request.channel.name).to.equal("chat21");
+
+
+              expect(res.body.request.location).to.equal(undefined);
+             
+        
+             done();
+          });
+  });
+});
+});
+
+
+
+
 // mocha test/messageRoute.js  --grep 'createWithSender'
 
 it('createWithSender', function (done) {
