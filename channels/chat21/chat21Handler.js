@@ -184,7 +184,6 @@ class Chat21Handler {
 
 
     // quando passa da lead temp a default aggiorna tutti va bene?        
-
          leadEvent.on('lead.update', function(lead) {
             //  non sembra funzionare chiedi a Dario dove prende le info
             setImmediate(() => {
@@ -363,6 +362,7 @@ class Chat21Handler {
 
                                             chat21Event.emit('message.sent', data);
     
+                                                winston.debug("Message changeStatus 1");
                                                 messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
                                                     winston.debug("Chat21 message sent ", upMessage.toObject());                                        
                                                 }).catch(function(err) {
@@ -398,7 +398,7 @@ class Chat21Handler {
                                         // chat21.conversations.stopTyping(message.recipient,message.sender);
 
                                         chat21Event.emit('message.sent', data);
-
+                                            winston.debug("Message changeStatus 2");
                                             messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
                                                 winston.debug("Chat21 message sent ", upMessage.toObject());                                        
                                             }).catch(function(err) {
@@ -439,7 +439,7 @@ class Chat21Handler {
                                        // chat21.conversations.stopTyping(message.recipient,message.sender);
 
                                        chat21Event.emit('message.sent', data);
-
+                                       winston.debug("Message changeStatus 3");
                                            messageService.changeStatus(message._id, MessageConstants.CHAT_MESSAGE_STATUS.DELIVERED) .then(function(upMessage){
                                                winston.debug("Chat21 message sent ", upMessage.toObject());                                        
                                            }).catch(function(err) {
@@ -545,7 +545,11 @@ class Chat21Handler {
                         // let membersArray = JSON.parse(JSON.stringify(members));
                         // winston.info("membersArray", membersArray);
 
-                        var gAttributes = request.attributes || {};
+                        var gAttributes = requestObj.attributes || {};
+                        // TODO ATTENTION change value by reference
+                        // var gAttributes = request.attributes || {}; //BUG LINK TO event emmiter obiect
+
+
                         // problema requester_id
                         gAttributes["requester_id"] = request.requester_id;
                     
@@ -631,12 +635,12 @@ class Chat21Handler {
 
                         chat21.auth.setAdminToken(adminToken);                      
 
-                        winston.verbose("Chat21Sender archiving conversations for ",request.participants);
+                        winston.debug("Chat21Sender archiving conversations for ",request.participants);
 
                        //iterate request.participant and archive conversation
                        request.participants.forEach(function(participant,index) {
 
-                        winston.verbose("Chat21Sender archiving conversation: " + request.request_id + "for " + participant);
+                        winston.debug("Chat21Sender archiving conversation: " + request.request_id + "for " + participant);
 
                             chat21.conversations.archive(request.request_id, participant)
                                         .then(function(data){
