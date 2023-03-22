@@ -170,7 +170,7 @@ it('createSimpleWithAttributes', function (done) {
     var savedProject = savedProjectAndPU.project;
 
         chai.request(server)
-          .post('/'+ savedProject._id + '/requests/req123/messages')
+          .post('/'+ savedProject._id + '/requests/req123-createSimpleWithAttributes/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({"text":"text","attributes": {"a":"b"}})
