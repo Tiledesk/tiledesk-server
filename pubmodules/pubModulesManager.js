@@ -27,6 +27,9 @@ class PubModulesManager {
         this.whatsapp = undefined;
         this.whatsappRoute = undefined;
 
+        this.messenger = undefined;
+        this.messengerRoute = undefined;
+
         this.kaleyra = undefined;
         this.kaleyraRoute = undefined;
 
@@ -69,6 +72,10 @@ class PubModulesManager {
         if (this.whatsappRoute) {
             app.use('/modules/whatsapp', this.whatsappRoute);
             winston.info("PubModulesManager whatsappRoute controller loaded");
+        }
+        if (this.messengerRoute) {
+            app.use('/modules/messenger', this.messengerRoute);
+            winston.info("PubModulesManager messengerRoute controller loaded");
         }
         if (this.kaleyraRoute) {
             app.use('/modules/kaleyra', this.kaleyraRoute);
@@ -265,6 +272,22 @@ class PubModulesManager {
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') { 
                 winston.info("PubModulesManager init apps module not found");
+            }else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.messenger = require('./messenger');
+            winston.info("this.messenger: " + this.messenger);
+            this.messenger.listener.listen(config);
+
+            this.messengerRoute = this.messenger.messengerRoute;
+
+            winston.info("PubModulesManager initialized apps.");
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') { 
+                winston.info("PubModulesManager init apps module not found ");
             }else {
                 winston.info("PubModulesManager error initializing init apps module", err);
             }
