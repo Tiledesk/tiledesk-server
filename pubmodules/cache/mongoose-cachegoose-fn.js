@@ -713,10 +713,10 @@
 
     function invalidateFaq(client, faq) {
         key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
-        winston.info("Deleting cache for faq with key: " + key);
+        winston.verbose("Deleting cache for faq with key: " + key);
         client.del(key, function (err, reply) {
             winston.debug("Deleted cache for faq",reply);
-            winston.info("Deleted cache for faq",{err:err});
+            winston.verbose("Deleted cache for faq",{err:err});
         });   
 
         
