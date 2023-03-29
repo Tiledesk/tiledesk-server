@@ -25,7 +25,7 @@ class Listener {
         let fb_app_secret = process.env.FB_APP_SECRET;
         winston.debug("Messenger fb_app_secret: ", fb_app_secret);
 
-        let dashboard_base_url = process.env.DASHBOARD_BASE_URL;
+        let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
         winston.debug("Messenger dashboard_base_url: ", dashboard_base_url);
 
         messenger.startApp({
