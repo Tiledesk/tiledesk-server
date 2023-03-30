@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.3.111",
+  "version": "2.3.116",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -30,7 +30,7 @@
   },
   "optionalDependencies": {
     "@tiledesk-ent/tiledesk-server-jwthistory": "^1.1.9",
-    "@tiledesk-ent/tiledesk-server-payments": "^1.1.6",
+    "@tiledesk-ent/tiledesk-server-payments": "^1.1.7",
     "@tiledesk-ent/tiledesk-server-request-history": "^1.1.5",
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1",
     "@tiledesk-ent/tiledesk-server-enterprise": "^1.0.0"
@@ -39,13 +39,13 @@
     "@tiledesk/tiledesk-apps": "^1.0.16",
     "@tiledesk/tiledesk-chat21-app": "^1.1.7",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
-    "@tiledesk/tiledesk-dialogflow-connector": "^1.8.3",
+    "@tiledesk/tiledesk-dialogflow-connector": "^1.8.4",
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
     "@tiledesk/tiledesk-kaleyra-proxy": "^0.1.7",
-    "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
-    "@tiledesk/tiledesk-tybot-connector": "^0.1.67",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.42",
     "@tiledesk/tiledesk-messenger-connector": "0.1.2",
+    "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
+    "@tiledesk/tiledesk-tybot-connector": "^0.1.68",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
@@ -88,6 +88,7 @@
     "node-schedule": "^2.1.0",
     "nodemailer": "^6.7.5",
     "passport": "^0.4.1",
+    "passport-google-oidc": "^0.1.0",
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
     "pdfmake": "^0.2.5",
