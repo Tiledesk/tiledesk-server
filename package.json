@@ -45,7 +45,7 @@
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.42",
     "@tiledesk/tiledesk-messenger-connector": "0.1.2",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
-    "@tiledesk/tiledesk-tybot-connector": "^0.1.69",
+    "@tiledesk/tiledesk-tybot-connector": "^0.1.70",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
