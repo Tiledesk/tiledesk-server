@@ -1,0 +1,82 @@
+{
+    "webhook_enabled" : false,
+    "type" : "tilebot",
+    "secret" : "0c9021c8-3b62-47ce-98f2-cbc7b47639d1",
+    "language" : "en",
+    "public" : true,
+    "certified" : false,
+    "intentsEngine" : "none",
+    "tags" : [ 
+        "quiz", 
+        "onboarding", 
+        "whatsapp", 
+        "chatbot", 
+        "english", 
+        "buttons"
+    ],
+    "score" : 0,
+    "name" : "examplebot",
+    "id_project" : "64218dfecdb804001380b9ba",
+    "trashed" : false,
+    "createdBy" : "63a05d755f117f0013541383",
+    "attributes" : {
+        "variables" : {
+            "total" : "total",
+            "score" : "score",
+            "userFullname" : "userFullname"
+        },
+        "rules" : [ 
+            {
+                "uid" : "6f7f1206-0433-4ea5-a1f5-d688334fe147",
+                "name" : "go2",
+                "description" : "",
+                "when" : {
+                    "regexOption" : "any",
+                    "text" : "",
+                    "urlMatches" : "^.*$",
+                    "triggerEvery" : -1
+                },
+                "do" : [ 
+                    {
+                        "message" : {
+                            "text" : "/proactive2",
+                            "participants" : [ 
+                                "bot_64232b3f2e14140013a9a623"
+                            ],
+                            "attributes" : {
+                                "subtype" : "info"
+                            }
+                        }
+                    }
+                ]
+            }, 
+            {
+                "uid" : "4aa55b98-8450-4f59-b82e-06b794ed3edf",
+                "name" : "go",
+                "description" : "",
+                "when" : {
+                    "regexOption" : "ends",
+                    "text" : "ppp",
+                    "urlMatches" : "^.*(ppp)$",
+                    "triggerEvery" : -1
+                },
+                "do" : [ 
+                    {
+                        "message" : {
+                            "text" : "/proactive",
+                            "participants" : [ 
+                                "bot_64232b3f2e14140013a9a623"
+                            ],
+                            "attributes" : {
+                                "subtype" : "info"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "__v" : 0,
+    "url" : "http://localhost:3000/modules/tilebot/ext/6425b5c495fcdb0012beb9b9",
+    "description" : "A simple Javascript test submitted with a Chatbot 🤓\n\nYou can use this test to create and submit a simple test to your audience. This test makes wide use of \"attributes\" and \"conditions\" (aka the \"flow\"). We also created a rule to proactively engage your visitors to open and complete the test. We also used \"forms\" to ask your visitor's data (please mind that privacy concerns are left to you).\n\nIt also works on Whatsapp!\n\nFeel free to import and modify this test as you prefer.\n\nLet us know if you have some questions about this template writing a message to andrea@tiledesk.com"
+}
