@@ -1166,7 +1166,16 @@ class EmailService {
       }
     }
 
+    var subject = `R: ${message.request ? message.request.subject : '-'}`;  //gmail uses subject
 
+    if (project._id =="6406e34727b57500120b1bd6") {
+      subject = "Richiesta di supporto #" + message.request.ticket_id;
+      if (message.request.subject) {
+        subject = subject + " - " + message.request.subject;
+      } 
+      // console.log("subject",subject);
+    }
+    
     // if (message.request && message.request.lead && message.request.lead.email) {
     //   winston.info("message.request.lead.email: " + message.request.lead.email);
     //   replyTo = replyTo + ", "+ message.request.lead.email;
@@ -1182,7 +1191,7 @@ class EmailService {
       inReplyTo: inReplyTo,
       references: references,
       // subject:`${message.request ? message.request.subject : '-'}`, 
-      subject:`R: ${message.request ? message.request.subject : '-'}`,  //gmail uses subject
+      subject: subject,
       text:html, 
       html:html,
       config:configEmail, 
@@ -1805,7 +1814,10 @@ async sendRequestTranscript(to, messages, request, project) {
     // console.log("ocf",project._id);
     let subject = '[Tiledesk] Transcript';
     if (project._id =="6406e34727b57500120b1bd6") {
-      subject = "Chiusura richiesta di supporto #" + request.ticket_id;
+      subject = "Richiesta di supporto #" + request.ticket_id;
+      if (request.subject) {
+        subject = subject + " - " + request.subject;
+      } 
       // console.log("subject",subject);
     }
     // hcustomization.emailTranscript(to, subject, html, configEmail)

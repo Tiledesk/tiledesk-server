@@ -249,7 +249,10 @@ class RulesTrigger {
 
               //custom ocf here
               if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6") {
-                subject = "Apertura richiesta di supporto #" + eventTrigger.event.ticket_id;
+                subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
+                if (eventTrigger.event.subject) {
+                  subject = subject + " - " + eventTrigger.event.subject;
+                } 
                 // console.log("subject",subject);
               }
 
@@ -754,12 +757,14 @@ class RulesTrigger {
           winston.debug('runAction action preflight: ' + preflight);
 
           if (text && text.indexOf(":tdk_msg_subtype_info")>-1) {
+
             subtype = "info";
             text = text.replace(':tdk_msg_subtype_info', '');
             winston.debug('tdk_msg_subtype_info');
           }
 
           if (text && text.indexOf(":tdk_req_status_hidden")>-1) {
+
             status = 50;
             preflight = true;
             text = text.replace(':tdk_req_status_hidden', '');
@@ -817,6 +822,7 @@ class RulesTrigger {
                     }else {
                       userObj = eventTrigger.event.user;
                     }
+                    //TODO ATTENTION change value by reference userObj.password. This is a problem for trigger. Resolve it
                     delete userObj.password;
 
 
