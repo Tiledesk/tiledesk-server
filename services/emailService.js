@@ -1168,7 +1168,9 @@ class EmailService {
 
     var subject = `R: ${message.request ? message.request.subject : '-'}`;  //gmail uses subject
 
-    if (project._id =="6406e34727b57500120b1bd6") {
+    //ocf 
+        //prod                                                      //pre
+    if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
       subject = "Richiesta di supporto #" + message.request.ticket_id;
       if (message.request.subject) {
         subject = subject + " - " + message.request.subject;
@@ -1812,8 +1814,9 @@ async sendRequestTranscript(to, messages, request, project) {
 
     //custom ocf here
     // console.log("ocf",project._id);
-    let subject = '[Tiledesk] Transcript';
-    if (project._id =="6406e34727b57500120b1bd6") {
+    let subject = '[Tiledesk] Transcript';        
+         //prod                                               //pre
+    if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
       subject = "Richiesta di supporto #" + request.ticket_id;
       if (request.subject) {
         subject = subject + " - " + request.subject;

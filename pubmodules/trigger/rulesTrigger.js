@@ -248,7 +248,8 @@ class RulesTrigger {
               recipient = eventTrigger.event.request_id;
 
               //custom ocf here
-              if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6") {
+                                                  //prod                                                          //pre
+              if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6" || eventTrigger.event.id_project == "642c609f179910002cc56b3e") {
                 subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
                 if (eventTrigger.event.subject) {
                   subject = subject + " - " + eventTrigger.event.subject;
