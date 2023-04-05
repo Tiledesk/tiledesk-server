@@ -10,7 +10,7 @@ var ProfileSchema = new Schema({
   },
   trialDays: {
     type: Number,
-    default: 30
+    default: 14
   },
   agents: {
     type: Number,
