@@ -826,7 +826,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 
 router.get('/exportjson/:id_faq_kb', (req, res) => {
 
-  winston.info("exporting bot...")
+  winston.debug("exporting bot...")
 
 
   let id_faq_kb = req.params.id_faq_kb;
