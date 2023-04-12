@@ -392,9 +392,12 @@
 
     botEvent.on("faqbot.create", function(faq_kb) {
         setImmediate(() => {
+            let clonedbot = Object.assign({}, faq_kb);
+            delete clonedbot.secret;
+
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Creating cache for faq_kb.create with key: " + key);
-            client.set(key, faq_kb, cacheUtil.defaultTTL, (err, reply) => {
+            client.set(key, clonedbot, cacheUtil.defaultTTL, (err, reply) => {
                 winston.debug("Created cache for faq_kb.create",reply);
                 winston.verbose("Created cache for faq_kb.create",{err:err});
             });
@@ -639,6 +642,7 @@
         subscriptionEvent.on('subscription.create', function(trigger) {   
             setImmediate(() => {    
                 
+                //TODO i think you must clone trigger and remove .secret before caching
                 var key =trigger.id_project+":subscriptions:*";        
                 winston.verbose("Deleting cache for subscription.create with key: " + key);
                 client.del(key, function (err, reply) {

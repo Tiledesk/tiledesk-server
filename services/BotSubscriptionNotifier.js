@@ -51,7 +51,14 @@ class BotSubscriptionNotifier {
       };
 
       // TODO metti bot_? a user._id
-      var token = jwt.sign(bot.toObject(), botWithSecret.secret, signOptions);
+
+      // tolgo description, attributes
+      let botPayload = bot.toObject();
+      delete botPayload.secret;
+      delete botPayload.description;
+      delete botPayload.attributes;
+
+      var token = jwt.sign(botPayload, botWithSecret.secret, signOptions);
       json["token"] = token;
 
 
