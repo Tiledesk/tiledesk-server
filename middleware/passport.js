@@ -4,6 +4,7 @@ var ExtractJwt = passportJWT.ExtractJwt;
 
 var passportHttp = require("passport-http");  
 var BasicStrategy = passportHttp.BasicStrategy;
+var GoogleStrategy = require('passport-google-oidc');
 
 var winston = require('../config/winston');
 // var AnonymousStrategy = require('passport-anonymous').Strategy;
@@ -14,11 +15,18 @@ var config = require('../config/database'); // get db config file
 var Faq_kb = require("../models/faq_kb");
 var Project = require('../models/project');
 var Subscription = require('../models/subscription');
+
+var Auth = require('../models/auth');
+var userService = require('../services/userService');
+
 var UserUtil = require('../utils/userUtil');
 var jwt = require('jsonwebtoken');
 const url = require('url');
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
+
+var uniqid = require('uniqid');
+
 
 const MaskData = require("maskdata");
 
@@ -57,7 +65,11 @@ if (pKey) {
 var maskedconfigSecret = MaskData.maskPhone(configSecret, maskOptions);
 winston.info('Authentication Global Secret : ' + maskedconfigSecret);
 
-
+var enableGoogleSignin = false;
+if (process.env.GOOGLE_SIGNIN_ENABLED=="true" || process.env.GOOGLE_SIGNIN_ENABLED == true) {
+  enableGoogleSignin = true;
+}
+winston.info('Authentication Google Signin enabled : ' + enableGoogleSignin);
 
 
 var jwthistory = undefined;
@@ -431,11 +443,126 @@ module.exports = function(passport) {
         // if (!user) { return done(null, false); }
         // if (!user.verifyPassword(password)) { return done(null, false); }
       });
-    }
-    
-    
-    
-  ));
+    }));
+
+
+
+
+
+if (enableGoogleSignin==true) {
+  let googleClientId = process.env.GOOGLE_CLIENT_ID;
+  let googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  let googleCallbackURL = process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback";
+  
+  winston.info("Enabling Google Signin strategy with ClientId: " +  googleClientId + " callbackURL: " + googleCallbackURL + " clientSecret: " + googleClientSecret );
+
+  passport.use(new GoogleStrategy({
+    clientID: googleClientId, 
+    clientSecret: googleClientSecret,
+    callbackURL: googleCallbackURL  // 'https://www.example.com/oauth2/redirect/google'
+  },
+  function(issuer, profile, cb) {
+
+    winston.info("issuer: "+issuer)
+    winston.info("profile", profile)
+    // winston.info("cb", cb)
+
+    var email = profile.emails[0].value;
+    winston.info("email: "+email)   
+
+    var query = {providerId : issuer, subject: profile.id};
+    winston.debug("query", query)
+
+    Auth.findOne(query, function(err, cred){     
+    winston.debug("cred", cred, err)
+
+      // db.get('SELECT * FROM federated_credentials WHERE provider = ? AND subject = ?', [
+      // issuer,
+      // profile.id
+    // ], function(err, cred) {
+
+    winston.debug("11")
+
+
+      if (err) { return cb(err); }
+
+      winston.debug("12")
+
+      if (!cred) {
+        winston.debug("13")
+        // The Google account has not logged in to this app before.  Create a
+        // new user record and link it to the Google account.
+
+        // db.run('INSERT INTO users (name) VALUES (?)', [
+        //   profile.displayName
+        // ], function(err) {
+
+          var password = uniqid()
+
+          
+
+          userService.signup(email, password, undefined, profile.displayName, true)
+          .then(function (savedUser) {
+
+
+          // if (err) { return cb(err); }
+
+          winston.debug("savedUser", savedUser)    
+
+          var auth = new Auth({
+            providerId: issuer,
+            subject: profile.id,
+          });
+          auth.save(function (err, authSaved) {    
+                
+          // db.run('INSERT INTO federated_credentials (user_id, provider, subject) VALUES (?, ?, ?)', [
+          //   id,
+          //   issuer,
+          //   profile.id
+          // ], function(err) {
+
+
+            if (err) { return cb(err); }
+
+            winston.debug("authSaved", authSaved)    
+
+            // var user = {
+            //   id: id.toString(),
+            //   name: profile.displayName
+            // };
+            // var user = {
+            //   id: "1232321321321321",
+            //   name: "Google andrea"
+            // };
+            return cb(null, savedUser);
+          });
+        }).catch(function(err) {
+          winston.error("Error signup google ", err);
+          return cb(err); 
+        });
+      } else {
+
+        winston.debug("else")
+        // The Google account has previously logged in to the app.  Get the
+        // user record linked to the Google account and log the user in.
+
+        User.findOne({
+          email: email, status: 100
+        }, 'email firstname lastname password emailverified id', function (err, user) {
+
+          winston.debug("user",user, err);
+        // db.get('SELECT * FROM users WHERE id = ?', [ cred.user_id ], function(err, user) {
+          if (err) { return cb(err); }
+          if (!user) { return cb(null, false); }
+          return cb(null, user);
+        });
+      }
+    });
+  }
+));
+
+}
+
 
 
   // var OidcStrategy = require('passport-openidconnect').Strategy;

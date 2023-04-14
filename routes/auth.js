@@ -451,6 +451,56 @@ function (req, res) {
   });
 });
 
+
+
+// Redirect the user to the Google signin page</em> 
+router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+
+// Retrieve user data using the access token received</em> 
+router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
+// res.redirect("/auth/profile/");
+
+  var user = req.user;
+  winston.debug("user", user);
+
+  var userJson = user.toObject();
+  
+    var signOptions = {     
+      issuer:  'https://tiledesk.com',       
+      subject:  'user',
+      audience:  'https://tiledesk.com',
+      jwtid: uuidv4()
+
+    };
+
+    var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+    if (alg) {
+      signOptions.algorithm = alg;
+    }
+
+
+  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+
+
+  // return the information including token as JSON
+  // res.json(returnObject);
+
+  var url = process.env.EMAIL_BASEURL+"?token=JWT "+token;
+  winston.debug("url: "+ url);
+
+  res.redirect(url);
+
+
+  
+
+}
+);
+// profile route after successful sign in</em> 
+// router.get("/profile", (req, res) => {
+//   console.log(req);
+// res.send("Welcome");
+// });
+
 // VERIFY EMAIL
 router.put('/verifyemail/:userid', function (req, res) {
 
