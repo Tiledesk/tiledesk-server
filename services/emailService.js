@@ -436,11 +436,14 @@ class EmailService {
     // cambiare in [Nicky:Dashboard Support] Assigned Chat
     // serve per aggiornare native... fai aggiornamento 
 
-    let subject = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
+    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
 
     if (request.subject) {
-      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
+
+    let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
+
 
     // if (request.ticket_id) {
     //   subject = `[Ticket #${request.ticket_id}] New Assigned Chat`;
@@ -583,18 +586,20 @@ class EmailService {
     }
 
 
-    let subject = `[Tiledesk ${project ? project.name : '-'}] New message`;
+    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New message`;
 
     if (request.subject) {
-      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
-      subject = `[Ticket #${request.ticket_id}] New message`;
+      subjectDef = `[Ticket #${request.ticket_id}] New message`;
     }
     
     if (request.ticket_id && request.subject) {
-      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      subjectDef = `[Ticket #${request.ticket_id}] ${request.subject}`;
     }
+
+    let subject = that.formatText("assignedEmailMessageSubject", subjectDef, request, project.settings);
 
 
 
@@ -727,11 +732,15 @@ class EmailService {
       }
     }
 
-    let subject = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
+    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
 
     if (request.subject) {
-      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
+
+    let subject = that.formatText("pooledRequestSubject", subjectDef, request, project.settings);
+
+
     // if (request.ticket_id) {
     //   subject = `[Ticket #${request.ticket_id}] New Pooled Chat`;
     // }
@@ -868,18 +877,20 @@ class EmailService {
     }
 
 
-    let subject = `[Tiledesk ${project ? project.name : '-'}] New Message`;
+    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Message`;
 
     if (request.subject) {
-      subject = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
-      subject = `[Ticket #${request.ticket_id}] New Message`;
+      subjectDef = `[Ticket #${request.ticket_id}] New Message`;
     }
     
     if (request.ticket_id && request.subject) {
-      subject = `[Ticket #${request.ticket_id}] ${request.subject}`;
+      subjectDef = `[Ticket #${request.ticket_id}] ${request.subject}`;
     }
+
+    let subject = that.formatText("pooledEmailMessageSubject", subjectDef, request, project.settings);
 
 
     that.send({
@@ -1012,6 +1023,8 @@ class EmailService {
     }
 
 
+    let subject = that.formatText("newMessageSubject", `[Tiledesk ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
+
     that.send({
       messageId: messageId,
       // sender: message.senderFullname, //must be an email
@@ -1020,7 +1033,7 @@ class EmailService {
       replyTo: replyTo, 
       inReplyTo: inReplyTo,
       references: references,
-      subject:`[Tiledesk ${project ? project.name : '-'}] New Offline Message`,    //TODO (anche per il cloud) aggiungere variabile env per cambiare i subjects
+      subject:subject,    //TODO (anche per il cloud) aggiungere variabile env per cambiare i subjects
       html:html, 
       config:configEmail, 
       headers: headers
@@ -1166,17 +1179,18 @@ class EmailService {
       }
     }
 
-    var subject = `R: ${message.request ? message.request.subject : '-'}`;  //gmail uses subject
+    //gmail uses subject
+    let subject = that.formatText("ticketSubject", `R: ${message.request ? message.request.subject : '-'}`, message, project.settings);
 
     //ocf 
         //prod                                                      //pre
-    if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
-      subject = "Richiesta di supporto #" + message.request.ticket_id;
-      if (message.request.subject) {
-        subject = subject + " - " + message.request.subject;
-      } 
-      // console.log("subject",subject);
-    }
+    // if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
+    //   subject = "Richiesta di supporto #" + message.request.ticket_id;
+    //   if (message.request.subject) {
+    //     subject = subject + " - " + message.request.subject;
+    //   } 
+    //   // console.log("subject",subject);
+    // }
     
     // if (message.request && message.request.lead && message.request.lead.email) {
     //   winston.info("message.request.lead.email: " + message.request.lead.email);
@@ -1349,6 +1363,8 @@ class EmailService {
     }
 
 
+    let subject = that.formatText("newMessageFollowerSubject", `${message.request ? message.request.ticket_id : '-'}`, message, project.settings);
+
   
     
     that.send({
@@ -1361,7 +1377,7 @@ class EmailService {
       inReplyTo: inReplyTo,
       references: references,
       // subject:`${message.request ? message.request.subject : '-'}`, 
-      subject:`${message.request ? message.request.ticket_id : '-'}`,  //gmail uses subject
+      subject: subject,  //gmail uses subject
       text:html, 
       html:html,
       config:configEmail, 
@@ -1814,15 +1830,17 @@ async sendRequestTranscript(to, messages, request, project) {
 
     //custom ocf here
     // console.log("ocf",project._id);
-    let subject = '[Tiledesk] Transcript';        
+    let subject = that.formatText("sendTranscriptSubject", '[Tiledesk] Transcript', request, project.settings);
+
          //prod                                               //pre
-    if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
-      subject = "Richiesta di supporto #" + request.ticket_id;
-      if (request.subject) {
-        subject = subject + " - " + request.subject;
-      } 
-      // console.log("subject",subject);
-    }
+    // if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
+    //   subject = "Segnalazione #" + request.ticket_id;
+    //   // subject = "Richiesta di supporto #" + request.ticket_id;
+    //   if (request.subject) {
+    //     subject = subject + " - " + request.subject;
+    //   } 
+    //   // console.log("subject",subject);
+    // }
     // hcustomization.emailTranscript(to, subject, html, configEmail)
 
     that.send({from:from, to:to, subject: subject, html:html, config: configEmail});
@@ -1830,6 +1848,72 @@ async sendRequestTranscript(to, messages, request, project) {
 
 }
 
+formatText(templateName, defaultText, payload, settings) {
+
+  let text = defaultText;
+  winston.verbose("formatText defaultText: "+ defaultText);
+
+  let template = this.getTemplate(templateName, settings);
+
+  winston.verbose("formatText template: "+ template);
+
+  if (template) {
+    text = template;
+  }
+
+  var baseScope = JSON.parse(JSON.stringify(this));
+  delete baseScope.pass;
+
+  winston.verbose("formatText text: "+ text);
+
+  var templateHand = handlebars.compile(text);
+
+  var replacements = {        
+    payload: payload,  
+    baseScope: baseScope,
+    test: "test"
+  };
+
+  var textTemplate = templateHand(replacements);
+  winston.verbose("formatText textTemplate: "+ textTemplate);
+
+  return textTemplate;
+
+}
+
+getTemplate(templateName, settings) {
+
+   var that = this;
+    winston.verbose('getTemplate formatSubject: ' + JSON.stringify(settings)); 
+    
+
+    winston.verbose('getTemplate settings.email.templates: ',settings.email.templates); 
+      if (settings && settings.email && settings.email.templates) {
+
+       var templates = settings.email.templates;
+       winston.verbose('getTemplate templates: ',templates); 
+
+       var templateDbName = templateName.replace(".subject", "");
+       winston.verbose('getTemplate templateDbName: '+templateDbName); 
+
+
+       var template = templates[templateDbName];
+       winston.verbose('getTemplate template: '+template); 
+
+        if (template) {
+        // that.callback(template);
+          // return new Promise(function (resolve, reject) {
+            // return resolve(template);
+            return template;
+          // });
+        }else {
+          return undefined;
+        }      
+      } else {
+        return undefined;
+      } 
+
+}
 
 
 
