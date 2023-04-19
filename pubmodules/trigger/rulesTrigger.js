@@ -146,6 +146,7 @@ class RulesTrigger {
 
           if (text && text.endsWith(":tdk_msg_subtype_info")) {            
             attributes.subtype = "info";
+            //TODO ATTENTION change value by reference text. Text is string so string is passed by value. No problem
             text = text.replace(':tdk_msg_subtype_info', '');
             winston.verbose('tdk_msg_subtype_info');
           }
@@ -250,7 +251,8 @@ class RulesTrigger {
               //custom ocf here
                                                   //prod                                                          //pre
               if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6" || eventTrigger.event.id_project == "642c609f179910002cc56b3e") {
-                subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
+                // subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
+                subject = "Segnalazione #" + eventTrigger.event.ticket_id;
                 if (eventTrigger.event.subject) {
                   subject = subject + " - " + eventTrigger.event.subject;
                 } 
@@ -758,6 +760,7 @@ class RulesTrigger {
           winston.debug('runAction action preflight: ' + preflight);
 
           if (text && text.indexOf(":tdk_msg_subtype_info")>-1) {
+          //TODO ATTENTION change value by reference text subtype. Text is string so string is passed by value. No problem
 
             subtype = "info";
             text = text.replace(':tdk_msg_subtype_info', '');
@@ -766,6 +769,7 @@ class RulesTrigger {
 
           if (text && text.indexOf(":tdk_req_status_hidden")>-1) {
 
+            //TODO ATTENTION change value by reference status preflight text. Text is string so string is passed by value. No problem
             status = 50;
             preflight = true;
             text = text.replace(':tdk_req_status_hidden', '');
