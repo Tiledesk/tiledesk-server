@@ -29,6 +29,15 @@ var ProfileSchema = new Schema({
   subscriptionId:  {
     type: String,
   },
+  extra1:  {
+    type: String,
+  },
+  extra2:  {
+    type: String,
+  },
+  extra3:  {
+    type: String,
+  },
   subscription_creation_date: {
     type: Date,
   },
