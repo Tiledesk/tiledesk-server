@@ -26,7 +26,6 @@ class Listener {
         winston.debug("Messenger fb_app_secret: ", fb_app_secret);
         
         let fb_verify_token = process.env.MESSENGER_VERIFY_TOKEN;
-        winston.debug("Messenger verify_token: " + fb_verify_token.substring(0,8) + "*************")
 
         let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
         winston.debug("Messenger dashboard_base_url: ", dashboard_base_url);
@@ -43,8 +42,12 @@ class Listener {
             DASHBOARD_BASE_URL: dashboard_base_url,
             VERIFY_TOKEN: fb_verify_token,
             log: log
-        }, () => {
-            winston.info("Tiledesk Messenger Connector proxy server succesfully started.");
+        }, (err) => {
+            if (!err) {
+                winston.info("Tiledesk Messenger Connector proxy server succesfully started.");
+            } else {
+                winston.info("unable to start Tiledesk Messenger Connector. " + err);
+            }
         })
 
     }

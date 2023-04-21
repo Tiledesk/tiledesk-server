@@ -39,8 +39,12 @@ class Listener {
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
             log: log
-        }, () => {
-            winston.info("Tiledesk WhatsApp Connector proxy server succesfully started.");
+        }, (err) => {
+            if (!err) {
+                winston.info("Tiledesk Messenger Connector proxy server succesfully started.");
+            } else {
+                winston.info("unable to start Tiledesk Whatsapp Connector. " + err);
+            }
         })
 
     }
