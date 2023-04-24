@@ -290,6 +290,10 @@ class Chat21Handler {
 
                         attributes['projectId'] = message.id_project; //TODO not used. used by ionic to open request detail ???
                         
+                        if (message.channel && message.channel.name) {
+                            attributes['channel'] = message.channel.name;
+                        }
+                        
                        
 
 
