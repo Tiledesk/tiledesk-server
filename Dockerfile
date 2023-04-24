@@ -1,4 +1,7 @@
-FROM node:12
+FROM node:16
+
+RUN sed -i 's/stable\/updates/stable-security\/updates/' /etc/apt/sources.list
+
 
 RUN apt-get update
 
