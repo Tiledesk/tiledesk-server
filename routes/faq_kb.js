@@ -13,6 +13,8 @@ var multer = require('multer')
 var upload = multer()
 var configGlobal = require('../config/global');
 const faq = require('../models/faq');
+var jwt = require('jsonwebtoken');
+const uuidv4 = require('uuid/v4');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -311,7 +313,7 @@ router.put('/:faq_kbid', function (req, res) {
   }
 
 
-  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {
+  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
@@ -322,7 +324,7 @@ router.put('/:faq_kbid', function (req, res) {
 });
 
 
-router.patch('/:faq_kbid/attributes', function (req, res) {
+router.patch('/:faq_kbid/attributes', function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
   // TODO use service method
@@ -388,7 +390,7 @@ router.get('/:faq_kbid', function (req, res) {
 
   winston.debug(req.query);
 
-  Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {
+  Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -425,6 +427,48 @@ router.get('/:faq_kbid', function (req, res) {
       winston.debug('¿¿ MY USECASE ?? ')
       res.json(faq_kb);
     }
+
+  });
+});
+
+
+
+router.get('/:faq_kbid/jwt', function (req, res) {
+
+  winston.debug(req.query);
+
+  Faq_kb.findById(req.params.faq_kbid).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+
+
+    var signOptions = {
+      issuer:  'https://tiledesk.com',
+      subject:  'bot',
+      audience:  'https://tiledesk.com/bots/'+faq_kb._id,   
+      jwtid: uuidv4()       
+    };
+
+    // TODO metti bot_? a user._id
+
+    // tolgo description, attributes
+    let botPayload = faq_kb.toObject();
+
+    let botSecret = botPayload.secret;
+    // winston.info("botSecret: " + botSecret);
+
+    delete botPayload.secret;
+    delete botPayload.description;
+    delete botPayload.attributes;
+
+    var token = jwt.sign(botPayload, botSecret, signOptions);
+
+
+    res.json({"jwt":token});
 
   });
 });
@@ -467,7 +511,7 @@ router.get('/', function (req, res) {
 
   winston.debug("query", query);
 
-  Faq_kb.find(query, function (err, faq_kb) {
+  Faq_kb.find(query, function (err, faq_kb) {  //TODO add cache_bot_here
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, message: "Unable to get chatbots" });
@@ -749,7 +793,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
         // }
   
 
-        Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {
+        Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {  //TODO add cache_bot_here
           if (err) {
             return res.status(500).send({ success: false, msg: "Error updating bot." });
           }
