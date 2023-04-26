@@ -23,7 +23,18 @@ var cacheUtil = require("../../utils/cacheUtil");
 var cacheEnabler = require("../../services/cacheEnabler");
 var UIDGenerator = require("../../utils/UIDGenerator");
 const RequestConstants = require('../../models/requestConstants');
+var Bot = require("../../models/faq_kb");
 
+var request = require('retry-request', {
+  request: require('request')
+});
+const uuidv4 = require('uuid/v4');
+
+var jwt = require('jsonwebtoken');
+
+const port = process.env.PORT || '3000';
+const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class RulesTrigger {
 
@@ -285,7 +296,7 @@ class RulesTrigger {
               var to = eventTrigger.event.request.lead.email;
               winston.debug('to ' + to);
   
-              // sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
+              // sendEmailDirect(to, text, id_project, recipient, subject, message)
               sendEmailUtil.sendEmailDirect(to, text, id_project, recipient, subject, message);              
             } else {
               winston.info('email.send trigger. Lead email is undefined ');
@@ -300,6 +311,130 @@ class RulesTrigger {
         
   
 
+
+
+      triggerEventEmitter.on('bot.calling', async (eventTrigger) => {
+
+        try {
+
+          winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
+          var trigger = eventTrigger.trigger;         
+          winston.debug('runAction trigger', trigger.toObject());
+
+
+          var action = eventTrigger.action;
+          winston.debug('runAction action', action.toObject());
+
+
+          var intentName = action.parameters.intentName;
+          winston.debug('runAction action intentName: ' + intentName);
+
+          var botId = action.parameters.botId;
+          winston.debug('runAction action botId: ' + botId);
+
+
+          var url = TILEBOT_ENDPOINT+botId;
+          if (action.parameters.url) {
+            url = action.parameters.url;
+          }
+          winston.debug('runAction action url: ' + url);
+
+
+          var message = action.parameters.message;
+          winston.debug('runAction action message: ' + message);
+
+          
+
+        
+          if (eventTrigger.eventKey=="request.create" || eventTrigger.eventKey=="request.participants.join") {
+            // recipient = eventTrigger.event.request_id;
+          }
+          if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {
+            // recipient = eventTrigger.event.recipient;
+          }
+          if (eventTrigger.eventKey=="event.emit") {
+            winston.debug('runAction action event.emit: ', eventTrigger.event.toObject());            
+            // recipient = eventTrigger.event.project_user.id_user;
+          }
+
+          // console.log("eventTrigger.event", eventTrigger.event);
+          
+          var id_project = eventTrigger.event.id_project;
+          winston.debug('runAction action id_project: ' + id_project);
+
+
+          var payload = Object.assign({}, eventTrigger.event);;
+          winston.debug('runAction action payload: ', payload);
+          
+
+          delete payload.request.snapshot
+      
+          var json = {timestamp: Date.now(), payload: payload};
+    
+
+          json["hook"] = trigger;
+
+
+
+
+          var bot = await Bot.findById(botId).select("+secret").exec();
+          winston.debug("bot: ", bot);
+
+          var signOptions = {
+            issuer:  'https://tiledesk.com',
+            subject:  'bot',
+            audience:  'https://tiledesk.com/bots/'+bot._id,   
+            jwtid: uuidv4()       
+          };
+
+
+          let botPayload = bot.toObject();    
+          
+          let botSecret = botPayload.secret;
+
+          delete botPayload.secret;
+          delete botPayload.description;
+          delete botPayload.attributes;
+
+          var token = jwt.sign(botPayload, botSecret, signOptions);
+          json["token"] = token;
+
+
+          var webhook_origin = process.env.WEBHOOK_ORIGIN || "http://localhost:3000";
+          winston.debug("webhook_origin: "+webhook_origin);
+
+          winston.debug("Rules trigger notify json ", json );
+
+          request({
+            url: url,
+            headers: {
+             'Content-Type' : 'application/json', 
+             'User-Agent': 'tiledesk-bot',
+             'Origin': webhook_origin
+              //'x-hook-secret': s.secret
+            },
+            json: json,
+            method: 'POST'
+
+          }, function(err, result, json){            
+            winston.verbose("SENT notify for bot with url " + url +  " with err " + err);
+            winston.debug("SENT notify for bot with url ", result);
+            if (err) {
+              winston.error("Error sending notify for bot with url " + url + " with err " + err);
+              //TODO Reply with error
+              // next(err, json);
+            }
+          });
+    
+            
+
+        } catch(e) {
+          winston.error("Error runAction", e);
+        }
+
+        });
+        
+  
 
 
         triggerEventEmitter.on('request.department.route', function(eventTrigger) {
