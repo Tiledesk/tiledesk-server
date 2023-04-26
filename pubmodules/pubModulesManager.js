@@ -279,7 +279,7 @@ class PubModulesManager {
 
         try {
             this.messenger = require('./messenger');
-            winston.info("this.messenger: " + this.messenger);
+            winston.debug("this.messenger: " + this.messenger);
             this.messenger.listener.listen(config);
 
             this.messengerRoute = this.messenger.messengerRoute;
