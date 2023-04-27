@@ -49,6 +49,8 @@ class RequestNotification {
 }
 
 listen() {
+
+  winston.debug("RequestNotification listen");
     var that = this; 
     
 
@@ -207,7 +209,8 @@ listen() {
 
             if (project && project.settings && project.settings.email && 
               project.settings.email.autoSendTranscriptToRequester &&  
-              project.settings.email.autoSendTranscriptToRequester === true && 
+              project.settings.email.autoSendTranscriptToRequester === true 
+              && 
               project.profile && 
               (
                 (project.profile.type === 'free' && project.trialExpired === false) || 
@@ -231,7 +234,7 @@ listen() {
 
               });
               //end send email to admin
-
+              winston.debug('Lead.findById ');
               //send email to lead
               return Lead.findById(request.requester_id, function(err, lead){
                 //if (lead && lead.email) {

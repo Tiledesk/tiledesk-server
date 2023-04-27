@@ -261,14 +261,14 @@ class RulesTrigger {
 
               //custom ocf here
                                                   //prod                                                          //pre
-              if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6" || eventTrigger.event.id_project == "642c609f179910002cc56b3e") {
-                // subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
-                subject = "Segnalazione #" + eventTrigger.event.ticket_id;
-                if (eventTrigger.event.subject) {
-                  subject = subject + " - " + eventTrigger.event.subject;
-                } 
-                // console.log("subject",subject);
-              }
+              // if (eventTrigger.event.id_project =="6406e34727b57500120b1bd6" || eventTrigger.event.id_project == "642c609f179910002cc56b3e") {
+              //   // subject = "Richiesta di supporto #" + eventTrigger.event.ticket_id;
+              //   subject = "Segnalazione #" + eventTrigger.event.ticket_id;
+              //   if (eventTrigger.event.subject) {
+              //     subject = subject + " - " + eventTrigger.event.subject;
+              //   } 
+              //   // console.log("subject",subject);
+              // }
 
             }
             if (eventTrigger.eventKey=="message.create.from.requester" || eventTrigger.eventKey=="message.received") {

@@ -322,8 +322,8 @@ router.post('/send',
   let newto = await recipientEmailUtil.process(to, req.projectid);
   winston.debug("newto: " + newto);
 
-             //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage)
-  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined);
+             //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
+  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined);
   
   res.json({"queued": true});
     

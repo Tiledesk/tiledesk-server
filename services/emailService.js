@@ -1457,7 +1457,7 @@ class EmailService {
 
 
   
-async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
+async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload) {
 
   var that = this;
 
@@ -1499,7 +1499,8 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
     seamlessPage: sourcePage,
     msgText: msgText,
     tokenQueryString: tokenQueryString,
-    baseScope: baseScope    
+    baseScope: baseScope,
+    payload: payload
   };
 
   var html = template(replacements);
@@ -1524,6 +1525,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
     }
   }
 
+  let subjectParsed = that.parseText(subject, payload);
 
   // if (message.request && message.request.lead && message.request.lead.email) {
   //   winston.info("message.request.lead.email: " + message.request.lead.email);
@@ -1538,7 +1540,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
     from:from, 
     to:to, 
     replyTo: replyTo, 
-    subject:subject,
+    subject:subjectParsed,
     text:html, 
     html:html,
     config:configEmail, 
@@ -1848,6 +1850,31 @@ async sendRequestTranscript(to, messages, request, project) {
 
 }
 
+parseText(text, payload) {
+
+ 
+
+  var baseScope = JSON.parse(JSON.stringify(this));
+  delete baseScope.pass;
+
+  winston.info("parseText text: "+ text);
+
+  var templateHand = handlebars.compile(text);
+
+  var replacements = {        
+    payload: payload,  
+    baseScope: baseScope,
+    test: "test"
+  };
+
+  var textTemplate = templateHand(replacements);
+  winston.info("parseText textTemplate: "+ textTemplate);
+
+  return textTemplate;
+
+
+}
+
 formatText(templateName, defaultText, payload, settings) {
 
   let text = defaultText;
@@ -1887,8 +1914,8 @@ getTemplate(templateName, settings) {
     winston.verbose('getTemplate formatSubject: ' + JSON.stringify(settings)); 
     
 
-    winston.verbose('getTemplate settings.email.templates: ',settings.email.templates); 
       if (settings && settings.email && settings.email.templates) {
+        winston.verbose('getTemplate settings.email.templates: ',settings.email.templates); 
 
        var templates = settings.email.templates;
        winston.verbose('getTemplate templates: ',templates); 

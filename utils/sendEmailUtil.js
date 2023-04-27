@@ -23,9 +23,9 @@ class SendEmailUtil {
         winston.debug("finaltext:" + finaltext);
 
 
-        // sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage) {
-        emailService.sendEmailDirect(to, finaltext, project, recipient, subject, undefined, undefined);
-        // emailService.sendEmailDirect(to, text, project, recipient, subject, undefined, undefined);
+        // sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload) {
+        emailService.sendEmailDirect(to, finaltext, project, recipient, subject, undefined, undefined, message);
+        
     }
 }
 
