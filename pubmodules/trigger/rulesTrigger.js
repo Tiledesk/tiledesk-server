@@ -328,6 +328,7 @@ class RulesTrigger {
 
           var intentName = action.parameters.intentName;
           winston.debug('runAction action intentName: ' + intentName);
+        
 
           var botId = action.parameters.botId;
           winston.debug('runAction action botId: ' + botId);
@@ -366,6 +367,11 @@ class RulesTrigger {
           var payload = Object.assign({}, eventTrigger.event);;
           winston.debug('runAction action payload: ', payload);
           
+
+          if (message && payload.text) {
+            payload.text = message;
+            winston.debug('forcing payload text to : ' + payload.text);
+          }
 
           delete payload.request.snapshot
       
