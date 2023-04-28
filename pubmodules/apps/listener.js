@@ -6,13 +6,13 @@ var config = require('../../config/database'); // get db config file
 let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;   
 
 var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
-// console.log("pKey",pKey);
+console.log("pKey",pKey);
 
 if (pKey) {
   configSecretOrPubicKay = pKey.replace(/\\n/g, '\n');
 }
 
-// console.log("configSecretOrPubicKay",configSecretOrPubicKay);
+console.log("configSecretOrPubicKay",configSecretOrPubicKay);
 
 class Listener {
 
@@ -23,6 +23,7 @@ class Listener {
         if (config.databaseUri) {
             winston.debug("apps config databaseUri: " + config.databaseUri);
         }
+        console.log("ACCESS_TOKEN_SECRET",process.env.APPS_ACCESS_TOKEN_SECRET || configSecretOrPubicKay);
 
         apps.startApp({
             ACCESS_TOKEN_SECRET: process.env.APPS_ACCESS_TOKEN_SECRET || configSecretOrPubicKay,
