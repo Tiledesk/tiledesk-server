@@ -1857,7 +1857,7 @@ parseText(text, payload) {
   var baseScope = JSON.parse(JSON.stringify(this));
   delete baseScope.pass;
 
-  winston.info("parseText text: "+ text);
+  winston.debug("parseText text: "+ text);
 
   var templateHand = handlebars.compile(text);
 
@@ -1868,7 +1868,7 @@ parseText(text, payload) {
   };
 
   var textTemplate = templateHand(replacements);
-  winston.info("parseText textTemplate: "+ textTemplate);
+  winston.debug("parseText textTemplate: "+ textTemplate);
 
   return textTemplate;
 
