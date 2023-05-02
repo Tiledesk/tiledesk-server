@@ -12,9 +12,14 @@ var AuthSchema = new Schema({
         default: 'password',
         required: true
      },
+     subject: {
+        type: String,
+        required: true
+     },
      password: {
         type: String,
-        required: true,
+        required: false,
+        // required: true,
         // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
         // select: false
     },
