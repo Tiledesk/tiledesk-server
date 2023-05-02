@@ -123,11 +123,17 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.email.templates.newMessage"]!=undefined) {
     update["settings.email.templates.newMessage"] = req.body["settings.email.templates.newMessage"];
   }
+  if (req.body["settings.email.templates.newMessageFollower"]!=undefined) {
+    update["settings.email.templates.newMessageFollower"] = req.body["settings.email.templates.newMessageFollower"];
+  }
   if (req.body["settings.email.templates.ticket"]!=undefined) {
     update["settings.email.templates.ticket"] = req.body["settings.email.templates.ticket"];
   }
   if (req.body["settings.email.templates.sendTranscript"]!=undefined) {
     update["settings.email.templates.sendTranscript"] = req.body["settings.email.templates.sendTranscript"];
+  }
+  if (req.body["settings.email.templates.emailDirect"]!=undefined) {
+    update["settings.email.templates.emailDirect"] = req.body["settings.email.templates.emailDirect"];
   }
 
 
