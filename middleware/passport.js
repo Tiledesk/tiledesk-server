@@ -511,6 +511,7 @@ if (enableGoogleSignin==true) {
 
           var auth = new Auth({
             providerId: issuer,
+            email: email,
             subject: profile.id,
           });
           auth.save(function (err, authSaved) {    
