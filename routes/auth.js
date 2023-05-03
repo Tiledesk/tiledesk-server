@@ -467,7 +467,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   
   delete userJson.password;
 
-  
+
     var signOptions = {     
       issuer:  'https://tiledesk.com',       
       subject:  'user',
@@ -491,7 +491,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
   winston.debug("Google Redirect dashboard_base_url: ", dashboard_base_url);
 
-  var url = dashboard_base_url+"?token=JWT "+token;
+  var url = dashboard_base_url+"/#/?token=JWT "+token;
   winston.info("Google Redirect: "+ url);
 
   res.redirect(url);
