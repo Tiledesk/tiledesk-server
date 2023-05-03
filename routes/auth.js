@@ -465,6 +465,9 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
   var userJson = user.toObject();
   
+  delete userJson.password;
+
+  
     var signOptions = {     
       issuer:  'https://tiledesk.com',       
       subject:  'user',
