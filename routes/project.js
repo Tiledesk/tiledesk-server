@@ -46,6 +46,8 @@ router.put('/:projectid/downgradeplan', [passport.authenticate(['basic', 'jwt'],
 router.delete('/:projectid/physical', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('owner')], function (req, res) {
   winston.debug(req.body);
   // TODO delete also department, faq_kb, faq, group, label, lead, message, project_users, requests, subscription
+  
+  // TODO use findByIdAndRemove otherwise project don't contains label object
   Project.remove({ _id: req.params.projectid }, function (err, project) {
       if (err) {
           winston.error('Error deleting project ', err);
@@ -518,6 +520,8 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
       winston.warn('Project not found ');
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
+
+     //TODO REMOVE settings from project
     res.json(project);
   });
 });
@@ -614,6 +618,8 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
       project_users.sort((a, b) => (a.id_project && b.id_project && a.id_project.updatedAt > b.id_project.updatedAt) ? 1 : -1)
       project_users.reverse(); 
+
+      //TODO REMOVE settings from project
       res.json(project_users);
     });
 });

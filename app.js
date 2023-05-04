@@ -132,6 +132,7 @@ var settingDataLoader = require('./services/settingDataLoader');
 var schemaMigrationService = require('./services/schemaMigrationService');
 var RouterLogger = require('./models/routerLogger');
 var cacheEnabler = require("./services/cacheEnabler");
+const session = require('express-session');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -270,6 +271,16 @@ if (process.env.ENABLE_ACCESSLOG) {
 
 app.use(passport.initialize());
 
+// After you declare "app"
+if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_STRATEGY=="true" ) {
+  winston.info("Express Session disabled");
+} else {
+  // https://www.npmjs.com/package/express-session
+  let sessionSecret = process.env.SESSION_SECRET || "tiledesk-session-secret";
+  winston.info("Express Session Secret: " + sessionSecret);
+  app.use(session({ secret: sessionSecret}));
+  app.use(passport.session());
+}
 
 //ATTENTION. If you use AWS Api Gateway you need also to configure the cors policy https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors-console.html
 app.use(cors());

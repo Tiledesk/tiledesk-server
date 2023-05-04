@@ -452,9 +452,31 @@ function (req, res) {
 });
 
 
+// http://localhost:3000/auth/google?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fgoogle%2Fcallback%3Ffrom%3Dsignup
+
+// http://localhost:3000/auth/google?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fgoogle%2Fcallbacks
+
+// http://localhost:3000/auth/google?redirect_url=%2F%23%2Fproject%2F6452281f6d68c5f419c1c577%2Fhome
+
+
 
 // Redirect the user to the Google signin page</em> 
-router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+// router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+router.get("/google", function(req,res,next){
+  winston.info("redirect_url: "+ req.query.redirect_url );
+  req.session.redirect_url = req.query.redirect_url;
+  // req._toParam = 'Hello';
+  passport.authenticate(
+      // 'google', { scope : ["email", "profile"], state: base64url(JSON.stringify({blah: 'text'}))  } //custom redirect_url req.query.state
+      'google', { scope : ["email", "profile"] } //custom redirect_url
+      // 'google', { scope : ["email", "profile"], callbackURL: req.query.redirect_url } //custom redirect_url
+  )(req,res,next);
+});
+
+// router.get("/google/callbacks", passport.authenticate("google", { session: false }), (req, res) => {
+//   console.log("callback_signup");
+//   res.redirect("/google/callback");
+// });
 
 // Retrieve user data using the access token received</em> 
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
@@ -462,9 +484,17 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
   var user = req.user;
   winston.debug("user", user);
+  // winston.info("req._toParam: "+ req._toParam);
+  // winston.info("req.query.redirect_url: "+ req.query.redirect_url);
+  // winston.info("req.query.state: "+ req.query.state);
+  winston.info("req.session.redirect_url: "+ req.session.redirect_url);
+  
 
   var userJson = user.toObject();
   
+  delete userJson.password;
+
+
     var signOptions = {     
       issuer:  'https://tiledesk.com',       
       subject:  'user',
@@ -485,8 +515,19 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   // return the information including token as JSON
   // res.json(returnObject);
 
-  var url = process.env.EMAIL_BASEURL+"?token=JWT "+token;
-  winston.debug("url: "+ url);
+  let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
+  winston.debug("Google Redirect dashboard_base_url: ", dashboard_base_url);
+
+  let homeurl = "/#/";
+
+  if (req.session.redirect_url) {
+    homeurl = req.session.redirect_url;
+  }
+
+  var url = dashboard_base_url+homeurl+"?token=JWT "+token;
+
+
+  winston.info("Google Redirect: "+ url);
 
   res.redirect(url);
 
