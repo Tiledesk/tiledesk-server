@@ -55,6 +55,9 @@ var UserSchema = new Schema({
         index: true,
         // select: false
     }, 
+    description: {
+        type: String,
+    },
     // authType: { // update db old data
     //     type: String,
     //     index:true,

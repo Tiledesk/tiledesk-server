@@ -20,6 +20,7 @@ router.put('/', function (req, res) {
   update.firstname = req.body.firstname;
   update.lastname = req.body.lastname;
   update.attributes = req.body.attributes;
+  update.description = req.body.description;
   
   
 
@@ -75,6 +76,7 @@ router.delete('/physical', function (req, res) {
   // cancello virtualmente progetti owner
   winston.debug('delete USER - REQ BODY ', req.body);
 
+  // TODO use findByIdAndRemove otherwise user don't contains label object
   User.remove({ _id: req.user.id }, function (err, user) {
     if (err) {
       winston.error(err);
