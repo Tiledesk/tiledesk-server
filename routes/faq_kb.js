@@ -312,6 +312,10 @@ router.put('/:faq_kbid', function (req, res) {
     update.tags = req.body.tags;
   }
 
+  if (req.body.trained != undefined) {
+    update.trained = req.body.trained;
+  }
+
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
     if (err) {

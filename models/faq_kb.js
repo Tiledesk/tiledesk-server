@@ -105,6 +105,10 @@ var Faq_kbSchema = new Schema({
   publishedAt: { 
     type: Date
   },
+  trained: {
+    type: Boolean,
+    default: true
+  },
 },{
   timestamps: true
 }
