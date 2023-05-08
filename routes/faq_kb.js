@@ -15,6 +15,7 @@ var configGlobal = require('../config/global');
 const faq = require('../models/faq');
 var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -477,6 +478,90 @@ router.get('/:faq_kbid/jwt', function (req, res) {
   });
 });
 
+
+router.get('/:faq_kbid/trained', async (req, res) => {
+
+  winston.debug(req.query);
+  // //       //const changeStream = Message.watch( pipeline, { fullDocument: 'updateLookup' });
+
+
+  const space = ' ';
+  let isFinished = false;
+  let isDataSent = false; 
+
+
+  res.once('finish', () => {
+    isFinished = true;
+    winston.debug("isFinished = true;");
+  });
+
+  res.once('end', () => {
+    isFinished = true;
+    winston.debug("end = true;");
+  });
+
+  res.once('close', () => {
+    isFinished = true;
+    winston.debug("close = true;");
+  });
+
+  res.on('data', (data) => {
+    // Look for something other than our blank space to indicate that real
+    // data is now being sent back to the client.
+    if (data !== space) {
+      winston.debug("isDataSent = true;");
+      isDataSent = true;
+    }
+  });
+
+  // const fullDocumentQuery = that.cloneAsDotted("fullDocument.", query);
+  // console.log("fullDocumentQuery", JSON.stringify(fullDocumentQuery));
+
+  let fullDocumentQuery = {"fullDocument._id": new ObjectId(req.params.faq_kbid)};
+  // let fullDocumentQuery = {"fullDocument.id_project": "6453d246f1e784003a97537b"};
+  // { $match: { 'fullDocument.username': 'alice' } },
+
+  // let fullDocumentQuery = {"_id": req.params.faq_kbid};
+  
+  // const pipeline = [];
+  const pipeline = [{ $match: fullDocumentQuery }];
+  winston.debug("pipeline: "+ JSON.stringify(pipeline));
+
+  Faq_kb.watch( pipeline).
+  // Faq_kb.watch( pipeline, { fullDocument: 'required' }).
+  on('change', data => {  //The $changeStream stage is only supported on replica sets
+    winston.debug("change", data);
+    res.write(JSON.stringify(data.fullDocument));
+    res.end();
+  });
+
+
+
+  const waitAndSend = () => {
+    setTimeout(() => {
+      winston.debug("Polling isFinished " + isFinished);
+      winston.debug("Polling isDataSent " + isDataSent);
+      winston.debug("Polling headersSent " + res.headersSent);
+
+      // If the response hasn't finished and hasn't sent any data back....
+      if (!isFinished && !isDataSent) {
+        // Need to write the status code/headers if they haven't been sent yet.
+        if (!res.headersSent) {
+          //res.writeHead(202);
+          res.writeHead(200, {'Content-Type': 'application/json'})
+        }
+        res.write("ciao...");
+        // res.write(space);
+        winston.debug("Space return");
+        // Wait another 15 seconds
+        waitAndSend();
+      }
+    // }, 15000);  //15 secondi
+    }, 1500);  //15 secondi
+  };
+  waitAndSend();
+
+});
 
 // NEW - GET ALL FAQKB WITH THE PASSED PROJECT ID
 router.get('/', function (req, res) {
