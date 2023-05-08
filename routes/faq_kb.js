@@ -550,14 +550,14 @@ router.get('/:faq_kbid/trained', async (req, res) => {
           //res.writeHead(202);
           res.writeHead(200, {'Content-Type': 'application/json'})
         }
-        res.write("ciao...");
-        // res.write(space);
+        // res.write("ciao...");
+        res.write(space);
         winston.debug("Space return");
         // Wait another 15 seconds
         waitAndSend();
       }
-    // }, 15000);  //15 secondi
-    }, 1500);  //15 secondi
+    }, 15000);  //15 secondi
+    // }, 1500);  //1,5 secondi
   };
   waitAndSend();
 
