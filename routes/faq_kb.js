@@ -523,7 +523,7 @@ router.get('/:faq_kbid/trained', async (req, res) => {
   
   // const pipeline = [];
   const pipeline = [{ $match: fullDocumentQuery }];
-  winston.debug("pipeline: "+ JSON.stringify(pipeline));
+  winston.info("pipeline: "+ JSON.stringify(pipeline));
 
   Faq_kb.watch( pipeline).
   // Faq_kb.watch( pipeline, { fullDocument: 'required' }).
