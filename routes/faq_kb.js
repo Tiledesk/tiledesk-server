@@ -480,8 +480,6 @@ router.get('/:faq_kbid/jwt', function (req, res) {
 
 
 router.get('/:faq_kbid/trained', async (req, res) => {
-
-  winston.debug(req.query);
   // //       //const changeStream = Message.watch( pipeline, { fullDocument: 'updateLookup' });
 
 
@@ -492,24 +490,24 @@ router.get('/:faq_kbid/trained', async (req, res) => {
 
   res.once('finish', () => {
     isFinished = true;
-    winston.debug("isFinished = true;");
+    winston.info("isFinished = true;");
   });
 
   res.once('end', () => {
     isFinished = true;
-    winston.debug("end = true;");
+    winston.info("end = true;");
   });
 
   res.once('close', () => {
     isFinished = true;
-    winston.debug("close = true;");
+    winston.info("close = true;");
   });
 
   res.on('data', (data) => {
     // Look for something other than our blank space to indicate that real
     // data is now being sent back to the client.
     if (data !== space) {
-      winston.debug("isDataSent = true;");
+      winston.info("isDataSent = true;");
       isDataSent = true;
     }
   });
@@ -530,7 +528,7 @@ router.get('/:faq_kbid/trained', async (req, res) => {
   Faq_kb.watch( pipeline).
   // Faq_kb.watch( pipeline, { fullDocument: 'required' }).
   on('change', data => {  //The $changeStream stage is only supported on replica sets
-    winston.debug("change", data);
+    winston.info("change", data);
     res.write(JSON.stringify(data.fullDocument));
     res.end();
   });
@@ -539,9 +537,9 @@ router.get('/:faq_kbid/trained', async (req, res) => {
 
   const waitAndSend = () => {
     setTimeout(() => {
-      winston.debug("Polling isFinished " + isFinished);
-      winston.debug("Polling isDataSent " + isDataSent);
-      winston.debug("Polling headersSent " + res.headersSent);
+      winston.info("Polling isFinished " + isFinished);
+      winston.info("Polling isDataSent " + isDataSent);
+      winston.info("Polling headersSent " + res.headersSent);
 
       // If the response hasn't finished and hasn't sent any data back....
       if (!isFinished && !isDataSent) {
@@ -552,7 +550,7 @@ router.get('/:faq_kbid/trained', async (req, res) => {
         }
         // res.write("ciao...");
         res.write(space);
-        winston.debug("Space return");
+        winston.info("Space return");
         // Wait another 15 seconds
         waitAndSend();
       }
