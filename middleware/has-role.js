@@ -50,6 +50,12 @@ class RoleChecker {
               return true
             } else {
               winston.debug("isTypeAsFunction is false");
+
+              var adminEmail = process.env.ADMIN_EMAIL || "admin@tiledesk.com";
+
+              if (user && user.email && user.email === adminEmail) { //skip has role check 
+                return true;
+              }
               return false;
             }
        }
