@@ -3,12 +3,20 @@ const messageEvent = require('../event/messageEvent');
 const Faq_kb = require('../models/faq_kb');
 var winston = require('../config/winston');
 
-class BotEvent extends EventEmitter {}
+
 const cacheUtil = require("../utils/cacheUtil");
 const cacheEnabler = require("../services/cacheEnabler");
 
-const botEvent = new BotEvent();
+// class BotEvent extends EventEmitter {}
+class BotEvent extends EventEmitter {
+    constructor() {
+        super();
+        this.queueEnabled = false;
+        this.setMaxListeners(11);
+      }
+}
 
+const botEvent = new BotEvent();
 
 //TODO use request. getBotId
 function getBotFromParticipants(participants) {
@@ -111,8 +119,10 @@ messageEvent.on('message.create', function(message) {
 
 
     let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
+//TODO unselect secret. secret is unselectable by default in the model
 
         if (cacheEnabler.faq_kb) {
+            winston.debug('message.id_project+":faq_kbs:id:"+botId: '+ message.id_project+":faq_kbs:id:"+botId);  
           qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
           winston.debug('faq_kb cache enabled');
         }

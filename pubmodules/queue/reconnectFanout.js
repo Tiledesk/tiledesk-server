@@ -2,6 +2,7 @@ var amqp = require('amqplib/callback_api');
 var winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
+const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
@@ -179,6 +180,10 @@ function work(msg, cb) {
     winston.debug("reconnectfanout here topic:" + topic);
     authEvent.emit('project_user.update.queue.pubsub', JSON.parse(message_string));
   }
+  if (topic === 'faqbot_update') {
+    winston.info("reconnectfanout here topic faqbot_update:" + topic);
+    botEvent.emit('faqbot.update.queue.pubsub', JSON.parse(message_string));
+  }
   cb(true);
 //   WebSocket.cb(true);
 //   requestEvent.on(msg.KEYYYYYYY+'.ws', msg.content);
@@ -243,12 +248,24 @@ function listen() {
       publish(exchange, "project_user_update", Buffer.from(JSON.stringify(dat)));
     });
   });
+
+
+  botEvent.on('faqbot.update', function(bot) {
+    setImmediate(() => {
+      winston.debug("reconnect faqbot.update")
+      publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
+      winston.info("reconnect fan: "+ Buffer.from(JSON.stringify(bot)))
+    });
+  });
+
+
 }
 
 if (process.env.QUEUE_ENABLED === "true") {
     requestEvent.queueEnabled = true;
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true; 
+    botEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue Fanout enabled. endpint: " + url );

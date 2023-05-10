@@ -5,12 +5,14 @@ var Project = require("../models/project");
 var EventModel = require("../pubmodules/events/event");
 var Request = require("../models/request");
 var Message = require("../models/message");
+var Faq_kb = require("../models/faq_kb");
 const WebSocket = require('ws');
 var url = require('url');
 var validtoken = require('../middleware/valid-token');
 var messageEvent = require("../event/messageEvent");
 var eventEvent = require("../pubmodules/events/eventEvent");
 var requestEvent = require("../event/requestEvent");
+var botEvent = require("../event/botEvent");
 var jwt = require('jsonwebtoken');
 var config = require('../config/database'); // get db config file
 var winston = require('../config/winston');
@@ -183,6 +185,7 @@ class WebSocketServer {
                 return reject('WebSocket - Error getting  topic. Topic can t be null');
             }
             var urlSub = topic.split('/');  
+            winston.debug('urlSub: '+urlSub);
 
             if (!urlSub || (urlSub && urlSub.length==0)) { 
               winston.error('WebSocket - Error getting  topic. Topic is not properly configured');  
@@ -209,7 +212,7 @@ class WebSocketServer {
 
               if (!project) {
                 winston.warn('WebSocket project not found for projectid ' + projectId);  
-                return reject({err:'Project_user not found for projectid ' + projectId});
+                return reject({err:'project not found for projectid ' + projectId});
               }
 
               if (topic.endsWith('/messages')) {
@@ -530,9 +533,38 @@ class WebSocketServer {
                 pubSubServer.handlePublishMessageToClientId (topic, events, clientId, "CREATE");
               }});        
   
-            });
+            })
           
-          } else {
+          } else if (topic.indexOf('/bots/') > -1) {        
+                
+              // var puId = urlSub[3];
+              // winston.info('puId: '+puId);
+    
+              winston.debug('urlSub: '+urlSub);
+
+              var botId = urlSub[3];
+              winston.debug('botId: '+botId);
+              
+              var query = { _id: botId, id_project: projectId };
+            
+              winston.debug(' query: ',query);
+    
+              Faq_kb.findOne(query)                          
+              .exec(function(err, bot) {             
+                if (err) {
+                   winston.error('WebSocket error getting  bots', err);  
+                   return reject(err);
+                }            
+          
+    
+                return resolve({publishFunction:function() {
+                // handlePublishMessageToClientId (topic, message, clientId, method) {
+                  pubSubServer.handlePublishMessageToClientId (topic, bot, clientId, "CREATE");
+                }});        
+    
+              });
+            
+            } else {
   
               //request/id
                 
@@ -783,6 +815,41 @@ class WebSocketServer {
         pubSubServer.handlePublishMessage ('/'+event.id_project+'/events/'+event.project_user._id, event, undefined, true, "CREATE");
       });
       });
+
+
+
+
+
+
+
+
+      var botUpdateKey = 'faqbot.update';
+      if (botEvent.queueEnabled) {
+        botUpdateKey = 'faqbot.update.queue.pubsub';
+      }
+ 
+      winston.info('botUpdateKey: ' + botUpdateKey);
+      botEvent.on(botUpdateKey, async function(bot) {
+        setImmediate(async () => {
+
+        // TODO setImmediate(() => {        
+
+          let botJSON = Object.assign({}, bot);
+
+          if (bot.toObject) {
+            botJSON = bot.toObject();
+          }      
+
+          let topic = '/'+bot.id_project+'/bots/'+bot._id;
+          winston.info('botEvent websocket server: '+botUpdateKey + " on topic " + topic , botJSON);       
+
+          
+          pubSubServer.handlePublishMessage (topic, botJSON, undefined, true, "UPDATE");
+        });
+      });
+    
+
+
 
 
     // https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js

@@ -2,6 +2,7 @@ var amqp = require('amqplib/callback_api');
 var winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
+const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
 // https://elements.heroku.com/addons/cloudamqp
 // https://gist.github.com/carlhoerberg/006b01ac17a0a94859ba#file-reconnect-js
@@ -149,6 +150,13 @@ function startWorker() {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: project_user_update");
           winston.info("Data queue", oka)
         });
+
+        ch.bindQueue(_ok.queue, exchange, "faqbot_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: faqbot_update");
+          winston.info("Data queue", oka)
+        });
+
+
         ch.consume("jobs", processMsg, { noAck: false });
         winston.info("Worker is started");
       });
@@ -221,6 +229,12 @@ function work(msg, cb) {
     winston.debug("reconnect here topic:" + topic);
     // requestEvent.emit('request.create.queue', msg.content);
     authEvent.emit('project_user.update.queue', JSON.parse(message_string));
+  }
+
+  if (topic === 'faqbot_update') {
+    winston.info("reconnect here topic faqbot_update:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
   }
   cb(true);
 //   WebSocket.cb(true);
@@ -318,12 +332,22 @@ function listen() {
       });
     });
 
+
+    botEvent.on('faqbot.update', function(bot) {
+      setImmediate(() => {
+        winston.debug("reconnect faqbot.update")
+        publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
+        winston.info("reconnect: "+ Buffer.from(JSON.stringify(bot)))
+      });
+    });
+
 }
 
 if (process.env.QUEUE_ENABLED === "true") {
     requestEvent.queueEnabled = true;
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true;
+    botEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpint: " + url );
