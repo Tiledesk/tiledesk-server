@@ -36,7 +36,7 @@ class TrainingService {
                 if (err) {
                     winston.error("[Training] find all error: ", err);
                 } else {
-
+                      
                     let json = {
                         "configuration": {
                             "language": faq_kb.language,
@@ -46,7 +46,8 @@ class TrainingService {
                         "nlu": [],
 
                         // curl -v -X PUT -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin -d '{"trained":false}'  http://localhost:3000/63ed15febb8a5eb3b247fdfd/bots/64551b3422cdfb93ddb1b784
-                        "webhook_url":  process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id+"/training"
+                        "webhook_url":  process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id+"/training",
+                        "token" : process.env.TRAINING_BOT_JWT_TOKEN
                     }
 
                     faqs.forEach((f) => {
