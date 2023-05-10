@@ -3,6 +3,7 @@ const Faq_kb = require('../models/faq_kb');
 const Faq = require('../models/faq');
 var winston = require('../config/winston');
 const axios = require("axios").default;
+var configGlobal = require('../config/global');
 
 
 let chatbot_training_api_url = "http://34.65.210.38/model/train"
@@ -42,7 +43,10 @@ class TrainingService {
                             "pipeline":["lstm"]
                         },
                         "model": faq_kb._id,
-                        "nlu": []
+                        "nlu": [],
+
+                        // curl -v -X PUT -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin -d '{"trained":false}'  http://localhost:3000/63ed15febb8a5eb3b247fdfd/bots/64551b3422cdfb93ddb1b784
+                        "webhook_url":  process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id
                     }
 
                     faqs.forEach((f) => {
