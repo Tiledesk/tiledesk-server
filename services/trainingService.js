@@ -46,7 +46,7 @@ class TrainingService {
                         "nlu": [],
 
                         // curl -v -X PUT -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin -d '{"trained":false}'  http://localhost:3000/63ed15febb8a5eb3b247fdfd/bots/64551b3422cdfb93ddb1b784
-                        "webhook_url":  process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id
+                        "webhook_url":  process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id+"/training"
                     }
 
                     faqs.forEach((f) => {
