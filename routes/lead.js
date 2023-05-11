@@ -149,6 +149,56 @@ router.patch('/:leadid/attributes',  function (req, res) {
 
 
 
+router.patch('/:leadid/properties',  function (req, res) {
+  var data = req.body;
+
+  // TODO use service method
+
+  Lead.findById(req.params.leadid, function (err, lead) {
+    if (err) {
+      winston.error('--- > ERROR ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+     if (!lead) {
+        return res.status(404).send({ success: false, msg: 'Object not found.' });
+      }
+      
+      if (!lead.properties) {
+        winston.debug("empty properties")
+        lead.properties = {};
+      }
+
+      winston.debug(" lead properties", lead.properties)
+        
+        Object.keys(data).forEach(function(key) {
+          var val = data[key];
+          winston.debug("data attributes "+key+" " +val)
+          lead.properties[key] = val;
+        });     
+        
+        winston.debug(" lead properties", lead.properties)
+
+        // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+        lead.markModified('properties');
+
+          //cacheinvalidation
+          lead.save(function (err, savedLead) {
+          if (err) {
+            winston.error("error saving lead properties",err)
+            return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          }
+          winston.verbose(" saved lead properties",savedLead.toObject())
+          leadEvent.emit('lead.update', savedLead);
+
+            res.json(savedLead);
+        });
+  });
+  
+});
+
+
+
 // router.put('/:leadid', function (req, res) {
 //   winston.debug(req.body);
 //   var update = {};
@@ -199,6 +249,7 @@ router.delete('/:leadid/physical', function (req, res) {
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
   
+   // TODO use findByIdAndRemove otherwise lead don't contains label object
   Lead.remove({ _id: req.params.leadid }, function (err, lead) {
     if (err) {
       winston.error('--- > ERROR ', err);

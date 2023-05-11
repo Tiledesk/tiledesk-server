@@ -316,7 +316,10 @@ router.put('/:faq_kbid', function (req, res) {
   if (req.body.trained != undefined) {
     update.trained = req.body.trained;
   }
-
+  // update._id = req.params.faq_kbid;
+  
+  winston.debug("update", update);
+  // "$set": req.params.faq_kbid
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
     if (err) {
@@ -327,6 +330,14 @@ router.put('/:faq_kbid', function (req, res) {
     res.json(updatedFaq_kb);
   });
 });
+
+
+
+
+
+
+
+
 
 
 router.patch('/:faq_kbid/attributes', function (req, res) {   //TODO add cache_bot_here
@@ -478,88 +489,6 @@ router.get('/:faq_kbid/jwt', function (req, res) {
   });
 });
 
-
-router.get('/:faq_kbid/trained', async (req, res) => {
-  // //       //const changeStream = Message.watch( pipeline, { fullDocument: 'updateLookup' });
-
-
-  const space = ' ';
-  let isFinished = false;
-  let isDataSent = false; 
-
-
-  res.once('finish', () => {
-    isFinished = true;
-    winston.info("isFinished = true;");
-  });
-
-  res.once('end', () => {
-    isFinished = true;
-    winston.info("end = true;");
-  });
-
-  res.once('close', () => {
-    isFinished = true;
-    winston.info("close = true;");
-  });
-
-  res.on('data', (data) => {
-    // Look for something other than our blank space to indicate that real
-    // data is now being sent back to the client.
-    if (data !== space) {
-      winston.info("isDataSent = true;");
-      isDataSent = true;
-    }
-  });
-
-  // const fullDocumentQuery = that.cloneAsDotted("fullDocument.", query);
-  // console.log("fullDocumentQuery", JSON.stringify(fullDocumentQuery));
-
-  let fullDocumentQuery = {"fullDocument._id": new ObjectId(req.params.faq_kbid)};
-  // let fullDocumentQuery = {"fullDocument.id_project": "6453d246f1e784003a97537b"};
-  // { $match: { 'fullDocument.username': 'alice' } },
-
-  // let fullDocumentQuery = {"_id": req.params.faq_kbid};
-  
-  // const pipeline = [];
-  const pipeline = [{ $match: fullDocumentQuery }];
-  winston.info("pipeline: "+ JSON.stringify(pipeline));
-
-  Faq_kb.watch( pipeline).
-  // Faq_kb.watch( pipeline, { fullDocument: 'required' }).
-  on('change', data => {  //The $changeStream stage is only supported on replica sets
-    winston.info("change", data);
-    res.write(JSON.stringify(data.fullDocument));
-    res.end();
-  });
-
-
-
-  const waitAndSend = () => {
-    setTimeout(() => {
-      winston.info("Polling isFinished " + isFinished);
-      winston.info("Polling isDataSent " + isDataSent);
-      winston.info("Polling headersSent " + res.headersSent);
-
-      // If the response hasn't finished and hasn't sent any data back....
-      if (!isFinished && !isDataSent) {
-        // Need to write the status code/headers if they haven't been sent yet.
-        if (!res.headersSent) {
-          //res.writeHead(202);
-          res.writeHead(200, {'Content-Type': 'application/json'})
-        }
-        // res.write("ciao...");
-        res.write(space);
-        winston.info("Space return");
-        // Wait another 15 seconds
-        waitAndSend();
-      }
-    }, 15000);  //15 secondi
-    // }, 1500);  //1,5 secondi
-  };
-  waitAndSend();
-
-});
 
 // NEW - GET ALL FAQKB WITH THE PASSED PROJECT ID
 router.get('/', function (req, res) {
@@ -1012,6 +941,32 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
   })
 
 })
+
+
+
+
+router.post('/:faq_kbid/training', function (req, res) {
+
+  winston.debug(req.body);
+
+  var update = {};
+  update.trained = true;
+  // update._id = req.params.faq_kbid;
+  
+  winston.debug("update", update);
+  // "$set": req.params.faq_kbid
+
+  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    botEvent.emit('faqbot.update', updatedFaq_kb);
+    res.json(updatedFaq_kb);
+  });
+});
+
+
 
 
 module.exports = router;
