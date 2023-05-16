@@ -316,6 +316,18 @@ router.put('/:faq_kbid', function (req, res) {
   if (req.body.trained != undefined) {
     update.trained = req.body.trained;
   }
+
+  if (req.body.short_description != undefined) {
+    update.short_description = req.body.short_description
+  }
+
+  if (req.body.title != undefined) {
+    update.title = req.body.title
+  }
+
+  if (req.body.certifiedTags != undefined) {
+    update.certifiedTags = req.body.certifiedTags
+  }
   // update._id = req.params.faq_kbid;
   
   winston.debug("update", update);

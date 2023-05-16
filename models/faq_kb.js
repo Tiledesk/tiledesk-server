@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
 var winston = require('../config/winston');
+const { stringify } = require('uuid');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
@@ -109,6 +110,18 @@ var Faq_kbSchema = new Schema({
     type: Boolean,
     default: true
   },
+  short_description: {
+    type: String,
+    required: false
+  },
+  title: {
+    type: String,
+    required: false
+  },
+  certifiedTags: {
+    type: Array,
+    required: false
+  }
 },{
   timestamps: true
 }
