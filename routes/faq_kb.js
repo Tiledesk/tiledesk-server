@@ -343,7 +343,33 @@ router.put('/:faq_kbid', function (req, res) {
   });
 });
 
+router.put('/:faq_kbid/language/:language', (req, res) => {
+  
+  winston.debug("update language: ", req.params);
 
+  let update = {};
+  if (req.params.language != undefined) {
+    update.language = req.params.language;
+  }
+
+  winston.debug("update", update);
+  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true }, (err, updatedFaq_kb) => {
+    if (err) {
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    Faq.updateMany({ id_faq_kb: req.params.faq_kbid }, update, (err, result) => {
+      if (err) {
+        botEvent.emit('faqbot.update', updatedFaq_kb);
+        return res.status(500).send({ success: false, msg: 'Error updating multiple object.' });
+      }
+      console.log("updateMany intents result: ", result)
+      return res.status(200).send(updatedFaq_kb)
+    })
+
+  })
+
+})
 
 
 

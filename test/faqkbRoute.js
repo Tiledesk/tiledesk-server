@@ -116,6 +116,75 @@ describe('FaqKBRoute', () => {
             })
         })
 
+        // mocha test/faqkbRoute.js  --grep 'language'
+        it('update chatbot and intents language', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", language: "en" })
+                        .end((err, res) => {
+                            if (log) {
+                                console.log("res.body", res.body);
+                            }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    if (log) {
+                                        console.log("faq_list: ", res.body);
+                                    }
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+
+
+                                    chai.request(server)
+                                        .put('/' + savedProject._id + '/faq_kb/' + id_faq_kb + '/language/it')
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (log) {
+                                                console.log("res.body: ", res.body);
+                                            }
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.name).to.equal("testbot");
+                                            expect(res.body.language).to.equal("it");
+
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    if (log) {
+                                                        console.log("faq_list: ", res.body);
+                                                    }
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.an('array').that.is.not.empty;
+                                                    
+                                                    done();
+                                                })
+                                                
+                                        })
+
+                                })
+
+
+
+                        });
+                })
+            })
+        })
+
 
         it('fork chatbot (private)', (done) => {
 
@@ -299,7 +368,7 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank "})
+                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
                         .end((err, res) => {
                             if (log) {
                                 console.log("res.body: ", res.body);
