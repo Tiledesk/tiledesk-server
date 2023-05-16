@@ -181,7 +181,7 @@ function work(msg, cb) {
     authEvent.emit('project_user.update.queue.pubsub', JSON.parse(message_string));
   }
   if (topic === 'faqbot_update') {
-    winston.info("reconnectfanout here topic faqbot_update:" + topic);
+    winston.debug("reconnectfanout here topic faqbot_update:" + topic);
     botEvent.emit('faqbot.update.queue.pubsub', JSON.parse(message_string));
   }
   cb(true);
@@ -254,7 +254,7 @@ function listen() {
     setImmediate(() => {
       winston.debug("reconnect faqbot.update")
       publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
-      winston.info("reconnect fan: "+ Buffer.from(JSON.stringify(bot)))
+      winston.debug("reconnect fan: "+ Buffer.from(JSON.stringify(bot)))
     });
   });
 
