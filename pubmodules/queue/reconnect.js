@@ -337,7 +337,7 @@ function listen() {
       setImmediate(() => {
         winston.debug("reconnect faqbot.update")
         publish(exchange, "faqbot_update", Buffer.from(JSON.stringify(bot)));
-        winston.info("reconnect: "+ Buffer.from(JSON.stringify(bot)))
+        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(bot)))
       });
     });
 
