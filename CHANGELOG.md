@@ -1,11 +1,73 @@
 
 
-💥 TILEDESK SERVER v2.3.77 💥
+💥 TILEDESK SERVER v2.4.13 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.4.13) 
 
 
+# 2.4.13
+- "@tiledesk/tiledesk-tybot-connector": "^0.1.79"
+
+# 2.4.12
+- logfix
+- givanni fix
+
+# 2.4.11
+- whatsapp connector aggiornata alla 0.1.48
+- aggiunti campi title, certifiedTags e short_description nel modello faq_kb
+- gestiti i campi title, certifiedTags e short_description in update faq_kb
+
+# 2.4.10
+- email template fix
+
+# 2.4.9
+- added trained field to bot entity
+- added training endpoint
+- skip has role verification for admin@td user
+- bot websocket realtime endpoint
+- added properties to lead model and patch endpoint
+- @tiledesk/tiledesk-whatsapp-connector 0.1.46
+
+# 2.4.8
+- added webp image
+- added description to user entity
+
+# 2.4.7
+
+# 2.4.6
+- Added forcing message to bot.calling trigger action
+
+# 2.4.5
+- Custom subject for direct email. Also supported with trigger subject configuration (from DB). See Custom OCF trigger Open Ticket email
+
+# 2.4.3
+- tiledesk-ent/tiledesk-server-payments: 1.1.12 with node 16.20
+# 2.4.2
+- tiledesk-whatsapp-connector to 0.1.45
+- bot.calling trigger added
+- Endpoint to generate a jwt token for a chatbot
+- tiledesk-ent/tiledesk-server-payments: 1.1.11 with node 16
+
+# 2.4.1
+- tiledesk/tiledesk-tybot-connector": "^0.1.77
+- node 16 support for package.json and dockers files
+
+# 2.3.132
+- Added channel name to message attributes for chat21 engine
+
+# 2.3.131
+- update tiledesk-whatsapp-connector to 0.1.44
+- update tiledesk-messenger-connector to 0.1.9
+
+# 2.3.130
+- cache invalidation for docker image
+
+# 2.3.129
+- ocf email fix
+
+# 2.3.128
+- email subject customization on project settings
 
 # 2.3.127
 - Added Google OAuth Strategy
