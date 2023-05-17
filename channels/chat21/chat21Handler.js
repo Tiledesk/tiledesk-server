@@ -323,6 +323,9 @@ class Chat21Handler {
                             if (message.request && message.request.subject ) {
                                 recipient_fullname = message.request.subject;
                             }
+                            if (message.request && message.request.channel  && message.request.channel.name ) {
+                                attributes['request_channel'] = message.request.channel.name;
+                            }
 
                             /*
                             const parsedReply = tiledeskUtil.parseReply(message.text);
