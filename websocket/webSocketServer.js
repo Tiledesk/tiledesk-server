@@ -828,7 +828,7 @@ class WebSocketServer {
         botUpdateKey = 'faqbot.update.queue.pubsub';
       }
  
-      winston.info('botUpdateKey: ' + botUpdateKey);
+      winston.debug('botUpdateKey: ' + botUpdateKey);
       botEvent.on(botUpdateKey, async function(bot) {
         setImmediate(async () => {
 
@@ -841,7 +841,7 @@ class WebSocketServer {
           }      
 
           let topic = '/'+bot.id_project+'/bots/'+bot._id;
-          winston.info('botEvent websocket server: '+botUpdateKey + " on topic " + topic , botJSON);       
+          winston.debug('botEvent websocket server: '+botUpdateKey + " on topic " + topic , botJSON);       
 
           
           pubSubServer.handlePublishMessage (topic, botJSON, undefined, true, "UPDATE");
