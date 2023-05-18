@@ -15,6 +15,20 @@ var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // attento devi aggiornare configMap di PRE E PROD
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
+var durable = false;
+if (process.env.ENABLE_DURABLE_QUEUE == true || process.env.ENABLE_DURABLE_QUEUE == "true") {
+  durable = true;
+}
+winston.info("Durable queue: " + durable);
+
+var persistent = false;
+if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT_QUEUE == "true") {
+  persistent = true;
+}
+winston.info("Persistent queue: " + persistent);
+
+
+
 var exchange = 'amq.topic';
 
 function start() {
@@ -83,8 +97,8 @@ function startPublisher() {
 // method to publish a message, will queue messages internally if the connection is down and resend later
 function publish(exchange, routingKey, content) {
   try {
-    pubChannel.publish(exchange, routingKey, content, {},
-    // pubChannel.publish(exchange, routingKey, content, { persistent: true },
+    pubChannel.publish(exchange, routingKey, content, { persistent: persistent },
+      // pubChannel.publish(exchange, routingKey, content, { persistent: true },
 
                        function(err, ok) {
                          if (err) {
@@ -112,9 +126,12 @@ function startWorker() {
       });
       ch.prefetch(10);//leggila da env
       ch.assertExchange(exchange, 'topic', {
-        durable: true
+        durable: durable
+        // durable: true
       });
-      ch.assertQueue("jobs", { durable: true }, function(err, _ok) {
+
+      ch.assertQueue("jobs", { durable: durable }, function(err, _ok) {
+      // ch.assertQueue("jobs", { durable: true }, function(err, _ok) {
         if (closeOnErr(err)) return;
         ch.bindQueue(_ok.queue, exchange, "request_create", {}, function(err3, oka) {
             winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_create");

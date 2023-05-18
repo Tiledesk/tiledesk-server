@@ -268,6 +268,6 @@ if (process.env.QUEUE_ENABLED === "true") {
     botEvent.queueEnabled = true;
     listen();
     start();
-    winston.info("Queue Fanout enabled. endpint: " + url );
+    winston.info("Queue Fanout enabled. endpoint: " + url );
 } 
 
