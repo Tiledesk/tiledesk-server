@@ -251,7 +251,7 @@ function work(msg, cb) {
   }
 
   if (topic === 'faqbot_update') {
-    winston.info("reconnect here topic faqbot_update:" + topic); 
+    winston.debug("reconnect here topic faqbot_update:" + topic); 
     // requestEvent.emit('request.update.queue',  msg.content);
     botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
   }
