@@ -305,7 +305,8 @@ router.post('/', function (req, res) {
                 
                     // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-                      winston.info("before updateWaitingTimeByRequestId*******");
+                      winston.info("before updateWaitingTimeByRequestId*******",request.participants, message.sender);
+                      winston.info("updateWaitingTimeByRequestId******* message: "+ message.sender);
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.info("updateWaitingTimeByRequestId*******");
