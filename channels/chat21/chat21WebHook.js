@@ -91,6 +91,8 @@ router.post('/', function (req, res) {
             return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
           }
 
+          winston.debug('request cache simple 1', request);
+
           if (!request) { //the request doen't exists create it
 
                 winston.debug("request not exists with request_id: " + message.recipient);
@@ -305,11 +307,11 @@ router.post('/', function (req, res) {
                 
                     // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-                      winston.info("before updateWaitingTimeByRequestId*******",request.participants, message.sender);
-                      winston.info("updateWaitingTimeByRequestId******* message: "+ message.sender);
+                      winston.debug("before updateWaitingTimeByRequestId*******",request.participants, message.sender);
+                      winston.debug("updateWaitingTimeByRequestId******* message: "+ message.sender);
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
-                        winston.info("updateWaitingTimeByRequestId*******");
+                        winston.debug("updateWaitingTimeByRequestId*******");
                         return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, false).then(function(upRequest) {
                           return res.json(upRequest);
                         });
