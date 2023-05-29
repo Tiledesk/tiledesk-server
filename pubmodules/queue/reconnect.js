@@ -27,7 +27,8 @@ if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT
 
 var exchange = process.env.QUEUE_EXCHANGE_TOPIC || 'amq.topic';
 
-winston.info("Durable queue: " + durable + " Persistent queue: " + persistent + " Exchange topic: " + exchange);
+var queueName = process.env.QUEUE_NAME || 'jobs';
+winston.info("Durable queue: " + durable + " Persistent queue: " + persistent + " Exchange topic: " + exchange+ " Queue name: " + queueName);
 
 
 function start() {
@@ -129,7 +130,7 @@ function startWorker() {
         // durable: true
       });
 
-      ch.assertQueue("jobs", { durable: durable }, function(err, _ok) {
+      ch.assertQueue(queueName, { durable: durable }, function(err, _ok) {
       // ch.assertQueue("jobs", { durable: true }, function(err, _ok) {
         if (closeOnErr(err)) return;
         ch.bindQueue(_ok.queue, exchange, "request_create", {}, function(err3, oka) {
@@ -175,7 +176,7 @@ function startWorker() {
         });
 
 
-        ch.consume("jobs", processMsg, { noAck: false });
+        ch.consume(queueName, processMsg, { noAck: false });
         winston.info("Worker is started");
       });
   
