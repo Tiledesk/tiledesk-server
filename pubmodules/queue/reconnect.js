@@ -19,17 +19,16 @@ var durable = false;
 if (process.env.ENABLE_DURABLE_QUEUE == true || process.env.ENABLE_DURABLE_QUEUE == "true") {
   durable = true;
 }
-winston.info("Durable queue: " + durable);
 
 var persistent = false;
 if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT_QUEUE == "true") {
   persistent = true;
 }
-winston.info("Persistent queue: " + persistent);
 
+var exchange = process.env.QUEUE_EXCHANGE_TOPIC || 'amq.topic';
 
+winston.info("Durable queue: " + durable + " Persistent queue: " + persistent + " Exchange topic: " + exchange);
 
-var exchange = 'amq.topic';
 
 function start() {
   amqp.connect(url, function(err, conn) {
