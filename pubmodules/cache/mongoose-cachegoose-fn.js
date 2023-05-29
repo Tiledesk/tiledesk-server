@@ -286,6 +286,32 @@
         })
     });
 
+    function invalidatRequestSimple(client, project_id, rid, request_id) {
+        var key = project_id+":requests:id:"+rid+":simple";
+        winston.verbose("Deleting cache for widgets with key: " + key);
+        client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for invalidatRequestSimple",reply);
+            winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
+        });   
+
+        key = "requests:request_id:"+request_id+":simple";  //without project for chat21 webhook
+        winston.verbose("Creating cache for request.create.simple for invalidatRequestSimple without project with key : " + key);
+        client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for invalidatRequestSimple",reply);
+            winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
+        });   
+
+        key = project_id+":requests:request_id:"+request_id+":simple";
+        winston.verbose("Creating cache for request.create.simple for invalidatRequestSimple with key: " + key);
+        client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for invalidatRequestSimple",reply);
+            winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
+        });   
+
+
+    }
+
+
     requestEvent.on("request.create", function(request) {
         setImmediate(() => {
             var key = request.id_project+":requests:id:"+request.id;
@@ -310,6 +336,7 @@
                 winston.debug("Deleted cache for request.create",reply);
                 winston.verbose("Deleted cache for request.create",{err:err});
             });   
+
         });
     });
 
@@ -338,6 +365,9 @@
                 winston.debug("Deleted cache for request.update",reply);
                 winston.verbose("Deleted cache for request.update",{err:err});
             });   
+
+            invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
+
         });
     });
 
@@ -365,6 +395,9 @@
                 winston.debug("Deleted cache for request.close",reply);
                 winston.verbose("Deleted cache for request.close",{err:err});
             });   
+
+            invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
+
         });
     });
 
@@ -727,7 +760,7 @@
     }
 
     function invalidateWidgets(client, project_id) {
-        key = project_id+":widgets";
+        let key = project_id+":widgets";
         winston.verbose("Deleting cache for widgets with key: " + key);
         client.del(key, function (err, reply) {
             winston.debug("Deleted cache for widgets",reply);
