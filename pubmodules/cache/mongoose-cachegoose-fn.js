@@ -18,6 +18,16 @@
  var RoleConstants = require("../../models/roleConstants");
 
  
+ function del(client, key, callback) {
+    winston.debug("here1")
+    client.del(key).then(function(result) {
+        winston.debug("here2")
+        return callback(null, result);
+    }).catch(function(error) {
+        winston.debug("here3")
+        return callback(error);
+    });
+ }
 
  function listen(client) {
 
@@ -70,7 +80,9 @@
         setImmediate(() => {
             var key = "projects:id:"+project.id;
             winston.verbose("Deleting cache for project.delete with key: " + key);
-            client.del(key, (err, reply) => {
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, (err, reply) => {
                 winston.debug("Deleted cache for project.delete",reply);
                 winston.verbose("Deleted cache for project.delete",{err:err});
             });
@@ -239,7 +251,9 @@
 
             var key = "users:id:"+user.id;
             winston.verbose("Deleting cache for user.delete with key: " + key);
-            client.del(key, (err, reply) => {
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, (err, reply) => {
                 winston.debug("Deleted cache for user.delete",reply);
                 winston.verbose("Deleted cache for user.delete",{err:err});
             });
@@ -289,21 +303,27 @@
     function invalidatRequestSimple(client, project_id, rid, request_id) {
         var key = project_id+":requests:id:"+rid+":simple";
         winston.verbose("Deleting cache for widgets with key: " + key);
-        client.del(key, function (err, reply) {
+        // found del
+        del(client._cache, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for invalidatRequestSimple",reply);
             winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
         });   
 
         key = "requests:request_id:"+request_id+":simple";  //without project for chat21 webhook
         winston.verbose("Creating cache for request.create.simple for invalidatRequestSimple without project with key : " + key);
-        client.del(key, function (err, reply) {
+        // found del
+        del(client._cache, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for invalidatRequestSimple",reply);
             winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
         });   
 
         key = project_id+":requests:request_id:"+request_id+":simple";
         winston.verbose("Creating cache for request.create.simple for invalidatRequestSimple with key: " + key);
-        client.del(key, function (err, reply) {
+        // found del
+        del(client._cache, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for invalidatRequestSimple",reply);
             winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
         });   
@@ -455,7 +475,10 @@
 
             key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id+":secret";
             winston.verbose("Deleting cache for faq_kb.update secret with key: " + key);
-            client.del(key, function (err, reply) {  //tested
+            // found del
+            // winston.info("quiqui", client._cache);
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, function (err, reply) {  //tested
                 winston.debug("Deleted cache for faq_kb.update secret",reply);
                 winston.verbose("Deleted cache for faq_kb.update secret",{err:err});
             });   
@@ -463,7 +486,9 @@
             // without project for tilebot
             key = "faq_kbs:id:"+faq_kb._id;
             winston.verbose("Deleting cache for faq_kb.update without project for tilebot with key: " + key);
-            client.del(key, function (err, reply) {  
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, function (err, reply) {  
                 winston.debug("Deleted cache for faq_kb.update  without project for tilebot ",reply);
                 winston.verbose("Deleted cache for faq_kb.update  without project for tilebot ",{err:err});
             });   
@@ -479,7 +504,9 @@
         setImmediate(() => {
             var key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id;
             winston.verbose("Deleting cache for faqbot.delete with key: " + key);
-            client.del(key, (err, reply) => {
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, (err, reply) => {
                 winston.debug("Deleted cache for faqbot.delete",reply);
                 winston.verbose("Deleted cache for faqbot.delete",{err:err});
             });
@@ -487,7 +514,9 @@
 
             key = faq_kb.id_project+":faq_kbs:id:"+faq_kb._id+":secret";
             winston.verbose("Deleting cache for faq_kb.delete secret with key: " + key);
-            client.del(key, function (err, reply) {
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, function (err, reply) {
                 winston.debug("Deleted cache for faq_kb.delete secret",reply);
                 winston.verbose("Deleted cache for faq_kb.delete secret",{err:err});
             });  
@@ -496,7 +525,9 @@
             // without project for tilebot
             key = "faq_kbs:id:"+faq_kb._id;
             winston.verbose("Deleting cache for faq_kb.update without project for tilebot with key: " + key);
-            client.del(key, function (err, reply) {  
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, function (err, reply) {  
                 winston.debug("Deleted cache for faq_kb.update  without project for tilebot ",reply);
                 winston.verbose("Deleted cache for faq_kb.update  without project for tilebot ",{err:err});
             });   
@@ -592,7 +623,9 @@
         setImmediate(() => {
             var key = department.id_project+":departments:id:"+department._id;
             winston.verbose("Deleting cache for department.delete with key: " + key);
-            client.del(key, (err, reply) => {
+            // found del
+            del(client._cache, key, function (err, reply) {  //tested
+            // client.del(key, (err, reply) => {
                 winston.debug("Deleted cache for department.delete",reply);
                 winston.verbose("Deleted cache for department.delete",{err:err});
             });
@@ -679,7 +712,9 @@
                 // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";        
                 winston.verbose("Deleting cache for subscription.create with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for subscription.create",reply);
                     winston.verbose("Deleted cache for subscription.create",{err:err});
                 });   
@@ -691,7 +726,9 @@
                 // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";        
                 winston.verbose("Deleting cache for subscription.update with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for subscription.update",reply);
                     winston.verbose("Deleted cache for subscription.update",{err:err});
                 });   
@@ -703,7 +740,9 @@
                 // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";         
                 winston.verbose("Deleting cache for subscription.delete with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for subscription.delete",reply);
                     winston.verbose("Deleted cache for subscription.delete",{err:err});
                 });   
@@ -719,7 +758,9 @@
                 // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":triggers:*";        
                 winston.verbose("Deleting cache for trigger.create with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for trigger.create",reply);
                     winston.verbose("Deleted cache for trigger.create",{err:err});
                 });   
@@ -731,7 +772,9 @@
                 // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":triggers:*";        
                 winston.verbose("Deleting cache for trigger.update with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for trigger.update",reply);
                     winston.verbose("Deleted cache for trigger.update",{err:err});
                 });   
@@ -743,7 +786,9 @@
                 // elimina delete con * e fai cancellazione puntuale  
                 var key =trigger.id_project+":triggers:*";         
                 winston.verbose("Deleting cache for trigger.delete with key: " + key);
-                client.del(key, function (err, reply) {
+                // found del
+                del(client._cache, key, function (err, reply) {  //tested
+                // client.del(key, function (err, reply) {
                     winston.debug("Deleted cache for trigger.delete",reply);
                     winston.verbose("Deleted cache for trigger.delete",{err:err});
                 });   
@@ -756,7 +801,9 @@
     function invalidateFaq(client, faq) {
         key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
         winston.verbose("Deleting cache for faq with key: " + key);
-        client.del(key, function (err, reply) {
+        // found del
+        del(client._cache, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for faq",reply);
             winston.verbose("Deleted cache for faq",{err:err});
         });   
@@ -767,7 +814,9 @@
     function invalidateWidgets(client, project_id) {
         let key = project_id+":widgets";
         winston.verbose("Deleting cache for widgets with key: " + key);
-        client.del(key, function (err, reply) {
+        // found del
+        del(client._cache, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for widgets",reply);
             winston.verbose("Deleted cache for widgets",{err:err});
         });   
