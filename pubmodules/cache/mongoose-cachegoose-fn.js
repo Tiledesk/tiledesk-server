@@ -31,13 +31,13 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = "projects:query:*";
-            winston.verbose("Deleting cache for project.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.verbose("Deleted cache for project.create",{err:err});
-                winston.debug("Deleted cache for project.create",reply);
+            // key = "projects:query:*";
+            // winston.verbose("Deleting cache for project.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.verbose("Deleted cache for project.create",{err:err});
+            //     winston.debug("Deleted cache for project.create",reply);
 
-            }); 
+            // }); 
         });  
     });
 
@@ -52,12 +52,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = "projects:query:*";
-            winston.verbose("Deleting cache for project.update with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for project.update",reply);
-                winston.verbose("Deleted cache for project.update",{err:err});
-            });   
+            // key = "projects:query:*";
+            // winston.verbose("Deleting cache for project.update with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for project.update",reply);
+            //     winston.verbose("Deleted cache for project.update",{err:err});
+            // });   
 
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for project.update");
@@ -76,12 +76,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = "projects:query:*";
-            winston.verbose("Deleting cache for project.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for project.create",reply);
-                winston.verbose("Deleted cache for project.create",{err:err});
-            });   
+            // key = "projects:query:*";
+            // winston.verbose("Deleting cache for project.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for project.create",reply);
+            //     winston.verbose("Deleted cache for project.create",{err:err});
+            // });   
         });
 
         // TODO invalidate widgets here
@@ -100,12 +100,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = "projects:query:*";
-            winston.verbose("Deleting cache for project.downgrade with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for project.downgrade",reply);
-                winston.verbose("Deleted cache for project.downgrade",{err:err});
-            }); 
+            // key = "projects:query:*";
+            // winston.verbose("Deleting cache for project.downgrade with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for project.downgrade",reply);
+            //     winston.verbose("Deleted cache for project.downgrade",{err:err});
+            // }); 
             
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for project.downgrade");
@@ -330,12 +330,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = request.id_project+":requests:query:*";
-            winston.verbose("Deleting cache for request.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for request.create",reply);
-                winston.verbose("Deleted cache for request.create",{err:err});
-            });   
+            // key = request.id_project+":requests:query:*";
+            // winston.verbose("Deleting cache for request.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for request.create",reply);
+            //     winston.verbose("Deleted cache for request.create",{err:err});
+            // });   
 
         });
     });
@@ -359,12 +359,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = request.id_project+":requests:query:*";
-            winston.verbose("Deleting cache for request.update with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for request.update",reply);
-                winston.verbose("Deleted cache for request.update",{err:err});
-            });   
+            // key = request.id_project+":requests:query:*";
+            // winston.verbose("Deleting cache for request.update with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for request.update",reply);
+            //     winston.verbose("Deleted cache for request.update",{err:err});
+            // });   
 
             invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
 
@@ -389,12 +389,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = request.id_project+":requests:query:*";
-            winston.verbose("Deleting cache for request.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for request.close",reply);
-                winston.verbose("Deleted cache for request.close",{err:err});
-            });   
+            // key = request.id_project+":requests:query:*";
+            // winston.verbose("Deleting cache for request.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for request.close",reply);
+            //     winston.verbose("Deleted cache for request.close",{err:err});
+            // });   
 
             invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
 
@@ -549,12 +549,12 @@
             });
             
             // TODO COMMENTA NON USATO
-            key = department.id_project+":departments:query:*";        
-            winston.verbose("Deleting cache for department.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for department.create",reply);
-                winston.verbose("Deleted cache for department.create",{err:err});
-            });   
+            // key = department.id_project+":departments:query:*";        
+            // winston.verbose("Deleting cache for department.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for department.create",reply);
+            //     winston.verbose("Deleted cache for department.create",{err:err});
+            // });   
 
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for department.create");
@@ -574,12 +574,12 @@
             });    
 
             // TODO COMMENTA NON USATO
-            key = department.id_project+":departments:query:*";        
-            winston.verbose("Deleting cache for department.update with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for department.update",reply);
-                winston.verbose("Deleted cache for department.update",{err:err});
-            });   
+            // key = department.id_project+":departments:query:*";        
+            // winston.verbose("Deleting cache for department.update with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for department.update",reply);
+            //     winston.verbose("Deleted cache for department.update",{err:err});
+            // });   
 
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for department.update");
@@ -598,12 +598,12 @@
             });
 
             // TODO COMMENTA NON USATO
-            key = department.id_project+":departments:query:*";        
-            winston.verbose("Deleting cache for department.delete with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for department.delete",reply);
-                winston.verbose("Deleted cache for department.delete",{err:err});
-            });   
+            // key = department.id_project+":departments:query:*";        
+            // winston.verbose("Deleting cache for department.delete with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for department.delete",reply);
+            //     winston.verbose("Deleted cache for department.delete",{err:err});
+            // });   
 
             // TODO invalidate widgets here
             winston.verbose("Deleting widgets cache for department.delete");
@@ -616,12 +616,12 @@
         setImmediate(() => {    
 
             // TODO COMMENTA NON USATO
-            var key = label.id_project+":labels:query:*";        
-            winston.verbose("Deleting cache for label.create with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for label.create",reply);
-                winston.verbose("Deleted cache for label.create",{err:err});
-            });   
+            // var key = label.id_project+":labels:query:*";        
+            // winston.verbose("Deleting cache for label.create with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for label.create",reply);
+            //     winston.verbose("Deleted cache for label.create",{err:err});
+            // });   
         });
     });
 
@@ -631,12 +631,12 @@
         setImmediate(() => {    
 
             // TODO COMMENTA NON USATO
-            var key = label.id_project+":labels:query:*";        
-            winston.verbose("Deleting cache for label.update with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for label.update",reply);
-                winston.verbose("Deleted cache for label.update",{err:err});
-            });   
+            // var key = label.id_project+":labels:query:*";        
+            // winston.verbose("Deleting cache for label.update with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for label.update",reply);
+            //     winston.verbose("Deleted cache for label.update",{err:err});
+            // });   
         });
     });
 
@@ -645,12 +645,12 @@
         setImmediate(() => {       
             
             // TODO COMMENTA NON USATO
-            var key = label.id_project+":labels:query:*";        
-            winston.verbose("Deleting cache for label.clone with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for label.clone",reply);
-                winston.verbose("Deleted cache for label.clone",{err:err});
-            });   
+            // var key = label.id_project+":labels:query:*";        
+            // winston.verbose("Deleting cache for label.clone with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for label.clone",reply);
+            //     winston.verbose("Deleted cache for label.clone",{err:err});
+            // });   
         });
     });
 
@@ -659,12 +659,12 @@
         setImmediate(() => {         
 
             // TODO COMMENTA NON USATO
-            var key = label.id_project+":labels:query:*";        
-            winston.verbose("Deleting cache for label.delete with key: " + key);
-            client.del(key, function (err, reply) {
-                winston.debug("Deleted cache for label.delete",reply);
-                winston.verbose("Deleted cache for label.delete",{err:err});
-            });   
+            // var key = label.id_project+":labels:query:*";        
+            // winston.verbose("Deleting cache for label.delete with key: " + key);
+            // client.del(key, function (err, reply) {
+            //     winston.debug("Deleted cache for label.delete",reply);
+            //     winston.verbose("Deleted cache for label.delete",{err:err});
+            // });   
         });
     });
 
@@ -676,6 +676,7 @@
             setImmediate(() => {    
                 
                 //TODO i think you must clone trigger and remove .secret before caching
+                // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";        
                 winston.verbose("Deleting cache for subscription.create with key: " + key);
                 client.del(key, function (err, reply) {
@@ -687,6 +688,7 @@
     
         subscriptionEvent.on('subscription.update', function(trigger) {   
             setImmediate(() => {         
+                // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";        
                 winston.verbose("Deleting cache for subscription.update with key: " + key);
                 client.del(key, function (err, reply) {
@@ -698,6 +700,7 @@
     
         subscriptionEvent.on("subscription.delete", function(trigger) {     
             setImmediate(() => {         
+                // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":subscriptions:*";         
                 winston.verbose("Deleting cache for subscription.delete with key: " + key);
                 client.del(key, function (err, reply) {
@@ -713,7 +716,7 @@
     if (triggerEventEmitter) {
         triggerEventEmitter.on('trigger.create', function(trigger) {   
             setImmediate(() => {    
-                
+                // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":triggers:*";        
                 winston.verbose("Deleting cache for trigger.create with key: " + key);
                 client.del(key, function (err, reply) {
@@ -725,6 +728,7 @@
     
         triggerEventEmitter.on('trigger.update', function(trigger) {   
             setImmediate(() => {         
+                // elimina delete con * e fai cancellazione puntuale
                 var key =trigger.id_project+":triggers:*";        
                 winston.verbose("Deleting cache for trigger.update with key: " + key);
                 client.del(key, function (err, reply) {
@@ -735,7 +739,8 @@
         });
     
         triggerEventEmitter.on("trigger.delete", function(trigger) {     
-            setImmediate(() => {         
+            setImmediate(() => {       
+                // elimina delete con * e fai cancellazione puntuale  
                 var key =trigger.id_project+":triggers:*";         
                 winston.verbose("Deleting cache for trigger.delete with key: " + key);
                 client.del(key, function (err, reply) {
