@@ -18,23 +18,36 @@
  var RoleConstants = require("../../models/roleConstants");
 
  
- function del(client, key, callback) {
-    winston.debug("here1")
-    client.del(key, function (err, data) {
-        if (err) {
-            return callback(error);
-        } else {
-            return callback(null, data);
-        }
-    });
+ async function del(client, key, callback) {
+    key = "cacheman:cachegoose-cache:" + key;
+    winston.debug("key: "+key)
+   
+    // client.del(key, function (err, data) {
+    //     if (err) {
+    //         return callback(error);
+    //     } else {
+    //         winston.info("del data: "+ data)
+
+    //         return callback(null, data);
+    //     }
+    // });
 
     // client.del(key).then(function(result) {
-    //     winston.debug("here2")
+    //     winston.info("result", result)
     //     return callback(null, result);
     // }).catch(function(error) {
-    //     winston.debug("here3")
+    //     winston.error("here3", error)
     //     return callback(error);
     // });
+
+    var res = await client.del(key)
+    winston.debug("result: "+ res)
+    if (res) {
+        return callback(null, res); 
+    } else {
+        var error = "error";
+        return callback(error);
+    }
  }
 
  function listen(client) {
@@ -311,8 +324,11 @@
     function invalidatRequestSimple(client, project_id, rid, request_id) {
         var key = project_id+":requests:id:"+rid+":simple";
         winston.verbose("Deleting cache for widgets with key: " + key);
+        
         // found del
+        winston.debug("Deleted4545");
         del(client._cache._engine.client, key, function (err, reply) {  //tested
+        
         // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for invalidatRequestSimple",reply);
             winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
