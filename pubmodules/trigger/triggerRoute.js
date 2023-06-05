@@ -108,8 +108,8 @@ router.put('/:triggercode/reset', function (req, res) {
 router.delete('/:triggerid', function (req, res) {
 
   winston.debug(req.body);
-
-  Trigger.remove({ _id: req.params.triggerid }, function (err, trigger) {
+  Trigger.findByIdAndRemove(req.params.triggerid, { new: false}, function (err, trigger) {
+  // Trigger.remove({ _id: req.params.triggerid }, function (err, trigger) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });

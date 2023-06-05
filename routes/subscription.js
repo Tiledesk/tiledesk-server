@@ -66,7 +66,8 @@ router.delete('/:subscriptionid', function (req, res) {
 
   winston.debug(req.body);
 
-  Subscription.remove({ _id: req.params.subscriptionid }, function (err, subscriptionUpd) {
+  Subscription.findByIdAndRemove(req.params.subscriptionid, { new: false}, function (err, subscriptionUpd) {
+    // Subscription.remove({ _id: req.params.subscriptionid }, function (err, subscriptionUpd) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }

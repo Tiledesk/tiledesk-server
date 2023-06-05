@@ -324,7 +324,7 @@
     function invalidatRequestSimple(client, project_id, rid, request_id) {
         var key = project_id+":requests:id:"+rid+":simple";
         winston.verbose("Deleting cache for widgets with key: " + key);
-        
+
         // found del
         winston.debug("Deleted4545");
         del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -729,12 +729,14 @@
 
 
     if (subscriptionEvent) {
-        subscriptionEvent.on('subscription.create', function(trigger) {   
+        subscriptionEvent.on('subscription.create', function(subscription) {   
             setImmediate(() => {    
                 
                 //TODO i think you must clone trigger and remove .secret before caching
-                // elimina delete con * e fai cancellazione puntuale
-                var key =trigger.id_project+":subscriptions:*";        
+                // q.cache(cacheUtil.longTTL, id_project+":subscriptions:event:"+event);  //CACHE_SUBSCRIPTION
+                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+
+                // var key =trigger.id_project+":subscriptions:*";        //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.create with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -745,10 +747,11 @@
             });
         });
     
-        subscriptionEvent.on('subscription.update', function(trigger) {   
+        subscriptionEvent.on('subscription.update', function(subscription) {   
             setImmediate(() => {         
-                // elimina delete con * e fai cancellazione puntuale
-                var key =trigger.id_project+":subscriptions:*";        
+                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+
+                // var key =subscription.id_project+":subscriptions:*";         //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.update with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -759,10 +762,11 @@
             });
         });
     
-        subscriptionEvent.on("subscription.delete", function(trigger) {     
+        subscriptionEvent.on("subscription.delete", function(subscription) {     
             setImmediate(() => {         
-                // elimina delete con * e fai cancellazione puntuale
-                var key =trigger.id_project+":subscriptions:*";         
+                var key =subscription.id_project+":subscriptions:event:"+subscription.event;    
+
+                // var key =subscription.id_project+":subscriptions:*";          //wildcardcache //tested
                 winston.verbose("Deleting cache for subscription.delete with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -779,8 +783,9 @@
     if (triggerEventEmitter) {
         triggerEventEmitter.on('trigger.create', function(trigger) {   
             setImmediate(() => {    
-                // elimina delete con * e fai cancellazione puntuale
-                var key =trigger.id_project+":triggers:*";        
+                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+
+                // var key =trigger.id_project+":triggers:*";         //wildcardcache //tested
                 winston.verbose("Deleting cache for trigger.create with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -793,8 +798,9 @@
     
         triggerEventEmitter.on('trigger.update', function(trigger) {   
             setImmediate(() => {         
-                // elimina delete con * e fai cancellazione puntuale
-                var key =trigger.id_project+":triggers:*";        
+                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+                // var key =trigger.id_project+":triggers:*";         //wildcardcache //tested
+
                 winston.verbose("Deleting cache for trigger.update with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -806,9 +812,10 @@
         });
     
         triggerEventEmitter.on("trigger.delete", function(trigger) {     
-            setImmediate(() => {       
-                // elimina delete con * e fai cancellazione puntuale  
-                var key =trigger.id_project+":triggers:*";         
+            setImmediate(() => {      
+                var key =trigger.id_project+":triggers:trigger.key:"+trigger.trigger.key;
+
+                // var key =trigger.id_project+":triggers:*";          //wildcardcache
                 winston.verbose("Deleting cache for trigger.delete with key: " + key);
                 // found del
                 del(client._cache._engine.client, key, function (err, reply) {  //tested
@@ -823,7 +830,11 @@
     
 
     function invalidateFaq(client, faq) {
-        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
+
+        // let faqCacheKey = "cacheman:cachegoose-cache:faqs:botid:"+ botId + ":faq:id:" + key;
+
+        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:"+faq._id;
+        // key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
         winston.verbose("Deleting cache for faq with key: " + key);
         // found del
         del(client._cache._engine.client, key, function (err, reply) {  //tested
