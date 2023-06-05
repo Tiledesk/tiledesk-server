@@ -22,9 +22,10 @@ class Listener {
         var password = process.env.CACHE_REDIS_PASSWORD;
         winston.debug("Redis password: "+ password);
 
-
         let graph_url = process.env.META_GRAPH_URL || config.graphUrl || "https://graph.facebook.com/v14.0/"
         winston.debug("Whatsapp graph_url: "+ password);
+
+        let baseFileUrl = process.env.BASE_FILE_URL
 
         let log = process.env.WHATSAPP_LOG || false
         winston.debug("Whatsapp log: "+ log);
@@ -32,6 +33,7 @@ class Listener {
         whatsapp.startApp({
             MONGODB_URL: config.databaseUri,          
             API_URL: apiUrl,
+            BASE_FILE_URL: baseFileUrl,
             GRAPH_URL: graph_url,
             BASE_URL: apiUrl + "/modules/whatsapp",                     
             APPS_API_URL: apiUrl + "/modules/apps",
