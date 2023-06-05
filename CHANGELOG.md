@@ -1,10 +1,33 @@
 
 
-💥 TILEDESK SERVER v2.4.13 💥
+💥 TILEDESK SERVER v2.3.77 💥
 🚀        TAGGED AND PUBLISHED ON NPM           🚀
 🚀        IN PRODUCTION                        🚀
-(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.4.13) 
+(https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.18
+- logfix
+
+# 2.4.17
+- logfix
+- post and .patch for /properties are equals
+- bugfix added invalidatRequestSimple for waiting time issue
+- added QUEUE_EXCHANGE_TOPIC env parameter
+- email template changes
+
+
+# 2.4.16
+- env for durable and persistent queue
+
+# 2.4.15
+- persistent false
+
+
+# 2.4.14 -> PROD
+- added request_channel attribute to chat21 messages
+- moved propertiies to agent role
+- logfix
+- "@tiledesk/tiledesk-tybot-connector": "^0.1.80"
 
 # 2.4.13
 - "@tiledesk/tiledesk-tybot-connector": "^0.1.79"

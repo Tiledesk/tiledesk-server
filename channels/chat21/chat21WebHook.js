@@ -25,7 +25,7 @@ if (process.env.SYNC_JOIN_LEAVE_GROUP_EVENT === true || process.env.SYNC_JOIN_LE
 }
 winston.info("Chat21 Sync JoinAndLeave Support Group Event: " + syncJoinAndLeaveGroupEvent);
 
-var allowReopenChat =  false;
+var allowReopenChat =  false;   //It's work only with firebase chat engine
 if (process.env.ALLOW_REOPEN_CHAT === true || process.env.ALLOW_REOPEN_CHAT ==="true") {
   allowReopenChat = true;
 }
@@ -90,6 +90,8 @@ router.post('/', function (req, res) {
           if (err) {
             return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
           }
+
+          winston.debug('request cache simple 1', request);
 
           if (!request) { //the request doen't exists create it
 
@@ -305,7 +307,8 @@ router.post('/', function (req, res) {
                 
                     // return requestService.incrementMessagesCountByRequestId(request.request_id, request.id_project).then(function(savedRequest) {
                       // winston.debug("savedRequest.participants.indexOf(message.sender)", savedRequest.participants.indexOf(message.sender));
-                       
+                      winston.debug("before updateWaitingTimeByRequestId*******",request.participants, message.sender);
+                      winston.debug("updateWaitingTimeByRequestId******* message: "+ message.sender);
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId*******");

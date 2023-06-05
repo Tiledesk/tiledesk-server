@@ -75,7 +75,7 @@ class ChatbotService {
 
   async createBot(api_url, token, chatbot, project_id) {
 
-    winston.info("(CHATBOT SERVICE) createBot");
+    winston.debug("(CHATBOT SERVICE) createBot");
 
     return await axios({
       url: api_url + '/' + project_id + '/faq_kb/',
