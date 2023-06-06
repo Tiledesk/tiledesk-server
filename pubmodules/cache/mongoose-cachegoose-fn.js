@@ -833,12 +833,13 @@
 
         // let faqCacheKey = "cacheman:cachegoose-cache:faqs:botid:"+ botId + ":faq:id:" + key;
                             //cacheman:cachegoose-cache:faqs:botid:647dc3e8da041c001396f764:faq:id:647dc3ea61ad510014ca0b46
+        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:"+faq.intent_display_name;
         // key = "faqs:botid:"+faq.id_faq_kb+":faq:id:"+faq._id;
-        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
+        // key = "faqs:botid:"+faq.id_faq_kb+":faq:id:*";
         winston.verbose("Deleting cache for faq with key: " + key);
         // found del
-        // del(client._cache._engine.client, key, function (err, reply) {  //tested
-        client.del(key, function (err, reply) {
+        del(client._cache._engine.client, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
             winston.debug("Deleted cache for faq",reply);
             winston.verbose("Deleted cache for faq",{err:err});
         });   
