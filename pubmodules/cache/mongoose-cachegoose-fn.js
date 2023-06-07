@@ -846,7 +846,7 @@
 
 
 
-        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:#"+faq._id;       
+        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:#"+faq.intent_id;       
         winston.verbose("Deleting cache for faq with key: " + key);
         // found del
         del(client._cache._engine.client, key, function (err, reply) {  //tested
