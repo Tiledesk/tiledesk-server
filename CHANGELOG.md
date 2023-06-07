@@ -5,6 +5,33 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.26
+- filter by priority
+- bugfix intent invalidation by intent id
+
+# 2.4.25
+- "@tiledesk/tiledesk-tybot-connector": "^0.1.81"
+- bugfix intent invalidation by intent_display_name
+
+# 2.4.24
+- Wildcard invalidate bugfix for intents, subscriptions and triggers
+
+# 2.4.23
+- waiting time chance invalidation fix
+- delete redis fix
+
+# 2.4.22
+- bugfix changed del method from cachemon to native redis
+
+# 2.4.21
+- changed del method from cachemon to native redis
+
+# 2.4.20
+- removed unused redis delete with wildcard
+
+# 2.4.19
+- Added QUEUE_NAME env parameter
+
 # 2.4.18
 - logfix
 
