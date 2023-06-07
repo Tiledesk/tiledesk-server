@@ -844,6 +844,16 @@
             winston.verbose("Deleted cache for faq",{err:err});
         });   
 
+
+
+        key = "faqs:botid:"+faq.id_faq_kb+":faq:id:#"+faq._id;       
+        winston.verbose("Deleting cache for faq with key: " + key);
+        // found del
+        del(client._cache._engine.client, key, function (err, reply) {  //tested
+        // client.del(key, function (err, reply) {
+            winston.debug("Deleted cache for faq",reply);
+            winston.verbose("Deleted cache for faq",{err:err});
+        });   
         
     }
 
