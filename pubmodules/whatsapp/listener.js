@@ -25,7 +25,7 @@ class Listener {
         let graph_url = process.env.META_GRAPH_URL || config.graphUrl || "https://graph.facebook.com/v14.0/"
         winston.debug("Whatsapp graph_url: "+ password);
 
-        let baseFileUrl = process.env.BASE_FILE_URL
+        let baseFileUrl = process.env.BASE_FILE_URL || apiUrl || "http://localhost:3000"
 
         let log = process.env.WHATSAPP_LOG || false
         winston.debug("Whatsapp log: "+ log);
