@@ -500,8 +500,8 @@ if (enableGoogleSignin==true) {
           var password = uniqid()
 
           
-
-          userService.signup(email, password, undefined, profile.displayName, true)
+          // signup ( email, password, firstname, lastname, emailverified) {
+          userService.signup(email, password,  profile.displayName, undefined, true)
           .then(function (savedUser) {
 
 
