@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+
+
+# 2.4.27
+- tiledesk/tiledesk-tybot-connector:0.1.83
+
 # 2.4.26
 - filter by priority
 - bugfix intent invalidation by intent id
