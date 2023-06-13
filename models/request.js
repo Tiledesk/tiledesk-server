@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 var Channel = require('../models/channel');
 var winston = require('../config/winston');
 var RequestConstants = require("../models/requestConstants");
+var ChannelConstants = require("../models/channelConstants");
 
 var ProjectUserSchema = require("../models/project_user").schema;
 var RequestStatus = require("../models/requestStatus");
@@ -275,10 +276,19 @@ var RequestSchema = new Schema({
   },
   smartAssignment: {
     type: Boolean,
-    default: true,
+    default: function() {
+      // winston.info("smartAssignment default this.channel.name:" + this.channel.name);
+      if (this.channel && (this.channel.name===ChannelConstants.FORM || this.channel.name===ChannelConstants.EMAIL )) {
+        // winston.info("smartAssignment default return false");
+        return false;
+      }else {
+        // winston.info("smartAssignment default return true");
+        return true;
+      }
+    },
     index: true
   },
-  workingStatus: { //new, pending
+  workingStatus: { //new, pending, open
     type: String,
     required: false,
     index: true
@@ -451,10 +461,10 @@ RequestSchema.index({ id_project: 1, participants: 1});
 //  https://docs.mongodb.com/manual/core/index-compound/ The order of the fields listed in a compound index is important. The index will contain references to documents sorted first by the values of the item field and, within each value of the item field, sorted by values of the stock field. See Sort Order for more information
 RequestSchema.index({ id_project: 1, status: 1, updatedAt: -1 }); // query for websocket
 RequestSchema.index({ id_project: 1, status: 1, preflight:1, updatedAt: -1 }); // query for websocket
-
 RequestSchema.index({ id_project: 1, preflight:1, updatedAt: -1 }); // used query ws (topic.endsWith('/requests'))
 
 RequestSchema.index({ hasBot: 1, createdAt: 1 }); // suggested by atlas
+
 
 // suggested by atlas
 RequestSchema.index({ lead: 1, id_project: 1, participants: 1, preflight: 1, createdAt: -1 });
@@ -464,6 +474,7 @@ RequestSchema.index({ lead: 1, id_project: 1, preflight: 1, createdAt: -1 });
 // suggested by atlas
 RequestSchema.index({ lead: 1, "snapshot.agents.id_user": 1, id_project: 1, preflight: 1, createdAt: -1 });
 
+
 // suggested by atlas
 RequestSchema.index({ id_project: 1, ticket_id: 1 });
 
@@ -472,8 +483,6 @@ RequestSchema.index({ id_project: 1, createdAt: 1, preflight: 1});
 
 //suggested by atlas profiler. Used by auto closing requests
 RequestSchema.index({ hasBot: 1, status: 1, createdAt: 1});
-
-
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv
