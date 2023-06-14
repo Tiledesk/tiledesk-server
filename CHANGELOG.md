@@ -7,6 +7,9 @@
 
 
 
+# 2.4.28
+- smartAssignment default value condition for channels
+
 # 2.4.27
 - tiledesk/tiledesk-tybot-connector:0.1.83
 
