@@ -16,6 +16,8 @@ constructor() {
   this.queryAfterTimeout = parseInt(process.env.CLOSE_BOT_UNRESPONSIVE_REQUESTS_AFTER_TIMEOUT) || 2 * 24 * 60 * 60 * 1000; //two days ago //172800000 two days // 86400000 a day
   this.queryLimit = parseInt(process.env.CLOSE_BOT_UNRESPONSIVE_REQUESTS_QUERY_LIMIT) || 10;
   this.queryProject = process.env.CLOSE_BOT_UNRESPONSIVE_REQUESTS_QUERY_FILTER_ONLY_PROJECT; //example in PRE: {"$in":["5fc224ce05416200342af18a","5fb3e3cb0150a00034ab77d5"]}
+  this.delayBeforeClosing = parseInt(process.env.CLOSE_BOT_UNRESPONSIVE_REQUESTS_DELAY) || 1000;
+  // winston.info("delayBeforeClosing: "+ this.delayBeforeClosing);
 
   if (this.queryProject) {
     winston.info("CloseBotUnresponsiveRequestTask filter only by projects enabled: " + this.queryProject );
@@ -62,10 +64,12 @@ scheduleUnresponsiveRequests() {
 
 
 findUnresponsiveRequests() {
-    
+  var that = this;
+
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()
     
 
+  //  TODO escludi i ticket offline
     var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
@@ -73,6 +77,7 @@ findUnresponsiveRequests() {
     }
 
 
+    //  TODO dovrei fare una query escludendo tutti gli id_project su cui è disabilitato oppure dovrei salvare un attribute in ogni singola request
 
     winston.debug("CloseBotUnresponsiveRequestTask query",query);
 
@@ -84,6 +89,9 @@ findUnresponsiveRequests() {
           winston.error("CloseBotUnresponsiveRequestTask error getting unresponsive requests ", err);
           return 0;
       }
+
+      // winston.info("delayBeforeClosing: "+ that.delayBeforeClosing);
+
       if (!requests || (requests && requests.length==0)) {
           winston.verbose("CloseBotUnresponsiveRequestTask no unresponsive requests found ");
           return 0;
@@ -91,24 +99,32 @@ findUnresponsiveRequests() {
 
       winston.info("CloseBotUnresponsiveRequestTask: found " + requests.length +  " unresponsive requests");
       winston.debug("CloseBotUnresponsiveRequestTask: found unresponsive requests ", requests);
-      
+
+      let i = 0;
+      let delay = this.delayBeforeClosing*i;
+      // winston.info("delay" + delay);
+
       requests.forEach(request => {
+        i++;
+        setTimeout(function(){
 
-        winston.debug("********unresponsive request ", request);
+          //  TODO aggiungi uno sleep
+          winston.debug("********unresponsive request ", request);
 
-         //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
-        const closed_by = "_bot_unresponsive";
-        return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
-          winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
-          // winston.info("Request closed",updatedStatusRequest);
-        }).catch(function(err) {
-          if (process.env.HIDE_CLOSE_REQUEST_ERRORS == true || process.env.HIDE_CLOSE_REQUEST_ERRORS == "true" ) {
+          //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
+          const closed_by = "_bot_unresponsive";
+          return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
+            winston.info("CloseBotUnresponsiveRequestTask: Request closed with request_id: " + request.request_id);
+            // winston.info("Request closed",updatedStatusRequest);
+          }).catch(function(err) {
+            if (process.env.HIDE_CLOSE_REQUEST_ERRORS == true || process.env.HIDE_CLOSE_REQUEST_ERRORS == "true" ) {
 
-          } else {
-            winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
-          }
-          
-        })
+            } else {
+              winston.error("CloseBotUnresponsiveRequestTask: Error closing the request with request_id: " + request.request_id, err);
+            }
+            
+          })
+        }, delay)
 
       });
 
