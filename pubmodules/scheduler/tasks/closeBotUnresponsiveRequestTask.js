@@ -69,7 +69,7 @@ findUnresponsiveRequests() {
   // db.getCollection('requests').find({"hasBot":true, "status": { "$lt": 1000 }, "createdAt":  { "$lte" :new ISODate("2020-11-28T20:15:31Z")} }).count()
     
 
-  //  TODO escludi i ticket offline
+  //   TODO escludi i ticket offline
     var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
@@ -77,7 +77,7 @@ findUnresponsiveRequests() {
     }
 
 
-    //  TODO dovrei fare una query escludendo tutti gli id_project su cui è disabilitato oppure dovrei salvare un attribute in ogni singola request
+    //    TODO dovrei fare una query escludendo tutti gli id_project su cui è disabilitato oppure dovrei salvare un attribute in ogni singola request
 
     winston.debug("CloseBotUnresponsiveRequestTask query",query);
 
@@ -101,11 +101,12 @@ findUnresponsiveRequests() {
       winston.debug("CloseBotUnresponsiveRequestTask: found unresponsive requests ", requests);
 
       let i = 0;
-      let delay = this.delayBeforeClosing*i;
+      let delay = 0;
       // winston.info("delay" + delay);
 
       requests.forEach(request => {
         i++;
+        delay = that.delayBeforeClosing*i;
         setTimeout(function(){
 
           //  TODO aggiungi uno sleep
