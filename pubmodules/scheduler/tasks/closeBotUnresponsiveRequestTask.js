@@ -70,6 +70,7 @@ findUnresponsiveRequests() {
     
 
   //   TODO escludi i ticket offline
+    // var query = { };
     var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
@@ -106,11 +107,14 @@ findUnresponsiveRequests() {
 
       requests.forEach(request => {
         i++;
-        delay = that.delayBeforeClosing*i;
+        delay = 2*that.delayBeforeClosing*i;
+        winston.debug("CloseBotUnresponsiveRequestTask: delay : " + delay);
+
         setTimeout(function(){
 
           //  TODO aggiungi uno sleep
-          winston.debug("********unresponsive request ", request);
+          winston.debug("********unresponsive request : "+ request.first_text);
+          // winston.debug("********unresponsive request ", request);
 
           //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
           const closed_by = "_bot_unresponsive";
