@@ -459,7 +459,8 @@ if (enableGoogleSignin==true) {
   passport.use(new GoogleStrategy({
     clientID: googleClientId, 
     clientSecret: googleClientSecret,
-    callbackURL: googleCallbackURL  // 'https://www.example.com/oauth2/redirect/google'
+    callbackURL: googleCallbackURL,  // 'https://www.example.com/oauth2/redirect/google'
+    stateless: true
   },
   function(issuer, profile, cb) {
 
@@ -538,8 +539,15 @@ if (enableGoogleSignin==true) {
             return cb(null, savedUser);
           });
         }).catch(function(err) {
-          winston.error("Error signup google ", err);
-          return cb(err); 
+          // if (err.code == 11000) {
+          
+
+            
+          // } else {
+            winston.error("Error signup google ", err);
+            return cb(err); 
+          // }
+         
         });
       } else {
 
