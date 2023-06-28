@@ -460,7 +460,7 @@ if (enableGoogleSignin==true) {
     clientID: googleClientId, 
     clientSecret: googleClientSecret,
     callbackURL: googleCallbackURL,  // 'https://www.example.com/oauth2/redirect/google'
-    stateless: true
+    // stateless: true ????
   },
   function(issuer, profile, cb) {
 
