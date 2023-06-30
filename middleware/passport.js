@@ -502,7 +502,7 @@ if (enableGoogleSignin==true) {
 
           
           // signup ( email, password, firstname, lastname, emailverified) {
-          userService.signup(email, password,  profile.displayName, undefined, true)
+          userService.signup(email, password,  profile.displayName, "", true)
           .then(function (savedUser) {
 
 
