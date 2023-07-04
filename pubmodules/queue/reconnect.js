@@ -17,10 +17,10 @@ var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // attento devi aggiornare configMap di PRE E PROD
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
-var durable = true;
-if (process.env.ENABLE_DURABLE_QUEUE == false || process.env.ENABLE_DURABLE_QUEUE == "false") {
-  durable = false;
-}
+var durable = false;
+// if (process.env.ENABLE_DURABLE_QUEUE == false || process.env.ENABLE_DURABLE_QUEUE == "false") {
+//   durable = false;
+// }
 
 var persistent = false;
 if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT_QUEUE == "true") {
@@ -392,6 +392,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
+    leadEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpint: " + url );
