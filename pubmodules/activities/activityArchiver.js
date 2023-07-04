@@ -46,7 +46,7 @@ class ActivityArchiver {
       // if (authEvent.queueEnabled) { //queue not supported.
       //   authProjectUserInvitePendingKey = 'project_user.invite.pending.queue';
       // }
-      winston.info('ActivityArchiver authProjectUserInvitePendingKey: ' + authProjectUserInvitePendingKey);
+      winston.debug('ActivityArchiver authProjectUserInvitePendingKey: ' + authProjectUserInvitePendingKey);
 
         authEvent.on(authProjectUserInvitePendingKey,  function(event) { 
           setImmediate(() => {
@@ -67,7 +67,7 @@ class ActivityArchiver {
         // if (authEvent.queueEnabled) { //queue not supported
         //   authProjectUserInviteKey = 'project_user.invite.queue';
         // }
-        winston.info('ActivityArchiver authProjectUserInviteKey: ' + authProjectUserInviteKey);
+        winston.debug('ActivityArchiver authProjectUserInviteKey: ' + authProjectUserInviteKey);
   
         authEvent.on(authProjectUserInviteKey,  function(event) { 
           setImmediate(() => {
@@ -90,7 +90,7 @@ class ActivityArchiver {
         if (authEvent.queueEnabled) {
           authProjectUserUpdateKey = 'project_user.update.queue';
         }
-        winston.info('ActivityArchiver authProjectUserUpdateKey: ' + authProjectUserUpdateKey);
+        winston.debug('ActivityArchiver authProjectUserUpdateKey: ' + authProjectUserUpdateKey);
   
        authEvent.on(authProjectUserUpdateKey,  function(event) { 
         setImmediate(() => {   
@@ -130,7 +130,7 @@ class ActivityArchiver {
       //  if (authEvent.queueEnabled) { //queue not supported
       //   authProjectUserDeleteKey = 'project_user.delete.queue';
       //  }
-       winston.info('ActivityArchiver authProjectUserDeleteKey: ' + authProjectUserDeleteKey);
+       winston.debug('ActivityArchiver authProjectUserDeleteKey: ' + authProjectUserDeleteKey);
  
 
       authEvent.on(authProjectUserDeleteKey,  function(event) { 
@@ -297,7 +297,7 @@ class ActivityArchiver {
        if (requestEvent.queueEnabled) {
          requestCreateKey = 'request.create.queue';
        }
-       winston.info('ActivityArchiver requestCreateKey: ' + requestCreateKey);
+       winston.debug('ActivityArchiver requestCreateKey: ' + requestCreateKey);
 
         requestEvent.on(requestCreateKey,  function(request) {   
           setImmediate(() => {        
@@ -341,7 +341,7 @@ class ActivityArchiver {
         if (requestEvent.queueEnabled) {
           requestUpdatePreflightKey = 'request.update.preflight.queue';
         }
-        winston.info('ActivityArchiver requestUpdatePreflightKey: ' + requestUpdatePreflightKey);
+        winston.debug('ActivityArchiver requestUpdatePreflightKey: ' + requestUpdatePreflightKey);
 
         
         requestEvent.on(requestUpdatePreflightKey,  function(request) {
@@ -371,14 +371,15 @@ class ActivityArchiver {
 
 
         // verified with queue
-        var requestCloseKey = 'request.close';
+        var requestCloseKey = 'request.close';   //request.close event here queued under job
         if (requestEvent.queueEnabled) {
           requestCloseKey = 'request.close.queue';
         }
-        winston.info('ActivityArchiver requestCloseKey: ' + requestCloseKey);
+        winston.debug('ActivityArchiver requestCloseKey: ' + requestCloseKey);
 
 
         requestEvent.on(requestCloseKey,  function(request) {   
+          winston.debug("request.close event here 7")
           setImmediate(() => {           
        
               try {

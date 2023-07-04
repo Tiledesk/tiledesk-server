@@ -142,6 +142,9 @@ require('./services/mongoose-cache-fn')(mongoose);
 var subscriptionNotifier = require('./services/subscriptionNotifier');
 subscriptionNotifier.start();
 
+var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+
+
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
 
@@ -150,9 +153,8 @@ trainingService.start();
  
 // job_here
 
-
 var geoService = require('./services/geoService');
-// geoService.listen();
+// geoService.listen(); //queued
 
 let JobsManager = require('./jobsManager');
 
@@ -162,7 +164,7 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled,geoService);
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, subscriptionNotifierQueued);
 jobsManager.listen();
 
 

@@ -21,6 +21,12 @@ let JobsManager = require('./jobsManager');
 
 
 let geoService = require('./services/geoService');
+// let subscriptionNotifier = require('./services/subscriptionNotifier');
+var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+
+require('./services/mongoose-cache-fn')(mongoose);
+
+
 var config = require('./config/database');
 
 
@@ -39,8 +45,8 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
   }
+winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
-
 // winston.info("mongoose.connection",mongoose.connection);
 // module.exports = jobsManager;
 
@@ -49,10 +55,12 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
 async function main()
 {
 
-    require('./pubmodules/queue');     
+   //************* LOAD QUEUE ************ //
+    require('./pubmodules/queue');   
+    
     // require('@tiledesk-ent/tiledesk-server-queue');     
 
-    let jobsManager = new JobsManager(undefined, geoService);
+    let jobsManager = new JobsManager(undefined, geoService, subscriptionNotifierQueued);
 
     jobsManager.listen();
 
