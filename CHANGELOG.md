@@ -6,6 +6,39 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 
+# 2.4.37
+- added replyto to email endpoint
+- tiledesk/tiledesk-tybot-connector: 0.1.88
+- added lead.create to the queue
+- added subscriptionNotifiedQueued for the most common events (request.create, request.update, request.close, lead.create, project_user.update)
+
+
+# 2.4.36
+- Google last name fix with empty string
+
+# 2.4.35
+- tiledesk/tiledesk-tybot-connector: 0.1.87
+
+# 2.4.34
+- tiledesk/tiledesk-tybot-connector:0.1.83
+- stateless as default for Google Strategy
+- added redis session for google auth. To enable it put ENABLE_REDIS_SESSION to true otherwise standard passport session is used
+
+# 2.4.33
+- "@tiledesk/tiledesk-tybot-connector": "^0.1.86"
+- stateless true for Google Strategy
+
+# 2.4.32
+- close chat set timeout for performance
+
+# 2.4.31
+- close chat set timeout for performance
+
+# 2.4.30
+- close chat set timeout for performance
+
+# 2.4.29
+- @tiledesk/tiledesk-whatsapp-connector 0.1.50
 
 # 2.4.28
 - smartAssignment default value condition for channels
