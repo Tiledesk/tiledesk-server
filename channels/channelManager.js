@@ -17,7 +17,7 @@ require('../middleware/passport')(passport);
 if (chat21Enabled && chat21Enabled == "true") {
     winston.info("ChannelManager - Chat21 channel is enabled");
 }else {
-    winston.info("ChannelManager Chat21 channel is disabled. Attention!!");
+    winston.warn("ChannelManager Chat21 channel is disabled. Attention!!");
 }
 
 class ChannelManager {
