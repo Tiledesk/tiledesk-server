@@ -239,7 +239,7 @@ describe('FaqKBRoute', () => {
 
         });
 
-        it('update qwerty', (done) => {
+        it('update', (done) => {
 
 
             //   this.timeout();
