@@ -91,7 +91,10 @@ var FaqSchema = new Schema({
   actions: {
     type: Array,
     required: false
-  }
+  },
+  attributes: {
+    type: Object,
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html

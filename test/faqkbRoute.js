@@ -313,7 +313,7 @@ describe('FaqKBRoute', () => {
             })
         })
 
-        it('create bot and import json qwerty', (done) => {
+        it('create bot and import json', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -357,7 +357,7 @@ describe('FaqKBRoute', () => {
 
         })
 
-        it('import json in an existing bot qwerty2', (done) => {
+        it('import json in an existing bot', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";

@@ -6,8 +6,10 @@ var multer = require('multer')
 var upload = multer()
 const faqBotEvent = require('../event/faqBotEvent');
 var winston = require('../config/winston');
+const faqEvent = require('../event/faqBotEvent')
 
 var parsecsv = require("fast-csv");
+const botEvent = require('../event/botEvent');
 csv = require('csv-express');
 csv.separator = ';';
 
@@ -135,6 +137,10 @@ router.post('/', function (req, res) {
       newFaq.actions = req.body.actions
     }
 
+    if (req.body.attributes) {
+      newFaq.attributes = req.body.attributes
+    }
+
     newFaq.save(function (err, savedFaq) {
       if (err) {
         if (err.code == 11000) {
@@ -159,6 +165,56 @@ router.post('/', function (req, res) {
   });
 });
 
+router.patch('/:faqid/attributes', function (req, res) {
+  let data = req.body;
+  console.log("data: ", data);
+
+  Faq.findById(req.params.faqid, function (err, updatedFaq) {
+    if (err) {
+      winston.error('Find Faq by id ERROR: ', err);
+      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    if (!updatedFaq) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+
+    if (!updatedFaq.attributes) {
+      console.log("empty attributes");
+      winston.debug("empty attributes");
+      updatedFaq.attributes = {};
+    }
+
+    winston.debug("updatedFaq attributes", updatedFaq.attributes);
+
+    Object.keys(data).forEach(function(key) {
+      var val = data[key];
+      winston.debug("data attributes" + key + " " + val);
+      updatedFaq.attributes[key] = val;
+    })
+
+    console.log("updatedFaq: ", updatedFaq);
+    console.log("updatedFaq attributes: ", updatedFaq.attributes);
+
+    winston.debug("updatedBot attributes", updatedFaq.attributes)
+
+    updatedFaq.markModified('attributes');
+
+    //cache invalidation
+    updatedFaq.save(function (err, savedFaq) {
+      if (err) {
+        winston.error("saving faq attributes ERROR: ", err);
+        return res.status(500).send({ success: false, msg: 'Error saving object.' });
+      }
+
+      console.log("saved faq attributes", savedFaq.toObject());
+
+      winston.verbose("saved faq attributes", savedFaq.toObject());
+      faqBotEvent.emit('faq.update', savedFaq);
+      res.json(savedFaq);
+    })
+  })
+})
 
 router.put('/:faqid', function (req, res) {
 
@@ -201,6 +257,9 @@ router.put('/:faqid', function (req, res) {
   }
   if (req.body.actions != undefined) {
     update.actions = req.body.actions;
+  }
+  if (req.body.attributes != undefined) {
+    update.attributes = req.body.attributes;
   }
 
   Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
