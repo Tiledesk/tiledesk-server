@@ -81,7 +81,7 @@ router.get("/download", (req, res) => {
   winston.debug('path', req.query.path);
   // if (path.indexOf("/users/"))
   let filename = pathlib.basename(req.query.path);
-  winston.info("filename:"+filename);
+  winston.debug("filename:"+filename);
 
   res.attachment(filename);
   fileService.getFileDataAsStream(req.query.path).pipe(res);

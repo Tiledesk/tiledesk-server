@@ -2,10 +2,14 @@
 var winston = require('./config/winston');
 
 class JobsManager {
-    constructor(jobWorkerEnabled, geoService) {
+    constructor(jobWorkerEnabled, geoService, subscriptionNotifierQueued) {
         this.geoService = geoService;
+        // this.subscriptionNotifier = subscriptionNotifier;
+        this.subscriptionNotifierQueued = subscriptionNotifierQueued;
+
         this.emailNotificatio = undefined;
         this.activityArchiver = undefined;
+
 
         this.jobWorkerEnabled = jobWorkerEnabled;
         // this.jobWorkerEnabled = false;
@@ -22,6 +26,8 @@ class JobsManager {
            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listeners");  
         }
         this.geoService.listen();
+        // this.subscriptionNotifier.start();
+        this.subscriptionNotifierQueued.start();
     }
 
     listenEmailNotification(emailNotification) {      
@@ -32,6 +38,8 @@ class JobsManager {
         this.emailNotification = emailNotification;
         this.emailNotification.requestNotification.listen();
     }
+
+
 
     listenActivityArchiver(activityArchiver) {
         winston.info("JobsManager listenActivityArchiver started"); 

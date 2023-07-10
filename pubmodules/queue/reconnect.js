@@ -2,6 +2,8 @@ var amqp = require('amqplib/callback_api');
 var winston = require('../../config/winston');
 const requestEvent = require('../../event/requestEvent');
 const messageEvent = require('../../event/messageEvent');
+const leadEvent = require('../../event/leadEvent');
+
 const botEvent = require('../../event/botEvent');
 const authEvent = require('../../event/authEvent');
 // https://elements.heroku.com/addons/cloudamqp
@@ -16,9 +18,9 @@ var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
 var durable = false;
-if (process.env.ENABLE_DURABLE_QUEUE == true || process.env.ENABLE_DURABLE_QUEUE == "true") {
-  durable = true;
-}
+// if (process.env.ENABLE_DURABLE_QUEUE == false || process.env.ENABLE_DURABLE_QUEUE == "false") {
+//   durable = false;
+// }
 
 var persistent = false;
 if (process.env.ENABLE_PERSISTENT_QUEUE == true || process.env.ENABLE_PERSISTENT_QUEUE == "true") {
@@ -175,6 +177,12 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "lead_create", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_create");
+          winston.info("Data queue", oka)
+        });
+
+
 
         ch.consume(queueName, processMsg, { noAck: false });
         winston.info("Worker is started");
@@ -255,6 +263,14 @@ function work(msg, cb) {
     // requestEvent.emit('request.update.queue',  msg.content);
     botEvent.emit('faqbot.update.queue',  JSON.parse(message_string));
   }
+
+  if (topic === 'lead_create') {
+    winston.debug("reconnect here topic lead_create:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    leadEvent.emit('lead.create.queue',  JSON.parse(message_string));
+  }
+
+
   cb(true);
 //   WebSocket.cb(true);
 //   requestEvent.on(msg.KEYYYYYYY+'.ws', msg.content);
@@ -360,6 +376,15 @@ function listen() {
       });
     });
 
+
+    leadEvent.on('lead.create', function(lead) {
+      setImmediate(() => {
+        winston.debug("reconnect lead.create")
+        publish(exchange, "lead_create", Buffer.from(JSON.stringify(lead)));
+        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
+      });
+    });
+
 }
 
 if (process.env.QUEUE_ENABLED === "true") {
@@ -367,6 +392,7 @@ if (process.env.QUEUE_ENABLED === "true") {
     messageEvent.queueEnabled = true;
     authEvent.queueEnabled = true;
     botEvent.queueEnabled = true;
+    leadEvent.queueEnabled = true;
     listen();
     start();
     winston.info("Queue enabled. endpint: " + url );

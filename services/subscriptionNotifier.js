@@ -202,18 +202,23 @@ class SubscriptionNotifier {
       return 0;
     }
 
+// queued 
+    // var messageCreateKey = 'message.create';
+    // if (messageEvent.queueEnabled) {
+    //   messageCreateKey = 'message.create.queue';
+    // }
+    // messageEvent.on(messageCreateKey, function(message) {   //queued tested
+    //   setImmediate(() => {
+    //     winston.info('SubscriptionNotifier message.create');
+    //     subscriptionNotifier.subscribe('message.create', message);
+    //   });
+    // });
 
-    messageEvent.on('message.create', function(message) {
-      setImmediate(() => {
-        subscriptionNotifier.subscribe('message.create', message);
-      });
-    });
-
-    message2Event.on('message.create.**.channel.*', function(message) {
+    message2Event.on('message.create.**.channel.*', function(message) {    //notqueued high
       // message2Event.on('message.create.request.channel.*', function(message) {
       winston.debug("message2Event: "+this.event, message);
       subscriptionNotifier.subscribe(this.event, message);         
-  }, {async: true});
+    }, {async: true});
 
 
 
@@ -235,72 +240,103 @@ class SubscriptionNotifier {
     // });
 
 
-    requestEvent.on('request.create', function(request) {
-      setImmediate(() => {
-        subscriptionNotifier.subscribe('request.create', request);       
-      });
-    });
 
-    requestEvent.on('request.update', function(request) {
-      setImmediate(() => {
-        subscriptionNotifier.subscribe('request.update', request);
-      });        
-    });
-
-    requestEvent.on('request.close', function(request) {
-      setImmediate(() => {
-        Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
-          var requestJson = request.toJSON();
-          requestJson.messages = messages;
-          subscriptionNotifier.subscribe('request.close', requestJson);
-        });   
-      });
-    });
+// queued 
+    // var requestCreateKey = 'request.create';
+    // if (requestEvent.queueEnabled) {
+    //   requestCreateKey = 'request.create.queue';
+    // }
+    // requestEvent.on(requestCreateKey, function(request) {  //queued tested
+    //   setImmediate(() => {
+    //     winston.info('SubscriptionNotifier request.create');
+    //     subscriptionNotifier.subscribe('request.create', request);       
+    //   });
+    // });
 
 
-      leadEvent.on('lead.create', function(lead) {
-        setImmediate(() => {
-          subscriptionNotifier.subscribe('lead.create', lead);
-        });
-      });
+// queued 
+    // var requestUpdateKey = 'request.update';
+    // if (requestEvent.queueEnabled) {
+    //   requestUpdateKey = 'request.update.queue';
+    // }
+    // requestEvent.on(requestUpdateKey, function(request) {    //queued tested
+    //   setImmediate(() => {
+    //     winston.info('SubscriptionNotifier request.update');
+    //     subscriptionNotifier.subscribe('request.update', request);
+    //   });        
+    // });
 
 
-      botEvent.on('faqbot.create', function(faqBot) {
+    // queued 
+    // var requestCloseKey = 'request.close';   //request.close event here queued under job
+    // if (requestEvent.queueEnabled) {
+    //   requestCloseKey = 'request.close.queue';
+    // }
+    // requestEvent.on(requestCloseKey, function(request) {   //request.close event here noqueued     //queued tested
+    //   winston.info('SubscriptionNotifier request.close');
+    //   winston.info("request.close event here 1")
+    //   setImmediate(() => {
+    //     Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {
+    //       var requestJson = request;
+    //       if (request.toJSON) {
+    //         requestJson = request.toJSON();
+    //       }
+          
+    //       requestJson.messages = messages;
+    //       subscriptionNotifier.subscribe('request.close', requestJson);
+    //     });   
+    //   });
+    // });
+
+
+    // queued 
+    // var leadCreateKey = 'lead.create';   //request.close event here queued under job
+    // if (leadEvent.queueEnabled) {
+    //   leadCreateKey = 'lead.create.queue';
+    // }
+    // leadEvent.on(leadCreateKey, function(lead) {    //notqueued high
+    //   setImmediate(() => {
+    //     subscriptionNotifier.subscribe('lead.create', lead);
+    //   });
+    // });
+
+
+      botEvent.on('faqbot.create', function(faqBot) {  //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faqbot.create', faqBot);
         });
       });
 
-      botEvent.on('faqbot.update', function(faqBot) {
+      botEvent.on('faqbot.update', function(faqBot) {    //queued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faqbot.update', faqBot);
         });
       });
 
-      botEvent.on('faqbot.delete', function(faqBot) {
+      botEvent.on('faqbot.delete', function(faqBot) {    //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faqbot.delete', faqBot);
         });
       });
 
-      faqBotEvent.on('faq.create', function(faq) {
+      faqBotEvent.on('faq.create', function(faq) {       //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faq.create', faq);
         });
       });
 
-      faqBotEvent.on('faq.update', function(faq) {
+      faqBotEvent.on('faq.update', function(faq) {       //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faq.update', faq);
         });
       });
-      faqBotEvent.on('faq.delete', function(faq) {
+      faqBotEvent.on('faq.delete', function(faq) {      //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('faq.delete', faq);
         });
       });
 
-      authEvent.on('user.signup',  function(event) { 
+      authEvent.on('user.signup',  function(event) {    //notqueued
         setImmediate(() => {
           var user = event.savedUser;
           delete user.password;
@@ -312,7 +348,7 @@ class SubscriptionNotifier {
 
       // authEvent.emit('project_user.invite', {req:req, savedProject_userPopulated: savedProject_userPopulated});
 
-      authEvent.on('project_user.invite',  function(event) { 
+      authEvent.on('project_user.invite',  function(event) {   //notqueued
         setImmediate(() => {
           subscriptionNotifier.subscribe('project_user.invite', event.savedProject_userPopulated);         
         });
@@ -320,15 +356,21 @@ class SubscriptionNotifier {
     
       // authEvent.emit('project_user.update', {updatedProject_userPopulated:updatedProject_userPopulated, req: req});
 
-      authEvent.on('project_user.update',  function(event) {      
-        setImmediate(() => {
-          subscriptionNotifier.subscribe('project_user.update', event.updatedProject_userPopulated);         
-        });
-      });
+
+      // queued 
+      // var authProjectUserUpdateKey = 'project_user.update';
+      // if (authEvent.queueEnabled) {
+      //   authProjectUserUpdateKey = 'project_user.update.queue';
+      // }
+      // authEvent.on(authProjectUserUpdateKey,  function(event) {    //notqueued  high
+      //   setImmediate(() => {
+      //     subscriptionNotifier.subscribe('project_user.update', event.updatedProject_userPopulated);         
+      //   });
+      // });
     
       // authEvent.emit('project_user.delete', {req: req, project_userPopulated: project_userPopulated});
 
-     authEvent.on('project_user.delete',  function(event) { 
+     authEvent.on('project_user.delete',  function(event) {      //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('project_user.delete', event.project_userPopulated);               
       });
@@ -337,7 +379,7 @@ class SubscriptionNotifier {
 
      //TODO lanciare user.signin in questo modo uno esternamente con webhook può creare proactive greetings
 
-    departmentEvent.on('operator.select',  function(result) { 
+    departmentEvent.on('operator.select',  function(result) {     //notqueued
       winston.debug("departmentEvent.on(operator.select");
 
       var operatorSelectedEvent = result.result;
@@ -376,53 +418,53 @@ class SubscriptionNotifier {
     });
 
 
-    departmentEvent.on('department.create',  function(department) { 
+    departmentEvent.on('department.create',  function(department) {      //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('department.create', department);         
       });
     });
   
   
-    departmentEvent.on('department.update',  function(department) { 
+    departmentEvent.on('department.update',  function(department) {       //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('department.update', department);         
       });
     });
 
-    departmentEvent.on('department.delete',  function(department) { 
+    departmentEvent.on('department.delete',  function(department) {        //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('department.delete', department);         
       });
     });
 
 
-    groupEvent.on('group.create',  function(group) { 
+    groupEvent.on('group.create',  function(group) {                      //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('group.create', group);         
       });
     });
   
   
-    groupEvent.on('group.update',  function(group) { 
+    groupEvent.on('group.update',  function(group) {                      //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('group.update', group);         
       });
     });
 
-    groupEvent.on('group.delete',  function(group) { 
+    groupEvent.on('group.delete',  function(group) {                      //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('group.delete', group);         
       });
     });
 
-    eventEvent.on('event.emit',  function(event) { 
+    eventEvent.on('event.emit',  function(event) {                        //notqueued
       setImmediate(() => {
         subscriptionNotifier.subscribe('event.emit', event);         
       });
     });
 
     // event2Event.on(name, savedEventPopulated);
-    event2Event.on('**', function(savedEventPopulated) {
+    event2Event.on('**', function(savedEventPopulated) {                //notqueued
       setImmediate(() => {
         winston.debug("eventname",this.event);
         subscriptionNotifier.subscribe('event.emit.'+this.event, savedEventPopulated);         
@@ -430,7 +472,7 @@ class SubscriptionNotifier {
     });
 
 
-    projectEvent.on('project.create',  function(project) { 
+    projectEvent.on('project.create',  function(project) {              //notqueued
       setImmediate(() => {
         var projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
@@ -438,7 +480,7 @@ class SubscriptionNotifier {
       });
     });
 
-    projectEvent.on('project.update',  function(project) { 
+    projectEvent.on('project.update',  function(project) {              //notqueued
       setImmediate(() => {
         var projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
@@ -446,7 +488,7 @@ class SubscriptionNotifier {
       });
     });
 
-    projectEvent.on('project.downgrade',  function(project) { 
+    projectEvent.on('project.downgrade',  function(project) {           //notqueued
       setImmediate(() => {
         var projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;
@@ -454,7 +496,7 @@ class SubscriptionNotifier {
       });
     });
 
-    projectEvent.on('project.delete',  function(project) { 
+    projectEvent.on('project.delete',  function(project) {              //notqueued
       setImmediate(() => {
         var projectJson = project.toJSON();
         projectJson.id_project = projectJson._id;

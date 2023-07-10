@@ -72,6 +72,7 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
     winston.error('Failed to connect to MongoDB on ' + databaseUri + " ", err);
     process.exit(1);
   }
+  winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
   mongoose.set('debug', true);
@@ -133,12 +134,16 @@ var schemaMigrationService = require('./services/schemaMigrationService');
 var RouterLogger = require('./models/routerLogger');
 var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
+const RedisStore = require("connect-redis").default
 
 require('./services/mongoose-cache-fn')(mongoose);
 
 
 var subscriptionNotifier = require('./services/subscriptionNotifier');
 subscriptionNotifier.start();
+
+var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start();
@@ -148,9 +153,8 @@ trainingService.start();
  
 // job_here
 
-
 var geoService = require('./services/geoService');
-// geoService.listen();
+// geoService.listen(); //queued
 
 let JobsManager = require('./jobsManager');
 
@@ -160,7 +164,7 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled,geoService);
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, subscriptionNotifierQueued);
 jobsManager.listen();
 
 
@@ -275,11 +279,49 @@ app.use(passport.initialize());
 if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_STRATEGY=="true" ) {
   winston.info("Express Session disabled");
 } else {
+
   // https://www.npmjs.com/package/express-session
   let sessionSecret = process.env.SESSION_SECRET || "tiledesk-session-secret";
-  winston.info("Express Session Secret: " + sessionSecret);
-  app.use(session({ secret: sessionSecret}));
+
+  if (process.env.ENABLE_REDIS_SESSION==true ||  process.env.ENABLE_REDIS_SESSION=="true" ) {
+  
+      // Initialize client.
+      // let redisClient = createClient()
+      // redisClient.connect().catch(console.error)
+
+      let cacheClient = undefined;
+      if (pubModulesManager.cache) {
+        cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
+      }
+      // winston.info("Express Session cacheClient",cacheClient);
+
+
+      let redisStore = new RedisStore({
+        client: cacheClient,
+        prefix: "sessions:",
+      })
+
+
+      app.use(
+        session({
+          store: redisStore,
+          resave: false, // required: force lightweight session keep alive (touch)
+          saveUninitialized: false, // recommended: only save session when data exists
+          secret: sessionSecret
+        })
+      )
+      winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
+
+
+  } else {
+    app.use(session({ secret: sessionSecret}));
+    winston.info("Express Session enabled with Secret: " + sessionSecret);
+
+  }
+
   app.use(passport.session());
+  
+  
 }
 
 //ATTENTION. If you use AWS Api Gateway you need also to configure the cors policy https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors-console.html
