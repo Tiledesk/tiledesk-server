@@ -21,7 +21,7 @@ router.get('/:userid', function (req, res) {
     return res.status(404).send({ success: false, msg: 'User id not found' });
   }
 
-  User.findById(userid, 'firstname lastname _id', function (err, user) {
+  User.findById(userid, 'firstname lastname _id public_website public_email description', function (err, user) {
     if (err) {
       winston.error('Error getting object.',err);
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
