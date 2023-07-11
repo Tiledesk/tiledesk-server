@@ -643,7 +643,7 @@ class WebSocketServer {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue.pubsub';
     }
-    winston.debug('messageCreateKey: ' + messageCreateKey);
+    winston.debug('WS messageCreateKey: ' + messageCreateKey);
 
     messageEvent.on(messageCreateKey, function (message) {
       setImmediate(async () => {
