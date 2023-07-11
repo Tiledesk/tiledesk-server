@@ -5,12 +5,20 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.39
+- Queued botSubscriptionNotifier
+- added lead.create to the queue????? testare di nuovo
+- @tiledesk/tiledesk-tybot-connector: 0.1.89
+- jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
+
+# 2.4.38
+- str fix
 
 # 2.4.37
 - added replyto to email endpoint
 - tiledesk/tiledesk-tybot-connector: 0.1.88
 - added lead.create to the queue
-- added subscriptionNotifiedQueued for the most common events (request.create, request.update, request.close, lead.create, project_user.update)
+- added subscriptionNotifiedQueued for the most common events (message.create, request.create, request.update, request.close, lead.create, project_user.update)
 
 
 # 2.4.36
@@ -19,7 +27,7 @@
 # 2.4.35
 - tiledesk/tiledesk-tybot-connector: 0.1.87
 
-# 2.4.34
+# 2.4.34 -> ERRORE PAGAMENTO
 - tiledesk/tiledesk-tybot-connector:0.1.83
 - stateless as default for Google Strategy
 - added redis session for google auth. To enable it put ENABLE_REDIS_SESSION to true otherwise standard passport session is used
