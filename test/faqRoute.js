@@ -373,7 +373,7 @@ describe('FaqKBRoute', () => {
         })
 
 
-        it('uploadcsv qwerty', (done) => {
+        it('uploadcsv', (done) => {
 
 
             //   this.timeout();
