@@ -23,6 +23,9 @@ let JobsManager = require('./jobsManager');
 let geoService = require('./services/geoService');
 // let subscriptionNotifier = require('./services/subscriptionNotifier');
 var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued');
+var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
+
+const botEvent = require('./event/botEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -60,7 +63,7 @@ async function main()
     
     // require('@tiledesk-ent/tiledesk-server-queue');     
 
-    let jobsManager = new JobsManager(undefined, geoService, subscriptionNotifierQueued);
+    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier);
 
     jobsManager.listen();
 
@@ -71,6 +74,8 @@ async function main()
    
     let activityArchiver = require('./pubmodules/activities').activityArchiver;    
     jobsManager.listenActivityArchiver(activityArchiver);
+
+
 
     winston.info("Jobs started"); 
 

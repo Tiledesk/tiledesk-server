@@ -135,6 +135,7 @@ var RouterLogger = require('./models/routerLogger');
 var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
+const botEvent = require('./event/botEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -146,7 +147,9 @@ var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued'
 
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
-botSubscriptionNotifier.start();
+// botSubscriptionNotifier.start(); //queued
+
+// botEvent.listen(); queued
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
@@ -164,10 +167,7 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled, geoService, subscriptionNotifierQueued);
-jobsManager.listen();
-
-
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier);
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
@@ -175,6 +175,8 @@ faqBotHandler.listen();
 var pubModulesManager = require('./pubmodules/pubModulesManager');
 pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, databaseUri:databaseUri, routes:{}, jobsManager:jobsManager});
   
+jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
+
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 

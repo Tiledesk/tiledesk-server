@@ -27,11 +27,13 @@ class SubscriptionNotifierQueued {
     if (messageEvent.queueEnabled) {
       messageCreateKey = 'message.create.queue';
     }
+    winston.debug('SubscriptionNotifierQueued messageCreateKey: ' + messageCreateKey);
+
     messageEvent.on(messageCreateKey, function(message) {   //queued tested
       setImmediate(() => {
-        winston.debug('SubscriptionNotifier message.create');
+        winston.debug('SubscriptionNotifierQueued message.create');
         subscriptionNotifier.subscribe('message.create', message);
-        winston.debug('SubscriptionNotifier message.create sent');
+        winston.debug('SubscriptionNotifierQueued message.create sent');
       });
     });
 

@@ -14,6 +14,102 @@ class BotEvent extends EventEmitter {
         this.queueEnabled = false;
         this.setMaxListeners(11);
       }
+
+
+      listen() {
+        //TODO modify to async
+        //messageEvent.on('message.received', function(message) {
+
+
+        var messageCreateKey = 'message.create';
+        if (messageEvent.queueEnabled) {
+            messageCreateKey = 'message.create.queue';
+        }
+
+        winston.info("Listening messageCreateKey" + messageCreateKey + " for Chatbot messages");
+
+        messageEvent.on(messageCreateKey, function(message) {
+
+            winston.debug("message", message);
+
+            // TODO usa meglio se attributes.reply_always=true
+            if (message.sender === "system" && message.text && message.text!="\\start") {
+                winston.debug("it s a message sent from system, exit");
+                return null;
+            }
+            
+            if (message.text && ( message.text.indexOf("\\agent") > -1 || message.text.indexOf("\\close") > -1)) { //not reply to a message containing \\agent
+                return 0;
+            }
+
+            // if (message.text.startsWith("\\")) { //not reply to a message containing \
+            //     return null;
+            // }
+            
+        var botId = getBotId(message);
+
+        winston.debug("botId: " + botId);
+
+        if (!botId) {
+                return null;
+            }else {
+                                                        //loop fix for messages sent from external bot    
+                // botprefix         
+                if (message.sender === 'bot_'+botId || message.sender === botId) {
+                    winston.debug("it s a message sent from bot, exit");
+                    return null;        
+                }else {
+                    messageEvent.emit('message.received.for.bot', message);  //UNUSED
+                }
+
+            }
+
+            // qui potresti leggere anche +secret ed evitare prossima query in botNotification
+            let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
+        //TODO unselect secret. secret is unselectable by default in the model
+
+                if (cacheEnabler.faq_kb) {
+                    winston.debug('message.id_project+":faq_kbs:id:"+botId: '+ message.id_project+":faq_kbs:id:"+botId);  
+                qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
+                winston.debug('faq_kb cache enabled');
+                }
+
+                qbot.exec(function(err, bot) {
+
+
+            
+                if (err) {
+                winston.error('Error getting object.', err);
+                return 0;
+                }
+                if (!bot) {
+                    winston.warn('Bot not found with id '+botId);
+                }
+
+                winston.debug("bot debug", bot);
+
+                if (bot) {
+                    if (bot.type==="internal") {
+                        botEvent.emit('bot.message.received.notify.internal', message);
+                    
+                    }else {  //external 
+                        if (bot.url) {
+                            var botNotification = {bot: bot, message: message};
+                            botEvent.emit('bot.message.received.notify.external', botNotification);
+                        }else {
+                            winston.warn("bot url is not defined", bot);
+                        }
+                    }
+                } 
+
+            });
+            
+
+
+        });
+
+      }
+
 }
 
 const botEvent = new BotEvent();
@@ -79,87 +175,6 @@ function getBotId(message) {
  
 }
 
-//TODO modify to async
-//messageEvent.on('message.received', function(message) {
-messageEvent.on('message.create', function(message) {
-
-    winston.debug("message", message);
-
-    // TODO usa meglio se attributes.reply_always=true
-    if (message.sender === "system" && message.text && message.text!="\\start") {
-        winston.debug("it s a message sent from system, exit");
-        return null;
-    }
-    
-    if (message.text && ( message.text.indexOf("\\agent") > -1 || message.text.indexOf("\\close") > -1)) { //not reply to a message containing \\agent
-        return 0;
-    }
-
-    // if (message.text.startsWith("\\")) { //not reply to a message containing \
-    //     return null;
-    // }
-    
-   var botId = getBotId(message);
-
-   winston.debug("botId: " + botId);
-
-   if (!botId) {
-        return null;
-    }else {
-                                                //loop fix for messages sent from external bot    
-        // botprefix         
-        if (message.sender === 'bot_'+botId || message.sender === botId) {
-            winston.debug("it s a message sent from bot, exit");
-            return null;        
-        }else {
-            messageEvent.emit('message.received.for.bot', message);
-        }
-
-    }
-
-
-    let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
-//TODO unselect secret. secret is unselectable by default in the model
-
-        if (cacheEnabler.faq_kb) {
-            winston.debug('message.id_project+":faq_kbs:id:"+botId: '+ message.id_project+":faq_kbs:id:"+botId);  
-          qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
-          winston.debug('faq_kb cache enabled');
-        }
-
-        qbot.exec(function(err, bot) {
-
-
-    
-        if (err) {
-          winston.error('Error getting object.', err);
-          return 0;
-        }
-        if (!bot) {
-            winston.warn('Bot not found with id '+botId);
-        }
-
-        winston.debug("bot", bot);
-
-        if (bot) {
-            if (bot.type==="internal") {
-                botEvent.emit('bot.message.received.notify.internal', message);
-               
-            }else {  //external 
-                if (bot.url) {
-                    var botNotification = {bot: bot, message: message};
-                    botEvent.emit('bot.message.received.notify.external', botNotification);
-                }else {
-                    winston.warn("bot url is not defined", bot);
-                }
-            }
-        } 
-
-    });
-    
-
-
-});
 
 
 module.exports = botEvent;
