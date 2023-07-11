@@ -7,23 +7,36 @@ var winston = require('../config/winston');
 const authEvent = require('../event/authEvent');
 const uuidv4 = require('uuid/v4');
 
-
-
-
-
 router.put('/', function (req, res) {
 
   winston.debug('UPDATE USER - REQ BODY ', req.body);
 
   var update = {};
-  
-  update.firstname = req.body.firstname;
-  update.lastname = req.body.lastname;
-  update.attributes = req.body.attributes;
-  update.description = req.body.description;
-  
-  
 
+  // update.firstname = req.body.firstname;
+  // update.lastname = req.body.lastname;
+  // update.attributes = req.body.attributes;
+  // update.description = req.body.description;
+
+  if (req.body.firstname != undefined) {
+    update.firstname = req.body.firstname;
+  }
+  if (req.body.lastname != undefined) {
+    update.lastname = req.body.lastname;
+  }
+  if (req.body.attributes != undefined) {
+    update.attributes = req.body.attributes;
+  }
+  if (req.body.description != undefined) {
+    update.description = req.body.description;
+  }
+  if (req.body.public_email != undefined) {
+    update.public_email = req.body.public_email;
+  }
+  if (req.body.public_website != undefined) {
+    update.public_website = req.body.public_website;
+  }
+ 
   User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
     if (err) {
       winston.error("Error putting user",err);

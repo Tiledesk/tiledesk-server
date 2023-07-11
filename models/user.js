@@ -15,7 +15,7 @@ var UserSchema = new Schema({
         type: String,
         required: true,
         // https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
-        select: false 
+        select: false
     },
     firstname: {
         type: String,
@@ -31,10 +31,10 @@ var UserSchema = new Schema({
     },
     resetpswrequestid: {
         type: String,
-        select: false 
+        select: false
     },
     signedInAt: {
-        type:Date
+        type: Date
     },
 
     // db.users.find({authUrl: {$exists : false }}).forEach(function(mydoc) {
@@ -43,7 +43,7 @@ var UserSchema = new Schema({
 
     authUrl: {
         type: String,
-        index:true
+        index: true
     },
     attributes: {
         type: Object,
@@ -54,10 +54,18 @@ var UserSchema = new Schema({
         default: 100,
         index: true,
         // select: false
-    }, 
+    },
     description: {
         type: String,
     },
+    public_email: {
+        type: String,
+        required: false
+    },
+    public_website: {
+        type: String,
+        required: false
+    }
     // authType: { // update db old data
     //     type: String,
     //     index:true,
@@ -68,9 +76,9 @@ var UserSchema = new Schema({
     //     ref: 'auth',
     //     //required: true
     //   },       
-    },{
-      timestamps: true
-    }
+}, {
+    timestamps: true
+}
 );
 
 // UserSchema.set('toJSON', {
@@ -111,8 +119,8 @@ UserSchema.methods.comparePassword = function (passw, cb) {
 
 UserSchema.virtual('fullName').get(function () {
     return (this.firstname || '') + ' ' + (this.lastname || '');
-  });
-  
+});
+
 
 //UserSchema.index({ email: 1, authType: 1 }, { unique: true }); 
 
@@ -126,6 +134,6 @@ var UserModel = mongoose.model('user', UserSchema);
 if (process.env.MONGOOSE_SYNCINDEX) {
     UserModel.syncIndexes();
     winston.info("UserModel syncIndexes")
-  }
+}
 
 module.exports = UserModel;
