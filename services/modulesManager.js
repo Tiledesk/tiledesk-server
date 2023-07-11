@@ -145,14 +145,15 @@ class ModulesManager {
 
 
         try {
-            this.stripe = require('@tiledesk-ent/tiledesk-server-payments').stripeRoute;
+            this.stripe = require('../pubmodules/s').stripeRoute;
+            // this.stripe = require('@tiledesk-ent/tiledesk-server-payments').stripeRoute;
             winston.info("ModulesManager stripe initialized");
         } catch(err) {
         //    if (err.code == 'MODULE_NOT_FOUND') {
         //        winston.info("ModulesManager init stripe module not found");
         //    }else {
                 winston.error("ModulesManager error initializing init stripe module", err);
-        //    }
+        //    }   
         } 
 
 
