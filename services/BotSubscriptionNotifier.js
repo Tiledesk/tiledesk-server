@@ -19,7 +19,7 @@ class BotSubscriptionNotifier {
   
   notify(bot,botWithSecret, payload) {
   
-      winston.verbose("BotSubscriptionNotifier bot", bot.toObject());
+      winston.debug("BotSubscriptionNotifier bot", bot.toObject());
       winston.debug("BotSubscriptionNotifier payload", payload );
 
       var url = bot.url;

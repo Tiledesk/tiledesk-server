@@ -26,7 +26,7 @@ class BotEvent extends EventEmitter {
             messageCreateKey = 'message.create.queue';
         }
 
-        winston.info("Listening messageCreateKey" + messageCreateKey + " for Chatbot messages");
+        winston.info("Listening " + messageCreateKey + " event for Chatbot messages");
 
         messageEvent.on(messageCreateKey, function(message) {
 
