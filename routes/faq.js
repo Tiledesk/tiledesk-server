@@ -10,6 +10,7 @@ const faqEvent = require('../event/faqBotEvent')
 
 var parsecsv = require("fast-csv");
 const botEvent = require('../event/botEvent');
+const uuidv4 = require('uuid/v4');
 csv = require('csv-express');
 csv.separator = ';';
 
@@ -21,21 +22,22 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
   winston.debug(' -> FILE ', req.file);
 
   var id_faq_kb = req.body.id_faq_kb;
-  winston.debug('id_faq_kb: '+id_faq_kb);
+  winston.debug('id_faq_kb: ' + id_faq_kb);
 
   var delimiter = req.body.delimiter || ";";
-  winston.debug('delimiter: '+delimiter);
+  winston.debug('delimiter: ' + delimiter);
 
   var csv = req.file.buffer.toString('utf8');
+  console.log("--> csv: ", csv)
   // winston.debug(' -> CSV STRING ', csv);
 
   // res.json({ success: true, msg: 'Importing CSV...' });
 
   // PARSE CSV
- 
 
 
-  Faq_kb.findById(id_faq_kb).exec(function(err, faq_kb) {
+
+  Faq_kb.findById(id_faq_kb).exec(function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -44,17 +46,44 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
     }
     winston.debug('faq_kb ', faq_kb.toJSON());
 
-  // getFaqKbKeyById(req.body.id_faq_kb, function (remote_faqkb_key) {
+    // getFaqKbKeyById(req.body.id_faq_kb, function (remote_faqkb_key) {
 
     parsecsv.parseString(csv, { headers: false, delimiter: delimiter })
       .on("data", function (data) {
         winston.debug('PARSED CSV ', data);
 
+        console.log('--> PARSED CSV ', data);
+
         var question = data[0]
-        var answer = data[1]
+        //var answer = data[1]
         var intent_id = data[2];
         var intent_display_name = data[3];
         var webhook_enabled = data[4];
+
+
+        var actions = [
+          {
+            _tdActionType: "reply",
+            _tdActionId: uuidv4(),
+            text: data[1],
+            attributes: {
+              commands: [
+                {
+                  type: "wait",
+                  time: 500
+                },
+                {
+                  type: "message",
+                  message: {
+                    type: "text",
+                    text: data[1]
+                  }
+                }
+              ]
+            }
+
+          }
+        ]
 
         var webhook_enabled_boolean = false;
         if (webhook_enabled) {
@@ -67,8 +96,9 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
         var newFaq = new Faq({
           id_faq_kb: id_faq_kb,
           question: question,
-          answer: answer,
-          intent_id:intent_id,
+          //answer: answer,
+          actions: actions,
+          intent_id: intent_id,
           intent_display_name: intent_display_name,
           webhook_enabled: webhook_enabled_boolean,
           language: faq_kb.language,
@@ -76,6 +106,8 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           createdBy: req.user.id,
           updatedBy: req.user.id
         });
+
+        console.log("--> newFaq: ", JSON.stringify(newFaq, null, 2));
 
         newFaq.save(function (err, savedFaq) {
           if (err) {
@@ -85,7 +117,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           } else {
             faqBotEvent.emit('faq.create', savedFaq);
           }
-          
+
         });
       })
       .on("end", function () {
@@ -105,7 +137,7 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
 
-  Faq_kb.findById(req.body.id_faq_kb).exec(function(err, faq_kb) {
+  Faq_kb.findById(req.body.id_faq_kb).exec(function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -148,7 +180,7 @@ router.post('/', function (req, res) {
         } else {
           winston.debug('--- > ERROR ', err)
           return res.status(500).send({ success: false, msg: 'Error saving object.' });
-        }     
+        }
       }
       winston.debug('1. ID OF THE NEW FAQ CREATED ', savedFaq._id)
       winston.debug('1. QUESTION OF THE NEW FAQ CREATED ', savedFaq.question)
@@ -160,7 +192,7 @@ router.post('/', function (req, res) {
 
       res.json(savedFaq);
 
-    
+
     });
   });
 });
@@ -187,7 +219,7 @@ router.patch('/:faqid/attributes', function (req, res) {
 
     winston.debug("updatedFaq attributes", updatedFaq.attributes);
 
-    Object.keys(data).forEach(function(key) {
+    Object.keys(data).forEach(function (key) {
       var val = data[key];
       winston.debug("data attributes" + key + " " + val);
       updatedFaq.attributes[key] = val;
@@ -221,38 +253,38 @@ router.put('/:faqid', function (req, res) {
   winston.debug('UPDATE FAQ ', req.body);
 
   var update = {};
-  
-  if (req.body.intent!=undefined) {
+
+  if (req.body.intent != undefined) {
     update.intent = req.body.intent;
   }
-  if (req.body.question!=undefined) {
+  if (req.body.question != undefined) {
     update.question = req.body.question;
   }
-  if (req.body.answer!=undefined) {
+  if (req.body.answer != undefined) {
     update.answer = req.body.answer;
   }
-  if (req.body.topic!=undefined) {
+  if (req.body.topic != undefined) {
     update.topic = req.body.topic;
   }
-  if (req.body.status!=undefined) {
+  if (req.body.status != undefined) {
     update.status = req.body.status;
   }
-  if (req.body.language!=undefined) {
+  if (req.body.language != undefined) {
     update.language = req.body.language;
   }
-  if (req.body.intent_display_name!=undefined) {
+  if (req.body.intent_display_name != undefined) {
     update.intent_display_name = req.body.intent_display_name;
   }
-  if (req.body.webhook_enabled!=undefined) {
+  if (req.body.webhook_enabled != undefined) {
     update.webhook_enabled = req.body.webhook_enabled;
   }
-  if (req.body.enabled!=undefined) {
+  if (req.body.enabled != undefined) {
     update.enabled = req.body.enabled;
   }
-  if (req.body.reply!=undefined) {
+  if (req.body.reply != undefined) {
     update.reply = req.body.reply;
   }
-  if (req.body.form!=undefined) {
+  if (req.body.form != undefined) {
     update.form = req.body.form;
   }
   if (req.body.actions != undefined) {
@@ -266,7 +298,7 @@ router.put('/:faqid', function (req, res) {
     if (err) {
       if (err.code == 11000) {
         return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
-      }else {
+      } else {
         return res.status(500).send({ success: false, msg: 'Error updating object.' });
       }
     }
@@ -315,16 +347,18 @@ router.get('/csv', function (req, res) {
 
   winston.debug('EXPORT FAQS TO CSV QUERY', query);
 
-   Faq.find(query, 'question answer intent_id intent_display_name webhook_enabled -_id').lean().exec(function (err, faqs) {
+  Faq.find(query, 'question answer intent_id intent_display_name webhook_enabled -_id').lean().exec(function (err, faqs) {
     if (err) {
       winston.debug('EXPORT FAQS TO CSV ERR', err)
       return (err)
     };
     var csv = [];
-    faqs.forEach(function(element) {
-      var row = {question: element.question, answer: element.answer, 
+    faqs.forEach(function (element) {
+      var row = {
+        question: element.question, answer: element.answer,
         intent_id: element.intent_id, intent_display_name: element.intent_display_name,
-        webhook_enabled: element.webhook_enabled || false }
+        webhook_enabled: element.webhook_enabled || false
+      }
       csv.push(row);
     });
     winston.debug('EXPORT FAQ TO CSV FAQS', csv)
@@ -363,9 +397,9 @@ router.get('/', function (req, res, next) {
 
   var limit = 3000; // Number of request per page
 
-  if (req.query.limit) {    
+  if (req.query.limit) {
     limit = parseInt(req.query.limit);
-    winston.debug('faq ROUTE - limit: '+limit);
+    winston.debug('faq ROUTE - limit: ' + limit);
   }
 
   var page = 0;
@@ -388,15 +422,15 @@ router.get('/', function (req, res, next) {
   }
 
   if (req.query.intent_display_name) {
-    query.intent_display_name=req.query.intent_display_name
+    query.intent_display_name = req.query.intent_display_name
   }
-  
+
 
   winston.debug("GET FAQ query", query);
 
   // query.$text = {"$search": "question"};
 
-// TODO ORDER BY SCORE
+  // TODO ORDER BY SCORE
   // return Faq.find(query,  {score: { $meta: "textScore" } }) 
   // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
 
@@ -404,11 +438,11 @@ router.get('/', function (req, res, next) {
   // return Faq.search('a closer', (err, result) => {
   //   console.log("result: ", result);
   // })
-  
+
   return Faq.find(query).
-  skip(skip).limit(limit).
-  populate({path:'faq_kb'})//, match: { trashed: { $in: [null, false] } }}).
-  .exec(function (err, faq) {
+    skip(skip).limit(limit).
+    populate({ path: 'faq_kb' })//, match: { trashed: { $in: [null, false] } }}).
+    .exec(function (err, faq) {
       winston.debug("GET FAQ ", faq);
 
       if (err) {
@@ -420,7 +454,7 @@ router.get('/', function (req, res, next) {
 
     });
 
-  
+
 });
 
 
