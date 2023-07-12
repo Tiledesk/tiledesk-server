@@ -147,9 +147,9 @@ var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued'
 
 
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
-// botSubscriptionNotifier.start(); //queued
+botSubscriptionNotifier.start(); //queued but disabled
 
-// botEvent.listen(); queued
+botEvent.listen(); //queued but disabled
 
 var trainingService = require('./services/trainingService');
 trainingService.start();

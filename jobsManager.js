@@ -27,12 +27,13 @@ class JobsManager {
            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listeners");  
         }
         this.geoService.listen();
-        this.botEvent.listen();
+        
+        // this.botEvent.listen(); // disabled
 
         // this.subscriptionNotifier.start();
         this.subscriptionNotifierQueued.start();
 
-        this.botSubscriptionNotifier.start();
+        // this.botSubscriptionNotifier.start(); // disabled
     }
 
     listenEmailNotification(emailNotification) {      
@@ -44,7 +45,7 @@ class JobsManager {
         this.emailNotification.requestNotification.listen();
     }
 
-   
+
 
     listenActivityArchiver(activityArchiver) {
         winston.info("JobsManager listenActivityArchiver started"); 
