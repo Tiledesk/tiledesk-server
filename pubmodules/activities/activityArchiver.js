@@ -42,6 +42,7 @@ class ActivityArchiver {
         activityEvent.on('lead.download.csv', this.save);
 */
       
+//  works only if worker is disabled
       var authProjectUserInvitePendingKey = 'project_user.invite.pending';  //Don't work if job_worker enabled because queue.worker is disabled
       // if (authEvent.queueEnabled) { //queue not supported.
       //   authProjectUserInvitePendingKey = 'project_user.invite.pending.queue';
@@ -63,6 +64,10 @@ class ActivityArchiver {
        
         });
       
+
+
+
+//  works only if worker is disabled
         var authProjectUserInviteKey = 'project_user.invite';   //Don't work if job_worker enabled because queue.worker is disabled
         // if (authEvent.queueEnabled) { //queue not supported
         //   authProjectUserInviteKey = 'project_user.invite.queue';
@@ -84,6 +89,9 @@ class ActivityArchiver {
             
           });
         });
+
+
+
       
       // verified with queue
         var authProjectUserUpdateKey = 'project_user.update';
@@ -125,7 +133,7 @@ class ActivityArchiver {
         
        });
       
-
+//  works only if worker is disabled
        var authProjectUserDeleteKey = 'project_user.delete';     //Don't work if job_worker enabled because queue.worker is disabled
       //  if (authEvent.queueEnabled) { //queue not supported
       //   authProjectUserDeleteKey = 'project_user.delete.queue';
@@ -147,8 +155,10 @@ class ActivityArchiver {
           
         });
       });
-      
 
+
+      
+// disabled why? performance?
       // var authUserSignineKey = 'user.signin';
       // // if (authEvent.queueEnabled) { //queue not supported
       // //   authUserSignineKey = 'user.signin.queue';
