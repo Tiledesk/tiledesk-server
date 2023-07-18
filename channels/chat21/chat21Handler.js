@@ -85,6 +85,8 @@ class Chat21Handler {
 
         
       
+        // chat21Handler on worker is loaded with stadard events like request.create and NOT request.create.queue because it is used internally by the worker when the request is closed by ChatUnhandledRequestScheduler
+
         // su projectUser create e update
         authEvent.on('user.signup', function(userData) {
             var firstName = userData.savedUser.firstname;
@@ -258,7 +260,7 @@ class Chat21Handler {
                         });
         });
        
-
+        // chat21Handler on worker is loaded with stadard events like request.create and NOT request.create.queue because it is used internally by the worker when the request is closed by ChatUnhandledRequestScheduler
         messageEvent.on('message.sending', function(message) {
 
             // setImmediate(() => {
@@ -358,7 +360,7 @@ class Chat21Handler {
                            return  chat21.messages.sendToGroup(message.senderFullname,     message.recipient, 
                                 recipient_fullname, message.text, message.sender, attributes, message.type, message.metadata, timestamp)
                                         .then(function(data){
-                                            winston.verbose("Chat21Sender sendToGroup sent: "+ JSON.stringify(data));
+                                            winston.verbose("Chat21Sender sendToGroup sent: "+ JSON.stringify(data) + " for text message " + message.text);
                                     
 
                                             // chat21.conversations.stopTyping(message.recipient,message.sender);
@@ -520,6 +522,8 @@ class Chat21Handler {
             //     });
             // });
 
+
+            // chat21Handler on worker is loaded with stadard events like request.create and NOT request.create.queue because it is used internally by the worker when the request is closed by ChatUnhandledRequestScheduler
             requestEvent.on('request.create',  function(request) {          
 
                 winston.debug("chat21Handler requestEvent request.create called" , request);
@@ -632,9 +636,10 @@ class Chat21Handler {
             });
     
 
-            
-            requestEvent.on('request.close',  function(request) {          
+            // chat21Handler on worker is loaded with stadard events like request.create and NOT request.create.queue because it is used internally by the worker when the request is closed by ChatUnhandledRequestScheduler
 
+            requestEvent.on('request.close',  function(request) {          //request.close event here noqueued
+                winston.debug("request.close event here 8")
                 winston.debug("chat21Handler requestEvent request.close called" , request);
 
                 setImmediate(() => {
