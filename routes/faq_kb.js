@@ -363,7 +363,6 @@ router.put('/:faq_kbid/language/:language', (req, res) => {
         botEvent.emit('faqbot.update', updatedFaq_kb);
         return res.status(500).send({ success: false, msg: 'Error updating multiple object.' });
       }
-      console.log("updateMany intents result: ", result)
       return res.status(200).send(updatedFaq_kb)
     })
 

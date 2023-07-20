@@ -28,7 +28,6 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
   winston.debug('delimiter: ' + delimiter);
 
   var csv = req.file.buffer.toString('utf8');
-  console.log("--> csv: ", csv)
   // winston.debug(' -> CSV STRING ', csv);
 
   // res.json({ success: true, msg: 'Importing CSV...' });
@@ -51,8 +50,6 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
     parsecsv.parseString(csv, { headers: false, delimiter: delimiter })
       .on("data", function (data) {
         winston.debug('PARSED CSV ', data);
-
-        console.log('--> PARSED CSV ', data);
 
         var question = data[0]
         //var answer = data[1]
@@ -106,8 +103,6 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           createdBy: req.user.id,
           updatedBy: req.user.id
         });
-
-        console.log("--> newFaq: ", JSON.stringify(newFaq, null, 2));
 
         newFaq.save(function (err, savedFaq) {
           if (err) {
@@ -199,7 +194,6 @@ router.post('/', function (req, res) {
 
 router.patch('/:faqid/attributes', function (req, res) {
   let data = req.body;
-  console.log("data: ", data);
 
   Faq.findById(req.params.faqid, function (err, updatedFaq) {
     if (err) {
@@ -212,7 +206,6 @@ router.patch('/:faqid/attributes', function (req, res) {
     }
 
     if (!updatedFaq.attributes) {
-      console.log("empty attributes");
       winston.debug("empty attributes");
       updatedFaq.attributes = {};
     }
@@ -225,9 +218,6 @@ router.patch('/:faqid/attributes', function (req, res) {
       updatedFaq.attributes[key] = val;
     })
 
-    console.log("updatedFaq: ", updatedFaq);
-    console.log("updatedFaq attributes: ", updatedFaq.attributes);
-
     winston.debug("updatedBot attributes", updatedFaq.attributes)
 
     updatedFaq.markModified('attributes');
@@ -238,8 +228,6 @@ router.patch('/:faqid/attributes', function (req, res) {
         winston.error("saving faq attributes ERROR: ", err);
         return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
-
-      console.log("saved faq attributes", savedFaq.toObject());
 
       winston.verbose("saved faq attributes", savedFaq.toObject());
       faqBotEvent.emit('faq.update', savedFaq);
