@@ -493,7 +493,8 @@ class PubModulesManager {
         
         if (this.scheduler) {
             try {
-                this.scheduler.taskRunner.start();     
+                // this.scheduler.taskRunner.start();     
+                this.jobsManager.listenScheduler(this.scheduler);
                 winston.info("PubModulesManager scheduler started.");   
             } catch(err) {        
                 winston.info("PubModulesManager error starting scheduler module", err);            
@@ -515,6 +516,7 @@ class PubModulesManager {
         if (this.routingQueue) {
             try {
                 this.routingQueue.listen();
+                // this.jobsManager.listenRoutingQueue(this.routingQueue);
                 winston.info("PubModulesManager routingQueue started");
             } catch(err) {        
                 winston.info("PubModulesManager error starting routingQueue module", err);            

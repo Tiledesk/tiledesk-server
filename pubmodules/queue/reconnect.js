@@ -17,7 +17,9 @@ var url = process.env.CLOUDAMQP_URL + "?heartbeat=60" || "amqp://localhost";
 // attento devi aggiornare configMap di PRE E PROD
 // var url = process.env.AMQP_URL + "?heartbeat=60" || "amqp://localhost?heartbeat=60";
 
+// var durable = true;
 var durable = false;
+
 // if (process.env.ENABLE_DURABLE_QUEUE == false || process.env.ENABLE_DURABLE_QUEUE == "false") {
 //   durable = false;
 // }
@@ -67,10 +69,10 @@ function whenConnected() {
   winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
   if (jobWorkerEnabled == false) {
-    winston.info("Queue Reconnect start worker");
+    winston.info("Queue Reconnect starts queue worker (queue observer)");
     startWorker();
   } else {
-    winston.info("Queue Reconnect without worker because external worker is enabled");
+    winston.info("Queue Reconnect without queue worker (queue observer) because external worker is enabled");
   }
   
 }
@@ -328,9 +330,10 @@ function listen() {
       });
     });
 
-
+    // winston.debug("sub to reconnect request.close");
     requestEvent.on('request.close', function(request) {
       setImmediate(() => {
+        winston.debug("reconnect request.close");
         publish(exchange, "request_close", Buffer.from(JSON.stringify(request)));
       });
     });
@@ -395,6 +398,6 @@ if (process.env.QUEUE_ENABLED === "true") {
     leadEvent.queueEnabled = true;
     listen();
     start();
-    winston.info("Queue enabled. endpint: " + url );
+    winston.info("Queue enabled. endpoint: " + url );
 } 
 

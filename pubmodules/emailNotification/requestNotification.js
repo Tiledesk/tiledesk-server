@@ -83,14 +83,14 @@ listen() {
 
           //messages sent from admins or agents to requester
           if (message.sender != message.request.lead.lead_id) {
-            winston.verbose("sending sendToUserEmailChannelEmail for EMAIL or FORM channel");
+            winston.debug("sending sendToUserEmailChannelEmail for EMAIL or FORM channel");
              
             //send email notification to requester (send also to followers)
             return that.sendToUserEmailChannelEmail(message.id_project, message);        
           } else { //messages sent from requester to agents or admins
 
             if (message.text != message.request.first_text) {              
-              winston.verbose("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel");
+              winston.debug("sending sendToAgentEmailChannelEmail for EMAIL or FORM channel");
 
               //send email notification to admins and agents(send also to followers)
               return that.sendToAgentEmailChannelEmail(message.id_project, message);           
@@ -140,7 +140,7 @@ listen() {
    
         /*
         if (request && (request.channel.name===ChannelConstants.EMAIL || request.channel.name===ChannelConstants.FORM )) {
-          winston.verbose("sending sendEmailChannelTakingNotification for EMAIL or FORM channel");
+          winston.debug("sending sendEmailChannelTakingNotification for EMAIL or FORM channel");
          that.sendEmailChannelTakingNotification(request.id_project, request)
         } 
         */
@@ -190,7 +190,7 @@ listen() {
     if (requestEvent.queueEnabled) {
       requestCloseExtendedKey = 'request.close.extended.queue';
     }
-    winston.debug('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);
+    winston.debug('RequestNotification requestCloseExtendedKey: ' + requestCloseExtendedKey);    //request.close event here queued under job
     requestEvent.on(requestCloseExtendedKey, function(data) {
       winston.debug('requestEvent.on(requestCloseExtendedKey ' + requestCloseExtendedKey);
       setImmediate(() => {
@@ -563,7 +563,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                          if (!user) {
                           winston.warn("User not found", userid);
                          } else {
-                           winston.verbose("Sending sendNewPooledMessageNotification to user with email: "+ user.email);
+                           winston.debug("Sending sendNewPooledMessageNotification to user with email: "+ user.email);
                            if (user.emailverified) {
                              emailService.sendNewPooledMessageEmailNotification(user.email, savedRequest, project, message);
                            }else {
@@ -997,7 +997,7 @@ sendAgentEmail(projectid, savedRequest) {
                           if (!user) {
                             winston.warn("User not found",  savedRequest.participants[0]);
                           } else {
-                            winston.verbose("Sending sendNewAssignedRequestNotification to user with email", user.email);
+                            winston.debug("Sending sendNewAssignedRequestNotification to user with email", user.email);
                             //  if (user.emailverified) {    enable it?     send anyway to improve engagment for new account    
                             
                             

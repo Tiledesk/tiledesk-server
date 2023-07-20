@@ -27,12 +27,13 @@ class JobsManager {
            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listeners");  
         }
         this.geoService.listen();
-        this.botEvent.listen();
+        
+        // this.botEvent.listen(); // disabled
 
         // this.subscriptionNotifier.start();
         this.subscriptionNotifierQueued.start();
 
-        this.botSubscriptionNotifier.start();
+        // this.botSubscriptionNotifier.start(); // disabled
     }
 
     listenEmailNotification(emailNotification) {      
@@ -44,7 +45,23 @@ class JobsManager {
         this.emailNotification.requestNotification.listen();
     }
 
-   
+    // listenRoutingQueue(routingQueue) {
+    //     winston.info("JobsManager routingQueue started");  
+    //     if ( this.jobWorkerEnabled == true) {
+    //         return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for routingQueue");  
+    //     }
+    //     this.routingQueue = routingQueue;
+    //     this.routingQueue.listen();
+    // }
+
+    listenScheduler(scheduler) {
+        winston.info("JobsManager scheduler started");  
+        if ( this.jobWorkerEnabled == true) {
+            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for scheduler");  
+        }
+        this.scheduler = scheduler;
+        this.scheduler.taskRunner.start();    
+    }
 
     listenActivityArchiver(activityArchiver) {
         winston.info("JobsManager listenActivityArchiver started"); 

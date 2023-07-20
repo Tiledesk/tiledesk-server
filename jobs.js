@@ -26,6 +26,7 @@ var subscriptionNotifierQueued = require('./services/subscriptionNotifierQueued'
 var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 
 const botEvent = require('./event/botEvent');
+var channelManager = require('./channels/channelManager');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -58,10 +59,26 @@ winston.info("Mongoose connection done on host: "+mongoose.connection.host + " o
 async function main()
 {
 
-   //************* LOAD QUEUE ************ //
-    require('./pubmodules/queue');   
-    
+  ////************* LOAD QUEUE ************ //
+  require('./pubmodules/cache').cachegoose(mongoose);            
+      
+
+  ////************* LOAD CONCIERGE BOT ************ //
+  require('./pubmodules/rules/appRules').start();
+
+
+  // require('./pubmodules/trigger/rulesTrigger').listen(); request.close trigger event is not triggered by anyone now?
+   
+
+  //************* LOAD QUEUE ************ //
+  require('./pubmodules/queue');   
     // require('@tiledesk-ent/tiledesk-server-queue');     
+
+   //************* LOAD CHAT21 ************ //
+   channelManager.listen(); // chat21Handler is loaded with stadard events like request.create and NOT request.create.queue because it is used internally by the worker when the request is closed by ChatUnhandledRequestScheduler
+
+    
+
 
     let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier);
 
@@ -75,6 +92,15 @@ async function main()
     let activityArchiver = require('./pubmodules/activities').activityArchiver;    
     jobsManager.listenActivityArchiver(activityArchiver);
 
+
+    // let routingQueue = require('./pubmodules/routing-queue').listener;    //ci sono altri eventi che nn gestisco in queue request.participants.join etc
+    // winston.info("routingQueue1"); 
+    // jobsManager.listenRoutingQueue(routingQueue);
+
+
+
+    let scheduler = require('./pubmodules/scheduler');    
+    jobsManager.listenScheduler(scheduler);
 
 
     winston.info("Jobs started"); 
