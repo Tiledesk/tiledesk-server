@@ -28,7 +28,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
   winston.debug('delimiter: ' + delimiter);
 
   var csv = req.file.buffer.toString('utf8');
-  console.log("--> csv: ", csv)
+  winston.debug("--> csv: ", csv)
   // winston.debug(' -> CSV STRING ', csv);
 
   // res.json({ success: true, msg: 'Importing CSV...' });
@@ -52,7 +52,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
       .on("data", function (data) {
         winston.debug('PARSED CSV ', data);
 
-        console.log('--> PARSED CSV ', data);
+        winston.debug('--> PARSED CSV ', data);
 
         var question = data[0]
         //var answer = data[1]
@@ -107,7 +107,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
           updatedBy: req.user.id
         });
 
-        console.log("--> newFaq: ", JSON.stringify(newFaq, null, 2));
+        winston.debug("--> newFaq: ", JSON.stringify(newFaq, null, 2));
 
         newFaq.save(function (err, savedFaq) {
           if (err) {
@@ -199,7 +199,7 @@ router.post('/', function (req, res) {
 
 router.patch('/:faqid/attributes', function (req, res) {
   let data = req.body;
-  console.log("data: ", data);
+  winston.debug("data: ", data);
 
   Faq.findById(req.params.faqid, function (err, updatedFaq) {
     if (err) {
@@ -212,7 +212,7 @@ router.patch('/:faqid/attributes', function (req, res) {
     }
 
     if (!updatedFaq.attributes) {
-      console.log("empty attributes");
+      winston.debug("empty attributes");
       winston.debug("empty attributes");
       updatedFaq.attributes = {};
     }
@@ -225,8 +225,8 @@ router.patch('/:faqid/attributes', function (req, res) {
       updatedFaq.attributes[key] = val;
     })
 
-    console.log("updatedFaq: ", updatedFaq);
-    console.log("updatedFaq attributes: ", updatedFaq.attributes);
+    winston.debug("updatedFaq: ", updatedFaq);
+    winston.debug("updatedFaq attributes: ", updatedFaq.attributes);
 
     winston.debug("updatedBot attributes", updatedFaq.attributes)
 
@@ -239,7 +239,7 @@ router.patch('/:faqid/attributes', function (req, res) {
         return res.status(500).send({ success: false, msg: 'Error saving object.' });
       }
 
-      console.log("saved faq attributes", savedFaq.toObject());
+      winston.debug("saved faq attributes", savedFaq.toObject());
 
       winston.verbose("saved faq attributes", savedFaq.toObject());
       faqBotEvent.emit('faq.update', savedFaq);
