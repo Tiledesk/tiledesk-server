@@ -5,6 +5,7 @@ const uuidv4 = require('uuid/v4');
 const leadEvent = require('../event/leadEvent');
 var winston = require('../config/winston');
 var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
 
 
 class LeadService {
@@ -67,8 +68,18 @@ class LeadService {
           if (!lead) {
             return resolve(that.createWitId(lead_id, fullname, email, id_project, createdBy, attributes, status));
           }
-          winston.debug("lead already exists createIfNotExistsWithLeadId");
-          return resolve(lead);
+
+          winston.debug("lead.email: " + lead.email); 
+          winston.debug("email: " + email); 
+          
+          if (lead.email == email) {
+            winston.debug("lead already exists createIfNotExistsWithLeadId with the same email");
+            return resolve(lead);
+          } else {
+            winston.debug("lead already exists createIfNotExistsWithLeadId but with different email");
+            return resolve(that.updateWitId(lead_id, fullname, email, id_project, status));
+          }
+          
       
       });
     });
@@ -101,7 +112,7 @@ class LeadService {
   }
 
   updateWitId(lead_id, fullname, email, id_project, status) {
-    winston.debug("lead_id: "+ lead_id);
+    winston.debug("updateWitId lead_id: "+ lead_id);
     winston.debug("fullname: "+ fullname);
     winston.debug("email: "+ email);
     winston.debug("id_project: "+ id_project);
