@@ -1431,7 +1431,6 @@ describe('/SendMessageSigninWithCustomToken', () => {
               
   });
 
-});
 
 
 
