@@ -5,9 +5,22 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+
+# 2.4.42
+- createIfNotExistsWithLeadId now update the lead email if jwt email changes
+
+# 2.4.41
+- Whatsapp updates
+
+# 2.4.40
+- botSubscriptionNotifier and botEvent queued disabled
+- added lead.create to the queue
+- queued scheduler (close chat)
+- added chat21 channel, cache, rules 
+
 # 2.4.39
 - Queued botSubscriptionNotifier
-- added lead.create to the queue????? testare di nuovo
+- added lead.create to the queue
 - @tiledesk/tiledesk-tybot-connector: 0.1.89
 - jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
 
