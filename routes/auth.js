@@ -458,13 +458,23 @@ function (req, res) {
 
 // http://localhost:3000/auth/google?redirect_url=%2F%23%2Fproject%2F6452281f6d68c5f419c1c577%2Fhome
 
+// http://localhost:3000/auth/google?redirect_url=%23%2Fcreate-project-gs
 
+// http://localhost:3000/auth/google?forced_redirect_url=https%3A%2F%2Fpanel.tiledesk.com%2Fv3%2Fchat%2F%23conversation-detail%3Ffrom%3Dgoogle
+
+// https://tiledesk-server-pre.herokuapp.com/auth/google?redirect_url=%23%2Fcreate-project-gs
+
+// https://tiledesk-server-pre.herokuapp.com/auth/google
 
 // Redirect the user to the Google signin page</em> 
 // router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
 router.get("/google", function(req,res,next){
   winston.info("redirect_url: "+ req.query.redirect_url );
   req.session.redirect_url = req.query.redirect_url;
+
+  winston.info("forced_redirect_url: "+ req.query.forced_redirect_url );
+  req.session.forced_redirect_url = req.query.forced_redirect_url;
+
   // req._toParam = 'Hello';
   passport.authenticate(
       // 'google', { scope : ["email", "profile"], state: base64url(JSON.stringify({blah: 'text'}))  } //custom redirect_url req.query.state
@@ -487,7 +497,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   // winston.info("req._toParam: "+ req._toParam);
   // winston.info("req.query.redirect_url: "+ req.query.redirect_url);
   // winston.info("req.query.state: "+ req.query.state);
-  winston.info("req.session.redirect_url: "+ req.session.redirect_url);
+  winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
   
 
   var userJson = user.toObject();
@@ -526,6 +536,9 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
   var url = dashboard_base_url+homeurl+"?token=JWT "+token;
 
+  if (req.session.forced_redirect_url) {
+    url = req.session.forced_redirect_url+"&token=JWT "+token;
+  }
 
   winston.info("Google Redirect: "+ url);
 
