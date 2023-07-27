@@ -471,10 +471,10 @@ function (req, res) {
 // Redirect the user to the Google signin page</em> 
 // router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
 router.get("/google", function(req,res,next){
-  winston.info("redirect_url: "+ req.query.redirect_url );
+  winston.debug("redirect_url: "+ req.query.redirect_url );
   req.session.redirect_url = req.query.redirect_url;
 
-  winston.info("forced_redirect_url: "+ req.query.forced_redirect_url );
+  winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
   // req._toParam = 'Hello';
@@ -542,7 +542,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
   }
 
-  winston.info("Google Redirect: "+ url);
+  winston.debug("Google Redirect: "+ url);
 
   res.redirect(url);
 
