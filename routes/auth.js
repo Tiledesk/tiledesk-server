@@ -539,7 +539,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   var url = dashboard_base_url+homeurl+"?token=JWT "+token;
 
   if (req.session.forced_redirect_url) {
-    url = req.session.forced_redirect_url+"?token=JWT "+token;
+    url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
   }
 
   winston.info("Google Redirect: "+ url);
