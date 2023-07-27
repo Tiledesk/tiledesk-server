@@ -466,6 +466,8 @@ function (req, res) {
 
 // https://tiledesk-server-pre.herokuapp.com/auth/google
 
+// https://tiledesk-server-pre.herokuapp.com/auth/google?forced_redirect_url=https%3A%2F%2Fpanel.tiledesk.com%2Fv3%2Fchat%2F%23conversation-detail%3Ffrom%3Dgoogle
+
 // Redirect the user to the Google signin page</em> 
 // router.get("/google", passport.authenticate("google", { scope: ["email", "profile"] }));
 router.get("/google", function(req,res,next){
@@ -537,7 +539,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   var url = dashboard_base_url+homeurl+"?token=JWT "+token;
 
   if (req.session.forced_redirect_url) {
-    url = req.session.forced_redirect_url+"&token=JWT "+token;
+    url = req.session.forced_redirect_url+"?token=JWT "+token;
   }
 
   winston.info("Google Redirect: "+ url);
