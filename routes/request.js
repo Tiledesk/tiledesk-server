@@ -459,7 +459,7 @@ router.put('/:requestid/agent', async (req, res) => {
   winston.debug(req.body);
    //route(request_id, departmentid, id_project) { 
    
-   
+
    var request = await Request.findOne({"request_id":req.params.requestid, id_project:req.projectid})   
    .exec();
     
@@ -817,7 +817,7 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
       //all request 
-  } else if (projectuser && projectuser.role == "owner" || projectuser.role == "admin") {
+  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
       //all request 
       // per uni mostrare solo quelle priprio quindi solo participants
     if (req.query.mine) {
@@ -1029,6 +1029,8 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
   }
 
+
+  
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
