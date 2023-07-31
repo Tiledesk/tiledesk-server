@@ -14,10 +14,13 @@ winston.debug("webhook_origin: "+webhook_origin);
 var cacheUtil = require('../utils/cacheUtil');
 var cacheEnabler = require("../services/cacheEnabler");
 
+
+
+
 class BotSubscriptionNotifier {
    
   
-  notify(bot,botWithSecret, payload) {
+  notify(bot,secret, payload) {
   
       winston.debug("BotSubscriptionNotifier bot", bot.toObject());
       winston.debug("BotSubscriptionNotifier payload", payload );
@@ -58,7 +61,7 @@ class BotSubscriptionNotifier {
       delete botPayload.description;
       delete botPayload.attributes;
 
-      var token = jwt.sign(botPayload, botWithSecret.secret, signOptions);
+      var token = jwt.sign(botPayload, secret, signOptions);
       json["token"] = token;
 
 
@@ -93,24 +96,32 @@ class BotSubscriptionNotifier {
     //modify to async
     botEvent.on('bot.message.received.notify.external', function(botNotification) {
       var bot = botNotification.bot;
-      winston.debug('getting botWithSecret');
-      let qbot = Faq_kb.findById(bot._id).select('+secret')
+      var secret = bot.secret;
+      winston.debug('bot.message.received.notify.external: '+secret);
 
-      if (cacheEnabler.faq_kb) {
-        let id_project = bot.id_project;
-        winston.debug("id_project.id_project:"+id_project);
-        qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+bot._id+":secret")
-        winston.debug('faq_kb BotSubscriptionNotifier cache enabled');
-      }
+    //   winston.debug('getting botWithSecret');
+    //   let qbot = Faq_kb.findById(bot._id).select('+secret')
 
-      qbot.exec(function (err, botWithSecret){   //TODO add cache_bot_here????
-        if (err) {
-          winston.debug('Error getting botWithSecret', err);
-        }
-        botSubscriptionNotifier.notify(bot, botWithSecret, botNotification.message);
-      });
+    //   if (cacheEnabler.faq_kb) {
+    //     let id_project = bot.id_project;
+    //     winston.debug("id_project.id_project:"+id_project);
+    //     qbot.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+bot._id+":secret")
+    //     winston.debug('faq_kb BotSubscriptionNotifier cache enabled');
+    //   }
+
+    //   qbot.exec(function (err, botWithSecret){   //TODO add cache_bot_here????
+    //     if (err) {
+    //       winston.debug('Error getting botWithSecret', err);
+    //     }
+    //     botSubscriptionNotifier.notify(bot, botWithSecret, botNotification.message);
+    //   });
       
+    botSubscriptionNotifier.notify(bot, secret, botNotification.message);
+
+
     });
+
+
 
     winston.info('BotSubscriptionNotifier started');
 

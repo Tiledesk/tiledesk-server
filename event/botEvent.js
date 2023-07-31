@@ -65,13 +65,15 @@ class BotEvent extends EventEmitter {
             }
 
             // qui potresti leggere anche +secret ed evitare prossima query in botNotification
-            let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
+            // let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
+            let qbot = Faq_kb.findById(botId).select('+secret')
         //TODO unselect secret. secret is unselectable by default in the model
 
                 if (cacheEnabler.faq_kb) {
                     winston.debug('message.id_project+":faq_kbs:id:"+botId: '+ message.id_project+":faq_kbs:id:"+botId);  
-                qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
-                winston.debug('faq_kb cache enabled');
+                    // qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId)
+                    qbot.cache(cacheUtil.defaultTTL, message.id_project+":faq_kbs:id:"+botId+":secret")
+                    winston.debug('faq_kb cache enabled');
                 }
 
                 qbot.exec(function(err, bot) {
@@ -87,6 +89,7 @@ class BotEvent extends EventEmitter {
                 }
 
                 winston.debug("bot debug", bot);
+                winston.debug('bot debug secret: '+ bot.secret);
 
                 if (bot) {
                     if (bot.type==="internal") {
