@@ -93,9 +93,9 @@ async function main()
     jobsManager.listenActivityArchiver(activityArchiver);
 
 
-    // let routingQueue = require('./pubmodules/routing-queue').listener;    //ci sono altri eventi che nn gestisco in queue request.participants.join etc
-    // winston.info("routingQueue1"); 
-    // jobsManager.listenRoutingQueue(routingQueue);
+    let routingQueueQueued = require('./pubmodules/routing-queue').listenerQueued;
+    winston.debug("routingQueueQueued"); 
+    jobsManager.listenRoutingQueue(routingQueueQueued);
 
 
 

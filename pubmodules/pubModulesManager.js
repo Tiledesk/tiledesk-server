@@ -51,6 +51,7 @@ class PubModulesManager {
         this.jobsManager = undefined;
 
         this.routingQueue = undefined;
+        this.routingQueueQueued = undefined;
 
         this.cache = undefined;
 
@@ -407,8 +408,11 @@ class PubModulesManager {
 
         try {
             this.routingQueue = require('./routing-queue').listener;
+            this.routingQueueQueued = require('./routing-queue').listenerQueued;
+
             // this.routingQueue.listen();
             winston.debug("this.routingQueue:"+ this.routingQueue);           
+            winston.debug("this.routingQueueQueued:"+ this.routingQueueQueued);           
 
             winston.info("PubModulesManager routing queue initialized");
         } catch(err) {
@@ -515,11 +519,19 @@ class PubModulesManager {
 
         if (this.routingQueue) {
             try {
-                this.routingQueue.listen();
-                // this.jobsManager.listenRoutingQueue(this.routingQueue);
+                this.routingQueue.listen();  
                 winston.info("PubModulesManager routingQueue started");
             } catch(err) {        
                 winston.info("PubModulesManager error starting routingQueue module", err);            
+            }
+        }
+        if (this.routingQueueQueued) {
+            try {
+                // this.routingQueueQueued.listen();  
+                this.jobsManager.listenRoutingQueue(this.routingQueueQueued);
+                winston.info("PubModulesManager routingQueue queued started");
+            } catch(err) {        
+                winston.info("PubModulesManager error starting routingQueue queued module", err);            
             }
         }
 

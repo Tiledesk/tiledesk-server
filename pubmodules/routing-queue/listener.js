@@ -1,13 +1,7 @@
-const projectEvent = require('../../event/projectEvent');
 const departmentEvent = require('../../event/departmentEvent');
-const authEvent = require('../../event/authEvent');
-const requestEvent = require('../../event/requestEvent');
 var Request = require('../../models/request');
-var Project = require('../../models/project');
-var Project_user = require('../../models/project_user');
 var winston = require('../../config/winston');
 
-var ProjectUserUtil = require("../../utils/project_userUtil");
 
 // var request = require('retry-request', {
 //     request: require('request')
@@ -55,42 +49,6 @@ class Listener {
         // };
       }
 
-      // db.getCollection('project_users').find({"number_assigned_requests" : {"$lt":0}}).count()
-
-
-    updateProjectUser(id_user, id_project, operation) {
-      winston.debug("updateProjectUser start");
-      return Project_user       
-                    .findOneAndUpdate({id_user: id_user, id_project: id_project}, {$inc : {'number_assigned_requests' : operation}}, {new: true, upsert:false}, function(err, updatedPU) {
-                    if (err) {
-                     return winston.error(err);
-                    }
-                    winston.debug("number_assigned_requests +1 :" + updatedPU.id);
-
-                    updatedPU.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
-
-                      var pu = updatedProject_userPopulated.toJSON();
-
-                      return Project.findById(id_project).exec(function(err, project) {
-                        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, project.settings && project.settings.max_agent_assigned_chat);                  
-                        winston.debug("pu.isBusy: "+ pu.isBusy);
-                        authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: undefined, skipArchive: true});
-                      })
-                      
-                    });
-
-                });
-    }
-
-    updateParticipatingProjectUsers(request, operation) {
-        winston.debug("request.participatingAgents", request.participatingAgents);
-        if (request.participatingAgents.length>0) {
-            request.participatingAgents.forEach(user => {
-              winston.debug("request.participatingAgents user",user); //it is a user and not a project_user
-                this.updateProjectUser(user.id, request.id_project, operation);                
-            });
-        } 
-      }  
 
     listen() {
 
@@ -101,57 +59,6 @@ class Listener {
       }
 
         var that = this;
- 
-        // TODO fai versione che passa anche project
-        requestEvent.on('request.create', async (request) => {
-            setImmediate(() => {
-              this.updateParticipatingProjectUsers(request, +1);  
-            });
-        });
-
-          // TODO usa versione complete con project per evitare query??
-        requestEvent.on('request.close', async (request) => {
-          setImmediate(() => {
-            this.updateParticipatingProjectUsers(request, -1);          
-          });
-        });
-
-
-        requestEvent.on('request.participants.join', async (data) => {
-          var request = data.request;
-          var member = data.member;
-          setImmediate(() => {
-            this.updateProjectUser(member, request.id_project, 1);          
-          });
-        });
-
-        requestEvent.on('request.participants.leave', async (data) => {
-          var request = data.request;
-          var member = data.member;
-          setImmediate(() => {
-            this.updateProjectUser(member, request.id_project, -1);          
-          });
-        });
-
-        requestEvent.on('request.participants.update', async (data) => {
-          var request = data.request;
-          var removedParticipants = data.removedParticipants;
-          var addedParticipants = data.addedParticipants;
-
-          setImmediate(() => {
-
-            addedParticipants.forEach(participant => {
-              winston.debug('addedParticipants participant', participant);
-              this.updateProjectUser(participant, request.id_project, 1);          
-            });
-
-            removedParticipants.forEach(participant => {
-              winston.debug('removedParticipants participant', participant);
-              this.updateProjectUser(participant, request.id_project, -1);          
-            });
-
-          });
-        });
 
         departmentEvent.on('operator.select.base2', async (res) => {
             // departmentEvent.prependListener('operator.select', async (data) => {
@@ -170,9 +77,7 @@ class Listener {
           
             }
           
-          
-          
-          
+        
           
           
           
