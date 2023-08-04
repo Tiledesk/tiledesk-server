@@ -202,6 +202,7 @@ class FaqService {
           reply: faq.reply,
           intent_display_name: faq.intent_display_name,
           language: "en",
+	  attributes: faq.attributes,
           id_project: projectid,
           topic: faq.topic,
           createdBy: created_by,
