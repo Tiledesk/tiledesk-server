@@ -106,52 +106,73 @@ class FaqService {
         //   { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
         //   { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
         // ]
-        faqsArray = [         
-          {
-            'question': '\\start',
-            "actions" : [ 
-              {
-                  "_tdActionType" : "reply",
-                  "text" : "Hi, how can I help you?",
-                  "attributes" : {
-                      "commands" : [ 
-                          {
-                              "type" : "message",
-                              "message" : {
-                                  "type" : "text",
-                                  "text" : "Hi, how can I help you?"
-                              }
-                          }
-                      ]
-                  }
-              }
-            ],
-            'intent_display_name': 'start',
-            'topic': 'internal'
-          },            
-          {
-            'question': 'defaultFallback',
-            "actions" : [ 
-              {
-                  "_tdActionType" : "reply",
-                  "text" : "I didn't understand. Can you rephrase your question?",
-                  "attributes" : {
-                      "commands" : [ 
-                          {
-                              "type" : "message",
-                              "message" : {
-                                  "type" : "text",
-                                  "text" : "I didn't understand. Can you rephrase your question?"
-                              }
-                          }
-                      ]
-                  }
-              }
-            ],
-            'intent_display_name': 'defaultFallback',
-            'topic': 'internal'
-          }, //TODO se metto spazio n * nn va              
-        ]
+        faqsArray = [{
+		"webhook_enabled": false,
+		"enabled": true,
+		"actions": [{
+			"_tdActionType": "reply",
+			"text": "I didn't understand. Can you rephrase your question?",
+			"attributes": {
+				"commands": [{
+					"type": "message",
+					"message": {
+						"type": "text",
+						"text": "I didn't understand. Can you rephrase your question?"
+					}
+				}]
+			}
+		}],
+		"intent_display_name": "defaultFallback",
+		"attributes": {
+			"position": {
+				"x": 714,
+				"y": 528
+			}
+		}
+	}, {
+		"webhook_enabled": false,
+		"enabled": true,
+		"actions": [{
+			"_tdActionType": "intent",
+			"intentName": "#9d0b96b9-e036-4c2d-8504-1181b5c4be75"
+		}],
+		"question": "\\start",
+		"intent_display_name": "start",
+		"attributes": {
+			"position": {
+				"x": 172,
+				"y": 384
+			}
+		}
+	}, {
+		"webhook_enabled": false,
+		"enabled": true,
+		"actions": [{
+			"_tdActionType": "reply",
+			"attributes": {
+				"disableInputMessage": false,
+				"commands": [{
+					"type": "wait",
+					"time": 500
+				}, {
+					"type": "message",
+					"message": {
+						"type": "text",
+						"text": "Hi, how can I help you?"
+					}
+				}]
+			},
+			"text": "Hi, how can I help you?\r\n"
+		}],
+		"intent_display_name": "welcome",
+		"intent_id": "9d0b96b9-e036-4c2d-8504-1181b5c4be75",
+		"attributes": {
+			"position": {
+				"x": 714,
+				"y": 113
+			}
+		}
+	}]
 
       }
 
