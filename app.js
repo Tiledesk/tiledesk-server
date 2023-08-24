@@ -112,6 +112,7 @@ var jwtroute = require('./routes/jwt');
 var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
+var openai_kbs = require('./routes/openai_kbs');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -548,6 +549,8 @@ app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], email);
 
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
+
+app.use('/:projectid/openai_kbs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai_kbs);
 
 
 
