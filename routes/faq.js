@@ -168,9 +168,11 @@ router.post('/', function (req, res) {
     if (req.body.actions) {
       newFaq.actions = req.body.actions
     }
-
     if (req.body.attributes) {
       newFaq.attributes = req.body.attributes
+    }
+    if (req.body.intent_id) {
+      newFaq.intent_id = req.body.intent_id;
     }
 
     newFaq.save(function (err, savedFaq) {
