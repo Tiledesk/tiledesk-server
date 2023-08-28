@@ -325,6 +325,8 @@ router.post('/send',
   let replyto = req.body.replyto;
   winston.debug("replyto: " + replyto);
 
+  winston.info("Sending an email with text : " + text + " to " + to);
+
              //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
   emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
   
