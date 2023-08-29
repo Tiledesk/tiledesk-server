@@ -53,7 +53,7 @@ describe('FaqKBRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
                                 .auth(email, pwd)
-                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", attributes: { attr1: { one: "one", two: "two"}, attr2: {three: "three"}} })
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", attributes: { attr1: { one: "one", two: "two"}, attr2: {three: "three"}}, intent_id: 'custom-intent-id' }) // if intent_id is null the value will be the default one
                                 .end((err, res) => {
                                     //console.log("res",  res);
                                     console.log("res.body", res.body);
