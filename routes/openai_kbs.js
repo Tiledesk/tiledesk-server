@@ -24,7 +24,8 @@ router.post('/', async (req, res) => {
     let new_kbs = new OpenaiKbs({
         name: body.name,
         url: body.url,
-        id_project: req.projectid
+        id_project: req.projectid,
+        gptkey: req.body.gptkey
     })
 
     new_kbs.save(function (err, savedKbs) {
@@ -38,7 +39,7 @@ router.post('/', async (req, res) => {
 })
 
 router.put('/', async (req, res) => {
-
+    // to be implemented
 })
 
 router.delete('/:kbs_id', async (req, res) => {
