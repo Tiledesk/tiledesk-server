@@ -6,6 +6,8 @@ var Schema = mongoose.Schema,
   ObjectId = Schema.ObjectId;
 var moment = require('moment');
 var requestService = require('../services/requestService');
+var emailService = require('../services/emailService');
+
 var departmentService = require('../services/departmentService');
 var winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
@@ -646,6 +648,62 @@ router.delete('/:requestid/notes/:noteid',  function (req, res) {
 
 
 
+//TODO add cc
+router.post('/:requestid/email/send', 
+ async (req, res) => {
+
+
+  let text = req.body.text;
+  winston.debug("text: " + text);
+
+  let request_id = req.params.requestid;
+  winston.debug("request_id: " + request_id);
+
+  let subject = req.body.subject;
+  winston.info("subject: " + subject);
+
+  winston.debug("req.project", req.project);
+
+  let replyto = req.body.replyto;
+  winston.debug("replyto: " + replyto);
+
+
+  let q = Request.findOne({request_id: request_id, id_project: req.projectid})
+  // .select("+snapshot.agents")
+  .populate('lead')
+  q.exec(function(err, request) {  
+    if (err) {
+      winston.error("error getting request by id ", err);
+      return res.status(500).send({ success: false, msg: 'Error getting object.' });
+    }
+    if (!request) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+
+
+
+    winston.info("Sending an email with text : " + text + " to request_id " + request_id);
+
+    if (!request.lead.email) {
+      res.json({"no queued": true});
+    }
+
+    let newto = request.lead.email
+    winston.info("Sending an email newto " + newto);
+
+    //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
+    emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
+
+    res.json({"queued": true});
+
+
+  });
+
+
+
+    
+});
+
 
 
 
@@ -1029,7 +1087,9 @@ router.get('/', function (req, res, next) {
     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
   }
 
-
+  if (req.query.priority) {
+    query.priority = req.query.priority;
+  }
   
 
   var direction = -1; //-1 descending , 1 ascending
