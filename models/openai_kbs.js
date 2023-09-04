@@ -16,7 +16,14 @@ var OpenaiKbsSchema = new Schema({
     required: true,
     index: true
   },
-
+  gptkey: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  }
 });
 
 

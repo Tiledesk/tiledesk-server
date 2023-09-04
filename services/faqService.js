@@ -114,6 +114,9 @@ class FaqService {
             "text": "I didn't understand. Can you rephrase your question?",
             "attributes": {
               "commands": [{
+                "type": "wait",
+                "time": 500
+              },{
                 "type": "message",
                 "message": {
                   "type": "text",
