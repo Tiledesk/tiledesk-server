@@ -312,7 +312,8 @@ router.post('/', function (req, res) {
                       // TODO it doesn't work for internal requests bacause participanets == message.sender⁄
                       if (request.participants && request.participants.indexOf(message.sender) > -1) { //update waiitng time if write an  agent (member of participants)
                         winston.debug("updateWaitingTimeByRequestId*******");
-                        return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, false).then(function(upRequest) {
+                                                                                                                  //leave this parameter to true because it is used by websocket to notify request.update                                 
+                        return requestService.updateWaitingTimeByRequestId(request.request_id, request.id_project, true).then(function(upRequest) {
                           return res.json(upRequest);
                         });
                       }else {
