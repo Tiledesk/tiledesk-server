@@ -303,35 +303,38 @@ if (process.env.ENABLE_TEST_EMAIL_ENDPOINT==true || process.env.ENABLE_TEST_EMAI
 
 
 //TODO add cc
-// router.post('/send', 
-//  async (req, res) => {
-//   let to = req.body.to;
-//   winston.debug("to: " + to);
+router.post('/internal/send', 
+ async (req, res) => {
+  let to = req.body.to;
+  winston.debug("to: " + to);
 
-//   let text = req.body.text;
-//   winston.debug("text: " + text);
+  let text = req.body.text;
+  winston.debug("text: " + text);
 
-//   let request_id = req.body.request_id;
-//   winston.debug("request_id: " + request_id);
+  let request_id = req.body.request_id;
+  winston.debug("request_id: " + request_id);
 
-//   let subject = req.body.subject;
-//   winston.debug("subject: " + subject);
+  let subject = req.body.subject;
+  winston.debug("subject: " + subject);
 
-//   winston.debug("req.project", req.project);
+  winston.debug("req.project", req.project);
 
-//   let newto = await recipientEmailUtil.process(to, req.projectid);
-//   winston.debug("newto: " + newto);
+  let newto = await recipientEmailUtil.process(to, req.projectid);
+  winston.debug("newto: " + newto);
 
-//   let replyto = req.body.replyto;
-//   winston.debug("replyto: " + replyto);
+  let replyto = req.body.replyto;
+  winston.debug("replyto: " + replyto);
 
-//   winston.info("Sending an email with text : " + text + " to " + to);
+  winston.info("Sending an email with text : " + text + " to " + to);
 
-//              //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
-//   emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
+             //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
+  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
   
-//   res.json({"queued": true});
+  res.json({"queued": true});
     
-// });
+});
+
+
+
 
 module.exports = router;
