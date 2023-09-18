@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
         console.log("openai preview --> json: ", json);
 
         openaiService.completions(json, gptkey).then((response) => {
-            winston.debug("completions response: ", response);
+            // winston.debug("completions response: ", response);
             res.status(200).send(response);
         }).catch((err) => {
             winston.error("completions error: ", err);

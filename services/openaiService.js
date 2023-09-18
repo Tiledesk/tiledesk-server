@@ -19,7 +19,7 @@ class OpenaiService {
                 data: data,
                 method: 'POST'
             }).then((resbody) => {
-                winston.debug("[Openai] completions resbody: ", resbody);
+                //winston.debug("[Openai] completions resbody: ", resbody.data);
                 resolve(resbody);
             }).catch((err) => {
                 winston.error("[Openai] completions error: ", err);
