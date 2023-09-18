@@ -14,7 +14,7 @@ class OpenaiService {
                 url: openai_endpoint + "/chat/completions",
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorizaion': "Bearer " + gptkey
+                    'Authorization': "Bearer " + gptkey
                 },
                 data: data,
                 method: 'POST'
