@@ -5,24 +5,44 @@ var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
 
 router.post('/', async (req, res) => {
-    
+
     let project_id = req.projectid;
     let body = req.body;
 
     KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
         console.log("kbSettings: ", kbSettings);
-        
+
         if (!kbSettings) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter (settings not exist)"})
+            return res.status(400).send({ success: false, message: "Missing gptkey parameter (settings not exist)" })
         }
-        
+
         let gptkey = kbSettings.gptkey;
 
         if (!gptkey) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter"})
+            return res.status(400).send({ success: false, message: "Missing gptkey parameter" })
         }
 
-        openaiService.completions(body, gptkey).then((response) => {
+        // attua modifiche
+        let json = {
+            "model": body.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": body.question
+                }
+            ],
+            "max_tokens": body.max_tokens,
+            "temperature": body.temperature
+        }
+
+        let message = { role: "", content: "" };
+        if (body.context) {
+            message.role = "system";
+            message.content = body.context;
+            json.messages.unshift(message);
+        }
+
+        openaiService.completions(json, gptkey).then((response) => {
             winston.debug("completions response: ", response);
             res.status(200).send(response);
         }).catch((err) => {
