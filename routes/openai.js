@@ -9,6 +9,8 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
+    console.log("### --> body: ", body);
+
     KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
         console.log("kbSettings: ", kbSettings);
 
@@ -41,6 +43,7 @@ router.post('/', async (req, res) => {
             message.content = body.context;
             json.messages.unshift(message);
         }
+        console.log("openai preview --> json: ", json);
 
         openaiService.completions(json, gptkey).then((response) => {
             winston.debug("completions response: ", response);

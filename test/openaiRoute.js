@@ -24,7 +24,6 @@ describe('FaqKBRoute', () => {
 
     describe('/create', () => {
 
-        // can't be tested!
         // it('completions', (done) => {
 
         //     var email = "test-signup-" + Date.now() + "@email.com";
@@ -56,7 +55,7 @@ describe('FaqKBRoute', () => {
         //                                 .auth(email, pwd)
         //                                 .send({ question: "Provide 3 names for a dog", context: "you are an awesome assistant", max_tokens: 100, temperature: 0, model: "gpt-3.5-turbo" })
         //                                 .end((err, res) => {
-        //                                     console.log("res.body: ", res.body);
+        //                                     console.log("res.body (1): ", res.body);
         //                                     console.log("res.status: ", res.status);
 
         //                                     done();
@@ -64,31 +63,6 @@ describe('FaqKBRoute', () => {
 
         //                         })
         //                 })
-
-
-        //             chai.request(server)
-        //                 .post('/' + savedProject._id + '/kbsettings')
-        //                 .auth(email, pwd)
-        //                 .send({}) // can be empty
-        //                 .end((err, res) => {
-        //                     if (log) { console.log("create kbsettings res.body: ", res.body); }
-        //                     res.should.have.status(200);
-        //                     res.body.should.be.a('object');
-        //                     expect(res.body.id_project).to.equal(savedProject._id.toString());
-
-        //                     chai.request(server)
-        //                         .post('/' + savedProject._id + '/openai')
-        //                         .auth(email, pwd)
-        //                         .send({ question: "Provide 3 names for a dog", context: "you are an awesome assistant", max_tokens: 100, temperature: 0, model: "gpt-3.5-turbo" })
-        //                         .end((err, res) => {
-        //                             console.log("res.body: ", res.body);
-        //                             console.log("res.status: ", res.status);
-
-        //                             done();
-        //                         })
-        //                 })
-
-
         //         })
         //     })
         // }).timeout(20000)
