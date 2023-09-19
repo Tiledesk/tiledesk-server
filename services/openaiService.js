@@ -14,7 +14,7 @@ class OpenaiService {
         return new Promise((resolve, reject) => {
 
             axios({
-                url: this.openai_endpoint + "/chat/completions",
+                url: openai_endpoint + "/chat/completions",
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': "Bearer " + gptkey
