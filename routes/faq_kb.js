@@ -746,7 +746,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
                     enabled: intent.enabled,
                     webhook_enabled: intent.webhook_enabled,
                     language: intent.language,
-                    actions: intent.actions
+                    actions: intent.actions,
+                    attributes: intent.attributes
                   }
     
                   // TO DELETE: no used when req.query.create = 'true'
