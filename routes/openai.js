@@ -49,7 +49,8 @@ router.post('/', async (req, res) => {
             // winston.debug("completions response: ", response);
             res.status(200).send(response);
         }).catch((err) => {
-            winston.error("completions error: ", err);
+            console.log("err: ", err);
+            // winston.error("completions error: ", err);
             res.status(500).send(err)
         })
 
