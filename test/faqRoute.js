@@ -19,7 +19,7 @@ const path = require('path');
 var expect = chai.expect;
 var assert = chai.assert;
 
-let log = true;
+let log = false;
 
 chai.use(chaiHttp);
 
@@ -27,7 +27,7 @@ describe('FaqKBRoute', () => {
 
     describe('/create', () => {
 
-        it('create', (done) => {
+        it('create qwerty', (done) => {
 
             //   this.timeout();
 
@@ -41,8 +41,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("create bot res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -55,8 +54,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", attributes: { attr1: { one: "one", two: "two"}, attr2: {three: "three"}}, intent_id: 'custom-intent-id' }) // if intent_id is null the value will be the default one
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("create intent res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);

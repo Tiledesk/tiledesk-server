@@ -147,6 +147,7 @@ router.post('/', function (req, res) {
     winston.debug('faq_kb ', faq_kb.toJSON());
 
     var newFaq = new Faq({
+      _id: req.body._id,
       id_faq_kb: req.body.id_faq_kb,
       question: req.body.question,
       answer: req.body.answer,
