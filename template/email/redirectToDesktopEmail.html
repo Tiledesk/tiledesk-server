@@ -1,5 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html lang="en" xmlns="http://www.w3.org/1999/xhtml"
   style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
 
 <head>
@@ -41,8 +42,6 @@
     .content {
       width: 100%;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       margin-top: 16px;
     }
 
@@ -69,7 +68,6 @@
     .title-container {
       width: 100%;
       display: flex;
-      justify-content: center;
       margin-top: 20px;
     }
 
@@ -88,7 +86,7 @@
     .custom-button {
       background-color: #ff8574 !important; 
       border: none; 
-      color: white; 
+      color: white !important; 
       padding: 6px 18px; 
       text-align: center; 
       text-decoration: none; 
@@ -111,13 +109,10 @@
       display: flex; 
       padding: 20px 18px; 
       color: #888888; 
-      align-items: center;
     }
 
     .social-button-container {
       display: flex; 
-      flex-direction: row;  
-      justify-content: center;
     }
     
     .social-icon-container {
@@ -131,19 +126,17 @@
     }
 
     .unsubscribe-container {
-      display: flex;
-      flex-direction: column;
       align-items: center;
       margin-top: 30px;
     }
 
-    .unsubscribe-container .site-link {
+    .site-link {
       font-size: 12px;
       font-weight: bold;
       color: #999;
     }
 
-    .unsubscribe-container unsubscribe-link {
+    .unsubscribe-link {
       font-size: 12px;
       color: #999;
     }
@@ -202,18 +195,14 @@
   </style>
 </head>
 
-<body itemscope itemtype="http://schema.org/EmailMessage">
+<body itemscope itemtype="http://schema.org/EmailMessage" bgcolor="#f6f6f6">
 
-  {{#if baseScope.replyEnabled}}
-  <div>\# Please type your reply above this line \#</div>
-  {{/if}}
-
-  <div class="content">
+  <div class="content" style="flex-direction: column;align-items: center;">
     <div class="inner-content">
       
       <div class="content-box">
         <div class="header-image-container"></div>
-        <div class="title-container">
+        <div class="title-container" style="justify-content: center;">
           <h2>Get Ready for a Full Tiledesk Experience!</h2>
         </div>
         <div class="text-container">
@@ -222,7 +211,7 @@
 
           <div style="margin-top: 20px; font-weight: 600;">Access Tiledesk on your desktop now 👇</div>
           <div style="margin-top: 10px;">
-            <a href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}" class="custom-button">
+            <a href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}" class="custom-button" style="color: white;">
               Enjoy Tiledesk
             </a>
           </div>
@@ -240,7 +229,7 @@
 
         <hr class="custom-divider">
         
-        <div class="powered-by-container">
+        <div class="powered-by-container" style="align-items: center;">
           <span>Powered by </span>
           <span style="display: flex;"><img
               src="https://tiledesk.com/wp-content/uploads/2023/05/tiledesk-solo_logo_new_gray.png" width="15"
@@ -252,7 +241,7 @@
       
       <div class="footer">
         <div style="margin-bottom: 10px; font-style: italic;">Follow us on:</div>
-        <div class="social-button-container">
+        <div class="social-button-container" style="flex-direction: row; justify-content: center;">
           
           <!-- Facebook -->
           <a href="https://www.facebook.com/tiledesk" target="_blank">
@@ -301,7 +290,7 @@
           
         </div>
 
-        <div class="unsubscribe-container">
+        <div class="unsubscribe-container" style="display: flex;flex-direction: column;">
           <a href="http://www.tiledesk.com" class="site-link">Tiledesk.com </a>
           <a href="%unsubscribe_url%" class="unsubscribe-link">Unsubscribe</a>
         </div>
