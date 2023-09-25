@@ -27,7 +27,7 @@ var userService = require('../services/userService');
 
 describe('UserService()', function () {
 
-  it('autologin', (done) => {
+  it('loginemail', (done) => {
     var now = Date.now();
     var email = "test-UserService-signup-" + now + "@email.com";
     var pwd = "pwd";
@@ -38,7 +38,7 @@ describe('UserService()', function () {
       expect(savedUser.lastname).to.equal("Test lastname");
 
       chai.request(server)
-          .post('/users/autologin')
+          .post('/users/loginemail')
           .auth(email, pwd)
           .send({ "id_project": "123456789" })
           .end((err, res) => {

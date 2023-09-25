@@ -185,15 +185,15 @@ router.get('/', function (req, res) {
   });
 });
 
-router.post('/autologin/', function (req, res) {
+router.post('/loginemail', function (req, res) {
 
-  winston.debug("/autologin... req.body: ", req.body);
+  winston.debug("/loginemail... req.body: ", req.body);
   let user_id = req.user._id;
   let token = req.headers.authorization;
 
   let project_id = req.body.id_project;
   if (!project_id) {
-    res.status(500).send({ success: false, error: "missing id_project field" })
+    res.status(500).send({ success: false, error: "missing 'id_project' field" })
   }
 
   User.findById(user_id, (err, user) => {
