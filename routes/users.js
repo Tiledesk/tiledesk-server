@@ -185,5 +185,29 @@ router.get('/', function (req, res) {
   });
 });
 
+router.post('/autologin/', function (req, res) {
+
+  winston.debug("/autologin... req.body: ", req.body);
+  let user_id = req.user._id;
+  let token = req.headers.authorization;
+
+  let project_id = req.body.id_project;
+  if (!project_id) {
+    res.status(500).send({ success: false, error: "missing id_project field" })
+  }
+
+  User.findById(user_id, (err, user) => {
+    if (err) {
+      return res.status(404).send({ success: false, message: "No user found" });
+    }
+    winston.debug("user found: ", user);
+
+    emailService.sendEmailRedirectOnDesktop(user.email, token, project_id, user.email)
+    return res.status(200).send("Sending email...")
+  })
+
+
+})
+
 
 module.exports = router;

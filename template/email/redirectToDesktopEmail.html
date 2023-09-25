@@ -1,5 +1,4 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml"
   style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
 
@@ -79,10 +78,40 @@
       text-align: center;
     }
 
+    .custom-divider {
+      width: 94%;
+      height: 1px;
+      border: none;
+      background-color: #cacaca;
+    }
+
+    .custom-button {
+      background-color: #ff8574 !important; 
+      border: none; 
+      color: white; 
+      padding: 6px 18px; 
+      text-align: center; 
+      text-decoration: none; 
+      display: inline-block; 
+      font-size: 14px; 
+      font-weight: 600; 
+      letter-spacing: 1px; 
+      margin: 4px 2px; 
+      cursor: pointer; 
+      border-radius: 8px;
+    }
+
     .footer {
       width: 100%;
       text-align: center;
       padding: 12px 0px
+    }
+
+    .powered-by-container {
+      display: flex; 
+      padding: 20px 18px; 
+      color: #888888; 
+      align-items: center;
     }
 
     .social-button-container {
@@ -193,8 +222,7 @@
 
           <div style="margin-top: 20px; font-weight: 600;">Access Tiledesk on your desktop now 👇</div>
           <div style="margin-top: 10px;">
-            <a href="{{baseScope.baseUrl}}/12983761238976/home?token=JWT {{token}}"
-              style=" background-color: #ff8574 !important; border: none; color: white; padding: 6px 18px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer; border-radius: 8px;">
+            <a href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}" class="custom-button">
               Enjoy Tiledesk
             </a>
           </div>
@@ -203,16 +231,16 @@
             Alternatively, simply copy and paste this URL into your browser:
             <div>
               <a
-                href="{{baseScope.baseUrl}}/#/handle-        invitation/{{pendinginvitationid}}/{{projectName}}/{{currentUserFirstname}}/{{currentUserLastname}}">
-                https://panel.tiledesk.com/v3/dashboard/#/login?user=email@user.com
+                href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}">
+                {{baseScope.baseUrl}}/{{project_id}}/home
               </a>
             </div>
           </div>
         </div>
 
-        <hr style="width:94%;height:1px;border:none;background-color: #cacaca;">
+        <hr class="custom-divider">
         
-        <div style="display: flex; padding: 20px 18px; color: #888888; align-items: center;">
+        <div class="powered-by-container">
           <span>Powered by </span>
           <span style="display: flex;"><img
               src="https://tiledesk.com/wp-content/uploads/2023/05/tiledesk-solo_logo_new_gray.png" width="15"
