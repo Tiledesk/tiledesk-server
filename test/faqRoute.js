@@ -106,8 +106,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "external", language: 'fr' })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -119,8 +118,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, form: example_form })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -154,8 +152,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example", language: "it" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -167,8 +164,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -204,8 +200,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example", })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -216,8 +211,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", webhook_enabled: true, intent_display_name: "intent_display_name1" })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -252,8 +246,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -264,8 +257,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", attributes: { attr1: {one: "one", two: "two"}} })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -279,8 +271,7 @@ describe('FaqKBRoute', () => {
                                         .auth(email, pwd)
                                         .send({ id_faq_kb: id_faq_kb, question: "question2", answer: "answer2", webhook_enabled: true, attributes: { two: "twooo" } })
                                         .end((err, res) => {
-                                            //console.log("res",  res);
-                                            console.log("res.body", res.body);
+                                            if (log) { console.log("res.body", res.body); }
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -304,8 +295,6 @@ describe('FaqKBRoute', () => {
 
         it('update attributes', (done) => {
 
-            console.log("update attributes test start... ");
-
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
 
@@ -316,8 +305,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -328,8 +316,7 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    console.log("res.body", res.body);
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_faq_kb).to.equal(id_faq_kb);
@@ -351,9 +338,10 @@ describe('FaqKBRoute', () => {
                                             }
                                         })
                                         .end((err, res) => {
-                                            //console.log("res",  res);
-                                            console.log("res.body attributes", res.body);
-                                            console.log("res.body attributes", res.body.attributes);
+                                            if (log) {
+                                                console.log("res.body attributes", res.body);
+                                                console.log("res.body attributes", res.body.attributes);
+                                            }
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.attributes).to.not.equal(undefined);
@@ -387,8 +375,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -403,8 +390,8 @@ describe('FaqKBRoute', () => {
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
                                 .end((err, res) => {
-                                    console.log("err", err);
-                                    console.log("res.body", res.body);
+                                    if (err) { console.log("err", err); }
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
 
@@ -417,12 +404,6 @@ describe('FaqKBRoute', () => {
             });
 
         });
-
-
-
-
-
-
 
         it('uploadcsvWithLanguage', (done) => {
 
@@ -440,8 +421,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", language: "it" })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -457,8 +437,10 @@ describe('FaqKBRoute', () => {
                                 .field('delimiter', ';')
                                 // .send({id_faq_kb: id_faq_kb})       
                                 .end((err, res) => {
-                                    console.log("err", err);
-                                    console.log("res.body", res.body);
+                                    if (err) {
+                                        console.log("err", err);
+                                    }
+                                    if (log) { console.log("res.body", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
 
@@ -542,13 +524,98 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
                                 .end((err, res) => {
-                                    // if (log) {
-                                    // }
-
-                                    console.log("intentEngin on resbody (create faq): \n", res.body);
+                                    if (log) {  console.log("intentEngin on resbody (create faq): \n", res.body); }
                                     res.should.have.status(200);
 
                                     done();
+
+                                })
+                        })
+                })
+            })
+        });
+
+        it('delete with _id', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .end((err, res) => {
+                            if (log) { console.log("create chatbot res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq')
+                                .auth(email, pwd)
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .end((err, res) => {
+                                    if (log) { console.log("create intent res.body", res.body); }
+                                    res.should.have.status(200);
+                                    let faqid = res.body._id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/faq/' + faqid)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (log) { console.log("delete intent res.body", res.body); }
+                                            res.should.have.status(200);
+
+                                            done();
+                                        })
+
+                                })
+                        })
+                })
+            })
+        });
+
+        it('delete with intent_id', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .end((err, res) => {
+                            if (log) { console.log("create chatbot res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq')
+                                .auth(email, pwd)
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .end((err, res) => {
+                                    if (log) { console.log("create intent res.body", res.body); }
+                                    res.should.have.status(200);
+                                    let faqid = res.body.intent_id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/faq/intentId' + faqid)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (log) { console.log("delete intent res.body", res.body); }
+                                            res.should.have.status(200);
+
+                                            done();
+                                        })
 
                                 })
                         })

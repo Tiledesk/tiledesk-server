@@ -204,6 +204,8 @@ router.patch('/:faqid/attributes', function (req, res) {
   let data = req.body;
   winston.debug("data: ", data);
 
+  // aggiugnere controllo su intent_id qui
+
   Faq.findById(req.params.faqid, function (err, updatedFaq) {
     if (err) {
       winston.error('Find Faq by id ERROR: ', err);
@@ -254,6 +256,7 @@ router.patch('/:faqid/attributes', function (req, res) {
 router.put('/:faqid', function (req, res) {
 
   winston.debug('UPDATE FAQ ', req.body);
+  let faqid = req.params.faqid;
 
   var update = {};
 
@@ -297,45 +300,84 @@ router.put('/:faqid', function (req, res) {
     update.attributes = req.body.attributes;
   }
 
-  Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
-    if (err) {
-      if (err.code == 11000) {
-        return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
-      } else {
-        return res.status(500).send({ success: false, msg: 'Error updating object.' });
+  if (faqid.startsWith("intentId")) {
+    let intent_id = faqid.substring(8);
+    Faq.findOneAndUpdate({ intent_id: intent_id }, update, { new: true, upsert: true}, (err, updatedFaq) => {
+      if (err) {
+        if (err.code == 11000) {
+          return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
+        } else {
+          return res.status(500).send({ success: false, msg: 'Error updating object.' });
+        }
       }
-    }
 
-    faqBotEvent.emit('faq.update', updatedFaq);
-    faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
+      faqBotEvent.emit('faq.update', updatedFaq);
+      faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
+  
+      res.status(200).send(updatedFaq);
+    })
 
-    res.json(updatedFaq);
+  } else {
+    Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
+      if (err) {
+        if (err.code == 11000) {
+          return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
+        } else {
+          return res.status(500).send({ success: false, msg: 'Error updating object.' });
+        }
+      }
+  
+      faqBotEvent.emit('faq.update', updatedFaq);
+      faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
+  
+      res.status(200).send(updatedFaq);
+      // updateRemoteFaq(updatedFaq)
+    });
+  }
 
-    // updateRemoteFaq(updatedFaq)
-  });
 });
 
 
 // DELETE REMOTE AND LOCAL FAQ
 router.delete('/:faqid', function (req, res) {
 
-  // deleteRemoteFaq(req.params.faqid)
   winston.debug('DELETE FAQ - FAQ ID ', req.params.faqid);
 
-  Faq.findByIdAndRemove({ _id: req.params.faqid }, function (err, faq) {
-    if (err) {
-      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
-    }
-    winston.debug('Deleted FAQ ', faq);
+  let faqid = req.params.faqid;
+  
+  if (faqid.startsWith("intentId")) {
+    console.log("faqid is an intent_id")
+    let intent_id = faqid.substring(8);
+    console.log("faq intent_id: ", intent_id);
 
-    faqBotEvent.emit('faq.delete', faq);
-    faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
+    Faq.findOneAndDelete({ intent_id: intent_id }, (err, faq) => {
+      if (err) {
+        return res.status(500).send({ success: false, msg: "Error deleting object." });
+      }
 
-    res.json(faq);
+      winston.debug('Deleted FAQ ', faq);
+  
+      faqBotEvent.emit('faq.delete', faq);
+      faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
+  
+      res.status(200).send(faq);
 
-  });
+    })
 
-
+  } else {
+    Faq.findByIdAndRemove({ _id: req.params.faqid }, function (err, faq) {
+      if (err) {
+        return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      }
+      winston.debug('Deleted FAQ ', faq);
+  
+      faqBotEvent.emit('faq.delete', faq);
+      faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
+  
+      res.status(200).send(faq);
+  
+    });
+  }
 });
 
 // EXPORT FAQ TO CSV
