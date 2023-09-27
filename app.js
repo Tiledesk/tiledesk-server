@@ -129,6 +129,8 @@ var requestUtilRoot = require('./routes/requestUtilRoot');
 var urls = require('./routes/urls');
 var email = require('./routes/email');
 var property = require('./routes/property');
+var segment = require('./routes/segment');
+
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -550,6 +552,7 @@ app.use('/:projectid/campaigns',[passport.authenticate(['basic', 'jwt'], { sessi
 app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], email);
 
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
+app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
 app.use('/:projectid/openai_kbs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai_kbs);
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
