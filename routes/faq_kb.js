@@ -639,6 +639,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 
   winston.debug("json source " + json_string)
 
+  // intentOnly still existing?
   if (req.query.intentsOnly && req.query.intentsOnly == "true") {
 
     winston.debug("intents only")
@@ -658,7 +659,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
         enabled: intent.enabled,
         webhook_enabled: intent.webhook_enabled,
         language: intent.language,
-        actions: intent.actions
+        actions: intent.actions,
+        attributes: intent.attributes
       }
 
       // overwrite duplicated intents
@@ -746,7 +748,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
                     enabled: intent.enabled,
                     webhook_enabled: intent.webhook_enabled,
                     language: intent.language,
-                    actions: intent.actions
+                    actions: intent.actions,
+                    attributes: intent.attributes
                   }
     
                   // TO DELETE: no used when req.query.create = 'true'
@@ -869,7 +872,8 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
                 enabled: intent.enabled,
                 webhook_enabled: intent.webhook_enabled,
                 language: intent.language,
-                actions: intent.actions
+                actions: intent.actions,
+                attributes: intent.attributes
               }
     
               // overwrite duplicated intents

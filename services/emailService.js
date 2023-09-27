@@ -1851,6 +1851,39 @@ async sendRequestTranscript(to, messages, request, project) {
 
 }
 
+async sendEmailRedirectOnDesktop(to, token, project_id) {
+  winston.debug("sendEmailRedirectOnDesktop: " + to);
+
+  var that = this;
+
+  let html = await this.readTemplate('redirectToDesktopEmail.html');
+
+  let envTemplate = process.env.EMAIL_REDIRECT_TO_DESKTOP_TEMPLATE
+  winston.debug("envTemplate: " + envTemplate);
+
+  if (envTemplate) {
+    html = envTemplate;
+  }
+
+  winston.debug("html: " + html);
+
+  let template = handlebars.compile(html);
+
+  let baseScope = JSON.parse(JSON.stringify(that));
+  delete baseScope.pass;
+
+  let replacements = {
+    baseScope: baseScope,
+    token: token,
+    project_id: project_id
+  }
+
+  html = template(replacements);
+
+  that.send({ to: to, subject: "Join Tiledesk from Desktop", html: html });
+
+}
+
 parseText(text, payload) {
 
  
