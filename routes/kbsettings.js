@@ -98,15 +98,17 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 
 })
 
+
+// PROXY PUGLIA AI - START
 router.post('/qa', async (req, res) => {
     let data = req.body;
     console.log("data: ", data);
 
     openaiService.startScrape(data).then((resp) => {
-        console.log("qa resp: ", resp.data);
-        res.status(200).send();
+        // console.log("qa resp: ", resp.data);
+        res.status(200).send(resp.data);
     }).catch((err) => {
-        console.log("qa err: ", err);
+        winston.error("qa err: ", err);
         res.status(500).send(err);
     })
 })
@@ -117,10 +119,10 @@ router.post('/startscrape', async (req, res) => {
     console.log("data: ", data);
 
     openaiService.startScrape(data).then((resp) => {
-        console.log("startScrape resp: ", resp.data);
-        res.status(200).send();
+        // console.log("startScrape resp: ", resp.data);
+        res.status(200).send(resp.data);
     }).catch((err) => {
-        console.log("startScrape err: ", err);
+        winston.error("startScrape err: ", err);
         res.status(500).send(err);
     })
 })
@@ -132,13 +134,14 @@ router.post('/checkstatus', async (req, res) => {
     console.log("data: ", data);
 
     openaiService.checkStatus(data).then((resp) => {
-        console.log("checkStatus resp: ", resp.data);
-        res.status(200).send();
+        // console.log("checkStatus resp: ", resp.data);
+        res.status(200).send(resp.data);
     }).catch((err) => {
-        console.log("checkStatus err: ", err);
+        winston.error("checkStatus err: ", err);
         res.status(500).send(err);
     })
 })
+// PROXY PUGLIA AI - END
 
 router.post('/:settings_id', async (req, res) => {
 
