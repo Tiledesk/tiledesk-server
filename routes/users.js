@@ -203,7 +203,7 @@ router.post('/loginemail', function (req, res) {
     winston.debug("user found: ", user);
 
     emailService.sendEmailRedirectOnDesktop(user.email, token, project_id, user.email)
-    return res.status(200).send("Sending email...")
+    return res.status(200).send({ success: true, message: "Sending email..."})
   })
 
 
