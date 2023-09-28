@@ -140,7 +140,7 @@ router.post('/qa', async (req, res) => {
     })
 })
 
-router.get('/startscrape', async (req, res) => {
+router.post('/startscrape', async (req, res) => {
     
     let data = req.body;
     console.log("data: ", data);
@@ -155,7 +155,7 @@ router.get('/startscrape', async (req, res) => {
 })
 
 
-router.get('/checkstatus', async (req, res) => {
+router.post('/checkstatus', async (req, res) => {
 
     let data = req.body;
     console.log("data: ", data);
