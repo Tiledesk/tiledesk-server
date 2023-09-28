@@ -4,12 +4,14 @@ var configGlobal = require('../config/global');
 require('dotenv').config();
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
+let kb_endpoint = process.env.KB_ENDPOINT;
 
 class OpenaiService {
     
+    // OPEN AI
     completions(data, gptkey) {
         
-        console.log("****** Serivcesssssssss openai_endpoint: ", openai_endpoint);
+        winston.debug("[OPENAI SERVICE] openai endpoint: ", openai_endpoint);
 
         return new Promise((resolve, reject) => {
 
@@ -33,7 +35,74 @@ class OpenaiService {
         })
 
     }
+    
 
+    // PUGLIA AI
+    checkStatus(data) {
+        winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+
+        return new Promise((resolve, reject) => {
+
+            axios({
+                url: kb_endpoint + "/scrape/status",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                method: 'POST'
+            }).then((resbody) => {
+                resolve(resbody);
+            }).catch((err) => {
+                console.log("err: ", err);
+                reject(err);
+            })
+
+        })
+    }
+
+    startScrape(data) {
+        winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+
+        return new Promise((resolve, reject) => {
+
+            axios({
+                url: kb_endpoint + "/scrape/",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                method: 'POST'
+            }).then((resbody) => {
+                resolve(resbody);
+            }).catch((err) => {
+                console.log("err: ", err);
+                reject(err);
+            })
+
+        })
+    }
+
+    ask(data) {
+        winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+
+        return new Promise((resolve, reject) => {
+
+            axios({
+                url: kb_endpoint + "/qa/",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                method: 'POST'
+            }).then((resbody) => {
+                resolve(resbody);
+            }).catch((err) => {
+                console.log("err: ", err);
+                reject(err);
+            })
+
+        })
+    }
 }
 
 var openaiService = new OpenaiService();

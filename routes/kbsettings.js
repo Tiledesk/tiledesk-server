@@ -3,6 +3,7 @@ var KBSettings = require('../models/kb_setting');
 // var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
+const openaiService = require('../services/openaiService');
 
 router.get('/', async (req, res) => {
     let project_id = req.projectid;
@@ -122,6 +123,49 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
         } else {
             res.status(200).send(settings);
         }
+    })
+
+})
+
+router.post('/qa', async (req, res) => {
+    let data = req.body;
+    console.log("data: ", data);
+
+    openaiService.startScrape(data).then((resp) => {
+        console.log("qa resp: ", resp.data);
+        res.status(200).send();
+    }).catch((err) => {
+        console.log("qa err: ", err);
+        res.status(500).send(err);
+    })
+})
+
+router.get('/startscrape', async (req, res) => {
+    
+    let data = req.body;
+    console.log("data: ", data);
+
+    openaiService.startScrape(data).then((resp) => {
+        console.log("startScrape resp: ", resp.data);
+        res.status(200).send();
+    }).catch((err) => {
+        console.log("startScrape err: ", err);
+        res.status(500).send(err);
+    })
+})
+
+
+router.get('/checkstatus', async (req, res) => {
+
+    let data = req.body;
+    console.log("data: ", data);
+
+    openaiService.checkStatus(data).then((resp) => {
+        console.log("checkStatus resp: ", resp.data);
+        res.status(200).send();
+    }).catch((err) => {
+        console.log("checkStatus err: ", err);
+        res.status(500).send(err);
     })
 })
 
