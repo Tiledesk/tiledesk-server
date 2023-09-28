@@ -55,35 +55,6 @@ router.post('/', async (req, res) => {
     })
 })
 
-router.post('/:settings_id', async (req, res) => {
-
-    let settings_id = req.params.settings_id;
-    let body = req.body;
-
-    KBSettings.findById(settings_id, (err, settings) => {
-        if (err) {
-            winston.error("find knoledge base error: ", err);
-            return res.status(500).send({ success: false, error: err});
-        } else {
-
-            let new_kb = {
-                name: body.name,
-                url: body.url
-            }
-            settings.kbs.push(new_kb);
-
-            KBSettings.findByIdAndUpdate( settings_id, settings, { new: true }, (err, savedSettings) => {
-                if (err) {
-                    winston.err("findByIdAndUpdate error: ", err);
-                    res.status(500).send({ success: false, error: err });
-                } else {
-                    res.status(200).send(savedSettings);
-                }
-            })
-        }
-    })
-})
-
 router.put('/:settings_id', async (req, res) => {
 
     let settings_id = req.params.settings_id;
@@ -166,6 +137,35 @@ router.post('/checkstatus', async (req, res) => {
     }).catch((err) => {
         console.log("checkStatus err: ", err);
         res.status(500).send(err);
+    })
+})
+
+router.post('/:settings_id', async (req, res) => {
+
+    let settings_id = req.params.settings_id;
+    let body = req.body;
+
+    KBSettings.findById(settings_id, (err, settings) => {
+        if (err) {
+            winston.error("find knoledge base error: ", err);
+            return res.status(500).send({ success: false, error: err});
+        } else {
+
+            let new_kb = {
+                name: body.name,
+                url: body.url
+            }
+            settings.kbs.push(new_kb);
+
+            KBSettings.findByIdAndUpdate( settings_id, settings, { new: true }, (err, savedSettings) => {
+                if (err) {
+                    winston.err("findByIdAndUpdate error: ", err);
+                    res.status(500).send({ success: false, error: err });
+                } else {
+                    res.status(200).send(savedSettings);
+                }
+            })
+        }
     })
 })
 
