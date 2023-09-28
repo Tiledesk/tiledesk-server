@@ -162,7 +162,7 @@
                         <div style="margin-top: 20px; font-weight: 600;">Access Tiledesk on your desktop now 👇</div>
 
                         <div style="margin-top: 10px;">
-                          <a href="{{baseScope.baseUrl}}/#/handle-invitation/{{pendinginvitationid}}/{{projectName}}/{{currentUserFirstname}}/{{currentUserLastname}}"
+                          <a href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}"
                             style=" background-color: #ff8574 !important; border: none; color: white; padding: 6px 18px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer; border-radius: 8px;">
                             Enjoy Tiledesk
                           </a>
@@ -174,8 +174,8 @@
                         Alternatively, simply copy and paste this URL into your browser:
                         <div>
                           <a
-                            href="{{baseScope.baseUrl}}/#/handle-        invitation/{{pendinginvitationid}}/{{projectName}}/{{currentUserFirstname}}/{{currentUserLastname}}">
-                            https://panel.tiledesk.com/v3/dashboard/#/login?user=email@user.com
+                          href="{{baseScope.baseUrl}}/{{project_id}}/home?token={{token}}">
+                          {{baseScope.baseUrl}}/{{project_id}}/home
                           </a>
                         </div>
                       </div>
