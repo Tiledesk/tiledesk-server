@@ -104,7 +104,7 @@ router.post('/qa', async (req, res) => {
     let data = req.body;
     console.log("data: ", data);
 
-    openaiService.startScrape(data).then((resp) => {
+    openaiService.ask(data).then((resp) => {
         // console.log("qa resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
