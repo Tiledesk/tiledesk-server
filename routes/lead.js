@@ -7,6 +7,8 @@ var leadService = require("../services/leadService");
 csv = require('csv-express');
 csv.separator = ';';
 const leadEvent = require('../event/leadEvent');
+var Segment = require("../models/segment");
+var Segment2MongoConverter = require("../utils/segment2mongoConverter");
 
 
 router.post('/', function (req, res) {
@@ -388,7 +390,7 @@ router.get('/:leadid', function (req, res) {
 });
 
 
-router.get('/', function (req, res) {
+router.get('/', async(req, res) => {
 
   var limit = 40; // Number of request per page
 
@@ -407,7 +409,7 @@ router.get('/', function (req, res) {
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": LeadConstants.NORMAL};
+  var query = {};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
@@ -439,6 +441,24 @@ router.get('/', function (req, res) {
     winston.debug('req.query.tags', req.query.tags);
     query["tags"] = req.query.tags;
   }
+
+  
+  if (req.query.segment) {
+    let segment = await Segment.findOne({id_project: req.projectid, _id: req.query.segment }).exec();
+    if (!segment) {
+      return res.status(404).send({ success: false, msg: 'Error segment not found' });
+    }
+    Segment2MongoConverter.convert(query, segment);
+  }
+
+
+
+  // last query modifier
+  query["id_project"] = req.projectid;
+  query["status"] = LeadConstants.NORMAL;
+
+  winston.debug("query", query);
+
 
   var direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
