@@ -883,3 +883,44 @@ curl -v -X GET -H 'Content-Type:application/json' -H "Authorization: JWT eyJhbGc
 
 
 curl -v -X POST -H 'Content-Type:application/json' -u andrea.leo@frontiere21.it:258456 https://tiledesk-server-pre.herokuapp.com/chat21/native/auth/createCustomToken
+
+
+
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin -d '{"name":"testprj"}' http://localhost:3000/projects
+
+curl -v -X POST -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  -d '{ "name":"segment1", "filters": [{"field":"field1","operator":"=","value":"ciao2"}]}' http://localhost:3000/651446eeaf0e4e333f86db6d/segments
+
+
+curl -v -X POST -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin -d '{"text":"firstText"}' http://localhost:3000/651446eeaf0e4e333f86db6d/requests/req123456999-651446eeaf0e4e333f86db6d/messages
+
+
+curl -v -X GET -u admin@tiledesk.com:adminadmin  http://localhost:3000/651446eeaf0e4e333f86db6d/leads?segment=651448cc39405451f2165a80
+
+
+number
+
+curl -v -X POST -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  -d '{ "name":"segment1", "filters": [{"field":"field1","operator":"=","value":44}]}' http://localhost:3000/651446eeaf0e4e333f86db6d/segments
+
+curl -v -X GET -u admin@tiledesk.com:adminadmin  http://localhost:3000/651446eeaf0e4e333f86db6d/leads?segment=6515a7e0066727cb94bccd5c
+
+
+
+
+sudo systemctl start mongod
+
+
+
+
+curl -v -X PUT -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  -d '{ "name":"segment2", "filters": [{"field":"field1","operator":"=","value":"ciao2"}]}' http://localhost:3000/651446eeaf0e4e333f86db6d/segments/6516eb0a11e143e3548b8dd6
+
+
+
+curl -v -X GET -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  http://localhost:3000/651446eeaf0e4e333f86db6d/segments/6516eb0a11e143e3548b8dd6
+
+
+curl -v -X GET -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  http://localhost:3000/651446eeaf0e4e333f86db6d/segments/
+
+
+curl -v -X DELETE -H 'Content-Type:application/json' -u admin@tiledesk.com:adminadmin  http://localhost:3000/651446eeaf0e4e333f86db6d/segments/6516eb0a11e143e3548b8dd6
