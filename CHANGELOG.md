@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.43
+- updated tybot-connector to 0.1.96
+- added segment module
 
 # 2.4.42
 - createIfNotExistsWithLeadId now update the lead email if jwt email changes
