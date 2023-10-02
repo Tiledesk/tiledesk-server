@@ -15,10 +15,11 @@ var SegmentFilterSchema = new Schema({
         required: true
     },
     value: { //tidio supports date, tag, dropdown
-        type: String,
+        //type: String,
+        type: Object,
         required: true
     },
-});
+},{ _id : false });
 
 
 var SegmentSchema = new Schema({
