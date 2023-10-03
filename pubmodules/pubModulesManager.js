@@ -30,6 +30,9 @@ class PubModulesManager {
         this.messenger = undefined;
         this.messengerRoute = undefined;
 
+        this.telegram = undefined;
+        this.telegramRoute = undefined;
+
         this.kaleyra = undefined;
         this.kaleyraRoute = undefined;
 
@@ -77,6 +80,10 @@ class PubModulesManager {
         if (this.messengerRoute) {
             app.use('/modules/messenger', this.messengerRoute);
             winston.info("PubModulesManager messengerRoute controller loaded");
+        }
+        if (this.telegramRoute) {
+            app.use('/modules/telegram', this.telegramRoute);
+            winston.info("PubModulesManager telegramRoute controller loaded");
         }
         if (this.kaleyraRoute) {
             app.use('/modules/kaleyra', this.kaleyraRoute);
@@ -290,6 +297,22 @@ class PubModulesManager {
             if (err.code == 'MODULE_NOT_FOUND') { 
                 winston.info("PubModulesManager init apps module not found ");
             }else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.telegram = require('./telegram');
+            winston.info("this.telegram: " + this.telegram);
+            this.telegram.listener.listen(config);
+
+            this.telegramRoute = this.telegram.telegramRoute;
+
+            winston.info("PubModulesManager initialized apps (telegram).")
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init apps module not found ");
+            } else {
                 winston.info("PubModulesManager error initializing init apps module", err);
             }
         }

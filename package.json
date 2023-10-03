@@ -36,7 +36,7 @@
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-apps": "^1.0.16",
+    "@tiledesk/tiledesk-apps": "^1.0.17",
     "@tiledesk/tiledesk-chat21-app": "^1.1.7",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
     "@tiledesk/tiledesk-dialogflow-connector": "^1.8.4",
@@ -46,6 +46,7 @@
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-tybot-connector": "^0.1.97",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.51",
+    "@tiledesk/tiledesk-telegram-connector": "^0.1.7",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
