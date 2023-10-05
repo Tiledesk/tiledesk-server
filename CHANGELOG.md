@@ -5,12 +5,16 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.3.56
+# 2.4.58
+- update tiledesk-whatsapp-connector to 0.1.52
+- update tiledesk-telegram-connector to 0.1.8
+
+# 2.4.57
 - added telegram module
 - update tiledesk-apps to 0.1.17
 - update tiledesk-telegram-connector to 0.1.7
 
-# 2.3.55
+# 2.4.55
 - updated tybot-connector to 0.1.97
 
 # 2.4.43
