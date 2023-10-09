@@ -103,15 +103,12 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
-    console.log("/qa data: ", data);
 
     openaiService.ask(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
-        console.log("qa resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("qa err: ", err);
-        console.error("qa err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
@@ -121,15 +118,12 @@ router.post('/startscrape', async (req, res) => {
     
     let data = req.body;
     winston.debug("/startscrape data: ", data);
-    console.log("/startscrape data: ", data);
 
     openaiService.startScrape(data).then((resp) => {
         winston.debug("startScrape resp: ", resp.data);
-        console.log("startScrape resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("startScrape err: ", err);
-        console.error("startScrape err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
@@ -140,15 +134,12 @@ router.post('/checkstatus', async (req, res) => {
 
     let data = req.body;
     winston.debug("/checkstatus data: ", data);
-    console.log("/checkstatus data: ", data);
 
     openaiService.checkStatus(data).then((resp) => {
         winston.debug("checkStatus resp: ", resp.data);
-        console.log("checkStatus resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("checkstatus err: ", err);
-        console.error("checkstatus err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
