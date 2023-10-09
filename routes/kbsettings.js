@@ -102,28 +102,30 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 // PROXY PUGLIA AI - START
 router.post('/qa', async (req, res) => {
     let data = req.body;
-    console.log("data: ", data);
+    winston.debug("/qa data: ", data);
 
     openaiService.ask(data).then((resp) => {
-        // console.log("qa resp: ", resp.data);
+        winston.debug("qa resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("qa err: ", err);
-        res.status(500).send(err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
 
 router.post('/startscrape', async (req, res) => {
     
     let data = req.body;
-    console.log("data: ", data);
+    winston.debug("/startscrape data: ", data);
 
     openaiService.startScrape(data).then((resp) => {
-        // console.log("startScrape resp: ", resp.data);
+        winston.debug("startScrape resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("startScrape err: ", err);
-        res.status(500).send(err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
 
@@ -131,14 +133,15 @@ router.post('/startscrape', async (req, res) => {
 router.post('/checkstatus', async (req, res) => {
 
     let data = req.body;
-    console.log("data: ", data);
+    winston.debug("/checkstatus data: ", data);
 
     openaiService.checkStatus(data).then((resp) => {
-        // console.log("checkStatus resp: ", resp.data);
+        winston.debug("checkStatus resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
-        winston.error("checkStatus err: ", err);
-        res.status(500).send(err);
+        winston.error("checkstatus err: ", err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
 // PROXY PUGLIA AI - END

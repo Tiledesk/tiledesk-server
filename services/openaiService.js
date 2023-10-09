@@ -24,11 +24,8 @@ class OpenaiService {
                 data: data,
                 method: 'POST'
             }).then((resbody) => {
-                //winston.debug("[Openai] completions resbody: ", resbody.data);
                 resolve(resbody);
             }).catch((err) => {
-                console.log("err: ", err);
-                // winston.error("[Openai] completions error: ", err);
                 reject(err);
             })
 
@@ -53,7 +50,6 @@ class OpenaiService {
             }).then((resbody) => {
                 resolve(resbody);
             }).catch((err) => {
-                console.log("err: ", err);
                 reject(err);
             })
 
@@ -75,7 +71,6 @@ class OpenaiService {
             }).then((resbody) => {
                 resolve(resbody);
             }).catch((err) => {
-                console.log("err: ", err);
                 reject(err);
             })
 
