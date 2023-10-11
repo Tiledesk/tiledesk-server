@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.4.61
+# 2.4.63
+- downgrade tybot-connector to 0.1.97
+
+# 2.4.62
 - improved kbsettings endpoints for qa, scrape and check status
 - update tiledesk-whatsapp-connector to 0.1.52
 - update tiledesk-telegram-connector to 0.1.8
