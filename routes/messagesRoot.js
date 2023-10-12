@@ -19,14 +19,11 @@ router.post('/',
   check('recipientFullname').notEmpty(),
   check('text').custom((value, { req }) => {
     winston.debug('validation: '+ value + ' req.body.type ' + req.body.type);
-    console.log('validation: '+ value + ' req.body.type ' + req.body.type);
     if (!value && (!req.body.type || req.body.type === "text") ) {
       winston.debug('validation1 ');
-      console.log('validation1 ');
       return Promise.reject('Text field is required for messages with type "text"');
     }   
     winston.debug('validation2 ');
-    console.log('validation2 ');
     return Promise.resolve('validation ok');
   })
 ],
@@ -35,10 +32,6 @@ router.post('/',
   winston.debug('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
-  console.log('req.body post message', req.body);
-  console.log('req.params: ', req.params);
-  console.log('req.params.request_id: ' + req.params.request_id);
-
 
 
    const errors = validationResult(req);
