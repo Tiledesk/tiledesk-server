@@ -50,6 +50,11 @@ async (req, res)  => {
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
 
+  console.log('(debug)  req.body post message', req.body);
+  console.log('(debug)  req.params: ', req.params);
+  console.log('(debug)  req.params.request_id: ' + req.params.request_id);
+
+
   // const errors = validationResult(req);
   // if (!errors.isEmpty()) {
   //   return res.status(422).json({ errors: errors.array() });
@@ -67,6 +72,7 @@ async (req, res)  => {
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
+  console.log('(debug) messageStatus: ' + messageStatus);
 
       let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
       if (cacheEnabler.request) {
@@ -89,6 +95,7 @@ async (req, res)  => {
               label: req.projectid
             });
           // winston.error('Error getting the request.', err);
+          console.log("(debug) Error getting the request: ", err)
           return res.status(500).send({success: false, msg: 'Error getting the request.', err:err});
         }
 
