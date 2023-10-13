@@ -168,7 +168,7 @@ class FaqService {
             "text": "Hi, how can I help you?\r\n"
           }],
           "intent_display_name": "welcome",
-          "intent_id": "9d0b96b9-e036-4c2d-8504-1181b5c4be75",
+          "intent_id": uuidv4(),
           "attributes": {
             "position": {
               "x": 714,

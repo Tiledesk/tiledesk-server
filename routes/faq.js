@@ -258,6 +258,11 @@ router.put('/:faqid', function (req, res) {
   winston.debug('UPDATE FAQ ', req.body);
   let faqid = req.params.faqid;
 
+  if (!req.body.id_faq_kb) {
+    return res.status(422).send({ err: "Missing id_faq_kb in Request Body"})
+  }
+  let id_faq_kb = req.body.id_faq_kb;
+
   var update = {};
 
   if (req.body.intent != undefined) {
@@ -302,7 +307,7 @@ router.put('/:faqid', function (req, res) {
 
   if (faqid.startsWith("intentId")) {
     let intent_id = faqid.substring(8);
-    Faq.findOneAndUpdate({ intent_id: intent_id }, update, { new: true, upsert: true}, (err, updatedFaq) => {
+    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true, upsert: true}, (err, updatedFaq) => {
       if (err) {
         if (err.code == 11000) {
           return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
@@ -318,6 +323,7 @@ router.put('/:faqid', function (req, res) {
     })
 
   } else {
+    
     Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
       if (err) {
         if (err.code == 11000) {
