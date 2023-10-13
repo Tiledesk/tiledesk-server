@@ -3,6 +3,7 @@ var Faq_kb = require("../models/faq_kb");
 var winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 const ActionsConstants = require('../models/actionsConstants');
+const uuidv4 = require('uuid/v4');
 
 
 class FaqService {
