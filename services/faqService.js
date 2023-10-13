@@ -103,6 +103,7 @@ class FaqService {
 
       if (template === "blank") {
 
+        let custom_intent_id = uuidv4();
         // faqsArray = [         
         //   { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
         //   { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
@@ -138,7 +139,7 @@ class FaqService {
           "enabled": true,
           "actions": [{
             "_tdActionType": "intent",
-            "intentName": "#9d0b96b9-e036-4c2d-8504-1181b5c4be75"
+            "intentName": "#" + custom_intent_id
           }],
           "question": "\\start",
           "intent_display_name": "start",
@@ -169,7 +170,7 @@ class FaqService {
             "text": "Hi, how can I help you?\r\n"
           }],
           "intent_display_name": "welcome",
-          "intent_id": uuidv4(),
+          "intent_id": custom_intent_id,
           "attributes": {
             "position": {
               "x": 714,
