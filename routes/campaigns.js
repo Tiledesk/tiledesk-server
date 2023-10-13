@@ -1,14 +1,28 @@
 var express = require('express');
 var router = express.Router();
 var Group = require("../models/group");
+var Segment = require("../models/segment");
+var Lead = require("../models/lead");
 var User = require("../models/user");
 var winston = require('../config/winston');
 var requestService = require("../services/requestService");
 var messageService = require("../services/messageService");
 var MessageConstants = require("../models/messageConstants");
 var UIDGenerator = require("../utils/UIDGenerator");
+var LeadConstants = require("../models/leadConstants");
+var Segment2MongoConverter = require("../utils/segment2mongoConverter");
 
+var JobManager = require("jobs-worker-queued");
 
+var JOB_RABBITURI = process.env.JOB_RABBITURI;
+winston.info("JobWorkerQueued uri: " + JOB_RABBITURI);
+
+var jobManager = new JobManager(JOB_RABBITURI,
+  {
+  // debug:true,
+  // topic: "test22",
+  // exchange: "test333"
+  });
 
 
 // this endpoint supports support-group- or groups. this create a conversation for the sender (agent console)
@@ -41,7 +55,18 @@ router.post('/', function (req, res) {
     });
 });
 
-router.post('/direct', async function (req, res) {
+
+
+/*
+Invio di una campagna (il bot invia a tutti i membri del gruppo News dei messaggi direct)
+E' l'equivalente del bot "Telegram" che viene usato per aggiornare gli utenti delle ultime funzionalità. E' indicato per inviare news unidirezionali
+
+curl -v -X POST -H 'Content-Type:application/json' -u XYZ:XYZ -d '{"text":"Tiledesk new feature. See here https://tiledesk.com", "group_id":"XYZ"}' https://api.tiledesk.com/v2/XYZ/campaigns/direct
+
+Specifica nel campo text il messaggio.
+*/
+
+router.post('/directDEPRECATED?', async function (req, res) {
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
 
@@ -58,7 +83,22 @@ router.post('/direct', async function (req, res) {
   // TODO cicla su segment
   var segment_id = req.body.segment_id;
   if (segment_id) {
+      winston.info("segment_id: "+ segment_id);
+      
+      var queryLead = {};
 
+      let segment = await Segment.findOne({id_project: req.projectid, _id: segment_id }).exec();
+      if (!segment) {
+        return res.status(404).send({ success: false, msg: 'Error segment not found' });
+      }
+      Segment2MongoConverter.convert(queryLead, segment);
+  
+      queryLead["id_project"] = req.projectid;
+      queryLead["status"] = LeadConstants.NORMAL;
+      winston.info("queryLead", queryLead);
+
+      let leads = await Lead.find(queryLead).exec();
+      var recipients = leads;
   }
 
   var group_id = req.body.group_id;
@@ -66,13 +106,17 @@ router.post('/direct', async function (req, res) {
     var group = await Group.findOne({ _id: group_id, id_project: req.projectid }).exec();
     winston.info("group", group);
 
+    if (!group) {
+      return res.status(404).send({ success: false, msg: 'Error group not found' });
+    }
+
     var recipients = group.members;
     // winston.info("members", members);
 
 
   }
 
-  
+
   winston.info("recipients", recipients);
   winston.info("recipients.length: " + recipients.length);
 
@@ -99,6 +143,9 @@ router.post('/direct', async function (req, res) {
   }
 
   if (recipients.length == 1) {
+
+    // qui manca recipient?
+    message.recipient = recipients[0];
     return messageService.save(message).then(function(savedMessage){                        
         if (req.body.returnobject) {
           return res.json(savedMessage);
@@ -146,6 +193,146 @@ router.post('/direct', async function (req, res) {
   }
 
 
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ jobManager.run(async(data) => {
+        winston.info("run job here with payload", data);
+
+        let message = data.payload.message;
+
+        // TODO cicla su segment
+        var segment_id = data.payload.segment_id;
+        if (segment_id) {
+            winston.info("segment_id: "+ segment_id);
+            
+            
+          
+          
+        
+            var queryLead = {};
+
+            let segment = await Segment.findOne({id_project: data.payload.project_id, _id: segment_id }).exec();
+            if (!segment) {
+              // return res.status(404).send({ success: false, msg: 'Error segment not found' });
+              return winston.error("Error segment not found");
+            }
+            Segment2MongoConverter.convert(queryLead, segment);
+        
+            queryLead["id_project"] = data.payload.project_id;
+            queryLead["status"] = LeadConstants.NORMAL;
+            winston.info("queryLead", queryLead);
+
+
+            //const cursor = Lead.find({}).cursor();
+            //TODO RESTORE IT
+            const cursor = Lead.find(queryLead).cursor();
+
+            
+
+            // if (doc!= null) {
+            //   doc = await cursor.next()
+            // }
+
+            // cursor.next(function(error, doc) {
+            //   console.log(doc);
+
+            //   setTimout()
+            // });
+            
+
+            function sleep(ms) {
+              return new Promise((resolve) => {
+                setTimeout(resolve, ms);
+              });
+            }
+
+            for (let doc = await cursor.next(); doc != null; doc = await cursor.next() ) {
+              winston.debug("doc", doc);
+
+              // if (!message.recipient) {
+                message.recipient = doc.lead_id;
+              // }
+
+              // if (!message.recipientFullname) {
+                message.recipientFullname = doc.fullname;
+              // }
+
+              winston.debug("message to send", message);
+
+              messageService.save(message);
+            
+              await sleep(1000); 
+              winston.debug("finito 1000 sec");
+            }
+
+
+            // while(await cursor.hasNext()) {
+            //   const doc = await cursor.next();
+            //   // process doc here
+            // }
+        
+            // let leads = await Lead.find(queryLead).exec();
+            // var recipients = leads;
+            // winston.info("recipients", recipients);
+
+
+        }
+
+
+    });
+
+
+
+router.post('/direct', async function (req, res) {
+
+
+  winston.debug(req.body);
+  winston.debug("req.user", req.user);
+
+  var segment_id = req.body.segment_id;
+  winston.info("segment_id"+ segment_id);
+
+  let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
+  // winston.info("messageStatus"+ messageStatus);
+
+
+  let message = {
+    sender: req.body.sender || req.user._id, 
+    senderFullname: req.body.senderFullname || req.user.fullName, 
+    recipient: req.body.recipient, 
+    recipientFullname: req.body.recipientFullname,
+    text: req.body.text, 
+    id_project: req.projectid, // rendilo opzionale?
+    createdBy: req.user._id, 
+    status:  messageStatus,
+    attributes: req.body.attributes, 
+    type: req.body.type, 
+    metadata: req.body.metadata, 
+    language: req.body.language, 
+    channel_type: MessageConstants.CHANNEL_TYPE.DIRECT, 
+    channel: req.body.channel
+  };
+
+  winston.info("message before", message);
+
+  jobManager.publish(
+        {segment_id: segment_id, project_id: req.projectid, message: message}
+    );
+
+    return res.json({ queued: true });
 
 
 });
