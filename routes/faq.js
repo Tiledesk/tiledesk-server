@@ -350,19 +350,28 @@ router.delete('/:faqid', function (req, res) {
   winston.debug('DELETE FAQ - FAQ ID ', req.params.faqid);
 
   let faqid = req.params.faqid;
+  let id_faq_kb;
+  if (req.query && req.query.id_faq_kb) {
+    id_faq_kb = req.query.id_faq_kb;
+  }
   
   if (faqid.startsWith("intentId")) {
-    console.log("faqid is an intent_id")
     let intent_id = faqid.substring(8);
-    console.log("faq intent_id: ", intent_id);
+    if (!id_faq_kb) {
+      return res.status(500).send({ success: false, msg: "Unable to delete object. Query param 'id_faq_kb' is mandatory if you want to delete via intent_id"})
+    }
 
-    Faq.findOneAndDelete({ intent_id: intent_id }, (err, faq) => {
+    Faq.findOneAndDelete({ intent_id: intent_id, id_faq_kb: id_faq_kb }, (err, faq) => {
       if (err) {
         return res.status(500).send({ success: false, msg: "Error deleting object." });
       }
 
+      if (!faq) {
+        return res.status(404).send({ success: false, msg: "Error deleting object. The object does not exists."})
+      }
+
       winston.debug('Deleted FAQ ', faq);
-  
+      
       faqBotEvent.emit('faq.delete', faq);
       faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
   
