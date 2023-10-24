@@ -177,7 +177,8 @@ async (req, res)  => {
                   channel: req.body.channel, 
                   location: req.body.location,
                   participants: req.body.participants,
-                  lead: createdLead, requester: project_user,
+                  lead: createdLead, 
+                  requester: project_user,
                   priority: req.body.priority,
                   followers: req.body.followers,
                 };
