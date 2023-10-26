@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.72
+- update tiledesk-messenger-connector to 0.1.11
+
 # 2.4.71
 - update tiledesk-messenger-connector to 0.1.10
 
