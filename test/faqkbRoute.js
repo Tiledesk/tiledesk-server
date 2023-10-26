@@ -73,6 +73,53 @@ describe('FaqKBRoute', () => {
 
         }).timeout(20000);
 
+        it('train with tiledesk-ai qwerty', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-faqkb-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: "tiledesk-ai" })
+                        .end((err, res) => {
+                            if (log) {
+                                console.log("res.body", res.body);
+                            }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+                                    console.log("faq_list: ", res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+
+                                    chai.request(server)
+                                        .post('/' + savedProject._id + '/faq_kb/train/' + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .send({})
+                                        .end((err, res) => {
+                                            console.log("train res.body: ", res.body);
+                                        })
+
+                                    done();
+
+                                })
+
+
+
+                        });
+                })
+            })
+        })
+
 
         it('create with template example', (done) => {
 

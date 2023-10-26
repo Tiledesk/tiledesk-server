@@ -89,6 +89,12 @@ class TrainingService {
     start() {
         winston.info('TrainingService start');
 
+        faqBotEvent.on('faq_train.train', (id_faq_kb) => {
+            setImmediate(() => {
+                trainingService.train('faq_train.train', id_faq_kb);
+            })
+        })
+
         faqBotEvent.on('faq_train.importedall', (id_faq_kb) => {
             setImmediate(() => {
                 trainingService.train('faq.importedall', id_faq_kb);

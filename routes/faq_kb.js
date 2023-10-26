@@ -130,6 +130,27 @@ router.post('/train', function (req, res) {
 
 });
 
+router.post('/train/:id_faq_kb', async (req, res) => {
+  let id_faq_kb = req.params.id_faq_kb;
+
+  Faq_kb.findById(id_faq_kb, (err, chatbot) => {
+    if (err) {
+      return res.status(400).send({ success: false, error: err })
+    }
+    if (!chatbot) {
+      return res.status(404).send({ sucess: false, error: "Chatbot not found" });
+    }
+    if (chatbot.intentsEngine === 'tiledesk-ai') {
+      faqBotEvent.emit('faq_train.train', id_faq_kb);
+      return res.status(200).send({ success: true, message: "Training started"})
+    } else {
+      return res.status(200).send({ success: true, message: "Trained not started", reason: "Training available for intentsEngine equal to tiledesk-ai only" })
+    }
+  })
+
+
+})
+
 
 router.post('/askbot', function (req, res) {
 
@@ -696,7 +717,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
       }
 
     })
-    faqBotEvent.emit('faq_train.importedall', id_faq_kb);
+    //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
     return res.status(200).send({ success: true, msg: "Intents imported successfully" })
 
   } else {
@@ -788,7 +809,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
     
                 })
               }
-              faqBotEvent.emit('faq_train.importedall', savedEditedFaq_kb._id);
+              //faqBotEvent.emit('faq_train.importedall', savedEditedFaq_kb._id);
               return res.status(200).send(savedEditedFaq_kb);
             })
 
@@ -914,7 +935,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
             })
 
           }
-          faqBotEvent.emit('faq_train.importedall', id_faq_kb);
+          //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
           return res.send(updatedFaq_kb);
   
         })
