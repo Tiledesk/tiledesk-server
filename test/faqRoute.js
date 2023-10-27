@@ -28,7 +28,7 @@ describe('FaqKBRoute', () => {
 
     describe('/create', () => {
 
-        it('create qwerty', (done) => {
+        it('create', (done) => {
 
             //   this.timeout();
 
@@ -469,9 +469,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -483,9 +481,7 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb + "&page=0&limit=25&text=looking")
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("found these faqs: \n", res.body);
-                                    }
+                                    if (log) { console.log("found these faqs: \n", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.an('array');
 
@@ -509,11 +505,9 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .send({ "name": "testbot", type: "internal", template: "blank", intentsEngine: 'tiledesk-ai' })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -523,7 +517,7 @@ describe('FaqKBRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
                                 .auth(email, pwd)
-                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .send({ id_faq_kb: id_faq_kb, question: "question1\nciao\nbuongiorno", answer: "answer1" })
                                 .end((err, res) => {
                                     if (log) {  console.log("intentEngin on resbody (create faq): \n", res.body); }
                                     res.should.have.status(200);

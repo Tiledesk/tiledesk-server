@@ -15,7 +15,7 @@ var configGlobal = require('../config/global');
 const faq = require('../models/faq');
 var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
-var ObjectId = require('mongoose').Types.ObjectId;
+const trainingService = require('../services/trainingService');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -130,10 +130,12 @@ router.post('/train', function (req, res) {
 
 });
 
-router.post('/train/:id_faq_kb', async (req, res) => {
-  let id_faq_kb = req.params.id_faq_kb;
+router.post('/aitrain/', async (req, res) => {
+  
+  let id_faq_kb = req.body.id_faq_kb;
+  let webhook_enabled = req.body.webhook_enabled;
 
-  Faq_kb.findById(id_faq_kb, (err, chatbot) => {
+  Faq_kb.findById(id_faq_kb, async (err, chatbot) => {
     if (err) {
       return res.status(400).send({ success: false, error: err })
     }
@@ -141,8 +143,29 @@ router.post('/train/:id_faq_kb', async (req, res) => {
       return res.status(404).send({ sucess: false, error: "Chatbot not found" });
     }
     if (chatbot.intentsEngine === 'tiledesk-ai') {
-      faqBotEvent.emit('faq_train.train', id_faq_kb);
-      return res.status(200).send({ success: true, message: "Training started"})
+
+      // Option 1: emit event
+      //faqBotEvent.emit('faq_train.train', id_faq_kb, webhook_enabled);
+
+      // Option 2: call service directly
+      trainingService.train(null, id_faq_kb, webhook_enabled).then((training_result) => {
+        winston.info("training result: ", training_result);
+        let response = {
+          succes: true,
+          message: "Training started"
+        }
+        if (webhook_enabled === false) {
+          response.queue_message = training_result;
+        }
+        return res.status(200).send(response);
+
+      }).catch((err) => {
+        winston.error("training error: ", err);
+        return res.status(200).send({ success: false, message: "Trained not started", error: err });
+      })
+
+
+
     } else {
       return res.status(200).send({ success: true, message: "Trained not started", reason: "Training available for intentsEngine equal to tiledesk-ai only" })
     }
@@ -1010,6 +1033,7 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
 router.post('/:faq_kbid/training', function (req, res) {
 
   winston.debug(req.body);
+  winston.info(req.params.faq_kbid + "/training called" );
 
   var update = {};
   update.trained = true;
