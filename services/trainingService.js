@@ -7,7 +7,7 @@ var configGlobal = require('../config/global');
 
 
 let training_api_url = process.env.CHATBOT_TRAINING_API_URL || "http://34.65.210.38/model/enqueuetrain";
-let token = process.env.TRAINING_BOT_JWT_TOKEN || "authsecret";
+let token = process.env.TRAINING_BOT_JWT_TOKEN;
 
 class TrainingService {
 
