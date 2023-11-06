@@ -45,6 +45,9 @@ class MessageService {
     var that = this;
     winston.debug('message.save called');
 
+    message.createdAt = Date.now();
+    messageEvent.emit('message.create.before', message);
+
     let sender = message.sender;
     let senderFullname = message.senderFullname;
     let recipient = message.recipient;

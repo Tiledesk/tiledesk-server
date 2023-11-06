@@ -446,9 +446,27 @@ class RequestService {
     return this.create(request);
   };  
 
-  create(request) {
+  async create(request) {
 
     var startDate = new Date();
+
+    if (!request.createdAt) {
+      request.createdAt = new Date();
+    }
+
+    // OPTION 1: Count and block conversation creation
+    // let result = await requestEvent.emit('request.create.before', request);
+    // if (result === false) {
+    //   console.log("Quote limit reached! Unable to create a new request.");
+    //   let info = {
+    //     success: false,
+    //     message: "Quote limit reached"
+    //   }
+    //   return info;
+    // }
+
+    // OPTION 2: check the current conversations quote only
+    await requestEvent.emit('request.create.before', request);
 
     var request_id = request.request_id;
     var project_user_id = request.project_user_id;
@@ -483,6 +501,7 @@ class RequestService {
     var auto_close = request.auto_close;
 
     var followers = request.followers;
+    let createdAt = request.createdAt;
 
     if (!departmentid) {
       departmentid ='default';
@@ -637,7 +656,8 @@ class RequestService {
                 notes: notes,
                 priority: priority,
                 auto_close: auto_close,
-                followers: followers
+                followers: followers,
+                createdAt: createdAt
               });
 
               winston.debug('newRequest.',newRequest);

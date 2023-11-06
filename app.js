@@ -81,6 +81,14 @@ mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecat
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', false); 
 
+// CONNECT REDIS - CHECK IT
+const { TdCache } = require('./utils/TdCache');
+tdCache = new TdCache({
+    host: '127.0.0.1',
+    port: '6379'
+  });
+
+tdCache.connect();
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -114,6 +122,7 @@ var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
 var kbsettings = require('./routes/kbsettings');
+var quotes = require('./routes/quotes');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -157,7 +166,7 @@ botEvent.listen(); //queued but disabled
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
- 
+
 // job_here
 
 var geoService = require('./services/geoService');
@@ -190,6 +199,7 @@ var IPFilter = require('./middleware/ipFilter');
 var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
+const { QuoteManager } = require('./services/QuoteManager');
 
 var modulesManager = undefined;
 try {
@@ -225,6 +235,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.set('chatbot_service', new ChatbotService())
+app.set('redis_client', tdCache);
 
 
 // TODO DELETE IT IN THE NEXT RELEASE
@@ -380,8 +391,8 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
 app.get('/', function (req, res) {  
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
 });
-
   
+
 
 
 var projectIdSetter = function (req, res, next) {
@@ -556,7 +567,7 @@ app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { sessio
 
 app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
-
+app.use('/projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
 
 
@@ -592,7 +603,7 @@ app.use(function (err, req, res, next) {
 
 
 
-
+// mettere middleware qui per le quote
 
 
 

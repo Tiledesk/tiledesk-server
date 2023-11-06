@@ -23,16 +23,32 @@ var projectService = require('../services/projectService');
 
 var Request = require("../models/request");
 
+var { QuoteManager } = require('../services/QuoteManager');
+
+// CONNECT REDIS - CHECK IT
+const {TdCache} = require('../utils/TdCache');
+tdCache = new TdCache({
+    host: '127.0.0.1',
+    port: '6379'
+  });
+
+tdCache.connect();
+
+
 
 describe('messageService', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 
-  it('createMessage', function (done) {
+  it('createMessage qwerty', function (done) {
     // this.timeout(10000);
 
       projectService.create("test1", userid).then(function(savedProject) {
         // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+
+        let quoteManager = new QuoteManager({ project: savedProject, tdCache: tdCache })
+        quoteManager.start();
+
         messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
           savedProject._id, userid, undefined, {a1:"a1"}, undefined, undefined, "it"  ).then(function(savedMessage){
             winston.debug("resolve savedMessage", savedMessage.toObject());
