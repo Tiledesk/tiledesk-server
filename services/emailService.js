@@ -298,6 +298,7 @@ class EmailService {
 
       if (quoteEnabled && quoteEnabled === true) {
         emailEvent.emit('email.send', mail);
+        winston.info("email.send event emitted")
       }
 
       if (mail.callback){

@@ -130,6 +130,7 @@ class MessageService {
                         winston.verbose("Message created", savedMessage.toObject());
         
                         messageEvent.emit('message.create.simple', savedMessage);
+                        winston.info("message.create.simple event emitted")
         
                         that.emitMessage(savedMessage);
                         // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {

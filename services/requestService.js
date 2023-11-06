@@ -677,6 +677,7 @@ class RequestService {
                   winston.verbose("Performance Request created in millis: " + endDate-startDate);
                                     
                   requestEvent.emit('request.create.simple', savedRequest);
+                  winston.info("request.create.simple event emitted");
                   
                   return resolve(savedRequest);
                   

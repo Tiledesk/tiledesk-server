@@ -33,14 +33,12 @@ class QuoteManager {
         this.project = config.project;
         this.tdCache = config.tdCache;
 
-        console.log("Quote Manager initialized --> tdCache: ", this.tdCache);
-
     }
 
     async incrementRequestsCount(request) {
 
         let key = await this.generateKey(request, 'requests');
-        winston.debug("[QuoteManager] incrementRequestsCount key: " + key);
+        winston.info("[QuoteManager] incrementRequestsCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
@@ -49,7 +47,7 @@ class QuoteManager {
     async incrementMessagesCount(message) {
 
         let key = await this.generateKey(message, 'messages');
-        winston.debug("[QuoteManager] incrementMessagesCount key: " + key);
+        winston.info("[QuoteManager] incrementMessagesCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
@@ -57,7 +55,7 @@ class QuoteManager {
 
     async incrementEmailCount(email) {
         let key = await this.generateKey(email, 'email');
-        winston.debug("[QuoteManager] incrementEmailCount key: " + key);
+        winston.info("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
@@ -66,7 +64,7 @@ class QuoteManager {
     async incrementTokenCount(data) { // ?? cosa passo? il messaggio per vedere la data?
 
         let key = await this.generateKey(data, 'tokens');
-        winston.debug("[QuoteManager] incrementTokenCount key: " + key);
+        winston.info("[QuoteManager] incrementTokenCount key: " + key);
 
         await this.tdCache.incrby(key, data.tokens);
         return key;
@@ -199,6 +197,8 @@ class QuoteManager {
         });
 
         requestEvent.on('request.create.simple', async (request) => {
+
+            winston.info("request.create.simple event catched"); 
             let result = await this.incrementRequestsCount(request);
             //console.log("request.create.simple event result: ", result);
             return result;
@@ -217,6 +217,7 @@ class QuoteManager {
         })
 
         messageEvent.on('message.create.simple', async (message) => {
+            winston.info("message.create.simple event catched");
             let result = await this.incrementMessagesCount(message);
             //console.log("message.create.simple event result: ", result);
             return result;
@@ -235,6 +236,7 @@ class QuoteManager {
         })
 
         emailEvent.on('email.send', async (email) => {
+            winston.info("email.send event catched");
             let result = await this.incrementEmailCount(email);
             //console.log("email.send event result: ", result);
             return result;
