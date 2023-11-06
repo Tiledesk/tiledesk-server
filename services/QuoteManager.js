@@ -33,6 +33,8 @@ class QuoteManager {
         this.project = config.project;
         this.tdCache = config.tdCache;
 
+        console.log("Quote Manager initialized --> tdCache: ", this.tdCache);
+
     }
 
     async incrementRequestsCount(request) {
@@ -116,6 +118,7 @@ class QuoteManager {
     async getAllQuotes(obj) {
 
         let quotes = {}
+        console.log("getAllQuotes called...")
         for (let type of typesList) {
             let key = await this.generateKey(obj, type);
             let quote = await this.tdCache.get(key);
