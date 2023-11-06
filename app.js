@@ -84,8 +84,9 @@ mongoose.set('useUnifiedTopology', false);
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
 tdCache = new TdCache({
-    host: '127.0.0.1',
-    port: '6379'
+    host: process.env.CACHE_REDIS_HOST,
+    port: process.env.CACHE_REDIS_PORT,
+    password: process.env.CACHE_REDIS_PASSWORD
   });
 
 tdCache.connect();
