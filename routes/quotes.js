@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const { QuoteManager } = require('../services/QuoteManager');
+let winston = require('../config/winston');
 
 
 router.get('/', async (req, res) => {
@@ -15,6 +16,8 @@ router.get('/', async (req, res) => {
     let cache = req.app.get('redis_client');
 
     console.log("QUOTES cache imported")
+
+    // check if project is not null/undefined
 
     let qm = new QuoteManager({ project: req.project, tdCache: cache })
     let quotes = await qm.getAllQuotes(obj);

@@ -87,7 +87,7 @@ tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
     port: process.env.CACHE_REDIS_PORT,
     password: process.env.CACHE_REDIS_PASSWORD
-  });
+});
 
 tdCache.connect();
 
