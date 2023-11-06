@@ -174,6 +174,7 @@ describe('QuoteManager', function () {
 
                 chai.request(server)
                     .post('/' + savedProject._id + "/openai/quotes")
+                    .auth(email, pwd)
                     .send({ createdAt: createdAt , tokens: 128 })
                     .end((err, res) => {
                         if (log) { console.log("res.body", res.body )};

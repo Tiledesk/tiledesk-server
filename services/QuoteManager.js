@@ -185,67 +185,123 @@ class QuoteManager {
         let checkEventHandler = (object) => { }
 
 
-        // REQUESTS EVENTS
-        requestEvent.on('request.create.before', async (request) => {
-            let result = await this.checkQuote(request, 'requests');
-            if (result == true) {
-                winston.info("Limit not reached - a request can be created")
-            } else {
-                winston.info("Requests limit reached for the current plan!")
-            }
-            return result;
-        });
+        // // REQUESTS EVENTS
+        // requestEvent.on('request.create.before', async (request) => {
+        //     let result = await this.checkQuote(request, 'requests');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a request can be created")
+        //     } else {
+        //         winston.info("Requests limit reached for the current plan!")
+        //     }
+        //     return result;
+        // });
 
-        requestEvent.on('request.create.simple', async (request) => {
+        // requestEvent.on('request.create.simple', async (request) => {
 
-            winston.info("request.create.simple event catched"); 
-            let result = await this.incrementRequestsCount(request);
-            //console.log("request.create.simple event result: ", result);
-            return result;
-        })
-
-
-        // MESSAGES EVENTS
-        messageEvent.on('message.create.before', async (message) => {
-            let result = await this.checkQuote(message, 'messages');
-            if (result == true) {
-                winston.info("Limit not reached - a message can be created")
-            } else {
-                winston.info("Messages limit reached for the current plan!")
-            }
-            return result;
-        })
-
-        messageEvent.on('message.create.simple', async (message) => {
-            winston.info("message.create.simple event catched");
-            let result = await this.incrementMessagesCount(message);
-            //console.log("message.create.simple event result: ", result);
-            return result;
-        })
+        //     winston.info("request.create.simple event catched"); 
+        //     let result = await this.incrementRequestsCount(request);
+        //     //console.log("request.create.simple event result: ", result);
+        //     return result;
+        // })
 
 
-        // EMAIL EVENTS
-        emailEvent.on('email.send.before', async (email) => {
-            let result = await this.checkQuote(email, 'email');
-            if (result == true) {
-                winston.info("Limit not reached - a message can be created")
-            } else {
-                winston.info("Email limit reached for the current plan!")
-            }
-            return result;
-        })
+        // // MESSAGES EVENTS
+        // messageEvent.on('message.create.before', async (message) => {
+        //     let result = await this.checkQuote(message, 'messages');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a message can be created")
+        //     } else {
+        //         winston.info("Messages limit reached for the current plan!")
+        //     }
+        //     return result;
+        // })
 
-        emailEvent.on('email.send', async (email) => {
-            winston.info("email.send event catched");
-            let result = await this.incrementEmailCount(email);
-            //console.log("email.send event result: ", result);
-            return result;
-        })
+        // messageEvent.on('message.create.simple', async (message) => {
+        //     winston.info("message.create.simple event catched");
+        //     let result = await this.incrementMessagesCount(message);
+        //     //console.log("message.create.simple event result: ", result);
+        //     return result;
+        // })
+
+
+        // // EMAIL EVENTS
+        // emailEvent.on('email.send.before', async (email) => {
+        //     let result = await this.checkQuote(email, 'email');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a message can be created")
+        //     } else {
+        //         winston.info("Email limit reached for the current plan!")
+        //     }
+        //     return result;
+        // })
+
+        // emailEvent.on('email.send', async (email) => {
+        //     winston.info("email.send event catched");
+        //     let result = await this.incrementEmailCount(email);
+        //     //console.log("email.send event result: ", result);
+        //     return result;
+        // })
     }
 
 
 }
 // EVENTS
+// REQUESTS EVENTS
+requestEvent.on('request.create.before', async (request) => {
+    let result = await this.checkQuote(request, 'requests');
+    if (result == true) {
+        winston.info("Limit not reached - a request can be created")
+    } else {
+        winston.info("Requests limit reached for the current plan!")
+    }
+    return result;
+});
+
+requestEvent.on('request.create.simple', async (request) => {
+
+    winston.info("request.create.simple event catched"); 
+    let result = await this.incrementRequestsCount(request);
+    //console.log("request.create.simple event result: ", result);
+    return result;
+})
+
+
+// MESSAGES EVENTS
+messageEvent.on('message.create.before', async (message) => {
+    let result = await this.checkQuote(message, 'messages');
+    if (result == true) {
+        winston.info("Limit not reached - a message can be created")
+    } else {
+        winston.info("Messages limit reached for the current plan!")
+    }
+    return result;
+})
+
+messageEvent.on('message.create.simple', async (message) => {
+    winston.info("message.create.simple event catched");
+    let result = await this.incrementMessagesCount(message);
+    //console.log("message.create.simple event result: ", result);
+    return result;
+})
+
+
+// EMAIL EVENTS
+emailEvent.on('email.send.before', async (email) => {
+    let result = await this.checkQuote(email, 'email');
+    if (result == true) {
+        winston.info("Limit not reached - a message can be created")
+    } else {
+        winston.info("Email limit reached for the current plan!")
+    }
+    return result;
+})
+
+emailEvent.on('email.send', async (email) => {
+    winston.info("email.send event catched");
+    let result = await this.incrementEmailCount(email);
+    //console.log("email.send event result: ", result);
+    return result;
+})
 // var requestCreateBeforeEvent = async (request) => {
 //     console.log('Event catched - REQUEST CREATE BEFORE');
 //     let result = await this.incrementRequestCount(request);

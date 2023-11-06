@@ -71,7 +71,9 @@ router.post('/quotes', async (req, res) => {
     let quoteManager = new QuoteManager({ project: project, tdCache: redis_client });
 
     let incremented_key = await quoteManager.incrementTokenCount(req.body, 'tokens');
+    console.log("incremented_key: ", incremented_key)
     let quote = await quoteManager.getCurrentQuote(req.body, 'tokens');
+    console.log("quote: ", quote)
     
     res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
 })

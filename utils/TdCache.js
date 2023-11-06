@@ -179,7 +179,6 @@ class TdCache {
     }
     
     async get(key, callback) {
-      console.log("getting key", key)
       return new Promise( async (resolve, reject) => {
         this.client.get(key, (err, value) => {
           if (err) {
@@ -189,7 +188,6 @@ class TdCache {
             if (callback) {
               callback(value);
           }
-          console.log("---> value: ", value)
           return resolve(value);
           }
         });
