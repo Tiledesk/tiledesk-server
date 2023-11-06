@@ -1,0 +1,140 @@
+const mockProjectUser = {
+  "_id": "64e36f5dbf72263f7c056666",
+  "id_project": "64e36f5dbf72263f7c059999",
+  "id_user": "64e36f5dbf72263f7c057777",
+  "role": 'owner',
+  "user_available": true,
+  "createdBy": "64e36f5dbf72263f7c057777",
+  "updatedBy": "64e36f5dbf72263f7c057777"
+}
+
+const mockProjectFreeTrialPlan = {
+    "_id": "64e36f5dbf72263f7c059999",
+    "status": 100,
+    "ipFilterEnabled": false,
+    "ipFilter": [],
+    "ipFilterDenyEnabled": false,
+    "ipFilterDeny": [],
+    "name": "mock-project",
+    "activeOperatingHours": false,
+    "createdBy": "64e36f5cbf72263f7c05ba36",
+    "profile": {
+      "name": "free",
+      "trialDays": 14,
+      "agents": 0,
+      "type": "free"
+    },
+    "versions": 20115,
+    "channels": [
+      {
+        "name": "chat21"
+      }
+    ],
+    "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+const mockProjectSandboxPlan = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "Sandbox",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "payment",
+    "subStart": new Date('2023-10-20T08:45:54.058Z')
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+const mockProjectBasicPlan = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "Basic",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "payment",
+    "subStart": new Date('2023-10-20T08:45:54.058Z')
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+const mockProjectPremiumPlan = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "Premium",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "payment",
+    "subStart": new Date('2023-10-20T08:45:54.058Z')
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+const mockProjectCustomPlan = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "Custom",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "payment",
+    "subStart": new Date('2023-10-20T08:45:54.058Z')
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+module.exports = { mockProjectUser, mockProjectFreeTrialPlan, mockProjectSandboxPlan, mockProjectBasicPlan, mockProjectPremiumPlan, mockProjectCustomPlan };

@@ -7,6 +7,7 @@ var winston = require('../config/winston');
 var marked = require('marked');
 var handlebars = require('handlebars');
 var encode = require('html-entities').encode;
+const emailEvent = require('../event/emailEvent');
 
 handlebars.registerHelper('ifEquals', function(arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
@@ -243,7 +244,7 @@ class EmailService {
   //   return this.sendMail({to:to, subject:subject, html:html});
   // }
 
-  send(mail) {
+  send(mail, quoteEnabled) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -252,6 +253,12 @@ class EmailService {
     if (process.env.NODE_ENV == 'test')  {	
       return winston.warn("EmailService not sending email for testing");
     }
+
+    if (quoteEnabled && quoteEnabled === true) {
+      mail.createdAt = new Date();
+      emailEvent.emit('email.send.before', mail);
+    }
+
 
     let mailOptions = {
       from: mail.from || this.from, // sender address
@@ -288,6 +295,10 @@ class EmailService {
       }
       winston.verbose('Email sent:', {info: info});
       winston.debug('Email sent:', {info: info, mailOptions: mailOptions});
+
+      if (quoteEnabled && quoteEnabled === true) {
+        emailEvent.emit('email.send', mail);
+      }
 
       if (mail.callback){
         mail.callback(error, {info:info});
@@ -1536,6 +1547,8 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
   // if (!subject) {
   //   subject = "Tiledesk"
   // }
+
+  let email_enabled = true;
   
   that.send({
     from:from, 
@@ -1545,7 +1558,7 @@ async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, 
     text:html, 
     html:html,
     config:configEmail, 
-  }); 
+  }, email_enabled); 
   
 }
 

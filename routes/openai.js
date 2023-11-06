@@ -3,16 +3,16 @@ var router = express.Router();
 var KBSettings = require('../models/kb_setting');
 var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
+const { QuoteManager } = require('../services/QuoteManager');
+
 
 router.post('/', async (req, res) => {
 
     let project_id = req.projectid;
     let body = req.body;
 
-    console.log("### --> body: ", body);
-
     KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
-        console.log("kbSettings: ", kbSettings);
+        winston.debug("kbSettings: ", kbSettings);
 
         if (!kbSettings) {
             return res.status(400).send({ success: false, message: "Missing gptkey parameter (settings not exist)" })
@@ -43,7 +43,6 @@ router.post('/', async (req, res) => {
             message.content = body.context;
             json.messages.unshift(message);
         }
-        console.log("openai preview --> json: ", json);
 
         openaiService.completions(json, gptkey).then((response) => {
             // winston.debug("completions response: ", response);
@@ -55,6 +54,26 @@ router.post('/', async (req, res) => {
         })
 
     })
+})
+
+router.post('/quotes', async (req, res) => {
+
+    let project = req.project;
+
+    let body = req.body;
+    body.createdAt = new Date(body.createdAt);
+
+    let redis_client = req.app.get('redis_client');
+    if (!redis_client) {
+        return res.status(400).send({ error: "Redis not ready"});
+    }
+
+    let quoteManager = new QuoteManager({ project: project, tdCache: redis_client });
+
+    let incremented_key = await quoteManager.incrementTokenCount(req.body, 'tokens');
+    let quote = await quoteManager.getCurrentQuote(req.body, 'tokens');
+    
+    res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
 })
 
 // router.get('/', async (req, res) => {
