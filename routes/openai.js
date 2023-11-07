@@ -68,12 +68,10 @@ router.post('/quotes', async (req, res) => {
         return res.status(400).send({ error: "Redis not ready"});
     }
 
-    let quoteManager = new QuoteManager({ project: project, tdCache: redis_client });
+    let quoteManager = req.app.get('quote_manager');
 
-    let incremented_key = await quoteManager.incrementTokenCount(req.body, 'tokens');
-    console.log("incremented_key: ", incremented_key)
-    let quote = await quoteManager.getCurrentQuote(req.body, 'tokens');
-    console.log("quote: ", quote)
+    let incremented_key = await quoteManager.incrementTokenCount(req.project, req.body);
+    let quote = await quoteManager.getCurrentQuote(req.project, req.body, 'tokens');
     
     res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
 })

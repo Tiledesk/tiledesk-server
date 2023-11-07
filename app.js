@@ -83,7 +83,7 @@ mongoose.set('useUnifiedTopology', false);
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
-tdCache = new TdCache({
+let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
     port: process.env.CACHE_REDIS_PORT,
     password: process.env.CACHE_REDIS_PASSWORD
@@ -202,6 +202,9 @@ BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
 
+let qm = new QuoteManager({ tdCache: tdCache });
+qm.start();
+
 var modulesManager = undefined;
 try {
   modulesManager = require('./services/modulesManager');
@@ -237,6 +240,7 @@ app.set('view engine', 'jade');
 
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
+app.set('quote_manager', qm);
 
 
 // TODO DELETE IT IN THE NEXT RELEASE

@@ -78,7 +78,7 @@ class TdCache {
     async incr(key) {
       // console.log("incr key:", key)
       return new Promise( async (resolve, reject) => {
-          try {
+        try {
             // console.log("incr here...key", key)
             await this.client.incr(key);
           }
