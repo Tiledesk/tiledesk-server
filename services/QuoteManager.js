@@ -118,16 +118,23 @@ class QuoteManager {
 
     async getAllQuotes(project, obj) {
 
+        console.log("*** get all quotes")
+        console.log("*** get all quotes project: ", project)
+        console.log("*** get all quotes obj: ", obj);
         this.project = project;
 
         let quotes = {}
         for (let type of typesList) {
+            console.log("*** get all quotes --> search for type: ", type);
             let key = await this.generateKey(obj, type);
+            console.log("*** get all quotes --> key generated: ", key);
             let quote = await this.tdCache.get(key);
+            console.log("*** get all quotes --> quote retrieved: ", quote);
 
             quotes[type] = {
                 quote: quote
             };
+            console.log("*** get all quotes --> quotes: ", quotes);
         }
 
         return quotes;
