@@ -13,14 +13,10 @@ router.get('/', async (req, res) => {
         obj.createdAt = new Date(date)
     }    
     
-    let cache = req.app.get('redis_client');
-
-    console.log("QUOTES cache imported")
+    let quoteManager = req.app.get('quote_manager');
 
     // check if project is not null/undefined
-
-    let qm = new QuoteManager({ tdCache: cache })
-    let quotes = await qm.getAllQuotes(req.project, obj);
+    let quotes = await quoteManager.getAllQuotes(req.project, obj);
 
     console.log("quotes: ", quotes);
     winston.debug("quotes: ", quotes);
