@@ -19,8 +19,8 @@ router.get('/', async (req, res) => {
 
     // check if project is not null/undefined
 
-    let qm = new QuoteManager({ project: req.project, tdCache: cache })
-    let quotes = await qm.getAllQuotes(obj);
+    let qm = new QuoteManager({ tdCache: cache })
+    let quotes = await qm.getAllQuotes(req.project, obj);
 
     console.log("quotes: ", quotes);
     winston.debug("quotes: ", quotes);
