@@ -4,7 +4,7 @@ const { QuoteManager } = require('../services/QuoteManager');
 let winston = require('../config/winston');
 
 
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
 
     let date = req.body.date;
 
