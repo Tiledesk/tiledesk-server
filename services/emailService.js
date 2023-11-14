@@ -1889,7 +1889,7 @@ class EmailService {
 
   }
 
-  async sendEmailRedirectOnDesktop(to, token, project_id) {
+  async sendEmailRedirectOnDesktop(to, token, project_id, chatbot_id) {
     winston.debug("sendEmailRedirectOnDesktop: " + to);
 
     var that = this;
@@ -1913,7 +1913,8 @@ class EmailService {
     let replacements = {
       baseScope: baseScope,
       token: token,
-      project_id: project_id
+      project_id: project_id,
+      chatbot_id: chatbot_id
     }
 
     html = template(replacements);

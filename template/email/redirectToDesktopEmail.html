@@ -162,7 +162,12 @@
                         <div style="margin-top: 20px; font-weight: 600;">Access Tiledesk on your desktop now 👇</div>
 
                         <div style="margin-top: 10px;">
-                          <a href="{{baseScope.baseUrl}}/#/project/{{project_id}}/home?token={{token}}"
+                          <!-- // Change it with config parameter -->
+                          <!-- <a href="{{baseScope.baseUrl}}/#/project/{{project_id}}/home?token={{token}}"
+                            style=" background-color: #ff8574 !important; border: none; color: white; padding: 6px 18px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer; border-radius: 8px;">
+                            Enjoy Tiledesk
+                          </a> -->
+                          <a href="https://panel.tiledesk.com/v3/cds/#/project/{{project_id}}/chatbot/{{chatbot_id}}/intent/0?jwt={{token}}"
                             style=" background-color: #ff8574 !important; border: none; color: white; padding: 6px 18px; text-align: center; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 600; letter-spacing: 1px; margin: 4px 2px; cursor: pointer; border-radius: 8px;">
                             Enjoy Tiledesk
                           </a>
@@ -173,8 +178,12 @@
                       <div style="margin-top: 40px;">
                         Alternatively, simply copy and paste this URL into your browser:
                         <div>
-                          <a
+                          <!-- <a
                           href="{{baseScope.baseUrl}}/#/project/{{project_id}}/home?token={{token}}">
+                          {{baseScope.baseUrl}}/#/project/{{project_id}}/home
+                          </a> -->
+                          <a
+                          href="https://panel.tiledesk.com/v3/cds/#/project/{{project_id}}/chatbot/{{chatbot_id}}/intent/0?jwt={{token}}">
                           {{baseScope.baseUrl}}/#/project/{{project_id}}/home
                           </a>
                         </div>
