@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.77
+- update tybot-connector to 0.2.26
+
 # 2.4.76
 - update tybot-connector to 0.2.25
 - update redirectToDesktop email for new onboarding
