@@ -453,7 +453,7 @@ describe('KbSettingsRoute', () => {
 
         // }).timeout(20000)
 
-        // it('check status error - no db created for', (done) => {
+        // it('checkstatuserror - no db created for', (done) => {
 
         //     var email = "test-signup-" + Date.now() + "@email.com";
         //     var pwd = "pwd";
@@ -474,7 +474,7 @@ describe('KbSettingsRoute', () => {
         //                     chai.request(server)
         //                         .post('/' + savedProject._id + "/kbsettings/" + res.body._id)
         //                         .auth(email, pwd)
-        //                         .send({ name: "dbnevercreated.com/kb/", url: "https://exampleurl.com/kb/" })
+        //                         .send({ name: "gethelp.tiledesk.com/", url: "https://gethelp.tiledesk.com/" })
         //                         .end((err, res) => {
         //                             if (log) { console.log("add kb to kb settings res.body: ", res.body); }
         //                             res.should.have.status(200);
@@ -484,12 +484,12 @@ describe('KbSettingsRoute', () => {
         //                             chai.request(server)
         //                                 .post('/' + savedProject._id + "/kbsettings/checkstatus")
         //                                 .auth(email, pwd)
-        //                                 .send({ full_url: "dbnevercreated.com/kb/" })
+        //                                 .send({ full_url: "https://gethelp.tiledesk.com/" })
         //                                 .end((err, res) => {
         //                                     res.should.have.status(200);
         //                                     res.body.should.be.a('object');
-        //                                     expect(res.body.status_message).to.equal("Database is not created yet for dbnevercreated.com/kb/, please wait a few minutes and try again");
-        //                                     expect(res.body.status_code).to.equal(0);
+        //                                     // expect(res.body.status_message).to.equal("Database is not created yet for dbnevercreated.com/kb/, please wait a few minutes and try again");
+        //                                     // expect(res.body.status_code).to.equal(0);
 
         //                                     done();
         //                                 })

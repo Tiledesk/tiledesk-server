@@ -122,7 +122,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
       })
       .on("end", function () {
         winston.debug("PARSE DONE");
-        faqBotEvent.emit('faq_train.create', id_faq_kb)
+        //faqBotEvent.emit('faq_train.create', id_faq_kb)
         res.json({ success: true, msg: 'CSV Parsed' });
       })
       .on("error", function (err) {
@@ -191,7 +191,7 @@ router.post('/', function (req, res) {
       winston.debug('1. ID FAQKB GET IN THE OBJECT OF NEW FAQ CREATED ', savedFaq.id_faq_kb);
 
       faqBotEvent.emit('faq.create', savedFaq);
-      faqBotEvent.emit('faq_train.create', req.body.id_faq_kb)
+      //faqBotEvent.emit('faq_train.create', req.body.id_faq_kb)
 
       res.json(savedFaq);
 
@@ -317,7 +317,7 @@ router.put('/:faqid', function (req, res) {
       }
 
       faqBotEvent.emit('faq.update', updatedFaq);
-      faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
+      //faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
   
       res.status(200).send(updatedFaq);
     })
@@ -334,7 +334,7 @@ router.put('/:faqid', function (req, res) {
       }
   
       faqBotEvent.emit('faq.update', updatedFaq);
-      faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
+      //faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
   
       res.status(200).send(updatedFaq);
       // updateRemoteFaq(updatedFaq)
@@ -373,7 +373,7 @@ router.delete('/:faqid', function (req, res) {
       winston.debug('Deleted FAQ ', faq);
       
       faqBotEvent.emit('faq.delete', faq);
-      faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
+      //faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
   
       res.status(200).send(faq);
 
@@ -387,7 +387,7 @@ router.delete('/:faqid', function (req, res) {
       winston.debug('Deleted FAQ ', faq);
   
       faqBotEvent.emit('faq.delete', faq);
-      faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
+      //faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
   
       res.status(200).send(faq);
   

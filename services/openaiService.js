@@ -62,7 +62,7 @@ class OpenaiService {
         return new Promise((resolve, reject) => {
 
             axios({
-                url: kb_endpoint + "/scrape/",
+                url: kb_endpoint + "/scrape",
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -83,7 +83,7 @@ class OpenaiService {
         return new Promise((resolve, reject) => {
 
             axios({
-                url: kb_endpoint + "/qa/",
+                url: kb_endpoint + "/qa",
                 headers: {
                     'Content-Type': 'application/json'
                 },
