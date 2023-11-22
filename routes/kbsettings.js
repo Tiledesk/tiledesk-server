@@ -103,6 +103,7 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
+    winston.info("/qa data: ", data);
 
     openaiService.ask(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
@@ -110,6 +111,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         let status = err.response.status;
+        winston.info("status on error: ", status)
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
