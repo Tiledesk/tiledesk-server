@@ -474,6 +474,7 @@ class RequestService {
     var id_project = request.id_project;
 
     var first_text = request.first_text;
+
     //removed for ticket
     // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
     // var first_text;  
@@ -515,6 +516,7 @@ class RequestService {
       }
       
     }
+
     
     var that = this;
 

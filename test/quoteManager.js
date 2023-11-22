@@ -169,12 +169,19 @@ describe('QuoteManager', function () {
         userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
             projectService.create("quote-project", savedUser._id).then((savedProject) => {
 
+<<<<<<< Updated upstream
                 let createdAt = new Date();
                 createdAt.setDate(createdAt.getDate() + 1)
 
                 chai.request(server)
                     .post('/' + savedProject._id + "/openai/quotes")
                     .send({ createdAt: createdAt , tokens: 128 })
+=======
+
+                chai.request(server)
+                    .post('/' + savedProject._id + "/openai/quotes")
+                    .send({ "createdAt": "2023-11-05T11:08:36.567Z","tokens": 128 })
+>>>>>>> Stashed changes
                     .end((err, res) => {
                         if (log) { console.log("res.body", res.body )};
                         res.should.have.status(200);
@@ -182,10 +189,15 @@ describe('QuoteManager', function () {
 
                         let date = new Date().toLocaleDateString();
 
+<<<<<<< Updated upstream
                         let key = "quotes:tokens:" + savedProject._id + ":" + date;
                         let message_resp = "value incremented for key " + key;
                         expect(res.body.message).to.equal(message_resp);
                         expect(res.body.key).to.equal(key);
+=======
+                        let message_resp = "value incremented for key quotes:tokens:" + savedProject._id + ":" + date;
+                        expect(res.body.message).to.equal(message_resp)
+>>>>>>> Stashed changes
                         expect(res.body.currentQuote).to.equal(128);
 
 
@@ -197,4 +209,65 @@ describe('QuoteManager', function () {
 
     })
 
+<<<<<<< Updated upstream
+=======
+
+
+
+    // it('incrementRequestCountMulti', async function () {
+    //     let mockProject = projectMock.mockProjectSandboxPlan;
+    //     let mockRequest = requestMock.requestMock;
+
+    //     let quoteManager = new QuoteManager({ project: mockProject, tdCache: tdCache });
+
+    //     for (let date of dateList) {
+    //         mockRequest.createdAt = new Date(date);
+    //         let result = await quoteManager.incrementRequestsCount(mockRequest);
+    //         console.log("result: ", result);
+    //         console.log("\n\n");
+    //     }
+
+    // })
+
+    // it('incrementRequestCountLimitReached', async function () {
+
+    //     let mockProject = projectMock.mockProjectSandboxPlan;
+    //     let mockRequest = requestMock.requestMock;
+
+    //     // for the test the limit is fixed to 5
+
+    //     let i;
+    //     let quoteManager = new QuoteManager({ project: mockProject, tdCache: tdCache });
+
+    //     for (i = 0; i < 5; i++) {
+    //         mockRequest.createdAt = new Date(dateList[i]);
+    //         await quoteManager.incrementRequestsCount(mockRequest);
+    //     }
+
+    //     mockRequest.createdAt = new Date(dateList[i]);
+    //     let result = await quoteManager.incrementRequestsCount(mockRequest);
+    //     console.log("result: ", result);
+
+
+    // })
+
+    // it('getCurrentCount', async function() {
+    //     let mockProject = projectMock.mockProjectSandboxPlan;
+    //     let mockRequest = requestMock.requestMock; 
+
+    //     let quoteManager = new QuoteManager({ project: mockProject, tdCache: mockTdCache } );
+
+    //     for (let date of dateList) {
+    //         mockRequest.createdAt = new Date(date);
+    //         let result = await quoteManager.incrementRequestCount(mockRequest);
+    //         console.log("result: ", result);
+    //     }
+
+    //     let today = new Date('2023-12-22T08:45:54.058Z');
+    //     let quote = await quoteManager.getCurrentQuote(today, 'requests');
+    //     console.log("request quote: ", quote)
+
+
+    // })
+>>>>>>> Stashed changes
 })

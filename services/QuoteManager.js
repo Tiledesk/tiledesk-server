@@ -35,6 +35,11 @@ class QuoteManager {
 
     }
 
+    async test() {
+        let text = "Sto funzionando sul progetto " + this.project._id;
+        return text;
+    }
+
     async incrementRequestsCount(request) {
 
         let key = await this.generateKey(request, 'requests');
@@ -63,6 +68,7 @@ class QuoteManager {
 
     async incrementTokenCount(data) { // ?? cosa passo? il messaggio per vedere la data?
 
+        console.log("incrementTokenCount data: ", data)
         let key = await this.generateKey(data, 'tokens');
         winston.debug("[QuoteManager] incrementTokenCount key: " + key);
 

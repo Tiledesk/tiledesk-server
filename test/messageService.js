@@ -26,7 +26,11 @@ var Request = require("../models/request");
 var { QuoteManager } = require('../services/QuoteManager');
 
 // CONNECT REDIS - CHECK IT
+<<<<<<< Updated upstream
 const {TdCache} = require('../utils/TdCache');
+=======
+const { TdCache } = require('../utils/tdCache');
+>>>>>>> Stashed changes
 tdCache = new TdCache({
     host: '127.0.0.1',
     port: '6379'
