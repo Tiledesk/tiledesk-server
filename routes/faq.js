@@ -243,7 +243,7 @@ router.post('/ops_update', async (req, res) => {
       case 'put':
         id = op.intent._id;
         if (op.intent.intent_id) {
-          id = op.intent.intent_id;
+          id = "intentId" + op.intent.intent_id;
         }
         HTTPREQUEST = {
           url: apiUrl + '/' + req.projectid + '/faq/' + id,
