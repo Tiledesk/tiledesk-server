@@ -228,7 +228,7 @@ router.post('/ops_update', async (req, res) => {
           method: 'post'
         }
         winston.info("operation HTTPREQUEST: ", HTTPREQUEST);
-        this.myrequest(
+        myrequest(
           HTTPREQUEST, async (err, resbody) => {
             if (err) {
               winston.error("err performing operation: ", err);
