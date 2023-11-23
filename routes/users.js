@@ -202,6 +202,10 @@ router.post('/loginemail', function (req, res) {
     res.status(500).send({ success: false, error: "missing 'bot_id' field" });
   }
 
+  if (!chatbot_id) {
+    res.status(500).send({ success: false, error: "missing 'bot_id' field" });
+  }
+
   User.findById(user_id, (err, user) => {
     if (err) {
       return res.status(404).send({ success: false, message: "No user found" });
