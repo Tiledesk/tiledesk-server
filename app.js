@@ -114,6 +114,7 @@ var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
 var kbsettings = require('./routes/kbsettings');
+var integration = require('./routes/integration')
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -556,6 +557,8 @@ app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { sessio
 
 app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
+
+app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], integration )
 
 
 

@@ -6,6 +6,7 @@
  var departmentEvent = require("../../event/departmentEvent");   
  var authEvent = require("../../event/authEvent");   
  var labelEvent = require("../../event/labelEvent");
+ var integrationEvent = require("../../event/integrationEvent");
 
  var triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
  var subscriptionEvent = require("../../event/subscriptionEvent");   
@@ -724,6 +725,31 @@
             // });   
         });
     });
+
+    integrationEvent.on("integration.create", (integrations) => {
+        let key = "project:" + integration.id_project + ":integrations";
+        winston.verbose("Creating cache for integration.create with key: " + key);
+        client.set(key, integrations, )
+    })
+
+    // integrationEvent.on("integration.update", (integration) => {
+    //     var key = integration.id_project + ":integration:" + integration._id;
+    //     winston.verbose("Deleting cache for project.delete with key: " + key);
+    //     // found del
+    //     // cache invalidation with del
+    //     del(client._cache._engine.client, key, function (err, reply) {
+    //         winston.debug("Deleted cache for project.delete",reply);
+    //         winston.verbose("Deleted cache for project.delete",{err:err});
+    //     });
+
+    //     var key = "projects:id:"+project.id;
+    //     winston.verbose("Creating cache for project.create with key: " + key);
+    //     client.set(key, project, cacheUtil.longTTL, (err, reply) => {
+    //         winston.verbose("Created cache for project.create",{err:err});
+    //         winston.debug("Created cache for project.create reply",reply);
+    //     });
+
+    // })
 
     // fai cache per subscription.create, .update .delete
 
