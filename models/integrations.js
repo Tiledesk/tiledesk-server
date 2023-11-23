@@ -16,10 +16,6 @@ var IntegrationsSchema = new Schema({
         type: Object,
         required: true,
         default: {}
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
     }
 })
 

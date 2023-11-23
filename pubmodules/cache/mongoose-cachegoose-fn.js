@@ -726,30 +726,16 @@
         });
     });
 
-    integrationEvent.on("integration.create", (integrations) => {
-        let key = "project:" + integration.id_project + ":integrations";
+    // l'evento è relativo a tutte le integrazioni, è sufficiente solo un evento
+    // per create, update, delete di una singola creation
+    integrationEvent.on("integration.update", (integrations, id_project) => {
+        let key = "project:" + id_project + ":integrations";
         winston.verbose("Creating cache for integration.create with key: " + key);
-        client.set(key, integrations, )
+        client.set(key, integrations, cacheUtil.longTTL, (err, reply) => {
+            winston.verbose("Created cache for integration.create", {err: err} );
+            winston.debug("Created cache for integration.create reply", reply);
+        })
     })
-
-    // integrationEvent.on("integration.update", (integration) => {
-    //     var key = integration.id_project + ":integration:" + integration._id;
-    //     winston.verbose("Deleting cache for project.delete with key: " + key);
-    //     // found del
-    //     // cache invalidation with del
-    //     del(client._cache._engine.client, key, function (err, reply) {
-    //         winston.debug("Deleted cache for project.delete",reply);
-    //         winston.verbose("Deleted cache for project.delete",{err:err});
-    //     });
-
-    //     var key = "projects:id:"+project.id;
-    //     winston.verbose("Creating cache for project.create with key: " + key);
-    //     client.set(key, project, cacheUtil.longTTL, (err, reply) => {
-    //         winston.verbose("Created cache for project.create",{err:err});
-    //         winston.debug("Created cache for project.create reply",reply);
-    //     });
-
-    // })
 
     // fai cache per subscription.create, .update .delete
 
