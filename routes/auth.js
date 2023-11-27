@@ -37,13 +37,27 @@ if (pKey) {
 // var configSecret = fs.readFileSync('private.key');
 
 
+var recaptcha = require('../middleware/recaptcha');
+
+
 router.post('/signup',
-[
-  check('email').isEmail(),  
-  check('firstname').notEmpty(),  
-  check('lastname').notEmpty()
-]
+  [
+    check('email').isEmail(),  
+    check('firstname').notEmpty(),  
+    check('lastname').notEmpty(),
+    recaptcha
+
+  ]
+  // recaptcha.middleware.verify
+
 , function (req, res) {
+
+  // if (!req.recaptcha.error) {
+  //   winston.error("Signup recaptcha ok");
+  // } else {
+  //   // error code
+  //   winston.error("Signup recaptcha ko");
+  // }
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
