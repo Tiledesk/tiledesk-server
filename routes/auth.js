@@ -33,17 +33,32 @@ if (pKey) {
   configSecret = pKey.replace(/\\n/g, '\n');
 }
 
+var recaptcha = require('../middleware/recaptcha');
+
+
+
 // const fs  = require('fs');
 // var configSecret = fs.readFileSync('private.key');
 
 
 router.post('/signup',
-[
-  check('email').isEmail(),  
-  check('firstname').notEmpty(),  
-  check('lastname').notEmpty()
-]
+  [
+    check('email').isEmail(),  
+    check('firstname').notEmpty(),  
+    check('lastname').notEmpty(),
+    recaptcha
+
+  ]
+  // recaptcha.middleware.verify
+
 , function (req, res) {
+
+  // if (!req.recaptcha.error) {
+  //   winston.error("Signup recaptcha ok");
+  // } else {
+  //   // error code
+  //   winston.error("Signup recaptcha ko");
+  // }
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -210,6 +225,7 @@ router.post('/signinWithCustomToken', [
 
     var id_project;
      
+    let userToReturn = req.user;
 
     var role = RoleConstants.USER;
 
@@ -264,12 +280,41 @@ router.post('/signinWithCustomToken', [
 
 
       Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
-      exec(function (err, project_user) {
+      exec(async (err, project_user) => {
         if (err) {
           winston.error(err);
           return res.json({ success: true, token: req.headers["authorization"], user: req.user });
         }
         if (!project_user) {
+
+          let createNewUser = false;
+          winston.debug('role: '+ role)
+
+          
+          if (role === RoleConstants.OWNER || role === RoleConstants.ADMIN || role === RoleConstants.AGENT) {            
+           createNewUser = true;
+
+           var newUser;
+           try {
+            newUser = await userService.signup(req.user.email, uuidv4(), req.user.firstname, req.user.lastname, false);
+           } catch(e) {
+            winston.debug('error signup already exists??: ')
+
+            if (e.code = "E11000") {
+              newUser = await User.findOne({email: req.user.email , status: 100}).exec();
+              winston.debug('signup found')
+
+            } 
+           }
+           
+           if (!newUser) {
+            return res.status(401).send({ success: false, msg: 'User not found.' });
+           }
+
+           winston.debug('newUser.', newUser)
+           userToReturn=newUser;
+          }
+
             var newProject_user = new Project_user({
 
               id_project: id_project,
@@ -281,29 +326,36 @@ router.post('/signinWithCustomToken', [
               updatedBy: req.user._id
             });
 
+            // testtare qiestp cpm dpcker dev partemdp da ui
+            if (createNewUser===true) {
+              newProject_user.id_user = newUser._id;
+              // delete newProject_user.uuid_user;
+              winston.debug('newProject_user.', newProject_user)
+            }
+
             return newProject_user.save(function (err, savedProject_user) {
               if (err) {
                 winston.error('Error saving object.', err)
                 // return res.status(500).send({ success: false, msg: 'Error saving object.' });
-                return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+                return res.json({ success: true, token: req.headers["authorization"], user: userToReturn});
               }
 
             
               authEvent.emit("projectuser.create", savedProject_user);         
 
-              authEvent.emit("user.signin", {user:req.user, req:req, token: req.headers["authorization"]});      
+              authEvent.emit("user.signin", {user:userToReturn, req:req, token: req.headers["authorization"]});      
 
               winston.debug('project user created ', savedProject_user.toObject());
 
                 
 
-              return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+              return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
           });
         } else {
           winston.debug('project user already exists ');
 
           if (project_user.status==="active") {
-            return res.json({ success: true, token: req.headers["authorization"], user: req.user });
+            return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
           } else {
             winston.warn('Authentication failed. Project_user not active.');
             return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not active.' });
