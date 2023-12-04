@@ -53,6 +53,23 @@ router.get('/:integration_id', async (req, res) => {
 
 })
 
+router.get('/name/:integration_name', async (req, res) => {
+
+    let id_project = req.projectid;
+    winston.debug("Get all integration for the project " + id_project);
+
+    let integration_name = req.params.integration_name;
+    winston.debug("Get integration with id " + integration_name);
+
+    Integration.findOne({ id_project: id_project, name: integration_name }, (err, integration) => {
+        if (err) {
+            winston.error("Error find integration by name: ", err);
+            return res.status(404).send({ success: false, err: err });
+        }
+        res.status(200).send(integration);
+    })
+})
+
 // Add new integration
 router.post('/', async (req, res) => {
 
