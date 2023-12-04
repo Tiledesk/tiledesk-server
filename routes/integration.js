@@ -68,8 +68,8 @@ router.get('/name/:integration_name', async (req, res) => {
         }
 
         if (!integration) {
-            winston.error("Integration not found");
-            return res.status(404).send("Integration not found");
+            winston.debug("Integration not found");
+            return res.status(200).send("Integration not found");
         }
         
         res.status(200).send(integration);
