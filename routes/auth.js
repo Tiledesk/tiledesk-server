@@ -311,7 +311,7 @@ router.post('/signinWithCustomToken', [
             return res.status(401).send({ success: false, msg: 'User not found.' });
            }
 
-           winston.debug('newUser.', newUser)
+           winston.info('userToReturn forced to newUser.', newUser)
            userToReturn=newUser;
           }
 
