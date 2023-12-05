@@ -311,7 +311,7 @@ router.post('/signinWithCustomToken', [
             return res.status(401).send({ success: false, msg: 'User not found.' });
            }
 
-           winston.info('userToReturn forced to newUser.', newUser)
+           winston.debug('userToReturn forced to newUser.', newUser)
            userToReturn=newUser;
           }
 
@@ -347,9 +347,33 @@ router.post('/signinWithCustomToken', [
 
               winston.debug('project user created ', savedProject_user.toObject());
 
-                
 
-              return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
+              let returnToken = req.headers["authorization"];
+              if (createNewUser===true) {       
+
+
+
+                var signOptions = {         
+                  issuer:  'https://tiledesk.com',   
+                  subject:  'user',
+                  audience:  'https://tiledesk.com',
+                  jwtid: uuidv4()
+                };
+
+                var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                if (alg) {
+                  signOptions.algorithm = alg;
+                }
+
+                //remove password //test it              
+                let userJson = userToReturn.toObject();
+                delete userJson.password;
+       
+                returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
+                
+              }
+              
+              return res.json({ success: true, token: returnToken, user: userToReturn });
           });
         } else {
           winston.debug('project user already exists ');
