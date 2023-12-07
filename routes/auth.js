@@ -372,8 +372,8 @@ router.post('/signinWithCustomToken', [
                 returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
                 
               }
-              
-              return res.json({ success: true, token: returnToken, user: userToReturn });
+
+              return res.json({ success: true, token: 'JWT ' + returnToken, user: userToReturn });
           });
         } else {
           winston.debug('project user already exists ');
