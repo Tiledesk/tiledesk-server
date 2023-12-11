@@ -192,6 +192,11 @@ pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, d
   
 jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
 
+let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
+winston.info("whatsappQueue");
+jobsManager.listenWhatsappQueue(whatsappQueue);
+
+
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
