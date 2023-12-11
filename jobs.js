@@ -97,7 +97,9 @@ async function main()
     winston.debug("routingQueueQueued"); 
     jobsManager.listenRoutingQueue(routingQueueQueued);
 
-
+    let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
+    winston.info("whatsappQueue");
+    jobsManager.listenerQueued(whatsappQueue);
 
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);
