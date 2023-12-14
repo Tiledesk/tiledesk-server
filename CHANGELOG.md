@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.82
+- Added whatsapp log services
+
 # 2.4.81
 - update whatsapp-connector to 0.1.56
 
