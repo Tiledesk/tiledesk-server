@@ -99,7 +99,7 @@ async function main()
 
     let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
     winston.info("whatsappQueue");
-    jobsManager.listenerQueued(whatsappQueue);
+    jobsManager.listenWhatsappQueue(whatsappQueue);
 
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);
