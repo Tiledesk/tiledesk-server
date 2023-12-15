@@ -479,7 +479,7 @@ app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/users_util', usersUtil);
-app.use('/logs', logs);
+// app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
 // TODO security issues
@@ -581,6 +581,8 @@ app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { ses
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], integration )
+
+app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
 
 
