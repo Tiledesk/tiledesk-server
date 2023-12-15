@@ -37,7 +37,7 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
         let clearLogs = logs.map(({_id, __v, ...keepAttrs}) => keepAttrs)
         winston.verbose("clearLogs: ", clearLogs)
 
-        res.status(200).send(logs);
+        res.status(200).send(clearLogs);
     })
 
 })

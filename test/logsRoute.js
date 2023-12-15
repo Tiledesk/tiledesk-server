@@ -19,7 +19,7 @@ var assert = chai.assert;
 let example_log = {
     json_message: {
         messaging_product: "whatsapp",
-        to: "+393484506627",
+        to: "+393484511111",
         type: "template",
         template: {
             name: "codice_sconto",
@@ -63,7 +63,7 @@ describe('LogsRoute', () => {
                     console.log("example_log.transaction_id: ", example_log.transaction_id);
 
                     chai.request(server)
-                        .post('/logs/whatsapp')
+                        .post('/' + savedProject._id + '/logs/whatsapp')
                         .auth(email, pwd)
                         .send(example_log)
                         .end((err, res) => {
@@ -73,7 +73,7 @@ describe('LogsRoute', () => {
                             res.body.should.be.a('object');
 
                             chai.request(server)
-                                .get('/logs/whatsapp/' + example_log.transaction_id)
+                                .get('/' + savedProject._id + '/logs/whatsapp/' + example_log.transaction_id)
                                 .auth(email, pwd)
                                 .end((err, res) => {
                                     console.log("err: ", err);
