@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var winston = require('../config/winston');
 const { MessageLog } = require('../models/whatsappLog');
+const { Transaction } = require('../models/transaction');
 
 
 
@@ -17,16 +18,32 @@ router.post('/', function (req, res, next) {
 });
 
 router.get('/whatsapp', async (req, res) => {
-    res.stats(200).send({ success: true });
+
+    let project_id = req.projectid;
+
+    Transaction.find({ id_project: prject_id }, (err, transactions) => {
+        if (err) {
+            winston.error("Error find transactions for project_id: " + project_id);
+            return res.status(400).send({ success: false, message: "Unable to find transaction for project_id " + project_id });
+        }
+
+        winston.verbose("Transactions: ", transactions);
+
+        res.status(200).send(transactions);
+    })
+
+    // res.stats(200).send({ success: true });
 })
 
 
 router.get('/whatsapp/:transaction_id', async (req, res) => {
 
+    let project_id = req.projectid;
+
     let transaction_id = req.params.transaction_id;
     winston.info("Get logs for whatsapp transaction_id " + transaction_id);;
 
-    MessageLog.find({ transaction_id: transaction_id }).lean().exec((err, logs) => {
+    MessageLog.find({ id_project: project_id, transaction_id: transaction_id }).lean().exec((err, logs) => {
         if (err) {
             winston.error("Error find logs for transaction_id " + transaction_id);
             return res.status(400).send({ success: false, message: "Unable to find logs for transaction_id " + transaction_id })
@@ -47,6 +64,7 @@ router.post('/whatsapp', async (req, res) => {
     winston.info("save following log: ", req.body);
 
     let log = new MessageLog({
+        id_project: req.body.id_project,
         json_message: req.body.json_message,
         transaction_id: req.body.transaction_id,
         message_id: req.body.message_id,
