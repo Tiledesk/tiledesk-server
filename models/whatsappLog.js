@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const MessageLogSchema = mongoose.Schema({
+  id_project: {
+    type: String,
+    required: true
+  },
   json_message: {
     type: Object,
     required: true
