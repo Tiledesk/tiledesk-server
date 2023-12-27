@@ -580,7 +580,7 @@ app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
-app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], integration )
+app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], integration )
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
