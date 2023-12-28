@@ -13,6 +13,10 @@ const botEvent = require('../event/botEvent');
 const uuidv4 = require('uuid/v4');
 csv = require('csv-express');
 csv.separator = ';';
+const axios = require("axios").default;
+var configGlobal = require('../config/global');
+
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 // POST CSV FILE UPLOAD FROM CLIENT
 router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next) {
@@ -200,6 +204,122 @@ router.post('/', function (req, res) {
   });
 });
 
+router.post('/ops_update', async (req, res) => {
+
+  let id_faq_kb = req.body.id_faq_kb;
+  let operations = req.body.operations;
+
+  for (let op of operations) {
+    let HTTPREQUEST;
+    let id;
+
+    // method post
+    switch (op.type) {
+      case 'post':
+        HTTPREQUEST = {
+          url: apiUrl + '/' + req.projectid + '/faq/',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.authorization
+          },
+          json: op.intent,
+          method: 'post'
+        }
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
+        this.myrequest(
+          HTTPREQUEST, async (err, resbody) => {
+            if (err) {
+              winston.error("err performing operation: ", err);
+            } else {
+              winston.debug("\n\nresbody operation: ", resbody);
+            }
+          }
+        )
+        break;
+
+      // method put
+      case 'put':
+        id = op.intent._id;
+        if (op.intent.intent_id) {
+          id = op.intent.intent_id;
+        }
+        HTTPREQUEST = {
+          url: apiUrl + '/' + req.projectid + '/faq/' + id,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.authorization
+          },
+          json: op.intent,
+          method: 'put'
+        }
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
+        myrequest(
+          HTTPREQUEST, async (err, resbody) => {
+            if (err) {
+              winston.error("err performing operation: ", err);
+            } else {
+              winston.debug("\n\nresbody operation: ", resbody);
+            }
+          }
+        )
+        break;
+
+      // method patch
+      case 'patch':
+        HTTPREQUEST = {
+          url: apiUrl + '/' + req.projectid + '/faq/' + op.intent._id + '/attributes',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.authorization
+          },
+          json: op.intent.attributes,
+          method: 'patch'
+        }
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
+        myrequest(
+          HTTPREQUEST, async (err, resbody) => {
+            if (err) {
+              winston.error("err performing operation: ", err);
+            } else {
+              winston.debug("\n\nresbody operation: ", resbody);
+            }
+          }
+        )
+        break;
+
+      // method delete
+      case 'delete':
+        id = op.intent._id;
+        if (op.intent.intent_id) {
+          id = "intentId" + op.intent.intent_id;
+        }
+        HTTPREQUEST = {
+          url: apiUrl + '/' + req.projectid + '/faq/' + id + '?id_faq_kb=' + id_faq_kb,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': req.headers.authorization
+          },
+          method: 'delete'
+        }
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
+        myrequest(
+          HTTPREQUEST, async (err, resbody) => {
+            if (err) {
+              winston.error("err performing operation: ", err);
+            } else {
+              winston.debug("\n\nresbody operation: ", resbody);
+            }
+          }
+        )
+        break;
+    }
+  }
+
+  res.status(200).send({ success: true });
+
+
+})
+
 router.patch('/:faqid/attributes', function (req, res) {
   let data = req.body;
   winston.debug("data: ", data);
@@ -259,7 +379,7 @@ router.put('/:faqid', function (req, res) {
   let faqid = req.params.faqid;
 
   if (!req.body.id_faq_kb) {
-    return res.status(422).send({ err: "Missing id_faq_kb in Request Body"})
+    return res.status(422).send({ err: "Missing id_faq_kb in Request Body" })
   }
   let id_faq_kb = req.body.id_faq_kb;
 
@@ -307,7 +427,7 @@ router.put('/:faqid', function (req, res) {
 
   if (faqid.startsWith("intentId")) {
     let intent_id = faqid.substring(8);
-    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true, upsert: true}, (err, updatedFaq) => {
+    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true, upsert: true }, (err, updatedFaq) => {
       if (err) {
         if (err.code == 11000) {
           return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });
@@ -318,12 +438,12 @@ router.put('/:faqid', function (req, res) {
 
       faqBotEvent.emit('faq.update', updatedFaq);
       //faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
-  
+
       res.status(200).send(updatedFaq);
     })
 
   } else {
-    
+
     Faq.findByIdAndUpdate(req.params.faqid, update, { new: true, upsert: true }, function (err, updatedFaq) {
       if (err) {
         if (err.code == 11000) {
@@ -332,10 +452,10 @@ router.put('/:faqid', function (req, res) {
           return res.status(500).send({ success: false, msg: 'Error updating object.' });
         }
       }
-  
+
       faqBotEvent.emit('faq.update', updatedFaq);
       //faqBotEvent.emit('faq_train.update', updatedFaq.id_faq_kb);
-  
+
       res.status(200).send(updatedFaq);
       // updateRemoteFaq(updatedFaq)
     });
@@ -354,11 +474,11 @@ router.delete('/:faqid', function (req, res) {
   if (req.query && req.query.id_faq_kb) {
     id_faq_kb = req.query.id_faq_kb;
   }
-  
+
   if (faqid.startsWith("intentId")) {
     let intent_id = faqid.substring(8);
     if (!id_faq_kb) {
-      return res.status(500).send({ success: false, msg: "Unable to delete object. Query param 'id_faq_kb' is mandatory if you want to delete via intent_id"})
+      return res.status(500).send({ success: false, msg: "Unable to delete object. Query param 'id_faq_kb' is mandatory if you want to delete via intent_id" })
     }
 
     Faq.findOneAndDelete({ intent_id: intent_id, id_faq_kb: id_faq_kb }, (err, faq) => {
@@ -367,14 +487,14 @@ router.delete('/:faqid', function (req, res) {
       }
 
       if (!faq) {
-        return res.status(404).send({ success: false, msg: "Error deleting object. The object does not exists."})
+        return res.status(404).send({ success: false, msg: "Error deleting object. The object does not exists." })
       }
 
       winston.debug('Deleted FAQ ', faq);
-      
+
       faqBotEvent.emit('faq.delete', faq);
       //faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
-  
+
       res.status(200).send(faq);
 
     })
@@ -385,12 +505,12 @@ router.delete('/:faqid', function (req, res) {
         return res.status(500).send({ success: false, msg: 'Error deleting object.' });
       }
       winston.debug('Deleted FAQ ', faq);
-  
+
       faqBotEvent.emit('faq.delete', faq);
       //faqBotEvent.emit('faq_train.delete', faq.id_faq_kb);
-  
+
       res.status(200).send(faq);
-  
+
     });
   }
 });
@@ -517,7 +637,32 @@ router.get('/', function (req, res, next) {
 
 });
 
+async function myrequest(options, callback) {
 
+  winston.debug("myrequest options: ", options)
+  return await axios({
+    url: options.url,
+    method: options.method,
+    data: options.json,
+    params: options.params,
+    headers: options.headers
+  }).then((res) => {
+    if (res && res.status == 200 && res.data) {
+      if (callback) {
+        callback(null, res.data);
+      }
+    }
+    else {
+      if (callback) {
+        callback(TiledeskClient.getErr({ message: "Response status not 200" }, options, res), null, null);
+      }
+    }
+  }).catch((err) => {
+    if (callback) {
+      callback(err, null, null);
+    }
+  })
+}
 
 
 module.exports = router;

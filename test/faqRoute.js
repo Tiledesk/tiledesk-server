@@ -5,6 +5,8 @@ var User = require('../models/user');
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
+const example_data = require('./example-json-multiple-operation-mock');
+
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
@@ -37,6 +39,9 @@ describe('FaqKBRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+
+                    console.log("#### savedProject: ", savedProject)
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
@@ -357,6 +362,32 @@ describe('FaqKBRoute', () => {
 
                 });
             });
+        })
+
+        it('updateBulkOperations', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-updatebulkops", savedUser._id).then((savedProject) => {
+
+                    //console.log("EXAMPLE DATA: ", JSON.stringify(example_data));
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq/ops_update')
+                        .auth(email, pwd)
+                        .send(example_data.json_multiple_operation) // set up the payload
+                        .end((err, res) => {
+                            if (log) { console.log("res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            done();
+                        })
+
+                })
+            })
         })
 
 
@@ -712,5 +743,4 @@ describe('FaqKBRoute', () => {
     });
 
 });
-
 
