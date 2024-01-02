@@ -59,19 +59,9 @@ router.post('/', async (req, res) => {
 router.post('/quotes', async (req, res) => {
 
     let project = req.project;
-<<<<<<< Updated upstream
 
     let body = req.body;
     body.createdAt = new Date(body.createdAt);
-=======
-    console.log("project: ", project);
-
-    let body = req.body;
-    body.createdAt = new Date(body.createdAt);
-    console.log("req.body: ", body);
-
-
->>>>>>> Stashed changes
 
     let redis_client = req.app.get('redis_client');
     if (!redis_client) {
@@ -81,28 +71,9 @@ router.post('/quotes', async (req, res) => {
     let quoteManager = new QuoteManager({ project: project, tdCache: redis_client });
 
     let incremented_key = await quoteManager.incrementTokenCount(req.body, 'tokens');
-<<<<<<< Updated upstream
     let quote = await quoteManager.getCurrentQuote(req.body, 'tokens');
     
     res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
-=======
-    console.log("incremented_key: ", incremented_key);
-
-    let quote = await quoteManager.getCurrentQuote(req.body, 'tokens');
-    console.log("quote: ", quote);
-    
-    // let initial_quote = quoteManager.getCurrentQuote(body, 'tokens')
-    // console.log("initial_quote: ", initial_quote);
-
-    // let final_quote = quoteManager.getCurrentQuote(body, 'tokens')
-    // console.log("initial_quote: ", initial_quote);
-
-
-
-
-    res.status(200).send({ message: "value incremented for key " + incremented_key, currentQuote: quote });
-    // res.status(200).send();
->>>>>>> Stashed changes
 })
 
 // router.get('/', async (req, res) => {

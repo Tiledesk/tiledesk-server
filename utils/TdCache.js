@@ -189,7 +189,6 @@ class TdCache {
             if (callback) {
               callback(value);
           }
-          console.log("---> value: ", value)
           return resolve(value);
           }
         });

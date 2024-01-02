@@ -46,15 +46,8 @@ class MessageService {
     winston.debug('message.save called');
 
     message.createdAt = Date.now();
-<<<<<<< Updated upstream
     messageEvent.emit('message.create.before', message);
 
-=======
-    console.log("EMIT EVENT message.create.before")
-    messageEvent.emit('message.create.before', message);
-
-
->>>>>>> Stashed changes
     let sender = message.sender;
     let senderFullname = message.senderFullname;
     let recipient = message.recipient;

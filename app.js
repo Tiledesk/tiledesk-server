@@ -89,30 +89,6 @@ tdCache = new TdCache({
   });
 
 tdCache.connect();
-<<<<<<< Updated upstream
-=======
-// var redis = require('redis')
-// var redis_client;
-
-// connectRedis();
-
-// function connectRedis() {
-//   console.log(">>> connectRedis")
-//   redis_client = redis.createClient({
-//     host: "127.0.0.1",
-//     port: 6379,
-//   });
-
-//   redis_client.on('error', err => {
-//     winston.info('(wab) Connect Redis Error ' + err);
-//   })
-
-//   redis_client.on('ready', () => {
-//     winston.info("(wab) Redis ready!")
-//   })
-
-// }
->>>>>>> Stashed changes
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -191,13 +167,6 @@ botEvent.listen(); //queued but disabled
 var trainingService = require('./services/trainingService');
 trainingService.start();
 
-<<<<<<< Updated upstream
-=======
-// var QuoteManager = require('./services/QuoteManager');
-// let quoteManager = new QuoteManager();
-// quoteManager.start();
- 
->>>>>>> Stashed changes
 // job_here
 
 var geoService = require('./services/geoService');
@@ -265,10 +234,6 @@ app.set('view engine', 'jade');
 
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
-<<<<<<< Updated upstream
-=======
-// app.set('quote_manager', new QuoteManager({ project: req.project, tdCache: redis_client }));
->>>>>>> Stashed changes
 
 
 // TODO DELETE IT IN THE NEXT RELEASE
@@ -442,23 +407,6 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
 app.get('/', function (req, res) {  
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
 });
-<<<<<<< Updated upstream
-=======
-
-app.get('/exampleredis', async (req, res) => {
-
-  res.status(200).send('example redis works!')
-
-  redis_client.set('example_key2', 'example_vale2');
-  redis_client.get('example_key2', (err, value) => {
-    if (err) {
-      console.error(err);
-    }
-    console.log("value: ", value)
-  })
-})
-
->>>>>>> Stashed changes
   
 
 
@@ -670,11 +618,7 @@ app.use(function (err, req, res, next) {
 
 
 
-<<<<<<< Updated upstream
 // mettere middleware qui per le quote
-=======
-// mettere middleware qui
->>>>>>> Stashed changes
 
 
 

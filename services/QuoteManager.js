@@ -68,7 +68,6 @@ class QuoteManager {
 
     async incrementTokenCount(data) { // ?? cosa passo? il messaggio per vedere la data?
 
-        console.log("incrementTokenCount data: ", data)
         let key = await this.generateKey(data, 'tokens');
         winston.debug("[QuoteManager] incrementTokenCount key: " + key);
 
@@ -90,13 +89,12 @@ class QuoteManager {
         // trial_expired per quelli free
         // subscription_is_active per quelly payment
         
-
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
         const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
 
         let ndays = (objectDateTimestamp - subscriptionDateTimestamp) / 86400;  // 86400 is the number of seconds in 1 day
-        let nmonths = floor(ndays / 30); //number of month to add to the initial subscription date;
+        let nmonths = floor(ndays / 30); // number of month to add to the initial subscription date;
 
         let date = new Date(subscriptionDate);
         date.setMonth(date.getMonth() + nmonths);
