@@ -374,13 +374,21 @@ router.post('/signinWithCustomToken', [
               }
 
               return res.json({ success: true, token: 'JWT ' + returnToken, user: userToReturn });
-              
           });
         } else {
           winston.debug('project user already exists ');
 
           if (project_user.status==="active") {
-            return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
+
+            if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
+              let userFromDB = await User.findOne({email: req.user.email , status: 100}).exec();
+              return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
+
+            } else {
+              return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
+            }
+
+
           } else {
             winston.warn('Authentication failed. Project_user not active.');
             return res.status(401).send({ success: false, msg: 'Authentication failed. Project_user not active.' });
