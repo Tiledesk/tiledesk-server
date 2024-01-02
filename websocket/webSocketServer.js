@@ -139,7 +139,7 @@ class WebSocketServer {
 
             jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
                   if (err) {
-                     winston.error('WebSocket error verifing websocket jwt token ', err);
+                     winston.error('WebSocket error verifing websocket jwt token: '+token, err);
                      return cb(false, 401, 'Unauthorized');
                   } else {
                      // uncomment it
