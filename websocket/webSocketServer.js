@@ -135,6 +135,7 @@ class WebSocketServer {
               }
             }
 
+            winston.info("configSecretOrPubicKay: "+ configSecretOrPubicKay );
 
             jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
                   if (err) {
