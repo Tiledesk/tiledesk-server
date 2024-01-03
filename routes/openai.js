@@ -11,6 +11,15 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
+    let obj = { createdAt: new Date() };
+
+    let quoteManager = req.app.get('quote_manager');
+    let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+
+    if (isAvailable === false) {
+        return res.status(403).send("Tokens quota exceeded")
+    }
+
     KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
         winston.debug("kbSettings: ", kbSettings);
 
@@ -23,6 +32,7 @@ router.post('/', async (req, res) => {
         if (!gptkey) {
             return res.status(400).send({ success: false, message: "Missing gptkey parameter" })
         }
+        
 
         // attua modifiche
         let json = {
@@ -46,6 +56,10 @@ router.post('/', async (req, res) => {
 
         openaiService.completions(json, gptkey).then((response) => {
             // winston.debug("completions response: ", response);
+
+            let incremented_key = quoteManager.incrementTokenCount(req.project, req.body);
+            winston.verbose("Tokens quota incremented for key " + incremented_key);
+
             res.status(200).send(response.data);
         }).catch((err) => {
             console.log("err: ", err);
