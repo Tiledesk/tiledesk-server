@@ -150,7 +150,7 @@ class QuoteManager {
 
         this.project = project;
         let limits = await this.getPlanLimits();
-        // console.log("\n\n---->limits: ", limits)
+        console.log("\n\n---->limits: ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
         // console.log("\n\n***** quote: ", quote)
 
