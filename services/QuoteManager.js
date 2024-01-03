@@ -149,8 +149,9 @@ class QuoteManager {
     async checkQuote(project, object, type) {
 
         this.project = project;
+        console.log(" *** check quote for ", this.project)
         let limits = await this.getPlanLimits();
-        console.log("\n\n---->limits: ", limits)
+        console.log(" *** --> limits ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
         // console.log("\n\n***** quote: ", quote)
 
@@ -169,6 +170,7 @@ class QuoteManager {
     async getPlanLimits() {
 
         let limits;
+        console.log("profile type ", this.project.profile.type)
         if (this.project.profile.type === 'payment') {
 
             const plan = this.project.profile.name;
@@ -186,11 +188,14 @@ class QuoteManager {
                     winston.info("get limits from project info")
                     limits = PLANS_LIST.CUSTOM;
                 default:
+                    console.log("default case!!!!!")
                     limits = PLANS_LIST.FREE_TRIAL;
+                    console.log("free plan limits!!!!!: ", limits)
             }
         } else {
             limits = PLANS_LIST.FREE_TRIAL;
         }
+        console.log("limits!!")
         return limits;
     }
 
