@@ -155,6 +155,10 @@ class QuoteManager {
         let quote = await this.getCurrentQuote(project, object, type);
         // console.log("\n\n***** quote: ", quote)
 
+        console.log("check........");
+        console.log("quote: ", quote);
+        console.log("limit: ", limits[type]);
+
         if (quote == null) {
             return true;
         }
