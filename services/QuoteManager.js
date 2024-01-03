@@ -29,50 +29,51 @@ class QuoteManager {
             throw new Error('config is mandatory')
         }
 
-        if (!config.project) {
-            throw new Error('config.project is mandatory')
-        }
-
         if (!config.tdCache) {
             throw new Error('config.tdCache is mandatory')
         }
 
-        this.project = config.project;
         this.tdCache = config.tdCache;
+        this.project;
 
     }
 
     // INCREMENT KEY SECTION - START
-    async incrementRequestsCount(request) {
+    async incrementRequestsCount(project, request) {
 
+        this.project = project;
         let key = await this.generateKey(request, 'requests');
-        winston.debug("[QuoteManager] incrementRequestsCount key: " + key);
+        winston.verbose("[QuoteManager] incrementRequestsCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
     }
 
-    async incrementMessagesCount(message) {
+    async incrementMessagesCount(project, message) {
 
+        this.project = project;
         let key = await this.generateKey(message, 'messages');
-        winston.debug("[QuoteManager] incrementMessagesCount key: " + key);
+        winston.verbose("[QuoteManager] incrementMessagesCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
     }
 
-    async incrementEmailCount(email) {
+    async incrementEmailCount(project, email) {
+
+        this.project = project;
         let key = await this.generateKey(email, 'email');
-        winston.debug("[QuoteManager] incrementEmailCount key: " + key);
+        winston.info("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
     }
 
-    async incrementTokenCount(data) { // ?? cosa passo? il messaggio per vedere la data?
+    async incrementTokenCount(project, data) { // ?? cosa passo? il messaggio per vedere la data?
 
+        this.project = project;
         let key = await this.generateKey(data, 'tokens');
-        winston.debug("[QuoteManager] incrementTokenCount key: " + key);
+        winston.info("[QuoteManager] incrementTokenCount key: " + key);
 
         await this.tdCache.incrby(key, data.tokens);
         return key;
@@ -106,10 +107,11 @@ class QuoteManager {
     /**
      * Get current quote for a single type (tokens or request or ...)
      */
-    async getCurrentQuote(object, type) {
+    async getCurrentQuote(project, object, type) {
 
+        this.project = project;
         let key = await this.generateKey(object, type);
-        winston.info("[QuoteManager] getCurrentQuote key: " + key);
+        winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
 
         let quote = await this.tdCache.get(key);
         return Number(quote);
@@ -118,17 +120,21 @@ class QuoteManager {
     /**
      * Get quotes for a all types (tokens and request and ...)
      */
-    async getAllQuotes(obj) {
+    async getAllQuotes(project, obj) {
+
+        this.project = project;
 
         let quotes = {}
         for (let type of typesList) {
+            console.log("*** get all quotes --> search for type: ", type);
             let key = await this.generateKey(obj, type);
+            console.log("*** get all quotes --> key generated: ", key);
             let quote = await this.tdCache.get(key);
+            console.log("*** get all quotes --> quote retrieved: ", quote);
 
             quotes[type] = {
                 quote: Number(quote)
             };
-
         }
         return quotes;
         
@@ -139,10 +145,13 @@ class QuoteManager {
      * Returns TRUE if the limit is not reached --> operation can be performed
      * Returns FALSE if the limit is reached --> operation can't be performed
      */
-    async checkQuote(object, type) {
+    async checkQuote(project, object, type) {
 
+        this.project = project;
         let limits = await this.getPlanLimits();
-        let quote = await this.getCurrentQuote(object, type)
+        // console.log("\n\n---->limits: ", limits)
+        let quote = await this.getCurrentQuote(project, object, type);
+        // console.log("\n\n***** quote: ", quote)
 
         if (quote == null) {
             return true;
@@ -185,16 +194,16 @@ class QuoteManager {
 
 
     start() {
-        winston.info('QuoteManager start');
+        winston.verbose('QuoteManager start');
 
-        // TODO - Try to generalize
+        // TODO - Try to generalize to avoid repetition
         let incrementEventHandler = (object) => { }
         let checkEventHandler = (object) => { }
 
 
         // REQUESTS EVENTS - START
-        requestEvent.on('request.create.before', async (request) => {
-            let result = await this.checkQuote(request, 'requests');
+        requestEvent.on('request.create.quote.before', async (payload) => {
+            let result = await this.checkQuote(payload.project, payload.request, 'requests');
             if (result == true) {
                 winston.info("Limit not reached - a request can be created")
             } else {
@@ -203,8 +212,9 @@ class QuoteManager {
             return result;
         });
 
-        requestEvent.on('request.create.simple', async (request) => {
-            let result = await this.incrementRequestsCount(request);
+        requestEvent.on('request.create.quote', async (payload) => {
+            winston.verbose("request.create.quote event catched"); 
+            let result = await this.incrementRequestsCount(payload.project, payload.request);
             //console.log("request.create.simple event result: ", result);
             return result;
         })
@@ -212,8 +222,9 @@ class QuoteManager {
 
 
         // MESSAGES EVENTS - START
-        messageEvent.on('message.create.before', async (message) => {
-            let result = await this.checkQuote(message, 'messages');
+        messageEvent.on('message.create.quote.before', async (payload) => {
+            console.log("message.create.quote.before event fired");
+            let result = await this.checkQuote(payload.project, payload.message, 'messages');
             if (result == true) {
                 winston.info("Limit not reached - a message can be created")
             } else {
@@ -222,8 +233,10 @@ class QuoteManager {
             return result;
         })
 
-        messageEvent.on('message.create.simple', async (message) => {
-            let result = await this.incrementMessagesCount(message);
+        messageEvent.on('message.create.quote', async (payload) => {
+            console.log("message.create.quote event fired");
+            winston.verbose("message.create.quote event catched");
+            let result = await this.incrementMessagesCount(payload.project, payload.message);
             //console.log("message.create.simple event result: ", result);
             return result;
         })
@@ -241,8 +254,9 @@ class QuoteManager {
             return result;
         })
 
-        emailEvent.on('email.send', async (email) => {
-            let result = await this.incrementEmailCount(email);
+        emailEvent.on('email.send.quote', async (payload) => {
+            winston.info("email.send event catched");
+            let result = await this.incrementEmailCount(payload.project, payload.email);
             //console.log("email.send event result: ", result);
             return result;
         })

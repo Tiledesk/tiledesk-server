@@ -5,6 +5,51 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.82
+- Added whatsapp log services
+
+# 2.4.81
+- update whatsapp-connector to 0.1.56
+
+# 2.4.79
+- update whatsapp-connector to 0.1.55
+- update whatsapp-jobworker to 0.0.4
+- added support for whatsapp broadcast queue
+
+# 2.4.78
+- update whatsapp-connector to 0.1.53
+- update messenger-connector to 0.1.13
+- update telegram-connector to 0.1.10
+
+# 2.4.77
+- update tybot-connector to 0.2.26
+
+# 2.4.76
+- update tybot-connector to 0.2.25
+- update redirectToDesktop email for new onboarding
+
+# 2.4.74
+- update tiledesk-messenger-connector to 0.1.12
+
+# 2.4.73
+- Fix KB Settings bugs
+
+# 2.4.72
+- update tiledesk-messenger-connector to 0.1.11
+
+# 2.4.71
+- update tiledesk-messenger-connector to 0.1.10
+
+# 2.4.70
+- campaign direct refactoring with job worker
+- segment filter fix for lead
+
+# 2.4.69
+- update tiledesk-tybot-connector to 0.2.15
+
+# 2.4.68
+- update tiledesk-tybot-connector to 0.2.11
+
 # 2.4.67
 - update tiledesk-tybot-connector to 0.2.9
 

@@ -5,7 +5,7 @@ class TdCache {
     constructor(config) {
         this.redis_host = config.host;
         this.redis_port = config.port;
-        //this.redis_password = config.password;
+        this.redis_password = config.password;
         this.client = null;
     }
 
@@ -16,7 +16,7 @@ class TdCache {
                 {
                     host: this.redis_host,
                     port: this.redis_port,
-                    //password: this.redis_password
+                    password: this.redis_password
                 });
             this.client.on('error', err => {
                 reject(err);
@@ -78,7 +78,7 @@ class TdCache {
     async incr(key) {
       // console.log("incr key:", key)
       return new Promise( async (resolve, reject) => {
-          try {
+        try {
             // console.log("incr here...key", key)
             await this.client.incr(key);
           }
@@ -179,7 +179,6 @@ class TdCache {
     }
     
     async get(key, callback) {
-      console.log("getting key", key)
       return new Promise( async (resolve, reject) => {
         this.client.get(key, (err, value) => {
           if (err) {

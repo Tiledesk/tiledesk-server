@@ -32,7 +32,7 @@ class Segment2MongoConverter {
                         //console.log('Operator >=');
                         this.convertGreaterThanOrEqualOperatorFilter(condition, filter);
                         break;
-                    case 'stars with':
+                    case 'starts with':
                         //console.log('Operator >=');
                         this.convertStarsWithOperatorFilter(condition, filter);
                         break;

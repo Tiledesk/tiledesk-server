@@ -411,6 +411,15 @@ router.get('/', async(req, res) => {
 
   var query = {};
 
+
+  if (req.query.segment) {
+    let segment = await Segment.findOne({id_project: req.projectid, _id: req.query.segment }).exec();
+    if (!segment) {
+      return res.status(404).send({ success: false, msg: 'Error segment not found' });
+    }
+    Segment2MongoConverter.convert(query, segment);
+  }
+  
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
@@ -433,29 +442,20 @@ router.get('/', async(req, res) => {
 
   // aggiungi filtro per data
 
-  if (req.query.status) {
-    query.status = req.query.status;
-  }
 
   if (req.query.tags) {
     winston.debug('req.query.tags', req.query.tags);
     query["tags"] = req.query.tags;
   }
 
-  
-  if (req.query.segment) {
-    let segment = await Segment.findOne({id_project: req.projectid, _id: req.query.segment }).exec();
-    if (!segment) {
-      return res.status(404).send({ success: false, msg: 'Error segment not found' });
-    }
-    Segment2MongoConverter.convert(query, segment);
-  }
-
-
 
   // last query modifier
   query["id_project"] = req.projectid;
   query["status"] = LeadConstants.NORMAL;
+
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
 
   winston.debug("query", query);
 

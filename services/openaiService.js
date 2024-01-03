@@ -62,7 +62,7 @@ class OpenaiService {
         return new Promise((resolve, reject) => {
 
             axios({
-                url: kb_endpoint + "/scrape/",
+                url: kb_endpoint + "/scrape",
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -79,20 +79,22 @@ class OpenaiService {
 
     ask(data) {
         winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+        winston.info(" *** [OPENAI SERVICE] kb endpoint: ", kb_endpoint);
 
         return new Promise((resolve, reject) => {
-
+            winston.info(" *** start axios request")
             axios({
-                url: kb_endpoint + "/qa/",
+                url: kb_endpoint + "/qa",
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 data: data,
                 method: 'POST'
             }).then((resbody) => {
+                winston.info(" *** ask resbody: ", resbody)
                 resolve(resbody);
             }).catch((err) => {
-                console.log("err: ", err);
+                winston.info(" *** ask error: ", err);
                 reject(err);
             })
 

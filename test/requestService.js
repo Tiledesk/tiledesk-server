@@ -1,11 +1,12 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var chai = require("chai");
+let chai = require('chai');
 chai.config.includeStack = true;
 
 var expect = chai.expect;
-var assert = require('chai').assert;
+var assert = chai.assert;
+let should = chai.should();
 var config = require('../config/database');
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
@@ -76,41 +77,77 @@ describe('RequestService', function () {
   // var userid = "5badfe5d553d1844ad654072";
 
   // mocha test/requestService.js  --grep 'createObjSimple'
-
-  it('createSimpleRequest-quote', (done) => {
-
+  it('createObjSimpleQuote', function (done) {
+    // this.timeout(10000);
     var email = "test-request-create-" + Date.now() + "@email.com";
     var pwd = "pwd";
 
-    let mockProject = projectMock.mockProjectSandboxPlan;
-    let mockProjectUser = projectMock.mockProjectUser;
 
-    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(((savedUser) => {
-      leadService.createIfNotExists("leadfullname", "email@email.com", mockProject._id).then((createdLead) => {
-        var now = Date.now();
-        var request = {
-          request_id: "request_id-simple-" + now, project_user_id: mockProjectUser._id, lead_id: createdLead._id,
-          id_project: mockProject._id, first_text: "first_text",
-          lead: createdLead, requester: mockProjectUser
-        };
+    let qm = new QuoteManager({ tdCache: tdCache });
+    qm.start();
 
-        let quoteManager = new QuoteManager({ project: savedProjectAndPU.project, tdCache: tdCache })
-        quoteManager.start();
-        
-        // let qm = new QuoteManager({ project: savedProjectAndPU.project, tdCache: "something"})
-        requestService.create(request).then((savedRequest) => {
-          expect(savedRequest.request_id).to.equal("request_id-simple-" + now);
-          done();
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      var userid = savedUser.id;
+      projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
+        var savedProject = savedProjectAndPU.project;
 
-        }).catch(function (err) {
-          console.log("test reject", err);
-          assert.isNotOk(err, 'Promise error');
-          // done();
+        leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
+          var now = Date.now();
+          var request = {
+            request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
+            id_project: savedProject._id, first_text: "first_text",
+            lead: createdLead, requester: savedProjectAndPU.project_user
+          };
+
+          requestService.create(request).then(async function (savedRequest) {
+            winston.verbose("resolve", savedRequest.toObject());
+            expect(savedRequest.request_id).to.equal("request_id-createObjSimple-" + now);
+            expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
+            expect(savedRequest.first_text).to.equal("first_text");
+            expect(savedRequest.department).to.not.equal(null);
+            expect(savedRequest.ticket_id).to.equal(1);
+            expect(savedRequest.status).to.equal(200);
+            expect(savedRequest.participants).to.have.lengthOf(1);
+            expect(savedRequest.participants).to.contains(userid);
+            expect(savedRequest.participantsAgents).to.contains(userid);
+            expect(savedRequest.participantsBots).to.have.lengthOf(0);
+            expect(savedRequest.hasBot).to.equal(false);
+
+            expect(savedRequest.participants[0].toString()).to.equal(userid);
+            expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
+            expect(savedRequest.assigned_at).to.not.equal(null);
+
+            expect(savedRequest.snapshot.department.name).to.not.equal(null);
+            expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
+            expect(savedRequest.snapshot.availableAgentsCount).to.equal(1);
+            expect(savedRequest.snapshot.lead.fullname).to.equal("leadfullname");
+            expect(savedRequest.snapshot.requester.role).to.equal("owner");
+            expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
+            expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
+            expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+
+
+            setTimeout(async () => {
+              let obj = { createdAt: new Date() }
+  
+              let quotes = await qm.getAllQuotes(savedProject, obj);
+              console.log("quotes: ", quotes);
+              quotes.requests.quote.should.be.a('string');
+              expect(quotes.requests.quote).to.equal('1');
+              
+              done();
+            }, 200);
+
+
+          }).catch(function (err) {
+            console.log("test reject", err);
+            assert.isNotOk(err, 'Promise error');
+            // done();
+          });
         });
-      })
-    }))
-
-  })
+      });
+    });
+  }).timeout(10000);
 
   it('createObjSimple', function (done) {
     // this.timeout(10000);
@@ -118,6 +155,8 @@ describe('RequestService', function () {
     var pwd = "pwd";
 
 
+    let qm = new QuoteManager({ tdCache: tdCache });
+    qm.start();
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       var userid = savedUser.id;
@@ -133,7 +172,7 @@ describe('RequestService', function () {
           };
 
           requestService.create(request).then(function (savedRequest) {
-            winston.info("resolve", savedRequest.toObject());
+            winston.verbose("resolve", savedRequest.toObject());
             expect(savedRequest.request_id).to.equal("request_id-createObjSimple-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.first_text).to.equal("first_text");

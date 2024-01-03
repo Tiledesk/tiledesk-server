@@ -5,6 +5,8 @@ var User = require('../models/user');
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
+const example_data = require('./example-json-multiple-operation-mock');
+
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
@@ -12,6 +14,7 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 const path = require('path');
+const uuidv4 = require('uuid/v4');
 
 
 // chai.config.includeStack = true;
@@ -27,7 +30,7 @@ describe('FaqKBRoute', () => {
 
     describe('/create', () => {
 
-        it('create qwerty', (done) => {
+        it('create', (done) => {
 
             //   this.timeout();
 
@@ -358,6 +361,32 @@ describe('FaqKBRoute', () => {
             });
         })
 
+        it('updateBulkOperations', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-updatebulkops", savedUser._id).then((savedProject) => {
+
+                    //console.log("EXAMPLE DATA: ", JSON.stringify(example_data));
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq/ops_update')
+                        .auth(email, pwd)
+                        .send(example_data.json_multiple_operation) // set up the payload
+                        .end((err, res) => {
+                            if (log) { console.log("res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            done();
+                        })
+
+                })
+            })
+        })
+
 
         it('uploadcsv', (done) => {
 
@@ -468,9 +497,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -482,9 +509,7 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb + "&page=0&limit=25&text=looking")
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("found these faqs: \n", res.body);
-                                    }
+                                    if (log) { console.log("found these faqs: \n", res.body); }
                                     res.should.have.status(200);
                                     res.body.should.be.an('array');
 
@@ -508,11 +533,9 @@ describe('FaqKBRoute', () => {
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .send({ "name": "testbot", type: "internal", template: "blank", intentsEngine: 'tiledesk-ai' })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -522,7 +545,7 @@ describe('FaqKBRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
                                 .auth(email, pwd)
-                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .send({ id_faq_kb: id_faq_kb, question: "question1\nciao\nbuongiorno", answer: "answer1" })
                                 .end((err, res) => {
                                     if (log) {  console.log("intentEngin on resbody (create faq): \n", res.body); }
                                     res.should.have.status(200);
@@ -579,7 +602,7 @@ describe('FaqKBRoute', () => {
             })
         });
 
-        it('delete with intent_id', (done) => {
+        it('deleteWithIntentId', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -601,7 +624,51 @@ describe('FaqKBRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/faq')
                                 .auth(email, pwd)
-                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1" })
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", intent_id: uuidv4() })
+                                .end((err, res) => {
+                                    if (log) { console.log("create intent res.body", res.body); }
+                                    res.should.have.status(200);
+                                    let faqid = res.body.intent_id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/faq/intentId' + faqid + "?id_faq_kb=" + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (log) { console.log("delete intent res.body", res.body); }
+                                            res.should.have.status(200);
+
+                                            done();
+                                        })
+
+                                })
+                        })
+                })
+            })
+        });
+
+        it('deleteWithIntentIdError', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .end((err, res) => {
+                            if (log) { console.log("create chatbot res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq')
+                                .auth(email, pwd)
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", intent_id: uuidv4() })
                                 .end((err, res) => {
                                     if (log) { console.log("create intent res.body", res.body); }
                                     res.should.have.status(200);
@@ -609,10 +676,56 @@ describe('FaqKBRoute', () => {
 
                                     chai.request(server)
                                         .delete('/' + savedProject._id + '/faq/intentId' + faqid)
+                                        // .delete('/' + savedProject._id + '/faq/intentId' + faqid + "?id_faq_kb=" + id_faq_kb)
                                         .auth(email, pwd)
                                         .end((err, res) => {
                                             if (log) { console.log("delete intent res.body", res.body); }
-                                            res.should.have.status(200);
+                                            res.should.have.status(500);
+
+                                            done();
+                                        })
+
+                                })
+                        })
+                })
+            })
+        });
+
+        it('deleteWithIntentIdErroWrongChatbotId', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-search-faqs", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", intentsEngine: 'tiledesk-ai' })
+                        .end((err, res) => {
+                            if (log) { console.log("create chatbot res.body", res.body); }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            var id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/faq')
+                                .auth(email, pwd)
+                                .send({ id_faq_kb: id_faq_kb, question: "question1", answer: "answer1", intent_id: uuidv4() })
+                                .end((err, res) => {
+                                    if (log) { console.log("create intent res.body", res.body); }
+                                    res.should.have.status(200);
+                                    let faqid = res.body.intent_id;
+
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/faq/intentId' + faqid + "?id_faq_kb=11233")
+                                        // .delete('/' + savedProject._id + '/faq/intentId' + faqid + "?id_faq_kb=" + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (log) { console.log("delete intent res.body", res.body); }
+                                            res.should.have.status(404);
 
                                             done();
                                         })

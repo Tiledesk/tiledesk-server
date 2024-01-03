@@ -103,6 +103,7 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
+    winston.info("/qa data: ", data);
 
     openaiService.ask(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
@@ -110,6 +111,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         let status = err.response.status;
+        winston.info("status on error: ", status)
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
@@ -132,12 +134,43 @@ router.post('/startscrape', async (req, res) => {
 
 router.post('/checkstatus', async (req, res) => {
 
-    let data = req.body;
-    winston.debug("/checkstatus data: ", data);
+    // let data = req.body;
+    winston.debug("/checkstatus req.body: ", req.body);
+
+    let full_url = req.body.full_url;
+    let data = {
+        url_list: [ req.body.full_url ]
+    }
 
     openaiService.checkStatus(data).then((resp) => {
         winston.debug("checkStatus resp: ", resp.data);
-        res.status(200).send(resp.data);
+        winston.debug("checkStatus resp: ", resp.data);
+        winston.debug("checkStatus resp: ", resp.data[full_url]);
+
+        let response = resp.data[full_url];
+
+        let return_data = {
+            status_message: response.status_message
+        }
+
+        if (response.status_code === 3) {
+            return_data.status_code = 2;
+        }
+
+        if (response.status_code === 1 || response.status_code === 2 ) {
+            return_data.status_code = 1;
+        }
+
+        if (response.status_code === 0) {
+            return_data.status_code = 0;
+        }
+
+        if (!response.status_code) {
+            return_data.status_code = 0;
+        }
+
+        
+        res.status(200).send(return_data);
     }).catch((err) => {
         winston.error("checkstatus err: ", err);
         let status = err.response.status;

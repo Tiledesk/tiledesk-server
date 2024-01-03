@@ -83,10 +83,11 @@ mongoose.set('useUnifiedTopology', false);
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('./utils/TdCache');
-tdCache = new TdCache({
-    host: '127.0.0.1',
-    port: '6379'
-  });
+let tdCache = new TdCache({
+    host: process.env.CACHE_REDIS_HOST,
+    port: process.env.CACHE_REDIS_PORT,
+    password: process.env.CACHE_REDIS_PASSWORD
+});
 
 tdCache.connect();
 
@@ -123,6 +124,7 @@ var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
 var kbsettings = require('./routes/kbsettings');
 var quotes = require('./routes/quotes');
+var integration = require('./routes/integration')
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -190,6 +192,11 @@ pubModulesManager.init({express:express, mongoose:mongoose, passport:passport, d
   
 jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled events
 
+let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
+winston.info("whatsappQueue");
+jobsManager.listenWhatsappQueue(whatsappQueue);
+
+
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
 
@@ -200,6 +207,9 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+
+let qm = new QuoteManager({ tdCache: tdCache });
+qm.start();
 
 var modulesManager = undefined;
 try {
@@ -234,6 +244,7 @@ app.set('view engine', 'jade');
 
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
+app.set('quote_manager', qm);
 
 
 // TODO DELETE IT IN THE NEXT RELEASE
@@ -482,7 +493,7 @@ app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/users_util', usersUtil);
-app.use('/logs', logs);
+// app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
 // TODO security issues
@@ -582,7 +593,12 @@ app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { sessio
 // app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
-app.use('/projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
+app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
+
+app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], integration )
+
+app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
+
 
 
 

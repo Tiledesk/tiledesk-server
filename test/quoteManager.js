@@ -94,6 +94,10 @@ const dateList = [
 //     console.log("using 'mockTdCache' for the test")
 // }
 
+let quoteManager = new QuoteManager({ tdCache: tdCache });
+quoteManager.start();
+
+
 describe('QuoteManager', function () {
 
 
@@ -102,17 +106,16 @@ describe('QuoteManager', function () {
         let mockProject = projectMock.mockProjectSandboxPlan;
         let mockRequest = requestMock.requestMock;
 
-        let quoteManager = new QuoteManager({ project: mockProject, tdCache: tdCache });
 
         mockRequest.createdAt = new Date(dateList[0]);
 
-        let initial_quote = await quoteManager.getCurrentQuote(mockRequest, 'requests');
+        let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
         
-        let key_incremented = await quoteManager.incrementRequestsCount(mockRequest);
+        let key_incremented = await quoteManager.incrementRequestsCount(mockProject, mockRequest);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 
-        let final_quote = await quoteManager.getCurrentQuote(mockRequest, 'requests');
+        let final_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] final_quote: ", final_quote); }
         
         expect(key_incremented).to.equal("quotes:requests:64e36f5dbf72263f7c059999:20/10/2023");
@@ -123,17 +126,15 @@ describe('QuoteManager', function () {
         let mockProject = projectMock.mockProjectSandboxPlan;
         let mockMessage = messageMock.messageMock;
 
-        let quoteManager = new QuoteManager({ project: mockProject, tdCache: tdCache });
-
         mockMessage.createdAt = new Date();
 
-        let initial_quote = await quoteManager.getCurrentQuote(mockMessage, 'messages');
+        let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockMessage, 'messages');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
         
-        let key_incremented = await quoteManager.incrementMessagesCount(mockMessage);
+        let key_incremented = await quoteManager.incrementMessagesCount(mockProject, mockMessage);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 
-        let final_quote = await quoteManager.getCurrentQuote(mockMessage, 'messages');
+        let final_quote = await quoteManager.getCurrentQuote(mockProject, mockMessage, 'messages');
         if (log) { console.log("[Quote Test] current quote: ", final_quote); }
 
         //expect(key_incremented).to.equal("quotes:messages:64e36f5dbf72263f7c059999:20/10/2023");
@@ -145,15 +146,13 @@ describe('QuoteManager', function () {
         let mockProject = projectMock.mockProjectSandboxPlan;
         let mockEmail = emailMock.emailMock;
 
-        let quoteManager = new QuoteManager({ project: mockProject, tdCache: tdCache });
-
-        let initial_quote = await quoteManager.getCurrentQuote(mockEmail, 'email');
+        let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockEmail, 'email');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
         
-        let key_incremented = await quoteManager.incrementEmailCount(mockEmail);
+        let key_incremented = await quoteManager.incrementEmailCount(mockProject, mockEmail);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 
-        let final_quote = await quoteManager.getCurrentQuote(mockEmail, 'email');
+        let final_quote = await quoteManager.getCurrentQuote(mockProject, mockEmail, 'email');
         if (log) { console.log("[Quote Test] current quote: ", final_quote); }
 
         expect(key_incremented).to.equal("quotes:email:64e36f5dbf72263f7c059999:20/10/2023");
@@ -174,6 +173,7 @@ describe('QuoteManager', function () {
 
                 chai.request(server)
                     .post('/' + savedProject._id + "/openai/quotes")
+                    .auth(email, pwd)
                     .send({ createdAt: createdAt , tokens: 128 })
                     .end((err, res) => {
                         if (log) { console.log("res.body", res.body )};
