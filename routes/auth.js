@@ -402,7 +402,7 @@ router.post('/signinWithCustomToken', [
               let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
-              return res.json({ success: true, token: returnToken, user: userFromDB });
+              return res.json({ success: true, token: "JWT " + returnToken, user: userFromDB });
               // return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
               
 
