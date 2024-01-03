@@ -72,7 +72,7 @@ class WebSocketServer {
      var wss = new WebSocket.Server({  
        server: server, 
        path: websocketServerPath,
-        verifyClient: function (info, cb) {
+        verifyClient: async (info, cb) => {
           //console.log('info.req', info.req);
           // var token = info.req.headers.Authorization
           let urlParsed = url.parse(info.req.url, true);
@@ -82,7 +82,8 @@ class WebSocketServer {
 
           var token = queryParameter.token;
           winston.debug('token:'+ token);
-          winston.debug('configSecretOrPubicKay:'+ configSecretOrPubicKay);
+          let secretToVerify = configSecretOrPubicKay;
+          winston.debug('secretToVerify:'+ secretToVerify);
 
         
           if (!token)
@@ -114,30 +115,35 @@ class WebSocketServer {
                 }
 
                 winston.debug("project id: "+ AudienceId );
-                Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret')
+                let project = await Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret').exec();
+                winston.info("project: ", project );
+                winston.info("project.jwtSecret: "+ project.jwtSecret );
+                
+                secretToVerify = project.jwtSecret;
+
                 //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret") //project_cache
-                .exec(function (err, project){
-                  if (err) {
-                    winston.error("auth Project err: ", {error:err, decoded: decoded} );
-                    //return done(null, null);
-                  }
-                  if (!project) {
-                    winston.warn("Project not found with id: " +  AudienceId, decoded);
-                    //return done(null, null);
-                  } else {
-                    winston.info("project: ", project );
-                    winston.info("project.jwtSecret: "+ project.jwtSecret );
-                    configSecretOrPubicKay = project.jwtSecret;
-                    // done(null, project.jwtSecret);
-                  }                 
-                });
+                // .exec(function (err, project){
+                //   if (err) {
+                //     winston.error("auth Project err: ", {error:err, decoded: decoded} );
+                //     //return done(null, null);
+                //   }
+                //   if (!project) {
+                //     winston.warn("Project not found with id: " +  AudienceId, decoded);
+                //     //return done(null, null);
+                //   } else {
+                //     winston.info("project: ", project );
+                //     winston.info("project.jwtSecret: "+ project.jwtSecret );
+                //     secretToVerify = project.jwtSecret;
+                //     // done(null, project.jwtSecret);
+                //   }                 
+                // });
 
               }
             }
 
-            winston.info("configSecretOrPubicKay: "+ configSecretOrPubicKay );
+            winston.info("secretToVerify: "+ secretToVerify );
 
-            jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
+            jwt.verify(token, secretToVerify, function (err, decoded) {  //pub_jwt pp_jwt
                   if (err) {
                      winston.error('WebSocket error verifing websocket jwt token: '+token, err);
                      return cb(false, 401, 'Unauthorized');
