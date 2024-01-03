@@ -40,7 +40,7 @@ router.post('/incr/:type', async (req, res) => {
 
     let type = req.params.type;
     let body = req.body;
-    body.createdAt = new Date(body.createdAt);
+    body.createdAt = new Date();
 
     let quoteManager = req.app.get('quote_manager');
     let incremented_key = await quoteManager.incrementTokenCount(req.project, req.body);
