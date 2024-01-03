@@ -55,10 +55,11 @@ router.post('/', async (req, res) => {
             json.messages.unshift(message);
         }
 
-        openaiService.completions(json, gptkey).then((response) => {
+        openaiService.completions(json, gptkey).then( async (response) => {
             // winston.debug("completions response: ", response);
+            let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens }
 
-            let incremented_key = quoteManager.incrementTokenCount(req.project, req.body);
+            let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
             winston.verbose("Tokens quota incremented for key " + incremented_key);
             console.log("Tokens quota incremented for key " + incremented_key);
 
