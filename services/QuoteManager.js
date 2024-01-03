@@ -185,6 +185,8 @@ class QuoteManager {
                 case 'Custom':
                     winston.info("get limits from project info")
                     limits = PLANS_LIST.CUSTOM;
+                default:
+                    limits = PLANS_LIST.FREE_TRIAL;
             }
         } else {
             limits = PLANS_LIST.FREE_TRIAL;
