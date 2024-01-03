@@ -26,6 +26,7 @@ router.post('/', async (req, res) => {
 router.get('/:type', async (req, res) => {
 
     let type = req.params.type;
+    console.log("type: ", type)
     let obj = { createdAt: new Date() };
 
     let cache = req.app.get('redis_client');
