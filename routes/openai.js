@@ -15,6 +15,7 @@ router.post('/', async (req, res) => {
 
     let quoteManager = req.app.get('quote_manager');
     let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+    console.log("GPT quote is Available for preview: ", isAvailable);
 
     if (isAvailable === false) {
         return res.status(403).send("Tokens quota exceeded")
@@ -59,6 +60,7 @@ router.post('/', async (req, res) => {
 
             let incremented_key = quoteManager.incrementTokenCount(req.project, req.body);
             winston.verbose("Tokens quota incremented for key " + incremented_key);
+            console.log("Tokens quota incremented for key " + incremented_key);
 
             res.status(200).send(response.data);
         }).catch((err) => {
