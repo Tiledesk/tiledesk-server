@@ -73,6 +73,7 @@ class WebSocketServer {
        server: server, 
        path: websocketServerPath,
         verifyClient: async (info, cb) => {
+          var findByEmail = false;
           //console.log('info.req', info.req);
           // var token = info.req.headers.Authorization
           let urlParsed = url.parse(info.req.url, true);
@@ -118,8 +119,9 @@ class WebSocketServer {
                 let project = await Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret').exec();
                 winston.info("project: ", project );
                 winston.info("project.jwtSecret: "+ project.jwtSecret );
-                
+
                 secretToVerify = project.jwtSecret;
+                findByEmail = true;
 
                 //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret") //project_cache
                 // .exec(function (err, project){
@@ -157,7 +159,13 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
-                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
+                          let query = {_id: identifier, status: 100};
+
+                          if (findByEmail===true) {
+                            query = {email: decoded.email || decoded._doc.email, status: 100};
+                          }
+
+                          User.findOne(query, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
                             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                             .exec(function (err, user) {
                            
