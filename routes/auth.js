@@ -382,7 +382,29 @@ router.post('/signinWithCustomToken', [
 
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
               let userFromDB = await User.findOne({email: req.user.email , status: 100}).exec();
-              return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
+
+              var signOptions = {         
+                issuer:  'https://tiledesk.com',   
+                subject:  'user',
+                audience:  'https://tiledesk.com',
+                jwtid: uuidv4()
+              };
+
+              var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+              if (alg) {
+                signOptions.algorithm = alg;
+              }
+
+              //remove password //test it              
+              let userJson = userFromDB.toObject();
+              delete userJson.password;
+     
+              let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
+
+
+              return res.json({ success: true, token: returnToken, user: userFromDB });
+              // return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
+              
 
             } else {
               return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
