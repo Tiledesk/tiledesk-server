@@ -5,19 +5,19 @@ const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
 // const PLANS_LIST = {
-//     FREE_TRIAL: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 }, // same as PREMIUM
-//     SANDBOX: { users: 1, requests: 200, chatbots: 2, kbs: 1, kb_pages: 50, ai_tokens: 10000 },
-//     BASIC: { users: 1, requests: 810, chatbots: 5, kbs: 2, kb_pages: 250, ai_tokens: 50000 },
-//     PREMIUM: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 },
-//     CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, ai_tokens: 100000 } // manage it --> get limit directly from project info
+//     FREE_TRIAL: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, tokens: 250000 }, // same as PREMIUM
+//     SANDBOX: { users: 1, requests: 200, chatbots: 2, kbs: 1, kb_pages: 50, tokens: 10000 },
+//     BASIC: { users: 1, requests: 810, chatbots: 5, kbs: 2, kb_pages: 250, tokens: 50000 },
+//     PREMIUM: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, tokens: 250000 },
+//     CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, tokens: 100000 } // manage it --> get limit directly from project info
 // }
 
 const PLANS_LIST = {
-    FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      ai_tokens: 250000 }, // same as PREMIUM
-    SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       ai_tokens: 10000 },
-    BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      ai_tokens: 50000 },
-    PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      ai_tokens: 250000 },
-    CUSTOM:     { users: 100,   requests: 10000,    chatbots: 100,  kbs: 100,   kb_pages: 1000,     ai_tokens: 1000000 }
+    FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 }, // same as PREMIUM
+    SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       tokens: 10000 },
+    BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      tokens: 50000 },
+    PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 },
+    CUSTOM:     { users: 100,   requests: 10000,    chatbots: 100,  kbs: 100,   kb_pages: 1000,     tokens: 1000000 }
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens']
@@ -149,15 +149,8 @@ class QuoteManager {
     async checkQuote(project, object, type) {
 
         this.project = project;
-        console.log(" *** check quote for ", this.project)
         let limits = await this.getPlanLimits();
-        console.log(" *** --> limits ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
-        // console.log("\n\n***** quote: ", quote)
-
-        console.log("check........");
-        console.log("quote: ", quote);
-        console.log("limit: ", limits[type]);
 
         if (quote == null) {
             return true;
@@ -174,7 +167,6 @@ class QuoteManager {
     async getPlanLimits() {
 
         let limits;
-        console.log("profile type ", this.project.profile.type)
         if (this.project.profile.type === 'payment') {
 
             const plan = this.project.profile.name;
@@ -192,14 +184,11 @@ class QuoteManager {
                     winston.info("get limits from project info")
                     limits = PLANS_LIST.CUSTOM;
                 default:
-                    console.log("default case!!!!!")
                     limits = PLANS_LIST.FREE_TRIAL;
-                    console.log("free plan limits!!!!!: ", limits)
             }
         } else {
             limits = PLANS_LIST.FREE_TRIAL;
         }
-        console.log("limits!!")
         return limits;
     }
 
