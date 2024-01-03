@@ -13,6 +13,7 @@ const emailEvent = require('../event/emailEvent');
 // }
 
 const PLANS_LIST = {
+    FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      ai_tokens: 250000 }, // same as PREMIUM
     SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       ai_tokens: 10000 },
     BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      ai_tokens: 50000 },
     PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      ai_tokens: 250000 },
