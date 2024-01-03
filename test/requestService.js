@@ -38,12 +38,8 @@ var { QuoteManager } = require('../services/QuoteManager');
 const projectMock = require('./mock/projectMock');
 
 // CONNECT REDIS - CHECK IT
-<<<<<<< Updated upstream
 const { TdCache } = require('../utils/TdCache');
-=======
-const { TdCache } = require('../utils/tdCache');
->>>>>>> Stashed changes
-tdCache = new TdCache({
+let tdCache = new TdCache({
     host: '127.0.0.1',
     port: '6379'
   });

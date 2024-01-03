@@ -31,8 +31,8 @@ router.get('/:type', async (req, res) => {
 
     let cache = req.app.get('redis_client');
 
-    let qm = new QuoteManager({ project: req.project, tdCache: cache })
-    let isAvailable = await qm.checkQuote(obj, type);
+    let qm = new QuoteManager({ tdCache: cache })
+    let isAvailable = await qm.checkQuote(req.project, obj, type);
 
     winston.debug("is " + type + " available: ", isAvailable);
     res.status(200).send({ isAvailable: isAvailable })
