@@ -4,12 +4,19 @@ const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
+// const PLANS_LIST = {
+//     FREE_TRIAL: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 }, // same as PREMIUM
+//     SANDBOX: { users: 1, requests: 200, chatbots: 2, kbs: 1, kb_pages: 50, ai_tokens: 10000 },
+//     BASIC: { users: 1, requests: 810, chatbots: 5, kbs: 2, kb_pages: 250, ai_tokens: 50000 },
+//     PREMIUM: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 },
+//     CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, ai_tokens: 100000 } // manage it --> get limit directly from project info
+// }
+
 const PLANS_LIST = {
-    FREE_TRIAL: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 }, // same as PREMIUM
-    SANDBOX: { users: 1, requests: 200, chatbots: 2, kbs: 1, kb_pages: 50, ai_tokens: 10000 },
-    BASIC: { users: 1, requests: 810, chatbots: 5, kbs: 2, kb_pages: 250, ai_tokens: 50000 },
-    PREMIUM: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, ai_tokens: 250000 },
-    CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, ai_tokens: 100000 } // manage it --> get limit directly from project info
+    SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       ai_tokens: 10000 },
+    BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      ai_tokens: 50000 },
+    PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      ai_tokens: 250000 },
+    CUSTOM:     { users: 100,   requests: 10000,    chatbots: 100,  kbs: 100,   kb_pages: 1000,     ai_tokens: 1000000 }
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens']
@@ -35,11 +42,7 @@ class QuoteManager {
 
     }
 
-    async test() {
-        let text = "Sto funzionando sul progetto " + this.project._id;
-        return text;
-    }
-
+    // INCREMENT KEY SECTION - START
     async incrementRequestsCount(request) {
 
         let key = await this.generateKey(request, 'requests');
@@ -74,6 +77,7 @@ class QuoteManager {
         await this.tdCache.incrby(key, data.tokens);
         return key;
     }
+    // INCREMENT KEY SECTION - END
 
 
     async generateKey(object, type) {
@@ -85,9 +89,6 @@ class QuoteManager {
             subscriptionDate = this.project.createdAt;
         }
         let objectDate = object.createdAt;
-
-        // trial_expired per quelli free
-        // subscription_is_active per quelly payment
         
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
@@ -102,21 +103,21 @@ class QuoteManager {
         return "quotes:" + type + ":" + this.project._id + ":" + date.toLocaleDateString();
     }
 
+    /**
+     * Get current quote for a single type (tokens or request or ...)
+     */
     async getCurrentQuote(object, type) {
 
         let key = await this.generateKey(object, type);
         winston.info("[QuoteManager] getCurrentQuote key: " + key);
 
-        // await this.tdCache.incrby(key, data.tokens);
-
-        // this.tdCache.get(key, (err, quote) => {
-        //     console.log("quote: ", quote);
-        //     return Number(quote);
-        // })
         let quote = await this.tdCache.get(key);
         return Number(quote);
     }
 
+    /**
+     * Get quotes for a all types (tokens and request and ...)
+     */
     async getAllQuotes(obj) {
 
         let quotes = {}
@@ -125,17 +126,19 @@ class QuoteManager {
             let quote = await this.tdCache.get(key);
 
             quotes[type] = {
-                quote: quote
+                quote: Number(quote)
             };
 
-            console.log("quotes: ", quotes);
-
         }
-
         return quotes;
         
     }
 
+    /**
+     * Perform a check on a single type.
+     * Returns TRUE if the limit is not reached --> operation can be performed
+     * Returns FALSE if the limit is reached --> operation can't be performed
+     */
     async checkQuote(object, type) {
 
         let limits = await this.getPlanLimits();
@@ -151,6 +154,7 @@ class QuoteManager {
             return false;
         }
     }
+
 
     async getPlanLimits() {
 
@@ -188,7 +192,7 @@ class QuoteManager {
         let checkEventHandler = (object) => { }
 
 
-        // REQUESTS EVENTS
+        // REQUESTS EVENTS - START
         requestEvent.on('request.create.before', async (request) => {
             let result = await this.checkQuote(request, 'requests');
             if (result == true) {
@@ -204,9 +208,10 @@ class QuoteManager {
             //console.log("request.create.simple event result: ", result);
             return result;
         })
+        // REQUESTS EVENTS - END
 
 
-        // MESSAGES EVENTS
+        // MESSAGES EVENTS - START
         messageEvent.on('message.create.before', async (message) => {
             let result = await this.checkQuote(message, 'messages');
             if (result == true) {
@@ -222,9 +227,10 @@ class QuoteManager {
             //console.log("message.create.simple event result: ", result);
             return result;
         })
+        // MESSAGES EVENTS - END
 
 
-        // EMAIL EVENTS
+        // EMAIL EVENTS - START
         emailEvent.on('email.send.before', async (email) => {
             let result = await this.checkQuote(email, 'email');
             if (result == true) {
@@ -240,25 +246,10 @@ class QuoteManager {
             //console.log("email.send event result: ", result);
             return result;
         })
+        // EMAIL EVENTS - END
     }
 
 
 }
-// EVENTS
-// var requestCreateBeforeEvent = async (request) => {
-//     console.log('Event catched - REQUEST CREATE BEFORE');
-//     let result = await this.incrementRequestCount(request);
-//     console.log("increment conversation result: ", result);
-//     return true;
-// }
-
-// // requestEvent.on('request.create.before', requestCreateBeforeEvent);
-// // requestEvent.on('request.create.before', (request) => {
-// //     console.log('Event catched - REQUEST CREATE BEFORE');
-// // });
-
-// requestEvent.on('request.create.before', requestCreateBeforeEvent);
-
-
 
 module.exports = { QuoteManager };
