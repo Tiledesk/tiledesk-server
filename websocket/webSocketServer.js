@@ -72,8 +72,7 @@ class WebSocketServer {
      var wss = new WebSocket.Server({  
        server: server, 
        path: websocketServerPath,
-        verifyClient: async (info, cb) => {
-          var findByEmail = false;
+        verifyClient: function (info, cb) {
           //console.log('info.req', info.req);
           // var token = info.req.headers.Authorization
           let urlParsed = url.parse(info.req.url, true);
@@ -83,71 +82,16 @@ class WebSocketServer {
 
           var token = queryParameter.token;
           winston.debug('token:'+ token);
-          let secretToVerify = configSecretOrPubicKay;
-          winston.debug('secretToVerify:'+ secretToVerify);
+          winston.debug('configSecretOrPubicKay:'+ configSecretOrPubicKay);
 
         
           if (!token)
               cb(false, 401, 'Unauthorized');
           else {
-            token = token.replace('JWT ', ''); 
-
-            var decoded = jwt.decode(token);  
-            
-            if (decoded && decoded.aud) {
-              winston.info("decoded.aud: "+ decoded.aud );
-
-                
-              const audUrl  = new URL(decoded.aud);
-              winston.info("audUrl: "+ audUrl );
-              const path = audUrl.pathname;
-              winston.info("audUrl path: " + path );
-              
-              const AudienceType = path.split("/")[1];
-              winston.info("audUrl AudienceType: " + AudienceType );
-
-              const AudienceId = path.split("/")[2];
-              winston.info("audUrl AudienceId: " + AudienceId );
-
-              if (AudienceType == "projects") {
-                if (!AudienceId) {
-                  winston.error("AudienceId for projects is required: ", decoded);
-                  return done(null, null);
-                }
-
-                winston.debug("project id: "+ AudienceId );
-                let project = await Project.findOne({_id: AudienceId, status: 100}).select('+jwtSecret').exec();
-                winston.info("project: ", project );
-                winston.info("project.jwtSecret: "+ project.jwtSecret );
-
-                secretToVerify = project.jwtSecret;
-                findByEmail = true;
-
-                //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+AudienceId+":select:+jwtSecret") //project_cache
-                // .exec(function (err, project){
-                //   if (err) {
-                //     winston.error("auth Project err: ", {error:err, decoded: decoded} );
-                //     //return done(null, null);
-                //   }
-                //   if (!project) {
-                //     winston.warn("Project not found with id: " +  AudienceId, decoded);
-                //     //return done(null, null);
-                //   } else {
-                //     winston.info("project: ", project );
-                //     winston.info("project.jwtSecret: "+ project.jwtSecret );
-                //     secretToVerify = project.jwtSecret;
-                //     // done(null, project.jwtSecret);
-                //   }                 
-                // });
-
-              }
-            }
-
-            winston.info("secretToVerify: "+ secretToVerify );
-
-            jwt.verify(token, secretToVerify, function (err, decoded) {  //pub_jwt pp_jwt
+            token = token.replace('JWT ', '');            
+              jwt.verify(token, configSecretOrPubicKay, function (err, decoded) {  //pub_jwt pp_jwt
                   if (err) {
-                     winston.error('WebSocket error verifing websocket jwt token: '+token, err);
+                     winston.error('WebSocket error verifing websocket jwt token ', err);
                      return cb(false, 401, 'Unauthorized');
                   } else {
                      // uncomment it
@@ -159,13 +103,7 @@ class WebSocketServer {
                         //   winston.debug('hasRoleAsPromise project_user',project_user);
                           // winston.debug('ok websocket');
 
-                          let query = {_id: identifier, status: 100};
-
-                          if (findByEmail===true) {
-                            query = {email: decoded.email || decoded._doc.email, status: 100};
-                          }
-
-                          User.findOne(query, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
+                          User.findOne({_id: identifier, status: 100}, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
                             //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                             .exec(function (err, user) {
                            
