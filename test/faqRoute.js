@@ -39,6 +39,9 @@ describe('FaqKBRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+
+                    console.log("#### savedProject: ", savedProject)
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
@@ -740,5 +743,4 @@ describe('FaqKBRoute', () => {
     });
 
 });
-
 

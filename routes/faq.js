@@ -209,8 +209,6 @@ router.post('/ops_update', async (req, res) => {
   let id_faq_kb = req.body.id_faq_kb;
   let operations = req.body.operations;
 
-  console.log("---> apiurl: ", apiUrl);
-
   for (let op of operations) {
     let HTTPREQUEST;
     let id;
@@ -227,13 +225,13 @@ router.post('/ops_update', async (req, res) => {
           json: op.intent,
           method: 'post'
         }
-        winston.info("operation HTTPREQUEST: ", HTTPREQUEST);
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
         myrequest(
           HTTPREQUEST, async (err, resbody) => {
             if (err) {
               winston.error("err performing operation: ", err);
             } else {
-              winston.info("\n\nresbody operation: ", resbody);
+              winston.debug("\n\nresbody operation: ", resbody);
             }
           }
         )
@@ -254,13 +252,13 @@ router.post('/ops_update', async (req, res) => {
           json: op.intent,
           method: 'put'
         }
-        winston.info("operation HTTPREQUEST: ", HTTPREQUEST);
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
         myrequest(
           HTTPREQUEST, async (err, resbody) => {
             if (err) {
               winston.error("err performing operation: ", err);
             } else {
-              winston.info("\n\nresbody operation: ", resbody);
+              winston.debug("\n\nresbody operation: ", resbody);
             }
           }
         )
@@ -277,13 +275,13 @@ router.post('/ops_update', async (req, res) => {
           json: op.intent.attributes,
           method: 'patch'
         }
-        winston.info("operation HTTPREQUEST: ", HTTPREQUEST);
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
         myrequest(
           HTTPREQUEST, async (err, resbody) => {
             if (err) {
               winston.error("err performing operation: ", err);
             } else {
-              winston.info("\n\nresbody operation: ", resbody);
+              winston.debug("\n\nresbody operation: ", resbody);
             }
           }
         )
@@ -303,13 +301,13 @@ router.post('/ops_update', async (req, res) => {
           },
           method: 'delete'
         }
-        winston.info("operation HTTPREQUEST: ", HTTPREQUEST);
+        winston.debug("operation HTTPREQUEST: ", HTTPREQUEST);
         myrequest(
           HTTPREQUEST, async (err, resbody) => {
             if (err) {
               winston.error("err performing operation: ", err);
             } else {
-              winston.info("\n\nresbody operation: ", resbody);
+              winston.debug("\n\nresbody operation: ", resbody);
             }
           }
         )
@@ -642,7 +640,7 @@ router.get('/', function (req, res, next) {
 
 async function myrequest(options, callback) {
 
-  console.log("myrequest options: ", options)
+  winston.debug("myrequest options: ", options)
   return await axios({
     url: options.url,
     method: options.method,
@@ -666,9 +664,6 @@ async function myrequest(options, callback) {
     }
   })
 }
-
-
-
 
 
 module.exports = router;
