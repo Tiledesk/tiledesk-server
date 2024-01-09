@@ -12,6 +12,8 @@ router.post('/', async (req, res) => {
     let usePublicKey = false;
     let publicKey = process.env.GPTKEY;
     let gptkey = null;
+    let obj = { createdAt: new Date() };
+    let quoteManager = req.app.get('quote_manager');
 
     KBSettings.findOne({ id_project: project_id }, async (err, kbSettings) => {
 
@@ -32,10 +34,7 @@ router.post('/', async (req, res) => {
         }
 
         if (usePublicKey === true) {
-            let obj = { createdAt: new Date() };
-            let quoteManager = req.app.get('quote_manager');
             let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
-
             if (isAvailable === false) {
                 return res.status(403).send("Tokens quota exceeded")
             }
