@@ -5,37 +5,43 @@ var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
 const { QuoteManager } = require('../services/QuoteManager');
 
-
 router.post('/', async (req, res) => {
 
     let project_id = req.projectid;
     let body = req.body;
+    let usePublicKey = false;
+    let publicKey = process.env.GPTKEY;
+    let gptkey = null;
 
-    let obj = { createdAt: new Date() };
+    KBSettings.findOne({ id_project: project_id }, async (err, kbSettings) => {
 
-    let quoteManager = req.app.get('quote_manager');
-    let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
-    console.log("GPT quote is Available for preview: ", isAvailable);
-
-    if (isAvailable === false) {
-        return res.status(403).send("Tokens quota exceeded")
-    }
-
-    KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
-        winston.debug("kbSettings: ", kbSettings);
-
-        if (!kbSettings) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter (settings not exist)" })
+        if (err) {
+            usePublicKey = true;
+            gptkey = publicKey;
         }
 
-        let gptkey = kbSettings.gptkey;
+        if (kbSettings && kbSettings.gptkey) {
+            gptkey = kbSettings.gptkey;
+        } else {
+            usePublicKey = true;
+            gptkey = publicKey;
+        }
 
         if (!gptkey) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter" })
+            return res.status(400).send({ success: false, message: "Missing gptkey parameter" });
+        }
+
+        if (usePublicKey === true) {
+            let obj = { createdAt: new Date() };
+            let quoteManager = req.app.get('quote_manager');
+            let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+
+            if (isAvailable === false) {
+                return res.status(403).send("Tokens quota exceeded")
+            }
         }
         
 
-        // attua modifiche
         let json = {
             "model": body.model,
             "messages": [
@@ -55,21 +61,18 @@ router.post('/', async (req, res) => {
             json.messages.unshift(message);
         }
 
-        openaiService.completions(json, gptkey).then( async (response) => {
-            // winston.debug("completions response: ", response);
+        openaiService.completions(json, gptkey).then(async (response) => {
             let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens }
-
-            let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
-            winston.verbose("Tokens quota incremented for key " + incremented_key);
-            console.log("Tokens quota incremented for key " + incremented_key);
-
+            if (usePublicKey === true) {
+                let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
+                winston.verbose("Tokens quota incremented for key " + incremented_key);
+            }
             res.status(200).send(response.data);
+
         }).catch((err) => {
-            console.log("err: ", err);
             // winston.error("completions error: ", err);
             res.status(500).send(err)
         })
-
     })
 })
 
