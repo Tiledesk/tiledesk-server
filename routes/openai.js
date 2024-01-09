@@ -64,14 +64,17 @@ router.post('/', async (req, res) => {
         }
 
         openaiService.completions(json, gptkey).then(async (response) => {
+            console.log("completion response: ", response)
             let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens }
             if (usePublicKey === true) {
                 let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
                 winston.verbose("Tokens quota incremented for key " + incremented_key);
+                console.log("Tokens quota incremented for key " + incremented_key);
             }
             res.status(200).send(response.data);
 
         }).catch((err) => {
+            console.error("completion error: ", err);
             // winston.error("completions error: ", err);
             res.status(500).send(err)
         })
