@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
         if (kbSettings && kbSettings.gptkey) {
             gptkey = kbSettings.gptkey;
         } else {
+            console.log("using the public gptkey")
             usePublicKey = true;
             gptkey = publicKey;
         }
@@ -41,6 +42,7 @@ router.post('/', async (req, res) => {
             }
         }
         
+        console.log("gptkey: ", gptkey)
 
         let json = {
             "model": body.model,
