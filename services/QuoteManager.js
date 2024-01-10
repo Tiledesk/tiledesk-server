@@ -12,12 +12,20 @@ const emailEvent = require('../event/emailEvent');
 //     CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, tokens: 100000 } // manage it --> get limit directly from project info
 // }
 
+// const PLANS_LIST = {
+//     FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 }, // same as PREMIUM
+//     SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       tokens: 10000 },
+//     BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      tokens: 50000 },
+//     PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 },
+//     CUSTOM:     { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 5000,     tokens: 1000000 }
+// }
+
 const PLANS_LIST = {
-    FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 }, // same as PREMIUM
-    SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       tokens: 10000 },
-    BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      tokens: 50000 },
-    PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 },
-    CUSTOM:     { users: 100,   requests: 10000,    chatbots: 100,  kbs: 100,   kb_pages: 1000,     tokens: 1000000 }
+    FREE_TRIAL: { requests: 3000, messages: 0, tokens: 250000, email: 200 }, // same as PREMIUM
+    SANDBOX: { requests: 200, messages: 0, tokens: 10000, email: 200 },
+    BASIC: { requests: 800, messages: 0, tokens: 50000, email: 200 },
+    PREMIUM: { requests: 3000, messages: 0, tokens: 250000, email: 200 },
+    CUSTOM: { requests: 3000, messages: 0, tokens: 1000000, email: 200 }
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens']
@@ -91,7 +99,7 @@ class QuoteManager {
             subscriptionDate = this.project.createdAt;
         }
         let objectDate = object.createdAt;
-        
+
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
         const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
@@ -138,7 +146,7 @@ class QuoteManager {
             };
         }
         return quotes;
-        
+
     }
 
     /**
@@ -150,6 +158,7 @@ class QuoteManager {
 
         this.project = project;
         let limits = await this.getPlanLimits();
+        console.log("limits for current plan: ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
 
         if (quote == null) {
@@ -181,8 +190,20 @@ class QuoteManager {
                     limits = PLANS_LIST.PREMIUM;
                     break;
                 case 'Custom':
-                    winston.info("get limits from project info")
                     limits = PLANS_LIST.CUSTOM;
+                    break;
+                case 'Sandbox':
+                    limits = PLANS_LIST.SANDBOX;
+                    break;
+                case 'Growth':
+                    limits = PLANS_LIST.BASIC
+                    break;
+                case 'Scale':
+                    limits = PLANS_LIST.PREMIUM
+                    break;
+                case 'Plus':
+                    limits = PLANS_LIST.CUSTOM
+                    break;
                 default:
                     limits = PLANS_LIST.FREE_TRIAL;
             }
@@ -214,7 +235,7 @@ class QuoteManager {
         });
 
         requestEvent.on('request.create.quote', async (payload) => {
-            winston.verbose("request.create.quote event catched"); 
+            winston.verbose("request.create.quote event catched");
             let result = await this.incrementRequestsCount(payload.project, payload.request);
             //console.log("request.create.simple event result: ", result);
             return result;
