@@ -254,6 +254,8 @@ class EmailService {
       return winston.warn("EmailService not sending email for testing");
     }
 
+    console.log("quoteEnabled: ", quoteEnabled);
+    console.log("Quote abilitate per EMAIL")
     if (quoteEnabled && quoteEnabled === true) {
       mail.createdAt = new Date();
       emailEvent.emit('email.send.before', mail);
@@ -317,6 +319,7 @@ class EmailService {
             project: project,
             email: mail
           }
+          console.log("Quote abilitate --> incrementa contatore per EMAIL")
 
           emailEvent.emit('email.send.quote', payload);
           winston.verbose("email.send.quote event emitted");
