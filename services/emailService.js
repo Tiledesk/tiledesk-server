@@ -244,7 +244,7 @@ class EmailService {
   //   return this.sendMail({to:to, subject:subject, html:html});
   // }
 
-  async send(mail, quoteEnabled, project) {
+  async send(mail, quoteEnabled, project, quoteManager) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -255,17 +255,17 @@ class EmailService {
     }
 
     let payload = { project: project }
-
     if (quoteEnabled && quoteEnabled === true) {
       mail.createdAt = new Date();
       payload.email = mail;
 
-      console.log("(Email quote) payload: ", JSON.stringify(payload));
-      let result = await emailEvent.emit('email.send.before', payload);
-      console.log("result returned: ", result);
-      if (result === false) {
-        console.log("non puoi mandare l'email");
-        return false;
+      if (quoteManager) {
+        let result = await quoteManager.checkQuote(project, mail, 'email');
+        if (result === false) {
+          // Stop
+          winston.verbose('Unable to send email - Quota exceeded')
+          return false;
+        }
       }
     }
 
@@ -1479,7 +1479,7 @@ class EmailService {
 
 
 
-  async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload, replyTo) {
+  async sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload, replyTo, quoteManager) {
 
     var that = this;
 
@@ -1561,8 +1561,6 @@ class EmailService {
 
     let email_enabled = true;
 
-    console.log("EMAIL project: ", project);
-
     that.send({
       from: from,
       to: to,
@@ -1571,7 +1569,7 @@ class EmailService {
       text: html,
       html: html,
       config: configEmail,
-    }, email_enabled, project);
+    }, email_enabled, project, quoteManager);
 
   }
 
