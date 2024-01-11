@@ -163,6 +163,27 @@ describe('QuoteManager', function () {
 
     })
 
+    it('sendEmailDirect', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+            projectService.create("test-send-email-direct", savedUser._id).then(function (savedProject) {
+                chai.request(server)
+                    .post('/' + savedProject._id + '/emails/internal/send')
+                    .auth(email, pwd)
+                    .send({ to: "giovanni.troisiub@gmail.com", text: "Hello", subject: "HelloSub", replyto: "giovanni.troisiub@gmail.com" })
+                    .end((err, res) => {
+                        console.log("email internal send err", err);
+                        console.log("email internal send res.body", res.body);
+                        done();
+                    });
+            });
+        });
+
+    })
+
     it('incrementTokensCount', (done) => {
 
         var email = "test-quote-" + Date.now() + "@email.com"; 
