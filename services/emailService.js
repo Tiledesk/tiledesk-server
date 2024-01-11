@@ -244,7 +244,7 @@ class EmailService {
   //   return this.sendMail({to:to, subject:subject, html:html});
   // }
 
-  send(mail, quoteEnabled, project) {
+  async send(mail, quoteEnabled, project) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -261,7 +261,7 @@ class EmailService {
       payload.email = mail;
 
       console.log("(Email quote) payload: ", JSON.stringify(payload));
-      let result = emailEvent.emit('email.send.before', payload);
+      let result = await emailEvent.emit('email.send.before', payload);
       console.log("result returned: ", result);
       if (result === false) {
         console.log("non puoi mandare l'email");
