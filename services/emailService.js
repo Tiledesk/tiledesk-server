@@ -260,8 +260,9 @@ class EmailService {
       mail.createdAt = new Date();
       payload.email = mail;
 
-      console.log("(Email quote) payload: ", payload);
+      console.log("(Email quote) payload: ", JSON.stringify(payload));
       let result = emailEvent.emit('email.send.before', payload);
+      console.log("result: ", result);
       if (result === false) {
         console.log("non puoi mandare l'email");
         return false;
