@@ -268,11 +268,13 @@ class QuoteManager {
         // EMAIL EVENTS - START
         emailEvent.on('email.send.before', async (payload) => {
             let result = await this.checkQuote(payload.project, payload.email, 'email');
+            console.log("emailEvent.on result: ", result);
             if (result == true) {
                 winston.info("Limit not reached - a message can be created")
             } else {
                 winston.info("Email limit reached for the current plan!")
             }
+            console.log("return result: ", result);
             return result;
         })
 

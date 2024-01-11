@@ -262,7 +262,7 @@ class EmailService {
 
       console.log("(Email quote) payload: ", JSON.stringify(payload));
       let result = emailEvent.emit('email.send.before', payload);
-      console.log("result: ", result);
+      console.log("result returned: ", result);
       if (result === false) {
         console.log("non puoi mandare l'email");
         return false;
