@@ -244,7 +244,7 @@ class EmailService {
   //   return this.sendMail({to:to, subject:subject, html:html});
   // }
 
-  send(mail, quoteEnabled, id_project) {
+  send(mail, quoteEnabled, project) {
 
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
@@ -254,11 +254,18 @@ class EmailService {
       return winston.warn("EmailService not sending email for testing");
     }
 
-    console.log("quoteEnabled: ", quoteEnabled);
-    console.log("Quote abilitate per EMAIL")
+    let payload = { project: project }
+
     if (quoteEnabled && quoteEnabled === true) {
       mail.createdAt = new Date();
-      emailEvent.emit('email.send.before', mail);
+      payload.email = mail;
+
+      console.log("(Email quote) payload: ", payload);
+      let result = emailEvent.emit('email.send.before', payload);
+      if (result === false) {
+        console.log("non puoi mandare l'email");
+        return false;
+      }
     }
 
 
@@ -299,31 +306,8 @@ class EmailService {
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
       if (quoteEnabled && quoteEnabled === true) {
-
-
-        let q = Project.findOne({ _id: id_project, status: 100 });
-        if (cacheEnabler.project) {
-          q.cache(cacheUtil.longTTL, "projects:id:" + id_project)  //project_cache
-          winston.debug('project cache enabled for /project detail');
-        }
-        q.exec(function (err, project) {
-          if (err) {
-            winston.error('Error getting project ', err);
-          }
-          if (!project) {
-            winston.warn('Project not found ');
-          }
-
-          //TODO REMOVE settings from project
-          let payload = {
-            project: project,
-            email: mail
-          }
-          console.log("Quote abilitate --> incrementa contatore per EMAIL")
-
-          emailEvent.emit('email.send.quote', payload);
-          winston.verbose("email.send.quote event emitted");
-        });
+        emailEvent.emit('email.send.quote', payload);
+        winston.verbose("email.send.quote event emitted");
       }
 
       if (mail.callback) {
@@ -1586,7 +1570,7 @@ class EmailService {
       text: html,
       html: html,
       config: configEmail,
-    }, email_enabled, project._id);
+    }, email_enabled, project);
 
   }
 

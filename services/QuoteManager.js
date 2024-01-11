@@ -21,11 +21,11 @@ const emailEvent = require('../event/emailEvent');
 // }
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 3000, messages: 0, tokens: 250000, email: 200 }, // same as PREMIUM
-    SANDBOX: { requests: 200, messages: 0, tokens: 10000, email: 200 },
-    BASIC: { requests: 800, messages: 0, tokens: 50000, email: 200 },
-    PREMIUM: { requests: 3000, messages: 0, tokens: 250000, email: 200 },
-    CUSTOM: { requests: 3000, messages: 0, tokens: 1000000, email: 200 }
+    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200 },
+    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200 },
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 },
+    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 }
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens']
@@ -266,8 +266,8 @@ class QuoteManager {
 
 
         // EMAIL EVENTS - START
-        emailEvent.on('email.send.before', async (email) => {
-            let result = await this.checkQuote(email, 'email');
+        emailEvent.on('email.send.before', async (payload) => {
+            let result = await this.checkQuote(payload.project, payload.email, 'email');
             if (result == true) {
                 winston.info("Limit not reached - a message can be created")
             } else {
