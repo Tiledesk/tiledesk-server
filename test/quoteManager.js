@@ -29,7 +29,7 @@ const { TdCache } = require('../utils/TdCache');
 tdCache = new TdCache({
     host: '127.0.0.1',
     port: '6379'
-  });
+});
 
 tdCache.connect();
 // var redis = require('redis')
@@ -111,13 +111,13 @@ describe('QuoteManager', function () {
 
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
-        
+
         let key_incremented = await quoteManager.incrementRequestsCount(mockProject, mockRequest);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 
         let final_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] final_quote: ", final_quote); }
-        
+
         expect(key_incremented).to.equal("quotes:requests:64e36f5dbf72263f7c059999:20/10/2023");
         expect(final_quote).to.equal(initial_quote + 1);
     })
@@ -130,7 +130,7 @@ describe('QuoteManager', function () {
 
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockMessage, 'messages');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
-        
+
         let key_incremented = await quoteManager.incrementMessagesCount(mockProject, mockMessage);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 
@@ -146,9 +146,12 @@ describe('QuoteManager', function () {
         let mockProject = projectMock.mockProjectSandboxPlan;
         let mockEmail = emailMock.emailMock;
 
+        let result = await quoteManager.checkQuote(mockProject, mockEmail, 'email');
+        console.log("checkQuote result: ", result)
+
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockEmail, 'email');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
-        
+
         let key_incremented = await quoteManager.incrementEmailCount(mockProject, mockEmail);
         if (log) { console.log("[Quote Test] key_incremented: ", key_incremented); }
 

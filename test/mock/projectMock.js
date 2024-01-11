@@ -9,28 +9,28 @@ const mockProjectUser = {
 }
 
 const mockProjectFreeTrialPlan = {
-    "_id": "64e36f5dbf72263f7c059999",
-    "status": 100,
-    "ipFilterEnabled": false,
-    "ipFilter": [],
-    "ipFilterDenyEnabled": false,
-    "ipFilterDeny": [],
-    "name": "mock-project",
-    "activeOperatingHours": false,
-    "createdBy": "64e36f5cbf72263f7c05ba36",
-    "profile": {
-      "name": "free",
-      "trialDays": 14,
-      "agents": 0,
-      "type": "free"
-    },
-    "versions": 20115,
-    "channels": [
-      {
-        "name": "chat21"
-      }
-    ],
-    "createdAt": new Date('2023-10-16T08:45:54.058Z')
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "free",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "free"
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-16T08:45:54.058Z')
 }
 
 const mockProjectSandboxPlan = {
@@ -137,4 +137,35 @@ const mockProjectCustomPlan = {
   "createdAt": new Date('2023-10-16T08:45:54.058Z')
 }
 
-module.exports = { mockProjectUser, mockProjectFreeTrialPlan, mockProjectSandboxPlan, mockProjectBasicPlan, mockProjectPremiumPlan, mockProjectCustomPlan };
+const mockOldProjecPlusPlan = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "profile": {
+    "name": "Plus",
+    "trialDays": 30,
+    "agents": 40,
+    "type": "payment",
+    "subStart": new Date('2023-10-20T08:45:54.058Z'),
+    "subEnd": new Date('2024-3-29T08:45:54.058Z'),
+    "subscriptionId": "sub_1MjKLHG7zhjGozkvDsXITiDf",
+    "last_stripe_event": "invoice.payment_succeeded"
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2023-10-18T08:45:54.058Z'),
+  "updatedAt": new Date('2023-10-20T08:45:54.058Z'),
+  "bannedUsers": [],
+  "ipFilterDeny": [],
+  "ipFilterDenyEnabled": false
+}
+
+module.exports = { mockProjectUser, mockProjectFreeTrialPlan, mockProjectSandboxPlan, mockProjectBasicPlan, mockProjectPremiumPlan, mockProjectCustomPlan, mockOldProjecPlusPlan };
