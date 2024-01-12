@@ -988,6 +988,10 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
         // delete from exclude map intent_id
         const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
+        if (faq_kb.attributes) {
+          delete faq_kb.attributes.globals;
+        }
+
         let json = {
           webhook_enabled: faq_kb.webhook_enabled,
           webhook_url: faq_kb.webhook_url,
@@ -1013,6 +1017,7 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
           //   return res.status(200).send(json);
           // }
           let json_string = JSON.stringify(json);
+          console.log("json_string: ", json_string)
           res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
           return res.send(json_string);
         }

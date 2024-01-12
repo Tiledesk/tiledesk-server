@@ -766,7 +766,7 @@ describe('FaqKBRoute', () => {
         })
 
 
-        it('export json', (done) => {
+        it('exportjson', (done) => {
 
 
             //   this.timeout();
@@ -795,28 +795,40 @@ describe('FaqKBRoute', () => {
                             }
 
                             chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
-                                    res.should.have.status(200);
-                                    res.body.should.be.an('array').that.is.not.empty;
-
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-                                            if (log) {
+                                    .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+                                        if (log) {
+                                            console.log("faq_list: ", res.body);
+                                        }
+                                        res.should.have.status(200);
+                                        res.body.should.be.an('array').that.is.not.empty;
+    
+                                        chai.request(server)
+                                            .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+                                                if (log) {
+                                                    console.log("export json res: ", res.body);
+                                                }
                                                 console.log("export json res: ", res.body);
-                                            }
-                                            res.should.have.status(200);
-                                            //res.body.should.be.a('string');
+                                                res.should.have.status(200);
+                                                //res.body.should.be.a('string');
+    
+                                                done();
+                                            })
+                                    })
 
-                                            done();
-                                        })
-                                })
+                            // chai.request(server)
+                            //     .patch('/' + savedProject._id + '/faq_kb/' + id_faq_kb + '/attributes')
+                            //     .auth(email, pwd)
+                            //     .send({ variables: { var1: "var1", var2: "var2" },  globals: [{ key: 'test', value: 'test]'}] })
+                            //     .end((err, res) => {
+                            //         console.log("res.body: ", res.body)
+
+                                    
+                            //     })
+
                         });
                 });
             });
