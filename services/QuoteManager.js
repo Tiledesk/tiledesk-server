@@ -165,7 +165,7 @@ class QuoteManager {
             return true;
         }
 
-        if (quote <= limits[type]) {
+        if (quote < limits[type]) {
             return true;
         } else {
             return false;
