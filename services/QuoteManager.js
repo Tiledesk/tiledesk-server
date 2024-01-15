@@ -230,14 +230,11 @@ class QuoteManager {
     start() {
         winston.verbose('QuoteManager start');
 
-        console.log("QUOTES_ENABLED: ", process.env.QUOTES_ENABLED);
-        
         if (process.env.QUOTES_ENABLED !== undefined) {
-            quotes_enabled = process.env.QUOTES_ENABLED;
-            console.log("QuoteManager *quotes_enabled: ", quotes_enabled)
-            console.log("QuoteManager *quotes_enabled: ", typeof quotes_enabled)
+            if (process.env.QUOTES_ENABLED === false || process.env.QUOTES_ENABLED === 'false') {
+                quotes_enabled = false;
+            }
         }
-        console.log("QuoteManager quotes_enabled: ", quotes_enabled)
 
         // TODO - Try to generalize to avoid repetition
         let incrementEventHandler = (object) => { }
