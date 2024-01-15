@@ -30,6 +30,8 @@ const PLANS_LIST = {
 
 const typesList = ['requests', 'messages', 'email', 'tokens']
 
+let quotes_enabled = true;
+
 class QuoteManager {
 
     constructor(config) {
@@ -83,6 +85,11 @@ class QuoteManager {
         this.project = project;
         let key = await this.generateKey(data, 'tokens');
         winston.info("[QuoteManager] incrementTokenCount key: " + key);
+
+        if (quotes_enabled === false) {
+            winston.debug("QUOTES DISABLED - incrementTokenCount")
+            return key;
+        }
 
         await this.tdCache.incrby(key, data.tokens);
         return key;
@@ -156,6 +163,11 @@ class QuoteManager {
      */
     async checkQuote(project, object, type) {
 
+        if (quotes_enabled === false) {
+            winston.debug("QUOTES DISABLED - checkQuote for type " + type);
+            return true;
+        }
+
         this.project = project;
         let limits = await this.getPlanLimits();
         console.log("limits for current plan: ", limits)
@@ -217,6 +229,10 @@ class QuoteManager {
 
     start() {
         winston.verbose('QuoteManager start');
+        
+        if (process.env.QUOTES_ENABLED !== undefined) {
+            quotes_enabled = process.env.QUOTES_ENABLED;
+        }
 
         // TODO - Try to generalize to avoid repetition
         let incrementEventHandler = (object) => { }
@@ -224,63 +240,71 @@ class QuoteManager {
 
 
         // REQUESTS EVENTS - START
-        requestEvent.on('request.create.quote.before', async (payload) => {
-            let result = await this.checkQuote(payload.project, payload.request, 'requests');
-            if (result == true) {
-                winston.info("Limit not reached - a request can be created")
-            } else {
-                winston.info("Requests limit reached for the current plan!")
-            }
-            return result;
-        });
+        // requestEvent.on('request.create.quote.before', async (payload) => {
+        //     let result = await this.checkQuote(payload.project, payload.request, 'requests');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a request can be created")
+        //     } else {
+        //         winston.info("Requests limit reached for the current plan!")
+        //     }
+        //     return result;
+        // });
 
         requestEvent.on('request.create.quote', async (payload) => {
-            winston.verbose("request.create.quote event catched");
-            let result = await this.incrementRequestsCount(payload.project, payload.request);
-            //console.log("request.create.simple event result: ", result);
-            return result;
+            if (quotes_enabled === true) {
+                winston.verbose("request.create.quote event catched");
+                let result = await this.incrementRequestsCount(payload.project, payload.request);
+                return result;
+            } else {
+                console.log("QUOTES DISABLED - request.create.quote event")
+                winston.debug("QUOTES DISABLED - request.create.quote event")
+            }
         })
         // REQUESTS EVENTS - END
 
 
         // MESSAGES EVENTS - START
-        messageEvent.on('message.create.quote.before', async (payload) => {
-            console.log("message.create.quote.before event fired");
-            let result = await this.checkQuote(payload.project, payload.message, 'messages');
-            if (result == true) {
-                winston.info("Limit not reached - a message can be created")
-            } else {
-                winston.info("Messages limit reached for the current plan!")
-            }
-            return result;
-        })
+        // messageEvent.on('message.create.quote.before', async (payload) => {
+        //     let result = await this.checkQuote(payload.project, payload.message, 'messages');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a message can be created")
+        //     } else {
+        //         winston.info("Messages limit reached for the current plan!")
+        //     }
+        //     return result;
+        // })
 
         messageEvent.on('message.create.quote', async (payload) => {
-            console.log("message.create.quote event fired");
-            winston.verbose("message.create.quote event catched");
-            let result = await this.incrementMessagesCount(payload.project, payload.message);
-            //console.log("message.create.simple event result: ", result);
-            return result;
+            if (quotes_enabled === true) {
+                winston.verbose("message.create.quote event catched");
+                let result = await this.incrementMessagesCount(payload.project, payload.message);
+                return result;
+            } else {
+                winston.debug("QUOTES DISABLED - message.create.quote event")
+            }
         })
         // MESSAGES EVENTS - END
 
 
         // EMAIL EVENTS - START - Warning! Can't be used for check quote
-        emailEvent.on('email.send.before', async (payload) => {
-            let result = await this.checkQuote(payload.project, payload.email, 'email');
-            if (result == true) {
-                winston.info("Limit not reached - a message can be created")
-            } else {
-                winston.info("Email limit reached for the current plan!")
-            }
-            return result;
-        })
+        // emailEvent.on('email.send.before', async (payload) => {
+        //     let result = await this.checkQuote(payload.project, payload.email, 'email');
+        //     if (result == true) {
+        //         winston.info("Limit not reached - a message can be created")
+        //     } else {
+        //         winston.info("Email limit reached for the current plan!")
+        //     }
+        //     return result;
+        // })
 
         emailEvent.on('email.send.quote', async (payload) => {
-            winston.info("email.send event catched");
-            let result = await this.incrementEmailCount(payload.project, payload.email);
-            //console.log("email.send event result: ", result);
-            return result;
+            if (quotes_enabled === true) {
+                winston.info("email.send event catched");
+                let result = await this.incrementEmailCount(payload.project, payload.email);
+                return result;
+            } else {
+                winston.debug("QUOTES DISABLED - email.send event")
+            }
         })
         // EMAIL EVENTS - END
     }
