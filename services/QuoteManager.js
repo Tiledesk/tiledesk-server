@@ -235,6 +235,7 @@ class QuoteManager {
         if (process.env.QUOTES_ENABLED !== undefined) {
             quotes_enabled = process.env.QUOTES_ENABLED;
             console.log("QuoteManager *quotes_enabled: ", quotes_enabled)
+            console.log("QuoteManager *quotes_enabled: ", typeof quotes_enabled)
         }
         console.log("QuoteManager quotes_enabled: ", quotes_enabled)
 
