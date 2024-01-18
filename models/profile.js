@@ -5,7 +5,7 @@ var winston = require('../config/winston');
 var ProfileSchema = new Schema({
   name: {
     type: String,
-    default: 'Sandbox',
+    default: 'free',
     index: true
   },
   trialDays: {
@@ -14,7 +14,7 @@ var ProfileSchema = new Schema({
   },
   agents: {
     type: Number,
-    default: 2 //??
+    default: 0 //??
   },
   type: {
     type: String,
