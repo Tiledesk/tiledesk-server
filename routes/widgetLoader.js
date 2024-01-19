@@ -34,7 +34,7 @@ router.get('/v5/:project_id', function(req, res) {
         var js, fjs=d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
         js=d.createElement(s); 
-        js.id=id; js.async=true; js.src="${widgetLocation}/launch.js";
+        js.id=id; js.async=true; js.src="${widgetLocation}launch.js";
         fjs.parentNode.insertBefore(js, fjs);
     }(document,'script','tiledesk-jssdk'));
   `;
