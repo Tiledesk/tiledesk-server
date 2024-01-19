@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.93
+- Updated messenger-connector to 0.1.15
+
 # 2.4.92
 - Updated messenger-connector to 0.1.14
 
