@@ -9,11 +9,31 @@ var KBSchema = new Schema({
   },
   url: {
     type: String,
-    required: true
+    required: false
+  },
+  source: {
+    type: String,
+    required: false
+  },
+  type: {
+    type: String,
+    required: false
+  },
+  content: {
+    type: String,
+    required: false
+  },
+  namespace: {
+    type: String,
+    required: false
   },
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   },
   status: {
     type: Number,
