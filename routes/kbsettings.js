@@ -142,6 +142,11 @@ router.post('/ask', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
 
+    let gptkey = process.env.GPTKEY;
+    if (!gptkey) {
+        return res.status(403).send({ success: false, error: "GPT apikey undefined"})
+    }
+
     openaiService.askNamespace(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
         res.status(200).send(resp.data);
