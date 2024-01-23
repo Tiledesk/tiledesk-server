@@ -74,7 +74,7 @@ class TrainingService {
                             }
                         })
     
-                        winston.debug("training json: \n", json);
+                        winston.info("training json: \n", json);
     
                         await axios({
                             url: training_api_url,
