@@ -58,7 +58,7 @@ class TrainingService {
                             json.webhook_url = process.env.API_URL || configGlobal.apiUrl + "/" + faq_kb.id_project + "/bots/" + faq_kb._id+"/training"
                         }
 
-                        let index = faqs.findIndex(f => f.prop2 === "start");
+                        let index = faqs.findIndex(f => f.intent_display_name === "start");
                         faqs.slice(index);
 
 
