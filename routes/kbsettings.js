@@ -127,6 +127,10 @@ router.post('/scrape/status', async (req, res) => {
     winston.debug("/checkstatus req.body: ", req.body);
 
     openaiService.scrapeStatus(data).then((response) => {
+        console.log("response: ", response);
+        if (response.data) {
+            console.log("response.data: ", response.data);
+        }
         // winston.debug("checkStatus resp: ", response);
         // winston.debug("checkStatus resp.data: ", response.data); 
         
