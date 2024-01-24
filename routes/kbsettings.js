@@ -202,7 +202,7 @@ router.post('/checkstatus', async (req, res) => {
     }
 
     openaiService.checkStatus(data).then((resp) => {
-        winston.debug("checkStatus resp: ", resp);
+        //winston.debug("checkStatus resp: ", resp);
         // winston.debug("checkStatus resp: ", resp.data);
         // winston.debug("checkStatus resp: ", resp.data[full_url]);
 
