@@ -124,23 +124,16 @@ router.post('/scrape/single', async (req, res) => {
 router.post('/scrape/status', async (req, res) => {
 
     let data = req.body;
-    winston.debug("/checkstatus req.body: ", req.body);
+    winston.debug("/scrapeStatus req.body: ", req.body);
 
     openaiService.scrapeStatus(data).then((response) => {
-        console.log("response: ", response);
-        if (response.data) {
-            console.log("response.data: ", response.data);
-        }
-        // winston.debug("checkStatus resp: ", response);
-        // winston.debug("checkStatus resp.data: ", response.data); 
-        
-        res.status(200).send(response);
+
+        winston.debug("scrapeStatus response.data: ", response.data);
+        res.status(200).send(response.data);
     }).catch((err) => {
-        console.log("checkstatus err: ", err)
-        //winston.error("checkstatus err: ", err);
-        res.status(400).send(err);
-        // let status = err.response.status;
-        // res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        winston.error("scrapeStatus err: ", err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
 
