@@ -127,8 +127,8 @@ router.post('/scrape/status', async (req, res) => {
     winston.debug("/checkstatus req.body: ", req.body);
 
     openaiService.scrapeStatus(data).then((response) => {
-        winston.debug("checkStatus resp: ", response);
-        winston.debug("checkStatus resp.data: ", response.data); 
+        // winston.debug("checkStatus resp: ", response);
+        // winston.debug("checkStatus resp.data: ", response.data); 
         
         res.status(200).send(response);
     }).catch((err) => {
@@ -193,7 +193,7 @@ router.post('/startscrape', async (req, res) => {
 
 router.post('/checkstatus', async (req, res) => {
 
-    // let data = req.body;
+    //let data = req.body;
     winston.debug("/checkstatus req.body: ", req.body);
 
     let full_url = req.body.full_url;
@@ -202,31 +202,31 @@ router.post('/checkstatus', async (req, res) => {
     }
 
     openaiService.checkStatus(data).then((resp) => {
-        //winston.debug("checkStatus resp: ", resp);
-        // winston.debug("checkStatus resp: ", resp.data);
-        // winston.debug("checkStatus resp: ", resp.data[full_url]);
+        winston.debug("checkStatus resp: ", resp);
+        winston.debug("checkStatus resp: ", resp.data);
+        winston.debug("checkStatus resp: ", resp.data[full_url]);
 
-        // let response = resp.data[full_url];
+        let response = resp.data[full_url];
 
-        // let return_data = {
-        //     status_message: response.status_message
-        // }
+        let return_data = {
+            status_message: response.status_message
+        }
 
-        // if (response.status_code === 3) {
-        //     return_data.status_code = 2;
-        // }
+        if (response.status_code === 3) {
+            return_data.status_code = 2;
+        }
 
-        // if (response.status_code === 1 || response.status_code === 2 ) {
-        //     return_data.status_code = 1;
-        // }
+        if (response.status_code === 1 || response.status_code === 2 ) {
+            return_data.status_code = 1;
+        }
 
-        // if (response.status_code === 0) {
-        //     return_data.status_code = 0;
-        // }
+        if (response.status_code === 0) {
+            return_data.status_code = 0;
+        }
 
-        // if (!response.status_code) {
-        //     return_data.status_code = 0;
-        // }
+        if (!response.status_code) {
+            return_data.status_code = 0;
+        }
 
         
         res.status(200).send(resp);
