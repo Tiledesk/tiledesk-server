@@ -202,34 +202,34 @@ router.post('/checkstatus', async (req, res) => {
     }
 
     openaiService.checkStatus(data).then((resp) => {
-        winston.debug("checkStatus resp: ", resp.data);
-        winston.debug("checkStatus resp: ", resp.data);
-        winston.debug("checkStatus resp: ", resp.data[full_url]);
+        winston.debug("checkStatus resp: ", resp);
+        // winston.debug("checkStatus resp: ", resp.data);
+        // winston.debug("checkStatus resp: ", resp.data[full_url]);
 
-        let response = resp.data[full_url];
+        // let response = resp.data[full_url];
 
-        let return_data = {
-            status_message: response.status_message
-        }
+        // let return_data = {
+        //     status_message: response.status_message
+        // }
 
-        if (response.status_code === 3) {
-            return_data.status_code = 2;
-        }
+        // if (response.status_code === 3) {
+        //     return_data.status_code = 2;
+        // }
 
-        if (response.status_code === 1 || response.status_code === 2 ) {
-            return_data.status_code = 1;
-        }
+        // if (response.status_code === 1 || response.status_code === 2 ) {
+        //     return_data.status_code = 1;
+        // }
 
-        if (response.status_code === 0) {
-            return_data.status_code = 0;
-        }
+        // if (response.status_code === 0) {
+        //     return_data.status_code = 0;
+        // }
 
-        if (!response.status_code) {
-            return_data.status_code = 0;
-        }
+        // if (!response.status_code) {
+        //     return_data.status_code = 0;
+        // }
 
         
-        res.status(200).send(return_data);
+        res.status(200).send(resp);
     }).catch((err) => {
         winston.error("checkstatus err: ", err);
         let status = err.response.status;
