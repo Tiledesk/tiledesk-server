@@ -1,5 +1,6 @@
 var express = require('express');
-var KBSettings = require('../models/kb_setting');
+var { KBSettings } = require('../models/kb_setting');
+var { KB } = require('../models/kb_setting');
 // var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
@@ -250,14 +251,14 @@ router.post('/:settings_id', async (req, res) => {
             return res.status(500).send({ success: false, error: err});
         } else {
 
-            let new_kb = {
+            let new_kb = new KB({
                 name: body.name,
                 url: body.url,
                 source: body.source,
                 type: body.type,
                 content: body.content,
                 namespace: body.namespace
-            }
+            })
             settings.kbs.push(new_kb);
 
             KBSettings.findByIdAndUpdate( settings_id, settings, { new: true }, (err, savedSettings) => {
@@ -265,7 +266,7 @@ router.post('/:settings_id', async (req, res) => {
                     winston.err("findByIdAndUpdate error: ", err);
                     res.status(500).send({ success: false, error: err });
                 } else {
-                    res.status(200).send(savedSettings);
+                    res.status(200).send(new_kb);
                 }
             })
         }
