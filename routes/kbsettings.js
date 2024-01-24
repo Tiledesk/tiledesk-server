@@ -132,7 +132,8 @@ router.post('/scrape/status', async (req, res) => {
         
         res.status(200).send(response);
     }).catch((err) => {
-        winston.error("checkstatus err: ", err);
+        console.log("checkstatus err: ", err)
+        //winston.error("checkstatus err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
