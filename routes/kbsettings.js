@@ -123,7 +123,7 @@ router.post('/scrape/single', async (req, res) => {
 
 router.post('/scrape/status', async (req, res) => {
 
-    // let data = req.body;
+    let data = req.body;
     winston.debug("/checkstatus req.body: ", req.body);
 
     openaiService.scrapeStatus(data).then((response) => {
