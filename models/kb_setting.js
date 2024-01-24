@@ -64,5 +64,12 @@ var KBSettingSchema = new Schema({
 });
 
 
-module.exports = mongoose.model('KBSettings', KBSettingSchema);
-// module.exports = mongoose.model('KB', KBSchema)
+//module.exports = mongoose.model('KBSettings', KBSettingSchema);
+const KBSettings = mongoose.model('KBSettings', KBSettingSchema);
+const KB = mongoose.model('KB', KBSchema)
+
+module.exports = {
+  KBSettings: KBSettings,
+  KB: KB
+}
+
