@@ -648,6 +648,10 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
     return res.status(500).send({ success: false, message: "Unable to get chatbot" });
   }
 
+  if (chatbot.attributes) {
+    delete chatbot.attributes.globals
+  }
+
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
 
