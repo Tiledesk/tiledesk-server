@@ -639,6 +639,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 
   let globals = req.query.globals;
   winston.debug("export globals " + globals);
+  console.log("export globals? --> globals ", globals);
 
   let token = req.headers.authorization;
 
@@ -979,6 +980,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 router.get('/exportjson/:id_faq_kb', (req, res) => {
 
   winston.debug("exporting bot...")
+  console.log("exportjson req.query.globals: ", req.query.globals);
 
 
   let id_faq_kb = req.params.id_faq_kb;
@@ -996,9 +998,12 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
         const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
         if (!req.query.globals) {
+          console.log("Delete globals from attributes!")
           if (faq_kb.attributes) {
             delete faq_kb.attributes.globals;
           }
+        } else {
+          console.log("Keep globals")
         }
 
         let json = {
