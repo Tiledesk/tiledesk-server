@@ -91,6 +91,11 @@ router.put('/:kb_id', async (req, res) => {
             winston.error("KB findByIdAndUpdate error: ", err);
             return res.status(500).send({ success: false, error: err });
         } 
+        
+        if (!savedKb) {
+            winston.debug("Try to updating a non-existing kb");
+            return res.status(400).send({ success: false, message: "Content not found"})
+        }
 
         res.status(200).send(savedKb)
     })
@@ -99,7 +104,7 @@ router.put('/:kb_id', async (req, res) => {
 
 router.delete('/:kb_id', async (req, res) => {
 
-    let project_id = req.query.projectid;
+    let project_id = req.projectid;
     let kb_id = req.params.kb_id;
     winston.verbose("delete kb_id " + kb_id);
 
