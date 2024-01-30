@@ -39,6 +39,7 @@ router.get('/:kb_id', async (req, res) => {
 router.post('/', async (req, res) => {
 
     let project_id = req.projectid;
+    let body = req.body;
 
     let new_kb = new KB({
         id_project: project_id,
