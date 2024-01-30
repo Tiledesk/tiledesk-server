@@ -156,7 +156,6 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
-        console.log("err: ", err);
         reject(err);
       })
 
@@ -164,6 +163,45 @@ class OpenaiService {
   }
 
 
+  deleteIndex(data) {
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint + "/delete/id",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: data,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody);
+      }).catch((err) => {
+        reject(err);
+      })
+    })
+  }
+
+  deleteNamespace(data) {
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint + "/delete/namespace",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: data,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody);
+      }).catch((err) => {
+        reject(err);
+      })
+    })
+  }
 
 
 }
