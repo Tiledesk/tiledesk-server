@@ -102,41 +102,6 @@ router.put('/:kb_id', async (req, res) => {
 
 })
 
-router.delete('/:kb_id', async (req, res) => {
-
-    let project_id = req.projectid;
-    let kb_id = req.params.kb_id;
-    winston.verbose("delete kb_id " + kb_id);
-
-    let data = {
-        id: kb_id,
-        namespace: project_id
-    }
-
-    openaiService.deleteIndex(data).then((resp) => {
-        winston.debug("delete resp: ", resp.data);
-
-        if (resp.success === true) {
-            KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
-        
-                if (err) {
-                    winston.error("Delete kb error: ", err);
-                    return res.status(500).send({ success: false, error: err });
-                }
-                res.status(200).send(deletedKb);
-            })
-
-        } else {
-            return res.status(500).send({ success: false, error: "Unable to delete the content"})
-        }
-
-    }).catch((err) => {
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
-    })
-
-})
-
 
 // PROXY PUGLIA AI V2 - START
 router.post('/scrape/single', async (req, res) => {
@@ -263,6 +228,42 @@ router.delete('/deleteall', async (req, res) => {
     })
 })
 // PROXY PUGLIA AI V2 - END
+
+router.delete('/:kb_id', async (req, res) => {
+
+    let project_id = req.projectid;
+    let kb_id = req.params.kb_id;
+    winston.verbose("delete kb_id " + kb_id);
+
+    let data = {
+        id: kb_id,
+        namespace: project_id
+    }
+
+    openaiService.deleteIndex(data).then((resp) => {
+        winston.debug("delete resp: ", resp.data);
+
+        if (resp.success === true) {
+            KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
+        
+                if (err) {
+                    winston.error("Delete kb error: ", err);
+                    return res.status(500).send({ success: false, error: err });
+                }
+                res.status(200).send(deletedKb);
+            })
+
+        } else {
+            winston.info("resp.data: ", resp.data);
+            return res.status(500).send({ success: false, error: "Unable to delete the content"})
+        }
+
+    }).catch((err) => {
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+    })
+
+})
 
 
 module.exports = router;
