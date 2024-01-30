@@ -3,6 +3,10 @@ var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
 var KBSchema = new Schema({
+  id_project: {
+    type: String,
+    required: true,
+  },
   name: {
     type: String,
     required: true
