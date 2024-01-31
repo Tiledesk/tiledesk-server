@@ -1,7 +1,5 @@
 var express = require('express');
-var { KBSettings } = require('../models/kb_setting');
 var { KB } = require('../models/kb_setting');
-// var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
 const openaiService = require('../services/openaiService');
@@ -116,13 +114,17 @@ router.post('/scrape/single', async (req, res) => {
 
     data.gptkey = gptkey;
     
-    openaiService.singleScrape(data).then((resp) => {
+    openaiService.singleScrape(data).then( async (resp) => {
         winston.debug("singleScrape resp: ", resp.data);
+
+        let status_updated = await updateStatus(data.id, 0);
+        winston.verbose("status of kb " +  data.id + " updated: " + status_updated);
         return res.status(200).send(resp.data);
+
     }).catch((err) => {
         winston.error("singleScrape err: ", err);
         let status = err.response.status;
-        return res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        return res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail, error: err.response.data.detail });
     })
 })
 
@@ -243,7 +245,7 @@ router.delete('/:kb_id', async (req, res) => {
     openaiService.deleteIndex(data).then((resp) => {
         winston.debug("delete resp: ", resp.data);
 
-        if (resp.success === true) {
+        if (resp.data.success === true) {
             KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
         
                 if (err) {
@@ -255,7 +257,19 @@ router.delete('/:kb_id', async (req, res) => {
 
         } else {
             winston.info("resp.data: ", resp.data);
-            return res.status(500).send({ success: false, error: "Unable to delete the content"})
+
+            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4]} }, (err, deletedKb) => {
+                if (err) {
+                    winston.error("findOneAndDelete err: ", err);
+                    return res.status(500).send({ success: false, error: "Unable to delete the content due to an error"})
+                } 
+                else if (!deletedKb) {
+                    winston.verbose("Unable to delete the content in indexing status")
+                    return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status"})
+                } else {
+                    res.status(200).send(deletedKb);
+                }
+            })
         }
 
     }).catch((err) => {
@@ -265,5 +279,18 @@ router.delete('/:kb_id', async (req, res) => {
 
 })
 
+async function updateStatus(id, status) {
+    return new Promise((resolve) => {
+
+        KB.findByIdAndUpdate(id, { status: status }, (err, updatedKb) => {
+            if (err) {
+                resolve(false)
+            } else {
+                winston.debug("updatedKb: ", updatedKb)
+                resolve(true);
+            }
+        })
+    })
+}
 
 module.exports = router;
