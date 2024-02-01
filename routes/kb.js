@@ -55,26 +55,24 @@ router.post('/', async (req, res) => {
     }
     winston.debug("adding kb: ", new_kb);
 
-    if (new_kb.type === 'url') {
 
-        KB.findOneAndUpdate({ type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
-            if (err) {
-                winston.error("findOneAndUpdate with upsert error: ", err);
-                res.status(500).send({ success: false, error: err });
-            }
-            else {
+    KB.findOneAndUpdate({ type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
+        if (err) {
+            winston.error("findOneAndUpdate with upsert error: ", err);
+            res.status(500).send({ success: false, error: err });
+        }
+        else {
 
-                res.status(200).send(raw);
+            res.status(200).send(raw);
 
-                startScrape(raw.value).then((response) => {
-                    winston.verbose("startScrape response: ", response);
-                }).catch((err) => {
-                    winston.error("startScrape err: ", err);
-                })
+            startScrape(raw.value).then((response) => {
+                winston.verbose("startScrape response: ", response);
+            }).catch((err) => {
+                winston.error("startScrape err: ", err);
+            })
 
-            }
-        })
-    }
+        }
+    })
 
 })
 
