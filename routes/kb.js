@@ -65,7 +65,15 @@ router.post('/', async (req, res) => {
 
             res.status(200).send(raw);
 
-            startScrape(raw.value).then((response) => {
+            let json = {
+                id: raw.value._id,
+                type: raw.value.type,
+                source: raw.value.source,
+                content: raw.value.content,
+                namespace: raw.value.namespace
+            }
+
+            startScrape(json).then((response) => {
                 winston.verbose("startScrape response: ", response);
             }).catch((err) => {
                 winston.error("startScrape err: ", err);
