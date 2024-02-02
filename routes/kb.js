@@ -203,7 +203,7 @@ router.post('/scrape/status', async (req, res) => {
     }).catch((err) => {
         winston.error("scrapeStatus err: ", err);
         let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(status).send({ statusText: err.response.statusText, error: err.response.data.detail });
     })
 })
 
@@ -225,7 +225,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(status).send({ success: false,  statusText: err.response.statusText, error: err.response.data.detail });
     })
 })
 
@@ -240,7 +240,7 @@ router.delete('/delete', async (req, res) => {
     }).catch((err) => {
         winston.error("delete err: ", err);
         let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(status).send({ statusText: err.response.statusText, error: err.response.data.detail });
     })
 
 })
@@ -256,7 +256,7 @@ router.delete('/deleteall', async (req, res) => {
     }).catch((err) => {
         winston.error("delete namespace err: ", err);
         let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(status).send({ statusText: err.response.statusText, error: err.response.data.detail });
     })
 })
 // PROXY PUGLIA AI V2 - END
@@ -304,7 +304,7 @@ router.delete('/:kb_id', async (req, res) => {
 
     }).catch((err) => {
         let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
     })
 
 })
