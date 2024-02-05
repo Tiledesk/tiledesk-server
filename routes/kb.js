@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
     winston.debug("adding kb: ", new_kb);
 
 
-    KB.findOneAndUpdate({ type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
+    KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
         if (err) {
             winston.error("findOneAndUpdate with upsert error: ", err);
             res.status(500).send({ success: false, error: err });
