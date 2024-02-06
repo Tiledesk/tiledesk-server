@@ -296,12 +296,14 @@ router.post('/signinWithCustomToken', [
 
            var newUser;
            try {
-            newUser = await userService.signup(req.user.email, uuidv4(), req.user.firstname, req.user.lastname, false);
+
+            // Bug with email in camelcase
+            newUser = await userService.signup(req.user.email.toLowerCase(), uuidv4(), req.user.firstname, req.user.lastname, false);
            } catch(e) {
             winston.debug('error signup already exists??: ')
 
             if (e.code = "E11000") {
-              newUser = await User.findOne({email: req.user.email , status: 100}).exec();
+              newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
 
             } 
@@ -373,7 +375,11 @@ router.post('/signinWithCustomToken', [
                 
               }
 
-              return res.json({ success: true, token: 'JWT ' + returnToken, user: userToReturn });
+              if (returnToken.indexOf("JWT")==0) {
+                returnToken = "JWT " + returnToken;
+              }
+
+              return res.json({ success: true, token: returnToken, user: userToReturn });
           });
         } else {
           winston.debug('project user already exists ');
@@ -381,7 +387,7 @@ router.post('/signinWithCustomToken', [
           if (project_user.status==="active") {
 
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
-              let userFromDB = await User.findOne({email: req.user.email , status: 100}).exec();
+              let userFromDB = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
 
               var signOptions = {         
                 issuer:  'https://tiledesk.com',   
@@ -402,7 +408,10 @@ router.post('/signinWithCustomToken', [
               let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
-              return res.json({ success: true, token: "JWT " + returnToken, user: userFromDB });
+              if (returnToken.indexOf("JWT")==0) {
+                returnToken = "JWT " + returnToken;
+              }
+              return res.json({ success: true, token: returnToken, user: userFromDB });
               // return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
               
 
