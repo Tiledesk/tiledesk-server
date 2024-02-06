@@ -12,7 +12,7 @@ class ChatbotService {
     winston.debug("[CHATBOT SERVICE] fork");
 
     return await axios({
-      url: api_url + '/' + project_id + '/faq_kb/fork/'+id_faq_kb+"?projectid="+project_id+"&public=false",
+      url: api_url + '/' + project_id + '/faq_kb/fork/'+id_faq_kb+"?projectid="+project_id+"&public=false&globals=true",
       headers: {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -29,15 +29,16 @@ class ChatbotService {
 
   }
 
-  async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id) {
+  async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id, globals) {
 
     winston.debug("[CHATBOT SERVICE] getBotById");
+    console.log("getBotById globals: ", globals);
 
     // private bot
     if (published == "false") {
 
       return await axios({
-        url: api_url + "/" + project_id + "/faq_kb/exportjson/" + id_faq_kb,
+        url: api_url + "/" + project_id + "/faq_kb/exportjson/" + id_faq_kb + "?globals=" + globals,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token

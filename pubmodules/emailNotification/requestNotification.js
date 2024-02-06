@@ -23,7 +23,9 @@ var config = require('../../config/database');
 var configGlobal = require('../../config/global');
 
 var widgetConfig = require('../../config/widget');
-var widgetTestLocation = process.env.WIDGET_TEST_LOCATION || widgetConfig.testLocation;
+var widgetTestLocation = process.env.WIDGET_LOCATION || widgetConfig.testLocation;
+widgetTestLocation = widgetTestLocation + "assets/twp/index.html";
+
 
 
 let configSecret = process.env.GLOBAL_SECRET || config.secret;

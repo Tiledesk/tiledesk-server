@@ -766,7 +766,7 @@ describe('FaqKBRoute', () => {
         })
 
 
-        it('export json', (done) => {
+        it('exportjson', (done) => {
 
 
             //   this.timeout();
@@ -795,28 +795,40 @@ describe('FaqKBRoute', () => {
                             }
 
                             chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
-                                    res.should.have.status(200);
-                                    res.body.should.be.an('array').that.is.not.empty;
-
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-                                            if (log) {
+                                    .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+                                        if (log) {
+                                            console.log("faq_list: ", res.body);
+                                        }
+                                        res.should.have.status(200);
+                                        res.body.should.be.an('array').that.is.not.empty;
+    
+                                        chai.request(server)
+                                            .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+                                                if (log) {
+                                                    console.log("export json res: ", res.body);
+                                                }
                                                 console.log("export json res: ", res.body);
-                                            }
-                                            res.should.have.status(200);
-                                            //res.body.should.be.a('string');
+                                                res.should.have.status(200);
+                                                //res.body.should.be.a('string');
+    
+                                                done();
+                                            })
+                                    })
 
-                                            done();
-                                        })
-                                })
+                            // chai.request(server)
+                            //     .patch('/' + savedProject._id + '/faq_kb/' + id_faq_kb + '/attributes')
+                            //     .auth(email, pwd)
+                            //     .send({ variables: { var1: "var1", var2: "var2" },  globals: [{ key: 'test', value: 'test]'}] })
+                            //     .end((err, res) => {
+                            //         console.log("res.body: ", res.body)
+
+                                    
+                            //     })
+
                         });
                 });
             });
@@ -934,6 +946,70 @@ describe('FaqKBRoute', () => {
                 });
             });
         }).timeout(20000);
+
+        // it('publishChatbot', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(function (savedUser) {
+        //         projectService.create("current-project", savedUser._id).then(function (currentProject) {
+                    
+        //             console.log("declare chatbot_service functions...")
+
+        //             class chatbot_service {
+        //                 async fork(id, api_url, token, project_id) {
+        //                     console.log("chatbot_service test fork called")
+        //                     return { message: "Chatbot forked successfully", bot_id: savedChatbot._id }
+        //                     //return chatbot_mock.existing_chatbot_mock;
+        //                 }
+
+        //                 async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id, globals) {
+        //                     return chatbot_mock.existing_chatbot_mock;
+        //                 }
+
+        //                 async createBot(api_url, token, chatbot, project_id) {
+        //                     return chatbot_mock.empty_chatbot_mock
+        //                 }
+
+        //                 async importFaqs(api_url, id_faq_kb, token, chatbot, project_id) {
+        //                     return chatbot_mock.import_faqs_res_mock
+        //                 }
+        //             }
+
+        //             server.set('chatbot_service', new chatbot_service());
+        //             console.log("chatbot_service functions declared")
+
+        //             chai.request(server)
+        //                     .post('/' + currentProject._id + '/faq_kb')
+        //                     .auth(email, pwd)
+        //                     .send({ "name": "privateBot", type: "internal", language: 'en', public: "false", template: "blank" })
+        //                     .end((err, res) => {
+        //                         console.log("res.body: ", res.body);
+        //                         if (log) {
+        //                         }
+        //                         res.should.have.status(200);
+        //                         res.body.should.be.a('object');
+        //                         expect(res.body.name).to.equal("privateBot");
+        //                         expect(res.body.language).to.equal("en");
+        //                         let id_faq_kb = res.body._id;
+
+        //                         chai.request(server)
+        //                         .put('/' + currentProject._id + '/faq_kb/' +  id_faq_kb + '/publish')
+        //                         .auth(email, pwd)
+        //                         .set('Content-Type', 'application/json')
+        //                         .end((err, res) => {
+        //                             console.log("publish bot res.body: ", res.body);
+        //                             res.should.have.status(200);
+
+        //                             done();
+        //                         })
+        //                     })
+
+
+        //         })
+        //     })
+        // })
 
 
     });
