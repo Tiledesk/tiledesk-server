@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var KBSettings = require('../models/kb_setting');
+var { KBSettings } = require('../models/kb_setting');
 var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
 

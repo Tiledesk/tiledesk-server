@@ -1,5 +1,6 @@
 var express = require('express');
-var KBSettings = require('../models/kb_setting');
+var { KBSettings } = require('../models/kb_setting');
+var { KB } = require('../models/kb_setting');
 // var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
@@ -98,11 +99,75 @@ router.delete('/:settings_id/:kb_id', async (req, res) => {
 
 })
 
+// PROXY PUGLIA AI V2 - START
+router.post('/scrape/single', async (req, res) => {
+
+    let data = req.body;
+    winston.debug("/scrape/single data: ", data);
+
+    let gptkey = process.env.GPTKEY;
+    if (!gptkey) {
+        return res.status(403).send({ success: false, error: "GPT apikey undefined"})
+    }
+
+    data.gptkey = gptkey;
+    
+    openaiService.singleScrape(data).then((resp) => {
+        winston.debug("singleScrape resp: ", resp.data);
+        return res.status(200).send(resp.data);
+    }).catch((err) => {
+        winston.error("singleScrape err: ", err);
+        let status = err.response.status;
+        return res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+    })
+})
+
+router.post('/scrape/status', async (req, res) => {
+
+    let data = req.body;
+    winston.debug("/scrapeStatus req.body: ", req.body);
+
+    openaiService.scrapeStatus(data).then((response) => {
+
+        winston.debug("scrapeStatus response.data: ", response.data);
+        res.status(200).send(response.data);
+    }).catch((err) => {
+        winston.error("scrapeStatus err: ", err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+    })
+})
+
+router.post('/ask', async (req, res) => {
+    let data = req.body;
+    winston.debug("/qa data: ", data);
+
+    if (!data.gptkey) {
+        let gptkey = process.env.GPTKEY;
+        if (!gptkey) {
+            return res.status(403).send({ success: false, error: "GPT apikey undefined"})
+        }
+        data.gptkey = gptkey;
+    }
+
+    openaiService.askNamespace(data).then((resp) => {
+        winston.debug("qa resp: ", resp.data);
+        res.status(200).send(resp.data);
+    }).catch((err) => {
+        winston.error("qa err: ", err);
+        let status = err.response.status;
+        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+    })
+})
+
+// PROXY PUGLIA AI V2 - END
+
 
 // PROXY PUGLIA AI - START
 router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
+    winston.info("/qa data: ", data);
 
     openaiService.ask(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
@@ -110,6 +175,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         let status = err.response.status;
+        winston.info("status on error: ", status)
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
@@ -132,7 +198,7 @@ router.post('/startscrape', async (req, res) => {
 
 router.post('/checkstatus', async (req, res) => {
 
-    // let data = req.body;
+    //let data = req.body;
     winston.debug("/checkstatus req.body: ", req.body);
 
     let full_url = req.body.full_url;
@@ -141,7 +207,7 @@ router.post('/checkstatus', async (req, res) => {
     }
 
     openaiService.checkStatus(data).then((resp) => {
-        winston.debug("checkStatus resp: ", resp.data);
+        winston.debug("checkStatus resp: ", resp);
         winston.debug("checkStatus resp: ", resp.data);
         winston.debug("checkStatus resp: ", resp.data[full_url]);
 
@@ -168,7 +234,7 @@ router.post('/checkstatus', async (req, res) => {
         }
 
         
-        res.status(200).send(return_data);
+        res.status(200).send(resp);
     }).catch((err) => {
         winston.error("checkstatus err: ", err);
         let status = err.response.status;
@@ -188,10 +254,14 @@ router.post('/:settings_id', async (req, res) => {
             return res.status(500).send({ success: false, error: err});
         } else {
 
-            let new_kb = {
+            let new_kb = new KB({
                 name: body.name,
-                url: body.url
-            }
+                url: body.url,
+                source: body.source,
+                type: body.type,
+                content: body.content,
+                namespace: body.namespace
+            })
             settings.kbs.push(new_kb);
 
             KBSettings.findByIdAndUpdate( settings_id, settings, { new: true }, (err, savedSettings) => {
@@ -199,7 +269,7 @@ router.post('/:settings_id', async (req, res) => {
                     winston.err("findByIdAndUpdate error: ", err);
                     res.status(500).send({ success: false, error: err });
                 } else {
-                    res.status(200).send(savedSettings);
+                    res.status(200).send(new_kb);
                 }
             })
         }
