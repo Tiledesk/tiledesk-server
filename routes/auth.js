@@ -375,7 +375,11 @@ router.post('/signinWithCustomToken', [
                 
               }
 
-              return res.json({ success: true, token: 'JWT ' + returnToken, user: userToReturn });
+              if (returnToken.indexOf("JWT")==0) {
+                returnToken = "JWT " + returnToken;
+              }
+
+              return res.json({ success: true, token: returnToken, user: userToReturn });
           });
         } else {
           winston.debug('project user already exists ');
@@ -404,7 +408,10 @@ router.post('/signinWithCustomToken', [
               let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
-              return res.json({ success: true, token: "JWT " + returnToken, user: userFromDB });
+              if (returnToken.indexOf("JWT")==0) {
+                returnToken = "JWT " + returnToken;
+              }
+              return res.json({ success: true, token: returnToken, user: userFromDB });
               // return res.json({ success: true, token: req.headers["authorization"], user: userFromDB });
               
 
