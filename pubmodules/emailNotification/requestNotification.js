@@ -116,6 +116,7 @@ listen() {
             // send an email only if offline and has an email (send also to followers)
             return that.sendUserEmail(message.id_project, message);
           } else { //send email  to followers
+            winston.debug("send direct email****");
 
             that.sendToFollower(message.id_project, message);
 
