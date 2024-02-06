@@ -69,8 +69,12 @@ router.post('/', async (req, res) => {
                 id: raw.value._id,
                 type: raw.value.type,
                 source: raw.value.source,
-                content: raw.value.content,
+                content: "",
                 namespace: raw.value.namespace
+            }
+
+            if (raw.value.content) {
+                json.content = raw.value.content;
             }
 
             startScrape(json).then((response) => {
