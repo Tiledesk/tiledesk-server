@@ -171,7 +171,7 @@ router.post('/checkstatus', async (req, res) => {
         
         res.status(200).send(resp);
     }).catch((err) => {
-        console.log("checkstatus err: ", err)
+        // console.log("checkstatus err: ", err)
         //winston.error("checkstatus err: ", err);
         // let status = err.response.status;
         // res.status(500).send({ statusText: err.response.statusText, detail: err.response.data.detail });
