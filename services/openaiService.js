@@ -50,6 +50,7 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
+        console.log("checkStatus err: ", err)
         reject(err);
       })
 

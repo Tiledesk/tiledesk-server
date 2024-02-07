@@ -172,8 +172,8 @@ router.post('/checkstatus', async (req, res) => {
         res.status(200).send(resp);
     }).catch((err) => {
         //winston.error("checkstatus err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        // let status = err.response.status;
+        res.status(500).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
 })
 // PROXY PUGLIA AI - END
