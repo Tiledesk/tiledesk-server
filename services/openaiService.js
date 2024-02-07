@@ -162,7 +162,6 @@ class OpenaiService {
     })
   }
 
-
   deleteIndex(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 

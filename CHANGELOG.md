@@ -5,8 +5,20 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.4.93
-- Updated messenger-connector to 0.1.15
+# 2.4.98
+- Updated whatsapp-connector to 0.1.61
+
+# 2.4.97
+- Updated whatsapp-connector to 0.1.61
+
+# 2.4.96
+- Updated tybot-connector to 0.2.49
+
+# 2.4.95
+- Updated tybot-connector to 0.2.48
+
+# 2.4.94
+- Updated WIDGET_LOCATION usage
 
 # 2.4.92
 - Updated messenger-connector to 0.1.14

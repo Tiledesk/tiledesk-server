@@ -233,10 +233,9 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update.bannedUsers = req.body.bannedUsers;
   }
 
-  
-
-  
-  
+  if (req.body.profile != undefined) {
+    update.profile = req.body.profile;
+  }
   
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
