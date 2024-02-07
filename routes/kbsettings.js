@@ -146,30 +146,30 @@ router.post('/checkstatus', async (req, res) => {
         winston.debug("checkStatus resp: ", resp.data);
         winston.debug("checkStatus resp: ", resp.data[full_url]);
 
-        let response = resp.data[full_url];
+        // let response = resp.data[full_url];
 
-        let return_data = {
-            status_message: response.status_message
-        }
+        // let return_data = {
+        //     status_message: response.status_message
+        // }
 
-        if (response.status_code === 3) {
-            return_data.status_code = 2;
-        }
+        // if (response.status_code === 3) {
+        //     return_data.status_code = 2;
+        // }
 
-        if (response.status_code === 1 || response.status_code === 2 ) {
-            return_data.status_code = 1;
-        }
+        // if (response.status_code === 1 || response.status_code === 2 ) {
+        //     return_data.status_code = 1;
+        // }
 
-        if (response.status_code === 0) {
-            return_data.status_code = 0;
-        }
+        // if (response.status_code === 0) {
+        //     return_data.status_code = 0;
+        // }
 
-        if (!response.status_code) {
-            return_data.status_code = 0;
-        }
+        // if (!response.status_code) {
+        //     return_data.status_code = 0;
+        // }
 
         
-        res.status(200).send(resp);
+        res.status(200).send(resp.data);
     }).catch((err) => {
         // console.log("checkstatus err: ", err)
         //winston.error("checkstatus err: ", err);
