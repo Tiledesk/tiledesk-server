@@ -9,8 +9,6 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
-    console.log("### --> body: ", body);
-
     KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
         console.log("kbSettings: ", kbSettings);
 

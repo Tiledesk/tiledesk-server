@@ -169,9 +169,9 @@ router.post('/checkstatus', async (req, res) => {
         }
 
         
-        res.status(200).send(resp);
+        res.status(200).send(return_data);
     }).catch((err) => {
-        winston.error("checkstatus err: ", err);
+        //winston.error("checkstatus err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
@@ -200,7 +200,7 @@ router.post('/:settings_id', async (req, res) => {
                     winston.err("findByIdAndUpdate error: ", err);
                     res.status(500).send({ success: false, error: err });
                 } else {
-                    res.status(200).send(new_kb);
+                    res.status(200).send(savedSettings);
                 }
             })
         }
