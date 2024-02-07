@@ -50,6 +50,7 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
+        console.log("checkStatus err: ", err)
         reject(err);
       })
 
@@ -161,7 +162,6 @@ class OpenaiService {
 
     })
   }
-
 
   deleteIndex(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);

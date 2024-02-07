@@ -50,7 +50,7 @@ describe('RequestRoute', () => {
             .send({"first_text":"first_text"})
             .end(function(err, res) {
                 //console.log("res",  res);
-                console.log("res.body",  res.body);
+                //console.log("res.body",  res.body);
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 
