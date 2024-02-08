@@ -276,7 +276,8 @@ router.post('/signinWithCustomToken', [
     if (req.user.role) {
       role = req.user.role;
     }
-    winston.debug("role: " + role );
+    winston.debug("role1: " + role );
+    winston.debug("id_project: " + id_project + " uuid_user " + req.user._id + " role " + role);
 
 
       Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
@@ -285,15 +286,18 @@ router.post('/signinWithCustomToken', [
           winston.error(err);
           return res.json({ success: true, token: req.headers["authorization"], user: req.user });
         }
+        winston.debug("project_user: ", project_user );
+
+
         if (!project_user) {
 
           let createNewUser = false;
-          winston.debug('role: '+ role)
+          winston.debug('role2: '+ role)
 
           
           if (role === RoleConstants.OWNER || role === RoleConstants.ADMIN || role === RoleConstants.AGENT) {            
            createNewUser = true;
-
+           winston.debug('role owner admin agent');
            var newUser;
            try {
 
@@ -327,6 +331,8 @@ router.post('/signinWithCustomToken', [
               createdBy: req.user._id, //oppure req.user.id attento problema
               updatedBy: req.user._id
             });
+
+            winston.debug('newProject_user', newProject_user);
 
             // testtare qiestp cpm dpcker dev partemdp da ui
             if (createNewUser===true) {
@@ -375,7 +381,11 @@ router.post('/signinWithCustomToken', [
                 
               }
 
-              if (returnToken.indexOf("JWT")==0) {
+              winston.debug('returnToken '+returnToken);
+
+              winston.debug('returnToken.indexOf("JWT") '+returnToken.indexOf("JWT"));
+
+              if (returnToken.indexOf("JWT")<0) {
                 returnToken = "JWT " + returnToken;
               }
 
@@ -408,7 +418,7 @@ router.post('/signinWithCustomToken', [
               let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
 
 
-              if (returnToken.indexOf("JWT")==0) {
+              if (returnToken.indexOf("JWT")<0) {
                 returnToken = "JWT " + returnToken;
               }
               return res.json({ success: true, token: returnToken, user: userFromDB });
@@ -416,6 +426,8 @@ router.post('/signinWithCustomToken', [
               
 
             } else {
+              winston.debug('req.headers["authorization"]: '+req.headers["authorization"]);
+              
               return res.json({ success: true, token: req.headers["authorization"], user: userToReturn });
             }
 
