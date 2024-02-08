@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.101
+- Added new route for knowledge base
+- Bug fix: conflicts with old knowledge base
+
 # 2.4.100
 - Updated tybot-connector to 0.2.50
 - Added new route for knowledge base

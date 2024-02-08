@@ -327,8 +327,10 @@ router.post('/internal/send',
 
   winston.info("Sending an email with text : " + text + " to " + to);
 
-             //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
-  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
+  let quoteManager = req.app.get('quote_manager');
+
+  //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
+  emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto, quoteManager);
   
   res.json({"queued": true});
     

@@ -1,10 +1,10 @@
 var winston = require('../config/winston');
 const axios = require("axios").default;
-var configGlobal = require('../config/global');
 require('dotenv').config();
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
 let kb_endpoint = process.env.KB_ENDPOINT;
+let kb_endpoint_dev = process.env.KB_ENDPOINT_DEV;
 
 class OpenaiService {
 
@@ -50,6 +50,7 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
+        console.log("checkStatus err: ", err)
         reject(err);
       })
 
@@ -101,12 +102,12 @@ class OpenaiService {
 
   // PUGLIA AI V2
   singleScrape(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/scrape/single",
+        url: kb_endpoint_dev + "/scrape/single",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -122,12 +123,12 @@ class OpenaiService {
   }
 
   scrapeStatus(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/scrape/status",
+        url: kb_endpoint_dev + "/scrape/status",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -142,12 +143,12 @@ class OpenaiService {
   }
 
   askNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/qa",
+        url: kb_endpoint_dev + "/qa",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -162,14 +163,13 @@ class OpenaiService {
     })
   }
 
-
   deleteIndex(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/delete/id",
+        url: kb_endpoint_dev + "/delete/id",
         headers: {
           'Content-Type': 'application/json'
         },
@@ -184,12 +184,12 @@ class OpenaiService {
   }
 
   deleteNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/delete/namespace",
+        url: kb_endpoint_dev + "/delete/namespace",
         headers: {
           'Content-Type': 'application/json'
         },
