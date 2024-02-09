@@ -81,7 +81,7 @@ class Listener {
                 var userid = user.id || user._id;
                 winston.info("updateParticipatingProjectUsers userid: "+userid); 
 
-                this.updateProjectUser(user.id, request.id_project, operation);                
+                this.updateProjectUser(userid, request.id_project, operation);                
             });
         } 
       }  
