@@ -83,6 +83,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
+        winston.info("generateKey object ", object)
+        winston.info("generateKey type " + type)
         let subscriptionDate;
         if (this.project.profile.subStart) {
             subscriptionDate = this.project.profile.subStart;
@@ -90,6 +92,7 @@ class QuoteManager {
             subscriptionDate = this.project.createdAt;
         }
         let objectDate = object.createdAt;
+        winston.info("objectDate " + objectDate);
 
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
@@ -111,7 +114,7 @@ class QuoteManager {
 
         this.project = project;
         let key = await this.generateKey(object, type);
-        winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
+        winston.info("[QuoteManager] getCurrentQuote key: " + key);
 
         let quote = await this.tdCache.get(key);
         return Number(quote);
@@ -144,15 +147,19 @@ class QuoteManager {
      */
     async checkQuote(project, object, type) {
 
+        winston.info("checkQuote project ", project);
+        winston.info("checkQuote object ", object);
+        winston.info("checkQuote type " + type);
         if (quotes_enabled === false) {
-            winston.debug("QUOTES DISABLED - checkQuote for type " + type);
+            winston.info("QUOTES DISABLED - checkQuote for type " + type);
             return true;
         }
 
         this.project = project;
         let limits = await this.getPlanLimits();
-        winston.verbose("limits for current plan: ", limits)
+        winston.info("limits for current plan: ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
+        winston.info("getCurrentQuote resp: ", quote)
 
         if (quote == null) {
             return true;
