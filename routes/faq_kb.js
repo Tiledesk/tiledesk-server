@@ -639,7 +639,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 
   let globals = req.query.globals;
   winston.debug("export globals " + globals);
-  console.log("export globals? --> globals ", globals);
+
 
   let token = req.headers.authorization;
 
@@ -647,7 +647,7 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 
   let chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
   winston.debug("chatbot: ", chatbot)
-  console.log("/fork chatbot after getBotById: ", chatbot);
+
   if (!chatbot) {
     return res.status(500).send({ success: false, message: "Unable to get chatbot" });
   }
@@ -982,8 +982,6 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 router.get('/exportjson/:id_faq_kb', (req, res) => {
 
   winston.debug("exporting bot...")
-  console.log("exportjson req.query.globals: ", req.query.globals);
-
 
   let id_faq_kb = req.params.id_faq_kb;
 
@@ -1000,12 +998,10 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
         const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
         if (!req.query.globals) {
-          console.log("Delete globals from attributes!")
+          winston.verbose("Delete globals from attributes!")
           if (faq_kb.attributes) {
             delete faq_kb.attributes.globals;
           }
-        } else {
-          console.log("Keep globals")
         }
 
         let json = {
@@ -1033,7 +1029,6 @@ router.get('/exportjson/:id_faq_kb', (req, res) => {
           //   return res.status(200).send(json);
           // }
           let json_string = JSON.stringify(json);
-          console.log("json_string: ", json_string)
           res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
           return res.send(json_string);
         }

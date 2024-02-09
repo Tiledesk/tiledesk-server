@@ -32,7 +32,6 @@ class ChatbotService {
   async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id, globals) {
 
     winston.debug("[CHATBOT SERVICE] getBotById");
-    console.log("getBotById globals: ", globals);
 
     // private bot
     if (published == "false") {

@@ -11,7 +11,7 @@ class OpenaiService {
   // OPEN AI
   completions(data, gptkey) {
 
-    winston.debug("[OPENAI SERVICE] openai endpoint: ", openai_endpoint);
+    winston.debug("[OPENAI SERVICE] openai endpoint: " + openai_endpoint);
 
     return new Promise((resolve, reject) => {
 
@@ -36,7 +36,7 @@ class OpenaiService {
 
   // PUGLIA AI
   checkStatus(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
     return new Promise((resolve, reject) => {
 
@@ -50,7 +50,6 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
-        console.log("checkStatus err: ", err)
         reject(err);
       })
 
@@ -58,7 +57,7 @@ class OpenaiService {
   }
 
   startScrape(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
     return new Promise((resolve, reject) => {
 
@@ -79,7 +78,7 @@ class OpenaiService {
   }
 
   ask(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
     return new Promise((resolve, reject) => {
 
@@ -93,7 +92,6 @@ class OpenaiService {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
-        console.log("err: ", err);
         reject(err);
       })
 
@@ -102,7 +100,7 @@ class OpenaiService {
 
   // PUGLIA AI V2
   singleScrape(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
@@ -123,7 +121,7 @@ class OpenaiService {
   }
 
   scrapeStatus(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
@@ -143,7 +141,7 @@ class OpenaiService {
   }
 
   askNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
@@ -164,7 +162,7 @@ class OpenaiService {
   }
 
   deleteIndex(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 
@@ -184,7 +182,7 @@ class OpenaiService {
   }
 
   deleteNamespace(data) {
-    winston.debug("[OPENAI SERVICE] kb endpoint: ", kb_endpoint_dev);
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_dev);
 
     return new Promise((resolve, reject) => {
 

@@ -39,8 +39,6 @@ router.post('/', async (req, res) => {
 
     let project_id = req.projectid;
     let body = req.body;
-    console.log("create new kb project_id " + project_id);
-    console.log("create new kb body ", body);
 
     let new_kb = {
         id_project: project_id,

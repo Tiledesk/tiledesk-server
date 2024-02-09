@@ -46,52 +46,9 @@ class MessageService {
 
     save(message) {
 
-        let total_1;
-        let total_e;
-        let total_1_end_e;
-        let total_2;
-
         var that = this;
         winston.debug('message.save called');
 
-        message.createdAt = new Date();
-
-        // let start1 = Date.now();
-        // let project;
-        // let payload;
-        // let q = Project.findOne({ _id: message.id_project, status: 100 });
-        // if (cacheEnabler.project) {
-        //     q.cache(cacheUtil.longTTL, "projects:id:" + message.id_project)  //project_cache
-        //     winston.debug('project cache enabled for /project detail');
-        // }
-        // q.exec(async function (err, p) {
-        //     if (err) {
-        //         winston.error('Error getting project ', err);
-        //     }
-        //     if (!p) {
-        //         winston.warn('Project not found ');
-        //     }
-        //     //TODO REMOVE settings from project
-        //     project = p;
-        //     payload = {
-        //         project: project,
-        //         message: message
-        //     }
-
-        //     let end1 = Date.now();
-        //     total_1 = end1 - start1;
-
-        //     let start_e = Date.now();
-        //     let result = await messageEvent.emit('message.create.quote.before', payload);
-        //     let end_e = Date.now();
-        //     total_e = end_e - start_e;
-        //     if (result === false) {
-        //         winston.info("Messages limits reached for project " + project._id)
-        //         // return false in the second phase
-        //     }
-        // });
-
-        // let start2 = Date.now();
         let sender = message.sender;
         let senderFullname = message.senderFullname;
         let recipient = message.recipient;
@@ -110,6 +67,9 @@ class MessageService {
 
 
         return new Promise(function (resolve, reject) {
+
+            //let q = Project.findOne({ _id: request.id_project, status: 100 });
+            // Continue quotes code here (see at requestService)
 
             if (!createdBy) {
                 createdBy = sender;
@@ -196,11 +156,7 @@ class MessageService {
                             message: message
                         }
 
-                        let result = await messageEvent.emit('message.create.quote', payload);
-                        if (result === false) {
-                            winston.info("Messages limits reached for project " + p._id)
-                            // return false in the second phase
-                        }
+                        messageEvent.emit('message.create.quote', payload);
                     });
 
 
@@ -211,13 +167,6 @@ class MessageService {
                     // if (savedMessage.status === MessageConstants.CHAT_MESSAGE_STATUS.SENDING) {
                     //     messageEvent.emit('message.sending.simple', savedMessage);
                     // }
-
-                    // console.log("total 1: ", total_1);
-                    // console.log("total e: ", total_e);
-                    // total_1_end_e = total_1 + total_e;
-                    // console.log("total 1 + e: ", total_1_end_e);
-                    // console.log("total 2: ", total_2);
-
 
                     return resolve(savedMessage);
                 });
