@@ -116,7 +116,7 @@ class Listener {
         requestEvent.on(requestCloseKey, async (request) => {    //request.close event here noqueued
           winston.debug("request.close event here 4")
           setImmediate(() => {
-            winston.debug('Route queue requestClose');
+            winston.info('Route queue requestClose');
             this.updateParticipatingProjectUsers(request, -1);          
           });
         });
