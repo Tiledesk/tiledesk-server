@@ -78,6 +78,9 @@ class Listener {
         if (request.participatingAgents.length>0) {
             request.participatingAgents.forEach(user => {
               winston.info("request.participatingAgents user",user); //it is a user and not a project_user
+                var userid = user.id || user._id;
+                winston.info("updateParticipatingProjectUsers userid: "+userid); 
+
                 this.updateProjectUser(user.id, request.id_project, operation);                
             });
         } 
