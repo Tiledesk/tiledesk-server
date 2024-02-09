@@ -149,6 +149,10 @@ function startWorker() {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_participants_update");
           winston.info("Data queue", oka)
         });
+        ch.bindQueue(_ok.queue, exchange, "request_participants_leave", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_participants_leave");
+          winston.info("Data queue", oka)
+        });
 
         ch.bindQueue(_ok.queue, exchange, "request_update", {}, function(err3, oka) {
           winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: request_update");
@@ -230,6 +234,13 @@ function work(msg, cb) {
     // requestEvent.emit('request.update.queue',  msg.content);
     requestEvent.emit('request.update.preflight.queue',  JSON.parse(message_string));
   }    
+
+
+  if (topic === 'request_participants_leave') {
+    winston.debug("reconnect here topic:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    requestEvent.emit('request.participants.leave.queue',  JSON.parse(message_string));
+  }   
   
   if (topic === 'request_participants_update') {
     winston.debug("reconnect here topic:" + topic); 
@@ -313,7 +324,12 @@ function listen() {
     });
 
 
-    
+    requestEvent.on('request.participants.leave', function(request) {
+      setImmediate(() => {
+        publish(exchange, "request_participants_leave", Buffer.from(JSON.stringify(request)));
+        winston.debug("reconnect participants.leave published")
+      });
+    });
 
     requestEvent.on('request.participants.update', function(request) {
       setImmediate(() => {
