@@ -33,6 +33,9 @@ class PubModulesManager {
         this.telegram = undefined;
         this.telegramRoute = undefined;
 
+        this.mqttTest = undefined;
+        this.mqttTestRoute = undefined;
+
         this.templates = undefined;
         this.templatesRoute = undefined;
 
@@ -87,6 +90,10 @@ class PubModulesManager {
         if (this.telegramRoute) {
             app.use('/modules/telegram', this.telegramRoute);
             winston.info("PubModulesManager telegramRoute controller loaded");
+        }
+        if (this.mqttTestRoute) {
+            app.use('/modules/mqttTest', this.mqttTestRoute);
+            winston.info("PubModulesManager mqttTestRoute controller loaded");
         }
         if (this.templatesRoute) {
             app.use('/modules/templates', this.templatesRoute);
@@ -319,6 +326,22 @@ class PubModulesManager {
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("PubModulesManager init apps module not found ");
+            } else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.mqttTest = require('./mqttTest');
+            winston.info("this.mqttTest: " + this.mqttTest);
+            this.mqttTest.listener.listen(config);
+
+            this.mqttTestRoute = this.mqttTest.mqttTestRoute;
+
+            winston.info("PubModulesManager initialized apps (mqttTest).")
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init apps module not found ", err);
             } else {
                 winston.info("PubModulesManager error initializing init apps module", err);
             }
