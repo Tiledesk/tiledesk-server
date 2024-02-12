@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.102
+- Updated whatsapp-connector to 0.1.63
+- Updated messenger-connector to 0.1.17
+- Added quote management
+
 # 2.4.101
 - Added new route for knowledge base
 - Bug fix: conflicts with old knowledge base
