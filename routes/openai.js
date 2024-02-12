@@ -1,30 +1,46 @@
 var express = require('express');
 var router = express.Router();
-var KBSettings = require('../models/kb_setting');
+var { KBSettings } = require('../models/kb_setting');
 var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
+const { QuoteManager } = require('../services/QuoteManager');
 
 router.post('/', async (req, res) => {
 
     let project_id = req.projectid;
     let body = req.body;
+    let usePublicKey = false;
+    let publicKey = process.env.GPTKEY;
+    let gptkey = null;
+    let obj = { createdAt: new Date() };
+    let quoteManager = req.app.get('quote_manager');
 
-    console.log("### --> body: ", body);
+    KBSettings.findOne({ id_project: project_id }, async (err, kbSettings) => {
 
-    KBSettings.findOne({ id_project: project_id }, (err, kbSettings) => {
-        console.log("kbSettings: ", kbSettings);
-
-        if (!kbSettings) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter (settings not exist)" })
+        if (err) {
+            usePublicKey = true;
+            gptkey = publicKey;
         }
 
-        let gptkey = kbSettings.gptkey;
+        if (kbSettings && kbSettings.gptkey) {
+            gptkey = kbSettings.gptkey;
+        } else {
+            usePublicKey = true;
+            gptkey = publicKey;
+        }
 
         if (!gptkey) {
-            return res.status(400).send({ success: false, message: "Missing gptkey parameter" })
+            return res.status(400).send({ success: false, message: "Missing gptkey parameter" });
         }
 
-        // attua modifiche
+        if (usePublicKey === true) {
+            let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+            if (isAvailable === false) {
+                return res.status(403).send("Tokens quota exceeded")
+            }
+        }
+        
+
         let json = {
             "model": body.model,
             "messages": [
@@ -43,18 +59,40 @@ router.post('/', async (req, res) => {
             message.content = body.context;
             json.messages.unshift(message);
         }
-        console.log("openai preview --> json: ", json);
 
-        openaiService.completions(json, gptkey).then((response) => {
-            // winston.debug("completions response: ", response);
+        openaiService.completions(json, gptkey).then(async (response) => {
+            let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens }
+            if (usePublicKey === true) {
+                let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
+                winston.verbose("Tokens quota incremented for key " + incremented_key);
+            }
             res.status(200).send(response.data);
+
         }).catch((err) => {
-            console.log("err: ", err);
             // winston.error("completions error: ", err);
             res.status(500).send(err)
         })
-
     })
+})
+
+router.post('/quotes', async (req, res) => {
+
+    let project = req.project;
+
+    let body = req.body;
+    body.createdAt = new Date(body.createdAt);
+
+    let redis_client = req.app.get('redis_client');
+    if (!redis_client) {
+        return res.status(400).send({ error: "Redis not ready"});
+    }
+
+    let quoteManager = req.app.get('quote_manager');
+
+    let incremented_key = await quoteManager.incrementTokenCount(req.project, req.body);
+    let quote = await quoteManager.getCurrentQuote(req.project, req.body, 'tokens');
+    
+    res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
 })
 
 // router.get('/', async (req, res) => {

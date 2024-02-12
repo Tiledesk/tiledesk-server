@@ -195,7 +195,11 @@ router.post('/loginemail', function (req, res) {
   let chatbot_id = req.body.bot_id;
 
   if (!project_id) {
-    res.status(500).send({ success: false, error: "missing 'id_project' field" })
+    res.status(500).send({ success: false, error: "missing 'id_project' field" });
+  }
+
+  if (!chatbot_id) {
+    res.status(500).send({ success: false, error: "missing 'bot_id' field" });
   }
 
   if (!chatbot_id) {

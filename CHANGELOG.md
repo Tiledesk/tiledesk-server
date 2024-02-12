@@ -5,6 +5,28 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.4.101
+- Added new route for knowledge base
+- Bug fix: conflicts with old knowledge base
+
+# 2.4.100
+- Updated tybot-connector to 0.2.50
+- Added new route for knowledge base
+
+# 2.4.99
+- Updated whatsapp-connector to 0.1.62
+- Updated messenger-connector to 0.1.16
+- Bug fix: globals are not exported when a chatbot is published
+
+# 2.4.98
+- Updated whatsapp-connector to 0.1.61
+
+# 2.4.97
+- Updated whatsapp-connector to 0.1.61
+
+# 2.4.96
+- Updated tybot-connector to 0.2.49
+
 # 2.4.95
 - Updated tybot-connector to 0.2.48
 

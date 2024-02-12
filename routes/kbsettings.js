@@ -1,5 +1,6 @@
 var express = require('express');
-var KBSettings = require('../models/kb_setting');
+var { KBSettings } = require('../models/kb_setting');
+// var { KB } = require('../models/kb_setting');
 // var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
@@ -132,7 +133,7 @@ router.post('/startscrape', async (req, res) => {
 
 router.post('/checkstatus', async (req, res) => {
 
-    // let data = req.body;
+    //let data = req.body;
     winston.debug("/checkstatus req.body: ", req.body);
 
     let full_url = req.body.full_url;
@@ -141,7 +142,7 @@ router.post('/checkstatus', async (req, res) => {
     }
 
     openaiService.checkStatus(data).then((resp) => {
-        winston.debug("checkStatus resp: ", resp.data);
+        winston.debug("checkStatus resp: ", resp);
         winston.debug("checkStatus resp: ", resp.data);
         winston.debug("checkStatus resp: ", resp.data[full_url]);
 
@@ -170,7 +171,7 @@ router.post('/checkstatus', async (req, res) => {
         
         res.status(200).send(return_data);
     }).catch((err) => {
-        winston.error("checkstatus err: ", err);
+        //winston.error("checkstatus err: ", err);
         let status = err.response.status;
         res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
     })
@@ -205,5 +206,6 @@ router.post('/:settings_id', async (req, res) => {
         }
     })
 })
+
 
 module.exports = router;

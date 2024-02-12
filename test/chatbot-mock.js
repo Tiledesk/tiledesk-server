@@ -11,6 +11,12 @@ const existing_chatbot_mock = {
     createdAt: "2022-09-15T15:32:06.491Z",
     updatedAt: "2022-09-15T15:32:06.491Z",
     name: "Bot",
+    attributes: {
+        globals: {
+            "mykey1": "myvalue1",
+            "mykey2": "myvalue2"
+        }
+    },
     intents: [
         {
             "webhook_enabled": false,

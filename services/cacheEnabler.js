@@ -42,6 +42,11 @@ class CacheEnabler {
             this.widgets = false;
         }
 
+        this.integrations = true;
+        if (process.env.CACHE_INTEGRATIONS_ENABLED=="false" || process.env.CACHE_INTEGRATIONS_ENABLED==false) {
+            this.integrations = false;
+        }
+
         // this.user = true;
         // if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
         //     this.user = false;

@@ -81,6 +81,15 @@ mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecat
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', false); 
 
+// CONNECT REDIS - CHECK IT
+const { TdCache } = require('./utils/TdCache');
+let tdCache = new TdCache({
+    host: process.env.CACHE_REDIS_HOST,
+    port: process.env.CACHE_REDIS_PORT,
+    password: process.env.CACHE_REDIS_PASSWORD
+});
+
+tdCache.connect();
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -113,7 +122,10 @@ var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
+var quotes = require('./routes/quotes');
+var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
+var kb = require('./routes/kb');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -157,7 +169,7 @@ botEvent.listen(); //queued but disabled
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
- 
+
 // job_here
 
 var geoService = require('./services/geoService');
@@ -195,6 +207,10 @@ var IPFilter = require('./middleware/ipFilter');
 var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
+const { QuoteManager } = require('./services/QuoteManager');
+
+let qm = new QuoteManager({ tdCache: tdCache });
+qm.start();
 
 var modulesManager = undefined;
 try {
@@ -223,13 +239,13 @@ if (process.env.CREATE_INITIAL_DATA !== "false") {
 
 var app = express();
 
-
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.set('chatbot_service', new ChatbotService())
+app.set('redis_client', tdCache);
+app.set('quote_manager', qm);
 
 
 // TODO DELETE IT IN THE NEXT RELEASE
@@ -252,7 +268,6 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // app.use(morgan('dev'));
 // app.use(morgan('combined'));
-
 
 
 // app.use(bodyParser.json());
@@ -296,6 +311,7 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
 
   if (process.env.ENABLE_REDIS_SESSION==true ||  process.env.ENABLE_REDIS_SESSION=="true" ) {
   
+      console.log("Starting redis...") // errors occurs
       // Initialize client.
       // let redisClient = createClient()
       // redisClient.connect().catch(console.error)
@@ -342,6 +358,24 @@ app.options('*', cors());
 // const customRedisRateLimiter = require("./rateLimiter").customRedisRateLimiter;
 // app.use(customRedisRateLimiter);
 
+// MIDDLEWARE FOR REQUESTS QUOTE
+// app.use('/:projectid/requests', function (req, res, next) {
+  
+//   console.log("MIDDLEWARE FIRED ---> REQUESTS");
+//   console.log("(Requests Middleware) method: ", req.method);
+//   if (req.method === 'POST') {
+
+//   let quoteManager = new QuoteManager({ project: mockProject, tdCache: mockTdCache } )
+    
+//   } else {
+//     next();
+//   }
+
+
+// });
+
+
+
 if (process.env.ROUTELOGGER_ENABLED==="true") {
   winston.info("RouterLogger enabled ");
   app.use(function (req, res, next) {
@@ -385,8 +419,8 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
 app.get('/', function (req, res) {  
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
 });
-
   
+
 
 
 var projectIdSetter = function (req, res, next) {
@@ -436,8 +470,6 @@ var projectSetter = function (req, res, next) {
   
 
 }
-
-
 
 
 // app.use('/admin', admin);
@@ -559,8 +591,14 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
-app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
+// app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
+app.use('/:projectid/openai', openai);
+app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
+
+app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], integration )
+
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
+app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
@@ -599,7 +637,7 @@ app.use(function (err, req, res, next) {
 
 
 
-
+// mettere middleware qui per le quote
 
 
 

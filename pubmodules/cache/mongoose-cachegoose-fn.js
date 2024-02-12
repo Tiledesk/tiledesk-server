@@ -6,6 +6,7 @@
  var departmentEvent = require("../../event/departmentEvent");   
  var authEvent = require("../../event/authEvent");   
  var labelEvent = require("../../event/labelEvent");
+ var integrationEvent = require("../../event/integrationEvent");
 
  var triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
  var subscriptionEvent = require("../../event/subscriptionEvent");   
@@ -724,6 +725,17 @@
             // });   
         });
     });
+
+    // l'evento è relativo a tutte le integrazioni, è sufficiente solo un evento
+    // per create, update, delete di una singola creation
+    integrationEvent.on("integration.update", (integrations, id_project) => {
+        let key = "project:" + id_project + ":integrations";
+        winston.verbose("Creating cache for integration.create with key: " + key);
+        client.set(key, integrations, cacheUtil.longTTL, (err, reply) => {
+            winston.verbose("Created cache for integration.create", {err: err} );
+            winston.debug("Created cache for integration.create reply", reply);
+        })
+    })
 
     // fai cache per subscription.create, .update .delete
 
