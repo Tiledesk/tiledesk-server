@@ -147,8 +147,6 @@ class QuoteManager {
      */
     async checkQuote(project, object, type) {
 
-        winston.info("checkQuote project ", project);
-        winston.info("checkQuote object ", object);
         winston.info("checkQuote type " + type);
         if (quotes_enabled === false) {
             winston.info("QUOTES DISABLED - checkQuote for type " + type);
