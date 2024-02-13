@@ -13,7 +13,7 @@
   "dependencies": {
     "@chat21/chat21-node-sdk": "^1.1.7",
     "winston": "^3.3.3",
-    "firebase-admin": "^9.5.0"
+    "firebase-admin": "^11.5.0"
   },
   "devDependencies": {}
 }
