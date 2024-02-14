@@ -133,7 +133,7 @@ class Listener {
         winston.debug('Route queue  requestParticipantsJoinKey: ' + requestParticipantsJoinKey);
    
         requestEvent.on(requestParticipantsJoinKey, async (data) => {
-          winston.debug('Route queue ParticipantsJoin');
+          winston.info('Route queue ParticipantsJoin', data);
 
           var request = data.request;
           var member = data.member;
@@ -149,7 +149,7 @@ class Listener {
         winston.debug('Route queue  requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
    
         requestEvent.on(requestParticipantsLeaveKey, async (data) => {
-          winston.debug('Route queue ParticipantsLeave');
+          winston.info('Route queue ParticipantsLeave', data);
 
           var request = data.request;
           var member = data.member;
@@ -165,7 +165,7 @@ class Listener {
         winston.debug('Route queue  requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
    
         requestEvent.on(requestParticipantsUpdateKey, async (data) => {
-          winston.debug('Route queue Participants Update');
+          winston.info('Route queue Participants Update', data);
 
           var request = data.request;
           var removedParticipants = data.removedParticipants;
