@@ -101,7 +101,7 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestCreateKey = 'request.create.queue';
         }
-        winston.debug('Route queue requestCreateKey: ' + requestCreateKey);
+        winston.info('Route queue requestCreateKey: ' + requestCreateKey);
    
         requestEvent.on(requestCreateKey, async (request) => {
             setImmediate(() => {
@@ -115,7 +115,7 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestCloseKey = 'request.close.queue';
         }
-        winston.debug('Route queue requestCloseKey: ' + requestCloseKey);
+        winston.info('Route queue requestCloseKey: ' + requestCloseKey);
 
         requestEvent.on(requestCloseKey, async (request) => {    //request.close event here noqueued
           winston.debug("request.close event here 4")
@@ -130,7 +130,7 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestParticipantsJoinKey = 'request.participants.join.queue';
         }
-        winston.debug('Route queue  requestParticipantsJoinKey: ' + requestParticipantsJoinKey);
+        winston.info('Route queue  requestParticipantsJoinKey: ' + requestParticipantsJoinKey);
    
         requestEvent.on(requestParticipantsJoinKey, async (data) => {
           winston.info('Route queue ParticipantsJoin', data);
@@ -146,7 +146,7 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestParticipantsLeaveKey = 'request.participants.leave.queue';
         }
-        winston.debug('Route queue  requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
+        winston.info('Route queue  requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
    
         requestEvent.on(requestParticipantsLeaveKey, async (data) => {
           winston.info('Route queue ParticipantsLeave', data);
