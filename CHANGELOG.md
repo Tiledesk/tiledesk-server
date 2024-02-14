@@ -11,6 +11,12 @@
 - Added new kb route
 - Added mqttTest module
 
+# 2.4.103
+- Added new pricing modules
+- Added integrations route
+- Added new kb route
+- Added mqttTest module
+
 # 2.4.102
 - Updated whatsapp-connector to 0.1.63
 - Updated messenger-connector to 0.1.17
