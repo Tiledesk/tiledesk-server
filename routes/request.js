@@ -801,8 +801,7 @@ router.delete('/:requestid', function (req, res) {
     winston.verbose('Messages deleted for the recipient: ' + req.params.requestid);
   });
 
-
-  Request.remove({ request_id: req.params.requestid }, function (err, request) {
+  Request.findOneAndDelete({  request_id: req.params.requestid }, (err, request) => {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
@@ -817,8 +816,25 @@ router.delete('/:requestid', function (req, res) {
     requestEvent.emit('request.delete', request);
 
     res.json(request);
+  })
 
-  });
+  // Request.remove({ request_id: req.params.requestid }, function (err, request) {
+  //   if (err) {
+  //     winston.error('--- > ERROR ', err);
+  //     return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+  //   }
+
+  //   if (!request) {
+  //     return res.status(404).send({ success: false, msg: 'Object not found.' });
+  //   }
+
+  //   winston.verbose('Request deleted with request_id: ' + req.params.requestid);
+
+  //   requestEvent.emit('request.delete', request);
+
+  //   res.json(request);
+
+  // });
 });
 
 
