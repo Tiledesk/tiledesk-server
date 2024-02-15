@@ -678,7 +678,6 @@ class Chat21Handler {
                             chat21Event.emit('conversation.archived.error', err);
                         });
 
-                        
                         //  request.lead can be undefined because some test case uses the old deprecated method requestService.createWithId.
                         if (request.lead) {
                             // lead_id used. Change it?
@@ -709,6 +708,9 @@ class Chat21Handler {
                         chat21.auth.setAdminToken(adminToken);
 
                         winston.debug("Chat21Sender deleting conversations for ",request.participants);
+
+                        console.log("chat21: ", chat21);
+                        console.log("chat21.conversations: ", chat21.conversations);
 
                         chat21.conversations.delete(request.request_id).then((data) => {
                             winston.verbose("Chat21 conversation archived result "+ JSON.stringify(data));
