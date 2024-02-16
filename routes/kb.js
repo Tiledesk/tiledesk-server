@@ -16,7 +16,6 @@ router.get('/', async (req, res) => {
 
     if (req.query.status) {
         status = parseInt(req.query.status);
-        console.log("Get kb status: ", status)
         winston.debug("Get kb status: " + status)
     }
     if (req.query.limit) {
@@ -45,14 +44,12 @@ router.get('/', async (req, res) => {
     let sortQuery = {};
     sortQuery[sortField] = direction;
     winston.debug("Get kb sortQuery: " + sortQuery);
-    console.log("Get kb sortQuery: ", sortQuery);
 
     let query = {};
     query["id_project"] = project_id;
     if (req.query.status) {
         query["status"] = status;
     }
-    console.log("Get kb query: ", query);
 
     KB.find(query)
         .skip(skip)
