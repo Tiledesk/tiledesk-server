@@ -31,19 +31,12 @@ var KBSchema = new Schema({
     type: String,
     required: false
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
   status: {
     type: Number,
-    required: false,
-    default: -1
+    required: false
   }
+}, {
+  timestamps: true
 })
 
 var KBSettingSchema = new Schema({
@@ -64,8 +57,10 @@ var KBSettingSchema = new Schema({
     type: Number,
     default: 1000
   },
-  kbs: [ KBSchema ]
+  kbs: [KBSchema]
 });
+
+KBSchema.index({ createdAt: -1, updatedAt: -1 })
 
 
 //module.exports = mongoose.model('KBSettings', KBSettingSchema);

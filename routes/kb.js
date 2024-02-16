@@ -8,16 +8,66 @@ const openaiService = require('../services/openaiService');
 router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
+    let status;
+    let limit = 200;
+    let page = 0;
+    let direction = -1;
+    let sortField = "updatedAt";
 
-    KB.find({ id_project: project_id }, (err, kbs) => {
-        if (err) {
-            winston.error("Find all kbs error: ", err);
-            return res.status(500).send({ success: false, error: err });
-        }
+    if (req.query.status) {
+        status = parseInt(req.query.status);
+        console.log("Get kb status: ", status)
+        winston.debug("Get kb status: " + status)
+    }
+    if (req.query.limit) {
+        limit = parseInt(req.query.limit);
+        winston.debug("Get kb limit: " + limit)
+    }
+    
+    if (req.query.page) {
+        page = parseInt(req.query.page);
+        winston.debug("Get kb page: " + page)
+    }
 
-        winston.debug("KBs found: ", kbs);
-        return res.status(200).send(kbs);
-    })
+    let skip = page * limit;
+    winston.debug("Get kb skip page: " + skip);
+
+    if (req.query.direction) {
+        direction = parseInt(req.query.direction)
+        winston.debug("Get kb direction: " + direction)
+    }
+
+    if (req.query.sortField) {
+        sortField = req.query.sortField;
+        winston.debug("Get kb sortField: " + sortField)
+    }
+
+    let sortQuery = {};
+    sortQuery[sortField] = direction;
+    winston.debug("Get kb sortQuery: " + sortQuery);
+    console.log("Get kb sortQuery: ", sortQuery);
+
+    let query = {};
+    query["id_project"] = project_id;
+    if (req.query.status) {
+        query["status"] = status;
+    }
+    console.log("Get kb query: ", query);
+
+    KB.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortQuery)
+        .exec((err, kbs) => {
+            if (err) {
+                winston.error("Find all kbs error: ", err);
+                return res.status(500).send({ success: false, error: err });
+            }
+    
+            winston.debug("KBs found: ", kbs);
+            return res.status(200).send(kbs);
+        })
+
 })
 
 router.get('/:kb_id', async (req, res) => {
@@ -46,7 +96,8 @@ router.post('/', async (req, res) => {
         type: body.type,
         source: body.source,
         content: body.content,
-        namespace: body.namespace
+        namespace: body.namespace,
+        status: -1
     }
     if (!new_kb.namespace) {
         new_kb.namespace = project_id;
@@ -101,7 +152,6 @@ router.put('/:kb_id', async (req, res) => {
         update.status = req.body.status;
     }
 
-    update.updatedAt = new Date();
     winston.debug("kb update: ", update);
 
     KB.findByIdAndUpdate(kb_id, update, { new: true }, (err, savedKb) => {

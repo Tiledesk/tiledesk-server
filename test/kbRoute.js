@@ -73,6 +73,87 @@ describe('KbRoute', () => {
 
         });
 
+        it('getWithQueries', (done) => {
+            
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    let kb1 = {
+                        name: "example_name1",
+                        type: "url",
+                        source: "https://www.exampleurl1.com",
+                        content: ""
+                    }
+
+                    let kb2 = {
+                        name: "example_name2",
+                        type: "text",
+                        source: "example_name2",
+                        content: "example content"
+                    }
+
+                    let kb3 = {
+                        name: "example_name3",
+                        type: "url",
+                        source: "https://www.exampleurl3.com",
+                        content: ""
+                    }
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + "/kb")
+                        .auth(email, pwd)
+                        .send(kb1)
+                        .end((err, res) => {
+                            if (log) { console.log("create kb res.body: ", res.body); }
+                            res.should.have.status(200);
+
+                            setTimeout(() => {
+                                chai.request(server)
+                                    .post('/' + savedProject._id + "/kb")
+                                    .auth(email, pwd)
+                                    .send(kb2)
+                                    .end((err, res) => {
+                                        if (log) { console.log("create kb res.body: ", res.body); }
+                                        res.should.have.status(200);
+
+                                        setTimeout(() => {
+                                            chai.request(server)
+                                                .post('/' + savedProject._id + "/kb")
+                                                .auth(email, pwd)
+                                                .send(kb3)
+                                                .end((err, res) => {
+                                                    if (log) { console.log("create kb res.body: ", res.body); }
+                                                    res.should.have.status(200);
+
+                                                    let query = "?status=-1&limit=5&page=0&direction=-1&sortField=updatedAt";
+                                                    //let query = "";
+                                                    console.log("query: ", query);
+
+                                                    chai.request(server)
+                                                        .get('/' + savedProject._id + "/kb" + query)
+                                                        .auth(email, pwd)
+                                                        .end((err, res) => {
+                                                            console.log("getall res.body: ", res.body);
+                                                            res.should.have.status(200);
+
+                                                            done();
+
+                                                        })
+            
+                                                })
+                                        }, 1000)
+                                    })
+                            }, 1000)
+
+
+                        })
+                })
+            })
+        }).timeout(20000)
+
         it('scrapeSingle', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
