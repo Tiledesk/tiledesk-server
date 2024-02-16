@@ -467,7 +467,6 @@ router.put('/:faqid', function (req, res) {
 // DELETE REMOTE AND LOCAL FAQ
 router.delete('/:faqid', function (req, res) {
 
-  console.log("delete called")
   winston.debug('DELETE FAQ - FAQ ID ', req.params.faqid);
 
   let faqid = req.params.faqid;

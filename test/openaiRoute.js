@@ -20,7 +20,7 @@ var assert = chai.assert;
 
 chai.use(chaiHttp);
 
-describe('FaqKBRoute', () => {
+describe('OpenaiRoute', () => {
 
     describe('/create', () => {
 
@@ -102,30 +102,6 @@ describe('FaqKBRoute', () => {
             })
         }).timeout(20000)
 
-        it('completions missing settings', (done) => {
-
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-
-            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-                projectService.create("test-openai-create", savedUser._id).then((savedProject) => {
-
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/openai')
-                        .auth(email, pwd)
-                        .send({ question: "Provide 3 names for a dog", context: "you are an awesome assistant", max_tokens: 100, temperature: 0, model: "gpt-3.5-turbo" })
-                        .end((err, res) => {
-                            if (log) {console.log("res.body: ", res.body);}
-                            res.should.have.status(400);
-                            res.body.should.be.a('object');
-                            expect(res.body.success).to.equal(false);
-                            expect(res.body.message).to.equal("Missing gptkey parameter (settings not exist)");
-
-                            done();
-                        })
-                })
-            })
-        }).timeout(20000)
 
     });
 

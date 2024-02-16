@@ -1,5 +1,5 @@
 git pull
-npm version patch
+npm version minor
 version=`node -e 'console.log(require("./package.json").version)'`
 echo "version $version"
 

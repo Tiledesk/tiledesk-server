@@ -666,7 +666,7 @@ class Chat21Handler {
                                 });
                        });
 
-                    //    archive: function(recipient_id, user_id){
+                        //    archive: function(recipient_id, user_id){
                        chat21.conversations.archive(request.request_id, "system")
                        .then(function(data){
                            winston.verbose("Chat21 archived for system"+ JSON.stringify(data));
@@ -699,7 +699,28 @@ class Chat21Handler {
                 });
             });
             
-            
+            requestEvent.on('request.delete', function(request) {
+
+                winston.debug("chat21Handler requestEvent request.delete called" , request);
+
+                setImmediate(() => {
+                    if (request.channelOutbound.name === ChannelConstants.CHAT21) {
+
+                        chat21.auth.setAdminToken(adminToken);
+
+                        winston.debug("Chat21Sender deleting conversations for ",request.participants);
+
+                        chat21.conversations.delete(request.request_id).then((data) => {
+                            winston.verbose("Chat21 conversation archived result "+ JSON.stringify(data));
+                            chat21Event.emit('conversation.deleted', data);                                               
+                        }).catch((err) => {
+                            winston.error("Chat21 deleted err", err);
+                            chat21Event.emit('conversation.deleted.error', err);
+                        })
+                    }
+                })
+
+            });
 
              requestEvent.on('request.participants.update',  function(data) {      
                  

@@ -709,31 +709,7 @@ class RequestService {
           winston.verbose("Performance Request created in millis: " + endDate - startDate);
 
           requestEvent.emit('request.create.simple', savedRequest);
-
-          // let q = Project.findOne({ _id: request.id_project, status: 100 });
-          // if (cacheEnabler.project) {
-          //   q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
-          //   winston.debug('project cache enabled for /project detail');
-          // }
-          // q.exec(async function (err, p) {
-          //   if (err) {
-          //     winston.error('Error getting project ', err);
-          //   }
-          //   if (!p) {
-          //     winston.warn('Project not found ');
-          //   }
-          //   //TODO REMOVE settings from project
-          //   let payload = {
-          //     project: p,
-          //     request: request
-          //   }
-
-          // });
           requestEvent.emit('request.create.quote', payload);;
-          // if (result === false) {
-          //   winston.info("Requests limits reached for project " + p._id)
-          //   // return false in the second phase
-          // }
 
           return resolve(savedRequest);
 

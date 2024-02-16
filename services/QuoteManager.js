@@ -4,22 +4,6 @@ const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
-// const PLANS_LIST = {
-//     FREE_TRIAL: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, tokens: 250000 }, // same as PREMIUM
-//     SANDBOX: { users: 1, requests: 200, chatbots: 2, kbs: 1, kb_pages: 50, tokens: 10000 },
-//     BASIC: { users: 1, requests: 810, chatbots: 5, kbs: 2, kb_pages: 250, tokens: 50000 },
-//     PREMIUM: { users: 2, requests: 3000, chatbots: 20, kbs: 3, kb_pages: 500, tokens: 250000 },
-//     CUSTOM: { users: 100, conversations: 10000, chatbots: 100, kbs: 100, kb_pages: 1000, tokens: 100000 } // manage it --> get limit directly from project info
-// }
-
-// const PLANS_LIST = {
-//     FREE_TRIAL: { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 }, // same as PREMIUM
-//     SANDBOX:    { users: 1,     requests: 200,      chatbots: 2,    kbs: 1,     kb_pages: 50,       tokens: 10000 },
-//     BASIC:      { users: 1,     requests: 800,      chatbots: 5,    kbs: 2,     kb_pages: 250,      tokens: 50000 },
-//     PREMIUM:    { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 500,      tokens: 250000 },
-//     CUSTOM:     { users: 2,     requests: 3000,     chatbots: 20,   kbs: 3,     kb_pages: 5000,     tokens: 1000000 }
-// }
-
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 }, // same as PREMIUM
     SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200 },
@@ -99,6 +83,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
+        winston.info("generateKey object ", object)
+        winston.info("generateKey type " + type)
         let subscriptionDate;
         if (this.project.profile.subStart) {
             subscriptionDate = this.project.profile.subStart;
@@ -106,6 +92,7 @@ class QuoteManager {
             subscriptionDate = this.project.createdAt;
         }
         let objectDate = object.createdAt;
+        winston.info("objectDate " + objectDate);
 
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
@@ -127,7 +114,7 @@ class QuoteManager {
 
         this.project = project;
         let key = await this.generateKey(object, type);
-        winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
+        winston.info("[QuoteManager] getCurrentQuote key: " + key);
 
         let quote = await this.tdCache.get(key);
         return Number(quote);
@@ -142,18 +129,15 @@ class QuoteManager {
 
         let quotes = {}
         for (let type of typesList) {
-            console.log("*** get all quotes --> search for type: ", type);
+
             let key = await this.generateKey(obj, type);
-            console.log("*** get all quotes --> key generated: ", key);
             let quote = await this.tdCache.get(key);
-            console.log("*** get all quotes --> quote retrieved: ", quote);
 
             quotes[type] = {
                 quote: Number(quote)
             };
         }
         return quotes;
-
     }
 
     /**
@@ -163,15 +147,17 @@ class QuoteManager {
      */
     async checkQuote(project, object, type) {
 
+        winston.info("checkQuote type " + type);
         if (quotes_enabled === false) {
-            winston.debug("QUOTES DISABLED - checkQuote for type " + type);
+            winston.info("QUOTES DISABLED - checkQuote for type " + type);
             return true;
         }
 
         this.project = project;
         let limits = await this.getPlanLimits();
-        console.log("limits for current plan: ", limits)
+        winston.info("limits for current plan: ", limits)
         let quote = await this.getCurrentQuote(project, object, type);
+        winston.info("getCurrentQuote resp: ", quote)
 
         if (quote == null) {
             return true;
@@ -258,8 +244,7 @@ class QuoteManager {
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
                 return result;
             } else {
-                console.log("QUOTES DISABLED - request.create.quote event")
-                winston.debug("QUOTES DISABLED - request.create.quote event")
+                winston.info("QUOTES DISABLED - request.create.quote event")
             }
         })
         // REQUESTS EVENTS - END
@@ -282,7 +267,7 @@ class QuoteManager {
                 let result = await this.incrementMessagesCount(payload.project, payload.message);
                 return result;
             } else {
-                winston.debug("QUOTES DISABLED - message.create.quote event")
+                winston.info("QUOTES DISABLED - message.create.quote event")
             }
         })
         // MESSAGES EVENTS - END
@@ -305,7 +290,7 @@ class QuoteManager {
                 let result = await this.incrementEmailCount(payload.project, payload.email);
                 return result;
             } else {
-                winston.debug("QUOTES DISABLED - email.send event")
+                winston.info("QUOTES DISABLED - email.send event")
             }
         })
         // EMAIL EVENTS - END
