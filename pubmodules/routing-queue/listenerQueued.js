@@ -41,13 +41,14 @@ class Listener {
 
 
     updateProjectUser(id_user, id_project, operation) {
-      winston.debug("Route queue updateProjectUser start");
+      winston.debug("Route queue updateProjectUser start operation: " +operation+ "id_user "+ id_user + " id_project " + id_project );
       return Project_user       
                     .findOneAndUpdate({id_user: id_user, id_project: id_project}, {$inc : {'number_assigned_requests' : operation}}, {new: true, upsert:false}, function(err, updatedPU) {
                     if (err) {
                      return winston.error(err);
                     }
                     winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+                     winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
 
                     updatedPU.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
 
@@ -77,7 +78,10 @@ class Listener {
         if (request.participatingAgents.length>0) {
             request.participatingAgents.forEach(user => {
               winston.debug("request.participatingAgents user",user); //it is a user and not a project_user
-                this.updateProjectUser(user.id, request.id_project, operation);                
+                var userid = user.id || user._id;
+                winston.debug("updateParticipatingProjectUsers userid: "+userid); 
+
+                this.updateProjectUser(userid, request.id_project, operation);                
             });
         } 
       }  
