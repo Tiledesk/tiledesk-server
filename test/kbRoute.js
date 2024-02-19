@@ -138,6 +138,10 @@ describe('KbRoute', () => {
                                                         .end((err, res) => {
                                                             console.log("getall res.body: ", res.body);
                                                             res.should.have.status(200);
+                                                            res.body.should.be.a('object');
+                                                            res.body.kbs.should.be.a('array');
+                                                            expect(res.body.kbs.length).to.equal(3);
+                                                            expect(res.body.count).to.equal(3);
 
                                                             done();
 

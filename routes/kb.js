@@ -51,19 +51,34 @@ router.get('/', async (req, res) => {
         query["status"] = status;
     }
 
-    KB.find(query)
-        .skip(skip)
-        .limit(limit)
-        .sort(sortQuery)
-        .exec((err, kbs) => {
+ 
+    KB.countDocuments({ id_project: project_id}, (err, kbs_count) => {
             if (err) {
                 winston.error("Find all kbs error: ", err);
-                return res.status(500).send({ success: false, error: err });
             }
-    
-            winston.debug("KBs found: ", kbs);
-            return res.status(200).send(kbs);
+            winston.debug("KBs count: ", kbs_count);
+            
+            KB.find(query)
+                .skip(skip)
+                .limit(limit)
+                .sort(sortQuery)
+                .exec((err, kbs) => {
+                    if (err) {
+                        winston.error("Find all kbs error: ", err);
+                        return res.status(500).send({ success: false, error: err });
+                    }
+
+                    winston.debug("KBs found: ", kbs);
+
+                    let response = {
+                        count: kbs_count,
+                        kbs: kbs
+                    }
+                    return res.status(200).send(response);
+                })
+
         })
+
 
 })
 
