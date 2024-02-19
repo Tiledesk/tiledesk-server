@@ -128,7 +128,7 @@ describe('KbRoute', () => {
                                                     if (log) { console.log("create kb res.body: ", res.body); }
                                                     res.should.have.status(200);
 
-                                                    let query = "?status=-1&limit=5&page=0&direction=-1&sortField=updatedAt";
+                                                    let query = "?status=-1&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
                                                     //let query = "";
                                                     console.log("query: ", query);
 
@@ -142,6 +142,13 @@ describe('KbRoute', () => {
                                                             res.body.kbs.should.be.a('array');
                                                             expect(res.body.kbs.length).to.equal(3);
                                                             expect(res.body.count).to.equal(3);
+                                                            res.body.query.should.be.a('object');
+                                                            expect(res.body.query.status).to.equal(-1);
+                                                            expect(res.body.query.limit).to.equal(5);
+                                                            expect(res.body.query.page).to.equal(0);
+                                                            expect(res.body.query.direction).to.equal(-1);
+                                                            expect(res.body.query.sortField).to.equal("updatedAt");
+                                                            expect(res.body.query.search).to.equal("example");
 
                                                             done();
 

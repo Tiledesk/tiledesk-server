@@ -13,9 +13,14 @@ router.get('/', async (req, res) => {
     let page = 0;
     let direction = -1;
     let sortField = "updatedAt";
+    let text;
+
+    let query = {};
+    query["id_project"] = project_id;
 
     if (req.query.status) {
         status = parseInt(req.query.status);
+        query["status"] = status;
         winston.debug("Get kb status: " + status)
     }
     if (req.query.limit) {
@@ -41,17 +46,16 @@ router.get('/', async (req, res) => {
         winston.debug("Get kb sortField: " + sortField)
     }
 
+    if (req.query.search) {
+        text = req.query.search;
+        query['source'] = new RegExp(text);
+        winston.debug("Get kb text: " + text);
+    }
+
     let sortQuery = {};
     sortQuery[sortField] = direction;
     winston.debug("Get kb sortQuery: " + sortQuery);
-
-    let query = {};
-    query["id_project"] = project_id;
-    if (req.query.status) {
-        query["status"] = status;
-    }
-
- 
+     
     KB.countDocuments({ id_project: project_id}, (err, kbs_count) => {
             if (err) {
                 winston.error("Find all kbs error: ", err);
@@ -72,8 +76,29 @@ router.get('/', async (req, res) => {
 
                     let response = {
                         count: kbs_count,
+                        query: {},
                         kbs: kbs
                     }
+                    if (status) {
+                        response.query.status = status;
+                    }
+                    if (limit) {
+                        response.query.limit = limit;
+                    }
+                    if (status) {
+                        response.query.page = page;
+                    }
+                    if (sortField) {
+                        response.query.sortField = sortField;
+                    }
+                    if (direction) {
+                        response.query.direction = direction;
+                    }
+                    if (text) {
+                        response.query.search = text;
+                    }
+
+
                     return res.status(200).send(response);
                 })
 
