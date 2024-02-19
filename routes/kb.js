@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
     sortQuery[sortField] = direction;
     winston.debug("Get kb sortQuery: " + sortQuery);
      
-    KB.countDocuments({ id_project: project_id}, (err, kbs_count) => {
+    KB.countDocuments(query, (err, kbs_count) => {
             if (err) {
                 winston.error("Find all kbs error: ", err);
             }
