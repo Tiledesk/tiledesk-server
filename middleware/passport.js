@@ -464,12 +464,12 @@ if (enableGoogleSignin==true) {
   },
   function(issuer, profile, cb) {
 
-    winston.info("issuer: "+issuer)
-    winston.info("profile", profile)
+    winston.debug("issuer: "+issuer)
+    winston.debug("profile", profile)
     // winston.info("cb", cb)
 
     var email = profile.emails[0].value;
-    winston.info("email: "+email)   
+    winston.debug("email: "+email)   
 
     var query = {providerId : issuer, subject: profile.id};
     winston.debug("query", query)
