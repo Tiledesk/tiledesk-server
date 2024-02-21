@@ -5,6 +5,16 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.5.2
+- Updated messenger-connector to 0.1.18
+- Bug fix: kbs createdAt wrongly generated
+- Added advanced search for kbs
+
+# 2.5.1
+- Bug fix: reset busy status for agents when smart assignment is enabled
+- Added possibility to delete chat21 conversation 
+- Updated tybot-connector to 0.2.56
+
 # 2.5.0
 - Added new pricing modules
 - Added integrations route
