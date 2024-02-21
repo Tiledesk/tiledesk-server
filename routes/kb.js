@@ -428,7 +428,7 @@ async function scheduleScrape(resources) {
 
     console.log("scheduleScrape data: ", data)
 
-    let scheduler = new Scheduler({ AMQP_MANAGER_URL: process.env.AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: process.env.JOB_TOPIC_EXCHANGE });
+    let scheduler = new Scheduler({ AMQP_MANAGER_URL: process.env.AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: "tiledesk-trainer_test" });
     let result = await scheduler.trainSchedule(data);
     winston.info("Scheduler result: ", result);
 
