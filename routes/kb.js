@@ -3,6 +3,7 @@ var { KB } = require('../models/kb_setting');
 var router = express.Router();
 var winston = require('../config/winston');
 const openaiService = require('../services/openaiService');
+const { Scheduler } = require('../services/Scheduler');
 
 
 router.get('/', async (req, res) => {
@@ -163,11 +164,18 @@ router.post('/', async (req, res) => {
                 json.content = raw.value.content;
             }
 
-            startScrape(json).then((response) => {
-                winston.verbose("startScrape response: ", response);
-            }).catch((err) => {
-                winston.error("startScrape err: ", err);
-            })
+            let resources = [];
+
+            resources.push(json);
+            console.log("resources: ", resources);
+
+            scheduleScrape(resources);
+
+            // startScrape(json).then((response) => {
+            //     winston.verbose("startScrape response: ", response);
+            // }).catch((err) => {
+            //     winston.error("startScrape err: ", err);
+            // })
 
         }
     })
@@ -410,6 +418,21 @@ async function updateStatus(id, status) {
             }
         })
     })
+}
+
+async function scheduleScrape(resources) {
+
+    let data = {
+        resources: resources
+    }
+
+    console.log("scheduleScrape data: ", data)
+
+    let scheduler = new Scheduler({ AMQP_MANAGER_URL: process.env.AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: process.env.JOB_TOPIC_EXCHANGE });
+    let result = await scheduler.trainSchedule(data);
+    winston.info("Scheduler result: ", result);
+
+    return true;
 }
 
 async function startScrape(data) {
