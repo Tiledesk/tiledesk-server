@@ -23,7 +23,7 @@ class Scheduler {
         this.job_topic_exchange = config.JOB_TOPIC_EXCHANGE;
 
         jobManager = new JobManager(this.ampq_manager_url, {
-            debug: true,
+            debug: false,
             topic: this.job_topic_exchange,
             exchange: this.job_topic_exchange
         })
@@ -35,11 +35,9 @@ class Scheduler {
         try {
             winston.debug("(trainScheduler) data: ", data);
             jobManager.publish(data);
-            console.log("scheduled!")
             return { success: true, message: "Scheduled!" };
         } catch (err) {
             winston.error("(trainScheduler) scheduling error: ", err);
-            console.log("not scheduled!")
             return { success: false, message: "Scheduling error" };
         }
     }

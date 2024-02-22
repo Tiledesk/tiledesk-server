@@ -5,6 +5,8 @@ var winston = require('../config/winston');
 const openaiService = require('../services/openaiService');
 const { Scheduler } = require('../services/Scheduler');
 
+const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
+const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
 
 router.get('/', async (req, res) => {
 
@@ -167,8 +169,6 @@ router.post('/', async (req, res) => {
             let resources = [];
 
             resources.push(json);
-            console.log("resources: ", resources);
-
             scheduleScrape(resources);
 
             // startScrape(json).then((response) => {
@@ -181,6 +181,7 @@ router.post('/', async (req, res) => {
     })
 
 })
+
 
 router.put('/:kb_id', async (req, res) => {
 
@@ -426,9 +427,7 @@ async function scheduleScrape(resources) {
         resources: resources
     }
 
-    console.log("scheduleScrape data: ", data)
-
-    let scheduler = new Scheduler({ AMQP_MANAGER_URL: process.env.AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: "tiledesk-trainer_test" });
+    let scheduler = new Scheduler({ AMQP_MANAGER_URL: AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: JOB_TOPIC_EXCHANGE });
     let result = await scheduler.trainSchedule(data);
     winston.info("Scheduler result: ", result);
 
