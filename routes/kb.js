@@ -239,8 +239,12 @@ router.post('/scrape/single', async (req, res) => {
                 id: kb._id,
                 type: kb.type,
                 source: kb.source,
-                content: kb.content,
+                content: "",
                 namespace: kb.namespace
+            }
+
+            if (kb.content) {
+                json.content = kb.content;
             }
 
             startScrape(json).then((response) => {
