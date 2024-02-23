@@ -74,7 +74,7 @@ describe('KbRoute', () => {
         });
 
         it('getWithQueries', (done) => {
-            
+
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
 
@@ -153,7 +153,7 @@ describe('KbRoute', () => {
                                                             done();
 
                                                         })
-            
+
                                                 })
                                         }, 1000)
                                     })
@@ -219,6 +219,33 @@ describe('KbRoute', () => {
             });
 
         });
+
+        it('multiadd', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/kb/multi')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
+                        .end((err, res) => {
+
+                            //console.log("res.body: ", res.body)
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(4)
+                            done()
+
+                        })
+
+                });
+            });
+
+        })
 
     })
 });

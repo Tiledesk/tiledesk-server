@@ -2,11 +2,15 @@ var express = require('express');
 var { KB } = require('../models/kb_setting');
 var router = express.Router();
 var winston = require('../config/winston');
+var multer = require('multer')
+var upload = multer()
 const openaiService = require('../services/openaiService');
 const { Scheduler } = require('../services/Scheduler');
+const { forEach } = require('lodash');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+
 
 router.get('/', async (req, res) => {
 
@@ -30,7 +34,7 @@ router.get('/', async (req, res) => {
         limit = parseInt(req.query.limit);
         winston.debug("Get kb limit: " + limit)
     }
-    
+
     if (req.query.page) {
         page = parseInt(req.query.page);
         winston.debug("Get kb page: " + page)
@@ -58,54 +62,54 @@ router.get('/', async (req, res) => {
     let sortQuery = {};
     sortQuery[sortField] = direction;
     winston.debug("Get kb sortQuery: " + sortQuery);
-     
+
     KB.countDocuments(query, (err, kbs_count) => {
-            if (err) {
-                winston.error("Find all kbs error: ", err);
-            }
-            winston.debug("KBs count: ", kbs_count);
-            
-            KB.find(query)
-                .skip(skip)
-                .limit(limit)
-                .sort(sortQuery)
-                .exec((err, kbs) => {
-                    if (err) {
-                        winston.error("Find all kbs error: ", err);
-                        return res.status(500).send({ success: false, error: err });
-                    }
+        if (err) {
+            winston.error("Find all kbs error: ", err);
+        }
+        winston.debug("KBs count: ", kbs_count);
 
-                    winston.debug("KBs found: ", kbs);
+        KB.find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort(sortQuery)
+            .exec((err, kbs) => {
+                if (err) {
+                    winston.error("Find all kbs error: ", err);
+                    return res.status(500).send({ success: false, error: err });
+                }
 
-                    let response = {
-                        count: kbs_count,
-                        query: {},
-                        kbs: kbs
-                    }
-                    if (status) {
-                        response.query.status = status;
-                    }
-                    if (limit) {
-                        response.query.limit = limit;
-                    }
-                    if (status) {
-                        response.query.page = page;
-                    }
-                    if (sortField) {
-                        response.query.sortField = sortField;
-                    }
-                    if (direction) {
-                        response.query.direction = direction;
-                    }
-                    if (text) {
-                        response.query.search = text;
-                    }
+                winston.debug("KBs found: ", kbs);
+
+                let response = {
+                    count: kbs_count,
+                    query: {},
+                    kbs: kbs
+                }
+                if (status) {
+                    response.query.status = status;
+                }
+                if (limit) {
+                    response.query.limit = limit;
+                }
+                if (status) {
+                    response.query.page = page;
+                }
+                if (sortField) {
+                    response.query.sortField = sortField;
+                }
+                if (direction) {
+                    response.query.direction = direction;
+                }
+                if (text) {
+                    response.query.search = text;
+                }
 
 
-                    return res.status(200).send(response);
-                })
+                return res.status(200).send(response);
+            })
 
-        })
+    })
 
 
 })
@@ -178,6 +182,52 @@ router.post('/', async (req, res) => {
             // })
 
         }
+    })
+
+})
+
+router.post('/multi', upload.single('uploadFile'), async (req, res) => {
+
+    let list;
+    if (req.file) {
+        file_string = req.file.buffer.toString('utf-8');
+        list = file_string.trim().split('\n');
+    } else {
+        list = req.body.list;
+    }
+
+    let project_id = req.projectid;
+    console.log("list: ", list)
+
+    let kbs = [];
+    list.forEach(url => {
+        kbs.push({
+            id_project: project_id,
+            name: url,
+            source: url,
+            type: 'url',
+            content: "",
+            namespace: project_id,
+            status: -1
+        })
+    })
+
+    console.log("kbs: ", kbs.length);
+
+    KB.insertMany(kbs, { rawResult: true }, (err, savedKbs) => {
+        if (err) {
+            winston.error("Error saving many objects ", err);
+            return res.status(400).send({ success: false, error: err })
+        }
+
+        console.log("savedKbs: ", savedKbs.ops);
+        res.status(200).send(savedKbs.ops)
+
+        let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, ...keepAttrs}) => keepAttrs)
+        console.log("resources to be sent to worker: ", resources)
+
+        scheduleScrape(resources);
+
     })
 
 })
@@ -323,7 +373,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         let status = err.response.status;
-        res.status(status).send({ success: false,  statusText: err.response.statusText, error: err.response.data.detail });
+        res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
     })
 })
 
@@ -427,6 +477,7 @@ async function scheduleScrape(resources) {
         resources: resources
     }
 
+    winston.debug("Schedule job with following data: ", data);
     let scheduler = new Scheduler({ AMQP_MANAGER_URL: AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: JOB_TOPIC_EXCHANGE });
     let result = await scheduler.trainSchedule(data);
     winston.info("Scheduler result: ", result);
