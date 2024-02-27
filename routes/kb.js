@@ -223,7 +223,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         console.log("savedKbs: ", savedKbs.ops);
         res.status(200).send(savedKbs.ops)
 
-        let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, ...keepAttrs}) => keepAttrs)
+        let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
+        resources = resources.map(({ _id, ...rest }) => {
+            return { id: _id, ...rest };
+        });
         console.log("resources to be sent to worker: ", resources)
 
         scheduleScrape(resources);
