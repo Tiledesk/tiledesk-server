@@ -186,6 +186,7 @@ router.post('/', async (req, res) => {
 
 })
 
+
 router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let list;
@@ -222,38 +223,20 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         }
     })
 
+    saveBulk(operations, kbs, project_id).then((result) => {
 
-    saveBulk(operations).then((result) => {
-        let resources = result.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
             return { id: _id, ...rest };
         });
-        winston.info("resources to be sent to worker: ", resources)
-        res.status(200).send(result);
+        winston.info("resources to be sent to worker: ", resources)        
         scheduleScrape(resources);
+        res.status(200).send(result);
+
     }).catch((err) => {
-        winston.error("Unable to save kbs in bulk")
+        winston.error("Unable to save kbs in bulk ", err)
         res.status(500).send(err);
     })
-
-    // KB.insertMany(kbs, { rawResult: true }, (err, savedKbs) => {
-    //     if (err) {
-    //         winston.error("Error saving many objects ", err);
-    //         return res.status(400).send({ success: false, error: err })
-    //     }
-
-    //     console.log("savedKbs: ", savedKbs.ops);
-    //     res.status(200).send(savedKbs.ops)
-
-    //     let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
-    //     resources = resources.map(({ _id, ...rest }) => {
-    //         return { id: _id, ...rest };
-    //     });
-    //     console.log("resources to be sent to worker: ", resources)
-
-    //     scheduleScrape(resources);
-
-    // })
 
 })
 
@@ -486,16 +469,20 @@ router.delete('/:kb_id', async (req, res) => {
 
 })
 
-async function saveBulk(operations) {
+async function saveBulk(operations, kbs, project_id) {
 
     return new Promise((resolve, reject) => {
         KB.bulkWrite(operations, { ordered: false }).then((result) => {
             winston.verbose("bulkWrite operations result: ", result);
-            KB.find({ _id: { $in: result.result.upserted.map(doc => doc._id) } }).lean().then((documents) => {
-                resolve(documents);
+
+            KB.find({ id_project: project_id, source: { $in: kbs.map(kb => kb.source) } }).lean().then((documents) => {
+                winston.info("documents: ", documents);
+                resolve(documents)
             }).catch((err) => {
+                winston.error("Error finding documents ", err)
                 reject(err);
             })
+
         }).catch((err) => {
             reject(err);
         })

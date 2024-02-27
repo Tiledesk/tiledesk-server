@@ -235,17 +235,33 @@ describe('KbRoute', () => {
                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
                         .end((err, res) => {
 
-                            //console.log("res.body: ", res.body)
+                            // console.log("res.body: ", res.body)
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(4)
-                            done()
+
+                            setTimeout(() => {
+
+                                chai.request(server)
+                                    .post('/' + savedProject._id + '/kb/multi')
+                                    .auth(email, pwd)
+                                    .set('Content-Type', 'text/plain')
+                                    .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
+                                    .end((err, res) => {
+                                        
+                                        // console.log("res.body: ", res.body);
+                                        res.should.have.status(200);
+                                        expect(res.body.length).to.equal(4)
+
+                                        done()
+                                    })
+                            }, 2000)
 
                         })
 
                 });
             });
 
-        })
+        }).timeout(20000)
 
     })
 });
