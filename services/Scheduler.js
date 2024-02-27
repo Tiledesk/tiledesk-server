@@ -31,7 +31,7 @@ class Scheduler {
 
     trainSchedule(data) {
 
-        console.log("trainSchedule data: ", data);
+        winston.info("trainSchedule data: ", data);
         try {
             winston.debug("(trainScheduler) data: ", data);
             jobManager.publish(data);

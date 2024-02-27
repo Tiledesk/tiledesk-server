@@ -197,7 +197,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
 
     let project_id = req.projectid;
-    console.log("list: ", list)
 
     let kbs = [];
     list.forEach(url => {
@@ -212,26 +211,49 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         })
     })
 
-    console.log("kbs: ", kbs.length);
-
-    KB.insertMany(kbs, { rawResult: true }, (err, savedKbs) => {
-        if (err) {
-            winston.error("Error saving many objects ", err);
-            return res.status(400).send({ success: false, error: err })
+    let operations = kbs.map(doc => {
+        return {
+            updateOne: {
+                filter: { id_project: doc.id_project, type: 'url', source: doc.source },
+                update: doc,
+                upsert: true,
+                returnOriginal: false
+            }
         }
+    })
 
-        console.log("savedKbs: ", savedKbs.ops);
-        res.status(200).send(savedKbs.ops)
 
-        let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
+    saveBulk(operations).then((result) => {
+        let resources = result.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
             return { id: _id, ...rest };
         });
-        console.log("resources to be sent to worker: ", resources)
-
+        winston.info("resources to be sent to worker: ", resources)
+        res.status(200).send(result);
         scheduleScrape(resources);
-
+    }).catch((err) => {
+        winston.error("Unable to save kbs in bulk")
+        res.status(500).send(err);
     })
+
+    // KB.insertMany(kbs, { rawResult: true }, (err, savedKbs) => {
+    //     if (err) {
+    //         winston.error("Error saving many objects ", err);
+    //         return res.status(400).send({ success: false, error: err })
+    //     }
+
+    //     console.log("savedKbs: ", savedKbs.ops);
+    //     res.status(200).send(savedKbs.ops)
+
+    //     let resources = savedKbs.ops.map(({name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs}) => keepAttrs)
+    //     resources = resources.map(({ _id, ...rest }) => {
+    //         return { id: _id, ...rest };
+    //     });
+    //     console.log("resources to be sent to worker: ", resources)
+
+    //     scheduleScrape(resources);
+
+    // })
 
 })
 
@@ -292,8 +314,12 @@ router.post('/scrape/single', async (req, res) => {
                 id: kb._id,
                 type: kb.type,
                 source: kb.source,
-                content: kb.content,
+                content: "",
                 namespace: kb.namespace
+            }
+
+            if (kb.content) {
+                json.content = kb.content;
             }
 
             startScrape(json).then((response) => {
@@ -460,6 +486,23 @@ router.delete('/:kb_id', async (req, res) => {
 
 })
 
+async function saveBulk(operations) {
+
+    return new Promise((resolve, reject) => {
+        KB.bulkWrite(operations, { ordered: false }).then((result) => {
+            winston.verbose("bulkWrite operations result: ", result);
+            KB.find({ _id: { $in: result.result.upserted.map(doc => doc._id) } }).lean().then((documents) => {
+                resolve(documents);
+            }).catch((err) => {
+                reject(err);
+            })
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+
+}
+
 async function updateStatus(id, status) {
     return new Promise((resolve) => {
 
@@ -479,8 +522,7 @@ async function scheduleScrape(resources) {
     let data = {
         resources: resources
     }
-
-    winston.debug("Schedule job with following data: ", data);
+    winston.info("Schedule job with following data: ", data);
     let scheduler = new Scheduler({ AMQP_MANAGER_URL: AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: JOB_TOPIC_EXCHANGE });
     let result = await scheduler.trainSchedule(data);
     winston.info("Scheduler result: ", result);
