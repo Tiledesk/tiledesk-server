@@ -247,7 +247,7 @@ describe('KbRoute', () => {
                                     .set('Content-Type', 'text/plain')
                                     .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
                                     .end((err, res) => {
-                                        
+
                                         // console.log("res.body: ", res.body);
                                         res.should.have.status(200);
                                         expect(res.body.length).to.equal(4)
@@ -255,6 +255,37 @@ describe('KbRoute', () => {
                                         done()
                                     })
                             }, 2000)
+
+                        })
+
+                });
+            });
+
+        }).timeout(20000)
+
+        it('sitemap', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/kb/sitemap')
+                        .auth(email, pwd)
+                        .send({ sitemap: "https://www.xml-sitemaps.com/download/gethelp.tiledesk.com-8edbed225/sitemap.xml?view=1" })
+                        .end((err, res) => {
+
+                            if (err) { console.log("error: ", err) };
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            res.body.sites.should.be.a('array');
+                            expect(res.body.sites.length).to.equal(500);
+
+                            done();
 
                         })
 
