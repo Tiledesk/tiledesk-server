@@ -195,7 +195,8 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     uuid_user: uuidv4(),
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
-    role: RoleConstants.GUEST,         
+    role: RoleConstants.GUEST,
+    // permissions: req.body.permissions,         securiry issue here. you must check permession. Use only put endpoint (secured by admin)
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -228,6 +229,11 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   if (req.body.max_assigned_chat!=undefined) {
     update.max_assigned_chat = req.body.max_assigned_chat;
   }
+
+  if (req.body.number_assigned_requests!=undefined) {
+    update.number_assigned_requests = req.body.number_assigned_requests;
+  }
+
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
   }
@@ -275,6 +281,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.role = req.body.role;
   }
 
+  // if (req.body.permissions!=undefined) {
+  //   update.permissions = req.body.permissions;
+  // }
+
   if (req.body.user_available!=undefined) {
     update.user_available = req.body.user_available;
   }
@@ -287,6 +297,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.max_assigned_chat = req.body.max_assigned_chat;
   }
 
+  if (req.body.number_assigned_requests!=undefined) {
+    update.number_assigned_requests = req.body.number_assigned_requests;
+  }
+  
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
   }

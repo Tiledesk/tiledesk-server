@@ -685,7 +685,9 @@ class RulesTrigger {
          triggerEventEmitter.on('request.department.bot.launch', function(eventTrigger) {
 
             try {
-    
+
+              winston.info('triggerEventEmitter eventTrigger:', eventTrigger);
+
               winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
               var trigger = eventTrigger.trigger;         
               winston.debug('runAction trigger', trigger.toObject());
