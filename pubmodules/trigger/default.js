@@ -121,7 +121,7 @@ var tInviteBotObj = {
                     {key:'request.departmentHasBot',fact: 'json',path: 'department.hasBot', operator:'equal', value: true},
                     {key:'request.first_text',fact: 'json',path: 'first_text', operator:'equal', value: 'welcome'}
                 ]},
-    actions: [{key:'request.department.bot.launch', parameters: {text:"//start"}}], 
+    actions: [{key:'request.department.bot.launch', parameters: {text:"/start"}}], 
     enabled:true,
     code: 's_invite_bot_01',
     type: 'internal',
