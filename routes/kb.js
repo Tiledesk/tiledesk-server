@@ -201,6 +201,11 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let project_id = req.projectid;
 
+    if (list.length > 300) {
+        winston.error("Too many urls. Can't indexing more than 300 urls at a time.");
+        return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 300 urls at a time."})
+    }
+
     let kbs = [];
     list.forEach(url => {
         kbs.push({
@@ -231,7 +236,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         resources = resources.map(({ _id, ...rest }) => {
             return { id: _id, ...rest };
         });
-        winston.info("resources to be sent to worker: ", resources)        
+        winston.verbose("resources to be sent to worker: ", resources)        
         scheduleScrape(resources);
         res.status(200).send(result);
 
@@ -461,7 +466,7 @@ router.delete('/:kb_id', async (req, res) => {
             })
 
         } else {
-            winston.info("resp.data: ", resp.data);
+            winston.verbose("resp.data: ", resp.data);
 
             KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4] } }, (err, deletedKb) => {
                 if (err) {
@@ -491,7 +496,7 @@ async function saveBulk(operations, kbs, project_id) {
             winston.verbose("bulkWrite operations result: ", result);
 
             KB.find({ id_project: project_id, source: { $in: kbs.map(kb => kb.source) } }).lean().then((documents) => {
-                winston.info("documents: ", documents);
+                winston.debug("documents: ", documents);
                 resolve(documents)
             }).catch((err) => {
                 winston.error("Error finding documents ", err)

@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
 
-let log = true;
+let log = false;
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -136,7 +136,7 @@ describe('KbRoute', () => {
                                                         .get('/' + savedProject._id + "/kb" + query)
                                                         .auth(email, pwd)
                                                         .end((err, res) => {
-                                                            console.log("getall res.body: ", res.body);
+                                                            if (log) { console.log("getall res.body: ", res.body); }
                                                             res.should.have.status(200);
                                                             res.body.should.be.a('object');
                                                             res.body.kbs.should.be.a('array');
@@ -261,7 +261,36 @@ describe('KbRoute', () => {
                 });
             });
 
-        }).timeout(20000)
+        }).timeout(10000)
+
+        it('multiaddTooManyUrls', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/kb/multi')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './TooManykbUrlsList.txt')), 'TooManykbUrlsList.txt')
+                        .end((err, res) => {
+
+                            // console.log("res.body: ", res.body)
+                            res.should.have.status(403);
+                            expect(res.body.success).to.equal(false);
+                            expect(res.body.error).to.equal("Too many urls. Can't indexing more than 300 urls at a time.");
+
+                            done()
+
+                        })
+
+                });
+            });
+
+        })
 
         it('sitemap', (done) => {
 
