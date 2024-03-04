@@ -685,8 +685,9 @@ class RulesTrigger {
          triggerEventEmitter.on('request.department.bot.launch', function(eventTrigger) {
 
             try {
-
+    
               winston.info('triggerEventEmitter eventTrigger:', eventTrigger);
+
 
               winston.debug('runAction eventTrigger.eventSuccess:', eventTrigger.eventSuccess);
               var trigger = eventTrigger.trigger;         
@@ -708,6 +709,15 @@ class RulesTrigger {
               var id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
+
+
+              var startText = "\\start";
+              if (action.parameters && action.parameters.text) {
+                startText = action.parameters.text;
+              }
+              winston.info('runAction action startText: ' + startText);
+
+
               // reroute(request_id, id_project, nobot) {
               requestService.reroute(request_id, id_project).then(function(request) {
 
@@ -718,7 +728,7 @@ class RulesTrigger {
                   'system', 
                   'Bot',                                     
                   request_id,
-                  '\\start',
+                  startText, // /start controlla se chatbot nuovo manda /start altrimenti per i vecchi \start
                   id_project,
                   null,
                   {subtype:'info', updateconversation : false}
@@ -777,7 +787,7 @@ class RulesTrigger {
                     'system', 
                     'Bot',                                     
                     request_id,
-                    '\\start',
+                    '\\start', // / start
                     id_project,
                     null,
                     {subtype:'info', updateconversation : false}
