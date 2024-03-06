@@ -8,7 +8,6 @@ const openaiService = require('../services/openaiService');
 const { Scheduler } = require('../services/Scheduler');
 
 const Sitemapper = require('sitemapper');
-const sitemap = new Sitemapper();
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -201,9 +200,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let project_id = req.projectid;
 
-    if (list.length > 300) {
-        winston.error("Too many urls. Can't indexing more than 300 urls at a time.");
-        return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 300 urls at a time."})
+    // if (list.length > 300) {
+    //     winston.error("Too many urls. Can't indexing more than 300 urls at a time.");
+    //     return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 300 urls at a time."})
+    // }
+
+    if (list.length > 20) {
+        winston.error("Too many urls. Can't indexing more than 20 urls at a time.");
+        return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 20 urls at a time."})
     }
 
     let kbs = [];
@@ -250,11 +254,17 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 router.post('/sitemap', async (req, res) => {
 
     let sitemap_url = req.body.sitemap;
+    
+    const sitemap = new Sitemapper({
+        url: sitemap_url,
+        timeout: 15000
+    });
 
-    sitemap.fetch(sitemap_url).then((data) => {
+    sitemap.fetch().then((data) => {
         winston.debug("data: ", data);
         res.status(200).send(data);
     }).catch((err) => {
+        console.error("err ", err)
         res.status(500).send({ success: false, error: err });
     })
 

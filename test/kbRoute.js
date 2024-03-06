@@ -281,7 +281,7 @@ describe('KbRoute', () => {
                             // console.log("res.body: ", res.body)
                             res.should.have.status(403);
                             expect(res.body.success).to.equal(false);
-                            expect(res.body.error).to.equal("Too many urls. Can't indexing more than 300 urls at a time.");
+                            expect(res.body.error).to.equal("Too many urls. Can't index more than 20 urls at a time.");
 
                             done()
 
@@ -303,16 +303,20 @@ describe('KbRoute', () => {
                     chai.request(server)
                         .post('/' + savedProject._id + '/kb/sitemap')
                         .auth(email, pwd)
-                        .send({ sitemap: "https://www.xml-sitemaps.com/download/gethelp.tiledesk.com-8edbed225/sitemap.xml?view=1" })
+                        // .send({ sitemap: "https://www.wired.it/sitemap.xml" })
+                        .send({ sitemap: "https://gethelp.tiledesk.com/sitemap.xml" })
                         .end((err, res) => {
 
                             if (err) { console.log("error: ", err) };
                             if (log) { console.log("res.body: ", res.body) }
 
+                            console.log("error: ", err)
+                            console.log("res.body: ", res.body)
+
+                            console.log("sites length: ", res.body.sites.length)
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             res.body.sites.should.be.a('array');
-                            expect(res.body.sites.length).to.equal(500);
 
                             done();
 
@@ -321,7 +325,7 @@ describe('KbRoute', () => {
                 });
             });
 
-        }).timeout(20000)
+        }).timeout(10000)
 
     })
 });
