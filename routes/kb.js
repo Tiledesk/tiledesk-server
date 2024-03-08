@@ -200,15 +200,15 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let project_id = req.projectid;
 
-    // if (list.length > 300) {
-    //     winston.error("Too many urls. Can't indexing more than 300 urls at a time.");
-    //     return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 300 urls at a time."})
-    // }
-
-    if (list.length > 20) {
-        winston.error("Too many urls. Can't indexing more than 20 urls at a time.");
-        return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 20 urls at a time."})
+    if (list.length > 300) {
+        winston.error("Too many urls. Can't index more than 300 urls at a time.");
+        return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
     }
+
+    // if (list.length > 20) {
+    //     winston.error("Too many urls. Can't indexing more than 20 urls at a time.");
+    //     return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 20 urls at a time."})
+    // }
 
     let kbs = [];
     list.forEach(url => {
