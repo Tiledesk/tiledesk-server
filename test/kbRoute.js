@@ -281,7 +281,7 @@ describe('KbRoute', () => {
                             // console.log("res.body: ", res.body)
                             res.should.have.status(403);
                             expect(res.body.success).to.equal(false);
-                            expect(res.body.error).to.equal("Too many urls. Can't index more than 20 urls at a time.");
+                            expect(res.body.error).to.equal("Too many urls. Can't index more than 300 urls at a time.");
 
                             done()
 

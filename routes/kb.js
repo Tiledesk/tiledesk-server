@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
 const openaiService = require('../services/openaiService');
+const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 
 const Sitemapper = require('sitemapper');
@@ -12,6 +13,15 @@ const Sitemapper = require('sitemapper');
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
 
+let jobManager = new JobManager(AMQP_MANAGER_URL, {
+    debug: false,
+    topic: JOB_TOPIC_EXCHANGE,
+    exchange: JOB_TOPIC_EXCHANGE
+})
+
+jobManager.connectAndStartPublisher(() => {
+    winston.info("ConnectPublisher done");
+})
 
 router.get('/', async (req, res) => {
 
@@ -540,8 +550,13 @@ async function scheduleScrape(resources) {
         resources: resources
     }
     winston.info("Schedule job with following data: ", data);
-    let scheduler = new Scheduler({ AMQP_MANAGER_URL: AMQP_MANAGER_URL, JOB_TOPIC_EXCHANGE: JOB_TOPIC_EXCHANGE });
-    let result = await scheduler.trainSchedule(data);
+    let scheduler = new Scheduler({ jobManager: jobManager });
+    scheduler.trainSchedule(data, (err, result) => {
+        if (err) {
+            winston.error("Scheduling error: ", err);
+        }
+        winston.info("Scheduling result: ", result);
+    });
     winston.info("Scheduler result: ", result);
 
     return true;
