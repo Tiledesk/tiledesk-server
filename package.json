@@ -44,7 +44,7 @@
     "@tiledesk/tiledesk-dialogflow-connector": "^1.8.4",
     "@tiledesk/tiledesk-json-rules-engine": "^4.0.3",
     "@tiledesk/tiledesk-kaleyra-proxy": "^0.1.7",
-    "@tiledesk/tiledesk-messenger-connector": "^0.1.18",
+    "@tiledesk/tiledesk-messenger-connector": "^0.1.19",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.10",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.7",
