@@ -378,7 +378,8 @@ router.post('/scrape/status', async (req, res) => {
         let update = {};
 
         if (response.data.status_code) {
-            update.status = response.data.status_code;
+            // update.status = response.data.status_code;
+            update.status = statusConverter(response.data.status_code);
         }
 
         KB.findByIdAndUpdate(data.id, update, { new: true }, (err, savedKb) => {
@@ -528,6 +529,30 @@ async function saveBulk(operations, kbs, project_id) {
         })
     })
 
+}
+
+async function statusConverter(status) {
+    return new Promise((resolve) => {
+
+        let td_status;
+        switch(status) {
+            case 0:
+                td_status = -1;
+                break;
+            case 2:
+                td_status = 200;
+                break;    
+            case 3:
+                td_status = 300;
+                break;
+            case 4:
+                td_status = 400;
+                break;
+            default:
+                td_status = -1
+        }
+        return td_status;
+    })
 }
 
 async function updateStatus(id, status) {
