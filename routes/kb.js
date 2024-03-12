@@ -371,7 +371,7 @@ router.post('/scrape/status', async (req, res) => {
         returnObject = true;
     }
 
-    openaiService.scrapeStatus(data).then((response) => {
+    openaiService.scrapeStatus(data).then( async (response) => {
 
         winston.debug("scrapeStatus response.data: ", response.data);
 
@@ -379,7 +379,8 @@ router.post('/scrape/status', async (req, res) => {
 
         if (response.data.status_code) {
             // update.status = response.data.status_code;
-            update.status = statusConverter(response.data.status_code);
+            update.status = await statusConverter(response.data.status_code)
+                
         }
 
         KB.findByIdAndUpdate(data.id, update, { new: true }, (err, savedKb) => {
@@ -552,7 +553,7 @@ async function statusConverter(status) {
             default:
                 td_status = -1
         }
-        return td_status;
+        resolve(td_status);
     })
 }
 
