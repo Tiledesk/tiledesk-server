@@ -367,7 +367,7 @@ router.post('/scrape/status', async (req, res) => {
 
     if (req.query &&
         req.query.returnObject &&
-        (req.query.returnObject === true || req.query.returnObject === true)) {
+        (req.query.returnObject === true || req.query.returnObject === 'true')) {
         returnObject = true;
     }
 
