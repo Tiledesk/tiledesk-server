@@ -386,6 +386,7 @@ router.post('/scrape/status', async (req, res) => {
 
             if (err) {
                 winston.verbose("Status was successfully recovered, but the update on the db failed");
+                winston.error("find kb by id and updated error: ", err);
 
                 if (returnObject) {
                     return res.status(206).send({ warning: "Unable to udpate content on db", message: "The original reply was forwarded", data: response.data });
