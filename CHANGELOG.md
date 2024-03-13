@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.5.3
+- Updated whatsapp-connector to 0.1.64
+
 # 2.5.2
 - Updated messenger-connector to 0.1.18
 - Bug fix: kbs createdAt wrongly generated
