@@ -61,6 +61,7 @@ async (req, res)  => {
   // TODO se sei agent non puoi cambiare sender
   // verificare validazione invio immagine senza caption 
   var project_user = req.projectuser;
+  winston.info('project_user: ' , project_user);
   var sender = req.body.sender;
   var fullname = req.body.senderFullname || req.user.fullName;
   var email = req.body.email || req.user.email;
@@ -182,6 +183,8 @@ async (req, res)  => {
                   priority: req.body.priority,
                   followers: req.body.followers,
                 };
+                winston.info('new_request: ' , new_request);
+
   
                 return requestService.create(new_request).then(function (savedRequest) {
 
