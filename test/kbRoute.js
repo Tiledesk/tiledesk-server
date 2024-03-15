@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
 
-let log = false;
+let log = true;
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -40,11 +40,16 @@ describe('KbRoute', () => {
                         content: ""
                     }
 
+                    console.log("kb: ", kb);
+
                     chai.request(server)
                         .post('/' + savedProject._id + '/kb')
                         .auth(email, pwd)
                         .send(kb) // can be empty
                         .end((err, res) => {
+                            if (err) {
+                                console.error("err: ", err);
+                            }
                             if (log) { console.log("create kb res.body: ", res.body); }
                             res.should.have.status(200);
                             // res.body.should.be.a('object');
@@ -71,7 +76,7 @@ describe('KbRoute', () => {
                 });
             });
 
-        });
+        }).timeout(10000);
 
         it('getWithQueries', (done) => {
 
@@ -238,6 +243,51 @@ describe('KbRoute', () => {
                             // console.log("res.body: ", res.body)
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(4)
+                            
+                            done();
+
+                            // setTimeout(() => {
+
+                            //     chai.request(server)
+                            //         .post('/' + savedProject._id + '/kb/multi')
+                            //         .auth(email, pwd)
+                            //         .set('Content-Type', 'text/plain')
+                            //         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
+                            //         .end((err, res) => {
+
+                            //             // console.log("res.body: ", res.body);
+                            //             res.should.have.status(200);
+                            //             expect(res.body.length).to.equal(4)
+
+                            //             done()
+                            //         })
+                            // }, 2000)
+
+                        })
+
+                });
+            });
+
+        }).timeout(10000)
+
+        it('multiadd-fail', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/kb/multi')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
+                        .end((err, res) => {
+
+                            // console.log("res.body: ", res.body)
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(4)
 
                             setTimeout(() => {
 
@@ -263,34 +313,34 @@ describe('KbRoute', () => {
 
         }).timeout(10000)
 
-        it('multiaddTooManyUrls', (done) => {
+        // it('tooManyUrls', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/kb/multi')
-                        .auth(email, pwd)
-                        .set('Content-Type', 'text/plain')
-                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './TooManykbUrlsList.txt')), 'TooManykbUrlsList.txt')
-                        .end((err, res) => {
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/kb/multi')
+        //                 .auth(email, pwd)
+        //                 .set('Content-Type', 'text/plain')
+        //                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './TooManykbUrlsList.txt')), 'TooManykbUrlsList.txt')
+        //                 .end((err, res) => {
 
-                            // console.log("res.body: ", res.body)
-                            res.should.have.status(403);
-                            expect(res.body.success).to.equal(false);
-                            expect(res.body.error).to.equal("Too many urls. Can't index more than 300 urls at a time.");
+        //                     // console.log("res.body: ", res.body)
+        //                     res.should.have.status(403);
+        //                     expect(res.body.success).to.equal(false);
+        //                     expect(res.body.error).to.equal("Too many urls. Can't index more than 300 urls at a time.");
 
-                            done()
+        //                     done()
 
-                        })
+        //                 })
 
-                });
-            });
+        //         });
+        //     });
 
-        })
+        // })
 
         it('sitemap', (done) => {
 

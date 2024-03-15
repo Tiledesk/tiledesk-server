@@ -145,6 +145,22 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
+    let quoteManager = req.app.get('quote_manager');
+    let limits = await quoteManager.getPlanLimits(req.project);
+    let kbs_limit = limits.kbs;
+    winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+    let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
+    winston.verbose("Kbs count: " + kbs_count);
+
+    if (kbs_count >= kbs_limit) {
+        return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+    }
+
+    let total_count = kbs_count + 1;
+    if (total_count > kbs_limit) {
+        return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+    }
     let new_kb = {
         id_project: project_id,
         name: body.name,
@@ -158,7 +174,6 @@ router.post('/', async (req, res) => {
         new_kb.namespace = project_id;
     }
     winston.debug("adding kb: ", new_kb);
-
 
     KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
         if (err) {
@@ -210,15 +225,27 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let project_id = req.projectid;
 
+    let quoteManager = req.app.get('quote_manager');
+    let limits = await quoteManager.getPlanLimits(req.project);
+    let kbs_limit = limits.kbs;
+    winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+    let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
+    winston.verbose("Kbs count: " + kbs_count);
+
+    if (kbs_count >= kbs_limit) {
+        return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+    }
+
+    let total_count = kbs_count + list.length;
+    if (total_count > kbs_limit) {
+        return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+    }
+
     if (list.length > 300) {
         winston.error("Too many urls. Can't index more than 300 urls at a time.");
         return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
     }
-
-    // if (list.length > 20) {
-    //     winston.error("Too many urls. Can't indexing more than 20 urls at a time.");
-    //     return res.status(403).send({ success: false, error: "Too many urls. Can't indexing more than 20 urls at a time."})
-    // }
 
     let kbs = [];
     list.forEach(url => {
