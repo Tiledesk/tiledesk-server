@@ -32,8 +32,9 @@ class RequestService {
   }
 
   listen() {
-    this.updateSnapshotLead();
-    this.sendMessageUpdateLead();
+    // 12 marzo 2024 I disabled these two functions due to performance problems for a chatbot created by Sponziello "Community bots Sendinblue Hubspot Qapla)"
+    // this.updateSnapshotLead();
+    // this.sendMessageUpdateLead();
   }
   updateSnapshotLead() {
     leadEvent.on('lead.update', function (lead) {

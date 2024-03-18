@@ -33,7 +33,10 @@ class BotEvent extends EventEmitter {
             winston.debug("message", message);
 
             // TODO usa meglio se attributes.reply_always=true
-            if (message.sender === "system" && message.text && message.text!="\\start") {
+            // if (message.sender === "system" && message.text && message.text!="\\start") {
+            if (message.sender === "system" && message.text && (message.text=="\\start" || message.text=="/start") ) {
+                winston.debug("it s a start message");
+            } else {
                 winston.debug("it s a message sent from system, exit");
                 return null;
             }
