@@ -648,7 +648,7 @@ async function startScrape(data) {
     return new Promise((resolve, reject) => {
         openaiService.singleScrape(data).then(async (resp) => {
             winston.debug("singleScrape resp: ", resp.data);
-            let status_updated = await updateStatus(data.id, 0);
+            let status_updated = await updateStatus(data.id, 100);
             winston.verbose("status of kb " + data.id + " updated: " + status_updated);
             resolve(resp.data);
         }).catch((err) => {

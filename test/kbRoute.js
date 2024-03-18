@@ -5,7 +5,7 @@ process.env.GPTKEY = "fakegptkey";
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
 
-let log = true;
+let log = false;
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -76,7 +76,7 @@ describe('KbRoute', () => {
                         type: "url",
                         source: "https://www.exampleurl5.com",
                         content: "",
-                        namespace: "paperino"
+                        namespace: "fakenamespace"
                     }
 
                     chai.request(server)
@@ -90,7 +90,7 @@ describe('KbRoute', () => {
                             
                             res.should.have.status(403);
                             res.body.should.be.a('object');
-                            expect(res.body.sucess).equal.to(false);
+                            expect(res.body.success).to.equal(false);
                             expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
 
                             done();
