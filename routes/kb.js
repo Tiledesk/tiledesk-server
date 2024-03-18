@@ -145,6 +145,12 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
+    if (req.body.namespace) {
+        if (req.body.namespace != req.projectid) {
+            return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
+        }
+    }
+
     let quoteManager = req.app.get('quote_manager');
     let limits = await quoteManager.getPlanLimits(req.project);
     let kbs_limit = limits.kbs;
@@ -441,6 +447,12 @@ router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
 
+    winston.info("id_project: ", req.projectid);
+
+    if (req.body.namespace != req.projectid) {
+        return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
+    }
+
     if (!data.gptkey) {
         let gptkey = process.env.GPTKEY;
         if (!gptkey) {
@@ -454,8 +466,16 @@ router.post('/qa', async (req, res) => {
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("qa err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+        console.log(err.response)
+        if (err.response 
+            && err.response.status) {
+                let status = err.response.status;
+                res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+        }
+        else {
+            res.status(500).send({ success: false, error: err });
+        }
+        
     })
 })
 
@@ -611,7 +631,6 @@ async function scheduleScrape(resources) {
         }
         winston.info("Scheduling result: ", result);
     });
-    winston.info("Scheduler result: ", result);
 
     return true;
 }
