@@ -63,7 +63,48 @@ describe('KbRoute', () => {
 
         }).timeout(10000);
 
-        it('createNewKb-namespaceNotBelongsProject', (done) => {
+        // logic in standby
+        // it('createNewKb-namespaceNotBelongsProject', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+        //             let kb = {
+        //                 name: "example_name5",
+        //                 type: "url",
+        //                 source: "https://www.exampleurl5.com",
+        //                 content: "",
+        //                 namespace: "fakenamespace"
+        //             }
+
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/kb')
+        //                 .auth(email, pwd)
+        //                 .send(kb) // can be empty
+        //                 .end((err, res) => {
+                            
+        //                     if (err) { console.error("err: ", err); }
+        //                     if (log) { console.log("create kb res.body: ", res.body); }
+                            
+        //                     res.should.have.status(403);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.success).to.equal(false);
+        //                     expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
+
+        //                     done();
+                   
+
+        //                 })
+
+        //         });
+        //     });
+
+        //}).timeout(10000);
+
+        it('createNewKb-replaceNamespace', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -88,10 +129,10 @@ describe('KbRoute', () => {
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("create kb res.body: ", res.body); }
                             
-                            res.should.have.status(403);
+                            res.should.have.status(200);
                             res.body.should.be.a('object');
-                            expect(res.body.success).to.equal(false);
-                            expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
+                            expect(res.body.value.namespace).not.equal("fakenamespace");
+                            expect(res.body.value.namespace).to.equal(savedProject._id.toString());
 
                             done();
                    
@@ -420,39 +461,40 @@ describe('KbRoute', () => {
 
         // })
 
+        // logic in standby
+        // it('askkb-namespaceNotBelongsProject', (done) => {
 
-        it('askkb-namespaceNotBelongsProject', (done) => {
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+        //         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
 
-            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-                projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
+        //             /**
+        //              * README
+        //              * Namespace should be equal to savedProject._id;
+        //              * A generic mongodb ID (like user id) is used instead for test porpouse
+        //              */
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + "/kb/qa")
+        //                 .auth(email, pwd)
+        //                 .send({ model: "gpt-4", namespace: savedUser._id, question: "sample question"})
+        //                 .end((err, res) => {
 
-                    /**
-                     * README
-                     * Namespace should be equal to savedProject._id;
-                     * A generic mongodb ID (like user id) is used instead for test porpouse
-                     */
-                    chai.request(server)
-                        .post('/' + savedProject._id + "/kb/qa")
-                        .auth(email, pwd)
-                        .send({ model: "gpt-4", namespace: savedUser._id, question: "sample question"})
-                        .end((err, res) => {
+        //                     if (err) { console.log("error: ", err) };
+        //                     if (log) { console.log("res.body: ", res.body) };
 
-                            if (err) { console.log("error: ", err) };
-                            if (log) { console.log("res.body: ", res.body) };
-
-                            res.should.have.status(403); 
-                            res.body.should.be.a('object');
-                            expect(res.body.success).to.equal(false);
-                            expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
+        //                     res.should.have.status(403); 
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.success).to.equal(false);
+        //                     expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
                             
-                            done();                            
-                        })
-                })
-            })
-        }).timeout(10000)
+        //                     done();                            
+        //                 })
+        //         })
+        //     })
+        // }).timeout(10000)
+
 
         it('sitemap', (done) => {
 

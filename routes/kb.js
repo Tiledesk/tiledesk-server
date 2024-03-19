@@ -145,11 +145,14 @@ router.post('/', async (req, res) => {
     let project_id = req.projectid;
     let body = req.body;
 
-    if (req.body.namespace) {
-        if (req.body.namespace != req.projectid) {
-            return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
-        }
-    }
+    // add or override namespace value if it is passed for security reason
+    body.namespace = project_id;
+
+    // if (req.body.namespace) {
+    //     if (req.body.namespace != req.projectid) {
+    //         return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
+    //     }
+    // }
 
     let quoteManager = req.app.get('quote_manager');
     let limits = await quoteManager.getPlanLimits(req.project);
@@ -445,13 +448,13 @@ router.post('/scrape/status', async (req, res) => {
 
 router.post('/qa', async (req, res) => {
     let data = req.body;
+    // add or override namespace value if it is passed for security reason
+    data.namespace = req.projectid;
     winston.debug("/qa data: ", data);
 
-    winston.info("id_project: ", req.projectid);
-
-    if (req.body.namespace != req.projectid) {
-        return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
-    }
+    // if (req.body.namespace != req.projectid) {
+    //     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
+    // }
 
     if (!data.gptkey) {
         let gptkey = process.env.GPTKEY;
@@ -463,7 +466,26 @@ router.post('/qa', async (req, res) => {
 
     openaiService.askNamespace(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
-        res.status(200).send(resp.data);
+        let answer = resp.data;
+
+        let id = answer.id;
+        let index = id.indexOf("#");
+        if (index != -1) {
+            id = id.sbstring(index + 1);
+        }
+
+        KB.findById(id, (err, resource) => {
+
+            if (err) {
+                winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
+                return res.status(200).send(resp.data);
+            }
+
+            answer.source = resource.name;
+            return res.status(200).send(answer);
+        })
+    
+
     }).catch((err) => {
         winston.error("qa err: ", err);
         console.log(err.response)
