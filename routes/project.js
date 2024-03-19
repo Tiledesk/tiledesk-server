@@ -75,6 +75,12 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
 
   var update = {};
+
+  if (req.body.profile) {
+    winston.info("Illegal field profile detected. Deny project profile update.");
+    return res.status(403).send({ success: false,  error: "You cannot edit the project profile."});
+
+  }
   
 //like patch
   if (req.body.name!=undefined) {
@@ -233,9 +239,9 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     update.bannedUsers = req.body.bannedUsers;
   }
 
-  if (req.body.profile != undefined) {
-    update.profile = req.body.profile;
-  }
+  // if (req.body.profile != undefined) {
+  //   update.profile = req.body.profile;
+  // }
   
   // if (req.body.defaultLanguage!=undefined) {
   //   update.defaultLanguage = req.body.defaultLanguage; 
