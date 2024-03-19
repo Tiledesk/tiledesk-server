@@ -175,6 +175,8 @@ trainingService.start();
 var geoService = require('./services/geoService');
 // geoService.listen(); //queued
 
+var updateLeadQueued = require('./services/updateLeadQueued');
+
 let JobsManager = require('./jobsManager');
 
 let jobWorkerEnabled = false;
@@ -183,7 +185,7 @@ if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == 
 }
 winston.info("JobsManager jobWorkerEnabled: "+ jobWorkerEnabled);  
 
-let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier);
+let jobsManager = new JobsManager(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
 
 var faqBotHandler = require('./services/faqBotHandler');
 faqBotHandler.listen();
