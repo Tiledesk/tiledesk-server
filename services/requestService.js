@@ -36,97 +36,100 @@ class RequestService {
     // this.updateSnapshotLead();
     // this.sendMessageUpdateLead();
   }
-  updateSnapshotLead() {
-    leadEvent.on('lead.update', function (lead) {
-      setImmediate(() => {
-        winston.debug("updateSnapshotLead on lead.update ", lead);
 
-        Request.updateMany({ lead: lead._id, id_project: lead.id_project }, { "$set": { "snapshot.lead": lead } }, function (err, updates) {
-          if (err) {
-            winston.error("Error updating requests updateSnapshotLead", err);
-            return 0;
-          }
-          winston.verbose("updateSnapshotLead updated for " + updates.nModified + " request")
-          requestEvent.emit('request.update.snapshot.lead', { lead: lead, updates: updates });
-          return;
-        });
-        // Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
+      // 12 marzo 2024 I disabled these two functions due to performance problems for a chatbot created by Sponziello "Community bots Sendinblue Hubspot Qapla)"
+  // updateSnapshotLead() {
+  //   leadEvent.on('lead.update', function (lead) {
+  //     setImmediate(() => {
+  //       winston.debug("updateSnapshotLead on lead.update ", lead);
 
-        //     if (err) {
-        //         winston.error("Error getting request by lead", err);
-        //         return 0;
-        //     }
-        //     if (!requests || (requests && requests.length==0)) {
-        //         winston.warn("No request found for lead id " +lead._id );
-        //         return 0;
-        //     }
+  //       Request.updateMany({ lead: lead._id, id_project: lead.id_project }, { "$set": { "snapshot.lead": lead } }, function (err, updates) {
+  //         if (err) {
+  //           winston.error("Error updating requests updateSnapshotLead", err);
+  //           return 0;
+  //         }
+  //         winston.verbose("updateSnapshotLead updated for " + updates.nModified + " request")
+  //         requestEvent.emit('request.update.snapshot.lead', { lead: lead, updates: updates });
+  //         return;
+  //       });
+  //       // Request.find({lead: lead._id, id_project: lead.id_project}, function(err, requests) {
 
-        //     requests.forEach(function(request) {
+  //       //     if (err) {
+  //       //         winston.error("Error getting request by lead", err);
+  //       //         return 0;
+  //       //     }
+  //       //     if (!requests || (requests && requests.length==0)) {
+  //       //         winston.warn("No request found for lead id " +lead._id );
+  //       //         return 0;
+  //       //     }
 
-
-        //     });
-
-        // });
+  //       //     requests.forEach(function(request) {
 
 
-      });
-    });
-  }
+  //       //     });
+
+  //       // });
 
 
-  sendMessageUpdateLead() {
-    leadEvent.on('lead.fullname.email.update', function (lead) {
-      winston.debug("lead.fullname.email.update ");
-      // leadEvent.on('lead.update', function(lead) {
+  //     });
+  //   });
+  // }
 
-      setImmediate(() => {
-        winston.debug("sendMessageUpdateLead on lead.update ", lead);
 
-        Request.find({ lead: lead._id, id_project: lead.id_project }, function (err, requests) {
+  // 12 marzo 2024 I disabled these two functions due to performance problems for a chatbot created by Sponziello "Community bots Sendinblue Hubspot Qapla)"
+  // sendMessageUpdateLead() {
+  //   leadEvent.on('lead.fullname.email.update', function (lead) {
+  //     winston.debug("lead.fullname.email.update ");
+  //     // leadEvent.on('lead.update', function(lead) {
 
-          if (err) {
-            winston.error("Error getting sendMessageUpdateLead request by lead", err);
-            return 0;
-          }
-          if (!requests || (requests && requests.length == 0)) {
-            winston.warn("sendMessageUpdateLead No request found for lead id " + lead._id);
-            return 0;
-          }
+  //     setImmediate(() => {
+  //       winston.debug("sendMessageUpdateLead on lead.update ", lead);
 
-          // winston.info("sendMessageUpdateLead requests ", requests);
+  //       Request.find({ lead: lead._id, id_project: lead.id_project }, function (err, requests) {
 
-          requests.forEach(function (request) {
+  //         if (err) {
+  //           winston.error("Error getting sendMessageUpdateLead request by lead", err);
+  //           return 0;
+  //         }
+  //         if (!requests || (requests && requests.length == 0)) {
+  //           winston.warn("sendMessageUpdateLead No request found for lead id " + lead._id);
+  //           return 0;
+  //         }
 
-            winston.debug("sendMessageUpdateLead request ", request);
+  //         // winston.info("sendMessageUpdateLead requests ", requests);
 
-            // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language)
-            messageService.send(
-              'system',
-              'Bot',
-              // lead.fullname,                                
-              request.request_id,
-              "Lead updated",
-              request.id_project,
-              'system',
-              {
-                subtype: "info/support",
-                "updateconversation": false,
-                messagelabel: { key: "LEAD_UPDATED" },
-                updateUserEmail: lead.email,
-                updateUserFullname: lead.fullname
-              },
-              undefined,
-              request.language
+  //         requests.forEach(function (request) {
 
-            );
+  //           winston.debug("sendMessageUpdateLead request ", request);
 
-          });
+  //           // send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language)
+  //           messageService.send(
+  //             'system',
+  //             'Bot',
+  //             // lead.fullname,                                
+  //             request.request_id,
+  //             "Lead updated",
+  //             request.id_project,
+  //             'system',
+  //             {
+  //               subtype: "info/support",
+  //               "updateconversation": false,
+  //               messagelabel: { key: "LEAD_UPDATED" },
+  //               updateUserEmail: lead.email,
+  //               updateUserFullname: lead.fullname
+  //             },
+  //             undefined,
+  //             request.language
 
-        });
+  //           );
 
-      });
-    });
-  }
+  //         });
+
+  //       });
+
+  //     });
+  //   });
+  // }
 
 
   getAvailableAgentsCount(agents) {

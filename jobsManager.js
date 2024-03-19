@@ -2,7 +2,7 @@
 var winston = require('./config/winston');
 
 class JobsManager {
-    constructor(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier) {
+    constructor(jobWorkerEnabled, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued) {
         this.geoService = geoService;
         this.botEvent = botEvent;
         // this.subscriptionNotifier = subscriptionNotifier;
@@ -19,6 +19,8 @@ class JobsManager {
         //     this.jobWorkerEnabled = true;
         // }
         // winston.info("JobsManager jobWorkerEnabled: "+ this.jobWorkerEnabled);  
+
+        this.updateLeadQueued = updateLeadQueued;
     }
 
 
@@ -33,6 +35,8 @@ class JobsManager {
 
         // this.subscriptionNotifier.start();
         this.subscriptionNotifierQueued.start();
+
+        this.updateLeadQueued.listen();
 
         // this.botSubscriptionNotifier.start(); // disabled
     }
