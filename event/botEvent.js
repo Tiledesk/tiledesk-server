@@ -33,12 +33,30 @@ class BotEvent extends EventEmitter {
             winston.debug("message", message);
 
             // TODO usa meglio se attributes.reply_always=true
+
             // if (message.sender === "system" && message.text && message.text!="\\start") {
-            if (message.sender === "system" && message.text && (message.text=="\\start" || message.text=="/start") ) {
-                winston.debug("it s a start message");
+            //     winston.debug("it s a message sent from system, exit");
+            //     return null;
+            // }
+
+
+            //sbagliato
+            // if (message.sender === "system" && message.text && (message.text=="\\start" || message.text=="/start") ) {
+            //     winston.debug("it s a start message");
+            // } else {
+            //     winston.debug("it s a message sent from system, exit");
+            //     return null;
+            // }
+
+            if (message.sender === "system") {
+                if (message.text && (message.text=="\\start" || message.text=="/start") ) {
+                    winston.debug("it s a start message");
+                } else {
+                    winston.debug("it s a message sent from system, exit");
+                    return null;
+                }
             } else {
-                winston.debug("it s a message sent from system, exit");
-                return null;
+                winston.debug("it s a message sent from other let s go");
             }
             
             if (message.text && ( message.text.indexOf("\\agent") > -1 || message.text.indexOf("\\close") > -1)) { //not reply to a message containing \\agent
