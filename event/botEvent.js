@@ -35,9 +35,9 @@ class BotEvent extends EventEmitter {
             // TODO usa meglio se attributes.reply_always=true
             // if (message.sender === "system" && message.text && message.text!="\\start") {
             if (message.sender === "system" && message.text && (message.text=="\\start" || message.text=="/start") ) {
-                winston.debug("it s a start message");
+                winston.info("it s a start message");
             } else {
-                winston.debug("it s a message sent from system, exit");
+                winston.info("it s a message sent from system, exit");
                 return null;
             }
             
@@ -51,7 +51,7 @@ class BotEvent extends EventEmitter {
             
         var botId = getBotId(message);
 
-        winston.debug("botId: " + botId);
+        winston.info("botId: " + botId);
 
         if (!botId) {
                 return null;
@@ -91,7 +91,7 @@ class BotEvent extends EventEmitter {
                     winston.warn('Bot not found with id '+botId);
                 }
 
-                winston.debug("bot debug", bot);
+                winston.info("bot debug", bot);
                 winston.debug('bot debug secret: '+ bot.secret);
 
                 if (bot) {
@@ -101,6 +101,8 @@ class BotEvent extends EventEmitter {
                     }else {  //external 
                         if (bot.url) {
                             var botNotification = {bot: bot, message: message};
+                            winston.info("bot external", message);
+
                             botEvent.emit('bot.message.received.notify.external', botNotification);
                         }else {
                             winston.warn("bot url is not defined", bot);
