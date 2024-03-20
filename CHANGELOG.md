@@ -5,8 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# Untagged
+# 2.6.0
 - Lead update queued
+- Updated tybot-connector to 0.2.57
+- Updated kb route
+- Added trainer job worker
 
 # 2.5.3
 - Updated whatsapp-connector to 0.1.64
