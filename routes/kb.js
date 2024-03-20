@@ -471,7 +471,7 @@ router.post('/qa', async (req, res) => {
         let id = answer.id;
         let index = id.indexOf("#");
         if (index != -1) {
-            id = id.sbstring(index + 1);
+            id = id.substring(index + 1);
         }
 
         KB.findById(id, (err, resource) => {
