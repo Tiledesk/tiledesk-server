@@ -194,6 +194,19 @@ function startWorker() {
           winston.info("Data queue", oka)
         });
 
+        ch.bindQueue(_ok.queue, exchange, "lead_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_update");
+          winston.info("Data queue", oka)
+        });
+
+        ch.bindQueue(_ok.queue, exchange, "lead_fullname_email_update", {}, function(err3, oka) {
+          winston.info("Queue bind: "+_ok.queue+ " err: "+err3+ " key: lead_fullname_email_update");
+          winston.info("Data queue", oka)
+        });
+
+        
+
+
 
 
         ch.consume(queueName, processMsg, { noAck: false });
@@ -294,6 +307,19 @@ function work(msg, cb) {
     // requestEvent.emit('request.update.queue',  msg.content);
     leadEvent.emit('lead.create.queue',  JSON.parse(message_string));
   }
+
+  if (topic === 'lead_update') {
+    winston.debug("reconnect here topic lead_update:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    leadEvent.emit('lead.update.queue',  JSON.parse(message_string));
+  }
+
+  if (topic === 'lead_fullname_email_update') {
+    winston.debug("reconnect here topic lead_fullname_email_update:" + topic); 
+    // requestEvent.emit('request.update.queue',  msg.content);
+    leadEvent.emit('lead.fullname.email.update.queue',  JSON.parse(message_string));
+  }
+
 
 
   cb(true);
@@ -421,6 +447,27 @@ function listen() {
         winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
       });
     });
+
+
+    leadEvent.on('lead.update', function(lead) {
+      setImmediate(() => {
+        winston.debug("reconnect lead.update")
+        publish(exchange, "lead_update", Buffer.from(JSON.stringify(lead)));
+        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
+      });
+    });
+
+
+    leadEvent.on('lead.fullname.email.update', function(lead) {
+      setImmediate(() => {
+        winston.debug("reconnect lead.fullname.email.update")
+        publish(exchange, "lead_fullname_email_update", Buffer.from(JSON.stringify(lead)));
+        winston.debug("reconnect: "+ Buffer.from(JSON.stringify(lead)))
+      });
+    });
+
+
+    
 
 }
 
