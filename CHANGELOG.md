@@ -5,7 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.6.0
+# 2.7.1
+- Updated widget.json translation file
+- Improved widget White Label 
+
+# 2.7.0
 - Lead update queued
 - Updated tybot-connector to 0.2.57
 - Updated kb route
