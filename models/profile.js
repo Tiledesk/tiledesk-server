@@ -20,6 +20,9 @@ var ProfileSchema = new Schema({
     type: String,
     default: 'free',
   },
+  quotes: {
+    type: Object
+  },
   subStart: {
     type: Date,
   },

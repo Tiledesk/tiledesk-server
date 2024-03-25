@@ -5,14 +5,14 @@ const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     kbs: 50 }, // same as PREMIUM
-    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200,     kbs: 50 },
-    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200,     kbs: 150},
-    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     kbs: 300},
-    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     kbs: 300}
+    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200,     chatbots: 2,        kbs: 50 },
+    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200,     chatbots: 5,        kbs: 150},
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300},
+    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300}
 }
 
-const typesList = ['requests', 'messages', 'email', 'tokens']
+const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
 
 let quotes_enabled = true;
 
@@ -74,8 +74,11 @@ class QuoteManager {
             winston.debug("QUOTES DISABLED - incrementTokenCount")
             return key;
         }
-
-        await this.tdCache.incrby(key, data.tokens);
+        
+        let tokens = data.tokens * data.multiplier;
+        await this.tdCache.incrbyfloat(key, tokens);
+        // await this.tdCache.incrby(key, tokens);
+        
         return key;
     }
     // INCREMENT KEY SECTION - END
@@ -156,6 +159,7 @@ class QuoteManager {
         this.project = project;
         let limits = await this.getPlanLimits();
         winston.verbose("limits for current plan: ", limits)
+
         let quote = await this.getCurrentQuote(project, object, type);
         winston.verbose("getCurrentQuote resp: ", quote)
 
@@ -212,7 +216,14 @@ class QuoteManager {
         } else {
             limits = PLANS_LIST.FREE_TRIAL;
         }
-        return limits;
+
+        if (this.project?.profile?.quotes) {
+            let profile_quotes = this.project?.profile?.quotes;
+            const merged_quotes = Object.assign({}, limits, profile_quotes);
+            return merged_quotes;
+        } else {
+            return limits;
+        }
     }
 
 
@@ -226,7 +237,7 @@ class QuoteManager {
             }
         }
 
-        winston.info("QUOTES ENABLED ? ", quotes_enabled);
+        winston.info("QUOTES ENABLED: " + quotes_enabled);
 
         // TODO - Try to generalize to avoid repetition
         let incrementEventHandler = (object) => { }

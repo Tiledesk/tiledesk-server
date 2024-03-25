@@ -73,6 +73,74 @@ describe('FaqKBRoute', () => {
 
         }).timeout(20000);
 
+        /**
+         * This test will be no longer available after merge with master because 
+         * the profile section can no longer be modified via api.
+         */
+        // it('createMaximumNumberExceeded', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+        //             chai.request(server)
+        //                 .put('/projects/' + savedProject._id)
+        //                 .auth(email, pwd)
+        //                 .send({ profile: { quotes: { chatbots: 2 } } })
+        //                 .end((err, res) => {
+                            
+        //                     if (log) { console.log("res.body", res.body); }
+
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + '/faq_kb')
+        //                         .auth(email, pwd)
+        //                         .send({ "name": "testbot1", type: "external", language: 'en' })
+        //                         .end((err, res) => {
+        //                             if (log) { console.log("res.body", res.body); }
+        //                             res.should.have.status(200);
+        //                             res.body.should.be.a('object');
+        //                             expect(res.body.name).to.equal("testbot1");
+        //                             expect(res.body.language).to.equal("en");
+
+        //                             chai.request(server)
+        //                                 .post('/' + savedProject._id + '/faq_kb')
+        //                                 .auth(email, pwd)
+        //                                 .send({ "name": "testbot2", type: "external", language: 'en' })
+        //                                 .end((err, res) => {
+        //                                     if (log) { console.log("res.body", res.body); }
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.a('object');
+        //                                     expect(res.body.name).to.equal("testbot2");
+        //                                     expect(res.body.language).to.equal("en");
+
+        //                                     chai.request(server)
+        //                                         .post('/' + savedProject._id + '/faq_kb')
+        //                                         .auth(email, pwd)
+        //                                         .send({ "name": "testbot3", type: "external", language: 'en' })
+        //                                         .end((err, res) => {
+                                                    
+        //                                             if (log) { console.log("res.body", res.body); }
+
+        //                                             res.should.have.status(403);
+        //                                             res.body.should.be.a('object');
+        //                                             expect(res.body.success).to.equal(false);
+        //                                             expect(res.body.error).to.equal("Maximum number of chatbots reached for the current plan");
+        //                                             expect(res.body.plan_limit).to.equal(2);
+
+        //                                             done()
+
+        //                                         });
+        //                                 });
+        //                         });
+        //                 })
+        //         });
+        //     });
+
+        // }).timeout(20000);
+
+
         // it('train with tiledesk-ai', (done) => {
         //     var email = "test-signup-" + Date.now() + "@email.com";
         //     var pwd = "pwd";

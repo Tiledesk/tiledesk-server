@@ -4,6 +4,7 @@ var { KBSettings } = require('../models/kb_setting');
 var openaiService = require('../services/openaiService');
 var winston = require('../config/winston');
 const { QuoteManager } = require('../services/QuoteManager');
+const { MODEL_MULTIPLIER } = require('../utils/aiUtils');
 
 router.post('/', async (req, res) => {
 
@@ -60,8 +61,14 @@ router.post('/', async (req, res) => {
             json.messages.unshift(message);
         }
 
+        let multiplier = MODEL_MULTIPLIER[json.model];
+        if (!multiplier) {
+            multiplier = 1;
+            winston.info("No multiplier found for AI model")
+        }
+
         openaiService.completions(json, gptkey).then(async (response) => {
-            let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens }
+            let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens, multiplier: multiplier }
             if (usePublicKey === true) {
                 let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
                 winston.verbose("Tokens quota incremented for key " + incremented_key);
