@@ -32,7 +32,8 @@ router.post('/', async function (req, res) {
   winston.debug("chatbots_count for project " + req.projectid + ": " + chatbots_count);
 
   if (chatbots_count >= chatbots_limit) {
-    return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
+    //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
+    winston.info("Chatbots limit reached for project " + req.projectid + ". Block currently disabled.");
   }
 
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {

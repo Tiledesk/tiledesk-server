@@ -9,7 +9,7 @@ const PLANS_LIST = {
     SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200,     chatbots: 2,        kbs: 50 },
     BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200,     chatbots: 5,        kbs: 150},
     PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300},
-    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300}
+    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 1000}
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
@@ -198,16 +198,13 @@ class QuoteManager {
                 case 'Custom':
                     limits = PLANS_LIST.CUSTOM;
                     break;
-                case 'Sandbox':
-                    limits = PLANS_LIST.SANDBOX;
-                    break;
-                case 'Growth':
+                case 'Growth':  // OLD PLAN
                     limits = PLANS_LIST.BASIC
                     break;
-                case 'Scale':
+                case 'Scale':   // OLD PLAN
                     limits = PLANS_LIST.PREMIUM
                     break;
-                case 'Plus':
+                case 'Plus':    // OLD PLAN
                     limits = PLANS_LIST.CUSTOM
                     break;
                 default:
