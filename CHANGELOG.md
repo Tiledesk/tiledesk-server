@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.2
+- Improved QuoteManager with kbs and chatbots (disabled)
+- Improved QuoteManager with AI multipliers
+
 # 2.7.1
 - Updated widget.json translation file
 - Improved widget White Label 
