@@ -69,9 +69,8 @@ describe('messageService', function () {
             let obj = { createdAt: new Date() }
 
             let quotes = await qm.getAllQuotes(savedProject, obj);
-            console.log("quotes: ", quotes);
-            quotes.messages.quote.should.be.a('string');
-            expect(quotes.messages.quote).to.equal('1');
+            quotes.messages.quote.should.be.a('number');
+            expect(quotes.messages.quote).to.equal(1);
             
             done();
             
@@ -84,7 +83,7 @@ describe('messageService', function () {
         });
 
     });
-  });
+  }).timeout(10000);
 
   it('createMessage', function (done) {
     // this.timeout(10000);

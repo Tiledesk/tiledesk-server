@@ -1,3 +1,6 @@
+process.env.NODE_ENV = 'test';
+process.env.QUOTES_ENABLED = 'true';
+
 const { QuoteManager } = require('../services/QuoteManager');
 const pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
 var projectService = require('../services/projectService');
@@ -198,7 +201,7 @@ describe('QuoteManager', function () {
                 chai.request(server)
                     .post('/' + savedProject._id + "/openai/quotes")
                     .auth(email, pwd)
-                    .send({ createdAt: createdAt , tokens: 128 })
+                    .send({ createdAt: createdAt , tokens: 128, multiplier: 25 })
                     .end((err, res) => {
                         if (log) { console.log("res.body", res.body )};
                         res.should.have.status(200);
@@ -210,7 +213,8 @@ describe('QuoteManager', function () {
                         let message_resp = "value incremented for key " + key;
                         expect(res.body.message).to.equal(message_resp);
                         expect(res.body.key).to.equal(key);
-                        expect(res.body.currentQuote).to.equal(128);
+                        let expected_quote = 128 * 25;
+                        expect(res.body.currentQuote).to.equal(expected_quote);
 
 
                         done();
