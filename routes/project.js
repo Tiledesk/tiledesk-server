@@ -26,8 +26,9 @@ var cacheEnabler = require("../services/cacheEnabler");
  */
 var jwt = require('jsonwebtoken');
 var config = require('../config/database');
+
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
-var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 if (pKey) {
   configSecret = pKey.replace(/\\n/g, '\n');
 }
@@ -255,9 +256,14 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   var update = {};
 
   if (req.body.profile) {
+
+    // check if super admin
+    let token = req.headers.authorization
+    token = token.split(" ")[1];
+
+
     winston.info("Illegal field profile detected. Deny project profile update.");
     return res.status(403).send({ success: false,  error: "You cannot edit the project profile."});
-
   }
   
 //like patch
