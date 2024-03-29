@@ -5,14 +5,14 @@ const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 }, // same as PREMIUM
-    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200 },
-    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200 },
-    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 },
-    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200 }
+    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200,     chatbots: 2,        kbs: 50 },
+    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200,     chatbots: 5,        kbs: 150},
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300},
+    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 1000}
 }
 
-const typesList = ['requests', 'messages', 'email', 'tokens']
+const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
 
 let quotes_enabled = true;
 
@@ -58,7 +58,7 @@ class QuoteManager {
 
         this.project = project;
         let key = await this.generateKey(email, 'email');
-        winston.info("[QuoteManager] incrementEmailCount key: " + key);
+        winston.verbose("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
         return key;
@@ -68,14 +68,17 @@ class QuoteManager {
 
         this.project = project;
         let key = await this.generateKey(data, 'tokens');
-        winston.info("[QuoteManager] incrementTokenCount key: " + key);
+        winston.verbose("[QuoteManager] incrementTokenCount key: " + key);
 
         if (quotes_enabled === false) {
             winston.debug("QUOTES DISABLED - incrementTokenCount")
             return key;
         }
-
-        await this.tdCache.incrby(key, data.tokens);
+        
+        let tokens = data.tokens * data.multiplier;
+        await this.tdCache.incrbyfloat(key, tokens);
+        // await this.tdCache.incrby(key, tokens);
+        
         return key;
     }
     // INCREMENT KEY SECTION - END
@@ -83,8 +86,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        winston.info("generateKey object ", object)
-        winston.info("generateKey type " + type)
+        winston.debug("generateKey object ", object)
+        winston.debug("generateKey type " + type)
         let subscriptionDate;
         if (this.project.profile.subStart) {
             subscriptionDate = this.project.profile.subStart;
@@ -92,7 +95,7 @@ class QuoteManager {
             subscriptionDate = this.project.createdAt;
         }
         let objectDate = object.createdAt;
-        winston.info("objectDate " + objectDate);
+        winston.debug("objectDate " + objectDate);
 
         // converts date in timestamps and transform from ms to s
         const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
@@ -114,7 +117,7 @@ class QuoteManager {
 
         this.project = project;
         let key = await this.generateKey(object, type);
-        winston.info("[QuoteManager] getCurrentQuote key: " + key);
+        winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
 
         let quote = await this.tdCache.get(key);
         return Number(quote);
@@ -147,17 +150,18 @@ class QuoteManager {
      */
     async checkQuote(project, object, type) {
 
-        winston.info("checkQuote type " + type);
+        winston.verbose("checkQuote type " + type);
         if (quotes_enabled === false) {
-            winston.info("QUOTES DISABLED - checkQuote for type " + type);
+            winston.verbose("QUOTES DISABLED - checkQuote for type " + type);
             return true;
         }
 
         this.project = project;
         let limits = await this.getPlanLimits();
-        winston.info("limits for current plan: ", limits)
+        winston.verbose("limits for current plan: ", limits)
+
         let quote = await this.getCurrentQuote(project, object, type);
-        winston.info("getCurrentQuote resp: ", quote)
+        winston.verbose("getCurrentQuote resp: ", quote)
 
         if (quote == null) {
             return true;
@@ -171,7 +175,11 @@ class QuoteManager {
     }
 
 
-    async getPlanLimits() {
+    async getPlanLimits(project) {
+
+        if (project) {
+            this.project = project
+        };
 
         let limits;
         if (this.project.profile.type === 'payment') {
@@ -190,16 +198,13 @@ class QuoteManager {
                 case 'Custom':
                     limits = PLANS_LIST.CUSTOM;
                     break;
-                case 'Sandbox':
-                    limits = PLANS_LIST.SANDBOX;
-                    break;
-                case 'Growth':
+                case 'Growth':  // OLD PLAN
                     limits = PLANS_LIST.BASIC
                     break;
-                case 'Scale':
+                case 'Scale':   // OLD PLAN
                     limits = PLANS_LIST.PREMIUM
                     break;
-                case 'Plus':
+                case 'Plus':    // OLD PLAN
                     limits = PLANS_LIST.CUSTOM
                     break;
                 default:
@@ -208,7 +213,14 @@ class QuoteManager {
         } else {
             limits = PLANS_LIST.FREE_TRIAL;
         }
-        return limits;
+
+        if (this.project?.profile?.quotes) {
+            let profile_quotes = this.project?.profile?.quotes;
+            const merged_quotes = Object.assign({}, limits, profile_quotes);
+            return merged_quotes;
+        } else {
+            return limits;
+        }
     }
 
 
@@ -221,6 +233,8 @@ class QuoteManager {
                 quotes_enabled = false;
             }
         }
+
+        winston.info("QUOTES ENABLED: " + quotes_enabled);
 
         // TODO - Try to generalize to avoid repetition
         let incrementEventHandler = (object) => { }
@@ -244,7 +258,7 @@ class QuoteManager {
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
                 return result;
             } else {
-                winston.info("QUOTES DISABLED - request.create.quote event")
+                winston.verbose("QUOTES DISABLED - request.create.quote event")
             }
         })
         // REQUESTS EVENTS - END
@@ -267,7 +281,7 @@ class QuoteManager {
                 let result = await this.incrementMessagesCount(payload.project, payload.message);
                 return result;
             } else {
-                winston.info("QUOTES DISABLED - message.create.quote event")
+                winston.verbose("QUOTES DISABLED - message.create.quote event")
             }
         })
         // MESSAGES EVENTS - END
@@ -286,11 +300,11 @@ class QuoteManager {
 
         emailEvent.on('email.send.quote', async (payload) => {
             if (quotes_enabled === true) {
-                winston.info("email.send event catched");
+                winston.verbose("email.send event catched");
                 let result = await this.incrementEmailCount(payload.project, payload.email);
                 return result;
             } else {
-                winston.info("QUOTES DISABLED - email.send event")
+                winston.verbose("QUOTES DISABLED - email.send event")
             }
         })
         // EMAIL EVENTS - END

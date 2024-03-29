@@ -19,10 +19,23 @@ const trainingService = require('../services/trainingService');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
-router.post('/', function (req, res) {
+router.post('/', async function (req, res) {
   winston.debug('create BOT ', req.body);
   //create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template)
   //faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, undefined, undefined, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine).then(function (savedFaq_kb) {
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let chatbots_limit = limits.chatbots;
+  winston.debug("chatbots_limit for project " + req.projectid + ": " + chatbots_limit);
+
+  let chatbots_count = await Faq_kb.countDocuments({ id_project: req.projectid, type: { $ne: "identity" } }).exec();
+  winston.debug("chatbots_count for project " + req.projectid + ": " + chatbots_count);
+
+  if (chatbots_count >= chatbots_limit) {
+    //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
+    winston.info("Chatbots limit reached for project " + req.projectid + ". Block currently disabled.");
+  }
+
   faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
     res.json(savedFaq_kb);
   });

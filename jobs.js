@@ -28,6 +28,9 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 const botEvent = require('./event/botEvent');
 var channelManager = require('./channels/channelManager');
 
+var updateLeadQueued = require('./services/updateLeadQueued');
+
+
 require('./services/mongoose-cache-fn')(mongoose);
 
 
@@ -80,7 +83,7 @@ async function main()
     
 
 
-    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier);
+    let jobsManager = new JobsManager(undefined, geoService, botEvent, subscriptionNotifierQueued, botSubscriptionNotifier, updateLeadQueued);
 
     jobsManager.listen();
 
@@ -100,6 +103,11 @@ async function main()
     let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
     winston.info("whatsappQueue");
     jobsManager.listenWhatsappQueue(whatsappQueue);
+
+    let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
+    winston.info("trainingQueue");
+    jobsManager.listenTrainingQueue(trainingQueue);
+
 
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);
