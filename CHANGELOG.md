@@ -5,6 +5,20 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.2
+- Improved QuoteManager with kbs and chatbots (disabled)
+- Improved QuoteManager with AI multipliers
+
+# 2.7.1
+- Updated widget.json translation file
+- Improved widget White Label 
+
+# 2.7.0
+- Lead update queued
+- Updated tybot-connector to 0.2.57
+- Updated kb route
+- Added trainer job worker
+
 # 2.5.3
 - Updated whatsapp-connector to 0.1.64
 

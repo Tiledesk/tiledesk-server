@@ -711,7 +711,8 @@ class RulesTrigger {
   
 
 
-              var startText = "\\start";
+              var startText = "\start";
+              // var startText = "\\start";
               if (action.parameters && action.parameters.text) {
                 startText = action.parameters.text;
               }
@@ -787,7 +788,7 @@ class RulesTrigger {
                     'system', 
                     'Bot',                                     
                     request_id,
-                    '\\start', // / start
+                    '\\start', // TODO CHANGE TO / start
                     id_project,
                     null,
                     {subtype:'info', updateconversation : false}
@@ -1037,6 +1038,7 @@ class RulesTrigger {
                if (eventAttributes.participants && eventAttributes.participants.length>0) { 
                 participants = eventAttributes.participants;
                 if (participants[0].indexOf("bot_")>-1) {
+                  // TODO CHANGE TO /start
                   text = "\\start";  //if participants is passed than the bot reply to the first message "welcome" so I changed "welcome" with "\start"
                 }              
                 // status = RequestConstants.ASSIGNED;

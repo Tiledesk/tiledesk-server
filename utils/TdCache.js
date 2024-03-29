@@ -103,6 +103,20 @@ class TdCache {
       })
     }
 
+    async incrbyfloat(key, increment) {
+      return new Promise( async (resolve, reject) => {
+        try {
+          await this.client.incrbyfloat(key, increment);
+        }
+
+        catch(error) {
+          console.error("Error on incrby: ", error);
+          reject(error);
+        }
+        return resolve();
+      })
+    }
+
     async hset(dict_key, key, value, options) {
       //console.log("hsetting dict_key key value", dict_key, key, value)
       return new Promise( async (resolve, reject) => {
