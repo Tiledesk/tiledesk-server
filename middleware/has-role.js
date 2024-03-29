@@ -184,8 +184,22 @@ class RoleChecker {
                 }
               } else {
               
+                /**
+                 * Updated by Johnny - 29mar2024 - START
+                 */
+                // console.log("req.user: ", req.user);
+                if (req.user.email === process.env.ADMIN_EMAIL) {
+                  req.user.attributes = { isSuperadmin: true };
+                  next();
+                } else {
+                  res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+                }
+                /**
+                 * Updated by Johnny - 29mar2024 - END
+                 */
+
                 // if (req.user) equals super admin next()
-                res.status(403).send({success: false, msg: 'you dont belong to the project.'});
+                //res.status(403).send({success: false, msg: 'you dont belong to the project.'});
               }
       
           });

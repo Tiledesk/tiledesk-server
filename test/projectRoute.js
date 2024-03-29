@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'test';
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
-let log = true;
+let log = false;
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
@@ -21,7 +21,7 @@ var assert = chai.assert;
 
 chai.use(chaiHttp);
 
-describe('OpenaiRoute', () => {
+describe('ProjectRoute', () => {
 
     describe('/create', () => {
 
@@ -47,7 +47,8 @@ describe('OpenaiRoute', () => {
                             let superadmin_token = res.body.token;
 
                             chai.request(server)
-                                .put('/projects/' + savedProject._id + "/update")
+                                // .put('/projects/' + savedProject._id + "/update")
+                                .put('/projects/' + savedProject._id)
                                 .set('Authorization', superadmin_token)
                                 .send({ profile: { name: "Custom", quotes: { kbs: 1000} } })
                                 .end((err, res) => {
@@ -56,7 +57,7 @@ describe('OpenaiRoute', () => {
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.profile.name).to.equal("Custom");
-                                    //expect(res.body.profile.quotes.kbs).to.equal(1000);
+                                    // expect(res.body.profile.quotes.kbs).to.equal(1000);
 
                                     done();
                                 })
@@ -74,9 +75,10 @@ describe('OpenaiRoute', () => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
 
                     chai.request(server)
-                        .put('/projects/' + savedProject._id + "/update")
+                        .put('/projects/' + savedProject._id)
+                        // .put('/projects/' + savedProject._id + "/update")
                         .auth(email, pwd)
-                        .send({ name: "test-project-create-updated" })
+                        .send({ profile: { name: "Custom", quotes: { kbs: 1000} } })
                         .end((err, res) => {
 
                             if (log) { console.log("update project profile res.body: ", res.body) };

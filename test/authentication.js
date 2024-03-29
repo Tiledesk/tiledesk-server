@@ -1,6 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
-
+process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 //var User = require('../models/user');
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
@@ -200,6 +200,33 @@ describe('/signup', () => {
              
                 
     });
+
+    it('signUpAdminNoVerificationEmail', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        chai.request(server)
+            .post("/auth/signin")
+            .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+            .end((err, res) => {
+
+                // console.log("login with superadmin res.body: ", res.body)
+                let superadmin_token = res.body.token;
+
+                chai.request(server)
+                    .post("/auth/signup")
+                    .set('Authorization', superadmin_token)
+                    .send({ email: email, password: pwd, lastname: "lastname", firstname: "firstname", disableEmail: true })
+                    .end((err, res) => {
+
+                        // console.log("res.body: ", res.body);
+                        done();
+                    })
+            })
+
+
+    })
 
     // mocha test/authentication.js  --grep 'signupUpperCaseEmail'
 
