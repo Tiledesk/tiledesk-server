@@ -711,7 +711,7 @@ class RulesTrigger {
   
 
 
-              var startText = "\start";
+              var startText = "\\start";
               // var startText = "\\start";
               if (action.parameters && action.parameters.text) {
                 startText = action.parameters.text;
