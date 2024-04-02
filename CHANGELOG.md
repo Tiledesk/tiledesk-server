@@ -5,6 +5,13 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.4
+- Bug fix '\start' in rulesTrigger
+- SSO fix
+- Updated tybot-connector to 0.2.60
+- Updated project profile call whit super admin token
+- Updated user signup with super admin token
+
 # 2.7.3
 - Updated project profile call
 - Updated tybot-connector to 0.2.59
