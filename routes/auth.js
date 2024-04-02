@@ -33,6 +33,12 @@ if (pKey) {
   configSecret = pKey.replace(/\\n/g, '\n');
 }
 
+let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
+var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+if (pubKey) {
+  pubConfigSecret = pKey.replace(/\\n/g, '\n');
+}
+
 var recaptcha = require('../middleware/recaptcha');
 
 
@@ -79,7 +85,7 @@ router.post('/signup',
         if (req.headers.authorization) {
 
           let token = req.headers.authorization.split(" ")[1];
-          let decode = jwt.verify(token, configSecret)
+          let decode = jwt.verify(token, pubConfigSecret)
           if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
             skipVerificationEmail = true;
             winston.verbose("skip sending verification email")
