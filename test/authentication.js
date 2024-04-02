@@ -19,10 +19,17 @@ var expect = chai.expect;
 var assert = chai.assert;
 var jwt = require('jsonwebtoken');
 
+var config = require('../config/database');
+
+var mongoose = require('mongoose');
+mongoose.connect(config.databasetest);
+
 
 chai.use(chaiHttp);
 
 describe('Authentication', () => {
+
+   // mocha test/authentication.js  --grep 'signinOk'
 
   describe('/signin', () => {
  
@@ -257,6 +264,7 @@ describe('/signup', () => {
                            
         });
 
+   // mocha test/authentication.js  --grep 'signupkOWrongEmail'
 
     it('signupkOWrongEmail', (done) => {
 
@@ -696,6 +704,7 @@ it('signinWithCustomTokenKONoAud', (done) => {
 
 
 
+   // mocha test/authentication.js  --grep 'signinWithCustomTokenOkTwoSigninWithCT'
 
 it('signinWithCustomTokenOkTwoSigninWithCT', (done) => {
 
@@ -786,6 +795,248 @@ it('signinWithCustomTokenOkTwoSigninWithCT', (done) => {
 
 
 
+
+
+   // mocha test/authentication.js  --grep 'signinWithCustomTokenRoleNew'
+
+
+it('signinWithCustomTokenRoleNew', (done) => {
+
+        
+    var email = "test-signinWithCustomTokenRole-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+
+    var emailToCheck = "emailrole"+ Date.now() +"@email.com";
+
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+        // create(name, createdBy, settings)
+        projectService.create("test-signinWithCustomTokenRole", savedUser._id).then(function(savedProject) {     
+      
+            chai.request(server)
+            .post('/'+ savedProject._id + '/keys/generate')
+            .auth(email, pwd)
+            .send()
+            .end((err, res) => {
+                //console.log("res",  res);
+                console.log("res.body",  res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                expect(res.body.jwtSecret).to.not.equal(null);                                                                              
+            
+                // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
+                var externalUserObj = {_id: "123", firstname:"andrea", lastname:"leo", email: emailToCheck, role:"admin"};
+                
+                console.log("externalUserObj", externalUserObj);
+
+
+                var signOptions = {                                                            
+                    subject:  'userexternal',                                                                 
+                    audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
+                    };
+
+
+                var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+            
+                console.log("jwtToken", jwtToken);
+
+
+                chai.request(server)
+                    .post('/auth/signinWithCustomToken' )
+                    .set('Authorization', 'JWT '+jwtToken)
+                    //.send({ id_project: savedProject._id})
+                    .send()
+                    .end((err, res) => {
+                        //console.log("res",  res);
+                        console.log("res.body",  res.body);
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.success).to.equal(true);          
+                        console.log("1");
+                                                                                                           
+                        expect(res.body.user.email).to.equal(emailToCheck);  
+                        console.log("2");
+                        expect(res.body.user.firstname).to.equal("andrea");          
+                        // expect(res.body.user._id).to.not.equal("123");          
+                        console.log("3");
+                                                        
+                       
+                        expect(res.body.token).to.not.equal(undefined);  
+                        // expect(res.body.token).to.equal('JWT '+jwtToken);  
+                                                                     
+                        console.log("4");
+                        done();
+                    });
+                });
+            });
+        });
+
+});
+
+
+
+
+
+   // mocha test/authentication.js  --grep 'signinWithCustomTokenRole'
+
+
+   it('signinWithCustomTokenRoleEmailAlreadyUsed', (done) => {
+
+        
+    var email = "test-signinWithCustomTokenRoleEmailAlreadyUsed-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+
+    var emailToCheck = "emailrole"+ Date.now() +"@email.com";
+
+    userService.signup( emailToCheck ,pwd, "andrea", "leo").then(function(savedUserToCheck) {
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+        // create(name, createdBy, settings)
+        projectService.create("test-signinWithCustomTokenRoleEmailAlreadyUsed", savedUser._id).then(function(savedProject) {     
+      
+            chai.request(server)
+            .post('/'+ savedProject._id + '/keys/generate')
+            .auth(email, pwd)
+            .send()
+            .end((err, res) => {
+                //console.log("res",  res);
+                console.log("res.body",  res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                expect(res.body.jwtSecret).to.not.equal(null);                                                                              
+            
+                // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
+                var externalUserObj = {_id: "123", firstname:"andrea", lastname:"leo", email: emailToCheck, role:"admin"};
+                
+                console.log("externalUserObj", externalUserObj);
+
+
+                var signOptions = {                                                            
+                    subject:  'userexternal',                                                                 
+                    audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
+                    };
+
+
+                var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+            
+                console.log("jwtToken", jwtToken);
+
+
+                chai.request(server)
+                    .post('/auth/signinWithCustomToken' )
+                    .set('Authorization', 'JWT '+jwtToken)
+                    //.send({ id_project: savedProject._id})
+                    .send()
+                    .end((err, res) => {
+                        //console.log("res",  res);
+                        console.log("res.body",  res.body);
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.success).to.equal(true);          
+                        // console.log("1");
+                                                                                                           
+                        expect(res.body.user.email).to.equal(emailToCheck);  
+                        // console.log("2");
+                        expect(res.body.user.firstname).to.equal("andrea");          
+                        // expect(res.body.user._id).to.not.equal("123");          
+                        // console.log("3");
+                                                        
+                       
+                        expect(res.body.token).to.not.equal(undefined);  
+                        // expect(res.body.token).to.equal('JWT '+jwtToken);  
+                                                                     
+                        // console.log("4");
+                        done();
+                    });
+                });
+            });
+        });
+    });
+});
+
+
+
+
+
+
+
+   // mocha test/authentication.js  --grep 'signinWithCustomTokenRoleSameOwnerEmail'
+
+
+   it('signinWithCustomTokenRoleSameOwnerEmail', (done) => {
+
+        
+    var email = "test-sctrolesameowner-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+
+    var emailToCheck = email;
+
+
+    userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
+        // create(name, createdBy, settings)
+        projectService.create("test-signinWithCustomTokenRoleEmailAlreadyUsed", savedUser._id).then(function(savedProject) {     
+      
+            chai.request(server)
+            .post('/'+ savedProject._id + '/keys/generate')
+            .auth(email, pwd)
+            .send()
+            .end((err, res) => {
+                //console.log("res",  res);
+                console.log("res.body",  res.body);
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                expect(res.body.jwtSecret).to.not.equal(null);                                                                              
+            
+                // 'E11000 duplicate key error collection: tiledesk-test.users index: email_1 dup key: { email: "email@email.com" }' }
+                var externalUserObj = {_id: "123", firstname:"andrea", lastname:"leo", email: emailToCheck, role:"admin"};
+                
+                console.log("externalUserObj", externalUserObj);
+
+
+                var signOptions = {                                                            
+                    subject:  'userexternal',                                                                 
+                    audience:  'https://tiledesk.com/projects/'+savedProject._id ,                                              
+                    };
+
+
+                var jwtToken = jwt.sign(externalUserObj, res.body.jwtSecret,signOptions);
+            
+                console.log("jwtToken", jwtToken);
+
+
+                chai.request(server)
+                    .post('/auth/signinWithCustomToken' )
+                    .set('Authorization', 'JWT '+jwtToken)
+                    //.send({ id_project: savedProject._id})
+                    .send()
+                    .end((err, res) => {
+                        //console.log("res",  res);
+                        console.log("res.body",  res.body);
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.success).to.equal(true);          
+                        console.log("1");
+                                                                                                           
+                        expect(res.body.user.email).to.equal(emailToCheck);  
+                        console.log("2");
+                        expect(res.body.user.firstname).to.equal("Test Firstname");          
+                        // expect(res.body.user._id).to.not.equal("123");          
+                        console.log("3");
+                                                        
+                       
+                        expect(res.body.token).to.not.equal(undefined);  
+                        // expect(res.body.token).to.equal('JWT '+jwtToken);  
+                                                                     
+                        console.log("4");
+                        done();
+                    });
+                });
+            });
+        });
+    });
 
 
 

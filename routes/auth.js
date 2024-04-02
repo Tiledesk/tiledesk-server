@@ -297,7 +297,8 @@ router.post('/signinWithCustomToken', [
     winston.debug("id_project: " + id_project + " uuid_user " + req.user._id + " role " + role);
 
 
-      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
+      Project_user.findOne({ id_project: id_project, uuid_user: req.user._id}).              
+      // Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
       exec(async (err, project_user) => {
         if (err) {
           winston.error(err);
@@ -314,7 +315,7 @@ router.post('/signinWithCustomToken', [
           
           if (role === RoleConstants.OWNER || role === RoleConstants.ADMIN || role === RoleConstants.AGENT) {            
            createNewUser = true;
-           winston.debug('role owner admin agent');
+           winston.debug('role owner or admin or agent');
            var newUser;
            try {
 
@@ -326,7 +327,43 @@ router.post('/signinWithCustomToken', [
             if (e.code = "E11000") {
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
+                  // qui dovresti cercare pu sul progetto con id di newUser se c'è 
+              var  project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
+                  if (project_userUser) {
+                    winston.debug('project user found')
+                    if (project_userUser.status==="active") {
+                        var signOptions = {         
+                          issuer:  'https://tiledesk.com',   
+                          subject:  'user',
+                          audience:  'https://tiledesk.com',
+                          jwtid: uuidv4()
+                        };
+          
+                        var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+                        if (alg) {
+                          signOptions.algorithm = alg;
+                        }
+                        winston.debug('project user found2')
 
+                        //remove password //test it              
+                        let userJson = newUser.toObject();
+                        delete userJson.password;
+                        winston.debug('project user found3')
+
+                        let returnToken = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt
+          
+                        winston.debug('project user found4')
+
+                        if (returnToken.indexOf("JWT")<0) {
+                          returnToken = "JWT " + returnToken;
+                        }
+                        winston.debug('project user found5')
+
+                        return res.json({ success: true, token: returnToken, user: newUser });
+
+                    }
+                  }
+                  
             } 
            }
            
@@ -336,6 +373,9 @@ router.post('/signinWithCustomToken', [
 
            winston.debug('userToReturn forced to newUser.', newUser)
            userToReturn=newUser;
+
+          
+
           }
 
             var newProject_user = new Project_user({
@@ -412,6 +452,16 @@ router.post('/signinWithCustomToken', [
           winston.debug('project user already exists ');
 
           if (project_user.status==="active") {
+
+            winston.debug('role.'+role)
+            winston.debug(' project_user.role', project_user)
+            
+ 
+             if (role == project_user.role) {
+               winston.debug('equals role : '+role + " " + project_user.role);
+             } else {
+               winston.debug('different role : '+role + " " + project_user.role);
+             }
 
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
               let userFromDB = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
