@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.6
+- Fix auth with admin token
+
 # 2.7.5
 - Added support for bot PRIVATE and PUB ket in auth.js
 

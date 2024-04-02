@@ -36,7 +36,7 @@ if (pKey) {
 let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
 var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 if (pubKey) {
-  pubConfigSecret = pKey.replace(/\\n/g, '\n');
+  pubConfigSecret = pubKey.replace(/\\n/g, '\n');
 }
 
 var recaptcha = require('../middleware/recaptcha');
