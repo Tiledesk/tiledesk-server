@@ -77,13 +77,15 @@ router.post('/signup',
     return res.json({ success: false, msg: 'Please pass email and password.' });
   } else {    
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
-      .then(function (savedUser) {
+      .then( async function (savedUser) {
         
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
         let skipVerificationEmail = false;
         if (req.headers.authorization) {
 
+          let updatedUser = await User.findByIdAndUpdate(savedUser._id, { emailverified: true }, { new: true }).exec();
+          winston.debug("updatedUser: ", updatedUser);
           let token = req.headers.authorization.split(" ")[1];
           let decode = jwt.verify(token, pubConfigSecret)
           if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
