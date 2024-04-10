@@ -8,6 +8,7 @@
 # 2.7.7
 - Fix update user verifiedEmail with signup from Admin
 - Updated WhatsApp listener to reduce mongodb connections
+- Fix duplicated intents
 
 # 2.7.6
 - Fix auth with admin token
