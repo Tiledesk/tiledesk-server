@@ -1,9 +1,12 @@
 const whatsapp = require("@tiledesk/tiledesk-whatsapp-connector");
 var winston = require('../../config/winston');
 var configGlobal = require('../../config/global');
+const mongoose = require("mongoose");
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.info('Whatsapp apiUrl: ' + apiUrl);
+
+const dbConnection = mongoose.connection;
 
 class Listener {
 
@@ -38,6 +41,7 @@ class Listener {
 
         whatsapp.startApp({
             MONGODB_URL: config.databaseUri,          
+            dbconnection: dbConnection,
             API_URL: apiUrl,
             BASE_FILE_URL: baseFileUrl,
             GRAPH_URL: graph_url,
