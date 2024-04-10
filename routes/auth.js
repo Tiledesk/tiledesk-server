@@ -84,11 +84,11 @@ router.post('/signup',
         let skipVerificationEmail = false;
         if (req.headers.authorization) {
 
-          let updatedUser = await User.findByIdAndUpdate(savedUser._id, { emailverified: true }, { new: true }).exec();
-          winston.debug("updatedUser: ", updatedUser);
           let token = req.headers.authorization.split(" ")[1];
           let decode = jwt.verify(token, pubConfigSecret)
           if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
+            let updatedUser = await User.findByIdAndUpdate(savedUser._id, { emailverified: true }, { new: true }).exec();
+            winston.debug("updatedUser: ", updatedUser);
             skipVerificationEmail = true;
             winston.verbose("skip sending verification email")
           }
