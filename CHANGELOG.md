@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.8
+- Updated tybot-connector to 0.2.61
+
 # 2.7.7
 - Fix update user verifiedEmail with signup from Admin
 - Updated WhatsApp listener to reduce mongodb connections
