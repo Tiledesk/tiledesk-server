@@ -23,6 +23,9 @@ var ProfileSchema = new Schema({
   quotes: {
     type: Object
   },
+  customization: {
+    type: Object
+  },
   subStart: {
     type: Date,
   },
