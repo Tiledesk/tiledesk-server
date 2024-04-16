@@ -36,6 +36,11 @@ class Listener {
         let amqp_manager_url = process.env.AMQP_MANAGER_URL;
         winston.debug("amqp_manager_url " + amqp_manager_url);
 
+        let brand_name = null;
+        if (process.env.BRAND_NAME) {
+            brand_name = process.env.BRAND_NAME
+        }
+
         let log = process.env.WHATSAPP_LOG || false
         winston.debug("Whatsapp log: "+ log);
 
@@ -52,6 +57,7 @@ class Listener {
             REDIS_PASSWORD: password,
             AMQP_MANAGER_URL: amqp_manager_url,
             JOB_TOPIC_EXCHANGE: job_topic,
+            BRAND_NAME: brand_name,
             log: log
         }, (err) => {
             if (!err) {
