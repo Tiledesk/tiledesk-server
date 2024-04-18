@@ -427,7 +427,8 @@ router.put('/:faqid', function (req, res) {
 
   if (faqid.startsWith("intentId")) {
     let intent_id = faqid.substring(8);
-    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true, upsert: true }, (err, updatedFaq) => {
+    //Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true, upsert: true }, (err, updatedFaq) => {
+    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_id: intent_id }, update, { new: true }, (err, updatedFaq) => {
       if (err) {
         if (err.code == 11000) {
           return res.status(409).send({ success: false, msg: 'Duplicate  intent_display_name.' });

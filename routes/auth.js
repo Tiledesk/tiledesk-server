@@ -33,6 +33,12 @@ if (pKey) {
   configSecret = pKey.replace(/\\n/g, '\n');
 }
 
+let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
+var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+if (pubKey) {
+  pubConfigSecret = pubKey.replace(/\\n/g, '\n');
+}
+
 var recaptcha = require('../middleware/recaptcha');
 
 
@@ -71,30 +77,32 @@ router.post('/signup',
     return res.json({ success: false, msg: 'Please pass email and password.' });
   } else {    
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
-      .then(function (savedUser) {
+      .then( async function (savedUser) {
         
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
 
-        // let skipVerificationEmail = false;
-        // if (req.headers.authorization) {
+        let skipVerificationEmail = false;
+        if (req.headers.authorization) {
 
-        //   let token = req.headers.authorization.split(" ")[1];
-        //   let decode = jwt.verify(token, configSecret)
-        //   if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
-        //     skipVerificationEmail = true;
-        //     winston.verbose("skip sending verification email")
-        //   }
-        // }
-
-        // if (!req.body.disableEmail){
-        //   if (!skipVerificationEmail) {
-        //     emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
-        //   }
-        // }
-        
-        if (!req.body.disableEmail){
-            emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+          let token = req.headers.authorization.split(" ")[1];
+          let decode = jwt.verify(token, pubConfigSecret)
+          if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
+            let updatedUser = await User.findByIdAndUpdate(savedUser._id, { emailverified: true }, { new: true }).exec();
+            winston.debug("updatedUser: ", updatedUser);
+            skipVerificationEmail = true;
+            winston.verbose("skip sending verification email")
+          }
         }
+
+        if (!req.body.disableEmail){
+          if (!skipVerificationEmail) {
+            emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+          }
+        }
+        
+        // if (!req.body.disableEmail){
+        //     emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+        // }
 
 
         /*

@@ -30,6 +30,11 @@ class Listener {
         let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
         winston.debug("Messenger dashboard_base_url: ", dashboard_base_url);
 
+        let brand_name = null;
+        if (process.env.BRAND_NAME) {
+            brand_name = process.env.BRAND_NAME
+        }
+
 
         messenger.startApp({
             MONGODB_URL: config.databaseUri,          
@@ -41,6 +46,7 @@ class Listener {
             GRAPH_URL: graph_url,
             DASHBOARD_BASE_URL: dashboard_base_url,
             VERIFY_TOKEN: fb_verify_token,
+            BRAND_NAME: brand_name,
             log: log
         }, (err) => {
             if (!err) {

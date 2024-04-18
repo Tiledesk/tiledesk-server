@@ -15,16 +15,17 @@ class Listener {
 
         let telegram_api_url = process.env.TELEGRAM_API_URL || config.telegramApiUrl || "https://api.telegram.org/bot"
         winston.debug("Telegram api url: " + telegram_api_url);
-        winston.info("Telegram api url: " + telegram_api_url);
-
 
         let telegram_file_url = process.env.TELEGRAM_FILE_URL || config.telegramFileUrl || "https://api.telegram.org/file/bot"
         winston.debug("Telegram file url: " + telegram_file_url);
-        winston.info("Telegram file url: " + telegram_file_url);
 
         let log = process.env.TELEGRAM_LOG || 'debug'
-        winston.debug("Telegram log: ", log);
-        winston.info("Telegram log: " + log);
+        winston.debug("Telegram log: " + log);
+
+        let brand_name = null;
+        if (process.env.BRAND_NAME) {
+            brand_name = process.env.BRAND_NAME
+        }
 
         telegram.startApp({
             MONGODB_URL: config.databaseUri,
@@ -33,6 +34,7 @@ class Listener {
             TELEGRAM_FILE_URL: telegram_file_url,
             BASE_URL: apiUrl + "/modules/telegram",
             APPS_API_URL: apiUrl + "/modules/apps",
+            BRAND_NAME: brand_name,
             log: log
         }, (err) => {
             if (!err) {
