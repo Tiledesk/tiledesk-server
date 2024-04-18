@@ -21,20 +21,6 @@ var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
 var cacheEnabler = require("../services/cacheEnabler");
 
-/**
- * NEW
- */
-var jwt = require('jsonwebtoken');
-var config = require('../config/database');
-
-let configSecret = process.env.GLOBAL_SECRET || config.secret;
-var pKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
-if (pKey) {
-  configSecret = pKey.replace(/\\n/g, '\n');
-}
-/**
- * End NEW
- */
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
   
@@ -254,7 +240,6 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 
   var update = {};
 
-  console.log("ADMIN EMAIL: ", process.env.ADMIN_EMAIL)
   if (req.body.profile) {
 
     if (req.user &&

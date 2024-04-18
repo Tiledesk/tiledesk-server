@@ -1,9 +1,12 @@
 const whatsapp = require("@tiledesk/tiledesk-whatsapp-connector");
 var winston = require('../../config/winston');
 var configGlobal = require('../../config/global');
+const mongoose = require("mongoose");
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.info('Whatsapp apiUrl: ' + apiUrl);
+
+const dbConnection = mongoose.connection;
 
 class Listener {
 
@@ -33,11 +36,17 @@ class Listener {
         let amqp_manager_url = process.env.AMQP_MANAGER_URL;
         winston.debug("amqp_manager_url " + amqp_manager_url);
 
+        let brand_name = null;
+        if (process.env.BRAND_NAME) {
+            brand_name = process.env.BRAND_NAME
+        }
+
         let log = process.env.WHATSAPP_LOG || false
         winston.debug("Whatsapp log: "+ log);
 
         whatsapp.startApp({
             MONGODB_URL: config.databaseUri,          
+            dbconnection: dbConnection,
             API_URL: apiUrl,
             BASE_FILE_URL: baseFileUrl,
             GRAPH_URL: graph_url,
@@ -48,6 +57,7 @@ class Listener {
             REDIS_PASSWORD: password,
             AMQP_MANAGER_URL: amqp_manager_url,
             JOB_TOPIC_EXCHANGE: job_topic,
+            BRAND_NAME: brand_name,
             log: log
         }, (err) => {
             if (!err) {
