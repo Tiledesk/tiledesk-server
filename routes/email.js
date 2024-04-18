@@ -10,13 +10,75 @@ const recipientEmailUtil = require("../utils/recipientEmailUtil");
 
 router.get('/templates/:templateid', 
  async (req, res) => {
+
   let templateid = req.params.templateid+".html";
-  winston.debug("templateid",templateid);
+  winston.debug("req.params.templateid: "+req.params.templateid);
+  winston.debug("process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE: "+process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE);
 
   var html = await emailService.readTemplateFile(templateid);
-    res.json({template:html});
+
+  if (req.params.templateid == "assignedRequest" && process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE) {
+    html = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "assignedEmailMessage" && process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE) {
+    html = process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "pooledRequest" && process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE) {
+    html = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "pooledEmailMessage" && process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE) {
+    html = process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "newMessage" && process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE) {
+    html = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "ticket" && process.env.EMAIL_TICKET_HTML_TEMPLATE) {
+    html = process.env.EMAIL_TICKET_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "newMessageFollower" && process.env.EMAIL_FOLLOWER_HTML_TEMPLATE) {
+    html = process.env.EMAIL_FOLLOWER_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "emailDirect" && process.env.EMAIL_DIRECT_HTML_TEMPLATE) {
+    html = process.env.EMAIL_DIRECT_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "resetPassword" && process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE) {
+    html = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "passwordChanged" && process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE) {
+    html = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "beenInvitedExistingUser" && process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE) {
+    html = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "beenInvitedNewUser" && process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE) {
+    html = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
+  }
+
+  if (req.params.templateid == "verify" && process.env.EMAIL_VERIFY_HTML_TEMPLATE) {
+    html = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
+  }
+  
+  if (req.params.templateid == "sendTranscript" && process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE) {
+    html = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
+  }
+
+  
+  res.json({template:html});
 });
  
+
+
 router.post('/test/send', 
  async (req, res) => {
   let to = req.body.to;
