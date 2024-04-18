@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.9
+- Updated whatsapp-connector to 0.2.66
+- Updated telegram-connector to 0.2.11
+- Updated messenger-connector to 0.2.20
+- Fixed bug: duplicated faq with intentid
+
 # 2.7.8
 - Updated tybot-connector to 0.2.61
 
