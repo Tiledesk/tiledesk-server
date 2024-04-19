@@ -7,11 +7,13 @@ var upload = multer()
 const openaiService = require('../services/openaiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
-
+var configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
     debug: false,
@@ -193,13 +195,17 @@ router.post('/', async (req, res) => {
 
             res.status(200).send(raw);
 
+            let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+            
             let json = {
                 id: raw.value._id,
                 type: raw.value.type,
                 source: raw.value.source,
                 content: "",
-                namespace: raw.value.namespace
+                namespace: raw.value.namespace,
+                webhook: webhook
             }
+            winston.debug("json: ", json);
 
             if (raw.value.content) {
                 json.content = raw.value.content;
@@ -220,7 +226,6 @@ router.post('/', async (req, res) => {
     })
 
 })
-
 
 router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
@@ -316,7 +321,6 @@ router.post('/sitemap', async (req, res) => {
 
 })
 
-
 router.put('/:kb_id', async (req, res) => {
 
     let kb_id = req.params.kb_id;
@@ -350,7 +354,6 @@ router.put('/:kb_id', async (req, res) => {
     })
 
 })
-
 
 // PROXY PUGLIA AI V2 - START
 router.post('/scrape/single', async (req, res) => {
