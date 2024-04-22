@@ -563,7 +563,7 @@ router.delete('/:kb_id', async (req, res) => {
         } else {
             winston.verbose("resp.data: ", resp.data);
 
-            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4] } }, (err, deletedKb) => {
+            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4, 100, 300, 400] } }, (err, deletedKb) => {
                 if (err) {
                     winston.error("findOneAndDelete err: ", err);
                     return res.status(500).send({ success: false, error: "Unable to delete the content due to an error" })
