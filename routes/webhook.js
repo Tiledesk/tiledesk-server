@@ -7,11 +7,19 @@ const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 
 router.post('/kb/status', async (req, res) => {
 
+  winston.info("(webhook) kb status called");
+  winston.info("(webhook) req.body: ", req.body);
+
+  winston.info("(webhook) x-auth-token: ", req.headers['x-auth-token']);
+  winston.info("(webhook) KB_WEBHOOK_TOKEN: ", KB_WEBHOOK_TOKEN);
+
   if (!req.headers['x-auth-token']) {
+    winston.error("Unauthorized: A x-auth-token must be provided")
     return res.status(401).send({ success: false, error: "Unauthorized", message: "A x-auth-token must be provided" })
   }
 
   if (req.headers['x-auth-token'] != KB_WEBHOOK_TOKEN) {
+    winston.error("Unauthorized: You don't have the authorization to accomplish this operation")
     return res.status(401).send({ success: false, error: "Unauthorized", message: "You don't have the authorization to accomplish this operation" });
   }
 
@@ -33,6 +41,7 @@ router.post('/kb/status', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    winston.info("kb updated succesfully: ", kb);
     res.status(200).send(kb);
   })
 
