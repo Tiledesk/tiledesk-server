@@ -1,9 +1,12 @@
 const telegram = require("@tiledesk/tiledesk-telegram-connector");
 var winston = require('../../config/winston');
 var configGlobal = require('../../config/global');
+const mongoose = require("mongoose");
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 winston.info("telegram apiUrl: " + apiUrl);
+
+const dbConnection = mongoose.connection;
 
 class Listener {
 
@@ -29,6 +32,7 @@ class Listener {
 
         telegram.startApp({
             MONGODB_URL: config.databaseUri,
+            dbconnection: dbConnection,
             API_URL: apiUrl,
             TELEGRAM_API_URL: telegram_api_url,
             TELEGRAM_FILE_URL: telegram_file_url,
