@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.12
+- Updated tybot-connector to 0.2.62
+
 # 2.7.11
 - Updated telegram-connector to 0.2.12
 - Updated messenger-connector to 0.2.21
