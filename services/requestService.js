@@ -2465,15 +2465,16 @@ class RequestService {
 
   async getRequestParametersFromChatbot(request_id) {
 
-    return new Promise((resolve, reject) => {
-      axios({
+    return new Promise( async (resolve, reject) => {
+      await axios({
         url: apiUrl + '/modules/tilebot/ext/reserved/parameters/requests/' + request_id,
         headers: {
           'Content-Type': 'application/json'
         },
         method: 'GET'
       }).then((response) => {
-        resolve(response);
+        console.log("[RequestService] response: ", response);
+        resolve(response.data);
       }).catch((err) => {
         winston.error("get request parameter error: ", err.response.data);
         reject(err);
