@@ -1495,22 +1495,27 @@ router.get('/:requestid', function (req, res) {
 router.get('/:requestid/chatbot/parameters', async (req, res) => {
 
   let project_id = req.projectid;
+  console.log("project_id: ", project_id)
 
   let request_id = req.params.requestid;
+  console.log("request_id: ", request_id)
 
   let split_pattern = /-/
   let splitted = request_id.split(split_pattern);
   
   if (project_id !== splitted[2]) {
+    console.log("Request does not belong to the project")
     return res.status(401).send({ success: false, message: "Request does not belong to the project"})
   }
 
-  let params = await requestService.getRequestParametersFromChatbot(request_id);
+  // let params = await requestService.getRequestParametersFromChatbot(request_id);
 
   requestService.getRequestParametersFromChatbot(request_id).then((parameters) => {
+    console.log("request_id: ", parameters)
     res.status(200).send(parameters);
 
   }).catch((err) => {
+    console.error("err: ", err)
     res.status(400).send(err);
   })
 
