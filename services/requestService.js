@@ -2473,6 +2473,7 @@ class RequestService {
         },
         method: 'GET'
       }).then((response) => {
+        console.log("[RequestService] response: ", response);
         resolve(response);
       }).catch((err) => {
         winston.error("get request parameter error: ", err.response.data);

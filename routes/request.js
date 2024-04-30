@@ -1515,7 +1515,7 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
     res.status(200).send(parameters);
 
   }).catch((err) => {
-    console.error("err: ", err)
+    console.error("err: ", err.response)
     res.status(400).send(err);
   })
 
