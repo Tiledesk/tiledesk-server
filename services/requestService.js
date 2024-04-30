@@ -16,6 +16,10 @@ var cacheEnabler = require("../services/cacheEnabler");
 var UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
+var configGlobal = require('../config/global');
+const axios = require("axios").default;
+
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
@@ -2459,10 +2463,24 @@ class RequestService {
 
 
 
+  async getRequestParametersFromChatbot(request_id) {
 
+    return new Promise((resolve, reject) => {
+      axios({
+        url: apiUrl + '/modules/tilebot/ext/reserved/parameters/requests/' + request_id,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        method: 'GET'
+      }).then((response) => {
+        resolve(response);
+      }).catch((err) => {
+        winston.error("get request parameter error: ", err.response.data);
+        reject(err);
+      })
+    })
 
-
-
+  }
 
 }
 
