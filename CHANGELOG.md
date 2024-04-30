@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.7.13
+# 2.7.15
+- Updated whatsapp-connector to 0.2.69
+
+# 2.7.14
 - Updated whatsapp-connector to 0.2.68
 
 # 2.7.13
