@@ -261,6 +261,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
     }
 
+    let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
     let kbs = [];
     list.forEach(url => {
         kbs.push({
@@ -289,9 +291,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
-            return { id: _id, ...rest };
+            return { id: _id, webhook: webhook, ...rest };
         });
-        winston.verbose("resources to be sent to worker: ", resources)        
+        winston.verbose("resources to be sent to worker: ", resources);
+        console.log("resources to be sent to worker: ", resources);
         scheduleScrape(resources);
         res.status(200).send(result);
 
