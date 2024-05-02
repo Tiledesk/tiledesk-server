@@ -10,8 +10,8 @@ router.post('/kb/status', async (req, res) => {
   winston.info("(webhook) kb status called");
   winston.info("(webhook) req.body: ", req.body);
 
-  winston.info("(webhook) x-auth-token: ", req.headers['x-auth-token']);
-  winston.info("(webhook) KB_WEBHOOK_TOKEN: ", KB_WEBHOOK_TOKEN);
+  winston.info("(webhook) x-auth-token: " + req.headers['x-auth-token']);
+  winston.info("(webhook) KB_WEBHOOK_TOKEN: " + KB_WEBHOOK_TOKEN);
 
   if (!req.headers['x-auth-token']) {
     winston.error("Unauthorized: A x-auth-token must be provided")
@@ -39,6 +39,11 @@ router.post('/kb/status', async (req, res) => {
     if (err) {
       winston.error(err);
       return res.status(500).send({ success: false, error: err });
+    }
+
+    if (!kb) {
+      winston.info("Knwoledge Base content to be updated not found")
+      return res.status(404).send({ success: false, messages: "Knwoledge Base content not found with id " + kb_id });
     }
 
     winston.info("kb updated succesfully: ", kb);
