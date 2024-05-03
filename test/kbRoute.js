@@ -205,7 +205,7 @@ describe('KbRoute', () => {
                                                     if (log) { console.log("create kb res.body: ", res.body); }
                                                     res.should.have.status(200);
 
-                                                    let query = "?status=-1&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
+                                                    let query = "?status=-1&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
                                                     //let query = "";
                                                     console.log("query: ", query);
 
@@ -214,11 +214,12 @@ describe('KbRoute', () => {
                                                         .auth(email, pwd)
                                                         .end((err, res) => {
                                                             if (log) { console.log("getall res.body: ", res.body); }
+                                                            console.log("getall res.body: ", res.body);
                                                             res.should.have.status(200);
                                                             res.body.should.be.a('object');
                                                             res.body.kbs.should.be.a('array');
-                                                            expect(res.body.kbs.length).to.equal(3);
-                                                            expect(res.body.count).to.equal(3);
+                                                            expect(res.body.kbs.length).to.equal(2);
+                                                            expect(res.body.count).to.equal(2);
                                                             res.body.query.should.be.a('object');
                                                             expect(res.body.query.status).to.equal(-1);
                                                             expect(res.body.query.limit).to.equal(5);

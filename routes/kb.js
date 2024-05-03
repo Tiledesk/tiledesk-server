@@ -29,6 +29,7 @@ router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
     let status;
+    let type;
     let limit = 200;
     let page = 0;
     let direction = -1;
@@ -43,6 +44,13 @@ router.get('/', async (req, res) => {
         query["status"] = status;
         winston.debug("Get kb status: " + status)
     }
+
+    if (req.query.type) {
+        type = req.query.type;
+        query["type"] = type;
+        winston.debug("Get kb type: " + type);
+    }
+
     if (req.query.limit) {
         limit = parseInt(req.query.limit);
         winston.debug("Get kb limit: " + limit)
