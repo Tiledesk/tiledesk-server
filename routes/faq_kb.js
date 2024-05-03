@@ -500,12 +500,12 @@ router.get('/:faq_kbid', function (req, res) {
 
   winston.debug(req.query);
 
-  Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {   //TODO add cache_bot_here
+  Faq_kb.findOne({ _id: req.params.faq_kbid, id_project: req.projectid }, function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
+      return res.status(404).send({ success: false, msg: 'Chatbot does not exist or does not belong to the specified project.' });
     }
 
     if (req.query.departmentid) {

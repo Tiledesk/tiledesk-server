@@ -1,9 +1,12 @@
 const messenger = require("@tiledesk/tiledesk-messenger-connector");
 var winston = require('../../config/winston');
 var configGlobal = require('../../config/global');
+const mongoose = require("mongoose");
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 //winston.info('Messenger apiUrl: ' + apiUrl);
+
+const dbConnection = mongoose.connection;
 
 class Listener {
 
@@ -37,7 +40,8 @@ class Listener {
 
 
         messenger.startApp({
-            MONGODB_URL: config.databaseUri,          
+            MONGODB_URL: config.databaseUri,   
+            dbconnection: dbConnection,      
             API_URL: apiUrl,
             BASE_URL: apiUrl + "/modules/messenger",
             APPS_API_URL: apiUrl + "/modules/apps",
