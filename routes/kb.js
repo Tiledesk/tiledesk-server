@@ -595,6 +595,33 @@ router.delete('/:kb_id', async (req, res) => {
 
 })
 
+router.delete('/namespace/:namespace_id', async (req, res) => {
+    
+    let id_project = req.projectid;
+    let namespace_id = req.params.namespace_id;
+
+    let data = {
+        namespace: namespace_id
+    }
+
+    openaiService.deleteNamespace(data).then((resp) => {
+        winston.debug("delete namespace resp: ", resp.data);
+
+        KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
+            if (err) {
+                winston.error("deleteMany error: ", err);
+                return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
+            }
+            winston.debug("deleteResponse: ", deleteResponse);
+            res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+        })
+
+    }).catch((err) => {
+        let status = err.response.status;
+        res.status(status).send({ success: false, error: "Unable to delete namespace"})
+    })
+})
+
 async function saveBulk(operations, kbs, project_id) {
 
     return new Promise((resolve, reject) => {
