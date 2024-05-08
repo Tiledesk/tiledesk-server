@@ -49,7 +49,7 @@
     "@tiledesk/tiledesk-telegram-connector": "^0.1.12",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.7",
     "@tiledesk/tiledesk-tybot-connector": "^0.2.63",
-    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.69",
+    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.70",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.7",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
