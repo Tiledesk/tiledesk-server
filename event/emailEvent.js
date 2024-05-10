@@ -14,7 +14,7 @@ class EmailEvent extends EventEmitter {
 
 const emailEvent = new EmailEvent();
 
-emailEvent.on('email.send.quote', function(data) {
+emailEvent.on('email.send.quote.checkpoint', function(data) {
 
     // TODO setImmediate here?
     winston.debug("emailEvent data: ", data);
