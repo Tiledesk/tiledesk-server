@@ -3,6 +3,7 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
+const emailService = require('./emailService');
 
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
@@ -204,6 +205,8 @@ class QuoteManager {
 
     async sendEmailIfQuotaExceeded(project, object, type, key) {
         
+        console.log("quoteManager emailService: ", emailService);
+
         let data = await this.checkQuoteForAlert(project, object, type);
         let limits = data.limits;
         let limit = data.limits[type];
