@@ -58,7 +58,9 @@ class QuoteManager {
     async incrementEmailCount(project, email) {
 
         this.project = project;
+        console.log("incrementEmailCount this.project: ", this.project)
         let key = await this.generateKey(email, 'email');
+        console.log("incrementEmailCount key: ", key);
         winston.verbose("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
@@ -221,7 +223,7 @@ class QuoteManager {
 
             winston.info("Checkpoint reached -> Send email!")
             let allQuotes = await this.getAllQuotes(project, object);
-            console.log("** --> allQuotes: " + allQuotes);
+            console.log("** --> allQuotes: ", allQuotes);
             let quotes = await this.generateQuotesObject(allQuotes, limits);
 
             let data = {

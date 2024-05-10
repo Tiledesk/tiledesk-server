@@ -33,6 +33,8 @@ emailEvent.on('email.send.quote', function(data) {
             return;
         }
 
+        console.log("email.send.quote puser: ", puser)
+
         user.findOne({ _id: puser.id_user}, (err, user) => {
 
             if (err) {
@@ -44,6 +46,8 @@ emailEvent.on('email.send.quote', function(data) {
                 winston.error("User not found. Unable to send checkpoint quota reached.")
                 return;
             }
+
+            console.log("email.send.quote user: ", user)
 
             let resource_name;
             if (data.type == 'requests') {

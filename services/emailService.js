@@ -1844,6 +1844,9 @@ class EmailService {
 
     html = template(replacements);
 
+    console.log("html: ", html);
+    console.log("Sending email to: ", to);
+
     that.send({ to: to, subject: "Update on resources usage", html: html });
   }
 
