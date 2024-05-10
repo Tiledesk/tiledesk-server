@@ -142,7 +142,7 @@ var urls = require('./routes/urls');
 var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
-
+var webhook = require('./routes/webhook');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -503,6 +503,8 @@ app.use('/users_util', usersUtil);
 // app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
+app.use('/webhook', webhook);
+
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
   winston.info(" Transcript view page is disabled");
@@ -557,6 +559,7 @@ app.use('/:projectid/faqpub', faqpub);
 
 //deprecated
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
+app.use('/:projectid/flows', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 
 
