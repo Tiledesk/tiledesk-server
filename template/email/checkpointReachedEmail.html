@@ -51,8 +51,6 @@
         align-items: center;
         width: 100%;
         margin-bottom: 30px;
-        /* position: fixed;
-        top: 90px; */
       }
 
       .box {
@@ -69,7 +67,6 @@
         height: 200px;
         width: 100%;
         margin-bottom: 40px;
-        border-radius: 8px;
       }
 
       .header {
@@ -82,20 +79,6 @@
 
       .content-body {
         padding: 10px 30px;
-      }
-
-      a {
-        /* box-sizing: border-box; */
-        font-size: 16px;
-        font-weight: 600;
-        color: #3c3c3c;
-        text-decoration: none;
-        margin: 0;
-        margin-bottom: 10px;
-      }
-
-      a:hover {
-        text-decoration: underline;
       }
 
       @media only screen and (max-width: 640px) {
@@ -157,8 +140,6 @@
   </head>
 
   <body>
-    <!-- <div style="background-color: #ff5757; height: 300px"></div>
-    <div style="background-color: #ffdfe0; height: 80px"></div> -->
     <div class="box-container">
       <div class="box">
         <div class="header-image"></div>
@@ -224,12 +205,32 @@
           />
         </div>
 
+        <!-- <div class="header">
+          <h2>Update on monthly resource usage<h2>
+        </div>
+
+        <div class="content-body">
+          Hi John,
+
+        </div> -->
       </div>
     </div>
 
     <div class="box-container">
-      <a href="http://www.tiledesk.com" class="company-url">Tiledesk.com</a>
-      <a href="%unsubscribe_url%" class="unsubscribe">Unsubscribe</a>
+      <a
+      target="_blank"
+      style="
+        -webkit-text-size-adjust: none;
+        -ms-text-size-adjust: none;
+        mso-line-height-rule: exactly;
+        text-decoration: none;
+        color: #5c6b7a;
+        font-size: 14px;
+      "
+      href="%unsubscribe_url%"
+      >Unsubscribe</a
+    >
     </div>
+    
   </body>
 </html>
