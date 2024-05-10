@@ -294,7 +294,7 @@ router.post('/signinWithCustomToken', [
       
     }    
   
-
+ 
 
     if (req.user.role) {
       role = req.user.role;
@@ -328,7 +328,7 @@ router.post('/signinWithCustomToken', [
             // Bug with email in camelcase
             newUser = await userService.signup(req.user.email.toLowerCase(), uuidv4(), req.user.firstname, req.user.lastname, false);
            } catch(e) {
-            winston.debug('error signup already exists??: ')
+            winston.info('error signup already exists??: ')
 
             if (e.code = "E11000") {
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
@@ -377,7 +377,7 @@ router.post('/signinWithCustomToken', [
             return res.status(401).send({ success: false, msg: 'User not found.' });
            }
 
-           winston.debug('userToReturn forced to newUser.', newUser)
+           winston.info('userToReturn forced to newUser.', newUser)
            userToReturn=newUser;
 
           
