@@ -2,6 +2,7 @@
 const EventEmitter = require('events');
 const emailService = require('../services/emailService');
 const project_user = require('../models/project_user');
+var winston = require('../config/winston');
 const user = require('../models/user');
 
 class EmailEvent extends EventEmitter {
