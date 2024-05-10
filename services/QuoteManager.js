@@ -130,8 +130,8 @@ class QuoteManager {
      */
     async getAllQuotes(project, obj) {
         
-        winston.info("getAllQuotes project: " + project);
-        winston.info("getAllQuotes obj: " + obj);
+        console.log("** --> getAllQuotes project: " + project);
+        console.log("** --> getAllQuotes obj: " + obj);
         this.project = project;
         winston.info("getAllQuotes this.project: " + this.project);
         let quotes = {}
@@ -190,7 +190,7 @@ class QuoteManager {
         winston.verbose("limits for current plan: ", limits)
 
         let quote = await this.getCurrentQuote(project, object, type);
-        winston.verbose("getCurrentQuote resp: ", quote)
+        winston.verbose("getCurrentQuote resp: " + quote)
 
         let data = {
             limits: limits,
@@ -221,7 +221,7 @@ class QuoteManager {
 
             winston.info("Checkpoint reached -> Send email!")
             let allQuotes = await this.getAllQuotes(project, object);
-            winston.info("allQuotes: " + allQuotes);
+            console.log("** --> allQuotes: " + allQuotes);
             let quotes = await this.generateQuotesObject(allQuotes, limits);
 
             let data = {
@@ -231,7 +231,8 @@ class QuoteManager {
                 checkpoint: checkpoint,
                 quotes: quotes
             }
-            winston.info("data: " + data);
+            // winston.info("data: " + data);
+            console.log("** --> data: ", data);
             emailEvent.emit('email.send.quote', data);
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {

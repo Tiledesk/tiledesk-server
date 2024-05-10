@@ -19,6 +19,8 @@ emailEvent.on('email.send.quote', function(data) {
     // TODO setImmediate here?
     winston.debug("emailEvent data: ", data);
 
+    console.log("** --> email.send.quote EVENT CATCHED")
+
     project_user.findOne({ id_project: data.id_project }, (err, puser) => {
 
         if (err) {
