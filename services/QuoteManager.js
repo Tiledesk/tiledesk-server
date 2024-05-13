@@ -3,6 +3,7 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
+const emailService = require('./emailService');
 
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
@@ -58,7 +59,9 @@ class QuoteManager {
     async incrementEmailCount(project, email) {
 
         this.project = project;
+        console.log("incrementEmailCount this.project: ", this.project)
         let key = await this.generateKey(email, 'email');
+        console.log("incrementEmailCount key: ", key);
         winston.verbose("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
@@ -88,8 +91,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        winston.debug("generateKey object ", object)
-        winston.debug("generateKey type " + type)
+        winston.info("generateKey object ", object)
+        winston.info("generateKey type " + type)
         let subscriptionDate;
         if (this.project.profile.subStart) {
             subscriptionDate = this.project.profile.subStart;
@@ -129,9 +132,11 @@ class QuoteManager {
      * Get quotes for a all types (tokens and request and ...)
      */
     async getAllQuotes(project, obj) {
-
+        
+        console.log("** --> getAllQuotes project: " + project);
+        console.log("** --> getAllQuotes obj: " + obj);
         this.project = project;
-
+        winston.info("getAllQuotes this.project: " + this.project);
         let quotes = {}
         for (let type of typesList) {
 
@@ -188,7 +193,7 @@ class QuoteManager {
         winston.verbose("limits for current plan: ", limits)
 
         let quote = await this.getCurrentQuote(project, object, type);
-        winston.verbose("getCurrentQuote resp: ", quote)
+        winston.verbose("getCurrentQuote resp: " + quote)
 
         let data = {
             limits: limits,
@@ -200,6 +205,8 @@ class QuoteManager {
 
     async sendEmailIfQuotaExceeded(project, object, type, key) {
         
+        console.log("quoteManager emailService: ", emailService);
+
         let data = await this.checkQuoteForAlert(project, object, type);
         let limits = data.limits;
         let limit = data.limits[type];
@@ -217,7 +224,9 @@ class QuoteManager {
         let result = await this.tdCache.get(nKey);
         if (!result) {
 
+            winston.info("Checkpoint reached -> Send email!")
             let allQuotes = await this.getAllQuotes(project, object);
+            console.log("** --> allQuotes: ", allQuotes);
             let quotes = await this.generateQuotesObject(allQuotes, limits);
 
             let data = {
@@ -227,6 +236,8 @@ class QuoteManager {
                 checkpoint: checkpoint,
                 quotes: quotes
             }
+            console.log("** --> data: ", data);
+            
             emailEvent.emit('email.send.quote.checkpoint', data);
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {

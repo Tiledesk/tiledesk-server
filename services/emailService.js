@@ -7,7 +7,7 @@ var winston = require('../config/winston');
 var marked = require('marked');
 var handlebars = require('handlebars');
 var encode = require('html-entities').encode;
-const emailEvent = require('../event/emailEvent');
+//const emailEvent = require('../event/emailEvent');
 
 handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
   return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
@@ -320,7 +320,7 @@ class EmailService {
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
       if (quoteEnabled && quoteEnabled === true) {
-        emailEvent.emit('email.send.quote', payload);
+        //emailEvent.emit('email.send.quote', payload);
         winston.verbose("email.send.quote event emitted");
       }
 
@@ -1843,6 +1843,9 @@ class EmailService {
     }
 
     html = template(replacements);
+
+    console.log("html: ", html);
+    console.log("Sending email to: ", to);
 
     that.send({ to: to, subject: "Update on resources usage", html: html });
   }
