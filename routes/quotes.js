@@ -45,7 +45,7 @@ router.post('/incr/:type', async (req, res) => {
 
     let quoteManager = req.app.get('quote_manager');
 
-    let multiplier = MODEL_MULTIPLIER[json.model];
+    let multiplier = MODEL_MULTIPLIER[body.model];
     if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")
