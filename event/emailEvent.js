@@ -4,8 +4,6 @@ const project_user = require('../models/project_user');
 var winston = require('../config/winston');
 const user = require('../models/user');
 
-console.log("(EmailEvent) 0 emailService: ", emailService)
-
 class EmailEvent extends EventEmitter {
     constructor() {
         super();
