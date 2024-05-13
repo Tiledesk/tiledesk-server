@@ -152,6 +152,7 @@ var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
 const botEvent = require('./event/botEvent');
+const emailEvent = require('./event/emailEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -215,7 +216,7 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
-const emailEvent = require('./event/emailEvent');
+
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
