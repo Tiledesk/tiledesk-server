@@ -16,6 +16,8 @@ const emailEvent = new EmailEvent();
 
 emailEvent.on('email.send.quote.checkpoint', function(data) {
 
+    console.log("(EmailEvent) 1 emailService: ", emailService)
+
     // TODO setImmediate here?
     winston.debug("emailEvent data: ", data);
 
@@ -60,7 +62,7 @@ emailEvent.on('email.send.quote.checkpoint', function(data) {
                 resource_name = 'Chatbot Email'
             }
 
-            console.log("emailService: ", emailService)
+            console.log("(EmailEvent) 2 emailService: ", emailService)
             console.log("calling sendEmailQuotaCheckpointReached");
             emailService.sendEmailQuotaCheckpointReached(user.email, user.firstname, data.project_name, resource_name, data.checkpoint, data.quotes);
             
