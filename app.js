@@ -142,7 +142,7 @@ var urls = require('./routes/urls');
 var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
-
+var webhook = require('./routes/webhook');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -152,6 +152,7 @@ var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
 const botEvent = require('./event/botEvent');
+const emailEvent = require('./event/emailEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -166,6 +167,7 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
+emailEvent.listen();
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
@@ -214,6 +216,7 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
@@ -503,6 +506,8 @@ app.use('/users_util', usersUtil);
 // app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
+app.use('/webhook', webhook);
+
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
   winston.info(" Transcript view page is disabled");
@@ -557,6 +562,7 @@ app.use('/:projectid/faqpub', faqpub);
 
 //deprecated
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
+app.use('/:projectid/flows', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 
 
