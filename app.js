@@ -166,6 +166,7 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
+emailEvent.listen();
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
@@ -214,6 +215,7 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const emailEvent = require('./event/emailEvent');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
