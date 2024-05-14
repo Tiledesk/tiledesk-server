@@ -460,13 +460,11 @@ var projectSetter = function (req, res, next) {
     q.exec(function(err, project){
       if (err) {
         winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
-        return res.status(404).send("Unable to find the project with id " + projectid);
       }
 
       winston.debug("projectSetter project:" + project);
       if (!project) {
         winston.warn("ProjectSetter project not found with id: " + projectid);
-        return res.status(404).send("Unable to find the project with id " + projectid);
         //next();
       } else {
         req.project = project;
