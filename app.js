@@ -169,7 +169,6 @@ botSubscriptionNotifier.start(); //queued but disabled
 botEvent.listen(); //queued but disabled
 emailEvent.listen();
 
-console.log("App emailServices: ", emailService)
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
