@@ -320,7 +320,7 @@ class EmailService {
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
       if (quoteEnabled && quoteEnabled === true) {
-        //emailEvent.emit('email.send.quote', payload);
+        emailEvent.emit('email.send.quote', payload);
         winston.verbose("email.send.quote event emitted");
       }
 
