@@ -152,7 +152,7 @@ var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
 const botEvent = require('./event/botEvent');
-//const emailEvent = require('./event/emailEvent');
+const emailEvent = require('./event/emailEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -167,7 +167,7 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
-//emailEvent.listen();
+emailEvent.listen();
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
@@ -465,7 +465,7 @@ var projectSetter = function (req, res, next) {
       winston.debug("projectSetter project:" + project);
       if (!project) {
         winston.warn("ProjectSetter project not found with id: " + projectid);
-        //next();
+        next();
       } else {
         req.project = project;
         next(); //call next one time for projectSetter function
