@@ -208,32 +208,32 @@ describe('/signup', () => {
                 
     });
 
-    // it('signUpAdminNoVerificationEmail', (done) => {
+    it('signUpAdminNoVerificationEmail', (done) => {
 
-    //     var email = "test-signup-" + Date.now() + "@email.com";
-    //     var pwd = "pwd";
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
 
-    //     chai.request(server)
-    //         .post("/auth/signin")
-    //         .send({ email: "admin@tiledesk.com", password: "adminadmin" })
-    //         .end((err, res) => {
+        chai.request(server)
+            .post("/auth/signin")
+            .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+            .end((err, res) => {
 
-    //             // console.log("login with superadmin res.body: ", res.body)
-    //             let superadmin_token = res.body.token;
+                // console.log("login with superadmin res.body: ", res.body)
+                let superadmin_token = res.body.token;
 
-    //             chai.request(server)
-    //                 .post("/auth/signup")
-    //                 .set('Authorization', superadmin_token)
-    //                 .send({ email: email, password: pwd, lastname: "lastname", firstname: "firstname", disableEmail: true })
-    //                 .end((err, res) => {
+                chai.request(server)
+                    .post("/auth/signup")
+                    .set('Authorization', superadmin_token)
+                    .send({ email: email, password: pwd, lastname: "lastname", firstname: "firstname", disableEmail: true })
+                    .end((err, res) => {
 
-    //                     // console.log("res.body: ", res.body);
-    //                     done();
-    //                 })
-    //         })
+                        // console.log("res.body: ", res.body);
+                        done();
+                    })
+            })
 
 
-    // })
+    })
 
     // mocha test/authentication.js  --grep 'signupUpperCaseEmail'
 

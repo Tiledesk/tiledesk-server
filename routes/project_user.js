@@ -196,6 +196,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,
+    // permissions: req.body.permissions,         securiry issue here. you must check permession. Use only put endpoint (secured by admin)
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -279,6 +280,10 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
   if (req.body.role!=undefined) {
     update.role = req.body.role;
   }
+
+  // if (req.body.permissions!=undefined) {
+  //   update.permissions = req.body.permissions;
+  // }
 
   if (req.body.user_available!=undefined) {
     update.user_available = req.body.user_available;
