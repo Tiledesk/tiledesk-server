@@ -39,7 +39,7 @@ router.get('/:type', async (req, res) => {
 
 router.post('/incr/:type', async (req, res) => {
 
-    console.log("incr res.body: ", res.body);
+    console.log("incr res.body: ", req.body);
     let type = req.params.type;
     let body = req.body;
     body.createdAt = new Date();
