@@ -39,6 +39,7 @@ router.get('/:type', async (req, res) => {
 
 router.post('/incr/:type', async (req, res) => {
 
+    console.log("incr res.body: ", res.body);
     let type = req.params.type;
     let body = req.body;
     body.createdAt = new Date();
@@ -51,6 +52,8 @@ router.post('/incr/:type', async (req, res) => {
         winston.info("No multiplier found for AI model")
     }
     body.multiplier = multiplier;
+    console.log("incr body: ", body);
+
 
     let incremented_key = await quoteManager.incrementTokenCount(req.project, body);
     let quote = await quoteManager.getCurrentQuote(req.project, req.body, type);
