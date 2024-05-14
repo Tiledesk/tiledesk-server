@@ -1,18 +1,3 @@
-
-
-// const EventEmitter = require('events');
-
-// class EmailEvent extends EventEmitter {
-//     constructor() {
-//         super();
-//         this.queueEnabled = false;
-//     }
-// }
-
-// const emailEvent = new EmailEvent();
-
-// module.exports =  emailEvent;
-
 const EventEmitter = require('events');
 const emailService = require('../services/emailService');
 const project_user = require('../models/project_user');
@@ -67,6 +52,7 @@ class EmailEvent extends EventEmitter {
                         resource_name = 'Chatbot Email'
                     }
 
+                    console.log("EmailEvent emailServices: ", emailService)
                     emailService.sendEmailQuotaCheckpointReached(user.email, user.firstname, data.project_name, resource_name, data.checkpoint, data.quotes);
 
                 })

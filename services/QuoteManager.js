@@ -232,6 +232,7 @@ class QuoteManager {
                 quotes: quotes
             }
             
+            console.log("EmailEvent emailServices: ", emailService)
             emailEvent.emit('email.send.quote.checkpoint', data);
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {
