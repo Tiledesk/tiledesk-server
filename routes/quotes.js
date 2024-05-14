@@ -53,7 +53,6 @@ router.post('/incr/:type', async (req, res) => {
     body.multiplier = multiplier;
 
     let incremented_key = await quoteManager.incrementTokenCount(req.project, body);
-    console.log("incremented_key: ", incremented_key);
     let quote = await quoteManager.getCurrentQuote(req.project, req.body, type);
 
     res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
