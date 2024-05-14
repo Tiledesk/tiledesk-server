@@ -397,6 +397,7 @@ class QuoteManager {
         //     return result;
         // })
 
+        console.log("emailEvent: ", emailEvent);
         emailEvent.on('email.send.quote', async (payload) => {
             if (quotes_enabled === true) {
                 winston.verbose("email.send event catched");
