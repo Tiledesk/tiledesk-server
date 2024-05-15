@@ -47,7 +47,7 @@
     "@tiledesk/tiledesk-messenger-connector": "^0.1.21",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.12",
-    "@tiledesk/tiledesk-train-jobworker": "^0.0.9",
+    "@tiledesk/tiledesk-train-jobworker": "^0.0.10",
     "@tiledesk/tiledesk-tybot-connector": "^0.2.65",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.70",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.7",
