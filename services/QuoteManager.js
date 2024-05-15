@@ -69,7 +69,6 @@ class QuoteManager {
 
     async incrementTokenCount(project, data) { // ?? cosa passo? il messaggio per vedere la data?
 
-        console.log("incrementTokenCount data: ", data);
         this.project = project;
         let key = await this.generateKey(data, 'tokens');
         winston.verbose("[QuoteManager] incrementTokenCount key: " + key);
@@ -80,7 +79,6 @@ class QuoteManager {
         }
         
         let tokens = data.tokens * data.multiplier;
-        console.log("incrbyfloat tokens: ", tokens);
         await this.tdCache.incrbyfloat(key, tokens);
         // await this.tdCache.incrby(key, tokens);
         this.sendEmailIfQuotaExceeded(project, data, 'tokens', key);
@@ -395,7 +393,6 @@ class QuoteManager {
         //     return result;
         // })
 
-        console.log("emailEvent: ", emailEvent);
         emailEvent.on('email.send.quote', async (payload) => {
             if (quotes_enabled === true) {
                 winston.verbose("email.send event catched");
