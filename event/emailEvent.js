@@ -1,5 +1,4 @@
 const EventEmitter = require('events');
-const emailService = require('../services/emailService');
 const project_user = require('../models/project_user');
 var winston = require('../config/winston');
 const user = require('../models/user');
@@ -53,7 +52,8 @@ class EmailEvent extends EventEmitter {
                     if (data.type == 'email') {
                         resource_name = 'Chatbot Email'
                     }
-        
+                    
+                    const emailService = require('../services/emailService');
                     console.log("----->\n calling sendEmailQuotaCheckpointReached()")
 
                     emailService.sendEmailQuotaCheckpointReached(user.email, user.firstname, data.project_name, resource_name, data.checkpoint, data.quotes);
