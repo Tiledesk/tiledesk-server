@@ -1812,6 +1812,8 @@ class EmailService {
   }
 
   async sendEmailQuotaCheckpointReached(to, firstname, project_name, resource_name, checkpoint, quotes) {
+
+    console.log("----->\n sendEmailQuotaCheckpointReached to : ", to);
     winston.debug("sendEmailQuotaCheckpointReached: " + to);
     var that = this;
 

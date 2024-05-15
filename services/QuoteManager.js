@@ -227,7 +227,10 @@ class QuoteManager {
                 checkpoint: checkpoint,
                 quotes: quotes
             }
+
+            console.log("------->\ndata: ", data);
             emailEvent.emit('email.send.quote.checkpoint', data);
+            console.log("------->\nemail.send.quote.checkpoint emitted");
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {
             winston.verbose("Quota checkpoint reached email already sent.")

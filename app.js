@@ -152,7 +152,6 @@ var cacheEnabler = require("./services/cacheEnabler");
 const session = require('express-session');
 const RedisStore = require("connect-redis").default
 const botEvent = require('./event/botEvent');
-const emailEvent = require('./event/emailEvent');
 
 require('./services/mongoose-cache-fn')(mongoose);
 
@@ -167,7 +166,6 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
-emailEvent.listen();
 
 var trainingService = require('./services/trainingService');
 trainingService.start();

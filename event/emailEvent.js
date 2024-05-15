@@ -13,7 +13,9 @@ class EmailEvent extends EventEmitter {
     listen() {
 
         emailEvent.on('email.send.quote.checkpoint', function(data) {
-        
+
+            
+            console.log("----->\n email.send.quote.checkpoint event catched from emailEvent")
             // TODO setImmediate here?
             winston.debug("emailEvent data: ", data);
         
@@ -52,8 +54,9 @@ class EmailEvent extends EventEmitter {
                         resource_name = 'Chatbot Email'
                     }
         
+                    console.log("----->\n calling sendEmailQuotaCheckpointReached()")
+
                     emailService.sendEmailQuotaCheckpointReached(user.email, user.firstname, data.project_name, resource_name, data.checkpoint, data.quotes);
-                    
                 })
         
             
@@ -64,5 +67,5 @@ class EmailEvent extends EventEmitter {
 }
 
 const emailEvent = new EmailEvent();
-
+emailEvent.listen();
 module.exports =  emailEvent;
