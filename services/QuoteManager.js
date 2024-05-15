@@ -206,11 +206,10 @@ class QuoteManager {
         let quote = data.quote;
 
         const checkpoint = await this.percentageCalculator(limit, quote);
-        console.log("checkpoint perc: ", checkpoint);
-
         if (checkpoint == 0) {
             return;
         }
+        winston.verbose("checkpoint perc: ", checkpoint);
 
         // Generate redis key
         let nKey = key + ":notify:" + checkpoint;
@@ -228,9 +227,7 @@ class QuoteManager {
                 quotes: quotes
             }
 
-            console.log("------->\ndata: ", data);
             emailEvent.emit('email.send.quote.checkpoint', data);
-            console.log("------->\nemail.send.quote.checkpoint emitted");
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {
             winston.verbose("Quota checkpoint reached email already sent.")

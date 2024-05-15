@@ -488,7 +488,6 @@ router.post('/qa', async (req, res) => {
 
     }).catch((err) => {
         winston.error("qa err: ", err);
-        console.log(err.response)
         if (err.response 
             && err.response.status) {
                 let status = err.response.status;

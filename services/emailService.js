@@ -1813,8 +1813,8 @@ class EmailService {
 
   async sendEmailQuotaCheckpointReached(to, firstname, project_name, resource_name, checkpoint, quotes) {
 
-    console.log("----->\n sendEmailQuotaCheckpointReached to : ", to);
-    winston.debug("sendEmailQuotaCheckpointReached: " + to);
+    winston.info("sendEmailQuotaCheckpointReached: " + to);
+    
     var that = this;
 
     let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED");
