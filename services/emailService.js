@@ -1843,7 +1843,6 @@ class EmailService {
       email_quote: email_quote,
       email_perc: email_perc
     }
-
     html = template(replacements);
 
     that.send({ to: to, subject: "Update on resources usage", html: html });

@@ -1,7 +1,10 @@
+
 const EventEmitter = require('events');
 const project_user = require('../models/project_user');
 var winston = require('../config/winston');
 const user = require('../models/user');
+
+console.log("(EmailEvent) 0 emailService: ", emailService)
 
 class EmailEvent extends EventEmitter {
     constructor() {
@@ -11,10 +14,14 @@ class EmailEvent extends EventEmitter {
 
     listen() {
 
+        console.log("(EmailEvent) 1 emailService: ", emailService)
+
         emailEvent.on('email.send.quote.checkpoint', function(data) {
 
             // TODO setImmediate here?
             winston.debug("emailEvent data: ", data);
+        
+            console.log("** --> email.send.quote EVENT CATCHED")
         
             project_user.findOne({ id_project: data.id_project }, (err, puser) => {
         
@@ -28,6 +35,8 @@ class EmailEvent extends EventEmitter {
                     return;
                 }
         
+                console.log("email.send.quote puser: ", puser)
+        
                 user.findOne({ _id: puser.id_user}, (err, user) => {
         
                     if (err) {
@@ -39,6 +48,8 @@ class EmailEvent extends EventEmitter {
                         winston.error("User not found. Unable to send checkpoint quota reached.")
                         return;
                     }
+        
+                    console.log("email.send.quote user: ", user)
         
                     let resource_name;
                     if (data.type == 'requests') {
@@ -59,6 +70,44 @@ class EmailEvent extends EventEmitter {
             
             })
         
+            //emailService.sendEmailQuotaCheckpointReached()
+        
+            //no cache required here. because is always new (empty)
+            // request
+            //     .populate(
+            //         [           
+            //         {path:'department'},
+            //         {path:'lead'},
+            //         {path:'participatingBots'},
+            //         {path:'participatingAgents'},                                         
+            //         {path:'requester',populate:{path:'id_user'}}
+            //         ]
+            //     )
+            //     .execPopulate( function(err, requestComplete) {
+        
+            //         if (err){
+            //             winston.error('error getting request', err);
+            //             return requestEvent.emit('request.create', request);
+            //         }
+        
+            //         winston.debug('emitting request.create', requestComplete.toObject());
+        
+            //         requestEvent.emit('request.create', requestComplete);
+        
+            //         //with request.create no messages are sent. So don't load messages
+            //     // Message.find({recipient:  request.request_id, id_project: request.id_project}).sort({updatedAt: 'asc'}).exec(function(err, messages) {                  
+            //     //   if (err) {
+            //     //         winston.error('err', err);
+            //     //   }
+            //     //   winston.debug('requestComplete',requestComplete.toObject());
+            //     //   requestComplete.messages = messages;
+            //     //   requestEvent.emit('request.create', requestComplete);
+        
+            //     // //   var requestJson = request.toJSON();
+            //     // //   requestJson.messages = messages;
+            //     // //   requestEvent.emit('request.create', requestJson);
+            //     // });
+            // });
           });
     }
 }
