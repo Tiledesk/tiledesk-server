@@ -40,20 +40,20 @@ router.get('/:type', async (req, res) => {
 router.post('/incr/:type', async (req, res) => {
 
     let type = req.params.type;
-    let body = req.body;
-    body.createdAt = new Date();
+    let data = req.body;
 
     let quoteManager = req.app.get('quote_manager');
 
-    let multiplier = MODEL_MULTIPLIER[body.model];
+    let multiplier = MODEL_MULTIPLIER[data.model];
     if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")
     }
-    body.multiplier = multiplier;
+    data.multiplier = multiplier;
+    data.createdAt = new Date();
 
-    let incremented_key = await quoteManager.incrementTokenCount(req.project, body);
-    let quote = await quoteManager.getCurrentQuote(req.project, req.body, type);
+    let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
+    let quote = await quoteManager.getCurrentQuote(req.project, data, type);    
 
     res.status(200).send({ message: "value incremented for key " + incremented_key, key: incremented_key, currentQuote: quote });
 })
