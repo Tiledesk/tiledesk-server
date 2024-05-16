@@ -498,7 +498,7 @@ router.post('/qa', async (req, res) => {
                 winston.info("No multiplier found for AI model")
             }
             obj.multiplier = multiplier;
-            obj.tokens = resp.prompt_token_size;
+            obj.tokens = answer.prompt_token_size;
 
             let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
             winston.verbose("incremented_key: ", incremented_key);
