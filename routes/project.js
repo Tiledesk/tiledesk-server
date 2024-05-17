@@ -247,76 +247,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
         req.user.attributes.isSuperadmin === true) {
           
           winston.debug("Superadmin can modify the project profile")
-          //update.profile = req.body.profile;
-
-          // Profile
-          if (req.body["profile.name"]!=undefined) {
-            update["profile.name"] = req.body["profile.name"];
-          }
-          if (req.body["profile.trialDays"]!=undefined) {
-            update["profile.trialDays"] = req.body["profile.trialDays"];
-          }
-          if (req.body["profile.agents"]!=undefined) {
-            update["profile.agents"] = req.body["profile.agents"];
-          }
-          if (req.body["profile.type"]!=undefined) {
-            update["profile.type"] = req.body["profile.type"];
-          }
-          if (req.body["profile.subscription_creation_date"]!=undefined) {
-            update["profile.subscription_creation_date"] = req.body["profile.subscription_creation_date"];
-          }
-          if (req.body["profile.subStart"]!=undefined) {
-            update["profile.subStart"] = req.body["profile.subStart"];
-          }
-          if (req.body["profile.subEnd"]!=undefined) {
-            update["profile.subEnd"] = req.body["profile.subEnd"];
-          }
-          if (req.body["profile.subscriptionId"]!=undefined) {
-            update["profile.subscriptionId"] = req.body["profile.subscriptionId"];
-          }
-          if (req.body["profile.last_stripe_event"]!=undefined) {
-            update["profile.last_stripe_event"] = req.body["profile.last_stripe_event"];
-          }
-
-          // Quotes
-          if (req.body["profile.quotes.chatbots"]!=undefined) {
-            update["profile.quotes.chatbots"] = req.body["profile.quotes.chatbots"];
-          }
-          if (req.body["profile.quotes.kbs"]!=undefined) {
-            update["profile.quotes.kbs"] = req.body["profile.quotes.kbs"];
-          }
-          if (req.body["profile.quotes.requests"]!=undefined) {
-            update["profile.quotes.requests"] = req.body["profile.quotes.requests"];
-          }
-          if (req.body["profile.quotes.tokens"]!=undefined) {
-            update["profile.quotes.tokens"] = req.body["profile.quotes.tokens"];
-          }
-          if (req.body["profile.quotes.email"]!=undefined) {
-            update["profile.quotes.email"] = req.body["profile.quotes.email"];
-          }
-
-          // Customization
-          if (req.body["profile.customization.widgetUnbranding"]!=undefined) {
-            update["profile.customization.widgetUnbranding"] = req.body["profile.customization.widgetUnbranding"];
-          }
-          if (req.body["profile.customization.smtpSettings"]!=undefined) {
-            update["profile.customization.smtpSettings"] = req.body["profile.customization.smtpSettings"];
-          }
-          if (req.body["profile.customization.knowledgeBases"]!=undefined) {
-            update["profile.customization.knowledgeBases"] = req.body["profile.customization.knowledgeBases"];
-          }
-          if (req.body["profile.customization.whatsapp"]!=undefined) {
-            update["profile.customization.whatsapp"] = req.body["profile.customization.whatsapp"];
-          }
-          if (req.body["profile.customization.messenger"]!=undefined) {
-            update["profile.customization.messenger"] = req.body["profile.customization.messenger"];
-          }
-          if (req.body["profile.customization.telegram"]!=undefined) {
-            update["profile.customization.telegram"] = req.body["profile.customization.telegram"];
-          }
-          if (req.body["profile.customization.chatbot"]!=undefined) {
-            update["profile.customization.chatbot"] = req.body["profile.customization.chatbot"];
-          }
+          update.profile = req.body.profile;
 
           delete req.user.attributes.isSuperadmin;
         }
