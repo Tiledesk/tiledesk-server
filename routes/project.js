@@ -479,6 +479,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.automatic_idle_chats"]!=undefined) {
     update["settings.automatic_idle_chats"] = req.body["settings.automatic_idle_chats"];
   }
+
+  if (req.body["settings.displayWidget"]!=undefined) {
+    update["settings.displayWidget"] = req.body["settings.displayWidget"];
+  }
   
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;

@@ -7,11 +7,13 @@ var upload = multer()
 const openaiService = require('../services/openaiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
-
+var configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
     debug: false,
@@ -27,6 +29,7 @@ router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
     let status;
+    let type;
     let limit = 200;
     let page = 0;
     let direction = -1;
@@ -41,6 +44,13 @@ router.get('/', async (req, res) => {
         query["status"] = status;
         winston.debug("Get kb status: " + status)
     }
+
+    if (req.query.type) {
+        type = req.query.type;
+        query["type"] = type;
+        winston.debug("Get kb type: " + type);
+    }
+
     if (req.query.limit) {
         limit = parseInt(req.query.limit);
         winston.debug("Get kb limit: " + limit)
@@ -193,13 +203,17 @@ router.post('/', async (req, res) => {
 
             res.status(200).send(raw);
 
+            let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+            
             let json = {
                 id: raw.value._id,
                 type: raw.value.type,
                 source: raw.value.source,
                 content: "",
-                namespace: raw.value.namespace
+                namespace: raw.value.namespace,
+                webhook: webhook
             }
+            winston.debug("json: ", json);
 
             if (raw.value.content) {
                 json.content = raw.value.content;
@@ -220,7 +234,6 @@ router.post('/', async (req, res) => {
     })
 
 })
-
 
 router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
@@ -256,6 +269,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
     }
 
+    let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
     let kbs = [];
     list.forEach(url => {
         kbs.push({
@@ -284,9 +299,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
-            return { id: _id, ...rest };
+            return { id: _id, webhook: webhook, ...rest };
         });
-        winston.verbose("resources to be sent to worker: ", resources)        
+        winston.verbose("resources to be sent to worker: ", resources);
+        console.log("resources to be sent to worker: ", resources);
         scheduleScrape(resources);
         res.status(200).send(result);
 
@@ -315,7 +331,6 @@ router.post('/sitemap', async (req, res) => {
     })
 
 })
-
 
 router.put('/:kb_id', async (req, res) => {
 
@@ -350,7 +365,6 @@ router.put('/:kb_id', async (req, res) => {
     })
 
 })
-
 
 // PROXY PUGLIA AI V2 - START
 router.post('/scrape/single', async (req, res) => {
@@ -447,7 +461,10 @@ router.post('/scrape/status', async (req, res) => {
 })
 
 router.post('/qa', async (req, res) => {
+
+    let publicKey = false;
     let data = req.body;
+    
     // add or override namespace value if it is passed for security reason
     data.namespace = req.projectid;
     winston.debug("/qa data: ", data);
@@ -462,6 +479,17 @@ router.post('/qa', async (req, res) => {
             return res.status(403).send({ success: false, error: "GPT apikey undefined" })
         }
         data.gptkey = gptkey;
+        publicKey = true;
+    }
+
+    let obj = { createdAt: new Date() };
+
+    let quoteManager = req.app.get('quote_manager');
+    if (publicKey === true) {
+        let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+        if (isAvailable === false) {
+            return res.status(403).send({ success: false, error: "Tokens quota exceeded" });
+        }
     }
 
     openaiService.askNamespace(data).then((resp) => {
@@ -474,7 +502,20 @@ router.post('/qa', async (req, res) => {
             id = id.substring(index + 1);
         }
 
+        console.log("askNamespace resp: ", resp);
+
         KB.findById(id, (err, resource) => {
+
+            let multiplier = MODEL_MULTIPLIER[data.model];
+            if (!multiplier) {
+                multiplier = 1;
+                winston.info("No multiplier found for AI model")
+            }
+            obj.multiplier = multiplier;
+            obj.tokens = answer.prompt_token_size;
+
+            let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+            winston.verbose("incremented_key: ", incremented_key);
 
             if (err) {
                 winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
@@ -488,7 +529,6 @@ router.post('/qa', async (req, res) => {
 
     }).catch((err) => {
         winston.error("qa err: ", err);
-        console.log(err.response)
         if (err.response 
             && err.response.status) {
                 let status = err.response.status;
@@ -560,7 +600,7 @@ router.delete('/:kb_id', async (req, res) => {
         } else {
             winston.verbose("resp.data: ", resp.data);
 
-            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4] } }, (err, deletedKb) => {
+            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4, 100, 300, 400] } }, (err, deletedKb) => {
                 if (err) {
                     winston.error("findOneAndDelete err: ", err);
                     return res.status(500).send({ success: false, error: "Unable to delete the content due to an error" })
@@ -579,6 +619,33 @@ router.delete('/:kb_id', async (req, res) => {
         res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
     })
 
+})
+
+router.delete('/namespace/:namespace_id', async (req, res) => {
+    
+    let id_project = req.projectid;
+    let namespace_id = req.params.namespace_id;
+
+    let data = {
+        namespace: namespace_id
+    }
+
+    openaiService.deleteNamespace(data).then((resp) => {
+        winston.debug("delete namespace resp: ", resp.data);
+
+        KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
+            if (err) {
+                winston.error("deleteMany error: ", err);
+                return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
+            }
+            winston.debug("deleteResponse: ", deleteResponse);
+            res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+        })
+
+    }).catch((err) => {
+        let status = err.response.status;
+        res.status(status).send({ success: false, error: "Unable to delete namespace"})
+    })
 })
 
 async function saveBulk(operations, kbs, project_id) {
