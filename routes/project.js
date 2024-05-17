@@ -247,7 +247,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
         req.user.attributes.isSuperadmin === true) {
           
           winston.debug("Superadmin can modify the project profile")
-          update.profile = req.body.profile;
+          //update.profile = req.body.profile;
 
           // Profile
           if (req.body["profile.name"]!=undefined) {
