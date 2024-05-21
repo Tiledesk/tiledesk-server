@@ -396,7 +396,7 @@ describe('KbRoute', () => {
 
         }).timeout(10000)
 
-        it('multiadd-fail', (done) => {
+        it('multiaddFail', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";

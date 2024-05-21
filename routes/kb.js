@@ -302,7 +302,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
             return { id: _id, webhook: webhook, ...rest };
         });
         winston.verbose("resources to be sent to worker: ", resources);
-        console.log("resources to be sent to worker: ", resources);
         scheduleScrape(resources);
         res.status(200).send(result);
 
@@ -683,17 +682,21 @@ async function updateStatus(id, status) {
 
 async function scheduleScrape(resources) {
 
-    let data = {
-        resources: resources
-    }
-    winston.info("Schedule job with following data: ", data);
+    // let data = {
+    //     resources: resources
+    // }
     let scheduler = new Scheduler({ jobManager: jobManager });
-    scheduler.trainSchedule(data, (err, result) => {
-        if (err) {
-            winston.error("Scheduling error: ", err);
-        }
-        winston.info("Scheduling result: ", result);
-    });
+    
+    resources.forEach(r => {
+        winston.debug("Schedule job with following data: ", r);
+        scheduler.trainSchedule(r, (err, result) => {
+            if (err) {
+                winston.error("Scheduling error: ", err);
+            }
+            winston.info("Scheduling result: ", result);
+        });
+    })
+
 
     return true;
 }
