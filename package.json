@@ -48,7 +48,7 @@
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.11",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.11",
-    "@tiledesk/tiledesk-tybot-connector": "^0.2.61",
+    "@tiledesk/tiledesk-tybot-connector": "^0.2.69",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.66",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.7",
     "amqplib": "^0.5.5",
