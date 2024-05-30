@@ -50,7 +50,7 @@
     "@tiledesk/tiledesk-telegram-connector": "^0.1.14",
     "@tiledesk/tiledesk-tybot-connector": "^0.2.69",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.72",
-    "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.7",
+    "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.8",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",
