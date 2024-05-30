@@ -669,8 +669,11 @@ async function statusConverter(status) {
 async function updateStatus(id, status) {
     return new Promise((resolve) => {
 
-        KB.findByIdAndUpdate(id, { status: status }, (err, updatedKb) => {
+        KB.findByIdAndUpdate(id, { status: status }, { new: true }, (err, updatedKb) => {
             if (err) {
+                resolve(false)
+            } else if (!updatedKb) {
+                winston.verbose("Unable to update status. Data source not found.")
                 resolve(false)
             } else {
                 winston.debug("updatedKb: ", updatedKb)
@@ -689,11 +692,15 @@ async function scheduleScrape(resources) {
     
     resources.forEach(r => {
         winston.debug("Schedule job with following data: ", r);
-        scheduler.trainSchedule(r, (err, result) => {
+        scheduler.trainSchedule(r, async (err, result) => {
+            let error_code = 100;
             if (err) {
                 winston.error("Scheduling error: ", err);
+                error_code = 400;
+            } else {
+                winston.info("Scheduling result: ", result);
             }
-            winston.info("Scheduling result: ", result);
+            await updateStatus(r.id, error_code);
         });
     })
 
