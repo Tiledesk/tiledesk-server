@@ -137,12 +137,17 @@ class EmailService {
     }
     winston.info('EmailService ccEnabled: ' + this.ccEnabled);
 
+    this.brand_name = "Tiledesk"
+    if (process.env.BRAND_NAME) {
+      this.brand_name = process.env.BRAND_NAME;
+    }
+
   }
 
-  readTemplate(templateName, settings) {
+  readTemplate(templateName, settings, environmentVariableKey) {
     // aggiunsta questo
     var that = this;
-    winston.debug('EmailService readTemplate: ' + templateName + '  ' + JSON.stringify(settings));
+    winston.debug('EmailService readTemplate: ' + templateName + ' environmentVariableKey:  ' + environmentVariableKey + ' setting ' + JSON.stringify(settings));
 
 
     if (settings && settings.email && settings.email.templates) {
@@ -162,11 +167,24 @@ class EmailService {
         return new Promise(function (resolve, reject) {
           return resolve(template);
         });
+      } 
+      // else {
+      //   return that.readTemplateFile(templateName);
+      // }
+    } else {
+      var envTemplate = process.env[environmentVariableKey];
+      winston.debug('EmailService envTemplate: ' + envTemplate);
+
+      if (envTemplate) {
+        winston.debug('EmailService return envTemplate: ' + envTemplate);
+
+        return envTemplate;
       } else {
+        winston.debug('EmailService return file: ' + templateName);
+
         return that.readTemplateFile(templateName);
       }
-    } else {
-      return that.readTemplateFile(templateName);
+      
     }
   }
   readTemplateFile(templateName) {
@@ -328,7 +346,8 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplate('test.html', { "email": { "templates": { test: "123" } } });
+    // var html = await this.readTemplate('test.html', { "email": { "templates": { test: "123" } } }, "EMAIL_TEST_HTML_TEMPLATE");
+    var html = await this.readTemplate('test.html', undefined, "EMAIL_TEST_HTML_TEMPLATE");
 
     var template = handlebars.compile(html);
 
@@ -337,7 +356,7 @@ class EmailService {
 
     var html = template(replacements);
 
-    return that.send({ to: to, subject: `Tiledesk test email`, config: configEmail, html: html, callback: callback });
+    return that.send({ to: to, subject: `${this.brand_name} test email`, config: configEmail, html: html, callback: callback });
 
   }
 
@@ -356,14 +375,7 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('assignedRequest.html', project.settings);
-
-    var envTemplate = process.env.EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -458,10 +470,10 @@ class EmailService {
     // cambiare in [Nicky:Dashboard Support] Assigned Chat
     // serve per aggiornare native... fai aggiornamento 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Assigned Chat`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
@@ -516,15 +528,7 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('assignedEmailMessage.html', project.settings);
-
-
-    var envTemplate = process.env.EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('assignedEmailMessage.html', project.settings, "EMAIL_ASSIGN_MESSAGE_EMAIL_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -608,13 +612,13 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
-      subjectDef = `[Ticket #${request.ticket_id}] New message`;
+      subjectDef = `[${this.brand_name} #${request.ticket_id}] New message`;
     }
 
     if (request.ticket_id && request.subject) {
@@ -668,14 +672,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplate('pooledRequest.html', project.settings);
-
-    var envTemplate = process.env.EMAIL_POOLED_REQUEST_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('pooledRequest.html', project.settings, "EMAIL_POOLED_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -754,10 +751,10 @@ class EmailService {
       }
     }
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Pooled Chat`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     let subject = that.formatText("pooledRequestSubject", subjectDef, request, project.settings);
@@ -805,16 +802,7 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('pooledEmailMessage.html', project.settings);
-
-
-    var envTemplate = process.env.EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('pooledEmailMessage.html', project.settings, "EMAIL_POOLED_MESSAGE_EMAIL_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -899,10 +887,10 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
       subjectDef = `[Ticket #${request.ticket_id}] New Message`;
@@ -955,16 +943,7 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('newMessage.html', project.settings);
-
-
-
-    var envTemplate = process.env.EMAIL_NEW_MESSAGE_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('newMessage.html', project.settings, "EMAIL_NEW_MESSAGE_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1045,7 +1024,7 @@ class EmailService {
     }
 
 
-    let subject = that.formatText("newMessageSubject", `[Tiledesk ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
+    let subject = that.formatText("newMessageSubject", `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
 
     that.send({
       messageId: messageId,
@@ -1070,7 +1049,7 @@ class EmailService {
       replyTo: replyTo,
       inReplyTo: inReplyTo,
       references: references,
-      subject: `[Tiledesk ${project ? project.name : '-'}] New Offline Message - notification`,
+      subject: `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message - notification`,
       html: html,
       headers: headers
     });
@@ -1088,16 +1067,8 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('ticket.html', project.settings);
+    var html = await this.readTemplate('ticket.html', project.settings, "EMAIL_TICKET_HTML_TEMPLATE");
     // this.readTemplateFile('ticket.txt', function(err, html) {
-
-
-    var envTemplate = process.env.EMAIL_TICKET_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
 
     winston.debug("html: " + html);
 
@@ -1273,15 +1244,7 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('newMessageFollower.html', project.settings);
-
-
-    var envTemplate = process.env.EMAIL_FOLLOWER_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('newMessageFollower.html', project.settings, "EMAIL_FOLLOWER_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1488,14 +1451,8 @@ class EmailService {
       project = project.toJSON();
     }
 
-    var html = await this.readTemplate('emailDirect.html', project.settings);
+    var html = await this.readTemplate('emailDirect.html', project.settings, "EMAIL_DIRECT_HTML_TEMPLATE");
 
-    var envTemplate = process.env.EMAIL_DIRECT_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
 
     winston.debug("html: " + html);
 
@@ -1580,15 +1537,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplate('resetPassword.html');
-
-
-    var envTemplate = process.env.EMAIL_RESET_PASSWORD_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('resetPassword.html', undefined, "EMAIL_RESET_PASSWORD_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1608,8 +1557,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Password reset request', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Password reset request - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Password reset request`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Password reset request - notification`, html: html });
 
   }
 
@@ -1618,15 +1567,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('passwordChanged.html');
-
-
-    var envTemplate = process.env.EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplateFile('passwordChanged.html', undefined, "EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1646,8 +1587,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Your password has been changed', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Your password has been changed - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Your password has been changed`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Your password has been changed - notification`, html: html });
 
   }
 
@@ -1662,14 +1603,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('beenInvitedExistingUser.html');
-
-    var envTemplate = process.env.EMAIL_EXUSER_INVITED_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplateFile('beenInvitedExistingUser.html', undefined, "EMAIL_EXUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1693,8 +1627,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
   }
 
   // ok
@@ -1708,14 +1642,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('beenInvitedNewUser.html');
-
-    var envTemplate = process.env.EMAIL_NEWUSER_INVITED_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplateFile('beenInvitedNewUser.html', undefined, "EMAIL_NEWUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1737,8 +1664,8 @@ class EmailService {
 
     var html = template(replacements);
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
 
   }
 
@@ -1751,14 +1678,7 @@ class EmailService {
     if (savedUser.toJSON) {
       savedUser = savedUser.toJSON();
     }
-    var html = await this.readTemplateFile('verify.html');
-
-    var envTemplate = process.env.EMAIL_VERIFY_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplateFile('verify.html', undefined, "EMAIL_VERIFY_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1776,8 +1696,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] Verify your email address`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] Verify your email address ` + to + " - notification", html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Verify your email address`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Verify your email address ` + to + " - notification", html: html });
 
   }
 
@@ -1811,14 +1731,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplate('sendTranscript.html', project.settings);
-
-    var envTemplate = process.env.EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE;
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
+    var html = await this.readTemplate('sendTranscript.html', project.settings, "EMAIL_SEND_TRANSCRIPT_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1857,7 +1770,7 @@ class EmailService {
 
     //custom ocf here
     // console.log("ocf",project._id);
-    let subject = that.formatText("sendTranscriptSubject", '[Tiledesk] Transcript', request, project.settings);
+    let subject = that.formatText("sendTranscriptSubject", `[${this.brand_name}] Transcript`, request, project.settings);
 
     //prod                                               //pre
     // if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
@@ -1871,7 +1784,7 @@ class EmailService {
     // hcustomization.emailTranscript(to, subject, html, configEmail)
 
     that.send({ from: from, to: to, subject: subject, html: html, config: configEmail });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Transcript - notification', html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Transcript - notification`, html: html });
 
   }
 
@@ -1880,14 +1793,8 @@ class EmailService {
 
     var that = this;
 
-    let html = await this.readTemplate('redirectToDesktopEmail.html');
+    let html = await this.readTemplate('redirectToDesktopEmail.html', undefined, "EMAIL_REDIRECT_TO_DESKTOP_TEMPLATE");
 
-    let envTemplate = process.env.EMAIL_REDIRECT_TO_DESKTOP_TEMPLATE
-    winston.debug("envTemplate: " + envTemplate);
-
-    if (envTemplate) {
-      html = envTemplate;
-    }
 
     winston.debug("html: " + html);
 
@@ -1905,7 +1812,7 @@ class EmailService {
 
     html = template(replacements);
 
-    that.send({ to: to, subject: "Join Tiledesk from Desktop", html: html });
+    that.send({ to: to, subject: `Join ${this.brand_name} from Desktop`, html: html });
 
   }
 
