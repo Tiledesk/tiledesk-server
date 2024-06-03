@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.26
+- Updated tybot-connector to 0.2.72
+
 # 2.7.25
 - Updated tybot-connector to 0.2.70
 - Changed auth role strategy in groups route and project_user endpoint
