@@ -364,6 +364,9 @@ class EmailService {
 
   async sendNewAssignedRequestNotification(to, request, project) {
 
+
+    console.log("sendNewAssignedRequestNotification request: ", JSON.stringify(request))
+    console.log("sendNewAssignedRequestNotification project: ", JSON.stringify(project))
     var that = this;
 
     //if the request came from rabbit mq?
@@ -408,6 +411,7 @@ class EmailService {
     };
 
     winston.debug("replacements ", replacements);
+    console.log("sendNewAssignedRequestNotification replacements: ", replacements)
 
     var html = template(replacements);
     winston.debug("html after: " + html);
@@ -471,12 +475,15 @@ class EmailService {
     // serve per aggiornare native... fai aggiornamento 
 
     let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Assigned Chat`;
+    console.log("1 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     if (request.subject) {
       subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
+    console.log("2 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
+    console.log("sendNewAssignedRequestNotification formatText subjectDef: ", subject)
 
 
     // if (request.ticket_id) {
@@ -1884,12 +1891,14 @@ class EmailService {
     winston.debug("formatText defaultText: " + defaultText);
 
     let template = this.getTemplate(templateName, settings);
+    console.log("formatText template ", template)
 
     winston.debug("formatText template: " + template);
 
     if (template) {
       text = template;
     }
+    console.log("formatText text ", text)
 
     var baseScope = JSON.parse(JSON.stringify(this));
     delete baseScope.pass;
@@ -1904,8 +1913,12 @@ class EmailService {
       test: "test"
     };
 
+    console.log("formatText replacements ", replacements)
+
     var textTemplate = templateHand(replacements);
     winston.debug("formatText textTemplate: " + textTemplate);
+
+    console.log("formatText textTemplate ", textTemplate)
 
     return textTemplate;
 
