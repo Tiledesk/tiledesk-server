@@ -264,6 +264,9 @@ class EmailService {
 
   async send(mail, quoteEnabled, project, quoteManager) {
 
+    console.log("\nsend mail: ", mail);
+    console.log("\nsend mail.to: ", mail.to);
+
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
@@ -310,9 +313,13 @@ class EmailService {
     winston.debug(' mail.config', mail.config);
 
     if (!mail.to) {
-      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      winston.warn("EmailService send method. to field is not defined", mailOptions);
+      return false;
     }
 
+    console.log("\nsend mail to is defined: ", mail.to);
+
+    console.log("\nsend before transport mailOptions: ", mailOptions);
     // send mail with defined transport object
     this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
       if (error) {
@@ -321,6 +328,8 @@ class EmailService {
         }
         return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
       }
+
+      console.log("\n\n email sent info: ", info);
       winston.verbose('Email sent:', { info: info });
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
@@ -365,8 +374,8 @@ class EmailService {
   async sendNewAssignedRequestNotification(to, request, project) {
 
 
-    console.log("sendNewAssignedRequestNotification request: ", JSON.stringify(request))
-    console.log("sendNewAssignedRequestNotification project: ", JSON.stringify(project))
+    console.log("\nsendNewAssignedRequestNotification request: ", JSON.stringify(request))
+    console.log("\nsendNewAssignedRequestNotification project: ", JSON.stringify(project))
     var that = this;
 
     //if the request came from rabbit mq?
@@ -381,6 +390,7 @@ class EmailService {
     var html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
+    console.log("\nsendNewAssignedRequestNotification html: ", JSON.stringify(html))
 
     var template = handlebars.compile(html);
 
@@ -423,6 +433,8 @@ class EmailService {
     if (this.replyEnabled) { //fai anche per gli altri
       replyTo = request.request_id + this.inboundDomainDomainWithAt;
     }
+    console.log("sendNewAssignedRequestNotification replyTo: ", replyTo)
+
 
     let headers;
     if (request) {
@@ -456,6 +468,7 @@ class EmailService {
     }
     winston.debug("email inReplyTo: " + inReplyTo);
     winston.debug("email references: " + references);
+    console.log("sendNewAssignedRequestNotification inReplyTo: ", inReplyTo)
 
     let from;
     let configEmail;
