@@ -3,6 +3,7 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
+const emailService = require('./emailService');
 
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
@@ -41,6 +42,7 @@ class QuoteManager {
         winston.verbose("[QuoteManager] incrementRequestsCount key: " + key);
 
         await this.tdCache.incr(key)
+        this.sendEmailIfQuotaExceeded(project, request, 'requests', key);
         return key;
     }
 
@@ -61,6 +63,7 @@ class QuoteManager {
         winston.verbose("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
+        this.sendEmailIfQuotaExceeded(project, email, 'email', key);
         return key;
     }
 
@@ -78,7 +81,7 @@ class QuoteManager {
         let tokens = data.tokens * data.multiplier;
         await this.tdCache.incrbyfloat(key, tokens);
         // await this.tdCache.incrby(key, tokens);
-        
+        this.sendEmailIfQuotaExceeded(project, data, 'tokens', key);
         return key;
     }
     // INCREMENT KEY SECTION - END
@@ -86,8 +89,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        winston.debug("generateKey object ", object)
-        winston.debug("generateKey type " + type)
+        winston.info("generateKey object ", object)
+        winston.info("generateKey type " + type)
         let subscriptionDate;
         if (this.project.profile.subStart) {
             subscriptionDate = this.project.profile.subStart;
@@ -127,9 +130,8 @@ class QuoteManager {
      * Get quotes for a all types (tokens and request and ...)
      */
     async getAllQuotes(project, obj) {
-
+        
         this.project = project;
-
         let quotes = {}
         for (let type of typesList) {
 
@@ -172,6 +174,97 @@ class QuoteManager {
         } else {
             return false;
         }
+    }
+
+    async checkQuoteForAlert(project, object, type) {
+        
+        if (quotes_enabled === false) {
+            winston.verbose("QUOTES DISABLED - checkQuote for type " + type);
+            return (null, null);
+        }
+
+        this.project = project;
+        let limits = await this.getPlanLimits();
+        winston.verbose("limits for current plan: ", limits)
+
+        let quote = await this.getCurrentQuote(project, object, type);
+        winston.verbose("getCurrentQuote resp: " + quote)
+
+        let data = {
+            limits: limits,
+            quote: quote
+        }
+
+        return data;
+    }
+
+    async sendEmailIfQuotaExceeded(project, object, type, key) {
+        
+
+        let data = await this.checkQuoteForAlert(project, object, type);
+        let limits = data.limits;
+        let limit = data.limits[type];
+        let quote = data.quote;
+
+        const checkpoint = await this.percentageCalculator(limit, quote);
+        if (checkpoint == 0) {
+            return;
+        }
+        winston.verbose("checkpoint perc: ", checkpoint);
+
+        // Generate redis key
+        let nKey = key + ":notify:" + checkpoint;
+        let result = await this.tdCache.get(nKey);
+        if (!result) {
+
+            winston.info("Checkpoint reached -> Send email!")
+            let allQuotes = await this.getAllQuotes(project, object);
+            let quotes = await this.generateQuotesObject(allQuotes, limits);
+
+            let data = {
+                id_project: project._id,
+                project_name: project.name,
+                type: type,
+                checkpoint: checkpoint,
+                quotes: quotes
+            }
+            emailEvent.emit('email.send.quote.checkpoint', data);
+            await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
+        } else {
+            winston.verbose("Quota checkpoint reached email already sent.")
+        }
+
+    }
+
+    async percentageCalculator(limit, quote) {
+        
+        let p = (quote / limit) * 100;
+
+        if (p >= 100) { return 100; }
+        if (p >= 95) { return 95; }
+        if (p >= 75) { return 75; }
+        if (p >= 50) { return 50; }
+
+        return 0;
+
+    }
+
+    async generateQuotesObject(quotes, limits) {
+        let quotes_obj = {
+            requests: {
+                quote: quotes.requests.quote,
+                perc: ((quotes.requests.quote / limits['requests']) * 100).toFixed(1)
+            },
+            tokens: {
+                quote: quotes.tokens.quote,
+                perc: ((quotes.tokens.quote / limits['tokens']) * 100).toFixed(1)
+            },
+            email: {
+                quote: quotes.email.quote,
+                perc: ((quotes.email.quote / limits['email']) * 100).toFixed(1)
+            }
+        }
+        return quotes_obj
     }
 
 
@@ -256,6 +349,8 @@ class QuoteManager {
             if (quotes_enabled === true) {
                 winston.verbose("request.create.quote event catched");
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
+
+                
                 return result;
             } else {
                 winston.verbose("QUOTES DISABLED - request.create.quote event")
