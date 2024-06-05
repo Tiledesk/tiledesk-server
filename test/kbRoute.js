@@ -207,7 +207,7 @@ describe('KbRoute', () => {
                                                     if (log) { console.log("create kb res.body: ", res.body); }
                                                     res.should.have.status(200);
 
-                                                    let query = "?status=-1&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
+                                                    let query = "?status=100&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
                                                     //let query = "";
                                                     console.log("query: ", query);
 
@@ -223,7 +223,7 @@ describe('KbRoute', () => {
                                                             expect(res.body.kbs.length).to.equal(2);
                                                             expect(res.body.count).to.equal(2);
                                                             res.body.query.should.be.a('object');
-                                                            expect(res.body.query.status).to.equal(-1);
+                                                            expect(res.body.query.status).to.equal(100);
                                                             expect(res.body.query.limit).to.equal(5);
                                                             expect(res.body.query.page).to.equal(0);
                                                             expect(res.body.query.direction).to.equal(-1);
@@ -619,7 +619,7 @@ describe('KbRoute', () => {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
                     chai.request(server)
-                        .get('/' + savedProject._id + '/kb/namespaces')
+                        .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
                         .end((err, res) => {
 
@@ -821,6 +821,7 @@ describe('KbRoute', () => {
 
         /**
          * Delete namespace
+         * !! Unable to test it due to external request
          */
         // it('deleteNamespace', (done) => {
 
