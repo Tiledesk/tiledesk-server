@@ -264,6 +264,9 @@ class EmailService {
 
   async send(mail, quoteEnabled, project, quoteManager) {
 
+    console.log("\nsend mail: ", mail);
+    console.log("\nsend mail.to: ", mail.to);
+
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
@@ -310,9 +313,13 @@ class EmailService {
     winston.debug(' mail.config', mail.config);
 
     if (!mail.to) {
-      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      winston.warn("EmailService send method. to field is not defined", mailOptions);
+      return false;
     }
 
+    console.log("\nsend mail to is defined: ", mail.to);
+
+    console.log("\nsend before transport mailOptions: ", mailOptions);
     // send mail with defined transport object
     this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
       if (error) {
@@ -321,6 +328,8 @@ class EmailService {
         }
         return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
       }
+
+      console.log("\n\n email sent info: ", info);
       winston.verbose('Email sent:', { info: info });
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
@@ -364,6 +373,9 @@ class EmailService {
 
   async sendNewAssignedRequestNotification(to, request, project) {
 
+
+    console.log("\nsendNewAssignedRequestNotification request: ", JSON.stringify(request))
+    console.log("\nsendNewAssignedRequestNotification project: ", JSON.stringify(project))
     var that = this;
 
     //if the request came from rabbit mq?
@@ -378,6 +390,7 @@ class EmailService {
     var html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
+    console.log("\nsendNewAssignedRequestNotification html: ", JSON.stringify(html))
 
     var template = handlebars.compile(html);
 
@@ -408,6 +421,7 @@ class EmailService {
     };
 
     winston.debug("replacements ", replacements);
+    console.log("sendNewAssignedRequestNotification replacements: ", replacements)
 
     var html = template(replacements);
     winston.debug("html after: " + html);
@@ -419,6 +433,8 @@ class EmailService {
     if (this.replyEnabled) { //fai anche per gli altri
       replyTo = request.request_id + this.inboundDomainDomainWithAt;
     }
+    console.log("sendNewAssignedRequestNotification replyTo: ", replyTo)
+
 
     let headers;
     if (request) {
@@ -452,6 +468,7 @@ class EmailService {
     }
     winston.debug("email inReplyTo: " + inReplyTo);
     winston.debug("email references: " + references);
+    console.log("sendNewAssignedRequestNotification inReplyTo: ", inReplyTo)
 
     let from;
     let configEmail;
@@ -471,12 +488,15 @@ class EmailService {
     // serve per aggiornare native... fai aggiornamento 
 
     let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Assigned Chat`;
+    console.log("1 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     if (request.subject) {
       subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
+    console.log("2 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
+    console.log("sendNewAssignedRequestNotification formatText subjectDef: ", subject)
 
 
     // if (request.ticket_id) {
@@ -1816,6 +1836,43 @@ class EmailService {
 
   }
 
+  async sendEmailQuotaCheckpointReached(to, firstname, project_name, resource_name, checkpoint, quotes) {
+
+    winston.info("sendEmailQuotaCheckpointReached: " + to);
+    
+    var that = this;
+
+    let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED");
+    winston.debug("html: " + html);
+
+    let template = handlebars.compile(html);
+
+    let requests_quote = quotes.requests.quote;
+    let requests_perc = quotes.requests.perc;
+
+    let tokens_quote = quotes.tokens.quote;
+    let tokens_perc = quotes.tokens.perc;
+
+    let email_quote = quotes.email.quote;
+    let email_perc = quotes.email.perc;
+
+    let replacements = {
+      firstname: firstname,
+      project_name: project_name,
+      resource_name: resource_name,
+      checkpoint: checkpoint,
+      requests_quote: requests_quote,
+      requests_perc: requests_perc,
+      tokens_quote: tokens_quote,
+      tokens_perc: tokens_perc,
+      email_quote: email_quote,
+      email_perc: email_perc
+    }
+    html = template(replacements);
+
+    that.send({ to: to, subject: "Update on resources usage", html: html });
+  }
+
   parseText(text, payload) {
 
 
@@ -1847,12 +1904,14 @@ class EmailService {
     winston.debug("formatText defaultText: " + defaultText);
 
     let template = this.getTemplate(templateName, settings);
+    console.log("formatText template ", template)
 
     winston.debug("formatText template: " + template);
 
     if (template) {
       text = template;
     }
+    console.log("formatText text ", text)
 
     var baseScope = JSON.parse(JSON.stringify(this));
     delete baseScope.pass;
@@ -1867,8 +1926,12 @@ class EmailService {
       test: "test"
     };
 
+    console.log("formatText replacements ", replacements)
+
     var textTemplate = templateHand(replacements);
     winston.debug("formatText textTemplate: " + textTemplate);
+
+    console.log("formatText textTemplate ", textTemplate)
 
     return textTemplate;
 

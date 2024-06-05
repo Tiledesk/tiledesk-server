@@ -694,7 +694,10 @@ router.post('/scrape/status', async (req, res) => {
 })
 
 router.post('/qa', async (req, res) => {
+
+    let publicKey = false;
     let data = req.body;
+    
     // add or override namespace value if it is passed for security reason
     data.namespace = req.projectid;
     winston.debug("/qa data: ", data);
@@ -709,6 +712,17 @@ router.post('/qa', async (req, res) => {
             return res.status(403).send({ success: false, error: "GPT apikey undefined" })
         }
         data.gptkey = gptkey;
+        publicKey = true;
+    }
+
+    let obj = { createdAt: new Date() };
+
+    let quoteManager = req.app.get('quote_manager');
+    if (publicKey === true) {
+        let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+        if (isAvailable === false) {
+            return res.status(403).send({ success: false, error: "Tokens quota exceeded" });
+        }
     }
 
     openaiService.askNamespace(data).then((resp) => {
@@ -721,7 +735,20 @@ router.post('/qa', async (req, res) => {
             id = id.substring(index + 1);
         }
 
+        console.log("askNamespace resp: ", resp);
+
         KB.findById(id, (err, resource) => {
+
+            let multiplier = MODEL_MULTIPLIER[data.model];
+            if (!multiplier) {
+                multiplier = 1;
+                winston.info("No multiplier found for AI model")
+            }
+            obj.multiplier = multiplier;
+            obj.tokens = answer.prompt_token_size;
+
+            let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+            winston.verbose("incremented_key: ", incremented_key);
 
             if (err) {
                 winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
@@ -736,8 +763,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         console.log(err.response)
-        if (err.response
-            && err.response.status) {
+        if (err.response && err.response.status) {
             let status = err.response.status;
             res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
         }
