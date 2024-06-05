@@ -1,4 +1,5 @@
 var express = require('express');
+var { Namespace } = require('../models/kb_setting');
 var { KB } = require('../models/kb_setting');
 var router = express.Router();
 var winston = require('../config/winston');
@@ -9,6 +10,8 @@ const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
+var mongoose = require('mongoose');
+
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -25,6 +28,237 @@ jobManager.connectAndStartPublisher(() => {
     winston.info("ConnectPublisher done");
 })
 
+let default_preview_settings = {
+    model: 'gpt-3.5-turbo',
+    max_tokens: 128,
+    temperature: 0.7,
+    top_k: 4,
+    context: "You are an awesome AI Assistant."
+
+}
+/**
+ * ****************************************
+ * Namespace Section - Start
+ * ****************************************
+ */
+router.get('/namespace/all', async (req, res) => {
+
+    let project_id = req.projectid;
+
+    Namespace.find({ id_project: project_id }, (err, namespaces) => {
+
+        if (err) {
+            winston.error("find namespaces error: ", err);
+            return res.status(500).send({ success: false, error: err });
+        }
+        else if (namespaces.length == 0) {
+
+            // Create Default Namespace
+            let new_namespace = new Namespace({
+                id_project: project_id,
+                namespace_id: project_id,
+                name: "Default",
+                preview_settings: default_preview_settings,
+                default: true
+            })
+
+            new_namespace.save((err, savedNamespace) => {
+                if (err) {
+                    winston.error("create default namespace error: ", err);
+                    return res.status(500).send({ success: false, error: err });
+                }
+
+                let namespaces = [];
+                namespaces.push(savedNamespace);
+
+                return res.status(200).send(namespaces);
+
+            })
+
+        } else {
+
+            return res.status(200).send(namespaces);
+        }
+    })
+})
+
+router.post('/namespace', async (req, res) => {
+
+    let project_id = req.projectid;
+    let body = req.body;
+    winston.debug("add namespace body: ", body);
+
+    var namespace_id = mongoose.Types.ObjectId();
+
+    let new_namespace = new Namespace({
+        id_project: project_id,
+        namespace_id: namespace_id,
+        name: body.name,
+        preview_settings: default_preview_settings,
+    })
+
+    new_namespace.save((err, savedNamespace) => {
+        if (err) {
+            winston.error("create namespace error: ", err);
+            return res.status(500).send({ success: false, error: err });
+        }
+
+        return res.status(200).send(savedNamespace);
+    })
+})
+
+router.put('/namespace/:namespace_id', async (req, res) => {
+
+    let namespace_id = req.params.namespace_id;
+    let body = req.body;
+    winston.debug("update namespace body: ", body);
+
+    let update = {};
+
+    if (body.name) {
+        update.name = body.name;
+    }
+    if (body.preview_settings) {
+        update.preview_settings = body.preview_settings;
+    }
+
+    Namespace.findOneAndUpdate({ namespace_id: namespace_id }, update, { new: true, upsert: true }, (err, updatedNamespace) => {
+        if (err) {
+            winston.error("update namespace error: ", err);
+            return res.status(500).send({ success: false, error: err });
+        }
+
+        res.status(200).send(updatedNamespace);
+    })
+})
+
+// router.delete('/namespace/:namespace_id', async (req, res) => {
+
+//     let id_project = req.projectid;
+//     let namespace_id = req.params.namespace_id;
+
+//     let data = {
+//         namespace: namespace_id
+//     }
+
+//     Namespace.findOne({ namespace_id: namespace_id }, (err, namespace) => {
+
+//         if (err) {
+//             winston.error("findOne namspace error: ", err);
+//             return res.status(500).send({ success: false, error: err })
+//         }
+
+//         if (namespace.default === true) {
+//             winston.error("Default namespace cannot be deleted");
+//             return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
+//         }
+
+//         openaiService.deleteNamespace(data).then((resp) => {
+//             winston.debug("delete namespace resp: ", resp.data);
+
+//             KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
+//                 if (err) {
+//                     winston.error("deleteMany error: ", err);
+//                     return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
+//                 }
+//                 winston.debug("deleteResponse: ", deleteResponse);
+
+//                 Namespace.findOneAndDelete({ namespace_id: namespace_id }, (err, deleteNamespaceResponse) => {
+//                     if (err) {
+//                         winston.error("deleteOne namespace error: ", err);
+//                         return res.status(500).send({ success: false, error: err });
+//                     }
+//                     winston.debug("deleteNamespaceResponse: ", deleteNamespaceResponse);
+
+//                     res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+//                 })
+//             })
+
+//         }).catch((err) => {
+//             let status = err.response.status;
+//             res.status(status).send({ success: false, error: "Unable to delete namespace" })
+//         })
+
+//     })
+
+// })
+
+router.delete('/namespace/:namespace_id', async (req, res) => {
+
+    let id_project = req.projectid;
+    let namespace_id = req.params.namespace_id;
+
+    let data = {
+        namespace: namespace_id
+    }
+
+    
+    if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
+        openaiService.deleteNamespace(data).then( async (resp) => {
+            winston.debug("delete namespace resp: ", resp.data);
+
+            let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+                winston.error("deleteMany error: ", err);
+                return res.status(500).send({ success: false, error: err });
+            })
+            winston.debug("delete all contents response: ", deleteResponse);
+
+            return res.status(200).send({ success: true, message: "All contents deleted successfully " })
+
+        }).catch((err) => {
+            let status = err.response.status;
+            return res.status(status).send({ success: false, error: "Unable to delete namespace" })
+        })
+    }
+
+    
+    let namespace = await Namespace.findOne({ namespace_id: namespace_id }).catch((err) => {
+        winston.error("findOne namespace error: ", err);
+        return res.status(500).send({ success: false, error: err });
+    })
+    console.log("namespace: ", namespace)
+    if (namespace.default === true) {
+        winston.error("Default namespace cannot be deleted");
+        return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
+    }
+
+    openaiService.deleteNamespace(data).then( async (resp) => {
+        winston.debug("delete namespace resp: ", resp.data);
+
+        let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+            winston.error("deleteMany error: ", err);
+            return res.status(500).send({ success: false, error: err });
+        })
+        winston.debug("delete all contents response: ", deleteResponse);
+
+        let deleteNamespaceResponse = await Namespace.findOneAndDelete({ namespace_id: namespace_id }).catch((err) => {
+            winston.error("deleteOne namespace error: ", err);
+            return res.status(500).send({ success: false, error: err });
+        })
+        winston.debug("delete namespace response: ", deleteNamespaceResponse);
+
+        return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+
+    }).catch((err) => {
+        let status = 400;
+        if (err.response && err.response.status) {
+            status = err.response.status;
+        }
+        return res.status(status).send({ success: false, error: "Unable to delete namespace" })
+    })
+
+})
+/**
+ * ****************************************
+ * Namespace Section - End
+ * ****************************************
+ */
+
+/**
+ * ****************************************
+ * Content Section - Start
+ * ****************************************
+ */
 router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
@@ -204,7 +438,7 @@ router.post('/', async (req, res) => {
             res.status(200).send(raw);
 
             let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-            
+
             let json = {
                 id: raw.value._id,
                 type: raw.value.type,
@@ -266,7 +500,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     if (list.length > 300) {
         winston.error("Too many urls. Can't index more than 300 urls at a time.");
-        return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
+        return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time." })
     }
 
     let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
@@ -315,7 +549,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 router.post('/sitemap', async (req, res) => {
 
     let sitemap_url = req.body.sitemap;
-    
+
     const sitemap = new Sitemapper({
         url: sitemap_url,
         timeout: 15000
@@ -420,7 +654,7 @@ router.post('/scrape/status', async (req, res) => {
         returnObject = true;
     }
 
-    openaiService.scrapeStatus(data).then( async (response) => {
+    openaiService.scrapeStatus(data).then(async (response) => {
 
         winston.debug("scrapeStatus response.data: ", response.data);
 
@@ -429,7 +663,7 @@ router.post('/scrape/status', async (req, res) => {
         if (response.data.status_code) {
             // update.status = response.data.status_code;
             update.status = await statusConverter(response.data.status_code)
-                
+
         }
 
         KB.findByIdAndUpdate(data.id, update, { new: true }, (err, savedKb) => {
@@ -497,20 +731,20 @@ router.post('/qa', async (req, res) => {
             answer.source = resource.name;
             return res.status(200).send(answer);
         })
-    
+
 
     }).catch((err) => {
         winston.error("qa err: ", err);
         console.log(err.response)
-        if (err.response 
+        if (err.response
             && err.response.status) {
-                let status = err.response.status;
-                res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+            let status = err.response.status;
+            res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
         }
         else {
             res.status(500).send({ success: false, error: err });
         }
-        
+
     })
 })
 
@@ -594,32 +828,7 @@ router.delete('/:kb_id', async (req, res) => {
 
 })
 
-router.delete('/namespace/:namespace_id', async (req, res) => {
-    
-    let id_project = req.projectid;
-    let namespace_id = req.params.namespace_id;
 
-    let data = {
-        namespace: namespace_id
-    }
-
-    openaiService.deleteNamespace(data).then((resp) => {
-        winston.debug("delete namespace resp: ", resp.data);
-
-        KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
-            if (err) {
-                winston.error("deleteMany error: ", err);
-                return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
-            }
-            winston.debug("deleteResponse: ", deleteResponse);
-            res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
-        })
-
-    }).catch((err) => {
-        let status = err.response.status;
-        res.status(status).send({ success: false, error: "Unable to delete namespace"})
-    })
-})
 
 async function saveBulk(operations, kbs, project_id) {
 
@@ -646,13 +855,13 @@ async function statusConverter(status) {
     return new Promise((resolve) => {
 
         let td_status;
-        switch(status) {
+        switch (status) {
             case 0:
                 td_status = -1;
                 break;
             case 2:
                 td_status = 200;
-                break;    
+                break;
             case 3:
                 td_status = 300;
                 break;
@@ -689,7 +898,7 @@ async function scheduleScrape(resources) {
     //     resources: resources
     // }
     let scheduler = new Scheduler({ jobManager: jobManager });
-    
+
     resources.forEach(r => {
         winston.debug("Schedule job with following data: ", r);
         scheduler.trainSchedule(r, async (err, result) => {

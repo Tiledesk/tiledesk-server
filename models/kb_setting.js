@@ -2,6 +2,31 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
+var NamespaceSchema = new Schema({
+  id_project: {
+    type: String,
+    required: true
+  },
+  namespace_id: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  preview_settings: {
+    type: Object,
+    required: true
+  },
+  default: {
+    type: Boolean,
+    default: false
+  }
+}, {
+  timestamps: true
+})
+
 var KBSchema = new Schema({
   id_project: {
     type: String,
@@ -39,6 +64,8 @@ var KBSchema = new Schema({
   timestamps: true
 })
 
+
+// DEPRECATED !! - Start
 var KBSettingSchema = new Schema({
   id_project: {
     type: String,
@@ -59,16 +86,23 @@ var KBSettingSchema = new Schema({
   },
   kbs: [KBSchema]
 });
+// DEPRECATED !! - End
+
 
 KBSchema.index({ createdAt: -1, updatedAt: -1 })
 
+// DEPRECATED
+//const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
 
-//module.exports = mongoose.model('KBSettings', KBSettingSchema);
-const KBSettings = mongoose.model('KBSettings', KBSettingSchema);
+const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
 
+// module.exports = {
+//   KBSettings: KBSettings,
+//   KB: KB
+// }
+
 module.exports = {
-  KBSettings: KBSettings,
+  Namespace: Namespace,
   KB: KB
 }
-
