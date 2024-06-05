@@ -132,57 +132,6 @@ router.put('/namespace/:namespace_id', async (req, res) => {
     })
 })
 
-// router.delete('/namespace/:namespace_id', async (req, res) => {
-
-//     let id_project = req.projectid;
-//     let namespace_id = req.params.namespace_id;
-
-//     let data = {
-//         namespace: namespace_id
-//     }
-
-//     Namespace.findOne({ namespace_id: namespace_id }, (err, namespace) => {
-
-//         if (err) {
-//             winston.error("findOne namspace error: ", err);
-//             return res.status(500).send({ success: false, error: err })
-//         }
-
-//         if (namespace.default === true) {
-//             winston.error("Default namespace cannot be deleted");
-//             return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
-//         }
-
-//         openaiService.deleteNamespace(data).then((resp) => {
-//             winston.debug("delete namespace resp: ", resp.data);
-
-//             KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
-//                 if (err) {
-//                     winston.error("deleteMany error: ", err);
-//                     return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
-//                 }
-//                 winston.debug("deleteResponse: ", deleteResponse);
-
-//                 Namespace.findOneAndDelete({ namespace_id: namespace_id }, (err, deleteNamespaceResponse) => {
-//                     if (err) {
-//                         winston.error("deleteOne namespace error: ", err);
-//                         return res.status(500).send({ success: false, error: err });
-//                     }
-//                     winston.debug("deleteNamespaceResponse: ", deleteNamespaceResponse);
-
-//                     res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
-//                 })
-//             })
-
-//         }).catch((err) => {
-//             let status = err.response.status;
-//             res.status(status).send({ success: false, error: "Unable to delete namespace" })
-//         })
-
-//     })
-
-// })
-
 router.delete('/namespace/:namespace_id', async (req, res) => {
 
     let id_project = req.projectid;
@@ -192,7 +141,7 @@ router.delete('/namespace/:namespace_id', async (req, res) => {
         namespace: namespace_id
     }
 
-    
+
     if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
         openaiService.deleteNamespace(data).then( async (resp) => {
             winston.debug("delete namespace resp: ", resp.data);
@@ -211,7 +160,7 @@ router.delete('/namespace/:namespace_id', async (req, res) => {
         })
     }
 
-    
+
     let namespace = await Namespace.findOne({ namespace_id: namespace_id }).catch((err) => {
         winston.error("findOne namespace error: ", err);
         return res.status(500).send({ success: false, error: err });
@@ -254,14 +203,22 @@ router.delete('/namespace/:namespace_id', async (req, res) => {
  * ****************************************
  */
 
+
+//----------------------------------------
+
+
 /**
- * ****************************************
- * Content Section - Start
- * ****************************************
- */
+* ****************************************
+* Content Section - Start
+* ****************************************
+*/
 router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
+    let namespace = req.query.namespace;
+    if (!namespace) {
+        return res.status(400).send({ success: false, error: "queryParam namespace is not defined" })
+    }
     let status;
     let type;
     let limit = 200;
@@ -272,6 +229,7 @@ router.get('/', async (req, res) => {
 
     let query = {};
     query["id_project"] = project_id;
+    query["namespace"] = namespace;
 
     if (req.query.status) {
         status = parseInt(req.query.status);
@@ -385,18 +343,24 @@ router.get('/:kb_id', async (req, res) => {
 
 router.post('/', async (req, res) => {
 
-
     let project_id = req.projectid;
     let body = req.body;
 
-    // add or override namespace value if it is passed for security reason
-    body.namespace = project_id;
+    if (!body.namespace) {
+      return res.status(400).send({ success: false, error: "parameter 'namespace' is not defined" });
+    }
 
-    // if (req.body.namespace) {
-    //     if (req.body.namespace != req.projectid) {
-    //         return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
-    //     }
-    // }
+    let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+      winston.error("find namespaces error: ", err)
+      res.status(200).send({ success: false, error: err })
+    })
+
+    let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+    console.log("namespaceIds: ", namespaceIds);
+
+    if (!namespaceIds.includes(body.namespace)) {
+      return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project."})
+    }
 
     let quoteManager = req.app.get('quote_manager');
     let limits = await quoteManager.getPlanLimits(req.project);
@@ -694,7 +658,10 @@ router.post('/scrape/status', async (req, res) => {
 })
 
 router.post('/qa', async (req, res) => {
+
+    let publicKey = false;
     let data = req.body;
+
     // add or override namespace value if it is passed for security reason
     data.namespace = req.projectid;
     winston.debug("/qa data: ", data);
@@ -709,6 +676,17 @@ router.post('/qa', async (req, res) => {
             return res.status(403).send({ success: false, error: "GPT apikey undefined" })
         }
         data.gptkey = gptkey;
+        publicKey = true;
+    }
+
+    let obj = { createdAt: new Date() };
+
+    let quoteManager = req.app.get('quote_manager');
+    if (publicKey === true) {
+        let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+        if (isAvailable === false) {
+            return res.status(403).send({ success: false, error: "Tokens quota exceeded" });
+        }
     }
 
     openaiService.askNamespace(data).then((resp) => {
@@ -721,7 +699,20 @@ router.post('/qa', async (req, res) => {
             id = id.substring(index + 1);
         }
 
+        console.log("askNamespace resp: ", resp);
+
         KB.findById(id, (err, resource) => {
+
+            let multiplier = MODEL_MULTIPLIER[data.model];
+            if (!multiplier) {
+                multiplier = 1;
+                winston.info("No multiplier found for AI model")
+            }
+            obj.multiplier = multiplier;
+            obj.tokens = answer.prompt_token_size;
+
+            let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+            winston.verbose("incremented_key: ", incremented_key);
 
             if (err) {
                 winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
@@ -736,8 +727,7 @@ router.post('/qa', async (req, res) => {
     }).catch((err) => {
         winston.error("qa err: ", err);
         console.log(err.response)
-        if (err.response
-            && err.response.status) {
+        if (err.response && err.response.status) {
             let status = err.response.status;
             res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
         }

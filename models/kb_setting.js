@@ -92,7 +92,7 @@ var KBSettingSchema = new Schema({
 KBSchema.index({ createdAt: -1, updatedAt: -1 })
 
 // DEPRECATED
-//const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
+const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
 
 const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
@@ -103,6 +103,7 @@ const KB = mongoose.model('KB', KBSchema)
 // }
 
 module.exports = {
+  KBSettings: KBSettings,
   Namespace: Namespace,
   KB: KB
 }

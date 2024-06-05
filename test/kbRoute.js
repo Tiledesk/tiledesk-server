@@ -34,7 +34,9 @@ describe('KbRoute', () => {
 
     describe('/create', () => {
 
-        it('createNewKb', (done) => {
+
+        // NEW TESTS
+        it('create-new-kb', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -42,34 +44,210 @@ describe('KbRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    let kb = {
-                        name: "example_name5",
-                        type: "url",
-                        source: "https://www.exampleurl5.com",
-                        content: "",
-                    }
-
                     chai.request(server)
-                        .post('/' + savedProject._id + '/kb')
+                        .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
-                        .send(kb) // can be empty
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err); }
-                            if (log) { console.log("create kb res.body: ", res.body); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
 
                             res.should.have.status(200);
-                            res.body.should.be.a('object');
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].namespace_id;
+                            console.log("namespace_id: ", namespace_id);
+
+                            let kb = {
+                                name: "example_name5",
+                                type: "url",
+                                source: "https://www.exampleurl5.com",
+                                content: "",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(kb) // can be empty
+                                .end((err, res) => {
+        
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create kb res.body: ", res.body); }
+        
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.value.id_project).to.equal(res.body.value.namespace)
+                                    expect(res.body.value.name).to.equal("example_name5")
+                                    expect(res.body.value.type).to.equal("url")
+                                    expect(res.body.value.source).to.equal("https://www.exampleurl5.com")
+                                    expect(res.body.value.status).to.equal(-1)
+        
+                                    done();
+                                })
+                        })
+                });
+            });
+
+        })
+
+        it('get-with-queries', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    let kb1 = {
+                        name: "example_name1",
+                        type: "url",
+                        source: "https://www.exampleurl1.com",
+                        content: ""
+                    }
+
+                    let kb2 = {
+                        name: "example_name2",
+                        type: "text",
+                        source: "example_name2",
+                        content: "example content"
+                    }
+
+                    let kb3 = {
+                        name: "example_name3",
+                        type: "url",
+                        source: "https://www.exampleurl3.com",
+                        content: ""
+                    }
+
+                    /**
+                     * Get all namespace. If no namespace exists, a default namespace is created and returned
+                     */
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body[0].name === 'Default');
+                            expect(res.body[0].namespace_id === savedProject._id);
+
+                            /**
+                             * Add contents to default namespace
+                             */
+                            chai.request(server)
+                                .post('/' + savedProject._id + "/kb")
+                                .auth(email, pwd)
+                                .send
 
                             done();
 
 
                         })
 
-                });
-            });
+                    // chai.request(server)
+                    //     .post('/' + savedProject._id + "/kb")
+                    //     .auth(email, pwd)
+                    //     .send(kb1)
+                    //     .end((err, res) => {
+                    //         if (log) { console.log("create kb res.body: ", res.body); }
+                    //         res.should.have.status(200);
 
-        }).timeout(10000);
+                    //         setTimeout(() => {
+                    //             chai.request(server)
+                    //                 .post('/' + savedProject._id + "/kb")
+                    //                 .auth(email, pwd)
+                    //                 .send(kb2)
+                    //                 .end((err, res) => {
+                    //                     if (log) { console.log("create kb res.body: ", res.body); }
+                    //                     res.should.have.status(200);
+
+                    //                     setTimeout(() => {
+                    //                         chai.request(server)
+                    //                             .post('/' + savedProject._id + "/kb")
+                    //                             .auth(email, pwd)
+                    //                             .send(kb3)
+                    //                             .end((err, res) => {
+                    //                                 if (log) { console.log("create kb res.body: ", res.body); }
+                    //                                 res.should.have.status(200);
+
+                    //                                 let query = "?status=100&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
+                    //                                 //let query = "";
+                    //                                 console.log("query: ", query);
+
+                    //                                 chai.request(server)
+                    //                                     .get('/' + savedProject._id + "/kb" + query)
+                    //                                     .auth(email, pwd)
+                    //                                     .end((err, res) => {
+                    //                                         if (log) { console.log("getall res.body: ", res.body); }
+                    //                                         res.should.have.status(200);
+                    //                                         res.body.should.be.a('object');
+                    //                                         res.body.kbs.should.be.a('array');
+                    //                                         expect(res.body.kbs.length).to.equal(2);
+                    //                                         expect(res.body.count).to.equal(2);
+                    //                                         res.body.query.should.be.a('object');
+                    //                                         expect(res.body.query.status).to.equal(100);
+                    //                                         expect(res.body.query.limit).to.equal(5);
+                    //                                         expect(res.body.query.page).to.equal(0);
+                    //                                         expect(res.body.query.direction).to.equal(-1);
+                    //                                         expect(res.body.query.sortField).to.equal("updatedAt");
+                    //                                         expect(res.body.query.search).to.equal("example");
+
+                    //                                         done();
+
+                    //                                     })
+
+                    //                             })
+                    //                     }, 1000)
+                    //                 })
+                    //         }, 1000)
+
+
+                    //     })
+                })
+            })
+        }).timeout(20000)
+        
+        // OLD TEST
+        // it('createNewKb', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+        //             let kb = {
+        //                 name: "example_name5",
+        //                 type: "url",
+        //                 source: "https://www.exampleurl5.com",
+        //                 content: "",
+        //             }
+
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/kb')
+        //                 .auth(email, pwd)
+        //                 .send(kb) // can be empty
+        //                 .end((err, res) => {
+
+        //                     if (err) { console.error("err: ", err); }
+        //                     if (log) { console.log("create kb res.body: ", res.body); }
+
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+
+        //                     done();
+
+
+        //                 })
+
+        //         });
+        //     });
+
+        // }).timeout(10000);
 
         // logic in standby
         // it('createNewKb-namespaceNotBelongsProject', (done) => {
@@ -112,45 +290,45 @@ describe('KbRoute', () => {
 
         //}).timeout(10000);
 
-        it('createNewKb-replaceNamespace', (done) => {
+        // it('createNewKb-replaceNamespace', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    let kb = {
-                        name: "example_name5",
-                        type: "url",
-                        source: "https://www.exampleurl5.com",
-                        content: "",
-                        namespace: "fakenamespace"
-                    }
+        //             let kb = {
+        //                 name: "example_name5",
+        //                 type: "url",
+        //                 source: "https://www.exampleurl5.com",
+        //                 content: "",
+        //                 namespace: "fakenamespace"
+        //             }
 
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/kb')
-                        .auth(email, pwd)
-                        .send(kb) // can be empty
-                        .end((err, res) => {
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/kb')
+        //                 .auth(email, pwd)
+        //                 .send(kb) // can be empty
+        //                 .end((err, res) => {
 
-                            if (err) { console.error("err: ", err); }
-                            if (log) { console.log("create kb res.body: ", res.body); }
+        //                     if (err) { console.error("err: ", err); }
+        //                     if (log) { console.log("create kb res.body: ", res.body); }
 
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.value.namespace).not.equal("fakenamespace");
-                            expect(res.body.value.namespace).to.equal(savedProject._id.toString());
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.value.namespace).not.equal("fakenamespace");
+        //                     expect(res.body.value.namespace).to.equal(savedProject._id.toString());
 
-                            done();
+        //                     done();
 
 
-                        })
+        //                 })
 
-                });
-            });
+        //         });
+        //     });
 
-        }).timeout(10000);
+        // }).timeout(10000);
 
         it('getWithQueries', (done) => {
 
@@ -216,7 +394,6 @@ describe('KbRoute', () => {
                                                         .auth(email, pwd)
                                                         .end((err, res) => {
                                                             if (log) { console.log("getall res.body: ", res.body); }
-                                                            console.log("getall res.body: ", res.body);
                                                             res.should.have.status(200);
                                                             res.body.should.be.a('object');
                                                             res.body.kbs.should.be.a('array');
@@ -903,5 +1080,6 @@ describe('KbRoute', () => {
 
     })
 });
+
 
 
