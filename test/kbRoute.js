@@ -55,7 +55,7 @@ describe('KbRoute', () => {
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
                             console.log("namespace_id: ", namespace_id);
 
                             let kb = {
@@ -112,9 +112,9 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body[0].name === 'Default');
-                            expect(res.body[0].namespace_id === savedProject._id);
+                            expect(res.body[0].id === savedProject._id);
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
 
                             let kb1 = {
                                 name: "example_name1",
@@ -227,9 +227,9 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body[0].name === 'Default');
-                            expect(res.body[0].namespace_id === savedProject._id);
+                            expect(res.body[0].id === savedProject._id);
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
 
                             let kb1 = {
                                 name: "example_name1",
@@ -377,7 +377,7 @@ describe('KbRoute', () => {
                             res.should.have.status(200)
                             expect(res.body.length).to.equal(1);
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
 
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
@@ -451,7 +451,7 @@ describe('KbRoute', () => {
                             res.should.have.status(200)
                             expect(res.body.length).to.equal(1);
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
 
                             let kb = {
                                 name: "https://www.exampleurl6.com",
@@ -460,7 +460,7 @@ describe('KbRoute', () => {
                                 content: "",
                                 namespace: namespace_id
                             }
-        
+
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb')
                                 .auth(email, pwd)
@@ -468,7 +468,7 @@ describe('KbRoute', () => {
                                 .end((err, res) => {
                                     if (log) { console.log("create kb res.body: ", res.body); }
                                     res.should.have.status(200);
-        
+
                                     let kbid = res.body.value._id;
 
                                     chai.request(server)
@@ -476,7 +476,7 @@ describe('KbRoute', () => {
                                         .auth(email, pwd)
                                         .send({ id: kbid })
                                         .end((err, res) => {
-                                            
+
                                             if (log) { console.log("single scrape res.body: ", res.body); }
 
                                             /**
@@ -490,8 +490,8 @@ describe('KbRoute', () => {
                                             // expect(res.body.maxPagesNumber).to.equal(1000);
                                             // expect(res.body.kbs).is.an('array').that.is.empty;
                                             done();
-        
-                                        })    
+
+                                        })
                                 })
                         })
                 });
@@ -1009,46 +1009,64 @@ describe('KbRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
 
-                    let kb = {
-                        name: "example_name6",
-                        type: "url",
-                        source: "https://www.exampleurl6.com",
-                        content: "",
-                    }
-
                     chai.request(server)
-                        .post('/' + savedProject._id + '/kb/')
+                        .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
-                        .send(kb)
                         .end((err, res) => {
 
                             if (err) { console.log("error: ", err) };
-                            if (log) { console.log("res.body: ", res.body) };
+                            if (log) { console.log("1 res.body: ", res.body) };
 
                             res.should.have.status(200);
-                            res.body.should.be.a('object');
+                            res.body.should.be.a('array');
 
-                            let kb_id = res.body.value._id;
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_name6",
+                                type: "url",
+                                source: "https://www.exampleurl6.com",
+                                content: "",
+                                namespace: namespace_id
+                            }
 
                             chai.request(server)
-                                .post('/webhook/kb/status')
-                                .set("x-auth-token", "testtoken")
-                                .send({ id: kb_id, status: 300 })
+                                .post('/' + savedProject._id + '/kb/')
+                                .auth(email, pwd)
+                                .send(kb)
                                 .end((err, res) => {
 
-                                    if (err) { console.error("err: ", err) };
-                                    if (log) { console.log("res.body: ", res.body) };
+                                    if (err) { console.log("error: ", err) };
+                                    if (log) { console.log("2 res.body: ", res.body) };
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
-                                    expect(res.body.status).to.equal(300);
 
-                                    done();
+                                    let kb_id = res.body.value._id;
+
+                                    chai.request(server)
+                                        .post('/webhook/kb/status')
+                                        .set("x-auth-token", "testtoken")
+                                        .send({ id: kb_id, status: 300 })
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err) };
+                                            if (log) { console.log("3 res.body: ", res.body) };
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.status).to.equal(300);
+
+                                            done();
+
+                                        })
+
 
                                 })
-
-
                         })
+
+
+
 
                 });
             });
@@ -1063,7 +1081,7 @@ describe('KbRoute', () => {
          * Get all namespaces of a project.
          * If there isn't namespaces for a project_id, the default namespace is created and returned.
          */
-        it('getNamespaces', (done) => {
+        it('get-namespaces', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1082,7 +1100,9 @@ describe('KbRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].namespace_id).to.equal(savedProject._id.toString());
+                            should.not.exist(res.body[0]._id);
+                            //expect(res.body[0]._id).to.equal(undefined);
+                            expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
 
                             done();
@@ -1099,7 +1119,7 @@ describe('KbRoute', () => {
          * Get all namespaces of a project.
          * If there isn't namespaces for a project_id, the default namespace is created and returned.
          */
-        it('createAndGetNamespaces', (done) => {
+        it('create-and-get-namespaces', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1119,7 +1139,8 @@ describe('KbRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].namespace_id).to.equal(savedProject._id.toString());
+                            should.not.exist(res.body[0]._id);
+                            expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
 
                             // Create another namespace
@@ -1134,6 +1155,8 @@ describe('KbRoute', () => {
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
+                                    should.not.exist(res.body._id)
+                                    should.exist(res.body.id)
                                     expect(res.body.name).to.equal('MyCustomNamespace');
 
                                     // Get again all namespace. A new default namespace should not be created.
@@ -1148,6 +1171,10 @@ describe('KbRoute', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('array');
                                             expect(res.body.length).to.equal(2);
+                                            should.not.exist(res.body[0]._id);
+                                            should.not.exist(res.body[1]._id);
+                                            should.exist(res.body[0].id);
+                                            should.exist(res.body[1].id);
 
                                             done();
                                         })
@@ -1161,7 +1188,7 @@ describe('KbRoute', () => {
         /**
          * Update namespaces
          */
-        it('updateNamespace', (done) => {
+        it('update-namespace', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1181,10 +1208,10 @@ describe('KbRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].namespace_id).to.equal(savedProject._id.toString());
+                            expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
                             console.log("namespace_id: ", namespace_id);
 
                             let new_settings = {
@@ -1207,6 +1234,8 @@ describe('KbRoute', () => {
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
+                                    should.not.exist(res.body._id);
+                                    should.exist(res.body.id);
                                     expect(res.body.name).to.equal('New Name');
                                     expect(res.body.preview_settings.model).to.equal('gpt-4o')
                                     expect(res.body.preview_settings.max_tokens).to.equal(256)
@@ -1224,7 +1253,7 @@ describe('KbRoute', () => {
         /**
          * Delete default namespace - Forbidden
          */
-        it('failToDeleteDefaultNamespace', (done) => {
+        it('fail-to-delete-default-namespace', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1244,10 +1273,10 @@ describe('KbRoute', () => {
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].namespace_id).to.equal(savedProject._id.toString());
+                            expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
 
-                            let namespace_id = res.body[0].namespace_id;
+                            let namespace_id = res.body[0].id;
                             console.log("namespace_id: ", namespace_id);
 
                             // Update namespace
@@ -1257,7 +1286,7 @@ describe('KbRoute', () => {
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err) }
-                                    if (log) { console.log("update namespace res.body: ", res.body) }
+                                    if (log) { console.log("delete namespace res.body: ", res.body) }
 
                                     res.should.have.status(403);
                                     res.body.should.be.a('object');
@@ -1276,7 +1305,7 @@ describe('KbRoute', () => {
          * Delete namespace
          * !! Unable to test it due to external request
          */
-        // it('deleteNamespace', (done) => {
+        // it('delete-namespace', (done) => {
 
         //     var email = "test-signup-" + Date.now() + "@email.com";
         //     var pwd = "pwd";

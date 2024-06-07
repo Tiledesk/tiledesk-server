@@ -60,7 +60,7 @@ router.post('/scrape/single', async (req, res) => {
     res.status(403).send(alert);
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
 
@@ -173,7 +173,7 @@ router.post('/qa', async (req, res) => {
     res.status(403).send(alert);
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
@@ -267,7 +267,7 @@ router.delete('/delete', async (req, res) => {
     res.status(403).send(alert);
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
@@ -302,7 +302,7 @@ router.delete('/deleteall', async (req, res) => {
     res.status(403).send(alert);
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
@@ -337,7 +337,7 @@ router.get('/namespace/all', async (req, res) => {
 
   let project_id = req.projectid;
 
-  Namespace.find({ id_project: project_id }, (err, namespaces) => {
+  Namespace.find({ id_project: project_id }).lean().exec((err, namespaces) => {
 
     if (err) {
       winston.error("find namespaces error: ", err);
@@ -348,7 +348,7 @@ router.get('/namespace/all', async (req, res) => {
       // Create Default Namespace
       let new_namespace = new Namespace({
         id_project: project_id,
-        namespace_id: project_id,
+        id: project_id,
         name: "Default",
         preview_settings: default_preview_settings,
         default: true
@@ -360,8 +360,12 @@ router.get('/namespace/all', async (req, res) => {
           return res.status(500).send({ success: false, error: err });
         }
 
+        let namespaceObj = savedNamespace.toObject();
+        delete namespaceObj._id;
+        delete namespaceObj.__v;
+
         let namespaces = [];
-        namespaces.push(savedNamespace);
+        namespaces.push(namespaceObj);
 
         return res.status(200).send(namespaces);
 
@@ -369,7 +373,9 @@ router.get('/namespace/all', async (req, res) => {
 
     } else {
 
-      return res.status(200).send(namespaces);
+      const namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      console.log("namespaceObjArray: ", namespaceObjArray);
+      return res.status(200).send(namespaceObjArray);
     }
   })
 })
@@ -384,7 +390,7 @@ router.post('/namespace', async (req, res) => {
 
   let new_namespace = new Namespace({
     id_project: project_id,
-    namespace_id: namespace_id,
+    id: namespace_id,
     name: body.name,
     preview_settings: default_preview_settings,
   })
@@ -395,13 +401,16 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
-    return res.status(200).send(savedNamespace);
+    let namespaceObj = savedNamespace.toObject();
+    delete namespaceObj._id;
+    delete namespaceObj.__v;
+    return res.status(200).send(namespaceObj);
   })
 })
 
-router.put('/namespace/:namespace_id', async (req, res) => {
+router.put('/namespace/:id', async (req, res) => {
 
-  let namespace_id = req.params.namespace_id;
+  let namespace_id = req.params.id;
   let body = req.body;
   winston.debug("update namespace body: ", body);
 
@@ -414,79 +423,86 @@ router.put('/namespace/:namespace_id', async (req, res) => {
     update.preview_settings = body.preview_settings;
   }
 
-  Namespace.findOneAndUpdate({ namespace_id: namespace_id }, update, { new: true, upsert: true }, (err, updatedNamespace) => {
+  Namespace.findOneAndUpdate({ id: namespace_id }, update, { new: true, upsert: true }, (err, updatedNamespace) => {
     if (err) {
       winston.error("update namespace error: ", err);
       return res.status(500).send({ success: false, error: err });
     }
 
-    res.status(200).send(updatedNamespace);
+    let namespaceObj = updatedNamespace.toObject();
+    delete namespaceObj._id;
+    delete namespaceObj.__v;
+    res.status(200).send(namespaceObj);
   })
 })
 
-router.delete('/namespace/:namespace_id', async (req, res) => {
+router.delete('/namespace/:id', async (req, res) => {
 
   let id_project = req.projectid;
-  let namespace_id = req.params.namespace_id;
+  let namespace_id = req.params.id;
 
   let data = {
     namespace: namespace_id
   }
 
-
   if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
+
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete all contents response: ", deleteResponse);
 
-      return res.status(200).send({ success: true, message: "All contents deleted successfully " })
+      return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
       let status = err.response.status;
       return res.status(status).send({ success: false, error: "Unable to delete namespace" })
     })
-  }
 
+  } else {
 
-  let namespace = await Namespace.findOne({ namespace_id: namespace_id }).catch((err) => {
-    winston.error("findOne namespace error: ", err);
-    return res.status(500).send({ success: false, error: err });
-  })
-  console.log("namespace: ", namespace)
-  if (namespace.default === true) {
-    winston.error("Default namespace cannot be deleted");
-    return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
-  }
-
-  openaiService.deleteNamespace(data).then(async (resp) => {
-    winston.debug("delete namespace resp: ", resp.data);
-
-    let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
-      winston.error("deleteMany error: ", err);
+    let namespace = await Namespace.findOne({ id: namespace_id }).catch((err) => {
+      winston.error("findOne namespace error: ", err);
       return res.status(500).send({ success: false, error: err });
     })
-    winston.debug("delete all contents response: ", deleteResponse);
-
-    let deleteNamespaceResponse = await Namespace.findOneAndDelete({ namespace_id: namespace_id }).catch((err) => {
-      winston.error("deleteOne namespace error: ", err);
-      return res.status(500).send({ success: false, error: err });
-    })
-    winston.debug("delete namespace response: ", deleteNamespaceResponse);
-
-    return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
-
-  }).catch((err) => {
-    let status = 400;
-    if (err.response && err.response.status) {
-      status = err.response.status;
+    console.log("namespace: ", namespace)
+    if (namespace.default === true) {
+      winston.error("Default namespace cannot be deleted");
+      return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
     }
-    return res.status(status).send({ success: false, error: "Unable to delete namespace" })
-  })
+  
+    openaiService.deleteNamespace(data).then(async (resp) => {
+      winston.debug("delete namespace resp: ", resp.data);
+  
+      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+        winston.error("deleteMany error: ", err);
+        return res.status(500).send({ success: false, error: err });
+      })
+      winston.debug("delete all contents response: ", deleteResponse);
+  
+      let deleteNamespaceResponse = await Namespace.findOneAndDelete({ id: namespace_id }).catch((err) => {
+        winston.error("deleteOne namespace error: ", err);
+        return res.status(500).send({ success: false, error: err });
+      })
+      winston.debug("delete namespace response: ", deleteNamespaceResponse);
+  
+      return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+  
+    }).catch((err) => {
+      let status = 400;
+      if (err.response && err.response.status) {
+        status = err.response.status;
+      }
+      return res.status(status).send({ success: false, error: "Unable to delete namespace" })
+    })
+
+  }
+
+
 
 })
 /**
@@ -653,7 +669,7 @@ router.post('/', async (req, res) => {
     res.status(403).send(alert);
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(body.namespace)) {
@@ -753,7 +769,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     res.status(403).send({ success: false, error: alert });
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.namespace_id);
+  let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(namespace_id)) {

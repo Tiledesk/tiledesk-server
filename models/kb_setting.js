@@ -7,7 +7,7 @@ var NamespaceSchema = new Schema({
     type: String,
     required: true
   },
-  namespace_id: {
+  id: {
     type: String,
     required: true
   },
