@@ -6,6 +6,35 @@ var router = express.Router();
 var winston = require('../config/winston');
 const openaiService = require('../services/openaiService');
 
+// OLD KB SETTINGS GET
+// router.get('/', async (req, res) => {
+//     let project_id = req.projectid;
+
+//     KBSettings.findOne({ id_project: project_id }, (err, kb_setting) => {
+//         if (err) {
+//             winston.error("find knoledge base settings error: ", err);
+//             return res.status(500).send({ success: false, error: err });
+//         }
+//         else if (!kb_setting) {
+//             // Automatically creates the kb settings object if it does not exist
+//             let new_settings = new KBSettings({
+//                 id_project: req.projectid
+//             })
+//             new_settings.save(function (err, savedKbSettings) {
+//                 if (err) {
+//                     winston.error("save new kbs error: ", err);
+//                     return res.status(500).send({ success: false, error: err});
+//                 } else {
+//                     return res.status(200).send(savedKbSettings);
+//                 }
+//             })
+//         }
+//         else {
+//             return res.status(200).send(kb_setting)
+//         }
+//     })
+// })
+
 router.get('/', async (req, res) => {
     let project_id = req.projectid;
 
@@ -13,21 +42,20 @@ router.get('/', async (req, res) => {
         if (err) {
             winston.error("find knoledge base settings error: ", err);
             return res.status(500).send({ success: false, error: err });
-        } 
-        else if (!kb_setting) {
-            // Automatically creates the kb settings object if it does not exist
-            let new_settings = new KBSettings({
-                id_project: req.projectid
-            })
-            new_settings.save(function (err, savedKbSettings) {
-                if (err) {
-                    winston.error("save new kbs error: ", err);
-                    return res.status(500).send({ success: false, error: err});
-                } else {
-                    return res.status(200).send(savedKbSettings);
-                }
-            })
         }
+
+        if (kb_setting && !kb_setting.kbs[0]) {
+            
+            KBSettings.findOneAndDelete({ id_project: project_id }, (err, kbsettingsDeleted) => {
+                if (err) {
+                    winston.error("find knoledge base settings and delete error: ", err);
+                    return res.status(200).send(kb_setting);
+                }
+                
+                winston.debug("Empty kb settings deleted successfully: ", kbsettingsDeleted);
+                return res.status(200).send();
+            })
+        } 
         else {
             return res.status(200).send(kb_setting)
         }

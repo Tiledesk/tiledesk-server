@@ -1501,10 +1501,14 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
   let splitted = request_id.split(split_pattern);
   
   if (project_id !== splitted[2]) {
+    console.log("Request does not belong to the project")
     return res.status(401).send({ success: false, message: "Request does not belong to the project"})
   }
 
+  // let params = await requestService.getRequestParametersFromChatbot(request_id);
+
   requestService.getRequestParametersFromChatbot(request_id).then((parameters) => {
+    console.log("request_id: ", parameters)
     res.status(200).send(parameters);
 
   }).catch((err) => {
