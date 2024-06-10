@@ -60,6 +60,7 @@ router.post('/scrape/single', async (req, res) => {
     res.status(403).send(alert);
   }
 
+  
   let namespaceIds = namespaces.map(namespace => namespace.id);
   console.log("namespaceIds: ", namespaceIds);
 
