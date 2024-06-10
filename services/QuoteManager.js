@@ -91,11 +91,22 @@ class QuoteManager {
         winston.debug("generateKey object ", object)
         winston.debug("generateKey type " + type)
         let subscriptionDate;
-        if (this.project.profile.subStart) {
-            subscriptionDate = this.project.profile.subStart;
+
+        if (this.project.isActiveSubscription === true) {
+            if (this.project.profile.subStart) {
+                subscriptionDate = this.project.profile.subStart;
+            } else {
+                // it should never happen
+                winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+            }
         } else {
-            subscriptionDate = this.project.createdAt;
+            if (this.project.profile.subEnd) {
+                subscriptionDate = this.project.profile.subEnd;
+            } else {
+                subscriptionDate = this.project.createdAt;
+            }
         }
+
         let objectDate = object.createdAt;
         winston.debug("objectDate " + objectDate);
 
@@ -126,7 +137,7 @@ class QuoteManager {
     }
 
     /**
-     * Get quotes for a all types (tokens and request and ...)
+     * Get quotes for all types (tokens and request and ...)
      */
     async getAllQuotes(project, obj) {
 
@@ -269,18 +280,20 @@ class QuoteManager {
 
     async getPlanLimits(project) {
 
+        console.log("\ngetPlanLimits");
+
         if (project) {
             this.project = project
         };
 
+        console.log("\ngetPlanLimits project: ", this.project);
+        
         let limits;
+        const plan = this.project.profile.name;
+        
         if (this.project.profile.type === 'payment') {
 
-            const plan = this.project.profile.name;
             switch (plan) {
-                case 'Sandbox':
-                    limits = PLANS_LIST.SANDBOX;
-                    break;
                 case 'Basic':
                     limits = PLANS_LIST.BASIC;
                     break;
@@ -303,9 +316,16 @@ class QuoteManager {
                     limits = PLANS_LIST.FREE_TRIAL;
             }
         } else {
-            limits = PLANS_LIST.FREE_TRIAL;
+
+            if (this.project.trialExpired === false) {
+                limits = PLANS_LIST.FREE_TRIAL
+            } else {
+                limits = PLANS_LIST.SANDBOX;
+            }
+        
         }
 
+        console.log("limits: ", limits)
         if (this.project?.profile?.quotes) {
             let profile_quotes = this.project?.profile?.quotes;
             const merged_quotes = Object.assign({}, limits, profile_quotes);
