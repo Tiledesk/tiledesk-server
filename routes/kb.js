@@ -503,7 +503,7 @@ router.delete('/namespace/:id', async (req, res) => {
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
