@@ -726,7 +726,7 @@ class RequestService {
 
           requestEvent.emit('request.create.simple', savedRequest);
 
-          if (!isTestConversation) {
+          if (!this.isTestConversation) {
             requestEvent.emit('request.create.quote', payload);;
           }
 
