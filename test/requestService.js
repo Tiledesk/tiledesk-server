@@ -94,6 +94,7 @@ describe('RequestService', function () {
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
           };
+          // attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" } // for quote test
 
           requestService.create(request).then(async function (savedRequest) {
             winston.verbose("resolve", savedRequest.toObject());
@@ -121,6 +122,8 @@ describe('RequestService', function () {
             expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.id_project).to.equal(savedProject._id.toString());
+            
+            //expect(savedRequest.attributes.sourcePage).to.equal("https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true")
 
 
             setTimeout(async () => {
