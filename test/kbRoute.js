@@ -5,8 +5,9 @@ process.env.KB_WEBHOOK_TOKEN = "testtoken"
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
+var faqService = require('../services/faqService');
 
-let log = true;
+let log = false;
 
 var config = require('../config/global');
 
@@ -19,6 +20,7 @@ var fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
 const nock = require('nock');
+const faq = require('../models/faq');
 
 
 // chai.config.includeStack = true;
@@ -1300,6 +1302,82 @@ describe('KbRoute', () => {
                 });
             });
         })
+
+
+        it('get-chatbots-from-namespace', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
+                    faqService.create("testbot1", null, savedProject._id, savedUser._id).then((savedBot1) => {
+                        faqService.create("testbot2", null, savedProject._id, savedUser._id).then((savedBot2) => {
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/kb/namespace/all')
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("get all namespaces res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+
+                                    let namespace_id = res.body[0].id;
+                                    if (log) { console.log("namespace_id: ", namespace_id) }
+
+                                    let newFaq1 = new faq({
+                                        id_faq_kb: savedBot1._id,
+                                        id_project: savedProject._id,
+                                        intent_id: "new-faq-1",
+                                        createdBy: savedUser._id,
+                                        updatedBy: savedUser._id,
+                                        actions: [{ "_tdActionType": "askgptv2", "_tdActionId": "f58212f9-1a8c-4623-b6fa-0f34e57d9999", "namespace": namespace_id }]
+                                    })
+
+                                    newFaq1.save((err, saved1) => {
+                                        if (err) { console.error("err1: ", err) };
+                                        if (log) { console.log("faq1 saved: ", saved1) };
+
+                                        let newFaq2 = new faq({
+                                            id_faq_kb: savedBot2._id,
+                                            id_project: savedProject._id,
+                                            intent_id: "new-faq-2",
+                                            createdBy: savedUser._id,
+                                            updatedBy: savedUser._id,
+                                            actions: [{ "_tdActionType": "reply", "_tdActionId": "f58212f9-1a8c-4623-b6fa-0f34e57d9998" }]
+                                        })
+
+                                        newFaq2.save((err, saved2) => {
+                                            if (err) { console.error("err2: ", err) };
+                                            if (log) { console.log("faq2 saved: ", saved2) };
+
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/kb/namespace/' + namespace_id + '/chatbots')
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+
+                                                    if (err) { console.error("err: ", err) };
+                                                    if (log) { console.log("get chatbots from namespace res.body: ", res.body) };
+                                                    
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.a('array');
+                                                    expect(res.body.length).to.equal(1);
+                                                    expect(res.body[0]._id).to.equal((savedBot1._id).toString());
+                                                    expect(res.body[0].name).to.equal('testbot1');
+
+                                                    done();
+                                                })
+                                        })
+                                    })
+                                })
+
+                        })
+                    })
+                })
+            })
+        }).timeout(10000)
 
         /**
          * Delete namespace

@@ -11,6 +11,8 @@ const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
 var mongoose = require('mongoose');
+const faq = require('../models/faq');
+const faq_kb = require('../models/faq_kb');
 
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
@@ -61,8 +63,6 @@ router.post('/scrape/single', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
-
 
   KB.findById(data.id, (err, kb) => {
     if (err) {
@@ -174,7 +174,6 @@ router.post('/qa', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
@@ -211,8 +210,6 @@ router.post('/qa', async (req, res) => {
       id = id.substring(index + 1);
     }
 
-    console.log("askNamespace resp: ", resp);
-
     KB.findById(id, (err, resource) => {
 
       let multiplier = MODEL_MULTIPLIER[data.model];
@@ -238,7 +235,7 @@ router.post('/qa', async (req, res) => {
 
   }).catch((err) => {
     winston.error("qa err: ", err);
-    console.log(err.response)
+    winston.error("qa err.response: ", err.response);
     if (err.response && err.response.status) {
       let status = err.response.status;
       res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
@@ -268,7 +265,6 @@ router.delete('/delete', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
@@ -303,7 +299,6 @@ router.delete('/deleteall', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
@@ -374,10 +369,61 @@ router.get('/namespace/all', async (req, res) => {
     } else {
 
       const namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
-      console.log("namespaceObjArray: ", namespaceObjArray);
+      winston.debug("namespaceObjArray: ", namespaceObjArray);
       return res.status(200).send(namespaceObjArray);
     }
   })
+})
+
+router.get('/namespace/:id/chatbots', async (req, res) => {
+
+  let project_id = req.projectid;
+  let namespace_id = req.params.id;
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let intents = await faq.find({ id_project: project_id, 'actions.namespace': namespace_id }).catch((err) => {
+    winston.error("Error find intents: ", err);
+    return res.status(500).send({ success: false, message: 'Unable to retrieve intents using the selected namespace', error: err });
+  })
+
+  if (!intents || intents.length == 0) {
+    winston.verbose("No intents found for the selected chatbot")
+    return res.status(200).send({ success: false, message: "No intents found for the selected chatbot" });
+  }
+
+  let chatbots = intents.map(i => i.id_faq_kb);
+  let uniqueChatbots = [...new Set(chatbots)];
+
+  let chatbotsArray = [];
+  let chatbotPromises = uniqueChatbots.map(async (c_id) => {
+    try {
+      let chatbot = await faq_kb.findById(c_id);
+      if (chatbot) {
+        let data = {
+          _id: chatbot._id,
+          name: chatbot.name
+        }
+        chatbotsArray.push(data);
+      }
+    } catch (err) {
+      winston.error("error getting chatbot: ", err);
+    }
+  });
+
+  await Promise.all(chatbotPromises);
+
+  winston.debug("chatbotsArray: ", chatbotsArray);
+
+  res.status(200).send(chatbotsArray);
 })
 
 router.post('/namespace', async (req, res) => {
@@ -387,13 +433,20 @@ router.post('/namespace', async (req, res) => {
   winston.debug("add namespace body: ", body);
 
   var namespace_id = mongoose.Types.ObjectId();
-
   let new_namespace = new Namespace({
     id_project: project_id,
     id: namespace_id,
     name: body.name,
     preview_settings: default_preview_settings,
   })
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    //res.status(500).send({ success: false, error: err })
+  })
+  if (!namespaces || namespaces.length == 0) {
+    new_namespace.default = true;
+  }
 
   new_namespace.save((err, savedNamespace) => {
     if (err) {
@@ -459,8 +512,15 @@ router.delete('/namespace/:id', async (req, res) => {
       return res.status(200).send({ success: true, message: "All contents deleted successfully" })
 
     }).catch((err) => {
-      let status = err.response.status;
-      return res.status(status).send({ success: false, error: "Unable to delete namespace" })
+
+      winston.error("deleteNamespace err: ", err);
+      winston.error("deleteNamespace err.response: ", err.response);
+      if (err.response && err.response.status) {
+        let status = err.response.status;
+        res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+      } else {
+        res.status(500).send({ success: false, message: "Unable to delete namespace", error: err })
+      }
     })
 
   } else {
@@ -469,29 +529,28 @@ router.delete('/namespace/:id', async (req, res) => {
       winston.error("findOne namespace error: ", err);
       return res.status(500).send({ success: false, error: err });
     })
-    console.log("namespace: ", namespace)
     if (namespace.default === true) {
       winston.error("Default namespace cannot be deleted");
       return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
     }
-  
+
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
-  
+
       let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete all contents response: ", deleteResponse);
-  
+
       let deleteNamespaceResponse = await Namespace.findOneAndDelete({ id: namespace_id }).catch((err) => {
         winston.error("deleteOne namespace error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
       winston.debug("delete namespace response: ", deleteNamespaceResponse);
-  
+
       return res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
-  
+
     }).catch((err) => {
       let status = 400;
       if (err.response && err.response.status) {
@@ -670,7 +729,6 @@ router.post('/', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(body.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
@@ -770,7 +828,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-  console.log("namespaceIds: ", namespaceIds);
 
   if (!namespaceIds.includes(namespace_id)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
