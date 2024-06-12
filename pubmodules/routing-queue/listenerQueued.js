@@ -41,14 +41,14 @@ class Listener {
 
 
     updateProjectUser(id_user, id_project, operation) {
-      winston.debug("Route queue updateProjectUser start operation: " +operation+ "id_user "+ id_user + " id_project " + id_project );
+      winston.info("Route queue updateProjectUser start operation: " +operation+ "id_user "+ id_user + " id_project " + id_project );
       return Project_user       
                     .findOneAndUpdate({id_user: id_user, id_project: id_project}, {$inc : {'number_assigned_requests' : operation}}, {new: true, upsert:false}, function(err, updatedPU) {
                     if (err) {
                      return winston.error(err);
                     }
-                    winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
-                     winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+                    winston.info("Route queue number_assigned_requests +1 :" + updatedPU.id);
+                     winston.info("Route queue number_assigned_requests +1 :" + updatedPU.id);
 
                     updatedPU.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
 
@@ -74,12 +74,12 @@ class Listener {
     }
 
     updateParticipatingProjectUsers(request, operation) {
-        winston.debug("Route queue request.participatingAgents", request.participatingAgents);
+        winston.info("Route queue request.participatingAgents", request.participatingAgents);
         if (request.participatingAgents.length>0) {
             request.participatingAgents.forEach(user => {
-              winston.debug("request.participatingAgents user",user); //it is a user and not a project_user
+              winston.info("request.participatingAgents user",user); //it is a user and not a project_user
                 var userid = user.id || user._id;
-                winston.debug("updateParticipatingProjectUsers userid: "+userid); 
+                winston.info("updateParticipatingProjectUsers userid: "+userid); 
 
                 this.updateProjectUser(userid, request.id_project, operation);                
             });
@@ -101,7 +101,7 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestCreateKey = 'request.create.queue';
         }
-        winston.debug('Route queue requestCreateKey: ' + requestCreateKey);
+        winston.info('Route queue requestCreateKey: ' + requestCreateKey);
    
         requestEvent.on(requestCreateKey, async (request) => {
             setImmediate(() => {
@@ -115,12 +115,12 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestCloseKey = 'request.close.queue';
         }
-        winston.debug('Route queue requestCloseKey: ' + requestCloseKey);
+        winston.info('Route queue requestCloseKey: ' + requestCloseKey);
 
         requestEvent.on(requestCloseKey, async (request) => {    //request.close event here noqueued
           winston.debug("request.close event here 4")
           setImmediate(() => {
-            winston.debug('Route queue requestClose');
+            winston.info('Route queue requestClose');
             this.updateParticipatingProjectUsers(request, -1);          
           });
         });
@@ -130,10 +130,10 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestParticipantsJoinKey = 'request.participants.join.queue';
         }
-        winston.debug('Route queue  requestParticipantsJoinKey: ' + requestParticipantsJoinKey);
+        winston.info('Route queue  requestParticipantsJoinKey: ' + requestParticipantsJoinKey);
    
         requestEvent.on(requestParticipantsJoinKey, async (data) => {
-          winston.debug('Route queue ParticipantsJoin');
+          winston.info('Route queue ParticipantsJoin', data);
 
           var request = data.request;
           var member = data.member;
@@ -146,10 +146,10 @@ class Listener {
         if (requestEvent.queueEnabled) {
           requestParticipantsLeaveKey = 'request.participants.leave.queue';
         }
-        winston.debug('Route queue  requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
+        winston.info('Route queue  requestParticipantsLeaveKey: ' + requestParticipantsLeaveKey);
    
         requestEvent.on(requestParticipantsLeaveKey, async (data) => {
-          winston.debug('Route queue ParticipantsLeave');
+          winston.info('Route queue ParticipantsLeave', data);
 
           var request = data.request;
           var member = data.member;
@@ -165,7 +165,7 @@ class Listener {
         winston.debug('Route queue  requestParticipantsUpdateKey: ' + requestParticipantsUpdateKey);
    
         requestEvent.on(requestParticipantsUpdateKey, async (data) => {
-          winston.debug('Route queue Participants Update');
+          winston.info('Route queue Participants Update', data);
 
           var request = data.request;
           var removedParticipants = data.removedParticipants;

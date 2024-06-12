@@ -137,6 +137,11 @@ class EmailService {
     }
     winston.info('EmailService ccEnabled: ' + this.ccEnabled);
 
+    this.brand_name = "Tiledesk"
+    if (process.env.BRAND_NAME) {
+      this.brand_name = process.env.BRAND_NAME;
+    }
+
   }
 
   readTemplate(templateName, settings, environmentVariableKey) {
@@ -259,6 +264,9 @@ class EmailService {
 
   async send(mail, quoteEnabled, project, quoteManager) {
 
+    console.log("\nsend mail: ", mail);
+    console.log("\nsend mail.to: ", mail.to);
+
     if (!this.enabled) {
       winston.info('EmailService is disabled. Not sending email');
       return 0;
@@ -305,9 +313,13 @@ class EmailService {
     winston.debug(' mail.config', mail.config);
 
     if (!mail.to) {
-      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      winston.warn("EmailService send method. to field is not defined", mailOptions);
+      return false;
     }
 
+    console.log("\nsend mail to is defined: ", mail.to);
+
+    console.log("\nsend before transport mailOptions: ", mailOptions);
     // send mail with defined transport object
     this.getTransport(mail.config).sendMail(mailOptions, (error, info) => {
       if (error) {
@@ -316,6 +328,8 @@ class EmailService {
         }
         return winston.error("Error sending email ", { error: error, mailConfig: mail.config, mailOptions: mailOptions });
       }
+
+      console.log("\n\n email sent info: ", info);
       winston.verbose('Email sent:', { info: info });
       winston.debug('Email sent:', { info: info, mailOptions: mailOptions });
 
@@ -351,7 +365,7 @@ class EmailService {
 
     var html = template(replacements);
 
-    return that.send({ to: to, subject: `Tiledesk test email`, config: configEmail, html: html, callback: callback });
+    return that.send({ to: to, subject: `${this.brand_name} test email`, config: configEmail, html: html, callback: callback });
 
   }
 
@@ -359,6 +373,9 @@ class EmailService {
 
   async sendNewAssignedRequestNotification(to, request, project) {
 
+
+    console.log("\nsendNewAssignedRequestNotification request: ", JSON.stringify(request))
+    console.log("\nsendNewAssignedRequestNotification project: ", JSON.stringify(project))
     var that = this;
 
     //if the request came from rabbit mq?
@@ -373,6 +390,7 @@ class EmailService {
     var html = await this.readTemplate('assignedRequest.html', project.settings, "EMAIL_ASSIGN_REQUEST_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
+    console.log("\nsendNewAssignedRequestNotification html: ", JSON.stringify(html))
 
     var template = handlebars.compile(html);
 
@@ -403,6 +421,7 @@ class EmailService {
     };
 
     winston.debug("replacements ", replacements);
+    console.log("sendNewAssignedRequestNotification replacements: ", replacements)
 
     var html = template(replacements);
     winston.debug("html after: " + html);
@@ -414,6 +433,8 @@ class EmailService {
     if (this.replyEnabled) { //fai anche per gli altri
       replyTo = request.request_id + this.inboundDomainDomainWithAt;
     }
+    console.log("sendNewAssignedRequestNotification replyTo: ", replyTo)
+
 
     let headers;
     if (request) {
@@ -447,6 +468,7 @@ class EmailService {
     }
     winston.debug("email inReplyTo: " + inReplyTo);
     winston.debug("email references: " + references);
+    console.log("sendNewAssignedRequestNotification inReplyTo: ", inReplyTo)
 
     let from;
     let configEmail;
@@ -465,13 +487,16 @@ class EmailService {
     // cambiare in [Nicky:Dashboard Support] Assigned Chat
     // serve per aggiornare native... fai aggiornamento 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Assigned Chat`;
+    console.log("1 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
+    console.log("2 sendNewAssignedRequestNotification subjectDef: ", subjectDef)
 
     let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
+    console.log("sendNewAssignedRequestNotification formatText subjectDef: ", subject)
 
 
     // if (request.ticket_id) {
@@ -607,13 +632,13 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
-      subjectDef = `[Ticket #${request.ticket_id}] New message`;
+      subjectDef = `[${this.brand_name} #${request.ticket_id}] New message`;
     }
 
     if (request.ticket_id && request.subject) {
@@ -746,10 +771,10 @@ class EmailService {
       }
     }
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Pooled Chat`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     let subject = that.formatText("pooledRequestSubject", subjectDef, request, project.settings);
@@ -882,10 +907,10 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
       subjectDef = `[Ticket #${request.ticket_id}] New Message`;
@@ -1019,7 +1044,7 @@ class EmailService {
     }
 
 
-    let subject = that.formatText("newMessageSubject", `[Tiledesk ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
+    let subject = that.formatText("newMessageSubject", `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
 
     that.send({
       messageId: messageId,
@@ -1044,7 +1069,7 @@ class EmailService {
       replyTo: replyTo,
       inReplyTo: inReplyTo,
       references: references,
-      subject: `[Tiledesk ${project ? project.name : '-'}] New Offline Message - notification`,
+      subject: `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message - notification`,
       html: html,
       headers: headers
     });
@@ -1552,8 +1577,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Password reset request', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Password reset request - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Password reset request`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Password reset request - notification`, html: html });
 
   }
 
@@ -1582,8 +1607,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Your password has been changed', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Your password has been changed - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Your password has been changed`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Your password has been changed - notification`, html: html });
 
   }
 
@@ -1622,8 +1647,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
   }
 
   // ok
@@ -1659,8 +1684,8 @@ class EmailService {
 
     var html = template(replacements);
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
 
   }
 
@@ -1691,8 +1716,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] Verify your email address`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] Verify your email address ` + to + " - notification", html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Verify your email address`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Verify your email address ` + to + " - notification", html: html });
 
   }
 
@@ -1765,7 +1790,7 @@ class EmailService {
 
     //custom ocf here
     // console.log("ocf",project._id);
-    let subject = that.formatText("sendTranscriptSubject", '[Tiledesk] Transcript', request, project.settings);
+    let subject = that.formatText("sendTranscriptSubject", `[${this.brand_name}] Transcript`, request, project.settings);
 
     //prod                                               //pre
     // if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
@@ -1779,7 +1804,7 @@ class EmailService {
     // hcustomization.emailTranscript(to, subject, html, configEmail)
 
     that.send({ from: from, to: to, subject: subject, html: html, config: configEmail });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Transcript - notification', html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Transcript - notification`, html: html });
 
   }
 
@@ -1807,7 +1832,7 @@ class EmailService {
 
     html = template(replacements);
 
-    that.send({ to: to, subject: "Join Tiledesk from Desktop", html: html });
+    that.send({ to: to, subject: `Join ${this.brand_name} from Desktop`, html: html });
 
   }
 
@@ -1843,7 +1868,6 @@ class EmailService {
       email_quote: email_quote,
       email_perc: email_perc
     }
-
     html = template(replacements);
 
     that.send({ to: to, subject: "Update on resources usage", html: html });
@@ -1880,12 +1904,14 @@ class EmailService {
     winston.debug("formatText defaultText: " + defaultText);
 
     let template = this.getTemplate(templateName, settings);
+    console.log("formatText template ", template)
 
     winston.debug("formatText template: " + template);
 
     if (template) {
       text = template;
     }
+    console.log("formatText text ", text)
 
     var baseScope = JSON.parse(JSON.stringify(this));
     delete baseScope.pass;
@@ -1900,8 +1926,12 @@ class EmailService {
       test: "test"
     };
 
+    console.log("formatText replacements ", replacements)
+
     var textTemplate = templateHand(replacements);
     winston.debug("formatText textTemplate: " + textTemplate);
+
+    console.log("formatText textTemplate ", textTemplate)
 
     return textTemplate;
 
