@@ -22,9 +22,9 @@ const axios = require("axios").default;
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let tdCache = new TdCache({
-    host: process.env.CACHE_REDIS_HOST,
-    port: process.env.CACHE_REDIS_PORT,
-    password: process.env.CACHE_REDIS_PASSWORD
+  host: process.env.CACHE_REDIS_HOST,
+  port: process.env.CACHE_REDIS_PORT,
+  password: process.env.CACHE_REDIS_PASSWORD
 });
 tdCache.connect();
 let qm = new QuoteManager({ tdCache: tdCache });
@@ -41,7 +41,7 @@ class RequestService {
     // this.sendMessageUpdateLead();
   }
 
-      // 12 marzo 2024 I disabled these two functions due to performance problems for a chatbot created by Sponziello "Community bots Sendinblue Hubspot Qapla)"
+  // 12 marzo 2024 I disabled these two functions due to performance problems for a chatbot created by Sponziello "Community bots Sendinblue Hubspot Qapla)"
   // updateSnapshotLead() {
   //   leadEvent.on('lead.update', function (lead) {
   //     setImmediate(() => {
@@ -475,93 +475,92 @@ class RequestService {
       request.createdAt = new Date();
     }
 
+    var request_id = request.request_id;
+    var project_user_id = request.project_user_id;
+    var lead_id = request.lead_id;
+    var id_project = request.id_project;
 
-      var request_id = request.request_id;
-      var project_user_id = request.project_user_id;
-      var lead_id = request.lead_id;
-      var id_project = request.id_project;
+    var first_text = request.first_text;
 
-      var first_text = request.first_text;
+    //removed for ticket
+    // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
+    // var first_text;  
+    // if (request.first_text) {  //first_text can be empty for type image
+    //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
+    // }
 
-      //removed for ticket
-      // // lascia che sia nico a fare il replace...certo tu devi fare il test che tutto sia ok quindi dopo demo
-      // var first_text;  
-      // if (request.first_text) {  //first_text can be empty for type image
-      //   first_text = request.first_text.replace(/[\n\r]+/g, ' '); //replace new line with space
-      // }
+    var departmentid = request.departmentid;
+    var sourcePage = request.sourcePage;
+    var language = request.language;
+    var userAgent = request.userAgent;
+    var status = request.status;
+    var createdBy = request.createdBy;
+    var attributes = request.attributes;
+    var subject = request.subject;
+    var preflight = request.preflight;
+    var channel = request.channel;
+    var location = request.location;
+    var participants = request.participants || [];
 
-      var departmentid = request.departmentid;
-      var sourcePage = request.sourcePage;
-      var language = request.language;
-      var userAgent = request.userAgent;
-      var status = request.status;
-      var createdBy = request.createdBy;
-      var attributes = request.attributes;
-      var subject = request.subject;
-      var preflight = request.preflight;
-      var channel = request.channel;
-      var location = request.location;
-      var participants = request.participants || [];
+    var tags = request.tags;
+    var notes = request.notes;
+    var priority = request.priority;
 
-      var tags = request.tags;
-      var notes = request.notes;
-      var priority = request.priority;
+    var auto_close = request.auto_close;
 
-      var auto_close = request.auto_close;
+    var followers = request.followers;
+    let createdAt = request.createdAt;
 
-      var followers = request.followers;
-      let createdAt = request.createdAt;
+    if (!departmentid) {
+      departmentid = 'default';
+    }
 
-      if (!departmentid) {
-        departmentid = 'default';
+    if (!createdBy) {
+      if (project_user_id) {
+        createdBy = project_user_id;
+      } else {
+        createdBy = "system";
       }
 
-      if (!createdBy) {
-        if (project_user_id) {
-          createdBy = project_user_id;
-        } else {
-          createdBy = "system";
-        }
+    }
 
+    let isTestConversation = false;
+
+    var that = this;
+
+    return new Promise(async (resolve, reject) => {
+
+      let q = Project.findOne({ _id: request.id_project, status: 100 });
+      if (cacheEnabler.project) {
+        q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
+        winston.debug('project cache enabled for /project detail');
       }
-
-      let isTestConversation = false;
-
-      var that = this;
-
-      return new Promise(async (resolve, reject) => {
-
-        let q = Project.findOne({ _id: request.id_project, status: 100 });
-        if (cacheEnabler.project) {
-          q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
-          winston.debug('project cache enabled for /project detail');
+      q.exec(async function (err, p) {
+        if (err) {
+          winston.error('Error getting project ', err);
         }
-        q.exec(async function (err, p) {
-          if (err) {
-            winston.error('Error getting project ', err);
+        if (!p) {
+          winston.warn('Project not found ');
+        }
+
+
+        let payload = {
+          project: p,
+          request: request
+        }
+
+        if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+          winston.verbose("is a test conversation --> skip quote availability check")
+          isTestConversation = true;
+        }
+        else {
+          let available = await qm.checkQuote(p, request, 'requests');
+          if (available === false) {
+            winston.info("Requests limits reached for project " + p._id)
+            return false;
           }
-          if (!p) {
-            winston.warn('Project not found ');
-          }
-    
-    
-          let payload = {
-            project: p,
-            request: request
-          }
-    
-          if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-              winston.verbose("is a test conversation --> skip quote availability check")
-              this.isTestConversation = true;
-          }
-          else {
-            let available = await qm.checkQuote(p, request, 'requests');
-            if (available === false) {
-              winston.info("Requests limits reached for project " + p._id)
-              return false;
-            }
-          }
-        
+        }
+
 
         var context = {
           request: {
@@ -711,7 +710,7 @@ class RequestService {
 
 
         //cacheinvalidation
-        return newRequest.save( async function (err, savedRequest) {
+        return newRequest.save(async function (err, savedRequest) {
 
           if (err) {
             winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
@@ -738,8 +737,8 @@ class RequestService {
         // });
 
       })
-      });
-    
+    });
+
   }
 
 
@@ -751,7 +750,7 @@ class RequestService {
       request.createdAt = new Date();
     }
 
-    
+
     var request_id = request.request_id;
     var project_user_id = request.project_user_id;
     var lead_id = request.lead_id;
@@ -987,7 +986,7 @@ class RequestService {
           }
 
           requestEvent.emit('request.create.quote', payload);;
-          
+
         });
 
         return resolve(savedRequest);
@@ -2476,7 +2475,7 @@ class RequestService {
 
   async getRequestParametersFromChatbot(request_id) {
 
-    return new Promise( async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       await axios({
         url: apiUrl + '/modules/tilebot/ext/reserved/parameters/requests/' + request_id,
         headers: {

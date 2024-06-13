@@ -1079,6 +1079,60 @@ describe('FaqKBRoute', () => {
         //     })
         // })
 
+        it('chatbotAccessDeny', (done) => {
+
+
+            //   this.timeout();
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-1", savedUser._id).then(function (savedProject1) {
+                    projectService.create("test-faqkb-2", savedUser._id).then(function (savedProject2) {
+
+                        // Create chatbot with project 1
+                        chai.request(server)
+                            .post('/' + savedProject1._id + '/faq_kb')
+                            .auth(email, pwd)
+                            .send({ "name": "testbot", type: "tilebot", language: 'en' })
+                            .end((err, res) => {
+
+                                if (log) { console.log("res.body", res.body); }
+                                console.log("Create from project1 res.body", res.body);
+                                res.should.have.status(200);
+
+                                // Get chatbot from project 1
+                                chai.request(server)
+                                    .get('/' + savedProject1._id + '/faq_kb/' + res.body._id)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+                                        if (log) { console.log("res.body", res.body); }
+                                        console.log("Get from project1 res.body", res.body);
+                                        res.should.have.status(200);
+
+                                        // Get chatbot from project 2 - Expected error
+                                        chai.request(server)
+                                            .get('/' + savedProject2._id + '/faq_kb/' + res.body._id)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+                                                if (log) { console.log("res.body", res.body); }
+                                                console.log("Get from project2 res.body", res.body);
+                                                res.should.have.status(404);
+                                                expect(res.body.success).to.equal(false);
+                                                expect(res.body.msg).to.equal("Chatbot does not exist or does not belong to the specified project.");
+
+                                                done();
+                                            });
+                                    });
+                            });
+                    })
+
+
+                });
+            });
+
+        });
 
     });
 
