@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
         if (usePublicKey === true) {
             let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
             if (isAvailable === false) {
-                return res.status(403).send("Tokens quota exceeded")
+                return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
             }
         }
         

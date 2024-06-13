@@ -239,7 +239,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
 
   var update = {};
-  let updating_profile = false;
+  let updating_quotes = false;
 
   if (req.body.profile) {
 
@@ -249,7 +249,15 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
           
           winston.debug("Superadmin can modify the project profile")
           update.profile = req.body.profile;
-          updating_profile = true;
+          if (req.body.profile.quotes) {
+            updating_quotes = true;
+          }
+
+          /**
+           * Possibile Miglioramento
+           * Eliminare solo le chiavi di redis di notify solo per le quote che si stanno modificando.
+           * Per farlo è necessario permettere la modifica puntuale del project profile, attualmente non disponibile.
+           */
 
           delete req.user.attributes.isSuperadmin;
     }
@@ -459,7 +467,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
     }
     projectEvent.emit('project.update', updatedProject );
 
-    if (updating_profile == true) {
+    if (updating_quotes == true) {
       let obj = { createdAt: new Date() };
       let quoteManager = req.app.get('quote_manager');
       quoteManager.invalidateCheckpointKeys(updatedProject, obj);
