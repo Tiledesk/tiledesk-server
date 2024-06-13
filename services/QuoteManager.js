@@ -259,6 +259,41 @@ class QuoteManager {
 
     }
 
+    async invalidateCheckpointKeys(project, obj) {
+
+        this.project = project;
+        console.log("invalidateCheckpointKeys project: ", project);
+        let requests_key = await this.generateKey(obj, 'requests');
+        let tokens_key = await this.generateKey(obj, 'tokens');
+        let email_key = await this.generateKey(obj, 'email');
+        console.log("invalidateCheckpointKeys requests_key: ", requests_key);
+        console.log("invalidateCheckpointKeys tokens_key: ", tokens_key);
+        console.log("invalidateCheckpointKeys email_key: ", email_key);
+
+        
+        let checkpoints = ['50', '75', '95', '100']
+
+        checkpoints.forEach( async (checkpoint) => {
+            let nrequests_key = requests_key + ":notify:" + checkpoint;
+            let ntokens_key = tokens_key + ":notify:" + checkpoint;
+            let nemail_key = email_key + ":notify:" + checkpoint;
+
+            console.log("invalidateCheckpointKeys nrequests_key: ", nrequests_key);
+            console.log("invalidateCheckpointKeys ntokens_key: ", ntokens_key);
+            console.log("invalidateCheckpointKeys nemail_key: ", nemail_key);
+
+            let req_res = await this.tdCache.del(nrequests_key);
+            let tok_res = await this.tdCache.del(ntokens_key);
+            let ema_res = await this.tdCache.del(nemail_key);
+
+            console.log("invalidateCheckpointKeys req_res: ", req_res);
+            console.log("invalidateCheckpointKeys tok_res: ", tok_res);
+            console.log("invalidateCheckpointKeys ema_res: ", ema_res);
+
+        })
+
+    }
+
     async generateQuotesObject(quotes, limits) {
         let quotes_obj = {
             requests: {
