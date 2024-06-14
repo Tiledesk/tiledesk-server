@@ -1,11 +1,14 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
+process.env.KB_WEBHOOK_TOKEN = "testtoken"
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
 
 let log = false;
+
+var config = require('../config/global');
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -14,11 +17,14 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
 // chai.config.includeStack = true;
 
 var expect = chai.expect;
 var assert = chai.assert;
+
+mongoose.connect(config.databasetest);
 
 chai.use(chaiHttp);
 
@@ -199,7 +205,7 @@ describe('KbRoute', () => {
                                                     if (log) { console.log("create kb res.body: ", res.body); }
                                                     res.should.have.status(200);
 
-                                                    let query = "?status=-1&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
+                                                    let query = "?status=-1&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
                                                     //let query = "";
                                                     console.log("query: ", query);
 
@@ -208,11 +214,12 @@ describe('KbRoute', () => {
                                                         .auth(email, pwd)
                                                         .end((err, res) => {
                                                             if (log) { console.log("getall res.body: ", res.body); }
+                                                            console.log("getall res.body: ", res.body);
                                                             res.should.have.status(200);
                                                             res.body.should.be.a('object');
                                                             res.body.kbs.should.be.a('array');
-                                                            expect(res.body.kbs.length).to.equal(3);
-                                                            expect(res.body.count).to.equal(3);
+                                                            expect(res.body.kbs.length).to.equal(2);
+                                                            expect(res.body.count).to.equal(2);
                                                             res.body.query.should.be.a('object');
                                                             expect(res.body.query.status).to.equal(-1);
                                                             expect(res.body.query.limit).to.equal(5);
@@ -389,7 +396,7 @@ describe('KbRoute', () => {
 
         }).timeout(10000)
 
-        it('multiadd-fail', (done) => {
+        it('multiaddFail', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -514,10 +521,6 @@ describe('KbRoute', () => {
                             if (err) { console.log("error: ", err) };
                             if (log) { console.log("res.body: ", res.body) }
 
-                            console.log("error: ", err)
-                            console.log("res.body: ", res.body)
-
-                            console.log("sites length: ", res.body.sites.length)
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             res.body.sites.should.be.a('array');
@@ -529,6 +532,59 @@ describe('KbRoute', () => {
                 });
             });
 
+        }).timeout(10000)
+
+        it('webhook', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
+
+                    let kb = {
+                        name: "example_name6",
+                        type: "url",
+                        source: "https://www.exampleurl6.com",
+                        content: "",
+                    }
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/kb/')
+                        .auth(email, pwd)
+                        .send(kb)
+                        .end((err, res) => {
+
+                            if (err) { console.log("error: ", err) };
+                            if (log) { console.log("res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            let kb_id = res.body.value._id;
+
+                            chai.request(server)
+                                .post('/webhook/kb/status')
+                                .set("x-auth-token", "testtoken")
+                                .send({ id: kb_id, status: 300 })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.status).to.equal(300);
+
+                                    done();
+
+                                })
+
+
+                        })
+
+                });
+            });
         }).timeout(10000)
 
     })

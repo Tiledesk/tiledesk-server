@@ -7,11 +7,13 @@ var upload = multer()
 const openaiService = require('../services/openaiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
-
+var configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
+const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
     debug: false,
@@ -27,6 +29,7 @@ router.get('/', async (req, res) => {
 
     let project_id = req.projectid;
     let status;
+    let type;
     let limit = 200;
     let page = 0;
     let direction = -1;
@@ -41,6 +44,13 @@ router.get('/', async (req, res) => {
         query["status"] = status;
         winston.debug("Get kb status: " + status)
     }
+
+    if (req.query.type) {
+        type = req.query.type;
+        query["type"] = type;
+        winston.debug("Get kb type: " + type);
+    }
+
     if (req.query.limit) {
         limit = parseInt(req.query.limit);
         winston.debug("Get kb limit: " + limit)
@@ -193,13 +203,17 @@ router.post('/', async (req, res) => {
 
             res.status(200).send(raw);
 
+            let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+            
             let json = {
                 id: raw.value._id,
                 type: raw.value.type,
                 source: raw.value.source,
                 content: "",
-                namespace: raw.value.namespace
+                namespace: raw.value.namespace,
+                webhook: webhook
             }
+            winston.debug("json: ", json);
 
             if (raw.value.content) {
                 json.content = raw.value.content;
@@ -220,7 +234,6 @@ router.post('/', async (req, res) => {
     })
 
 })
-
 
 router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
@@ -256,6 +269,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
         return res.status(403).send({ success: false, error: "Too many urls. Can't index more than 300 urls at a time."})
     }
 
+    let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
     let kbs = [];
     list.forEach(url => {
         kbs.push({
@@ -284,9 +299,9 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest }) => {
-            return { id: _id, ...rest };
+            return { id: _id, webhook: webhook, ...rest };
         });
-        winston.verbose("resources to be sent to worker: ", resources)        
+        winston.verbose("resources to be sent to worker: ", resources);
         scheduleScrape(resources);
         res.status(200).send(result);
 
@@ -315,7 +330,6 @@ router.post('/sitemap', async (req, res) => {
     })
 
 })
-
 
 router.put('/:kb_id', async (req, res) => {
 
@@ -350,7 +364,6 @@ router.put('/:kb_id', async (req, res) => {
     })
 
 })
-
 
 // PROXY PUGLIA AI V2 - START
 router.post('/scrape/single', async (req, res) => {
@@ -586,7 +599,7 @@ router.delete('/:kb_id', async (req, res) => {
         } else {
             winston.verbose("resp.data: ", resp.data);
 
-            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4] } }, (err, deletedKb) => {
+            KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4, 100, 300, 400] } }, (err, deletedKb) => {
                 if (err) {
                     winston.error("findOneAndDelete err: ", err);
                     return res.status(500).send({ success: false, error: "Unable to delete the content due to an error" })
@@ -605,6 +618,33 @@ router.delete('/:kb_id', async (req, res) => {
         res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
     })
 
+})
+
+router.delete('/namespace/:namespace_id', async (req, res) => {
+    
+    let id_project = req.projectid;
+    let namespace_id = req.params.namespace_id;
+
+    let data = {
+        namespace: namespace_id
+    }
+
+    openaiService.deleteNamespace(data).then((resp) => {
+        winston.debug("delete namespace resp: ", resp.data);
+
+        KB.deleteMany({ id_project: id_project, namespace: namespace_id }, (err, deleteResponse) => {
+            if (err) {
+                winston.error("deleteMany error: ", err);
+                return res.status(500).send({ success: false, error: "Unable to delete namespace due to an error" })
+            }
+            winston.debug("deleteResponse: ", deleteResponse);
+            res.status(200).send({ success: true, message: "Namespace deleted succesfully" })
+        })
+
+    }).catch((err) => {
+        let status = err.response.status;
+        res.status(status).send({ success: false, error: "Unable to delete namespace"})
+    })
 })
 
 async function saveBulk(operations, kbs, project_id) {
@@ -655,8 +695,11 @@ async function statusConverter(status) {
 async function updateStatus(id, status) {
     return new Promise((resolve) => {
 
-        KB.findByIdAndUpdate(id, { status: status }, (err, updatedKb) => {
+        KB.findByIdAndUpdate(id, { status: status }, { new: true }, (err, updatedKb) => {
             if (err) {
+                resolve(false)
+            } else if (!updatedKb) {
+                winston.verbose("Unable to update status. Data source not found.")
                 resolve(false)
             } else {
                 winston.debug("updatedKb: ", updatedKb)
@@ -668,17 +711,25 @@ async function updateStatus(id, status) {
 
 async function scheduleScrape(resources) {
 
-    let data = {
-        resources: resources
-    }
-    winston.info("Schedule job with following data: ", data);
+    // let data = {
+    //     resources: resources
+    // }
     let scheduler = new Scheduler({ jobManager: jobManager });
-    scheduler.trainSchedule(data, (err, result) => {
-        if (err) {
-            winston.error("Scheduling error: ", err);
-        }
-        winston.info("Scheduling result: ", result);
-    });
+    
+    resources.forEach(r => {
+        winston.debug("Schedule job with following data: ", r);
+        scheduler.trainSchedule(r, async (err, result) => {
+            let error_code = 100;
+            if (err) {
+                winston.error("Scheduling error: ", err);
+                error_code = 400;
+            } else {
+                winston.info("Scheduling result: ", result);
+            }
+            await updateStatus(r.id, error_code);
+        });
+    })
+
 
     return true;
 }

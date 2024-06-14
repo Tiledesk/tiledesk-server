@@ -5,6 +5,33 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.7.26
+- Updated tybot-connector to 0.2.72
+
+# 2.7.25
+- Updated tybot-connector to 0.2.70
+- Changed auth role strategy in groups route and project_user endpoint
+
+# 2.7.24
+- Updated whatsapp-jobworker to 0.0.8
+- Updated knowledge base route
+
+# 2.7.23
+- Updated tybot-connector to 0.2.69
+
+# 2.7.22
+- Updated whatsapp-connector to 0.1.72
+
+# 2.7.21
+- Updated whatsapp-connector to 0.1.71
+- Updated telegram-connector to 0.1.14
+
+# 2.7.20
+- Updated tybot-connector to 0.2.67
+
+# 2.7.18
+- Updated tybot-connector to 0.2.65
+
 # 2.7.17
 - Updated whatsapp-connector to 0.1.70
 
