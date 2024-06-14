@@ -41,6 +41,7 @@ class QuoteManager {
         winston.verbose("[QuoteManager] incrementRequestsCount key: " + key);
 
         await this.tdCache.incr(key)
+        this.sendEmailIfQuotaExceeded(project, request, 'requests', key);
         return key;
     }
 
@@ -61,6 +62,7 @@ class QuoteManager {
         winston.verbose("[QuoteManager] incrementEmailCount key: " + key);
 
         await this.tdCache.incr(key)
+        this.sendEmailIfQuotaExceeded(project, email, 'email', key);
         return key;
     }
 
@@ -78,7 +80,7 @@ class QuoteManager {
         let tokens = data.tokens * data.multiplier;
         await this.tdCache.incrbyfloat(key, tokens);
         // await this.tdCache.incrby(key, tokens);
-        
+        this.sendEmailIfQuotaExceeded(project, data, 'tokens', key);
         return key;
     }
     // INCREMENT KEY SECTION - END
@@ -89,11 +91,22 @@ class QuoteManager {
         winston.debug("generateKey object ", object)
         winston.debug("generateKey type " + type)
         let subscriptionDate;
-        if (this.project.profile.subStart) {
-            subscriptionDate = this.project.profile.subStart;
+
+        if (this.project.isActiveSubscription === true) {
+            if (this.project.profile.subStart) {
+                subscriptionDate = this.project.profile.subStart;
+            } else {
+                // it should never happen
+                winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+            }
         } else {
-            subscriptionDate = this.project.createdAt;
+            if (this.project.profile.subEnd) {
+                subscriptionDate = this.project.profile.subEnd;
+            } else {
+                subscriptionDate = this.project.createdAt;
+            }
         }
+
         let objectDate = object.createdAt;
         winston.debug("objectDate " + objectDate);
 
@@ -124,7 +137,7 @@ class QuoteManager {
     }
 
     /**
-     * Get quotes for a all types (tokens and request and ...)
+     * Get quotes for all types (tokens and request and ...)
      */
     async getAllQuotes(project, obj) {
 
@@ -174,21 +187,148 @@ class QuoteManager {
         }
     }
 
+    async checkQuoteForAlert(project, object, type) {
+        
+        if (quotes_enabled === false) {
+            winston.verbose("QUOTES DISABLED - checkQuote for type " + type);
+            return (null, null);
+        }
+
+        this.project = project;
+        let limits = await this.getPlanLimits();
+        winston.verbose("limits for current plan: ", limits)
+
+        let quote = await this.getCurrentQuote(project, object, type);
+        winston.verbose("getCurrentQuote resp: ", quote)
+
+        let data = {
+            limits: limits,
+            quote: quote
+        }
+
+        return data;
+    }
+
+    async sendEmailIfQuotaExceeded(project, object, type, key) {
+        
+        let data = await this.checkQuoteForAlert(project, object, type);
+        let limits = data.limits;
+        let limit = data.limits[type];
+        let quote = data.quote;
+
+        const checkpoint = await this.percentageCalculator(limit, quote);
+        if (checkpoint == 0) {
+            return;
+        }
+        winston.verbose("checkpoint perc: ", checkpoint);
+
+        // Generate redis key
+        let nKey = key + ":notify:" + checkpoint;
+        let result = await this.tdCache.get(nKey);
+        if (!result) {
+
+            let allQuotes = await this.getAllQuotes(project, object);
+            let quotes = await this.generateQuotesObject(allQuotes, limits);
+
+            let data = {
+                id_project: project._id,
+                project_name: project.name,
+                type: type,
+                checkpoint: checkpoint,
+                quotes: quotes
+            }
+
+            emailEvent.emit('email.send.quote.checkpoint', data);
+            await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
+        } else {
+            winston.verbose("Quota checkpoint reached email already sent.")
+        }
+
+    }
+
+    async percentageCalculator(limit, quote) {
+        
+        let p = (quote / limit) * 100;
+
+        if (p >= 100) { return 100; }
+        if (p >= 95) { return 95; }
+        if (p >= 75) { return 75; }
+        if (p >= 50) { return 50; }
+
+        return 0;
+
+    }
+
+    async invalidateCheckpointKeys(project, obj) {
+
+        this.project = project;
+        console.log("invalidateCheckpointKeys project: ", project);
+        let requests_key = await this.generateKey(obj, 'requests');
+        let tokens_key = await this.generateKey(obj, 'tokens');
+        let email_key = await this.generateKey(obj, 'email');
+        console.log("invalidateCheckpointKeys requests_key: ", requests_key);
+        console.log("invalidateCheckpointKeys tokens_key: ", tokens_key);
+        console.log("invalidateCheckpointKeys email_key: ", email_key);
+
+        
+        let checkpoints = ['50', '75', '95', '100']
+
+        checkpoints.forEach( async (checkpoint) => {
+            let nrequests_key = requests_key + ":notify:" + checkpoint;
+            let ntokens_key = tokens_key + ":notify:" + checkpoint;
+            let nemail_key = email_key + ":notify:" + checkpoint;
+
+            console.log("invalidateCheckpointKeys nrequests_key: ", nrequests_key);
+            console.log("invalidateCheckpointKeys ntokens_key: ", ntokens_key);
+            console.log("invalidateCheckpointKeys nemail_key: ", nemail_key);
+
+            let req_res = await this.tdCache.del(nrequests_key);
+            let tok_res = await this.tdCache.del(ntokens_key);
+            let ema_res = await this.tdCache.del(nemail_key);
+
+            console.log("invalidateCheckpointKeys req_res: ", req_res);
+            console.log("invalidateCheckpointKeys tok_res: ", tok_res);
+            console.log("invalidateCheckpointKeys ema_res: ", ema_res);
+
+        })
+
+    }
+
+    async generateQuotesObject(quotes, limits) {
+        let quotes_obj = {
+            requests: {
+                quote: quotes.requests.quote,
+                perc: ((quotes.requests.quote / limits['requests']) * 100).toFixed(1)
+            },
+            tokens: {
+                quote: quotes.tokens.quote,
+                perc: ((quotes.tokens.quote / limits['tokens']) * 100).toFixed(1)
+            },
+            email: {
+                quote: quotes.email.quote,
+                perc: ((quotes.email.quote / limits['email']) * 100).toFixed(1)
+            }
+        }
+        return quotes_obj
+    }
+
 
     async getPlanLimits(project) {
+
+        console.log("\ngetPlanLimits");
 
         if (project) {
             this.project = project
         };
 
+        console.log("\ngetPlanLimits project: ", this.project);
+        
         let limits;
+        const plan = this.project.profile.name;
+        
         if (this.project.profile.type === 'payment') {
 
-            const plan = this.project.profile.name;
             switch (plan) {
-                case 'Sandbox':
-                    limits = PLANS_LIST.SANDBOX;
-                    break;
                 case 'Basic':
                     limits = PLANS_LIST.BASIC;
                     break;
@@ -211,9 +351,16 @@ class QuoteManager {
                     limits = PLANS_LIST.FREE_TRIAL;
             }
         } else {
-            limits = PLANS_LIST.FREE_TRIAL;
+
+            if (this.project.trialExpired === false) {
+                limits = PLANS_LIST.FREE_TRIAL
+            } else {
+                limits = PLANS_LIST.SANDBOX;
+            }
+        
         }
 
+        console.log("limits: ", limits)
         if (this.project?.profile?.quotes) {
             let profile_quotes = this.project?.profile?.quotes;
             const merged_quotes = Object.assign({}, limits, profile_quotes);
@@ -256,6 +403,8 @@ class QuoteManager {
             if (quotes_enabled === true) {
                 winston.verbose("request.create.quote event catched");
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
+
+                
                 return result;
             } else {
                 winston.verbose("QUOTES DISABLED - request.create.quote event")
