@@ -9,7 +9,7 @@ var winston = require('../config/winston');
 loadMultiplier();
 function loadMultiplier() {
     
-    let models_string = process.env.MODELS.replace(/ /g,'');
+    let models_string = process.env.AI_MODELS.replace(/ /g,'');
     winston.debug("(loadMultiplier) models_string: ", models_string)
 
     let splitted_string = models_string.split(";");
