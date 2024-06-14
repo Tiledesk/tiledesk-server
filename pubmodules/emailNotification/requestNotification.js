@@ -1018,9 +1018,10 @@ sendAgentEmail(projectid, savedRequest) {
                             // var agentToken = jwt.sign(userObject, configSecret, signOptions);
                             // winston.debug("agentToken  "+agentToken);
 
-                            
-
-
+                            console.log("\nrequestNotification: ", user.email);
+                            console.log("\nrequestNotification: ", JSON.stringify(savedRequest));
+                            console.log("\nrequestNotification: ", JSON.stringify(project));
+                          
                             emailService.sendNewAssignedRequestNotification(user.email, savedRequest, project);
                             //  }
                           }

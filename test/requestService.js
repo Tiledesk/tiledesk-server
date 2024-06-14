@@ -92,7 +92,7 @@ describe('RequestService', function () {
           var request = {
             request_id: "request_id-createObjSimple-" + now, project_user_id: savedProjectAndPU.project_user._id, lead_id: createdLead._id,
             id_project: savedProject._id, first_text: "first_text",
-            lead: createdLead, requester: savedProjectAndPU.project_user
+            lead: createdLead, requester: savedProjectAndPU.project_user, attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" }
           };
           // attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" } // for quote test
 
@@ -123,7 +123,7 @@ describe('RequestService', function () {
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
             expect(savedRequest.id_project).to.equal(savedProject._id.toString());
             
-            //expect(savedRequest.attributes.sourcePage).to.equal("https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true")
+            expect(savedRequest.attributes.sourcePage).to.equal("https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true")
 
 
             setTimeout(async () => {

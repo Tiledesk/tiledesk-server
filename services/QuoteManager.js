@@ -3,6 +3,7 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
+const emailService = require('./emailService');
 
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
@@ -88,8 +89,8 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        winston.debug("generateKey object ", object)
-        winston.debug("generateKey type " + type)
+        winston.info("generateKey object ", object)
+        winston.info("generateKey type " + type)
         let subscriptionDate;
 
         if (this.project.isActiveSubscription === true) {
@@ -140,9 +141,8 @@ class QuoteManager {
      * Get quotes for all types (tokens and request and ...)
      */
     async getAllQuotes(project, obj) {
-
+        
         this.project = project;
-
         let quotes = {}
         for (let type of typesList) {
 
@@ -199,7 +199,7 @@ class QuoteManager {
         winston.verbose("limits for current plan: ", limits)
 
         let quote = await this.getCurrentQuote(project, object, type);
-        winston.verbose("getCurrentQuote resp: ", quote)
+        winston.verbose("getCurrentQuote resp: " + quote)
 
         let data = {
             limits: limits,
@@ -211,6 +211,7 @@ class QuoteManager {
 
     async sendEmailIfQuotaExceeded(project, object, type, key) {
         
+
         let data = await this.checkQuoteForAlert(project, object, type);
         let limits = data.limits;
         let limit = data.limits[type];
@@ -227,6 +228,7 @@ class QuoteManager {
         let result = await this.tdCache.get(nKey);
         if (!result) {
 
+            winston.info("Checkpoint reached -> Send email!")
             let allQuotes = await this.getAllQuotes(project, object);
             let quotes = await this.generateQuotesObject(allQuotes, limits);
 
@@ -237,7 +239,6 @@ class QuoteManager {
                 checkpoint: checkpoint,
                 quotes: quotes
             }
-
             emailEvent.emit('email.send.quote.checkpoint', data);
             await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
         } else {
