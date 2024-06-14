@@ -142,7 +142,7 @@ var urls = require('./routes/urls');
 var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
-
+var webhook = require('./routes/webhook');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -166,6 +166,7 @@ var botSubscriptionNotifier = require('./services/BotSubscriptionNotifier');
 botSubscriptionNotifier.start(); //queued but disabled
 
 botEvent.listen(); //queued but disabled
+
 
 var trainingService = require('./services/trainingService');
 trainingService.start();
@@ -199,9 +200,9 @@ let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
 
-let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
-winston.info("trainingQueue");
-jobsManager.listenTrainingQueue(trainingQueue);
+// let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
+// winston.info("trainingQueue");
+// jobsManager.listenTrainingQueue(trainingQueue);
 
 
 var channelManager = require('./channels/channelManager');
@@ -214,6 +215,7 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
@@ -500,8 +502,10 @@ app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/users_util', usersUtil);
-// app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
+app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
+
+app.use('/webhook', webhook);
 
 // TODO security issues
 if (process.env.DISABLE_TRANSCRIPT_VIEW_PAGE ) {
@@ -544,7 +548,8 @@ app.use('/:projectid/departments', department);
 
 channelManager.useUnderProjects(app);
 
-app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], group);
+app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], group);
+// app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], group);
 app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], tag);
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], resthook);
 
@@ -557,6 +562,7 @@ app.use('/:projectid/faqpub', faqpub);
 
 //deprecated
 app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
+app.use('/:projectid/flows', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
 
 
