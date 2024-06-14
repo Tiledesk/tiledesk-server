@@ -9,13 +9,23 @@ var winston = require('../config/winston');
 loadMultiplier();
 function loadMultiplier() {
     
-    let models_string = process.env.AI_MODELS.replace(/ /g,'');
+
+    let models_string = process.env.AI_MODELS;
     winston.debug("(loadMultiplier) models_string: ", models_string)
+    let models = {};
+
+    if (!models_string) {
+        winston.info("AI_MODELS not defined");
+        winston.info("AI Models: ", models)
+        return models;
+    }
+
+    let models_string_trimmed = models_string.replace(/ /g,'');
+    winston.debug("(loadMultiplier) models_string_trimmed: ", models_string_trimmed)
 
     let splitted_string = models_string.split(";");
     winston.debug("splitted_string: ", splitted_string)
 
-    let models = {};
     splitted_string.forEach(m => {
         m_split = m.split(":");
         if (!m_split[1]) {
