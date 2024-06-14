@@ -9,6 +9,8 @@ var winston = require('../config/winston');
 loadMultiplier();
 function loadMultiplier() {
     
+    console.log("process.env.AI_MODELS: ", process.env.AI_MODELS)
+    
     let models_string = process.env.MODELS.replace(/ /g,'');
     winston.debug("(loadMultiplier) models_string: ", models_string)
 
