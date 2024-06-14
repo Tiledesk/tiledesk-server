@@ -492,7 +492,7 @@ router.post('/qa', async (req, res) => {
 
         KB.findById(id, (err, resource) => {
 
-            let multiplier = MODEL_MULTIPLIER[data.model];
+            let multiplier = MODELS_MULTIPLIER[data.model];
             if (!multiplier) {
                 multiplier = 1;
                 winston.info("No multiplier found for AI model")

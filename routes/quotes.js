@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { QuoteManager } = require('../services/QuoteManager');
 let winston = require('../config/winston');
-const { MODEL_MULTIPLIER } = require('../utils/aiUtils');
+const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
 
 router.post('/', async (req, res) => {
@@ -44,7 +44,7 @@ router.post('/incr/:type', async (req, res) => {
 
     let quoteManager = req.app.get('quote_manager');
 
-    let multiplier = MODEL_MULTIPLIER[data.model];
+    let multiplier = MODELS_MULTIPLIER[data.model];
     if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")
