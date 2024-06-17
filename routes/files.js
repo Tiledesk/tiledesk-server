@@ -20,7 +20,11 @@ const fileService = new FileGridFsService("files");
 
 
 
-const upload = multer({ storage: fileService.getStorage("files") });
+//const upload = multer({ storage: fileService.getStorage("files") });
+const upload = multer({ 
+  storage: fileService.getStorage("files"),
+  limits: { fileSize: 1024 * 1024 * 10 } // 10 MB
+})
 
 /*
 curl -u andrea.leo@f21.it:123456 \
