@@ -14,6 +14,7 @@ var mongoose = require('mongoose');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
 
+const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -211,7 +212,7 @@ router.post('/qa', async (req, res) => {
 
     KB.findById(id, (err, resource) => {
 
-      let multiplier = MODEL_MULTIPLIER[data.model];
+      let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
         multiplier = 1;
         winston.info("No multiplier found for AI model")

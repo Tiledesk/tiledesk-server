@@ -47,8 +47,7 @@ const mockProjectSandboxPlan = {
     "name": "Sandbox",
     "trialDays": 14,
     "agents": 0,
-    "type": "payment",
-    "subStart": new Date('2023-10-20T08:45:54.058Z')
+    "type": "free",
   },
   "versions": 20115,
   "channels": [
@@ -56,7 +55,7 @@ const mockProjectSandboxPlan = {
       "name": "chat21"
     }
   ],
-  "createdAt": new Date('2023-10-16T08:45:54.058Z')
+  "createdAt": new Date('2023-10-20T08:45:54.058Z')
 }
 
 const mockProjectBasicPlan = {

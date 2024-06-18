@@ -525,6 +525,8 @@ class RequestService {
 
       }
 
+      let isTestConversation = false;
+
       var that = this;
 
       return new Promise(async (resolve, reject) => {
@@ -548,10 +550,16 @@ class RequestService {
             request: request
           }
     
-          let available = await qm.checkQuote(p, request, 'requests');
-          if (available === false) {
-            winston.info("Requests limits reached for project " + p._id)
-            return false;
+          if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+              winston.verbose("is a test conversation --> skip quote availability check")
+              this.isTestConversation = true;
+          }
+          else {
+            let available = await qm.checkQuote(p, request, 'requests');
+            if (available === false) {
+              winston.info("Requests limits reached for project " + p._id)
+              return false;
+            }
           }
         
 
@@ -717,7 +725,10 @@ class RequestService {
           winston.verbose("Performance Request created in millis: " + endDate - startDate);
 
           requestEvent.emit('request.create.simple', savedRequest);
-          requestEvent.emit('request.create.quote', payload);;
+
+          if (!isTestConversation) {
+            requestEvent.emit('request.create.quote', payload);;
+          }
 
           return resolve(savedRequest);
 

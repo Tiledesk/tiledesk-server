@@ -1816,6 +1816,44 @@ class EmailService {
 
   }
 
+  async sendEmailQuotaCheckpointReached(to, firstname, project_name, resource_name, checkpoint, quotes) {
+
+    winston.info("sendEmailQuotaCheckpointReached: " + to);
+    
+    var that = this;
+
+    let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED");
+    winston.debug("html: " + html);
+
+    let template = handlebars.compile(html);
+
+    let requests_quote = quotes.requests.quote;
+    let requests_perc = quotes.requests.perc;
+
+    let tokens_quote = quotes.tokens.quote;
+    let tokens_perc = quotes.tokens.perc;
+
+    let email_quote = quotes.email.quote;
+    let email_perc = quotes.email.perc;
+
+    let replacements = {
+      firstname: firstname,
+      project_name: project_name,
+      resource_name: resource_name,
+      checkpoint: checkpoint,
+      requests_quote: requests_quote,
+      requests_perc: requests_perc,
+      tokens_quote: tokens_quote,
+      tokens_perc: tokens_perc,
+      email_quote: email_quote,
+      email_perc: email_perc
+    }
+
+    html = template(replacements);
+
+    that.send({ to: to, subject: "Update on resources usage", html: html });
+  }
+
   parseText(text, payload) {
 
 
