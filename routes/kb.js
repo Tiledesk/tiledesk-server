@@ -36,7 +36,6 @@ let default_preview_settings = {
   temperature: 0.7,
   top_k: 4,
   context: "You are an awesome AI Assistant."
-
 }
 
 /**
@@ -225,6 +224,11 @@ router.post('/qa', async (req, res) => {
 
       if (err) {
         winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
+        return res.status(200).send(resp.data);
+      }
+
+      if (!resource) {
+        winston.error("Resource with id " + id + " not found in namespace " + answer.namespace + ". The standard answer is returned.")
         return res.status(200).send(resp.data);
       }
 
