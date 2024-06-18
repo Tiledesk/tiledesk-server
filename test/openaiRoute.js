@@ -1,6 +1,9 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 // process.env.GPTKEY = 'customgptkey';
+//process.env.AI_MODELS = 'gpt-3.5-turbo:0.6;gpt-4:25;gpt-4-turbo-preview:12;gpt-4o:6'
+//process.env.AI_MODELS = 'gpt-3.5-turbo;gpt-4-turbo-preview;gpt-4o'
+process.env.AI_MODELS = '    gpt-3.5-turbo:0   .6;gpt -4:2  5; g  pt-4-tur   bo-preview:12;gp   t-4o:6'
 
 let log = false;
 var projectService = require('../services/projectService');

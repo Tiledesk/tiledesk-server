@@ -5,11 +5,11 @@ const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 50 }, // same as PREMIUM
-    SANDBOX:    { requests: 200,    messages: 0,    tokens: 10000,      email: 200,     chatbots: 2,        kbs: 50 },
-    BASIC:      { requests: 800,    messages: 0,    tokens: 50000,      email: 200,     chatbots: 5,        kbs: 150},
-    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 300},
-    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,     chatbots: 20,       kbs: 1000}
+    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 250000,     email: 200,    chatbots: 20,       kbs: 50 }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,     email: 200,    chatbots: 2,        kbs: 50 },
+    BASIC:      { requests: 1000,   messages: 0,    tokens: 2000000,    email: 200,    chatbots: 10,       kbs: 200},
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,    email: 200,    chatbots: 20,       kbs: 500},
+    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 5000000,    email: 200,    chatbots: 20,       kbs: 500}
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
@@ -262,14 +262,10 @@ class QuoteManager {
     async invalidateCheckpointKeys(project, obj) {
 
         this.project = project;
-        console.log("invalidateCheckpointKeys project: ", project);
+        winston.verbose("invalidateCheckpointKeys project " + project._id);
         let requests_key = await this.generateKey(obj, 'requests');
         let tokens_key = await this.generateKey(obj, 'tokens');
         let email_key = await this.generateKey(obj, 'email');
-        console.log("invalidateCheckpointKeys requests_key: ", requests_key);
-        console.log("invalidateCheckpointKeys tokens_key: ", tokens_key);
-        console.log("invalidateCheckpointKeys email_key: ", email_key);
-
         
         let checkpoints = ['50', '75', '95', '100']
 
@@ -278,18 +274,15 @@ class QuoteManager {
             let ntokens_key = tokens_key + ":notify:" + checkpoint;
             let nemail_key = email_key + ":notify:" + checkpoint;
 
-            console.log("invalidateCheckpointKeys nrequests_key: ", nrequests_key);
-            console.log("invalidateCheckpointKeys ntokens_key: ", ntokens_key);
-            console.log("invalidateCheckpointKeys nemail_key: ", nemail_key);
+            winston.verbose("invalidateCheckpointKeys nrequests_key: " + nrequests_key);
+            winston.verbose("invalidateCheckpointKeys ntokens_key: " + ntokens_key);
+            winston.verbose("invalidateCheckpointKeys nemail_key: " + nemail_key);
 
-            let req_res = await this.tdCache.del(nrequests_key);
-            let tok_res = await this.tdCache.del(ntokens_key);
-            let ema_res = await this.tdCache.del(nemail_key);
+            this.tdCache.del(nrequests_key);
+            this.tdCache.del(ntokens_key);
+            this.tdCache.del(nemail_key);
 
-            console.log("invalidateCheckpointKeys req_res: ", req_res);
-            console.log("invalidateCheckpointKeys tok_res: ", tok_res);
-            console.log("invalidateCheckpointKeys ema_res: ", ema_res);
-
+            return true;
         })
 
     }
@@ -315,17 +308,13 @@ class QuoteManager {
 
     async getPlanLimits(project) {
 
-        console.log("\ngetPlanLimits");
-
         if (project) {
             this.project = project
         };
 
-        console.log("\ngetPlanLimits project: ", this.project);
-        
         let limits;
         const plan = this.project.profile.name;
-        
+
         if (this.project.profile.type === 'payment') {
 
             switch (plan) {
@@ -357,15 +346,15 @@ class QuoteManager {
             } else {
                 limits = PLANS_LIST.SANDBOX;
             }
-        
-        }
 
-        console.log("limits: ", limits)
+        }
         if (this.project?.profile?.quotes) {
             let profile_quotes = this.project?.profile?.quotes;
             const merged_quotes = Object.assign({}, limits, profile_quotes);
+            winston.verbose("Custom Limits: ", limits)
             return merged_quotes;
         } else {
+            winston.verbose("Default Limits: ", limits)
             return limits;
         }
     }

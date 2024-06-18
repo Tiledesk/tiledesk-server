@@ -23,7 +23,7 @@ function loadMultiplier() {
     let models_string_trimmed = models_string.replace(/ /g,'');
     winston.debug("(loadMultiplier) models_string_trimmed: ", models_string_trimmed)
 
-    let splitted_string = models_string.split(";");
+    let splitted_string = models_string_trimmed.split(";");
     winston.debug("splitted_string: ", splitted_string)
 
     splitted_string.forEach(m => {
