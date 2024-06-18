@@ -137,6 +137,11 @@ class EmailService {
     }
     winston.info('EmailService ccEnabled: ' + this.ccEnabled);
 
+    this.brand_name = "Tiledesk"
+    if (process.env.BRAND_NAME) {
+      this.brand_name = process.env.BRAND_NAME;
+    }
+
   }
 
   readTemplate(templateName, settings, environmentVariableKey) {
@@ -351,7 +356,7 @@ class EmailService {
 
     var html = template(replacements);
 
-    return that.send({ to: to, subject: `Tiledesk test email`, config: configEmail, html: html, callback: callback });
+    return that.send({ to: to, subject: `${this.brand_name} test email`, config: configEmail, html: html, callback: callback });
 
   }
 
@@ -465,10 +470,10 @@ class EmailService {
     // cambiare in [Nicky:Dashboard Support] Assigned Chat
     // serve per aggiornare native... fai aggiornamento 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Assigned Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Assigned Chat`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     let subject = that.formatText("assignedRequestSubject", subjectDef, request, project.settings);
@@ -607,13 +612,13 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
-      subjectDef = `[Ticket #${request.ticket_id}] New message`;
+      subjectDef = `[${this.brand_name} #${request.ticket_id}] New message`;
     }
 
     if (request.ticket_id && request.subject) {
@@ -746,10 +751,10 @@ class EmailService {
       }
     }
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Pooled Chat`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Pooled Chat`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
 
     let subject = that.formatText("pooledRequestSubject", subjectDef, request, project.settings);
@@ -882,10 +887,10 @@ class EmailService {
     }
 
 
-    let subjectDef = `[Tiledesk ${project ? project.name : '-'}] New Message`;
+    let subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] New Message`;
 
     if (request.subject) {
-      subjectDef = `[Tiledesk ${project ? project.name : '-'}] ${request.subject}`;
+      subjectDef = `[${this.brand_name} ${project ? project.name : '-'}] ${request.subject}`;
     }
     if (request.ticket_id) {
       subjectDef = `[Ticket #${request.ticket_id}] New Message`;
@@ -1019,7 +1024,7 @@ class EmailService {
     }
 
 
-    let subject = that.formatText("newMessageSubject", `[Tiledesk ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
+    let subject = that.formatText("newMessageSubject", `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message`, message, project.settings);
 
     that.send({
       messageId: messageId,
@@ -1044,7 +1049,7 @@ class EmailService {
       replyTo: replyTo,
       inReplyTo: inReplyTo,
       references: references,
-      subject: `[Tiledesk ${project ? project.name : '-'}] New Offline Message - notification`,
+      subject: `[${this.brand_name} ${project ? project.name : '-'}] New Offline Message - notification`,
       html: html,
       headers: headers
     });
@@ -1552,8 +1557,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Password reset request', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Password reset request - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Password reset request`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Password reset request - notification`, html: html });
 
   }
 
@@ -1582,8 +1587,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: '[Tiledesk] Your password has been changed', html: html });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Your password has been changed - notification', html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Your password has been changed`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Your password has been changed - notification`, html: html });
 
   }
 
@@ -1622,8 +1627,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
   }
 
   // ok
@@ -1659,8 +1664,8 @@ class EmailService {
 
     var html = template(replacements);
 
-    that.send({ to: to, subject: `[Tiledesk] You have been invited to the '${projectName}' project`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] You have been invited to the '${projectName}' project - notification`, html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] You have been invited to the '${projectName}' project - notification`, html: html });
 
   }
 
@@ -1691,8 +1696,8 @@ class EmailService {
     var html = template(replacements);
 
 
-    that.send({ to: to, subject: `[Tiledesk] Verify your email address`, html: html });
-    that.send({ to: that.bcc, subject: `[Tiledesk] Verify your email address ` + to + " - notification", html: html });
+    that.send({ to: to, subject: `[${this.brand_name}] Verify your email address`, html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Verify your email address ` + to + " - notification", html: html });
 
   }
 
@@ -1765,7 +1770,7 @@ class EmailService {
 
     //custom ocf here
     // console.log("ocf",project._id);
-    let subject = that.formatText("sendTranscriptSubject", '[Tiledesk] Transcript', request, project.settings);
+    let subject = that.formatText("sendTranscriptSubject", `[${this.brand_name}] Transcript`, request, project.settings);
 
     //prod                                               //pre
     // if (project._id =="6406e34727b57500120b1bd6" || project._id == "642c609f179910002cc56b3e") {
@@ -1779,7 +1784,7 @@ class EmailService {
     // hcustomization.emailTranscript(to, subject, html, configEmail)
 
     that.send({ from: from, to: to, subject: subject, html: html, config: configEmail });
-    that.send({ to: that.bcc, subject: '[Tiledesk] Transcript - notification', html: html });
+    that.send({ to: that.bcc, subject: `[${this.brand_name}] Transcript - notification`, html: html });
 
   }
 
@@ -1807,7 +1812,7 @@ class EmailService {
 
     html = template(replacements);
 
-    that.send({ to: to, subject: "Join Tiledesk from Desktop", html: html });
+    that.send({ to: to, subject: `Join ${this.brand_name} from Desktop`, html: html });
 
   }
 
