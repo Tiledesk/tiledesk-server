@@ -210,8 +210,10 @@ router.post('/qa', async (req, res) => {
       id = id.substring(index + 1);
     }
 
+    console.log("findbyid with id: ", id)
     KB.findById(id, (err, resource) => {
 
+      console.log("resource: ", resource)
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
         multiplier = 1;
@@ -225,6 +227,11 @@ router.post('/qa', async (req, res) => {
 
       if (err) {
         winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
+        return res.status(200).send(resp.data);
+      }
+
+      if (!resource) {
+        console.log("resource is undefined")
         return res.status(200).send(resp.data);
       }
 
