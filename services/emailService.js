@@ -149,7 +149,6 @@ class EmailService {
     var that = this;
     winston.debug('EmailService readTemplate: ' + templateName + ' environmentVariableKey:  ' + environmentVariableKey + ' setting ' + JSON.stringify(settings));
 
-    // env
     if (settings && settings.email && settings.email.templates) {
 
       var templates = settings.email.templates;
