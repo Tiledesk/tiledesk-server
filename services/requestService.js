@@ -552,7 +552,7 @@ class RequestService {
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
-              this.isTestConversation = true;
+              isTestConversation = true;
           }
           else {
             let available = await qm.checkQuote(p, request, 'requests');
