@@ -149,7 +149,7 @@ class EmailService {
     var that = this;
     winston.debug('EmailService readTemplate: ' + templateName + ' environmentVariableKey:  ' + environmentVariableKey + ' setting ' + JSON.stringify(settings));
 
-
+    // env
     if (settings && settings.email && settings.email.templates) {
 
       var templates = settings.email.templates;
@@ -168,6 +168,21 @@ class EmailService {
           return resolve(template);
         });
       } 
+      else {
+        var envTemplate = process.env[environmentVariableKey];
+        winston.debug('EmailService envTemplate: ' + envTemplate);
+
+        if (envTemplate) {
+          winston.debug('EmailService return envTemplate: ' + envTemplate);
+
+          return envTemplate;
+        } else {
+          winston.debug('EmailService return file: ' + templateName);
+
+          return that.readTemplateFile(templateName);
+        }  
+      }
+      
       // else {
       //   return that.readTemplateFile(templateName);
       // }
