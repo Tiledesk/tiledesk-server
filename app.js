@@ -500,7 +500,7 @@ app.use('/files', files);
 app.use('/urls', urls);
 app.use('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], users);
 app.use('/users_util', usersUtil);
-// app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
+app.use('/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], logs);
 app.use('/requests_util', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], requestUtilRoot);
 
 app.use('/webhook', webhook);
