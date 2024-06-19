@@ -82,6 +82,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Before proceeding in the conversation please agree to our <a href='https://tiledesk.com/termsofservice/' target='_blank'>Terms</a> and <a href='https://tiledesk.com/privacy.html' target='_blank'>Privacy Policy</a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "I agree",
             "PRECHAT_REQUIRED_ERROR": "This field is required",
+            
+            "TICKET_TAKING":"The request has been received and the assistance staff is dealing with it.\nTo add more comments, reply to this email.",
 
             "LABEL_TODAY": "today",
             "LABEL_TOMORROW": "yesterday",
@@ -169,6 +171,8 @@
             "INFO_SUPPORT_MEMBER_LEFT_GROUP":"ha lasciato il gruppo",
             "INFO_SUPPORT_MEMBER_ABANDONED_GROUP": "ha abbandonato la conversazione",
             "INFO_A_NEW_SUPPORT_REQUEST_HAS_BEEN_ASSIGNED_TO_YOU": "Una nuova richiesta di supporto è stata assegnata a te",
+
+			"TICKET_TAKING":"La richiesta è stata ricevuta e il personale di assistenza se ne sta occupando.\nPer aggiungere ulteriori commenti, rispondi a questa email.",
 
             "LABEL_PRECHAT_USER_FULLNAME": "Nome completo",
             "LABEL_PRECHAT_USER_EMAIL": "E-mail",
@@ -277,6 +281,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Je suis d'accord",
             "PRECHAT_REQUIRED_ERROR": "Ce champ est obligatoire",
 
+			"TICKET_TAKING":"La demande a été reçue et le personnel d'assistance la traite.\nPour ajouter d'autres commentaires, répondez à cet e-mail.",
+			
             "LABEL_TODAY": "aujourd'hui",
             "LABEL_TOMORROW": "hier",
             "LABEL_LAST_ACCESS": "dernier accès",
@@ -373,6 +379,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Antes de continuar con la conversación, acepte nuestros <a href='https://tiledesk.com/termsofservice/' target='_blank'>Términos</a> y <a href='https:/ /tiledesk.com/privacy.html' target='_blank'>Política de privacidad</a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Acepto",
             "PRECHAT_REQUIRED_ERROR": "Este campo es obligatorio",
+            
+            "TICKET_TAKING":"La solicitud ha sido recibida y el personal de asistencia está tratando con ella. \nPara agregar más comentarios, responda a este correo electrónico.",
             
             "LABEL_TODAY": "hoy",
             "LABEL_TOMORROW": "ayer",
@@ -471,6 +479,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Ich stimme zu",
             "PRECHAT_REQUIRED_ERROR": "Dieses Feld ist erforderlich",
         
+       	 	"TICKET_TAKING":"Die Anfrage ist eingegangen und wird vom Hilfspersonal bearbeitet.\nUm weitere Kommentare hinzuzufügen, antworten Sie auf diese E-Mail.",
+            
             "LABEL_TODAY": "heute",
             "LABEL_TOMORROW": "gestern",
             "LABEL_LAST_ACCESS": "letzter Zugriff",
@@ -567,6 +577,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Antes de continuar a conversa, concorde com nossos <a href='https://tiledesk.com/termsofservice/' target='_blank'>Termos</a> e <a href='https:/ /tiledesk.com/privacy.html' target='_blank'>Política de privacidade</a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Eu concordo",
             "PRECHAT_REQUIRED_ERROR": "Este campo é obrigatório",
+        
+        	"TICKET_TAKING":"A solicitação foi recebida e a equipe de assistência está tratando dela. \nPara adicionar mais comentários, responda a este e-mail.",
         
             "LABEL_TODAY": "hoje",
             "LABEL_TOMORROW": "ontem",
@@ -665,6 +677,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Я согласен",
             "PRECHAT_REQUIRED_ERROR": "Это поле обязательно для заполнения",
 
+			"TICKET_TAKING":"Запрос был получен, и обслуживающий персонал занимается им. \nЧтобы добавить больше комментариев, ответьте на это письмо.",
+
             "LABEL_TODAY": "Cегодня",
             "LABEL_TOMORROW": "вчерашний день",
             "LABEL_LAST_ACCESS": "последний доступ",
@@ -761,6 +775,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Konuşmaya devam etmeden önce lütfen <a href='https://tiledesk.com/termsofservice/' target='_blank'>Şartlarımızı</a> ve <a href='https:/ kabul edin. /tiledesk.com/privacy.html' target='_blank'>Gizlilik Politikası</a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Kabul ediyorum",
             "PRECHAT_REQUIRED_ERROR": "Bu alan gereklidir",
+            
+            "TICKET_TAKING":"Talep alındı ve yardım ekibi bununla ilgileniyor.\nDaha fazla yorum eklemek için bu e-postayı yanıtlayın.",
 
             "LABEL_TODAY": "bugün",
             "LABEL_TOMORROW": "dün",
@@ -861,6 +877,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY":"Слазем се",
             "PRECHAT_REQUIRED_ERROR":"Ово поље је захтевано",
             
+            "TICKET_TAKING":"Захтјев је примљен и помоћно особље се бави њиме.\nДа бисте додали још коментара, одговорите на ову е-поруку.",
+            
             "LABEL_TODAY": "данас",
             "LABEL_TOMORROW": "јуче",
             "LABEL_LAST_ACCESS": "последњи приступ",
@@ -959,6 +977,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "قبل متابعة المحادثة ، يرجى الموافقة على سياسة الخصوصية الخاصة بشروط <a href='https://tiledesk.com/termsofservice/' target='_blank'></a> و <a href='https://tiledesk.com/privacy.html' target='_blank'></a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "أنا موافق",
             "PRECHAT_REQUIRED_ERROR": "هذه الخانة مطلوبه",
+            
+            "TICKET_TAKING": "تم استلام الطلب ويقوم طاقم المساعدة بالتعامل معه.\nلإضافة المزيد من التعليقات ، قم بالرد على هذا البريد الإلكتروني.",
             
             "LABEL_TODAY": "اليوم",
             "LABEL_TOMORROW": "في الامس",
@@ -1059,6 +1079,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "я згоден",
             "PRECHAT_REQUIRED_ERROR": "Це поле є обов'язковим",
             
+            "TICKET_TAKING": "Запит отримано, і допоміжний персонал працює з ним.\nЩоб додати більше коментарів, надішліть відповідь на цей електронний лист.",
+            
             "LABEL_TODAY": "сьогодні",
             "LABEL_TOMORROW": "вчора",
             "LABEL_LAST_ACCESS": "вчора",
@@ -1156,6 +1178,8 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Innan du fortsätter i konversationen, godkänn våra <a href='https://tiledesk.com/termsofservice/' target='_blank'>Villkor</a> och <a href='https://tiledesk.com/privacy.html' target='_blank'>Sekretesspolicy</a>",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "jag håller med",
             "PRECHAT_REQUIRED_ERROR": "Detta fält är obligatoriskt",
+            
+            "TICKET_TAKING": "Begäran har kommit in och assistanspersonalen hanterar den.\nFör att lägga till fler kommentarer, svara på det här e-postmeddelandet.",
             
             "LABEL_TODAY": "i dag",
             "LABEL_TOMORROW": "i går",
@@ -1255,6 +1279,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Мен келісемін",
             "PRECHAT_REQUIRED_ERROR": "Бұл керек аймақ",
             
+            "TICKET_TAKING": "Өтініш қабылданды және көмек көрсету қызметкерлері онымен айналысуда.\nҚосымша пікірлер қосу үшін осы электрондық поштаға жауап беріңіз.",
+            
             "LABEL_TODAY": "бүгін",
             "LABEL_TOMORROW": "кеше",
             "LABEL_LAST_ACCESS": "соңғы рұқсат",
@@ -1353,6 +1379,8 @@
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "Men roziman",
             "PRECHAT_REQUIRED_ERROR": "Ushbu qator to'ldirilishi shart",
             
+            "TICKET_TAKING": "So'rov qabul qilindi va yordam xodimlari u bilan shug'ullanmoqda.\nKo'proq izoh qo'shish uchun ushbu xatga javob yozing.",
+            
             "LABEL_TODAY": "bugungi kunda",
             "LABEL_TOMORROW": "kecha",
             "LABEL_LAST_ACCESS": "oxirgi kirish",
@@ -1450,6 +1478,9 @@
             "LABEL_PRECHAT_STATIC_TERMS_PRIVACY": "Söhbətə davam etməzdən əvvəl <a href='https://tiledesk.com/termsofservice/' target='_blank'>Şərt</a> və <a href='https://tiledesk.com/privacy.html' target='_blank'>Məxfilik Siyasəti</a>ilə razılaşın",
             "LABEL_PRECHAT_ACCEPT_TERMS_PRIVACY": "razıyam",
             "PRECHAT_REQUIRED_ERROR": "Bu xananın doldurulması məcburidir",
+            
+            "TICKET_TAKING": "Müraciət qəbul edilib və yardım işçiləri bununla məşğul olur.\nDaha çox şərh əlavə etmək üçün bu e-poçta cavab yazın.",
+            
             "LABEL_TODAY": "bu gün",
             "LABEL_TOMORROW": "dünən",
             "LABEL_LAST_ACCESS": "son giriş",
