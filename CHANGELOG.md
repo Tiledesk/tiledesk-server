@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.8.1
+# 2.8.0
 - Enable quotas for conversations, tokens, and direct email.
 - Added namespaces to knowledge base
 - Updated tybot-connector to 0.2.82
