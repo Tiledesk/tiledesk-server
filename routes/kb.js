@@ -200,6 +200,10 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  if (data.system_context) {
+    data.system_context = data.system_context + " {context}";
+  }
+  
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
