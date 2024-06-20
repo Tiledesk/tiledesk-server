@@ -9,6 +9,7 @@
 - Enable quotas for conversations, tokens, and direct email.
 - Added namespaces to knowledge base
 - Updated tybot-connector to 0.2.82
+- Externalized models multipliers
 
 # 2.7.26
 - Updated tybot-connector to 0.2.72
