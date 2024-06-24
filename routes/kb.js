@@ -36,7 +36,8 @@ let default_preview_settings = {
   max_tokens: 128,
   temperature: 0.7,
   top_k: 4,
-  context: "You are an awesome AI Assistant."
+  //context: "You are an awesome AI Assistant."
+  context: null
 }
 
 /**
