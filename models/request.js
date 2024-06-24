@@ -197,6 +197,9 @@ var RequestSchema = new Schema({
   closed_by: { 
     type: String
   },
+  duration: {
+    type: Number
+  },
 
   tags: [TagSchema],
 
