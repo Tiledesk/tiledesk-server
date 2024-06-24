@@ -36,8 +36,11 @@ let default_preview_settings = {
   max_tokens: 128,
   temperature: 0.7,
   top_k: 4,
-  context: "You are an awesome AI Assistant."
+  //context: "You are an awesome AI Assistant."
+  context: null
 }
+
+let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 
 /**
 * ****************************************
@@ -200,10 +203,11 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (data.system_context) {
-    data.system_context = data.system_context + " {context}";
+    data.system_context = data.system_context + " \n" + default_context;
   }
-  
+
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
