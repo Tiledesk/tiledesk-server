@@ -415,7 +415,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let chatbotsArray = [];
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
-      let chatbot = await faq_kb.findById(c_id);
+      let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
       if (chatbot) {
         let data = {
           _id: chatbot._id,
