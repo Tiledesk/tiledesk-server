@@ -500,6 +500,15 @@ router.post('/namespace', async (req, res) => {
     new_namespace.default = true;
   }
 
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let ns_limit = limits.namespace;
+  console.log("Limit of namespaces for current plan " + ns_limit);
+
+  if (namespaces.length >= ns_limit) {
+    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: ns_limit });
+  }
+
   new_namespace.save((err, savedNamespace) => {
     if (err) {
       winston.error("create namespace error: ", err);
