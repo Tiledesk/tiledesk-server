@@ -419,8 +419,7 @@ router.get('/namespace/:id/:content_id', async (req, res) => {
     return res.status(200).send(chunks);
 
   }).catch((err) => {
-    winston.error("error getting content chunks: " + err);
-    winston.error("error getting content chunks: ", err);
+    console.log("error getting content chunks: ", err)
     return res.status(500).send({ success: false, error: err });
   })
 
