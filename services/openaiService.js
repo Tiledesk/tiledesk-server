@@ -162,6 +162,25 @@ class OpenaiService {
     })
   }
 
+  getContentChunks(namespace_id, content_id) {
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_qa);
+
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint_qa + "/id/" + content_id + "/namespace/" + namespace_id,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        method: 'GET'
+      }).then((resbody) => {
+        resolve(resbody)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  }
+
   deleteIndex(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
 

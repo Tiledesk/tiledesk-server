@@ -388,6 +388,44 @@ router.get('/namespace/all', async (req, res) => {
   })
 })
 
+router.get('/namespace/:id/:content_id', async (req, res) => {
+
+  let project_id = req.projectid;
+  let namespace_id = req.params.id;
+  let content_id = req.params.content_id;
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    return res.status(500).send({ success: false, error: err })
+  })
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let content = await KB.find({ id_project: project_id, namespace: namespace_id, _id: content_id }).catch((err) => {
+    winston.error("find content error: ", err);
+    return res.status(403).send({ success: false, error: err })
+  })
+
+  if(!content) {
+    return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
+  }
+
+  openaiService.getContentChunks(namespace_id, content_id).then((chunks) => {
+    winston.debug("chunks for content " + content_id);
+    winston.debug("chunks found ", chunks);
+    return res.status(200).send(chunks);
+
+  }).catch((err) => {
+    winston.error("error getting content chunks: " + err.response);
+    winston.error("error getting content chunks: ", err.response);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+})
+
 router.get('/namespace/:id/chatbots', async (req, res) => {
 
   let project_id = req.projectid;
