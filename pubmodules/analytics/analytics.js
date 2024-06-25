@@ -189,7 +189,7 @@ router.get('/requests/aggregate/status', function(req, res) {
 
     if (req.query.channel) {
       winston.debug('req.query.channel', req.query.channel);
-      query.channel.name = req.query.channel;
+      query['channel.name'] = req.query.channel;
     }
     
     winston.debug("QueryParams_LastDayCHART:", lastdays,req.query.department_id)
@@ -1064,7 +1064,7 @@ router.get('/requests/hasBot/count', function(req, res) {
 
     if (req.query.channel) {
       winston.debug('req.query.channel', req.query.channel);
-      query.channel.name = req.query.channel;
+      query['channel.name'] = req.query.channel;
     }
     
     winston.debug("QueryParams_LastDayCHART:", lastdays,req.query.department_id)
