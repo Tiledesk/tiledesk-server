@@ -84,6 +84,52 @@ describe('RequestRoute', () => {
   });
 
 
+  it('createSimpleAndCloseForDuration', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+            //console.log("res",  res);
+            //console.log("res.body",  res.body);
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+
+            //console.log("res.body: ", res.body)
+
+            setTimeout(() => {
+
+              chai.request(server)
+                  .put('/' + savedProject._id + '/requests/' + res.body.request_id + '/close')
+                  .auth(email, pwd)
+                  .send()
+                  .end((err, res) => {
+  
+                    if (err) { console.error("err: ", err) };
+                    console.log("request duration: ", res.body.duration)
+
+                    res.body.should.have.property('duration');
+                    res.body.duration.should.be.above(2000);
+  
+                    done();
+                  })
+
+            }, 2000)
+
+          });
+      });
+    });
+  }).timeout(5000);
+
 
 
 

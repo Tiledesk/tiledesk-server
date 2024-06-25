@@ -1266,14 +1266,16 @@ class RequestService {
 
   }
 
-  setClosedAtByRequestId(request_id, id_project, closed_at, closed_by) {
+  setClosedAtByRequestId(request_id, id_project, created_at, closed_at, closed_by) {
 
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
 
+      let duration = Math.abs(new Date(created_at) - new Date(closed_at))
+
       return Request
-        .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { closed_at: closed_at, closed_by: closed_by }, { new: true, upsert: false })
+        .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { closed_at: closed_at, closed_by: closed_by, duration: duration }, { new: true, upsert: false })
         .populate('lead')
         .populate('department')
         .populate('participatingBots')
@@ -1448,7 +1450,7 @@ class RequestService {
                 }
 
                 // setClosedAtByRequestId(request_id, id_project, closed_at, closed_by)
-                return that.setClosedAtByRequestId(request_id, id_project, new Date().getTime(), closed_by).then(function (updatedRequest) {
+                return that.setClosedAtByRequestId(request_id, id_project, request.createdAt, new Date().getTime(), closed_by).then(function (updatedRequest) {
 
                   winston.verbose("Request closed with id: " + updatedRequest.id);
                   winston.debug("Request closed ", updatedRequest);
