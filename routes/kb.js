@@ -413,13 +413,15 @@ router.get('/namespace/:id/:content_id', async (req, res) => {
     return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
   }
 
-  openaiService.getContentChunks(namespace_id, content_id).then((chunks) => {
+  openaiService.getContentChunks(namespace_id, content_id).then((resp) => {
+    let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
     winston.debug("chunks found ", chunks);
     return res.status(200).send(chunks);
 
   }).catch((err) => {
-    console.log("error getting content chunks: ", err)
+    console.log("error getting content chunks err.response: ", err.response)
+    console.log("error getting content chunks err.data: ", err.data)
     return res.status(500).send({ success: false, error: err });
   })
 

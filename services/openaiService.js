@@ -174,10 +174,8 @@ class OpenaiService {
         },
         method: 'GET'
       }).then((resbody) => {
-        console.log("resbody: ", resbody)
         resolve(resbody)
       }).catch((err) => {
-        console.log("reject with err: ", err)
         reject(err)
       })
     })
