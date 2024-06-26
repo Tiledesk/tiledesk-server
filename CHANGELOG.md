@@ -11,6 +11,7 @@
 - Enhanced kb context
 - Added enpoint to retrieve all content's chunks
 - Added limit on namespaces
+- Restore beenInvitedNewUser email
 
 # 2.8.0
 - Enable quotas for conversations, tokens, and direct email.
