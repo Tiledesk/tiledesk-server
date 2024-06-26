@@ -36,8 +36,11 @@ let default_preview_settings = {
   max_tokens: 128,
   temperature: 0.7,
   top_k: 4,
-  context: "You are an awesome AI Assistant."
+  //context: "You are an awesome AI Assistant."
+  context: null
 }
+
+let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 
 /**
 * ****************************************
@@ -200,10 +203,11 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (data.system_context) {
-    data.system_context = data.system_context + " {context}";
+    data.system_context = data.system_context + " \n" + default_context;
   }
-  
+
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
@@ -384,10 +388,51 @@ router.get('/namespace/all', async (req, res) => {
   })
 })
 
+router.get('/namespace/:id/:content_id', async (req, res) => {
+
+  let project_id = req.projectid;
+  let namespace_id = req.params.id;
+  let content_id = req.params.content_id;
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    return res.status(500).send({ success: false, error: err })
+  })
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let content = await KB.find({ id_project: project_id, namespace: namespace_id, _id: content_id }).catch((err) => {
+    winston.error("find content error: ", err);
+    return res.status(403).send({ success: false, error: err })
+  })
+
+  if(!content) {
+    return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
+  }
+
+  openaiService.getContentChunks(namespace_id, content_id).then((resp) => {
+    let chunks = resp.data;
+    winston.debug("chunks for content " + content_id);
+    winston.debug("chunks found ", chunks);
+    return res.status(200).send(chunks);
+
+  }).catch((err) => {
+    console.log("error getting content chunks err.response: ", err.response)
+    console.log("error getting content chunks err.data: ", err.data)
+    return res.status(500).send({ success: false, error: err });
+  })
+
+})
+
 router.get('/namespace/:id/chatbots', async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
+
+  let chatbotsArray = [];
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -406,16 +451,15 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
 
   if (!intents || intents.length == 0) {
     winston.verbose("No intents found for the selected chatbot")
-    return res.status(200).send({ success: false, message: "No intents found for the selected chatbot" });
+    return res.status(200).send(chatbotsArray);
   }
 
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
-  let chatbotsArray = [];
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
-      let chatbot = await faq_kb.findById(c_id);
+      let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
       if (chatbot) {
         let data = {
           _id: chatbot._id,
@@ -431,7 +475,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   await Promise.all(chatbotPromises);
 
   winston.debug("chatbotsArray: ", chatbotsArray);
-
+  
   res.status(200).send(chatbotsArray);
 })
 
@@ -455,6 +499,15 @@ router.post('/namespace', async (req, res) => {
   })
   if (!namespaces || namespaces.length == 0) {
     new_namespace.default = true;
+  }
+
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let ns_limit = limits.namespace;
+  console.log("Limit of namespaces for current plan " + ns_limit);
+
+  if (namespaces.length >= ns_limit) {
+    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: ns_limit });
   }
 
   new_namespace.save((err, savedNamespace) => {
