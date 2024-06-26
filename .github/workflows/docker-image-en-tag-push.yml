@@ -40,7 +40,7 @@ jobs:
         context: .
         file: ./Dockerfile-en
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        build_args: |
+        build-args: |
           NPM_TOKEN=${{ secrets.NPM_TOKEN }}
           VOICE_TOKEN=${{ secrets.VOICE_TOKEN }}
+        tags: ${{ steps.meta.outputs.tags }}
