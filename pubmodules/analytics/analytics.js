@@ -186,6 +186,11 @@ router.get('/requests/aggregate/status', function(req, res) {
       winston.debug('req.query.participant', req.query.participant);
       query.participants = req.query.participant;
     }
+
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
+    }
     
     winston.debug("QueryParams_LastDayCHART:", lastdays,req.query.department_id)
     winston.debug("Query_LastDayCHART", query)
@@ -632,6 +637,11 @@ router.get('/requests/aggregate/status', function(req, res) {
       query.participants = req.query.participant;
     }
 
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
+    }
+
     
     winston.debug("QueryParams_AvgTime:", lastdays,req.query.department_id)
     winston.debug("Query_AvgTIME", query)
@@ -801,6 +811,10 @@ router.get('/requests/aggregate/status', function(req, res) {
       query.participants = req.query.participant;
     }
 
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
+    }
 
     winston.debug("QueryParams_DurationTIME:", lastdays,req.query.department_id)
     winston.debug("Query_DurationTIME", query)
@@ -930,7 +944,10 @@ router.get('/requests/aggregate/status', function(req, res) {
       query.participants = req.query.participant;
     }
 
-
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
+    }
     
     winston.debug("QueryParams_SatisfactionTIME:", lastdays,req.query.department_id)
     winston.debug("Query_SatisfactionTIME", query)
@@ -1055,6 +1072,11 @@ router.get('/requests/hasBot/count', function(req, res) {
       //add field departmentid to query if req.query.department_id exist
       query.department= new ObjectId(req.query.department_id);
       
+    }
+
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
     }
     
     winston.debug("QueryParams_LastDayCHART:", lastdays,req.query.department_id)
@@ -1408,6 +1430,11 @@ router.get('/messages/count', function(req, res) {
   
     if (req.query.recipient) {
       query.recipient = req.query.recipient;
+    }
+
+    if (req.query.channel) {
+      winston.debug('req.query.channel', req.query.channel);
+      query['channel.name'] = req.query.channel;
     }
 
     
