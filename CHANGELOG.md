@@ -5,6 +5,13 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.1
+- Added trashed=false in chatbot namespace query
+- Return empty array if no chatbots are using the namespace
+- Enhanced kb context
+- Added enpoint to retrieve all content's chunks
+- Added limit on namespaces
+
 # 2.8.0
 - Enable quotas for conversations, tokens, and direct email.
 - Added namespaces to knowledge base
