@@ -432,6 +432,8 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let project_id = req.projectid;
   let namespace_id = req.params.id;
 
+  let chatbotsArray = [];
+
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
     res.status(500).send({ success: false, error: err })
@@ -449,16 +451,15 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
 
   if (!intents || intents.length == 0) {
     winston.verbose("No intents found for the selected chatbot")
-    return res.status(200).send({ success: false, message: "No intents found for the selected chatbot" });
+    return res.status(200).send(chatbotsArray);
   }
 
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
-  let chatbotsArray = [];
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
-      let chatbot = await faq_kb.findById(c_id);
+      let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
       if (chatbot) {
         let data = {
           _id: chatbot._id,
@@ -474,7 +475,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   await Promise.all(chatbotPromises);
 
   winston.debug("chatbotsArray: ", chatbotsArray);
-
+  
   res.status(200).send(chatbotsArray);
 })
 
