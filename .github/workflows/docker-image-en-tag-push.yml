@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         build_args: |
           NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-          VOICE_TOKEN=${{ secrets.VOICE_TOKEN }}
+          VOICE_TOKEN=pippo2
         dockerfile: Dockerfile-en
         repository: tiledeskrepo/tiledesk-server-enterprise
         tag_with_ref: true
