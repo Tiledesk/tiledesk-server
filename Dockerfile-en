@@ -14,9 +14,7 @@ ARG VOICE_TOKEN
 COPY .npmrc_ .npmrc
 
 # Set environment variable based on build argument
-ENV VOICE_TOKEN_LOCAL=${VOICE_TOKEN}
-RUN echo "${VOICE_TOKEN}"
-RUN echo "${VOICE_TOKEN_LOCAL}"
+ENV VOICE_TOKEN_REMOTE=${VOICE_TOKEN}
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied

@@ -33,6 +33,9 @@ class PubModulesManager {
         this.telegram = undefined;
         this.telegramRoute = undefined;
 
+        this.voice = undefined;
+        this.voiceRoute = undefined;
+
         this.mqttTest = undefined;
         this.mqttTestRoute = undefined;
 
@@ -90,6 +93,10 @@ class PubModulesManager {
         if (this.telegramRoute) {
             app.use('/modules/telegram', this.telegramRoute);
             winston.info("PubModulesManager telegramRoute controller loaded");
+        }
+        if (this.voiceRoute) {
+            app.use('/modules/voice', this.voiceRoute);
+            winston.info("PubModulesManager voiceRoute controller loaded");
         }
         if (this.mqttTestRoute) {
             app.use('/modules/mqttTest', this.mqttTestRoute);
@@ -329,6 +336,27 @@ class PubModulesManager {
             } else {
                 winston.info("PubModulesManager error initializing init apps module", err);
             }
+        }
+
+        if (process.env.VOICE_TOKEN_REMOTE === process.env.VOICE_SECRET) {
+            try {
+                this.voice = require('./voice');
+                winston.info("this.voice: " + this.voice);
+                this.voice.listener.listen(config);
+    
+                this.voiceRoute = this.voice.voiceRoute;
+    
+                winston.info("PubModulesManager initialized apps (voice).")
+            } catch(err) {
+                console.log("\n Unable to start voice connector: ", err);
+                if (err.code == 'MODULE_NOT_FOUND') {
+                    winston.info("PubModulesManager init apps module not found ");
+                } else {
+                    winston.info("PubModulesManager error initializing init apps module", err);
+                }
+            }
+        } else {
+            winston.info("PubModulesManager SKIP starting voice-connectorerror");
         }
 
         try {
