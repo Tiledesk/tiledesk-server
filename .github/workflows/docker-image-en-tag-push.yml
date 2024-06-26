@@ -12,6 +12,7 @@ jobs:
     steps:
      - name: Check out the repo
        uses: actions/checkout@v2
+
      - name: Push to Docker Hub
        uses: docker/build-push-action@v1
        with:
@@ -23,8 +24,3 @@ jobs:
         dockerfile: Dockerfile-en
         repository: tiledeskrepo/tiledesk-server-enterprise
         tag_with_ref: true
-     - name: Log Variable
-       run: |
-        echo Voice token log: ${{ secrets.VOICE_TOKEN }}
-       env:
-        VOICE_TOKEN: ${{ secrets.VOICE_TOKEN }}

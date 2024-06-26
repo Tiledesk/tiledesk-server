@@ -14,6 +14,7 @@ ARG VOICE_TOKEN
 COPY .npmrc_ .npmrc
 
 # Set environment variable based on build argument
+RUN echo "VOICE_TOKEN is set to: ${VOICE_TOKEN}"
 ENV VOICE_TOKEN=${VOICE_TOKEN}
 
 # Install app dependencies
