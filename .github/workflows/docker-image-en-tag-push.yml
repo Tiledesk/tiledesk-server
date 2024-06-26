@@ -17,7 +17,14 @@ jobs:
        with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+        build_args: |
+          NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+          VOICE_TOKEN=${{ secrets.VOICE_TOKEN }}
         dockerfile: Dockerfile-en
         repository: tiledeskrepo/tiledesk-server-enterprise
         tag_with_ref: true
+     - name: Log Variable
+       run: |
+        echo Voice token log: ${{ secrets.VOICE_TOKEN }}
+       env:
+        VOICE_TOKEN: ${{ secrets.VOICE_TOKEN }}
