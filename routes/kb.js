@@ -388,7 +388,7 @@ router.get('/namespace/all', async (req, res) => {
   })
 })
 
-router.get('/namespace/:id/:content_id', async (req, res) => {
+router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
