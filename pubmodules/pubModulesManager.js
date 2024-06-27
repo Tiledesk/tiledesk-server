@@ -338,7 +338,7 @@ class PubModulesManager {
             }
         }
 
-        if (process.env.VOICE_TOKEN_REMOTE === process.env.VOICE_SECRET) {
+        if (process.env.VOICE_TOKEN === process.env.VOICE_SECRET) {
             try {
                 this.voice = require('./voice');
                 winston.info("this.voice: " + this.voice);
@@ -355,8 +355,6 @@ class PubModulesManager {
                     winston.info("PubModulesManager error initializing init apps module", err);
                 }
             }
-        } else {
-            winston.info("PubModulesManager SKIP starting voice-connectorerror");
         }
 
         try {
