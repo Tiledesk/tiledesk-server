@@ -33,6 +33,9 @@ class PubModulesManager {
         this.telegram = undefined;
         this.telegramRoute = undefined;
 
+        this.sms = undefined;
+        this.smsRoute = undefined;
+
         this.mqttTest = undefined;
         this.mqttTestRoute = undefined;
 
@@ -90,6 +93,10 @@ class PubModulesManager {
         if (this.telegramRoute) {
             app.use('/modules/telegram', this.telegramRoute);
             winston.info("PubModulesManager telegramRoute controller loaded");
+        }
+        if (this.smsRoute) {
+            app.use('/modules/sms', this.smsRoute);
+            winston.info("PubModulesManager smsRoute controller loaded");
         }
         if (this.mqttTestRoute) {
             app.use('/modules/mqttTest', this.mqttTestRoute);
@@ -323,6 +330,22 @@ class PubModulesManager {
             this.telegramRoute = this.telegram.telegramRoute;
 
             winston.info("PubModulesManager initialized apps (telegram).")
+        } catch(err) {
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init apps module not found ");
+            } else {
+                winston.info("PubModulesManager error initializing init apps module", err);
+            }
+        }
+
+        try {
+            this.sms = require('./sms');
+            winston.info("this.sms: " + this.sms);
+            this.sms.listener.listen(config);
+
+            this.smsRoute = this.sms.smsRoute;
+
+            winston.info("PubModulesManager initialized apps (sms).")
         } catch(err) {
             if (err.code == 'MODULE_NOT_FOUND') {
                 winston.info("PubModulesManager init apps module not found ");
