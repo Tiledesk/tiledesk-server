@@ -32,8 +32,8 @@ jobManager.connectAndStartPublisher(() => {
 })
 
 let default_preview_settings = {
-  model: 'gpt-3.5-turbo',
-  max_tokens: 128,
+  model: 'gpt-4o',
+  max_tokens: 300,
   temperature: 0.7,
   top_k: 4,
   //context: "You are an awesome AI Assistant."
@@ -53,6 +53,10 @@ router.post('/scrape/single', async (req, res) => {
 
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
+
+  if (!data.scrape_type) {
+    data.scrape_type = 1;
+  }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -92,6 +96,11 @@ router.post('/scrape/single', async (req, res) => {
 
       if (kb.content) {
         json.content = kb.content;
+      }
+
+      json.scrape_type = 1;
+      if (data.scrape_type) {
+        json.scrape_type = data.scrape_type;
       }
 
       startScrape(json).then((response) => {
