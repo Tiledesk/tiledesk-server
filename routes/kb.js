@@ -33,7 +33,7 @@ jobManager.connectAndStartPublisher(() => {
 
 let default_preview_settings = {
   model: 'gpt-3.5-turbo',
-  max_tokens: 128,
+  max_tokens: 256,
   temperature: 0.7,
   top_k: 4,
   //context: "You are an awesome AI Assistant."
