@@ -32,7 +32,7 @@ jobManager.connectAndStartPublisher(() => {
 })
 
 let default_preview_settings = {
-  model: 'gpt-3.5-turbo',
+  model: 'gpt-4o',
   max_tokens: 256,
   temperature: 0.7,
   top_k: 4,
