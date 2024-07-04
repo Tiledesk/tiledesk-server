@@ -5,6 +5,14 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.3
+- Added advanced_context support
+- Updated default preview settings
+
+# 2.8.2
+- Updated default preview settings
+- Added scrape_type in /scrape/single for fix indexing on retrain
+
 # 2.8.1
 - Added trashed=false in chatbot namespace query
 - Return empty array if no chatbots are using the namespace
