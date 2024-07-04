@@ -33,7 +33,7 @@ jobManager.connectAndStartPublisher(() => {
 
 let default_preview_settings = {
   model: 'gpt-4o',
-  max_tokens: 300,
+  max_tokens: 256,
   temperature: 0.7,
   top_k: 4,
   //context: "You are an awesome AI Assistant."
@@ -213,8 +213,12 @@ router.post('/qa', async (req, res) => {
   }
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
-  if (data.system_context) {
-    data.system_context = data.system_context + " \n" + default_context;
+  if (!data.advanced_context) {
+    if (data.system_context) {
+      data.system_context = data.system_context + " \n" + default_context;
+    } else {
+      data.system_context = default_context;
+    }
   }
 
   openaiService.askNamespace(data).then((resp) => {
