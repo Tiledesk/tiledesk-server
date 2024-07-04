@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.4
+- Updated tybot-connector to 0.2.83
+
 # 2.8.3
 - Added advanced_context support
 - Updated default preview settings
