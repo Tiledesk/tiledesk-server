@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.6
+- Bug fix: token count was incremented in action preview and kb preview even with a private key in integration
+
 # 2.8.5
 - Restored sandbox limits for free trial plan
 
