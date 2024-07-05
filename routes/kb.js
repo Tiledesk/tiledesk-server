@@ -13,6 +13,7 @@ const Sitemapper = require('sitemapper');
 var mongoose = require('mongoose');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
+let Integration = require('../models/integrations');
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
@@ -186,20 +187,22 @@ router.post('/qa', async (req, res) => {
   }
 
   let namespaceIds = namespaces.map(namespace => namespace.id);
-
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
-
+  
   winston.debug("/qa data: ", data);
 
   if (!data.gptkey) {
-    let gptkey = process.env.GPTKEY;
+    let gptkey = await getKeyFromIntegrations(project_id);
+    if (!gptkey) {
+      gptkey = process.env.GPTKEY;
+      publicKey = true;
+    }
     if (!gptkey) {
       return res.status(403).send({ success: false, error: "GPT apikey undefined" })
     }
     data.gptkey = gptkey;
-    publicKey = true;
   }
 
   let obj = { createdAt: new Date() };
@@ -221,6 +224,10 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  // if (process.env.NODE_ENV === 'test') {
+  //   return res.status(200).send({ success: true, message: "Question skipped in test environment"});
+  // }
+
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
@@ -233,16 +240,18 @@ router.post('/qa', async (req, res) => {
 
     KB.findById(id, (err, resource) => {
 
-      let multiplier = MODELS_MULTIPLIER[data.model];
-      if (!multiplier) {
-        multiplier = 1;
-        winston.info("No multiplier found for AI model")
+      if (publicKey === true) {
+        let multiplier = MODELS_MULTIPLIER[data.model];
+        if (!multiplier) {
+          multiplier = 1;
+          winston.info("No multiplier found for AI model")
+        }
+        obj.multiplier = multiplier;
+        obj.tokens = answer.prompt_token_size;
+  
+        let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+        winston.verbose("incremented_key: ", incremented_key);
       }
-      obj.multiplier = multiplier;
-      obj.tokens = answer.prompt_token_size;
-
-      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-      winston.verbose("incremented_key: ", incremented_key);
 
       if (err) {
         winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
@@ -517,7 +526,7 @@ router.post('/namespace', async (req, res) => {
   let quoteManager = req.app.get('quote_manager');
   let limits = await quoteManager.getPlanLimits(req.project);
   let ns_limit = limits.namespace;
-  console.log("Limit of namespaces for current plan " + ns_limit);
+  //console.log("Limit of namespaces for current plan " + ns_limit);
 
   if (namespaces.length >= ns_limit) {
     return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: ns_limit });
@@ -1197,6 +1206,22 @@ async function startScrape(data) {
       winston.error("singleScrape err: ", err);
       reject(err);
     })
+  })
+}
+
+async function getKeyFromIntegrations(project_id) {
+
+  return new Promise( async (resolve) => {
+
+    let integration = await Integration.findOne({ id_project: project_id, name: 'openai' }).catch((err) => {
+      winston.error("Unable to find openai integration for the current project " + project_id);
+      resolve(null);
+    })
+    if (integration && integration.value && integration.value.apikey) {
+      resolve(integration.value.apikey);
+    } else {
+      resolve(null);
+    }
   })
 }
 /**
