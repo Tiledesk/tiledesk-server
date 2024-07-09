@@ -14,7 +14,7 @@ const emailEvent = require('../event/emailEvent');
 // }
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 5000000,     email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
+    FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
     SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 2,       namespace: 1,   kbs: 50     },
     BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,     email: 200,     chatbots: 5,       namespace: 1,   kbs: 150    },
     PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,     email: 200,     chatbots: 20,      namespace: 3,   kbs: 300    },

@@ -5,6 +5,23 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.6
+- Bug fix: token count was incremented in action preview and kb preview even with a private key in integration
+
+# 2.8.5
+- Restored sandbox limits for free trial plan
+
+# 2.8.4
+- Updated tybot-connector to 0.2.83
+
+# 2.8.3
+- Added advanced_context support
+- Updated default preview settings
+
+# 2.8.2
+- Updated default preview settings
+- Added scrape_type in /scrape/single for fix indexing on retrain
+
 # 2.8.1
 - Added trashed=false in chatbot namespace query
 - Return empty array if no chatbots are using the namespace
