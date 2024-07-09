@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.8.1",
+  "version": "2.8.6",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -36,7 +36,7 @@
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-apps": "^1.0.17",
+    "@tiledesk/tiledesk-apps": "^1.0.20",
     "@tiledesk/tiledesk-chat21-app": "^1.1.8",
     "@tiledesk/tiledesk-chatbot-templates": "^0.1.2",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
@@ -48,9 +48,11 @@
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.14",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.11",
-    "@tiledesk/tiledesk-tybot-connector": "^0.2.82",
+    "@tiledesk/tiledesk-tybot-connector": "^0.2.83",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.72",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.8",
+    "@tiledesk/tiledesk-sms-connector": "^0.1.6",
+    "@tiledesk/tiledesk-vxml-connector": "^0.1.37",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
     "bcrypt-nodejs": "0.0.3",

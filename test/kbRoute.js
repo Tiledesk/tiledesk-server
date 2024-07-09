@@ -1003,6 +1003,93 @@ describe('KbRoute', () => {
 
         // }).timeout(10000)
 
+        // Ask KB
+        // it('askkb-key-from-integrations', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+        //         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
+
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + "/integration/")
+        //                 .auth(email, pwd)
+        //                 .send({ name: "openai", value: { apikey: "sk-testkey", organization: "Testkey" } })
+        //                 .end((err, res) => {
+
+        //                     if (err) { console.error("err: ", err) };
+        //                     if (log) { console.log("res.body: ", res.body) };
+        //                     console.log("Integration created..")
+
+        //                     chai.request(server)
+        //                         .get('/' + savedProject._id + '/kb/namespace/all')
+        //                         .auth(email, pwd)
+        //                         .end((err, res) => {
+    
+        //                             if (err) { console.error("err: ", err); }
+        //                             if (log) { console.log("get all namespaces res.body: ", res.body); }
+                                    
+        //                             console.log("namespace created..")
+
+        //                             chai.request(server)
+        //                                 .post('/' + savedProject._id + "/kb/qa")
+        //                                 .auth(email, pwd)
+        //                                 .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question" })
+        //                                 .end((err, res) => {
+
+        //                                     if (err) { console.error("err: ", err) };
+        //                                     if (log) { console.log("res.body: ", res.body) };
+        //                                     console.log("res.body: ", res.body)
+        //                                     done();
+        //                                 })
+
+
+        //                         })
+
+        //                 })
+        //         })
+        //     })
+        // }).timeout(10000)
+
+        // Ask KB
+        // it('askkb-key-from-env', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+        //         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
+
+        //             chai.request(server)
+        //                 .get('/' + savedProject._id + '/kb/namespace/all')
+        //                 .auth(email, pwd)
+        //                 .end((err, res) => {
+
+        //                     if (err) { console.error("err: ", err); }
+        //                     if (log) { console.log("get all namespaces res.body: ", res.body); }
+                            
+        //                     console.log("namespace created..")
+
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + "/kb/qa")
+        //                         .auth(email, pwd)
+        //                         .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question" })
+        //                         .end((err, res) => {
+
+        //                             if (err) { console.error("err: ", err) };
+        //                             if (log) { console.log("res.body: ", res.body) };
+        //                             console.log("res.body: ", res.body)
+        //                             done();
+        //                         })
+
+
+        //                 })
+        //         })
+        //     })
+        // }).timeout(10000)
+
+
         it('webhook', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
