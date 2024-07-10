@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'test';
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
-let log = false;
+let log = true;
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
@@ -18,6 +18,31 @@ const path = require('path');
 
 var expect = chai.expect;
 var assert = chai.assert;
+
+let timeSlotsSample = {
+    "819559cc": {
+        name: "Slot1",
+        active: true,
+        hours: "{\"1\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"3\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"5\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
+    },
+    "5d4368de": {
+        name: "Slot2",
+        active: true,
+        hours: "{\"0\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"6\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
+    },
+    "2975ec45": {
+        name: "Slot3",
+        active: false,
+        hours: "{\"0\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"6\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
+    },
+    "2975ec45": {
+        name: "Slot4",
+        active: false,
+        hours: null
+    }
+}
+
+
 
 chai.use(chaiHttp);
 
@@ -50,7 +75,7 @@ describe('ProjectRoute', () => {
                                 // .put('/projects/' + savedProject._id + "/update")
                                 .put('/projects/' + savedProject._id)
                                 .set('Authorization', superadmin_token)
-                                .send({ profile: { name: "Custom", quotes: { kbs: 1000} } })
+                                .send({ profile: { name: "Custom", quotes: { kbs: 1000 } } })
                                 .end((err, res) => {
 
                                     if (log) { console.log("update project profile res.body: ", res.body) };
@@ -78,7 +103,7 @@ describe('ProjectRoute', () => {
                         .put('/projects/' + savedProject._id)
                         // .put('/projects/' + savedProject._id + "/update")
                         .auth(email, pwd)
-                        .send({ profile: { name: "Custom", quotes: { kbs: 1000} } })
+                        .send({ profile: { name: "Custom", quotes: { kbs: 1000 } } })
                         .end((err, res) => {
 
                             if (log) { console.log("update project profile res.body: ", res.body) };
@@ -90,6 +115,71 @@ describe('ProjectRoute', () => {
                 })
             })
         }).timeout(10000)
+
+        it('updateProjectTimeSlots', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        // .put('/projects/' + savedProject._id + "/update")
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ timeSlots: timeSlotsSample })
+                        .end((err, res) => {
+
+                            if (log) { console.log("update project time slots res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            done();
+                        })
+                })
+            })
+        }).timeout(10000)
+
+        it('isOpenTimeSlot', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        // .put('/projects/' + savedProject._id + "/update")
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ timeSlots: timeSlotsSample })
+                        .end((err, res) => {
+
+                            if (log) { console.log("update project time slots res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            chai.request(server)
+                                .get('/projects/' + savedProject._id + '/isopen?timeSlot=819559cc')
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body isopen: ", res.body) };
+
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                })
+                        })
+
+
+                })
+            })
+        }).timeout(10000)
+
     });
 
 });

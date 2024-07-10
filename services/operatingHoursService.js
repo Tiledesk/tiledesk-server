@@ -175,7 +175,84 @@ class OperatingHoursService {
 
   } // ./end projectIsOpenNow
 
+  slotIsOpenNow(projectId, slot_id, callback) {
 
+    let q = Project.findOne({ _id: projectId, status: 100});
+    if (cacheEnabler.project) { 
+      q.cache(cacheUtil.longTTL, "projects:id:"+projectId)  //project_cache
+      winston.debug('project cache enabled for slotIsOpenNow');
+    }
+    q.exec((err, project) => {
+
+      if (err) {
+        winston.error("(slotIsOpenNow) Error getting project: ", err);
+        callback(null, { errorCode: 1000, msg: "Error getting project." })
+        return;
+      }
+      if (!project) {
+        winston.warn("(slotIsOpenNow) Project not found with id: " + projectId);
+        // throw error
+        callback(null, { errorCode: 1010, msg: 'Project not found for id' + projectId });
+        return;
+      }
+
+      // Return ALWAYS true if the plan is free, trial is expired or the subscription is not active
+      if (project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
+        winston.debug('(slotIsOpenNow) Trial Expired or Subscription NOT Active') 
+        callback(true, null) ;
+        return;
+      }
+
+      if (!project.timeSlots) {
+        winston.warn("(slotIsOpenNow) No time slots specified for the project " + projectId);
+        callback(true, null)
+        return
+      }
+
+      let timeSlot = project.timeSlots[slot_id];
+      console.log("timeSlot: ", timeSlot);
+
+      if (!timeSlot) {
+        callback(null, { errorCode: 1030, msg: 'Slot not found with id ' + slot_id })
+        return;
+      }
+
+      if (timeSlot.active == false) {
+        winston.verbose("(slotIsOpenNow) selected slot is not active")
+        callback(true, null);
+        return;
+      }
+
+      if (!timeSlot.hours) {
+        callback(null, { errorCode: 1020, msg: 'Operating hours is empty' });
+        return;
+      }
+
+      let operatingHours = timeSlot.hours;
+      let operatingHoursParsed = JSON.parse(operatingHours);
+
+      let timezone = operatingHoursParsed.tzname;
+      console.log("timezone: ", timezone);
+
+      if (!timezone) {
+        callback(null, { errorCode: 2000, msg: 'Timezone undefined' });
+        return;
+      }
+
+      // Return the current Date of the selected timezone
+      let dateNowTimezone = addOrSubstractProjcTzOffsetFromDateNow(timezone);
+      console.log("datenowTimezone: ", dateNowTimezone)
+
+      // Return the number of day
+      // { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
+      let dayNowTimezone = dateNowTimezone.getDay();
+      console.log("dayNowTimezone: ", dayNowTimezone)
+      callback(true, null)
+
+
+
+    })
+  }
 }
 
 function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {

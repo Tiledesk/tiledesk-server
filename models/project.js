@@ -34,6 +34,9 @@ var ProjectSchema = new Schema({
   operatingHours: {
     type: Object,
   },
+  timeSlots: {
+    type: Object,
+  },
   settings: {
     type: Object,
     default: function () {
