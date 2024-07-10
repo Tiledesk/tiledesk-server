@@ -854,37 +854,27 @@ router.get('/:projectid/isopen', function (req, res) {
   // Check if a timeSlot is passed
   if (req.query.timeSlot) {
     let slot_id = req.query.timeSlot;
-    console.log("slot_id: ", slot_id);
-
     operatingHoursService.slotIsOpenNow(project_id, slot_id, (isOpen, err) => {
 
       if (err) {
         winston.error("Error getting slotIsOpenNow ", err);
         return res.status(500).send({ success: false, error: err });
       }
-
-      console.log("return isOpen: ", isOpen)
       return res.status(200).send({ isopen: isOpen})
-
     })
-
 
   } else {
 
     operatingHoursService.projectIsOpenNow(project_id, function (isOpen, err) {
      winston.debug('project', project_id, 'isopen: ', isOpen);
   
-     if (err) {
-       winston.error('Error getting projectIsOpenNow', err);
-       return res.status(500).send({ success: false, msg: err });
-     } 
-     console.log("aaaa!!")
-      res.json({"isopen":isOpen});
+      if (err) {
+        winston.error('Error getting projectIsOpenNow', err);
+        return res.status(500).send({ success: false, msg: err });
+      } 
+      return res.status(200).send({ isopen: isOpen})
    });
-
   }
-
-
 });
 
 //togli questo route da qui e mettilo in altra route

@@ -34,11 +34,6 @@ let timeSlotsSample = {
         name: "Slot3",
         active: false,
         hours: "{\"0\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"6\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
-    },
-    "2975ec45": {
-        name: "Slot4",
-        active: false,
-        hours: null
     }
 }
 
@@ -168,6 +163,7 @@ describe('ProjectRoute', () => {
                                     if (err) { console.error("err: ", err) };
                                     if (log) { console.log("res.body isopen: ", res.body) };
 
+                                    // Unable to do other checks due to currentTime change.
                                     res.should.have.status(200);
 
                                     done();

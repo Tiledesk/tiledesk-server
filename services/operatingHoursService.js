@@ -182,7 +182,7 @@ class OperatingHoursService {
       q.cache(cacheUtil.longTTL, "projects:id:"+projectId)  //project_cache
       winston.debug('project cache enabled for slotIsOpenNow');
     }
-    q.exec((err, project) => {
+    q.exec( async (err, project) => {
 
       if (err) {
         winston.error("(slotIsOpenNow) Error getting project: ", err);
@@ -191,7 +191,6 @@ class OperatingHoursService {
       }
       if (!project) {
         winston.warn("(slotIsOpenNow) Project not found with id: " + projectId);
-        // throw error
         callback(null, { errorCode: 1010, msg: 'Project not found for id' + projectId });
         return;
       }
@@ -228,31 +227,49 @@ class OperatingHoursService {
         return;
       }
 
-      let operatingHours = timeSlot.hours;
-      let operatingHoursParsed = JSON.parse(operatingHours);
+      const hours = JSON.parse(timeSlot.hours);
+      const tzname = hours.tzname;
+      delete hours.tzname;
 
-      let timezone = operatingHoursParsed.tzname;
-      console.log("timezone: ", timezone);
+      // Get the current time in the specified timezone
+      const currentTime = moment_tz.tz(tzname);
+      const currentWeekday = currentTime.isoWeekday();
 
-      if (!timezone) {
-        callback(null, { errorCode: 2000, msg: 'Timezone undefined' });
-        return;
+      const daySlots = hours[currentWeekday];
+      if (!daySlots) {
+        callback(false, null)
       }
 
-      // Return the current Date of the selected timezone
-      let dateNowTimezone = addOrSubstractProjcTzOffsetFromDateNow(timezone);
-      console.log("datenowTimezone: ", dateNowTimezone)
+      let promises = [];
 
-      // Return the number of day
-      // { '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday' };
-      let dayNowTimezone = dateNowTimezone.getDay();
-      console.log("dayNowTimezone: ", dayNowTimezone)
-      callback(true, null)
-
-
-
+      daySlots.forEach((slot) => {
+        promises.push(slotCheck(currentTime, slot))
+      })
+  
+      await Promise.all(promises).then((resp) => {
+        if (resp.indexOf(true) != -1) {
+          callback(true, null);
+          return;
+        }
+        callback(false, null);
+        return;
+      })
     })
   }
+}
+
+function slotCheck(currentTime, slot) {
+  return new Promise((resolve) => {
+
+    const startTime = moment_tz(slot.start, 'HH:mm');
+    const endTime = moment_tz(slot.end, 'HH:mm');
+
+    if (currentTime.isBetween(startTime, endTime, null, '[)')) {
+      resolve(true)
+    } else {
+      resolve(false);
+    }
+  })
 }
 
 function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
