@@ -307,6 +307,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body.operatingHours!=undefined) {
     update.operatingHours = req.body.operatingHours;
   }
+
+  if (req.body.timeSlots!=undefined) {
+    update.timeSlots = req.body.timeSlots;
+  }
   
   if (req.body.settings!=undefined) {
     update.settings = req.body.settings;
@@ -849,16 +853,32 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 // GET ALL PROJECTS BY CURRENT USER ID. usaed by unisalento to know if a project is open 
 router.get('/:projectid/isopen', function (req, res) {
-   operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
-    winston.debug('project', req.params.projectid, 'isopen: ', isOpen);
 
-    if (err) {
-      winston.error('Error getting projectIsOpenNow', err);
-      return res.status(500).send({ success: false, msg: err });
-    } 
-     res.json({"isopen":isOpen});
-  });
+  let project_id = req.params.projectid;
+  // Check if a timeSlot is passed
+  if (req.query.timeSlot) {
+    let slot_id = req.query.timeSlot;
+    operatingHoursService.slotIsOpenNow(project_id, slot_id, (isOpen, err) => {
 
+      if (err) {
+        winston.error("Error getting slotIsOpenNow ", err);
+        return res.status(500).send({ success: false, error: err });
+      }
+      return res.status(200).send({ isopen: isOpen})
+    })
+
+  } else {
+
+    operatingHoursService.projectIsOpenNow(project_id, function (isOpen, err) {
+     winston.debug('project', project_id, 'isopen: ', isOpen);
+  
+      if (err) {
+        winston.error('Error getting projectIsOpenNow', err);
+        return res.status(500).send({ success: false, msg: err });
+      } 
+      return res.status(200).send({ isopen: isOpen})
+   });
+  }
 });
 
 //togli questo route da qui e mettilo in altra route

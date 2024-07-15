@@ -175,7 +175,101 @@ class OperatingHoursService {
 
   } // ./end projectIsOpenNow
 
+  slotIsOpenNow(projectId, slot_id, callback) {
 
+    let q = Project.findOne({ _id: projectId, status: 100});
+    if (cacheEnabler.project) { 
+      q.cache(cacheUtil.longTTL, "projects:id:"+projectId)  //project_cache
+      winston.debug('project cache enabled for slotIsOpenNow');
+    }
+    q.exec( async (err, project) => {
+
+      if (err) {
+        winston.error("(slotIsOpenNow) Error getting project: ", err);
+        callback(null, { errorCode: 1000, msg: "Error getting project." })
+        return;
+      }
+      if (!project) {
+        winston.warn("(slotIsOpenNow) Project not found with id: " + projectId);
+        callback(null, { errorCode: 1010, msg: 'Project not found for id' + projectId });
+        return;
+      }
+
+      // Return ALWAYS true if the plan is free, trial is expired or the subscription is not active
+      if (project.profile && (project.profile.type === 'free' && project.trialExpired === true) || (project.profile.type === 'payment' && project.isActiveSubscription === false)) {
+        winston.debug('(slotIsOpenNow) Trial Expired or Subscription NOT Active') 
+        callback(true, null) ;
+        return;
+      }
+
+      if (!project.timeSlots) {
+        winston.warn("(slotIsOpenNow) No time slots specified for the project " + projectId);
+        callback(true, null)
+        return
+      }
+
+      let timeSlot = project.timeSlots[slot_id];
+      console.log("timeSlot: ", timeSlot);
+
+      if (!timeSlot) {
+        callback(null, { errorCode: 1030, msg: 'Slot not found with id ' + slot_id })
+        return;
+      }
+
+      if (timeSlot.active == false) {
+        winston.verbose("(slotIsOpenNow) selected slot is not active")
+        callback(true, null);
+        return;
+      }
+
+      if (!timeSlot.hours) {
+        callback(null, { errorCode: 1020, msg: 'Operating hours is empty' });
+        return;
+      }
+
+      const hours = JSON.parse(timeSlot.hours);
+      const tzname = hours.tzname;
+      delete hours.tzname;
+
+      // Get the current time in the specified timezone
+      const currentTime = moment_tz.tz(tzname);
+      const currentWeekday = currentTime.isoWeekday();
+
+      const daySlots = hours[currentWeekday];
+      if (!daySlots) {
+        callback(false, null)
+      }
+
+      let promises = [];
+
+      daySlots.forEach((slot) => {
+        promises.push(slotCheck(currentTime, slot))
+      })
+  
+      await Promise.all(promises).then((resp) => {
+        if (resp.indexOf(true) != -1) {
+          callback(true, null);
+          return;
+        }
+        callback(false, null);
+        return;
+      })
+    })
+  }
+}
+
+function slotCheck(currentTime, slot) {
+  return new Promise((resolve) => {
+
+    const startTime = moment_tz(slot.start, 'HH:mm');
+    const endTime = moment_tz(slot.end, 'HH:mm');
+
+    if (currentTime.isBetween(startTime, endTime, null, '[)')) {
+      resolve(true)
+    } else {
+      resolve(false);
+    }
+  })
 }
 
 function addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName) {
