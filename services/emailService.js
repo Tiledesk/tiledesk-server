@@ -1821,7 +1821,7 @@ class EmailService {
     if (chatbot_id) {
       redirect_url = `https://panel.tiledesk.com/v3/cds/#/project/${project_id}/chatbot/${chatbot_id}/intent/0?jwt=${token}`;
     } else {
-      redirect_url = `${baseScope.baseUrl}/#/project/${project_id}/knowledge-bases/${namespace_id}?jwt=${token}`;
+      redirect_url = `${baseScope.baseUrl}/#/project/${project_id}/knowledge-bases/${namespace_id}?token=${token}`;
     }
 
     let replacements = {
