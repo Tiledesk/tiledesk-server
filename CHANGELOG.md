@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.8.8
+- Changed default prompt for kb q&a
+
+# 2.8.7
+- Update project update endpoint with agent chats only function 
+
 # 2.8.6
 - Bug fix: token count was incremented in action preview and kb preview even with a private key in integration
 
