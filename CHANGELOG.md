@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.0
+- Added Twilio SMS route
+- Added VXML Voice route (hidden)
+
 # 2.8.8
 - Changed default prompt for kb q&a
 
