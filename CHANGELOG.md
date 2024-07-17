@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.1
+- Update sms-connector to 0.1.7
+- Update voice-connector to 0.1.38
+- Change send email quota checkpoint template key
+
 # 2.9.0
 - Added Twilio SMS route
 - Added VXML Voice route (hidden)
