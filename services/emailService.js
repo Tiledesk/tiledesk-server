@@ -1836,7 +1836,7 @@ class EmailService {
     
     var that = this;
 
-    let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED");
+    let html = await this.readTemplate('checkpointReachedEmail.html', undefined, "EMAIL_QUOTA_CHECKPOINT_REACHED_TEMPLATE");
     winston.debug("html: " + html);
 
     let template = handlebars.compile(html);
