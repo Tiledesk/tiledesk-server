@@ -960,55 +960,6 @@ router.get('/:projectid/users/availables', function (req, res) {
 
 });
 
-outer.get('/:projectid/users/availables/raw', function (req, res) {
-  //winston.debug("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
-
-  operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
-    //winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
-
-    if (err) {
-      winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
-      // sendError(err, res);
-      return res.status(500).send({ success: false, msg: err });
-    } else if (isOpen) {
-
-      Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
-        populate('id_user').
-        exec(function (err, project_users) {
-          if (err) {
-            winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
-            return res.status(500).send({ success: false, msg: 'Error getting object.' });
-          }
-          if (project_users) {
-
-            user_available_array = [];
-            project_users.forEach(project_user => {
-              if (project_user.id_user) {
-                // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-                user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-              } else {
-                // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
-              }
-            });
-
-            //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
-
-            res.json(user_available_array);
-          }
-        });
-
-
-    } else {
-     // winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
-      // closed
-      user_available_array = [];
-      res.json(user_available_array);
-    }
-  });
-
-});
-
-
 
 
 module.exports = router;
