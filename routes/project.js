@@ -888,7 +888,7 @@ router.get('/:projectid/users/availables', function (req, res) {
 
   console.log("req.query: ", req.query)
   console.log("req.query.raw: ", req.query.raw)
-  if (req.query.raw && req.query.raw === true) {
+  if (req.query.raw && (req.query.raw === true || req.query.raw === 'true')) {
     console.log("cerca SOLO la disponibilità degli utenti")
     Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
           populate('id_user').
