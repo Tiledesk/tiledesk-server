@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.4
+- Update tybot-connector to 0.2.86
+
 # 2.9.3
 - Added log for AMQP error in closeOnErr
 
