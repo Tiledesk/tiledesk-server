@@ -209,7 +209,6 @@ class OperatingHoursService {
       }
 
       let timeSlot = project.timeSlots[slot_id];
-      console.log("timeSlot: ", timeSlot);
 
       if (!timeSlot) {
         callback(null, { errorCode: 1030, msg: 'Slot not found with id ' + slot_id })
@@ -233,17 +232,18 @@ class OperatingHoursService {
 
       // Get the current time in the specified timezone
       const currentTime = moment_tz.tz(tzname);
-      const currentWeekday = currentTime.isoWeekday();
 
+      const currentWeekday = currentTime.isoWeekday();
       const daySlots = hours[currentWeekday];
       if (!daySlots) {
         callback(false, null)
+        return;
       }
 
       let promises = [];
 
       daySlots.forEach((slot) => {
-        promises.push(slotCheck(currentTime, slot))
+        promises.push(slotCheck(currentTime, tzname, slot))
       })
   
       await Promise.all(promises).then((resp) => {
@@ -258,11 +258,11 @@ class OperatingHoursService {
   }
 }
 
-function slotCheck(currentTime, slot) {
+function slotCheck(currentTime, tzname, slot) {
   return new Promise((resolve) => {
 
-    const startTime = moment_tz(slot.start, 'HH:mm');
-    const endTime = moment_tz(slot.end, 'HH:mm');
+    const startTime = moment_tz.tz(slot.start, 'HH:mm', tzname);
+    const endTime = moment_tz.tz(slot.end, 'HH:mm', tzname);
 
     if (currentTime.isBetween(startTime, endTime, null, '[)')) {
       resolve(true)
