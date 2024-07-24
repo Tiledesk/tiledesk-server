@@ -902,7 +902,7 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false, "draft": { $in: [false, null]} };
 
   var projectuser = req.projectuser;
 

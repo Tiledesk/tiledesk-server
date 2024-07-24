@@ -707,6 +707,10 @@ class RequestService {
           createdAt: createdAt
         });
 
+        if (isTestConversation) {
+          newRequest.draft = true;
+        }
+
         winston.debug('newRequest.', newRequest);
 
 
