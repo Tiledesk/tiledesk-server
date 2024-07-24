@@ -33,7 +33,7 @@ class Listener {
             brand_name = process.env.BRAND_NAME
         }
 
-        let log = process.env.VXML_LOG || false
+        let log = process.env.VOICE_LOG || false
         winston.debug("Voice log: "+ log);
 
         voice.startApp({
