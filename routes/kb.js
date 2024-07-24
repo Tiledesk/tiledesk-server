@@ -41,7 +41,8 @@ let default_preview_settings = {
   context: null
 }
 
-let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
+//let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
+let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
 
 /**
 * ****************************************
@@ -453,7 +454,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
-
+  
   let chatbotsArray = [];
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
@@ -479,6 +480,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
+  
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
       let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });

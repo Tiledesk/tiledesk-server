@@ -322,7 +322,7 @@ processMsg2(msg) {
 
 closeOnErr(err) {
   if (!err) return false;
-  if (this.debug) {console.log("[JobWorker] AMQP error", err);}
+  console.error("[JobWorker] AMQP error", err);
   this.amqpConn.close();
   return true;
 }

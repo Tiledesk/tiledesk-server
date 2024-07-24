@@ -12,12 +12,35 @@ jobs:
     steps:
      - name: Check out the repo
        uses: actions/checkout@v2
-     - name: Push to Docker Hub
-       uses: docker/build-push-action@v1
-       with:
+      
+     - name: Login to Docker Hub
+       uses: docker/login-action@v3
+       with:	    
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        build_args: NPM_TOKEN=${{ secrets.NPM_TOKEN }}
-        dockerfile: Dockerfile-en
         repository: tiledeskrepo/tiledesk-server-enterprise
         tag_with_ref: true
+    
+     - name: Log Voice Token
+       run: |
+          echo "Voice token log: ${{ secrets.VOICE_TOKEN }}"
+
+     - name: Generate Docker metadata
+       id: meta
+       uses: docker/metadata-action@v3
+       with:
+        images: tiledeskrepo/tiledesk-server-enterprise
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+
+     - name: Push to Docker Hub
+       uses: docker/build-push-action@v4
+       with:
+        context: .
+        file: ./Dockerfile-en
+        push: true
+        build-args: |
+          NPM_TOKEN=${{ secrets.NPM_TOKEN }}
+          VOICE_TOKEN=${{ secrets.VOICE_TOKEN }}
+        tags: ${{ steps.meta.outputs.tags }}
