@@ -886,10 +886,7 @@ router.get('/:projectid/isopen', function (req, res) {
 router.get('/:projectid/users/availables', function (req, res) {
   //winston.debug("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
 
-  console.log("req.query: ", req.query)
-  console.log("req.query.raw: ", req.query.raw)
   if (req.query.raw && (req.query.raw === true || req.query.raw === 'true')) {
-    console.log("cerca SOLO la disponibilità degli utenti")
     Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
           populate('id_user').
           exec(function (err, project_users) {
@@ -899,21 +896,17 @@ router.get('/:projectid/users/availables', function (req, res) {
             }
             if (project_users) {
   
-              console.log("project_users: ", project_users)
               user_available_array = [];
               project_users.forEach(project_user => {
                 if (project_user.id_user) {
                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-                  console.log("push project_user.id_user: ", project_user.id_user)
                   user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
                 } else {
-                  console.log("don't push ")
                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
                 }
               });
   
               //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
-              console.log("user_available_array: ", user_available_array)
               res.json(user_available_array);
             }
           });
