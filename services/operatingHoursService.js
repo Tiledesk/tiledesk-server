@@ -84,7 +84,6 @@ class OperatingHoursService {
             // winston.debug('O -----> [ OHS ] -> OPERATING HOURS PARSED: ', operatingHoursPars);
 
             var prjcTimezoneName = operatingHoursPars.tzname;
-            console.log("***[OH] project timezone name: ", prjcTimezoneName);
 
             if (prjcTimezoneName == undefined || prjcTimezoneName == '' || prjcTimezoneName == null) {
               // winston.debug('O ---> [ OHS ] -> PRJCT TIMEZONE NAME: ', prjcTimezoneName);
@@ -104,7 +103,6 @@ class OperatingHoursService {
               //    THE CURRENT DATE @ THE PROJECT TZ   
               try {
                 var dateNowAtPrjctTz = addOrSubstractProjcTzOffsetFromDateNow(prjcTimezoneName);
-                console.log("***[OH] current project time: ", dateNowAtPrjctTz);
                 // winston.debug('O ---> [ OHS ] -> *** CURRENT DATE @ THE PROJECT TZ ***', dateNowAtPrjctTz);
 
                 // FOR DEBUG (TO VIEW, IN DEBUG, THE NAME OF THE DAY INSTEAD OF THE NUMBER OF THE DAY)
@@ -112,7 +110,6 @@ class OperatingHoursService {
 
                 // WEEK DAY @ THE PROJECT TZ (note: the week day is represented as a number) 
                 var dayNowAtPrjctTz = dateNowAtPrjctTz.getDay();
-                console.log("***[OH] get day: ", dayNowAtPrjctTz);
                 // winston.debug('O ---> [ OHS ] -> *** DAY @ PRJCT TZ #', dayNowAtPrjctTz, '"', days[dayNowAtPrjctTz], '"');
 
                 // TRASFORM IN STRING THE DATE @ THE PRJCT TZ (IS THE DATE NOW TO WHICH I ADDED (OR SUBTRACT) THE TIMEZONE OFFSET (IN MS)
@@ -123,7 +120,6 @@ class OperatingHoursService {
                   dateNowAtPrjctTzToStr.lastIndexOf("T") + 1,
                   dateNowAtPrjctTzToStr.lastIndexOf(".")
                 );
-                console.log("***[OH] timeNowAtPrjctTz: ", timeNowAtPrjctTz);
                 // winston.debug('O ---> [ OHS ] -> **** TIME @ PRJCT TZ ', timeNowAtPrjctTz);
 
                 var currentDayMatchesOneOfTheOpeningPrjctDays = checkDay(operatingHoursPars, dayNowAtPrjctTz);
@@ -213,7 +209,6 @@ class OperatingHoursService {
       }
 
       let timeSlot = project.timeSlots[slot_id];
-      console.log("***[S] timeSlot: ", timeSlot);
 
       if (!timeSlot) {
         callback(null, { errorCode: 1030, msg: 'Slot not found with id ' + slot_id })
@@ -226,32 +221,25 @@ class OperatingHoursService {
         return;
       }
 
-      console.log("***[S] time slot is active");
-
       if (!timeSlot.hours) {
         callback(null, { errorCode: 1020, msg: 'Operating hours is empty' });
         return;
       }
 
       const hours = JSON.parse(timeSlot.hours);
-      console.log("***[S] hours: ", hours);
       const tzname = hours.tzname;
-      console.log("***[S] project timezone name: ", tzname);
       delete hours.tzname;
 
       // Get the current time in the specified timezone
       const currentTime = moment_tz.tz(tzname);
-      console.log("***[S] current project time: ", currentTime);
 
       const currentWeekday = currentTime.isoWeekday();
-      console.log("***[S] get day: ", currentWeekday);
       const daySlots = hours[currentWeekday];
       if (!daySlots) {
         callback(false, null)
         return;
       }
 
-      console.log("***[S] daySlots: ", daySlots);
       let promises = [];
 
       daySlots.forEach((slot) => {
@@ -273,14 +261,9 @@ class OperatingHoursService {
 function slotCheck(currentTime, tzname, slot) {
   return new Promise((resolve) => {
 
-    console.log("***[S] slotCheck: ", slotCheck);
-    console.log("***[S] slot: ", slot);
     const startTime = moment_tz.tz(slot.start, 'HH:mm', tzname);
     const endTime = moment_tz.tz(slot.end, 'HH:mm', tzname);
-    console.log("***[S] startTime: ", startTime);
-    console.log("***[S] endTime: ", endTime);
 
-    console.log("***[S] is between ", currentTime.isBetween(startTime, endTime, null, '[)'));
     if (currentTime.isBetween(startTime, endTime, null, '[)')) {
       resolve(true)
     } else {
@@ -373,9 +356,6 @@ function checkDay(operatingHoursPars, dayNowAtPrjctTz) {
 
 function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
 
-  console.log("***[OH] operatingHoursPars: ", operatingHoursPars);
-  console.log("***[OH] dayNowAtPrjctTz: ", dayNowAtPrjctTz);
-  console.log("***[OH] timeNowAtPrjctTz: ", timeNowAtPrjctTz);
   for (var operatingHoursweekDay in operatingHoursPars) {
     if (operatingHoursweekDay != 'tzname') {
       if (dayNowAtPrjctTz == operatingHoursweekDay) {
