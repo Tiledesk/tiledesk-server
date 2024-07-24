@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.5
+- Added raw option in /users/availables
+
 # 2.9.4
 - Update tybot-connector to 0.2.86
 - Added time-slots management
