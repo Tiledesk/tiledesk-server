@@ -7,6 +7,7 @@
 
 # 2.9.4
 - Update tybot-connector to 0.2.86
+- Added time-slots management
 
 # 2.9.3
 - Added log for AMQP error in closeOnErr
