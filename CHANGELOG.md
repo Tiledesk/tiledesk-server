@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.6
+- Fix bug: wrong timzone in startTime and andTime in operating hours service
+
 # 2.9.5
 - Added raw option in /users/availables
 
