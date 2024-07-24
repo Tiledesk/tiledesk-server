@@ -255,7 +255,7 @@ class OperatingHoursService {
       let promises = [];
 
       daySlots.forEach((slot) => {
-        promises.push(slotCheck(currentTime, slot))
+        promises.push(slotCheck(currentTime, tzname, slot))
       })
   
       await Promise.all(promises).then((resp) => {
@@ -270,13 +270,13 @@ class OperatingHoursService {
   }
 }
 
-function slotCheck(currentTime, slot) {
+function slotCheck(currentTime, tzname, slot) {
   return new Promise((resolve) => {
 
     console.log("***[S] slotCheck: ", slotCheck);
     console.log("***[S] slot: ", slot);
-    const startTime = moment_tz(slot.start, 'HH:mm');
-    const endTime = moment_tz(slot.end, 'HH:mm');
+    const startTime = moment_tz.tz(slot.start, 'HH:mm', tzname);
+    const endTime = moment_tz.tz(slot.end, 'HH:mm', tzname);
     console.log("***[S] startTime: ", startTime);
     console.log("***[S] endTime: ", endTime);
 
