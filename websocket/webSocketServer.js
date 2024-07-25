@@ -763,8 +763,8 @@ class WebSocketServer {
 
           if (requestJSON.draft !== true) {
             pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
-            pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
           }
+          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
 
         }
       });
