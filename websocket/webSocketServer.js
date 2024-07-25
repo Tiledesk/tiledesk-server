@@ -757,10 +757,15 @@ class WebSocketServer {
 
           
 
+          console.log("\n\n UPDATE - ws - request.update event")
+          console.log("\n\n UPDATE - ws - request.update event: -> ", JSON.stringify(requestJSON));
+          console.log("\n\n UPDATE - ws - request.update event: is draft? -> ", requestJSON.draft);
 
+          if (requestJSON.draft !== true) {
+            pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
+            pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
+          }
 
-          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests', requestJSON, undefined, true, "UPDATE");   
-          pubSubServer.handlePublishMessage ('/'+request.id_project+'/requests/'+request.request_id, requestJSON, undefined, true, "UPDATE");
         }
       });
       });
