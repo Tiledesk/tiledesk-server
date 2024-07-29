@@ -300,6 +300,11 @@ var RequestSchema = new Schema({
     type: String,
     required: true
   },
+  draft: {
+    type: Boolean,
+    required: false,
+    index: true
+  }
 
 }, {
   timestamps: true,

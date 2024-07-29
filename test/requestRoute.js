@@ -22,6 +22,8 @@ var faqService = require('../services/faqService');
 
 // chai.config.includeStack = true;
 
+let log = false;
+
 var expect = chai.expect;
 var assert = chai.assert;
 
@@ -1159,6 +1161,70 @@ describe('RequestRoute', () => {
         });
       });
     });
+
+    it('exludeDraftConversations', (done) => {
+
+      var email = "test-signup-" + Date.now() + "@email.com";
+      var pwd = "pwd";
+
+      userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+        projectService.createAndReturnProjectAndProjectUser("test-draft-conversation", savedUser._id).then((savedProjectAndPU) => {
+          let savedProject = savedProjectAndPU.project;
+          let savedPU = savedProjectAndPU.project_user;
+          leadService.createIfNotExists("Lead Fullname", "email@test.com", savedProject._id).then((createdLead) => {
+            let now = Date.now();
+            let request = {
+              request_id: "request_id-exludeDraftConversations-" + now, 
+              project_user_id: savedPU._id,
+              lead_id: createdLead._id,
+              id_project: savedProject._id,
+              first_text: "first_text",
+              lead: createdLead,
+              requester: savedPU,
+              attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" }
+            }
+
+            requestService.create(request).then(async (savedRequest) => {
+              
+              // Case 1 - request with source page that contains td_draft
+              expect(savedRequest.draft).to.equal(true);
+
+              // Case 2 - request without source page that contains td_draft
+              //expect(savedRequest.draft).to.be.undefined;
+
+              // get all requests -> should be 0
+
+              chai.request(server)
+                  .get('/' + savedProject._id + '/requests')
+                  .auth(email, pwd)
+                  .end((err, res) => {
+
+                    if (err) { console.error("err: ", err ) };
+                    if (log) { console.log("res.body: ", res.body) }
+
+                    res.should.have.status(200);
+                    res.body.should.be.a('object');
+                    res.body.requests.should.be.a('array');
+
+                    // Case 1 - request with source page that contains td_draft
+                    expect(res.body.requests.length).to.equal(0);
+
+                    // Case 2 - request without source page that contains td_draft
+                    //expect(res.body.requests.length).to.equal(1);
+
+                    done();
+                  })
+
+
+            }).catch((err) => {
+              console.error("error creating request: ", err)
+            })
+          })
+
+        })
+      })
+
+    })
 
     // it('assign', (done) => {
 
