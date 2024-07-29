@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.7
+- Fix bug: draft conversation was shown in monitor
+- Update tybot-connector to 0.2.92
+
 # 2.9.6
 - Fix bug: wrong timzone in startTime and andTime in operating hours service
 
