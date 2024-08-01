@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.9
+- Return draft conversations (for non real time monitor)
+
 # 2.9.8
 - Added model contexts fro kb preview 
 - Update tybot-connector to 0.2.93
