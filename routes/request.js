@@ -902,7 +902,7 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
 
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false, "draft": { $in: [false, null]} };
+  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
 
   var projectuser = req.projectuser;
 
@@ -1140,10 +1140,12 @@ router.get('/', function (req, res, next) {
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
-
   winston.debug("sort query", sortQuery);
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+
+  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+    query.draft = { $in: [false, null] }
+  }
 
   var projection = undefined;
 

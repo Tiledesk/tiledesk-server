@@ -1195,12 +1195,13 @@ describe('RequestRoute', () => {
               // get all requests -> should be 0
 
               chai.request(server)
-                  .get('/' + savedProject._id + '/requests')
+                  .get('/' + savedProject._id + '/requests?draft=false')
                   .auth(email, pwd)
                   .end((err, res) => {
 
                     if (err) { console.error("err: ", err ) };
                     if (log) { console.log("res.body: ", res.body) }
+                    console.log("res.body: ", res.body)
 
                     res.should.have.status(200);
                     res.body.should.be.a('object');

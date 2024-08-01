@@ -300,7 +300,6 @@ var RequestSchema = new Schema({
     type: String,
     required: true
   },
-  // this
   draft: {
     type: Boolean,
     required: false,
