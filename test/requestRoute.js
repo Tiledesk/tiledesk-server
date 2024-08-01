@@ -1195,7 +1195,7 @@ describe('RequestRoute', () => {
               // get all requests -> should be 0
 
               chai.request(server)
-                  .get('/' + savedProject._id + '/requests')
+                  .get('/' + savedProject._id + '/requests?draft=false')
                   .auth(email, pwd)
                   .end((err, res) => {
 
