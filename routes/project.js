@@ -3,6 +3,7 @@ var router = express.Router();
 var Project = require("../models/project");
 var projectEvent = require("../event/projectEvent");
 var projectService = require("../services/projectService");
+var projectUserService = require("../services/projectUserService");
 
 var Project_user = require("../models/project_user");
 
@@ -881,83 +882,145 @@ router.get('/:projectid/isopen', function (req, res) {
   }
 });
 
-//togli questo route da qui e mettilo in altra route
-// NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
-router.get('/:projectid/users/availables', function (req, res) {
-  //winston.debug("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
 
-  if (req.query.raw && (req.query.raw === true || req.query.raw === 'true')) {
-    Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
-          populate('id_user').
-          exec(function (err, project_users) {
-            if (err) {
-              winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
-              return res.status(500).send({ success: false, msg: 'Error getting object.' });
-            }
-            if (project_users) {
+router.get('/:projectid/users/availables', async  (req, res) => {
   
-              user_available_array = [];
-              project_users.forEach(project_user => {
-                if (project_user.id_user) {
-                  // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-                  user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-                } else {
-                  // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
-                }
-              });
-  
-              //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
-              res.json(user_available_array);
-            }
-          });
-  } else {
-    operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
-      //winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
-  
-      if (err) {
-        winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
-        // sendError(err, res);
-        return res.status(500).send({ success: false, msg: err });
-      } else if (isOpen) {
-  
-        Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
-          populate('id_user').
-          exec(function (err, project_users) {
-            if (err) {
-              winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
-              return res.status(500).send({ success: false, msg: 'Error getting object.' });
-            }
-            if (project_users) {
-  
-              user_available_array = [];
-              project_users.forEach(project_user => {
-                if (project_user.id_user) {
-                  // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-                  user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
-                } else {
-                  // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
-                }
-              });
-  
-              //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
-  
-              res.json(user_available_array);
-            }
-          });
-  
-  
-      } else {
-       // winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
-        // closed
-        user_available_array = [];
-        res.json(user_available_array);
-      }
-    });
+  console.log("sono qui")
+  let projectid = req.params.projectid;
+  let raw_option = req.query.raw;
+  let isOpen = true;
+
+  user_available_array = [];
+
+  if (!raw_option || raw_option === false) {
+    try {
+      isOpen = await new Promise((resolve, reject) => {
+        operatingHoursService.projectIsOpenNow(projectid, (isOpen, err) => {
+          if (err) reject(err);
+          else resolve(isOpen);
+        });
+      });
+    } catch (err) {
+      winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
+      return res.status(500).send({ success: false, msg: err });
+    }
   }
 
+  if (isOpen === false) {
+    res.json(user_available_array);
+  }
+
+  console.log("sono qua")
+  Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
+      .populate('id_user')
+      .exec((err, project_users) => {
+        if (err) {
+          winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
+          return res.status(500).send({ success: false, msg: 'Error getting object.' });
+        }
+
+        // check on SMART ASSIGNMENT
+        let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project_users);
+        console.log("available_agents: ", available_agents);
+
+        if (project_users) {
+  
+          user_available_array = [];
+          project_users.forEach(project_user => {
+            if (project_user.id_user) {
+              // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+              user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+            } else {
+              // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+            }
+          });
+
+          //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
+          res.json(user_available_array);
+        }
+      })
+  
   
 
-});
+
+})
+//togli questo route da qui e mettilo in altra route
+// NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
+// router.get('/:projectid/users/availables', function (req, res) {
+//   //winston.debug("PROJECT ROUTES FINDS AVAILABLES project_users: projectid", req.params.projectid);
+
+//   if (req.query.raw && (req.query.raw === true || req.query.raw === 'true')) {
+//     Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
+//           populate('id_user').
+//           exec(function (err, project_users) {
+//             if (err) {
+//               winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
+//               return res.status(500).send({ success: false, msg: 'Error getting object.' });
+//             }
+//             if (project_users) {
+  
+//               user_available_array = [];
+//               project_users.forEach(project_user => {
+//                 if (project_user.id_user) {
+//                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+//                   user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+//                 } else {
+//                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+//                 }
+//               });
+  
+//               //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
+//               res.json(user_available_array);
+//             }
+//           });
+//   } else {
+//     operatingHoursService.projectIsOpenNow(req.params.projectid, function (isOpen, err) {
+//       //winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT: ', isOpen);
+  
+//       if (err) {
+//         winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
+//         // sendError(err, res);
+//         return res.status(500).send({ success: false, msg: err });
+//       } else if (isOpen) {
+  
+//         Project_user.find({ id_project: req.params.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}}).
+//           populate('id_user').
+//           exec(function (err, project_users) {
+//             if (err) {
+//               winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
+//               return res.status(500).send({ success: false, msg: 'Error getting object.' });
+//             }
+//             if (project_users) {
+  
+//               user_available_array = [];
+//               project_users.forEach(project_user => {
+//                 if (project_user.id_user) {
+//                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
+//                   user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+//                 } else {
+//                   // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+//                 }
+//               });
+  
+//               //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
+  
+//               res.json(user_available_array);
+//             }
+//           });
+  
+  
+//       } else {
+//        // winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PRJCT: ', isOpen, ' -> AVAILABLE EMPTY');
+//         // closed
+//         user_available_array = [];
+//         res.json(user_available_array);
+//       }
+//     });
+//   }
+
+  
+
+// });
 
 
 

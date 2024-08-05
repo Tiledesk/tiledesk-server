@@ -9,6 +9,11 @@ var pendinginvitation = require("../services/pendingInvitationService");
 
 class ProjectUserService {
 
+    checkAgentsAvailablesWithSmartAssignment(available_users) {
+
+        console.log(" ---> available_users: ", available_users);
+        return available_users;
+    }
 
 }
 var projectUserService = new ProjectUserService();
