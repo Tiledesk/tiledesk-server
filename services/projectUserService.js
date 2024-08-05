@@ -29,7 +29,7 @@ class ProjectUserService {
         for (const aa of available_agents) {
             let max_assigned_chat_specific_user = max_assigned_chat;
             if (aa.max_assigned_chat && aa.max_assigned_chat != -1) {
-                max_assigned_chat_specific_user = aa.max_agent_assigned_chat;
+                max_assigned_chat_specific_user = aa.max_assigned_chat;
             }
             winston.verbose("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
 
