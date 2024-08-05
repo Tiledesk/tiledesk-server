@@ -16,11 +16,9 @@ class ProjectUserService {
 
         if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
             max_assigned_chat = project.settings.max_agent_assigned_chat;
-            winston.debug('[ProjectUserService] max_agent_assigned_chat: ' + max_assigned_chat);
-            console.log('[ProjectUserService] max_agent_assigned_chat: ' + max_assigned_chat);
+            winston.verbose('[ProjectUserService] max_agent_assigned_chat: ' + max_assigned_chat);
         } else {
-            winston.debug('[ProjectUserService] chat_limit_on or max_agent_assigned_chat is undefined');
-            console.log('[ProjectUserService] chat_limit_on or max_agent_assigned_chat is undefined');
+            winston.verbose('[ProjectUserService] chat_limit_on or max_agent_assigned_chat is undefined');
             return available_agents
         }
 
@@ -33,11 +31,10 @@ class ProjectUserService {
             if (aa.max_assigned_chat && aa.max_assigned_chat != -1) {
                 max_assigned_chat_specific_user = aa.max_agent_assigned_chat;
             }
-            winston.debug("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
-            console.log("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
+            winston.verbose("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
 
             if (aa.number_assigned_requests < max_assigned_chat_specific_user) {
-                console.log("[ProjectUserService] Adds project user to available_agents_request");
+                //winston.verbose("[ProjectUserService] Adds project user to available_agents_request");
                 available_agents_request.push(aa);
             }
         }

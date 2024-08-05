@@ -184,7 +184,6 @@ describe('ProjectRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create("test-project-create", savedUser._id).then((savedProject) => {
 
-
                     chai.request(server)
                         .get('/projects/' + savedProject._id + '/users/availables')
                         .auth(email, pwd)
@@ -195,34 +194,6 @@ describe('ProjectRoute', () => {
 
                             done();
                         })
-                    // chai.request(server)
-                    //     // .put('/projects/' + savedProject._id + "/update")
-                    //     .put('/projects/' + savedProject._id)
-                    //     .auth(email, pwd)
-                    //     .send({ timeSlots: timeSlotsSample })
-                    //     .end((err, res) => {
-
-                    //         if (log) { console.log("update project time slots res.body: ", res.body) };
-                    //         res.should.have.status(200);
-                    //         res.body.should.be.a('object');
-
-                    //         chai.request(server)
-                    //             .get('/projects/' + savedProject._id + '/isopen?timeSlot=819559cc')
-                    //             .auth(email, pwd)
-                    //             .end((err, res) => {
-
-                    //                 if (err) { console.error("err: ", err) };
-                    //                 if (log) { console.log("res.body isopen: ", res.body) };
-
-                    //                 // Unable to do other checks due to currentTime change.
-                    //                 res.should.have.status(200);
-
-                    //                 done();
-
-                    //             })
-                    //     })
-
-
                 })
             })
         }).timeout(10000)

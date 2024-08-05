@@ -885,12 +885,11 @@ router.get('/:projectid/isopen', function (req, res) {
 
 router.get('/:projectid/users/availables', async  (req, res) => {
   
-  console.log("sono qui")
   let projectid = req.params.projectid;
   let raw_option = req.query.raw;
   let isOpen = true;
 
-  user_available_array = [];
+  let available_agents_array = [];
 
   if (!raw_option || raw_option === false) {
     try {
@@ -907,10 +906,9 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   }
 
   if (isOpen === false) {
-    res.json(user_available_array);
+    res.json(available_agents_array);
   }
 
-  console.log("sono qua")
   Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
       .populate('id_user')
       .exec( async (err, project_users) => {
@@ -919,6 +917,8 @@ router.get('/:projectid/users/availables', async  (req, res) => {
           return res.status(500).send({ success: false, msg: 'Error getting object.' });
         }
 
+        winston.verbose("project_users: ", project_users);
+
         let project = await Project.findById(projectid).catch((err) => {
           winston.error("find project error: ", err)
           res.status(500).send({ success: false, error: err })
@@ -926,22 +926,21 @@ router.get('/:projectid/users/availables', async  (req, res) => {
 
         // check on SMART ASSIGNMENT
         let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project, project_users);
-        console.log("*** available_agents: ", available_agents);
+        winston.verbose("available_agents: ", available_agents);
 
-        if (project_users) {
+        if (available_agents) {
   
-          user_available_array = [];
-          project_users.forEach(project_user => {
-            if (project_user.id_user) {
+          available_agents_array = [];
+          available_agents.forEach(agent => {
+            if (agent.id_user) {
               // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
-              user_available_array.push({ "id": project_user.id_user._id, "firstname": project_user.id_user.firstname });
+              available_agents_array.push({ "id": agent.id_user._id, "firstname": agent.id_user.firstname });
             } else {
               // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
             }
           });
 
-          //winston.debug('ARRAY OF THE AVAILABLE USER ', user_available_array);
-          res.json(user_available_array);
+          res.json(available_agents_array);
         }
       })
   
