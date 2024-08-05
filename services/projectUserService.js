@@ -9,10 +9,41 @@ var pendinginvitation = require("../services/pendingInvitationService");
 
 class ProjectUserService {
 
-    checkAgentsAvailablesWithSmartAssignment(available_users) {
+    checkAgentsAvailablesWithSmartAssignment(project, available_agents) {
 
-        console.log(" ---> available_users: ", available_users);
-        return available_users;
+        let max_assigned_chat;
+        let available_agents_request = [];
+
+        if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
+            max_assigned_chat = project.settings.max_agent_assigned_chat;
+            winston.debug('[ProjectUserService] max_agent_assigned_chat: ' + max_assigned_chat);
+            console.log('[ProjectUserService] max_agent_assigned_chat: ' + max_assigned_chat);
+        } else {
+            winston.debug('[ProjectUserService] chat_limit_on or max_agent_assigned_chat is undefined');
+            console.log('[ProjectUserService] chat_limit_on or max_agent_assigned_chat is undefined');
+            return available_agents
+        }
+
+        if (available_agents.length == 0) {
+            return available_agents_request;
+        }
+
+        for (const aa of available_agents) {
+            let max_assigned_chat_specific_user = max_assigned_chat;
+            if (aa.max_assigned_chat && aa.max_assigned_chat != -1) {
+                max_assigned_chat_specific_user = aa.max_agent_assigned_chat;
+            }
+            winston.debug("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
+            console.log("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
+
+            if (aa.number_assigned_requests < max_assigned_chat_specific_user) {
+                console.log("[ProjectUserService] Adds project user to available_agents_request");
+                available_agents_request.push(aa);
+            }
+        }
+
+        return available_agents_request;
+
     }
 
 }

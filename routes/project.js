@@ -913,15 +913,20 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   console.log("sono qua")
   Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
       .populate('id_user')
-      .exec((err, project_users) => {
+      .exec( async (err, project_users) => {
         if (err) {
           winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
           return res.status(500).send({ success: false, msg: 'Error getting object.' });
         }
 
+        let project = await Project.findById(projectid).catch((err) => {
+          winston.error("find project error: ", err)
+          res.status(500).send({ success: false, error: err })
+        })
+
         // check on SMART ASSIGNMENT
-        let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project_users);
-        console.log("available_agents: ", available_agents);
+        let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project, project_users);
+        console.log("*** available_agents: ", available_agents);
 
         if (project_users) {
   
