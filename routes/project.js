@@ -889,9 +889,12 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   let raw_option = req.query.raw;
   let isOpen = true;
 
+  console.log("(Users Availables) raw_option: ", raw_option);
+
   let available_agents_array = [];
 
   if (!raw_option || raw_option === false) {
+    console.log("(Users Availables) check operating hours: ", raw_option);
     try {
       isOpen = await new Promise((resolve, reject) => {
         operatingHoursService.projectIsOpenNow(projectid, (isOpen, err) => {
@@ -905,7 +908,9 @@ router.get('/:projectid/users/availables', async  (req, res) => {
     }
   }
 
+  console.log("(Users Availables) is open ? ", isOpen);
   if (isOpen === false) {
+    console.log("(Users Availables) is open false --> return empty array");
     res.json(available_agents_array);
   }
 
@@ -917,7 +922,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
           return res.status(500).send({ success: false, msg: 'Error getting object.' });
         }
 
-        winston.verbose("project_users: ", project_users);
+        console.log("(Users Availables) project users availables: ", project_users);
 
         let project = await Project.findById(projectid).catch((err) => {
           winston.error("find project error: ", err)
@@ -926,12 +931,14 @@ router.get('/:projectid/users/availables', async  (req, res) => {
 
         // check on SMART ASSIGNMENT
         let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project, project_users);
+        console.log("(Users Availables) available agents after smart assignment check ", available_agents);
         winston.verbose("available_agents: ", available_agents);
 
         if (available_agents) {
   
           available_agents_array = [];
           available_agents.forEach(agent => {
+            console.log("(Users Availables) agent ", agent);
             if (agent.id_user) {
               // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
               available_agents_array.push({ "id": agent.id_user._id, "firstname": agent.id_user.firstname });
@@ -940,6 +947,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
             }
           });
 
+          console.log("(Users Availables) return  available_agents_array", available_agents_array);
           res.json(available_agents_array);
         }
       })
