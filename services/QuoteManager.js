@@ -13,12 +13,14 @@ const emailEvent = require('../event/emailEvent');
 //     CUSTOM:     { requests: 3000,   messages: 0,    tokens: 5000000,    email: 200,    chatbots: 20,       kbs: 500}
 // }
 
+
 const PLANS_LIST = {
     FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
     SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 2,       namespace: 1,   kbs: 50     },
     BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,     email: 200,     chatbots: 5,       namespace: 1,   kbs: 150    },
     PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,     email: 200,     chatbots: 20,      namespace: 3,   kbs: 300    },
-    CUSTOM:     { requests: 3000,   messages: 0,    tokens: 5000000,     email: 200,     chatbots: 20,      namespace: 3,   kbs: 1000   }
+    TEAM:       { requests: 5000,   messages: 0,    tokens: 10000000,    email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
+    CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,    email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
@@ -332,6 +334,9 @@ class QuoteManager {
                     break;
                 case 'Premium':
                     limits = PLANS_LIST.PREMIUM;
+                    break;
+                case 'Team':
+                    limits = PLANS_LIST.TEAM;
                     break;
                 case 'Custom':
                     limits = PLANS_LIST.CUSTOM;
