@@ -34,7 +34,6 @@ class ProjectUserService {
             winston.verbose("[ProjectUserService] max_assigned_chat_specific_user " + max_assigned_chat_specific_user);
 
             if (aa.number_assigned_requests < max_assigned_chat_specific_user) {
-                //winston.verbose("[ProjectUserService] Adds project user to available_agents_request");
                 available_agents_request.push(aa);
             }
         }

@@ -892,13 +892,12 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   let dep_id = req.query.department;
   let isOpen = true;
 
-  console.log("(Users Availables) raw_option: ", raw_option);
-  console.log("(Users Availables) dep_id: ", dep_id);
+  winston.debug("(Users Availables) raw_option: " + raw_option);
+  winston.debug("(Users Availables) dep_id: " + dep_id);
 
   let available_agents_array = [];
 
   if (!raw_option || raw_option === false) {
-    console.log("(Users Availables) checking operating hours...");
     try {
       isOpen = await new Promise((resolve, reject) => {
         operatingHoursService.projectIsOpenNow(projectid, (isOpen, err) => {
@@ -907,22 +906,18 @@ router.get('/:projectid/users/availables', async  (req, res) => {
         });
       });
     } catch (err) {
-      console.log("(Users Availables) check operating hours error: ", err);
+      wisnton.error("(Users Availables) check operating hours error: ", err);
       return res.status(500).send({ success: false, msg: err });
     }
   }
 
-  console.log("(Users Availables) is open ? ", isOpen);
   if (isOpen === false) {
-    console.log("(Users Availables) is open false --> return empty array");
     return res.json(available_agents_array);
   }
 
   let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
-  console.log("*** Starting query: ", query);
 
   if (dep_id) {
-    console.log("*** Search deparment with id: ", dep_id);
     let department = await Department.findById(dep_id).catch((err) => {
       winston.error("(Users Availables) find department error: ", err)
       return res.status(500).send({ success: false, error: err })
@@ -933,11 +928,10 @@ router.get('/:projectid/users/availables', async  (req, res) => {
       return res.status(404).send({ success: false, error: "Department " + dep_id + " not found" })
     }
 
-    console.log("*** Deparment found: ", department);
     let group_id = department.id_group;
     if (group_id) {
       let group = await Group.findById(group_id).catch((err) => {
-        winston.info("(Users Availables) find group error: ", err)
+        winston.error("(Users Availables) find group error: ", err)
         return res.status(500).send({ success: false, error: err })
       })
 
@@ -946,32 +940,12 @@ router.get('/:projectid/users/availables', async  (req, res) => {
         return res.status(404).send({ success: false, error: "Group " + group_id + " not found" })
       }
 
-      console.log("*** Group found: ", group);
-
-      // const objectIds = group.members.map(id => {
-      //   console.log("id: ", id);
-      //   let obid = mongoose.Types.ObjectId(id);
-      //   console.log("obid: ", obid);
-      //   return obid
-      // });
-      // console.log("group.members: ", group.members);
-      // console.log("group.members objectIds: ", objectIds);
-
       query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}
-
-      // query.id_user = {
-      //   $in: group.members.map(id => {
-      //     let obid = new ObjectId(id);
-      //     return obid;
-      //   }
-      //   )
-      // }
       
     }
   } 
   
-  console.log("*** Final query: ", query);
-  // Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
+  winston.debug("(Users Availables) project_users query ", query)
   Project_user.find(query)
       .populate('id_user')
       .exec( async (err, project_users) => {
@@ -980,8 +954,6 @@ router.get('/:projectid/users/availables', async  (req, res) => {
           return res.status(500).send({ success: false, msg: 'Error getting object.' + err});
         }
 
-        console.log("(Users Availables) project users availables: ", project_users);
-
         let project = await Project.findById(projectid).catch((err) => {
           winston.error("find project error: ", err)
           res.status(500).send({ success: false, error: err })
@@ -989,31 +961,27 @@ router.get('/:projectid/users/availables', async  (req, res) => {
 
         // check on SMART ASSIGNMENT
         let available_agents = projectUserService.checkAgentsAvailablesWithSmartAssignment(project, project_users);
-        console.log("(Users Availables) available agents after smart assignment check ", available_agents);
-        winston.verbose("available_agents: ", available_agents);
+        winston.verbose("(Users Availables) available agents after smart assignment check", available_agents);
 
         if (available_agents) {
   
           available_agents_array = [];
           available_agents.forEach(agent => {
-            console.log("(Users Availables) agent ", agent);
             if (agent.id_user) {
-              // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER: ', project_user)
               available_agents_array.push({ "id": agent.id_user._id, "firstname": agent.id_user.firstname });
             } else {
-              // winston.debug('PROJECT ROUTES - AVAILABLES PROJECT-USER (else): ', project_user)
+              winston.warn("(Users Availables) agent.id_user is undefined");
             }
           });
 
-          console.log("(Users Availables) return  available_agents_array", available_agents_array);
+          winston.debug("(Users Availables) return following available_agents_array", available_agents_array);
           res.json(available_agents_array);
         }
       })
   
-  
-
-
 })
+
+// OLD ENDPOINT for /users/availables
 //togli questo route da qui e mettilo in altra route
 // NEW -  RETURN  THE USER NAME AND THE USER ID OF THE AVAILABLE PROJECT-USER FOR THE PROJECT ID PASSED
 // router.get('/:projectid/users/availables', function (req, res) {

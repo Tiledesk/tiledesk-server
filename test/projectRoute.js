@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'test';
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
-let log = true;
+let log = false;
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 
@@ -21,6 +21,7 @@ var Group = require('../models/group');
 
 var expect = chai.expect;
 var assert = chai.assert;
+
 
 let timeSlotsSample = {
     "819559cc": {
@@ -211,7 +212,6 @@ describe('ProjectRoute', () => {
                 // ignore second user (need to be added to the same project)
                 userService.signup(email2, pwd, "Test Firstname 2", "Test Lastname 2").then((savedUser2) => {
                     projectService.create("test-project-create", savedUser._id).then((savedProject) => {
-                        console.log("savedProject: ", savedProject);
 
                         chai.request(server)
                             .post('/' + savedProject._id + '/groups')
@@ -220,7 +220,7 @@ describe('ProjectRoute', () => {
                             .end((err, res) => {
 
                                 if (err) { console.error("err: ", err) };
-                                console.log("create group res.body: ", res.body);
+                                if (log) { console.log("create group res.body: ", res.body); }
                                 let savedGroup = res.body;
 
                                 chai.request(server)
@@ -230,7 +230,7 @@ describe('ProjectRoute', () => {
                                     .end((err, res) => {
 
                                         if (err) { console.error("err: ", err) };
-                                        console.log("savedDepartment: ", res.body);
+                                        if (log) { console.log("savedDepartment: ", res.body); }
                                         let savedDepartment = res.body;
 
                                         chai.request(server)
@@ -238,25 +238,14 @@ describe('ProjectRoute', () => {
                                             .auth(email, pwd)
                                             .end((err, res) => {
 
-                                                console.error("err: ", err);
-                                                console.log("res.body: ", res.body);
-
+                                                if (err) { console.error("err: ", err); }
+                                                if (log) { console.log("res.body: ", res.body); }
+                                                
                                                 done();
                                             })
 
                                     })
-
-
-
                             })
-
-
-
-
-
-
-
-
                     })
                 })
             })
