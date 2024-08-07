@@ -8,6 +8,8 @@ var projectUserService = require("../services/projectUserService");
 var Project_user = require("../models/project_user");
 
 var operatingHoursService = require("../services/operatingHoursService");
+var Department = require('../models/department');
+var Group = require('../models/group');
 
 var winston = require('../config/winston');
 var roleChecker = require('../middleware/has-role');
@@ -21,7 +23,7 @@ var RoleConstants = require("../models/roleConstants");
 var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
 var cacheEnabler = require("../services/cacheEnabler");
-
+var mongoose = require('mongoose');
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
   
@@ -887,14 +889,16 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   
   let projectid = req.params.projectid;
   let raw_option = req.query.raw;
+  let dep_id = req.query.department;
   let isOpen = true;
 
   console.log("(Users Availables) raw_option: ", raw_option);
+  console.log("(Users Availables) dep_id: ", dep_id);
 
   let available_agents_array = [];
 
   if (!raw_option || raw_option === false) {
-    console.log("(Users Availables) check operating hours: ", raw_option);
+    console.log("(Users Availables) checking operating hours...");
     try {
       isOpen = await new Promise((resolve, reject) => {
         operatingHoursService.projectIsOpenNow(projectid, (isOpen, err) => {
@@ -903,7 +907,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
         });
       });
     } catch (err) {
-      winston.debug('P ---> [ OHS ] -> [ PROJECT ROUTES ] -> IS OPEN THE PROJECT - EROR: ', err)
+      console.log("(Users Availables) check operating hours error: ", err);
       return res.status(500).send({ success: false, msg: err });
     }
   }
@@ -911,15 +915,69 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   console.log("(Users Availables) is open ? ", isOpen);
   if (isOpen === false) {
     console.log("(Users Availables) is open false --> return empty array");
-    res.json(available_agents_array);
+    return res.json(available_agents_array);
   }
 
-  Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
+  let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
+  console.log("*** Starting query: ", query);
+
+  if (dep_id) {
+    console.log("*** Search deparment with id: ", dep_id);
+    let department = await Department.findById(dep_id).catch((err) => {
+      winston.error("(Users Availables) find department error: ", err)
+      return res.status(500).send({ success: false, error: err })
+    })
+
+    if (!department) {
+      winston.error("(Users Availables) department not found")
+      return res.status(404).send({ success: false, error: "Department " + dep_id + " not found" })
+    }
+
+    console.log("*** Deparment found: ", department);
+    let group_id = department.id_group;
+    if (group_id) {
+      let group = await Group.findById(group_id).catch((err) => {
+        winston.info("(Users Availables) find group error: ", err)
+        return res.status(500).send({ success: false, error: err })
+      })
+
+      if (!group) {
+        winston.error("(Users Availables) group not found")
+        return res.status(404).send({ success: false, error: "Group " + group_id + " not found" })
+      }
+
+      console.log("*** Group found: ", group);
+
+      // const objectIds = group.members.map(id => {
+      //   console.log("id: ", id);
+      //   let obid = mongoose.Types.ObjectId(id);
+      //   console.log("obid: ", obid);
+      //   return obid
+      // });
+      // console.log("group.members: ", group.members);
+      // console.log("group.members objectIds: ", objectIds);
+
+      query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}
+
+      // query.id_user = {
+      //   $in: group.members.map(id => {
+      //     let obid = new ObjectId(id);
+      //     return obid;
+      //   }
+      //   )
+      // }
+      
+    }
+  } 
+  
+  console.log("*** Final query: ", query);
+  // Project_user.find({ id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} })
+  Project_user.find(query)
       .populate('id_user')
       .exec( async (err, project_users) => {
         if (err) {
           winston.debug('PROJECT ROUTES - FINDS AVAILABLES project_users - ERROR: ', err);
-          return res.status(500).send({ success: false, msg: 'Error getting object.' });
+          return res.status(500).send({ success: false, msg: 'Error getting object.' + err});
         }
 
         console.log("(Users Availables) project users availables: ", project_users);

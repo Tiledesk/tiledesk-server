@@ -13,6 +13,9 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 const path = require('path');
+const departmentService = require('../services/departmentService');
+const routingConstants = require('../models/routingConstants');
+var Group = require('../models/group');
 
 // chai.config.includeStack = true;
 
@@ -194,6 +197,67 @@ describe('ProjectRoute', () => {
 
                             done();
                         })
+                })
+            })
+        }).timeout(10000)
+
+        it('departmentGroupAvailableUsers', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var email2 = "test-signup2-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                // ignore second user (need to be added to the same project)
+                userService.signup(email2, pwd, "Test Firstname 2", "Test Lastname 2").then((savedUser2) => {
+                    projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+                        console.log("savedProject: ", savedProject);
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/groups')
+                            .auth(email, pwd)
+                            .send({ name: "test-department-group", members: [savedUser._id] })
+                            .end((err, res) => {
+
+                                if (err) { console.error("err: ", err) };
+                                console.log("create group res.body: ", res.body);
+                                let savedGroup = res.body;
+
+                                chai.request(server)
+                                    .post('/' + savedProject._id + '/departments/')
+                                    .auth(email, pwd)
+                                    .send({ id_project: "66977908249376002d57a434", name: "test-department", routing: "assigned", id_group: savedGroup._id })
+                                    .end((err, res) => {
+
+                                        if (err) { console.error("err: ", err) };
+                                        console.log("savedDepartment: ", res.body);
+                                        let savedDepartment = res.body;
+
+                                        chai.request(server)
+                                            .get('/projects/' + savedProject._id + '/users/availables/?department=' + savedDepartment._id)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+
+                                                console.error("err: ", err);
+                                                console.log("res.body: ", res.body);
+
+                                                done();
+                                            })
+
+                                    })
+
+
+
+                            })
+
+
+
+
+
+
+
+
+                    })
                 })
             })
         }).timeout(10000)
