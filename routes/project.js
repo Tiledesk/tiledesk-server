@@ -941,7 +941,6 @@ router.get('/:projectid/users/availables', async  (req, res) => {
       }
 
       query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}
-      
     }
   } 
   
@@ -967,8 +966,15 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   
           available_agents_array = [];
           available_agents.forEach(agent => {
+            //console.log("agent: ", agent);
             if (agent.id_user) {
-              available_agents_array.push({ "id": agent.id_user._id, "firstname": agent.id_user.firstname });
+              available_agents_array.push({ 
+                "id": agent.id_user._id, 
+                "pu_id": agent._id,
+                "fullname": agent.id_user.firstname + " " + agent.id_user.lastname,
+                "email": agent.id_user.email,
+                "assigned_request": agent.number_assigned_requests
+              });
             } else {
               winston.warn("(Users Availables) agent.id_user is undefined");
             }

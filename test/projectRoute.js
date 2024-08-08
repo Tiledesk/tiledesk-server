@@ -205,48 +205,51 @@ describe('ProjectRoute', () => {
         it('departmentGroupAvailableUsers', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
-            var email2 = "test-signup2-" + Date.now() + "@email.com";
             var pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-                // ignore second user (need to be added to the same project)
-                userService.signup(email2, pwd, "Test Firstname 2", "Test Lastname 2").then((savedUser2) => {
-                    projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
 
-                        chai.request(server)
-                            .post('/' + savedProject._id + '/groups')
-                            .auth(email, pwd)
-                            .send({ name: "test-department-group", members: [savedUser._id] })
-                            .end((err, res) => {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/groups')
+                        .auth(email, pwd)
+                        .send({ name: "test-department-group", members: [savedUser._id] })
+                        .end((err, res) => {
 
-                                if (err) { console.error("err: ", err) };
-                                if (log) { console.log("create group res.body: ", res.body); }
-                                let savedGroup = res.body;
+                            if (err) { console.error("err: ", err) };
+                            if (log) { console.log("create group res.body: ", res.body); }
+                            let savedGroup = res.body;
 
-                                chai.request(server)
-                                    .post('/' + savedProject._id + '/departments/')
-                                    .auth(email, pwd)
-                                    .send({ id_project: "66977908249376002d57a434", name: "test-department", routing: "assigned", id_group: savedGroup._id })
-                                    .end((err, res) => {
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/departments/')
+                                .auth(email, pwd)
+                                .send({ id_project: "66977908249376002d57a434", name: "test-department", routing: "assigned", id_group: savedGroup._id })
+                                .end((err, res) => {
 
-                                        if (err) { console.error("err: ", err) };
-                                        if (log) { console.log("savedDepartment: ", res.body); }
-                                        let savedDepartment = res.body;
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("savedDepartment: ", res.body); }
+                                    let savedDepartment = res.body;
 
-                                        chai.request(server)
-                                            .get('/projects/' + savedProject._id + '/users/availables/?department=' + savedDepartment._id)
-                                            .auth(email, pwd)
-                                            .end((err, res) => {
+                                    chai.request(server)
+                                        .get('/projects/' + savedProject._id + '/users/availables/?department=' + savedDepartment._id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
 
-                                                if (err) { console.error("err: ", err); }
-                                                if (log) { console.log("res.body: ", res.body); }
-                                                
-                                                done();
-                                            })
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body: ", res.body); }
 
-                                    })
-                            })
-                    })
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('array');
+                                            expect(res.body.length).to.equal(1);
+                                            expect(res.body[0].id).to.equal(savedUser._id.toString());
+                                            expect(res.body[0].fullname).to.equal(savedUser.firstname + " " + savedUser.lastname);
+                                            expect(res.body[0].assigned_request).to.equal(0);
+                                            
+                                            done();
+                                        })
+
+                                })
+                        })
                 })
             })
         }).timeout(10000)
