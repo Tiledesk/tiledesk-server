@@ -689,12 +689,15 @@ router.post('/fork/:id_faq_kb', async (req, res) => {
 
 })
 
-
 router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.debug('import on id_faq_kb: ' + id_faq_kb);
-
+  
+  winston.debug('import with option create: ' + req.query.create);
+  winston.debug('import with option replace: ' + req.query.replace);
+  winston.debug('import with option overwrite: ' + req.query.overwrite);
+  
   let json_string;
   let json;
   if (req.file) {
@@ -706,291 +709,546 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 
   winston.debug("json source " + json_string)
 
-  // intentOnly still existing?
-  if (req.query.intentsOnly && req.query.intentsOnly == "true") {
-
-    winston.debug("intents only")
-
-    await json.intents.forEach((intent) => {
-
-      let new_faq = {
-        id_faq_kb: id_faq_kb,
-        id_project: req.projectid,
-        createdBy: req.user.id,
-        intent_display_name: intent.intent_display_name,
-        intent_id: intent.intent_id,
-        question: intent.question,
-        answer: intent.answer,
-        reply: intent.reply,
-        form: intent.form,
-        enabled: intent.enabled,
-        webhook_enabled: intent.webhook_enabled,
-        language: intent.language,
-        actions: intent.actions,
-        attributes: intent.attributes
-      }
-
-      // overwrite duplicated intents
-      if (req.query.overwrite == "true") {
-        Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
-          if (err) {
-            winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
-          } else {
-            if (savingResult.lastErrorObject.updatedExisting == true) {
-              winston.debug("updated existing intent")
-              faqBotEvent.emit('faq.update', savingResult.value);
-            } else {
-              winston.debug("new intent created")
-              faqBotEvent.emit('faq.create', savingResult.value);
-            }
-          }
-        })
-
-      // don't overwrite duplicated intents
-      } else {
-        Faq.create(new_faq, (err, savedFaq) => {
-          if (err) {
-            winston.debug("create new FAQ ERROR ", err);
-            if (err.code == 11000) {
-              winston.error("Duplicate intent_display_name.");
-              winston.debug("Skip duplicated intent_display_name");
-            } else {
-              winston.debug("new intent created")
-              faqBotEvent.emit('faq.create', savedFaq);
-            }
-          }
-        })
-      }
-
-    })
-    //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
-    return res.status(200).send({ success: true, msg: "Intents imported successfully" })
-
-  } else {
-
-    if (req.query.create && req.query.create == 'true') {
-
-      
-      faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes).then( async (savedFaq_kb) => {
-        winston.debug("saved (and imported) faq kb: ", savedFaq_kb);
-        
-        // edit attributes.rules
-        let attributes = json.attributes;
-        if (attributes &&
-            attributes.rules &&
-            attributes.rules.length > 0) {
-  
-              await attributes.rules.forEach((rule) => {
-                if (rule.do &&
-                    rule.do[0] &&
-                    rule.do[0].message &&
-                    rule.do[0].message.participants &&
-                    rule.do[0].message.participants[0]) {
-                      rule.do[0].message.participants[0] = "bot_" + savedFaq_kb._id
-                      winston.debug("attributes rule new participant: ", rule.do[0].message.participants[0])
-                    }
-              })
-            }
-            let chatbot_edited = { attributes: attributes };
-            Faq_kb.findByIdAndUpdate(savedFaq_kb._id, chatbot_edited, { new: true }, (err, savedEditedFaq_kb) => {
-              if (err) {
-                winston.error("error during saving edited faq_kb: ", err)
-              }
-              botEvent.emit('faqbot.create', savedFaq_kb);
-
-              if (json.intents) {
-  
-                  json.intents.forEach((intent) => {
-          
-                  let new_faq = {
-                    id_faq_kb: savedFaq_kb._id,
-                    id_project: req.projectid,
-                    createdBy: req.user.id,
-                    intent_display_name: intent.intent_display_name,
-                    intent_id: intent.intent_id,
-                    question: intent.question,
-                    answer: intent.answer,
-                    reply: intent.reply,
-                    form: intent.form,
-                    enabled: intent.enabled,
-                    webhook_enabled: intent.webhook_enabled,
-                    language: intent.language,
-                    actions: intent.actions,
-                    attributes: intent.attributes
-                  }
-    
-                  // TO DELETE: no used when req.query.create = 'true'
-                  if (req.query.overwrite == "true") {
-                    Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
-                      if (err) {
-                        winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
-                      } else {
-        
-                        if (savingResult.lastErrorObject.updatedExisting == true) {
-                          winston.debug("updated existing intent")
-                          faqBotEvent.emit('faq.update', savingResult.value);
-                        } else {
-                          winston.debug("new intent created")
-                          faqBotEvent.emit('faq.create', savingResult.value);
-                        }
-        
-                      }
-        
-                    })
-                  // don't overwrite duplicated intents
-                  } else {
-                    Faq.create(new_faq, (err, savedFaq) => {
-                      if (err) {
-                        winston.debug("create new FAQ ERROR ", err);
-                        if (err.code == 11000) {
-                          winston.error("Duplicate intent_display_name.");
-                          winston.debug("Skip duplicated intent_display_name");
-                        } else {
-                          winston.debug("new intent created")
-                          faqBotEvent.emit('faq.create', savedFaq);
-                        }
-                      }
-                    })
-                  }
-    
-                })
-              }
-              //faqBotEvent.emit('faq_train.importedall', savedEditedFaq_kb._id);
-              return res.status(200).send(savedEditedFaq_kb);
-            })
-
-      }).catch((err) => {
-        winston.error("error saving faq_kb: ", err);
-        return res.status(500).send(err);
+  // ****************************
+  // **** CREATE TRUE option ****
+  // ****************************
+  if (req.query.create === 'true') {
+    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
+      .catch((err) => {
+          winston.error("Error creating new chatbot")
+          return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
       })
+    
+    // Edit attributes.rules
+    let attributes = json.attributes;
+    if (attributes &&
+      attributes.rules &&
+      attributes.rules.length > 0) {
 
-    } else {
+      await attributes.rules.forEach((rule) => {
+        if (rule.do &&
+          rule.do[0] &&
+          rule.do[0].message &&
+          rule.do[0].message.participants &&
+          rule.do[0].message.participants[0]) {
+          rule.do[0].message.participants[0] = "bot_" + savedChatbot._id
+          winston.debug("attributes rule new participant: ", rule.do[0].message.participants[0])
+        }
+      })
+    }
+    
+    let chatbot_edited = { attributes: attributes };
 
-      Faq_kb.findById(id_faq_kb, async (err, faq_kb) => {
-        if (err) {
-          winston.error("GET FAQ-KB ERROR", err);
-          return res.status(500).send({ success: false, msg: "Error getting bot." });
-        }
-        if (!faq_kb) {
-          return res.status(404).send({ success: false, msg: 'Bot not found.' });
-        }
-  
-        // should be wrong
-        //const json = JSON.parse(json_string);
-  
-        if (json.webhook_enabled) {
-          faq_kb.webhook_enabled = json.webhook_enabled;
-        }
-        if (json.webhook_url) {
-          faq_kb.webhook_url = json.webhook_url;
-        }
-        if (json.language) {
-          faq_kb.language = json.language;
-        }
-        if (json.name) {
-          faq_kb.name = json.name;
-        }
-        if (json.description) {
-          faq_kb.description = json.description;
+    let updatedChatbot = await Faq_kb.findByIdAndUpdate(savedChatbot._id, chatbot_edited, { new: true }).catch((err) => {
+      winston.error("Error updating chatbot attributes: ", err);
+      winston.debug("Skip Error updating chatbot attributes: ", err);
+      // return res.status(400).send({ success: false, message: "Error updating chatbot attributes", error: err })
+    })
+
+    botEvent.emit('faqbot.create', savedChatbot);
+
+    if (json.intents) {
+      
+      json.intents.forEach( async (intent) => {
+
+        let new_faq = {
+          id_faq_kb: savedChatbot._id,
+          id_project: req.projectid,
+          createdBy: req.user.id,
+          intent_display_name: intent.intent_display_name,
+          intent_id: intent.intent_id,
+          question: intent.question,
+          answer: intent.answer,
+          reply: intent.reply,
+          form: intent.form,
+          enabled: intent.enabled,
+          webhook_enabled: intent.webhook_enabled,
+          language: intent.language,
+          actions: intent.actions,
+          attributes: intent.attributes
         }
 
-        if (json.attributes) {
-          let attributes = json.attributes;
-          if (attributes.rules &&
-              attributes.rules.length > 0) {
-                await attributes.rules.forEach((rule) => {
-                  if (rule.do &&
-                      rule.do[0] &&
-                      rule.do[0].message &&
-                      rule.do[0].message.participants &&
-                      rule.do[0].message.participants[0]) {
-                        rule.do[0].message.participants[0] = "bot_" + faq_kb._id
-                        winston.debug("attributes rule new participant: " + rule.do[0].message.participants[0])
-                      }
-                })
-                faq_kb.attributes = json.attributes;
-              }
-        }
-        // if (json.intentsEngine) {
-        //   faq_kb.intentsEngine = json.intentsEngine;
-        // }
-  
-
-        Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {  //TODO add cache_bot_here
-          if (err) {
-            return res.status(500).send({ success: false, msg: "Error updating bot." });
+        let faq = await Faq.create(new_faq).catch((err) => {
+          if (err.code == 11000) { // should never happen
+            winston.error("Duplicate intent_display_name.");
+            winston.debug("Skip duplicated intent_display_name"); // Don't stop the flow
+          } else {
+            winston.error("Error saving new faq: ", err)
           }
-  
-          botEvent.emit('faqbot.update', updatedFaq_kb);
-
-          if (json.intents) { 
-            await json.intents.forEach((intent) => {
-    
-              let new_faq = {
-                id_faq_kb: updatedFaq_kb._id,
-                id_project: req.projectid,
-                createdBy: req.user.id,
-                intent_display_name: intent.intent_display_name,
-                intent_id: intent.intent_id,
-                question: intent.question,
-                answer: intent.answer,
-                reply: intent.reply,
-                form: intent.form,
-                enabled: intent.enabled,
-                webhook_enabled: intent.webhook_enabled,
-                language: intent.language,
-                actions: intent.actions,
-                attributes: intent.attributes
-              }
-    
-              // overwrite duplicated intents
-              if (req.query.overwrite == "true") {
-                Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
-                  if (err) {
-                    winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
-                  } else {
-    
-                    if (savingResult.lastErrorObject.updatedExisting == true) {
-                      winston.info("updated existing intent")
-                      faqBotEvent.emit('faq.update', savingResult.value);
-                    } else {
-                      winston.info("new intent created")
-                      faqBotEvent.emit('faq.create', savingResult.value);
-                    }
-    
-                  }
-    
-                })
-    
-                // don't overwrite duplicated intents
-              } else {
-                Faq.create(new_faq, (err, savedFaq) => {
-                  if (err) {
-                    winston.debug("create new FAQ ERROR ", err);
-                    if (err.code == 11000) {
-                      winston.error("Duplicate intent_display_name.");
-                      winston.info("Skip duplicated intent_display_name");
-                    } else {
-                      winston.info("new intent created")
-                      faqBotEvent.emit('faq.create', savedFaq);
-                    }
-                  }
-                })
-              }
-    
-            })
-
-          }
-          //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
-          return res.send(updatedFaq_kb);
-  
         })
-  
+
+        if (faq) {
+          winston.debug("new intent created")
+          faqBotEvent.emit('faq.create', savedFaq);
+        }
       })
     }
 
+    if (updatedChatbot) {
+      return res.status(200).send(updatedChatbot)
+    } else {
+      return res.status(200).send(savedChatbot)
+    }
   }
+  // *****************************
+  // **** CREATE FALSE option ****
+  // *****************************
+  else {
+
+    if (!id_faq_kb) {
+      return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
+    }
+
+    let chatbot = Faq_kb.findById(id_faq_kb).catch((err) => {
+      winston.error("Error finding chatbot with id " + id_faq_kb);
+      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + id_faq_kb, error: err });
+    })
+
+    if (!chatbot) {
+      winston.error("Chatbot not found with id " + id_faq_kb);
+      return res.status(404).send({ success: false, message: "Chatbot not found with id " + id_faq_kb });
+    }
+
+    if (json.webhook_enabled) {
+      chatbot.webhook_enabled = json.webhook_enabled;
+    }
+    if (json.webhook_url) {
+      chatbot.webhook_url = json.webhook_url;
+    }
+    if (json.language) {
+      chatbot.language = json.language;
+    }
+    if (json.name) {
+      chatbot.name = json.name;
+    }
+    if (json.description) {
+      chatbot.description = json.description;
+    }
+    
+    if (json.attributes) {
+      let attributes = json.attributes;
+      if (attributes.rules &&
+        attributes.rules.length > 0) {
+        await attributes.rules.forEach((rule) => {
+          if (rule.do &&
+            rule.do[0] &&
+            rule.do[0].message &&
+            rule.do[0].message.participants &&
+            rule.do[0].message.participants[0]) {
+            rule.do[0].message.participants[0] = "bot_" + chatbot._id
+            winston.debug("attributes rule new participant: " + rule.do[0].message.participants[0])
+          }
+        })
+        chatbot.attributes = json.attributes;
+      }
+    }
+
+    let updatedChatbot = await Faq_kb.findByIdAndUpdate(id_faq_kb, chatbot, { new: true }).catch((err) => {
+      winston.error("Error updating chatbot");
+      return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
+    })
+
+    botEvent.emit('faqbot.update', updatedChatbot);    
+
+    // *****************************
+    // **** REPLACE TRUE option ****
+    // *****************************
+    if (req.query.replace === 'true') {
+      let result = await Faq.deleteMany({ id_faq_kb: id_faq_kb }).catch((err) => {
+        winston.error("Unable to delete all existing faqs with id_faq_kb " + id_faq_kb);
+      })
+
+      winston.verbose("All faq for chatbot " + id_faq_kb + " deleted successfully")
+      winston.debug("DeleteMany faqs result ", result);
+    }
+
+    if (json.intents) {
+      await json.intents.forEach( async (intent) => {
+
+        let new_faq = {
+          id_faq_kb: updatedChatbot._id,
+          id_project: req.projectid,
+          createdBy: req.user.id,
+          intent_display_name: intent.intent_display_name,
+          intent_id: intent.intent_id,
+          question: intent.question,
+          answer: intent.answer,
+          reply: intent.reply,
+          form: intent.form,
+          enabled: intent.enabled,
+          webhook_enabled: intent.webhook_enabled,
+          language: intent.language,
+          actions: intent.actions,
+          attributes: intent.attributes
+        }
+
+        // *******************************
+        // **** OVERWRITE TRUE option ****
+        // *******************************
+        if (req.query.overwrite == "true") {
+
+          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
+            winston.error("Unable to create faq: ", err);
+          })
+
+          if (savingResult) {
+            if (savingResult.lastErrorObject.updatedExisting === true) {
+              winston.info("updated existing intent")
+              faqBotEvent.emit('faq.update', savingResult.value);
+            } else {
+              winston.info("new intent created")
+              faqBotEvent.emit('faq.create', savingResult.value);
+            }
+          }
+
+        // ********************************
+        // **** OVERWRITE FALSE option ****
+        // ********************************
+        } else {
+
+          let faq = await Faq.create(new_faq).catch((err) => {
+            if (err.code == 11000) {
+              winston.error("Duplicate intent_display_name.");
+              winston.info("Skip duplicated intent_display_name");
+            } else {
+              winston.error("Error creating new intent: ", err);
+            }
+            winston.error("Error creating new intent: ", err);
+          })
+
+          if (faq) {
+            winston.info("new intent created")
+            faqBotEvent.emit('faq.create', savedFaq);
+          }
+        }
+
+      })
+
+    }
+
+    if (updatedChatbot) {
+      return res.send(updatedChatbot);
+    } else {
+      return res.send(chatbot);
+    }
+
+  }
+
 })
+
+// OLD
+// router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, res) => {
+
+//   let id_faq_kb = req.params.id_faq_kb;
+//   winston.debug('import on id_faq_kb: ' + id_faq_kb);
+
+//   let json_string;
+//   let json;
+//   if (req.file) {
+//     json_string = req.file.buffer.toString('utf-8');
+//     json = JSON.parse(json_string);
+//   } else {
+//     json = req.body;
+//   }
+
+//   winston.debug("json source " + json_string)
+
+//   // intentOnly still existing?
+//   if (req.query.intentsOnly && req.query.intentsOnly == "true") {
+
+//     winston.debug("intents only")
+
+//     await json.intents.forEach((intent) => {
+
+//       let new_faq = {
+//         id_faq_kb: id_faq_kb,
+//         id_project: req.projectid,
+//         createdBy: req.user.id,
+//         intent_display_name: intent.intent_display_name,
+//         intent_id: intent.intent_id,
+//         question: intent.question,
+//         answer: intent.answer,
+//         reply: intent.reply,
+//         form: intent.form,
+//         enabled: intent.enabled,
+//         webhook_enabled: intent.webhook_enabled,
+//         language: intent.language,
+//         actions: intent.actions,
+//         attributes: intent.attributes
+//       }
+
+//       // overwrite duplicated intents
+//       if (req.query.overwrite == "true") {
+//         Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
+//           if (err) {
+//             winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
+//           } else {
+//             if (savingResult.lastErrorObject.updatedExisting == true) {
+//               winston.debug("updated existing intent")
+//               faqBotEvent.emit('faq.update', savingResult.value);
+//             } else {
+//               winston.debug("new intent created")
+//               faqBotEvent.emit('faq.create', savingResult.value);
+//             }
+//           }
+//         })
+
+//       // don't overwrite duplicated intents
+//       } else {
+//         Faq.create(new_faq, (err, savedFaq) => {
+//           if (err) {
+//             winston.debug("create new FAQ ERROR ", err);
+//             if (err.code == 11000) {
+//               winston.error("Duplicate intent_display_name.");
+//               winston.debug("Skip duplicated intent_display_name");
+//             } else {
+//               winston.debug("new intent created")
+//               faqBotEvent.emit('faq.create', savedFaq);
+//             }
+//           }
+//         })
+//       }
+
+//     })
+//     //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
+//     return res.status(200).send({ success: true, msg: "Intents imported successfully" })
+
+//   } else {
+
+//     // ****************************
+//     // **** CREATE TRUE option ****
+//     // ****************************
+//     if (req.query.create && req.query.create == 'true') {
+
+      
+//       faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes).then( async (savedFaq_kb) => {
+//         winston.debug("saved (and imported) faq kb: ", savedFaq_kb);
+        
+//         // edit attributes.rules
+//         let attributes = json.attributes;
+//         if (attributes &&
+//             attributes.rules &&
+//             attributes.rules.length > 0) {
+  
+//               await attributes.rules.forEach((rule) => {
+//                 if (rule.do &&
+//                     rule.do[0] &&
+//                     rule.do[0].message &&
+//                     rule.do[0].message.participants &&
+//                     rule.do[0].message.participants[0]) {
+//                       rule.do[0].message.participants[0] = "bot_" + savedFaq_kb._id
+//                       winston.debug("attributes rule new participant: ", rule.do[0].message.participants[0])
+//                     }
+//               })
+//             }
+//             let chatbot_edited = { attributes: attributes };
+//             Faq_kb.findByIdAndUpdate(savedFaq_kb._id, chatbot_edited, { new: true }, (err, savedEditedFaq_kb) => {
+//               if (err) {
+//                 winston.error("error during saving edited faq_kb: ", err)
+//               }
+//               botEvent.emit('faqbot.create', savedFaq_kb);
+
+//               if (json.intents) {
+  
+//                   json.intents.forEach((intent) => {
+          
+//                   let new_faq = {
+//                     id_faq_kb: savedFaq_kb._id,
+//                     id_project: req.projectid,
+//                     createdBy: req.user.id,
+//                     intent_display_name: intent.intent_display_name,
+//                     intent_id: intent.intent_id,
+//                     question: intent.question,
+//                     answer: intent.answer,
+//                     reply: intent.reply,
+//                     form: intent.form,
+//                     enabled: intent.enabled,
+//                     webhook_enabled: intent.webhook_enabled,
+//                     language: intent.language,
+//                     actions: intent.actions,
+//                     attributes: intent.attributes
+//                   }
+    
+//                   // TO DELETE: no used when req.query.create = 'true'
+//                   if (req.query.overwrite == "true") {
+//                     Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
+//                       if (err) {
+//                         winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
+//                       } else {
+        
+//                         if (savingResult.lastErrorObject.updatedExisting == true) {
+//                           winston.debug("updated existing intent")
+//                           faqBotEvent.emit('faq.update', savingResult.value);
+//                         } else {
+//                           winston.debug("new intent created")
+//                           faqBotEvent.emit('faq.create', savingResult.value);
+//                         }
+        
+//                       }
+        
+//                     })
+//                   // don't overwrite duplicated intents
+//                   } else {
+//                     Faq.create(new_faq, (err, savedFaq) => {
+//                       if (err) {
+//                         winston.debug("create new FAQ ERROR ", err);
+//                         if (err.code == 11000) {
+//                           winston.error("Duplicate intent_display_name.");
+//                           winston.debug("Skip duplicated intent_display_name");
+//                         } else {
+//                           winston.debug("new intent created")
+//                           faqBotEvent.emit('faq.create', savedFaq);
+//                         }
+//                       }
+//                     })
+//                   }
+    
+//                 })
+//               }
+//               //faqBotEvent.emit('faq_train.importedall', savedEditedFaq_kb._id);
+//               return res.status(200).send(savedEditedFaq_kb);
+//             })
+
+//       }).catch((err) => {
+//         winston.error("error saving faq_kb: ", err);
+//         return res.status(500).send(err);
+//       })
+
+//     } 
+//     // ****************************
+//     // **** CREATE FALSE option ****
+//     // ****************************
+//     else {
+
+//       Faq_kb.findById(id_faq_kb, async (err, faq_kb) => {
+//         if (err) {
+//           winston.error("GET FAQ-KB ERROR", err);
+//           return res.status(500).send({ success: false, msg: "Error getting bot." });
+//         }
+//         if (!faq_kb) {
+//           return res.status(404).send({ success: false, msg: 'Bot not found.' });
+//         }
+  
+//         // should be wrong
+//         //const json = JSON.parse(json_string);
+  
+//         if (json.webhook_enabled) {
+//           faq_kb.webhook_enabled = json.webhook_enabled;
+//         }
+//         if (json.webhook_url) {
+//           faq_kb.webhook_url = json.webhook_url;
+//         }
+//         if (json.language) {
+//           faq_kb.language = json.language;
+//         }
+//         if (json.name) {
+//           faq_kb.name = json.name;
+//         }
+//         if (json.description) {
+//           faq_kb.description = json.description;
+//         }
+
+//         if (json.attributes) {
+//           let attributes = json.attributes;
+//           if (attributes.rules &&
+//               attributes.rules.length > 0) {
+//                 await attributes.rules.forEach((rule) => {
+//                   if (rule.do &&
+//                       rule.do[0] &&
+//                       rule.do[0].message &&
+//                       rule.do[0].message.participants &&
+//                       rule.do[0].message.participants[0]) {
+//                         rule.do[0].message.participants[0] = "bot_" + faq_kb._id
+//                         winston.debug("attributes rule new participant: " + rule.do[0].message.participants[0])
+//                       }
+//                 })
+//                 faq_kb.attributes = json.attributes;
+//               }
+//         }
+//         // if (json.intentsEngine) {
+//         //   faq_kb.intentsEngine = json.intentsEngine;
+//         // }
+  
+
+//         Faq_kb.findByIdAndUpdate(id_faq_kb, faq_kb, { new: true }, async (err, updatedFaq_kb) => {  //TODO add cache_bot_here
+//           if (err) {
+//             return res.status(500).send({ success: false, msg: "Error updating bot." });
+//           }
+  
+//           botEvent.emit('faqbot.update', updatedFaq_kb);
+
+//           if (json.intents) { 
+//             await json.intents.forEach((intent) => {
+    
+//               let new_faq = {
+//                 id_faq_kb: updatedFaq_kb._id,
+//                 id_project: req.projectid,
+//                 createdBy: req.user.id,
+//                 intent_display_name: intent.intent_display_name,
+//                 intent_id: intent.intent_id,
+//                 question: intent.question,
+//                 answer: intent.answer,
+//                 reply: intent.reply,
+//                 form: intent.form,
+//                 enabled: intent.enabled,
+//                 webhook_enabled: intent.webhook_enabled,
+//                 language: intent.language,
+//                 actions: intent.actions,
+//                 attributes: intent.attributes
+//               }
+    
+//               // *******************************
+//               // **** OVERWRITE TRUE option ****
+//               // *******************************
+//               if (req.query.overwrite == "true") {
+//                 Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }, (err, savingResult) => {
+//                   if (err) {
+//                     winston.error("findOneAndUpdate (upsert) FAQ ERROR ", err);
+//                   } else {
+    
+//                     if (savingResult.lastErrorObject.updatedExisting == true) {
+//                       winston.info("updated existing intent")
+//                       faqBotEvent.emit('faq.update', savingResult.value);
+//                     } else {
+//                       winston.info("new intent created")
+//                       faqBotEvent.emit('faq.create', savingResult.value);
+//                     }
+    
+//                   }
+    
+//                 })
+    
+//               // ********************************
+//               // **** OVERWRITE FALSE option ****
+//               // ********************************
+//               } else {
+//                 Faq.create(new_faq, (err, savedFaq) => {
+//                   if (err) {
+//                     winston.debug("create new FAQ ERROR ", err);
+//                     if (err.code == 11000) {
+//                       winston.error("Duplicate intent_display_name.");
+//                       winston.info("Skip duplicated intent_display_name");
+//                     } else {
+//                       winston.info("new intent created")
+//                       faqBotEvent.emit('faq.create', savedFaq);
+//                     }
+//                   }
+//                 })
+//               }
+    
+//             })
+
+//           }
+//           //faqBotEvent.emit('faq_train.importedall', id_faq_kb);
+//           return res.send(updatedFaq_kb);
+  
+//         })
+  
+//       })
+//     }
+
+//   }
+// })
 
 router.get('/exportjson/:id_faq_kb', (req, res) => {
 

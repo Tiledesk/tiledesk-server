@@ -5,6 +5,16 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.13
+- Updated tybot-connector to 0.2.95
+- Improved /users/availables endpoint with department and smart assignment check
+
+# 2.9.12
+- Added support for Team plan
+
+# 2.9.11
+- Bug fix quotas reset after stripe subscription update
+
 # 2.9.10
 - Update tybot-connector to 0.2.94
 
