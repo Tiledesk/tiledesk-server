@@ -7,7 +7,7 @@ var userService = require('../services/userService');
 var faqService = require('../services/faqService');
 
 let chatbot_mock = require('./chatbot-mock');
-let log = false;
+let log = true;
 
 
 //Require the dev-dependencies
@@ -244,9 +244,7 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "blank" })
                         .end((err, res) => {
-                            if (log) {
-                            }
-                            console.log("res.body", res.body);
+                            if (log) { console.log("res.body", res.body); }
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -256,9 +254,7 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                    }
-                                    console.log("faq_list: ", JSON.stringify(res.body, null, 2));
+                                    if (log) { console.log("faq_list: ", JSON.stringify(res.body, null, 2)); }
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
 
@@ -558,7 +554,65 @@ describe('FaqKBRoute', () => {
         })
 
 
-        it('import json (overwrite true)', (done) => {
+        it('import json in an existing bot and replace all intents', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then(((savedUser) => {
+                projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb?replace=true')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
+                        .end((err, res) => {
+                            if (log) {
+                                console.log("res.body: ", res.body);
+                            }
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+                            let id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err )};
+                                    if (log) { console.log("res.body: ", res.doby )};
+
+                                    res.should.have.status(200)
+                                    res.body.should.be.a('array');
+                                    expect(res.body.length).to.equal(0);
+
+                                    chai.request(server)
+                                        .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb)
+                                        .auth(email, pwd)
+                                        .set('Content-Type', 'text/plain')
+                                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
+                                        .end((err, res) => {
+                                            if (log) {
+                                                console.log("import json res: ", JSON.stringify(res.body, null, 2));
+                                            }
+                                            res.should.have.status(200);
+                                            //res.should.be.a('object');
+                                            //expect(res.body.name).to.equal("examplebot");
+                                            //expect(res.body.language).to.equal("en");
+        
+                                            done();
+                                        })
+                                })
+
+                        })
+                })
+            }))
+        })
+
+        // DEPRECATED
+        it('import-json-overwrite-true', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -566,6 +620,7 @@ describe('FaqKBRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
+                    
                     chai.request(server)
                         .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
@@ -614,7 +669,7 @@ describe('FaqKBRoute', () => {
         })
 
 
-        it('import json (overwrite false)', (done) => {
+        it('import json', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -669,169 +724,172 @@ describe('FaqKBRoute', () => {
             })
         })
 
-        it('import json (simple)', (done) => {
+        // DEPRECATED
+        // it('import json (simple)', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/faq_kb')
-                        .auth(email, pwd)
-                        .send({ "name": "testbot", type: "internal", language: 'fr' })
-                        .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.name).to.equal("testbot");
-                            expect(res.body.language).to.equal("fr");
-                            let id_faq_kb = res.body._id;
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/faq_kb')
+        //                 .auth(email, pwd)
+        //                 .send({ "name": "testbot", type: "internal", language: 'fr' })
+        //                 .end((err, res) => {
+        //                     if (log) {
+        //                         console.log("res.body: ", res.body);
+        //                     }
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.name).to.equal("testbot");
+        //                     expect(res.body.language).to.equal("fr");
+        //                     let id_faq_kb = res.body._id;
 
-                            chai.request(server)
-                                .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
-                                .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-                                .end((err, res) => {
-                                    if (log) {
-                                        console.log("import (intents only) json res: ", res.body);
-                                    }
-                                    res.should.have.status(200);
-                                    //res.should.be.a('object');
-                                    //expect(res.body.success).to.equal(true);
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
+        //                         .auth(email, pwd)
+        //                         .set('Content-Type', 'text/plain')
+        //                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
+        //                         .end((err, res) => {
+        //                             if (log) {
+        //                                 console.log("import (intents only) json res: ", res.body);
+        //                             }
+        //                             res.should.have.status(200);
+        //                             //res.should.be.a('object');
+        //                             //expect(res.body.success).to.equal(true);
 
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-                                            if (log) {
-                                                console.log("faq_list: ", res.body);
-                                            }
-                                            res.should.have.status(200);
-                                            res.body.should.be.an('array').that.is.not.empty;
+        //                             chai.request(server)
+        //                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+        //                                 .auth(email, pwd)
+        //                                 .end((err, res) => {
+        //                                     if (log) {
+        //                                         console.log("faq_list: ", res.body);
+        //                                     }
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.an('array').that.is.not.empty;
 
-                                            done();
+        //                                     done();
 
-                                        })
-                                })
-                        })
-                })
-            })
-        })
-
-
-        it('import json (intents only) (overwrite true)', (done) => {
-
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
-
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/faq_kb')
-                        .auth(email, pwd)
-                        .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
-                        .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.name).to.equal("testbot");
-                            expect(res.body.language).to.equal("fr");
-                            let id_faq_kb = res.body._id;
-
-                            chai.request(server)
-                                .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
-                                .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-                                .end((err, res) => {
-                                    if (log) {
-                                        console.log("import (intents only) json res: ", res.body);
-                                    }
-                                    res.should.have.status(200);
-                                    //res.should.be.a('object');
-                                    //expect(res.body.success).to.equal(true);
-
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-                                            if (log) {
-                                                console.log("faq_list: ", res.body);
-                                            }
-                                            res.should.have.status(200);
-                                            res.body.should.be.an('array').that.is.not.empty;
-
-                                            done();
-
-                                        })
-                                })
-                        })
-                })
-            })
-        })
+        //                                 })
+        //                         })
+        //                 })
+        //         })
+        //     })
+        // })
 
 
-        it('import json (intents only) (overwrite false)', (done) => {
+        // DEPRECATED
+        // it('import json (intents only) (overwrite true)', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/faq_kb')
-                        .auth(email, pwd)
-                        .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
-                        .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.name).to.equal("testbot");
-                            expect(res.body.language).to.equal("fr");
-                            let id_faq_kb = res.body._id;
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/faq_kb')
+        //                 .auth(email, pwd)
+        //                 .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
+        //                 .end((err, res) => {
+        //                     if (log) {
+        //                         console.log("res.body: ", res.body);
+        //                     }
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.name).to.equal("testbot");
+        //                     expect(res.body.language).to.equal("fr");
+        //                     let id_faq_kb = res.body._id;
 
-                            chai.request(server)
-                                .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true')
-                                .auth(email, pwd)
-                                .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
-                                .end((err, res) => {
-                                    if (log) {
-                                        console.log("import (intents only) json res: ", res.body);
-                                    }
-                                    res.should.have.status(200);
-                                    //res.should.be.a('object');
-                                    //expect(res.body.success).to.equal(true);
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true&overwrite=true')
+        //                         .auth(email, pwd)
+        //                         .set('Content-Type', 'text/plain')
+        //                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
+        //                         .end((err, res) => {
+        //                             if (log) {
+        //                                 console.log("import (intents only) json res: ", res.body);
+        //                             }
+        //                             res.should.have.status(200);
+        //                             //res.should.be.a('object');
+        //                             //expect(res.body.success).to.equal(true);
 
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-                                            if (log) {
-                                                console.log("faq_list: ", res.body);
-                                            }
-                                            res.should.have.status(200);
-                                            res.body.should.be.an('array').that.is.not.empty;
+        //                             chai.request(server)
+        //                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+        //                                 .auth(email, pwd)
+        //                                 .end((err, res) => {
+        //                                     if (log) {
+        //                                         console.log("faq_list: ", res.body);
+        //                                     }
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.an('array').that.is.not.empty;
 
-                                            done();
+        //                                     done();
 
-                                        })
-                                })
-                        })
-                })
-            })
-        })
+        //                                 })
+        //                         })
+        //                 })
+        //         })
+        //     })
+        // })
+
+
+        // DEPRECATED
+        // it('import json (intents only) (overwrite false)', (done) => {
+
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
+
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/faq_kb')
+        //                 .auth(email, pwd)
+        //                 .send({ "name": "testbot", type: "internal", language: 'fr', template: 'blank' })
+        //                 .end((err, res) => {
+        //                     if (log) {
+        //                         console.log("res.body: ", res.body);
+        //                     }
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.name).to.equal("testbot");
+        //                     expect(res.body.language).to.equal("fr");
+        //                     let id_faq_kb = res.body._id;
+
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb + '?intentsOnly=true')
+        //                         .auth(email, pwd)
+        //                         .set('Content-Type', 'text/plain')
+        //                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-intents.txt')), 'example-json-intents.txt')
+        //                         .end((err, res) => {
+        //                             if (log) {
+        //                                 console.log("import (intents only) json res: ", res.body);
+        //                             }
+        //                             res.should.have.status(200);
+        //                             //res.should.be.a('object');
+        //                             //expect(res.body.success).to.equal(true);
+
+        //                             chai.request(server)
+        //                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+        //                                 .auth(email, pwd)
+        //                                 .end((err, res) => {
+        //                                     if (log) {
+        //                                         console.log("faq_list: ", res.body);
+        //                                     }
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.an('array').that.is.not.empty;
+
+        //                                     done();
+
+        //                                 })
+        //                         })
+        //                 })
+        //         })
+        //     })
+        // })
 
 
         it('exportjson', (done) => {
@@ -879,7 +937,6 @@ describe('FaqKBRoute', () => {
                                                 if (log) {
                                                     console.log("export json res: ", res.body);
                                                 }
-                                                console.log("export json res: ", res.body);
                                                 res.should.have.status(200);
                                                 //res.body.should.be.a('string');
     
