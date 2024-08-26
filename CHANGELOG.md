@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.15
+- Updated jobs-worker-queue-manager
+
 # 2.9.14
 - Added replace option in chatbot import json
 - Added field project_user, fullname, email and assigned requests to what /users/availables returns 
