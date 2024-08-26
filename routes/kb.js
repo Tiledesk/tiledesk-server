@@ -28,8 +28,12 @@ let jobManager = new JobManager(AMQP_MANAGER_URL, {
   exchange: JOB_TOPIC_EXCHANGE
 })
 
-jobManager.connectAndStartPublisher(() => {
-  winston.info("ConnectPublisher done");
+jobManager.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
 })
 
 let default_preview_settings = {

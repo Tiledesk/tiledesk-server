@@ -21,7 +21,15 @@ class JobManager {
         var that = this;
         if (this.info) {console.log("[JobWorker] JobManager publisher started");}
         
-        this.queueManager.connect(function() {
+        this.queueManager.connect(function(status, err) {
+
+            if (err) {
+                console.log("[JobWorker] - connectAndStartPublisher - connection error: ", err);
+                if (callback) {
+                    callback(null, err)
+                    return;
+                }
+            }
             if (that.debug) {console.log("[JobWorker] Queue started");}
             that.queuePublisherConnected = true;
 
@@ -41,7 +49,8 @@ class JobManager {
                 } 
 
                 if (callback) {
-                    callback();
+                    callback(status, null);
+                    return;
                 }
             });
         });

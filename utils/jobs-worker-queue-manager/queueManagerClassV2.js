@@ -46,29 +46,37 @@ connect(callback) {
     amqp.connect(this.url, function(err, conn) {
       if (err) {
         // if (this.debug) {console.log("[AMQP]", err.message);
-        if (that.debug) {console.log("[JobWorker] AMQP", err);}
+        // if (that.debug) {console.log("[JobWorker] AMQP", err);}
+        console.error("[JobWorker] AMQP", err);
+        console.log("[JobWorker] Try to reconnect");
 
         return setTimeout(function() {
           that.connect()
         }, 1000);
       }
       conn.on("error", function(err) {
+        console.error("[JobWorker] err.message", err.message);
         if (err.message !== "Connection closing") {
-          if (that.debug) {console.log("[JobWorker] AMQP conn error", err);}
+          //if (that.debug) {console.log("[JobWorker] AMQP conn error", err);}
+          console.log("[JobWorker] AMQP conn error", err)
+          if (callback) {
+            callback(null, err)
+          }
         }
       });
       conn.on("close", function() {
-        if (that.debug) {console.log("[JobWorker] AMQP reconnecting");}
+        // if (that.debug) {console.log("[JobWorker] AMQP reconnecting");}
+        console.log("[JobWorker] AMQP reconnecting")
         return setTimeout(that.connect, 1000);
       });
 
-      if (that.debug) {console.log("[JobWorker] AMQP connected");}
+      console.log("[JobWorker] AMQP connected")
       that.amqpConn = conn;
 
       // that.whenConnected(callback);
 
       if (callback) {
-        callback();
+        callback('Connected', null);
       }
     //   return resolve();
     // });
@@ -96,10 +104,12 @@ startPublisher(callback) {
   that.amqpConn.createConfirmChannel(function(err, ch) {
     if (that.closeOnErr(err)) return;
     ch.on("error", function(err) {
-      if (that.debug) {console.log("[JobWorker] AMQP channel error", err);}
+      // if (that.debug) {console.log("[JobWorker] - startPublisher AMQP channel error", err);}
+      console.log("[JobWorker] - startPublisher AMQP channel error", err);
     });
     ch.on("close", function() {
-      if (that.debug) {console.log("[JobWorker] AMQP channel closed");}
+      // if (that.debug) {console.log("[JobWorker] AMQP channel closed");}
+      console.log("[JobWorker] - startPublisher AMQP channel closed")
     });
 
     // if (this.debug) {console.log("[AMQP] pubChannel");
