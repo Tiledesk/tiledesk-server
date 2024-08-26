@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.16
+- Update: change automatically the content status on re-index
+
 # 2.9.15
 - Updated jobs-worker-queue-manager
 
