@@ -1208,15 +1208,13 @@ async function startScrape(data) {
     data.gptkey = gptkey;
   }
 
-  
-  let status_updated = await updateStatus(data.id, 100);
+
+  let status_updated = await updateStatus(data.id, 200);
   winston.verbose("status of kb " + data.id + " updated: " + status_updated);
 
   return new Promise((resolve, reject) => {
     openaiService.singleScrape(data).then(async (resp) => {
       winston.debug("singleScrape resp: ", resp.data);
-      console.log("singleScrape resp: ", resp);
-      console.log("singleScrape resp.data: ", resp.data);
       let status_updated = await updateStatus(data.id, 300);
       winston.verbose("status of kb " + data.id + " updated: " + status_updated);
       resolve(resp.data);
