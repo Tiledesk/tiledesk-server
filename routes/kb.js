@@ -1208,14 +1208,22 @@ async function startScrape(data) {
     data.gptkey = gptkey;
   }
 
+  
+  let status_updated = await updateStatus(data.id, 100);
+  winston.verbose("status of kb " + data.id + " updated: " + status_updated);
+
   return new Promise((resolve, reject) => {
     openaiService.singleScrape(data).then(async (resp) => {
       winston.debug("singleScrape resp: ", resp.data);
-      let status_updated = await updateStatus(data.id, 100);
+      console.log("singleScrape resp: ", resp);
+      console.log("singleScrape resp.data: ", resp.data);
+      let status_updated = await updateStatus(data.id, 300);
       winston.verbose("status of kb " + data.id + " updated: " + status_updated);
       resolve(resp.data);
-    }).catch((err) => {
+    }).catch( async (err) => {
       winston.error("singleScrape err: ", err);
+      let status_updated = await updateStatus(data.id, 400);
+      winston.verbose("status of kb " + data.id + " updated: " + status_updated);
       reject(err);
     })
   })
