@@ -196,6 +196,17 @@ class WebSocketServer {
         var projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
 
+        if (projectId === "65203e12f8c0cf002cf4110b"
+            || projectId === "62c3f10152dc7400352bab0d"
+            || projectId === "66acec0cf7ebf80013d67974"
+            || projectId === "6613ff078890fc0013ad3c3a"
+            || projectId === "6565047fdd64fd001323f37c"
+            || projectId === "656054000410fa00132e5dcc") {
+
+              console.log('WSS onSubscribeCallback - ProjectID ' + projectId);
+              console.log("x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
+
+            }
 
         let q = Project.findOne({ _id: projectId, status: 100 })
 
