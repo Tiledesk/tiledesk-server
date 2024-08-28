@@ -424,6 +424,7 @@ if (process.env.ROUTELOGGER_ENABLED==="true") {
 
 app.get('/', function (req, res) {  
   console.log("x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
+  console.log("X-Real-IP ", req.headers['X-Real-IP'])
   console.log("remoteAddress: ",  req.socket.remoteAddress)
   res.send('Hello from Tiledesk server. It\'s UP. See the documentation here http://developer.tiledesk.com');
 });
