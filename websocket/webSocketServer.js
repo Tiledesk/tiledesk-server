@@ -205,7 +205,7 @@ class WebSocketServer {
 
               console.log('WSS onSubscribeCallback - ProjectID ' + projectId);
               console.log("x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
-
+              console.log("remoteAddress: ",  req.socket.remoteAddress)
             }
 
         let q = Project.findOne({ _id: projectId, status: 100 })
