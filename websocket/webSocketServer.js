@@ -206,6 +206,15 @@ class WebSocketServer {
               console.log('WSS onSubscribeCallback - ProjectID ' + projectId);
               console.log("x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
               console.log("remoteAddress: ",  req.socket.remoteAddress)
+
+
+              try {
+                console.log("req: ", JSON.stringify(req))
+              } catch(err) {
+                console.log("Unable to stringify request")
+                console.log("req: ", req)
+              }
+
             }
 
         let q = Project.findOne({ _id: projectId, status: 100 })
