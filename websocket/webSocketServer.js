@@ -195,6 +195,9 @@ class WebSocketServer {
 
         var projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
+        
+        console.log('WSS onSubscribeCallback - ProjectID ' + projectId);
+        console.log("x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
 
 
         let q = Project.findOne({ _id: projectId, status: 100 })
