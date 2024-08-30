@@ -204,7 +204,9 @@ class WebSocketServer {
             || projectId === "656054000410fa00132e5dcc") {
 
               console.log('(WebSocket) WSS onSubscribeCallback - ProjectID ' + projectId);
+              console.log("(WebSocket) req ", req.headers)
               console.log("(WebSocket) x-forwarded-for: ", req.headers['x-forwarded-for'], "remote port: ", req.socket.remotePort);
+              console.log("(/api) X-Real-IP ", req.headers['X-Real-IP'])
               console.log("(WebSocket) remoteAddress: ",  req.socket.remoteAddress)
 
 
