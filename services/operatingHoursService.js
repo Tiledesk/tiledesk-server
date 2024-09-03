@@ -355,6 +355,7 @@ function checkDay(operatingHoursPars, dayNowAtPrjctTz) {
 }
 
 function checkTimes(operatingHoursPars, dayNowAtPrjctTz, timeNowAtPrjctTz) {
+
   for (var operatingHoursweekDay in operatingHoursPars) {
     if (operatingHoursweekDay != 'tzname') {
       if (dayNowAtPrjctTz == operatingHoursweekDay) {
