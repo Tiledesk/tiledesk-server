@@ -324,7 +324,8 @@ class EmailService {
     winston.debug(' mail.config', mail.config);
 
     if (!mail.to) {
-      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      // return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      return winston.warn("EmailService send method. to field is not defined");
     }
 
     // send mail with defined transport object
