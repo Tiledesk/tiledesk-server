@@ -429,7 +429,7 @@ router.put('/:requestid/assign', function (req, res) {
 
   //cacheinvalidation
   return Request.findOne({ "request_id": req.params.requestid, "id_project": req.projectid })
-    .exec( async function (err, request) {
+    .exec(function (err, request) {
 
       if (err) {
         winston.error('Error patching request.', err);
@@ -440,56 +440,20 @@ router.put('/:requestid/assign', function (req, res) {
         return res.status(404).send({ success: false, msg: 'Request not found' });
       }
 
-      console.log("/assign request_id: ", request.request_id);
-      console.log("/assign request status: ", request.status);
-      console.log("/assign request createdAt: ", request.createdAt);
-
       if (request.status === RequestConstants.ASSIGNED || request.status === RequestConstants.SERVED || request.status === RequestConstants.CLOSED) {
         winston.info('Request already assigned');
         return res.json(request);
       }
+      //route(request_id, departmentid, id_project) {      
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
-      // New Code - START
-      const project = req.project;
-      console.log("/assign project settings: ", JSON.stringify(project.settings));
+        winston.debug("department changed", updatedRequest);
 
-      if (request.status === RequestConstants.UNASSIGNED) {
-        console.log("/assign request already in UNASSIGNED STATUS --> Try to assign it");
-        requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
-  
-          winston.debug("department changed", updatedRequest);
-  
-          return res.json(updatedRequest);
-        }).catch(function (error) {
-          winston.error('/assign Error changing the department.', error)
-          return res.status(500).send({ success: false, msg: 'Error changing the department.' });
-        })
-      } else {
-        if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
-          console.log("/assign smart assignment enabled --> put in queue")
-          let updatedRequest = await requestService.changeStatusByRequestId(req.params.requestid, req.projectid, RequestConstants.UNASSIGNED).catch((err) => {
-            console.error("Error changing requests status:  ", err);
-            return res.status(500).send({ success: false, error: err });
-          })
-
-          console.log("/assign updated request_id: ", request.request_id);
-          console.log("/assign updated request status: ", request.status);
-          console.log("/assign updated request createdAt: ", request.createdAt);
-
-        } else {
-          console.log("/assign smart assignment disabled --> continue with standard routing")
-          requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
-  
-            winston.debug("department changed", updatedRequest);
-    
-            return res.json(updatedRequest);
-          }).catch(function (error) {
-            winston.error('Error changing the department.', error)
-            return res.status(500).send({ success: false, msg: 'Error changing the department.' });
-          })
-        }
-      }
-  
+        return res.json(updatedRequest);
+      }).catch(function (error) {
+        winston.error('Error changing the department.', error)
+        return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+      })
     });
 });
 
