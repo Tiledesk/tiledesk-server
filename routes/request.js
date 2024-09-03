@@ -449,7 +449,6 @@ router.put('/:requestid/assign', function (req, res) {
       const project = req.project;
       console.log("/assign project: ", JSON.stringify(project));
       if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
-
         /**
          * If the smart assignment is active (queues active) an incoming request must be enqueued rather than be served immediately.
          * So, the status of the request must be changed in 100 (unassigned)
@@ -460,21 +459,35 @@ router.put('/:requestid/assign', function (req, res) {
           return res.json(updatedRequest)
         }).catch((err) => {
           console.error("Error changing requests status:  ", err)
+
+          console.log("Continue with standard routing")
+          requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+  
+            winston.debug("department changed", updatedRequest);
+    
+            return res.json(updatedRequest);
+          }).catch(function (error) {
+            winston.error('Error changing the department.', error)
+            return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+          })
         })
       } 
       // New Code - END
+      else {
+        console.log("Starting routing!!!!!")
+        //route(request_id, departmentid, id_project) {      
+        requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+  
+          winston.debug("department changed", updatedRequest);
+  
+          return res.json(updatedRequest);
+        }).catch(function (error) {
+          winston.error('Error changing the department.', error)
+          return res.status(500).send({ success: false, msg: 'Error changing the department.' });
+        })
 
-      console.log("Starting routing!!!!!")
-      //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      }
 
-        winston.debug("department changed", updatedRequest);
-
-        return res.json(updatedRequest);
-      }).catch(function (error) {
-        winston.error('Error changing the department.', error)
-        return res.status(500).send({ success: false, msg: 'Error changing the department.' });
-      })
     });
 });
 
