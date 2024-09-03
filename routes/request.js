@@ -1463,6 +1463,52 @@ router.get('/csv', function (req, res, next) {
 
 });
 
+router.get('/count', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let merge_assigned = req.query.merge_assigned;
+
+  let unassigned_count = 0;
+  let human_assigned_count = 0;
+  let bot_assigned_count = 0;
+
+  unassigned_count = await Request.countDocuments({ id_project: id_project, status: 100, preflight: false }).catch((err) => {
+    winston.error("Error getting unassigned requests count: ", err);
+    res.status(400).send({ success: false, error: err });
+  })
+  winston.info("Unassigned count: ", unassigned_count);
+
+  human_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: false }).catch((err) => {
+    winston.error("Error getting human unassigned requests count: ", err);
+    res.status(400).send({ success: false, error: err });
+  })
+  winston.info("Unassigned count: ", unassigned_count);
+
+  bot_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: true }).catch((err) => {
+    winston.error("Error getting bot assigned requests count: ", err);
+    res.status(400).send({ success: false, error: err });
+  })
+  winston.info("Unassigned count: ", bot_assigned_count);
+
+
+  if (merge_assigned) {
+    let data = {
+      unassigned: unassigned_count,
+      assigned: human_assigned_count + bot_assigned_count
+    }
+    return res.status(200).send(data);
+    
+  } else {
+    let data = {
+      unassigned: unassigned_count,
+      assigned: human_assigned_count,
+      bot_assigned: bot_assigned_count
+    }
+    return res.status(200).send(data);
+  }
+
+})
+
 router.get('/:requestid', function (req, res) {
 
   var requestid = req.params.requestid;
@@ -1514,52 +1560,6 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
     console.error("err: ", err.response)
     res.status(400).send(err);
   })
-
-})
-
-router.get('/count', async (req, res) => {
-  
-  let id_project = req.projectid;
-  let merge_assigned = req.query.merge_assigned;
-
-  let unassigned_count = 0;
-  let human_assigned_count = 0;
-  let bot_assigned_count = 0;
-
-  unassigned_count = await Request.countDocuments({ id_project: id_project, status: 100, preflight: false }).catch((err) => {
-    winston.error("Error getting unassigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.info("Unassigned count: ", unassigned_count);
-
-  human_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: false }).catch((err) => {
-    winston.error("Error getting human unassigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.info("Unassigned count: ", unassigned_count);
-
-  bot_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: true }).catch((err) => {
-    winston.error("Error getting bot assigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.info("Unassigned count: ", bot_assigned_count);
-
-
-  if (merge_assigned) {
-    let data = {
-      unassigned: unassigned_count,
-      assigned: human_assigned_count + bot_assigned_count
-    }
-    return res.status(200).send(data);
-    
-  } else {
-    let data = {
-      unassigned: unassigned_count,
-      assigned: human_assigned_count,
-      bot_assigned: bot_assigned_count
-    }
-    return res.status(200).send(data);
-  }
 
 })
 
