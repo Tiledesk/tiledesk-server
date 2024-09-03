@@ -444,6 +444,27 @@ router.put('/:requestid/assign', function (req, res) {
         winston.info('Request already assigned');
         return res.json(request);
       }
+
+      // New Code - START
+      const project = req.project;
+      console.log("/assign project: ", JSON.stringify(project));
+      if (project && project.settings && project.settings.chat_limit_on && project.settings.max_agent_assigned_chat) {
+
+        /**
+         * If the smart assignment is active (queues active) an incoming request must be enqueued rather than be served immediately.
+         * So, the status of the request must be changed in 100 (unassigned)
+         */
+        console.log("Changing requests status...")
+        requestService.changeStatusByRequestId(req.params.requestid, req.projectid, 100).then((updatedRequest) => {
+          console.log("changeStatusByRequestId - updatedRequest: ", updatedRequest);
+          return res.json(updatedRequest)
+        }).catch((err) => {
+          console.error("Error changing requests status:  ", err)
+        })
+      } 
+      // New Code - END
+
+      console.log("Starting routing!!!!!")
       //route(request_id, departmentid, id_project) {      
       requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
