@@ -5,8 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.9.17
+# 2.9.18
 - Added: /requests/count endpoint
+- Updated: sms-connector to 0.1.10
+- Updated: vxml-connector to 0.1.39
 
 # 2.9.16
 - Update: change automatically the content status on re-index
