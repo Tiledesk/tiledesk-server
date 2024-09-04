@@ -6,6 +6,9 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.9.18
+- Update: force lastRequestsLimit to be a number
+
+# 2.9.18
 - Added: /requests/count endpoint
 - Updated: sms-connector to 0.1.10
 - Updated: vxml-connector to 0.1.39
