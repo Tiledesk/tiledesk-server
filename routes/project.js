@@ -906,7 +906,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
         });
       });
     } catch (err) {
-      wisnton.error("(Users Availables) check operating hours error: ", err);
+      winston.error("(Users Availables) check operating hours error: ", err);
       return res.status(500).send({ success: false, msg: err });
     }
   }
