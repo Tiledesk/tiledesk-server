@@ -40,6 +40,8 @@ var cacheEnabler = require("../services/cacheEnabler");
 var lastRequestsLimit = process.env.WS_HISTORY_REQUESTS_LIMIT || 100;
 winston.debug('lastRequestsLimit:' + lastRequestsLimit);
 
+lastRequestsLimit = Number(lastRequestsLimit);
+
 var messagesLimit = process.env.WS_HISTORY_MESSAGES_LIMIT || 300;
 winston.debug('messagesLimit:' + messagesLimit);
 
