@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.9.18
+# 2.9.20
+- Fixed bug: delete namespace doesn't work properly (wrong namespace)
+
+# 2.9.19
 - Update: force lastRequestsLimit to be a number
 
 # 2.9.18
