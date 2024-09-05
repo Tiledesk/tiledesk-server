@@ -1053,9 +1053,24 @@ router.delete('/:kb_id', async (req, res) => {
   let kb_id = req.params.kb_id;
   winston.verbose("delete kb_id " + kb_id);
 
+
+  let kb = KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
+    winston.warn("Unable to find kb. Error: ", err);
+    return res.status(500).send({ success: false, error: err })
+  })
+  
+  if (!kb) {
+    winston.error("Unable to delete kb. Kb not found...")
+    return res.status(404).send({ success: false, error: "Content not found" })
+  }
+
   let data = {
     id: kb_id,
-    namespace: project_id
+    namespace: kb.namespace
+  }
+
+  if (!data.namespace) {
+    data.namespace = project_id;
   }
 
   openaiService.deleteIndex(data).then((resp) => {
