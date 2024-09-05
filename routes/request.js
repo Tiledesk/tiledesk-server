@@ -1476,19 +1476,19 @@ router.get('/count', async (req, res) => {
     winston.error("Error getting unassigned requests count: ", err);
     res.status(400).send({ success: false, error: err });
   })
-  winston.info("Unassigned count: ", unassigned_count);
+  winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
 
   human_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: false }).catch((err) => {
     winston.error("Error getting human unassigned requests count: ", err);
     res.status(400).send({ success: false, error: err });
   })
-  winston.info("Unassigned count: ", unassigned_count);
+  winston.debug("Human assigned count for project " + id_project + ": " + human_assigned_count);
 
   bot_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: true }).catch((err) => {
     winston.error("Error getting bot assigned requests count: ", err);
     res.status(400).send({ success: false, error: err });
   })
-  winston.info("Unassigned count: ", bot_assigned_count);
+  winston.debug("Bot assigned count for project " + id_project + ": " + bot_assigned_count);
 
 
   if (merge_assigned) {
