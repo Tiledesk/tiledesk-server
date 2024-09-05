@@ -1054,7 +1054,7 @@ router.delete('/:kb_id', async (req, res) => {
   winston.verbose("delete kb_id " + kb_id);
 
 
-  let kb = KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
+  let kb = await KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
     winston.warn("Unable to find kb. Error: ", err);
     return res.status(500).send({ success: false, error: err })
   })
