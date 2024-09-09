@@ -633,6 +633,22 @@ class RequestService {
       let isTestConversation = false;
       let isVoiceConversation = false;
 
+      // ESPERIMENTO
+      if (proactive) {
+        console.log("PROACTIVE CASE")
+        let open_request = await getAlreadyOpenRequest(id_project, lead_id);
+        console.log("Open request found!!! ", JSON.stringify(open_request))
+  
+        if (open_request) {
+          console.log("\nOPEN REQUEST EXISTS");
+          console.log("\nSKIP INCREMENT");
+        } else {
+          console.log("\nOPEN REQUEST NOT EXISTS");
+          console.log("\nINCREMENT NOW");
+        }
+      }
+
+
       var that = this;
 
       return new Promise(async (resolve, reject) => {
@@ -850,7 +866,7 @@ class RequestService {
           }
 
           if (proactive) {
-            requestEvent.emit('request.create.quote', payload);;
+            requestEvent.emit('request.create.quote', payload);
           }
 
           return resolve(savedRequest);
@@ -2617,6 +2633,26 @@ class RequestService {
       })
     })
 
+  }
+
+  async getAlreadyOpenRequest(id_project, lead_id) {
+
+    return new Promise( async (resolve, reject) => {
+
+      //const timeAgo = new Date(Date.now() - 60 * 60 * 1000); // 1 hour
+      const timeAgo = new Date(Date.now() - 2 * 60 * 1000); // 2 minutes
+      let request = await Request.findOne({ id_project: id_project, lead_id: lead_id, createdAt: { $gte: oneHourAgo } }).catch((err) => {
+        winston.error("Error getting request: ", err);
+        resolve(null);
+      })
+
+      if (!request) {
+        console.log("No request found");
+        resolve(null)
+      }
+
+      resolve(request);
+    })
   }
 
 }
