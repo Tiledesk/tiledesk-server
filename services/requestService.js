@@ -17,6 +17,7 @@ var UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
 var configGlobal = require('../config/global');
+const requestConstants = require('../models/requestConstants');
 const axios = require("axios").default;
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
@@ -297,6 +298,11 @@ class RequestService {
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
+            console.log("\nCase 1")
+            console.log("- SAME STATUS routedRequest.status ", routedRequest.status);
+            console.log("- SAME DEPARTENT routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
+            console.log("- SAME PARTICIPANTS routedRequest.participants ", routedRequest.participants);
+
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
             if (no_populate === "true" || no_populate === true) {
@@ -317,6 +323,14 @@ class RequestService {
               });
           }
 
+          // if ((requestBeforeRoute.status === requestConstants.TEMP) && ((routedRequest.status === requestConstants.ASSIGNED) || (routedRequest.status === requestConstants.UNASSIGNED))) {
+          //   // incrementa
+          // }
+
+          console.log("\nCase 2")
+          console.log("- routedRequest.status ", routedRequest.status);
+          console.log("- routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
+          console.log("- routedRequest.participants ", routedRequest.participants);
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
@@ -326,6 +340,7 @@ class RequestService {
               return reject(err);
             }
 
+            // Request con Status aggiornato (es. da 50 a 200)
             winston.debug("after save savedRequest", savedRequest);
 
             return savedRequest
@@ -526,6 +541,7 @@ class RequestService {
       }
 
       let isTestConversation = false;
+      let isVoiceConversation = false;
 
       var that = this;
 
@@ -549,10 +565,19 @@ class RequestService {
             project: p,
             request: request
           }
+
+          console.log("\nrequest STATUS: ", request.status);
+          console.log("\nrequest PREFLIGHT: ", request.preflight);
+          console.log("\nrequest HAS BOT: ", request.hasBot);
+
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
               isTestConversation = true;
+          }
+          else if (channel && (channel.name === 'voice-vxml')) {
+              winston.verbose("is a voice conversation --> skip quote availability check")
+              isVoiceConversation = true;
           }
           else {
             let available = await qm.checkQuote(p, request, 'requests');
@@ -730,7 +755,7 @@ class RequestService {
 
           requestEvent.emit('request.create.simple', savedRequest);
 
-          if (!isTestConversation) {
+          if (!isTestConversation && !isVoiceConversation) {
             requestEvent.emit('request.create.quote', payload);;
           }
 
