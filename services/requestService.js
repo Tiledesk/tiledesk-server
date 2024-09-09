@@ -634,19 +634,19 @@ class RequestService {
       let isVoiceConversation = false;
 
       // ESPERIMENTO
-      if (proactive) {
-        console.log("PROACTIVE CASE")
-        let open_request = await getAlreadyOpenRequest(id_project, lead_id);
+      // if (proactive) {
+      //   console.log("PROACTIVE CASE")
+      //   let open_request = await getAlreadyOpenRequest(id_project, lead_id);
         
-        if (open_request) {
-          console.log("Open request found!!! ", JSON.stringify(open_request))
-          console.log("\nOPEN REQUEST EXISTS");
-          console.log("\nSKIP INCREMENT");
-        } else {
-          console.log("\nOPEN REQUEST NOT EXISTS");
-          console.log("\nINCREMENT NOW");
-        }
-      }
+      //   if (open_request) {
+      //     console.log("Open request found!!! ", JSON.stringify(open_request))
+      //     console.log("\nOPEN REQUEST EXISTS");
+      //     console.log("\nSKIP INCREMENT");
+      //   } else {
+      //     console.log("\nOPEN REQUEST NOT EXISTS");
+      //     console.log("\nINCREMENT NOW");
+      //   }
+      // }
 
 
       var that = this;
