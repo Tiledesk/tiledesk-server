@@ -988,6 +988,10 @@ router.get('/', function (req, res, next) {
     query.ticket_id = req.query.ticket_id;
   }
 
+  if (req.query.preflight) {
+    query.preflight = req.query.preflight;
+  }
+
   // if (req.query.request_id) {
   //   console.log('req.query.request_id', req.query.request_id);
   //   query.request_id = req.query.request_id;
