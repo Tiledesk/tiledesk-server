@@ -17,6 +17,7 @@ var UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
 var configGlobal = require('../config/global');
+const requestConstants = require('../models/requestConstants');
 const axios = require("axios").default;
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
@@ -317,6 +318,10 @@ class RequestService {
               });
           }
 
+          // if ((requestBeforeRoute.status === requestConstants.TEMP) && ((routedRequest.status === requestConstants.ASSIGNED) || (routedRequest.status === requestConstants.UNASSIGNED))) {
+          //   // incrementa
+          // }
+
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
@@ -326,6 +331,7 @@ class RequestService {
               return reject(err);
             }
 
+            // Request con Status aggiornato (es. da 50 a 200)
             winston.debug("after save savedRequest", savedRequest);
 
             return savedRequest
@@ -550,6 +556,11 @@ class RequestService {
             project: p,
             request: request
           }
+
+          console.log("\nrequest STATUS: ", request.status);
+          console.log("\nrequest PREFLIGHT: ", request.preflight);
+          console.log("\nrequest HAS BOT: ", request.hasBot);
+
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
