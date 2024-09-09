@@ -2641,7 +2641,7 @@ class RequestService {
 
       //const timeAgo = new Date(Date.now() - 60 * 60 * 1000); // 1 hour
       const timeAgo = new Date(Date.now() - 2 * 60 * 1000); // 2 minutes
-      let request = await Request.findOne({ id_project: id_project, lead_id: lead_id, createdAt: { $gte: oneHourAgo } }).catch((err) => {
+      let request = await Request.findOne({ id_project: id_project, lead_id: lead_id, createdAt: { $gte: timeAgo } }).catch((err) => {
         winston.error("Error getting request: ", err);
         resolve(null);
       })
