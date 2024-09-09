@@ -298,6 +298,11 @@ class RequestService {
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
+            console.log("\nCase 1")
+            console.log("- SAME STATUS routedRequest.status ", routedRequest.status);
+            console.log("- SAME DEPARTENT routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
+            console.log("- SAME PARTICIPANTS routedRequest.participants ", routedRequest.participants);
+
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
             if (no_populate === "true" || no_populate === true) {
@@ -322,6 +327,10 @@ class RequestService {
           //   // incrementa
           // }
 
+          console.log("\nCase 2")
+          console.log("- routedRequest.status ", routedRequest.status);
+          console.log("- routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
+          console.log("- routedRequest.participants ", routedRequest.participants);
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
