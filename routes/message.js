@@ -181,6 +181,7 @@ async (req, res)  => {
                   requester: project_user,
                   priority: req.body.priority,
                   followers: req.body.followers,
+                  proactive: true
                 };
   
                 return requestService.create(new_request).then(function (savedRequest) {

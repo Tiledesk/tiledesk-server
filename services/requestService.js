@@ -373,7 +373,7 @@ class RequestService {
 
           }
 
-          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === requestConstants.UNASSIGNED) {
+          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === requestConstants.ASSIGNED) {
             console.log("\nCase 3 - Requests from proactive messages")
             console.log("- routedRequest.status ", routedRequest.status);
             console.log("- routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
@@ -615,6 +615,8 @@ class RequestService {
       var followers = request.followers;
       let createdAt = request.createdAt;
 
+      let proactive = request.proactive;
+
       if (!departmentid) {
         departmentid = 'default';
       }
@@ -845,6 +847,10 @@ class RequestService {
 
           if (!isTestConversation && !isVoiceConversation) {
             //requestEvent.emit('request.create.quote', payload);;
+          }
+
+          if (proactive) {
+            requestEvent.emit('request.create.quote', payload);;
           }
 
           return resolve(savedRequest);
