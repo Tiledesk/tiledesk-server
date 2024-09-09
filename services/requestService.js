@@ -637,9 +637,9 @@ class RequestService {
       if (proactive) {
         console.log("PROACTIVE CASE")
         let open_request = await getAlreadyOpenRequest(id_project, lead_id);
-        console.log("Open request found!!! ", JSON.stringify(open_request))
-  
+        
         if (open_request) {
+          console.log("Open request found!!! ", JSON.stringify(open_request))
           console.log("\nOPEN REQUEST EXISTS");
           console.log("\nSKIP INCREMENT");
         } else {
