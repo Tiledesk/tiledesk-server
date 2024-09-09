@@ -323,14 +323,52 @@ class RequestService {
               });
           }
 
-          // if ((requestBeforeRoute.status === requestConstants.TEMP) && ((routedRequest.status === requestConstants.ASSIGNED) || (routedRequest.status === requestConstants.UNASSIGNED))) {
-          //   // incrementa
-          // }
+          if ((requestBeforeRoute.status === requestConstants.TEMP) && ((routedRequest.status === requestConstants.ASSIGNED) || (routedRequest.status === requestConstants.UNASSIGNED))) {
+            console.log("\nCase 2")
+            console.log("- routedRequest.status ", routedRequest.status);
+            console.log("- routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
+            console.log("- routedRequest.participants ", routedRequest.participants);
 
-          console.log("\nCase 2")
-          console.log("- routedRequest.status ", routedRequest.status);
-          console.log("- routedRequest.beforeDepartmentId ", routedRequest.beforeDepartmentId);
-          console.log("- routedRequest.participants ", routedRequest.participants);
+            let q = Project.findOne({ _id: request.id_project, status: 100 });
+            if (cacheEnabler.project) {
+              q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
+              winston.debug('project cache enabled for /project detail');
+            }
+            q.exec(async (err, p) => {
+              if (err) {
+                winston.error('Error getting project ', err);
+              }
+              if (!p) {
+                winston.warn('Project not found ');
+              }
+
+              let payload = {
+                project: p,
+                request: request
+              }
+    
+              requestEvent.emit('request.create.quote', payload);
+    
+        
+              // if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+              //     winston.verbose("is a test conversation --> skip quote availability check")
+              //     isTestConversation = true;
+              // }
+              // else if (channel && (channel.name === 'voice-vxml')) {
+              //     winston.verbose("is a voice conversation --> skip quote availability check")
+              //     isVoiceConversation = true;
+              // }
+              // else {
+              //   let available = await qm.checkQuote(p, request, 'requests');
+              //   if (available === false) {
+              //     winston.info("Requests limits reached for project " + p._id)
+              //     return false;
+              //   }
+              // }
+            })
+
+          }
+
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
@@ -756,7 +794,7 @@ class RequestService {
           requestEvent.emit('request.create.simple', savedRequest);
 
           if (!isTestConversation && !isVoiceConversation) {
-            requestEvent.emit('request.create.quote', payload);;
+            //requestEvent.emit('request.create.quote', payload);;
           }
 
           return resolve(savedRequest);
