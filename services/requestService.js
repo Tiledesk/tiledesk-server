@@ -17,7 +17,6 @@ var UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
 var configGlobal = require('../config/global');
-const requestConstants = require('../models/requestConstants');
 const axios = require("axios").default;
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
@@ -287,6 +286,7 @@ class RequestService {
             winston.debug("beforeDepartmentId:" + beforeDepartmentId);
           }
 
+
           let afterDepartmentId;
           if (routedRequest.department) {
             afterDepartmentId = routedRequest.department.toString();
@@ -317,7 +317,6 @@ class RequestService {
               });
           }
 
-
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
@@ -327,7 +326,6 @@ class RequestService {
               return reject(err);
             }
 
-            // Request con Status aggiornato (es. da 50 a 200)
             winston.debug("after save savedRequest", savedRequest);
 
             return savedRequest
@@ -514,7 +512,6 @@ class RequestService {
       var followers = request.followers;
       let createdAt = request.createdAt;
 
-      let proactive = request.proactive;
 
       if (!departmentid) {
         departmentid = 'default';
@@ -531,22 +528,6 @@ class RequestService {
 
       let isTestConversation = false;
       let isVoiceConversation = false;
-
-      // ESPERIMENTO
-      // if (proactive) {
-      //   console.log("PROACTIVE CASE")
-      //   let open_request = await getAlreadyOpenRequest(id_project, lead_id);
-        
-      //   if (open_request) {
-      //     console.log("Open request found!!! ", JSON.stringify(open_request))
-      //     console.log("\nOPEN REQUEST EXISTS");
-      //     console.log("\nSKIP INCREMENT");
-      //   } else {
-      //     console.log("\nOPEN REQUEST NOT EXISTS");
-      //     console.log("\nINCREMENT NOW");
-      //   }
-      // }
-
 
       var that = this;
 
@@ -761,10 +742,6 @@ class RequestService {
           requestEvent.emit('request.create.simple', savedRequest);
 
           if (!isTestConversation && !isVoiceConversation) {
-            //requestEvent.emit('request.create.quote', payload);;
-          }
-
-          if (proactive) {
             requestEvent.emit('request.create.quote', payload);
           }
 
@@ -2534,25 +2511,6 @@ class RequestService {
 
   }
 
-  async getAlreadyOpenRequest(id_project, lead_id) {
-
-    return new Promise( async (resolve, reject) => {
-
-      //const timeAgo = new Date(Date.now() - 60 * 60 * 1000); // 1 hour
-      const timeAgo = new Date(Date.now() - 2 * 60 * 1000); // 2 minutes
-      let request = await Request.findOne({ id_project: id_project, lead_id: lead_id, createdAt: { $gte: timeAgo } }).catch((err) => {
-        winston.error("Error getting request: ", err);
-        resolve(null);
-      })
-
-      if (!request) {
-        console.log("No request found");
-        resolve(null)
-      }
-
-      resolve(request);
-    })
-  }
 
 }
 
