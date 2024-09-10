@@ -1012,7 +1012,8 @@ router.get('/', function (req, res, next) {
   }
 
   if (req.query.preflight) {
-    query.preflight = req.query.preflight;
+    //query.preflight = req.query.preflight;
+    delete query.preflight;
   }
 
   // if (req.query.request_id) {
