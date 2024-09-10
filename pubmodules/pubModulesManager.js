@@ -33,11 +33,11 @@ class PubModulesManager {
         this.telegram = undefined;
         this.telegramRoute = undefined;
 
-        this.sms = undefined;
-        this.smsRoute = undefined;
+        // this.sms = undefined;
+        // this.smsRoute = undefined;
         
-        this.voice = undefined;
-        this.voiceRoute = undefined;
+        // this.voice = undefined;
+        // this.voiceRoute = undefined;
 
         this.mqttTest = undefined;
         this.mqttTestRoute = undefined;
@@ -97,14 +97,14 @@ class PubModulesManager {
             app.use('/modules/telegram', this.telegramRoute);
             winston.info("PubModulesManager telegramRoute controller loaded");
         }
-        if (this.smsRoute) {
-            app.use('/modules/sms', this.smsRoute);
-            winston.info("PubModulesManager smsRoute controller loaded");
-        }
-        if (this.voiceRoute) {
-            app.use('/modules/voice', this.voiceRoute);
-            winston.info("PubModulesManager voiceRoute controller loaded");
-        }
+        // if (this.smsRoute) {
+        //     app.use('/modules/sms', this.smsRoute);
+        //     winston.info("PubModulesManager smsRoute controller loaded");
+        // }
+        // if (this.voiceRoute) {
+        //     app.use('/modules/voice', this.voiceRoute);
+        //     winston.info("PubModulesManager voiceRoute controller loaded");
+        // }
         if (this.mqttTestRoute) {
             app.use('/modules/mqttTest', this.mqttTestRoute);
             winston.info("PubModulesManager mqttTestRoute controller loaded");
@@ -345,40 +345,40 @@ class PubModulesManager {
             }
         }
 
-        if (process.env.VOICE_TOKEN === process.env.VOICE_SECRET) {
-            try {
-                this.voice = require('./voice');
-                winston.info("this.voice: " + this.voice);
-                this.voice.listener.listen(config);
+        // if (process.env.VOICE_TOKEN === process.env.VOICE_SECRET) {
+        //     try {
+        //         this.voice = require('./voice');
+        //         winston.info("this.voice: " + this.voice);
+        //         this.voice.listener.listen(config);
     
-                this.voiceRoute = this.voice.voiceRoute;
+        //         this.voiceRoute = this.voice.voiceRoute;
     
-                winston.info("PubModulesManager initialized apps (voice).")
-            } catch(err) {
-                console.log("\n Unable to start voice connector: ", err);
-                if (err.code == 'MODULE_NOT_FOUND') {
-                    winston.info("PubModulesManager init apps module not found ");
-                } else {
-                    winston.info("PubModulesManager error initializing init apps module", err);
-                }
-            }
-        }
+        //         winston.info("PubModulesManager initialized apps (voice).")
+        //     } catch(err) {
+        //         console.log("\n Unable to start voice connector: ", err);
+        //         if (err.code == 'MODULE_NOT_FOUND') {
+        //             winston.info("PubModulesManager init apps module not found ");
+        //         } else {
+        //             winston.info("PubModulesManager error initializing init apps module", err);
+        //         }
+        //     }
+        // }
 
-        try {
-            this.sms = require('./sms');
-            winston.info("this.sms: " + this.sms);
-            this.sms.listener.listen(config);
+        // try {
+        //     this.sms = require('./sms');
+        //     winston.info("this.sms: " + this.sms);
+        //     this.sms.listener.listen(config);
 
-            this.smsRoute = this.sms.smsRoute;
+        //     this.smsRoute = this.sms.smsRoute;
 
-            winston.info("PubModulesManager initialized apps (sms).")
-        } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ");
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
-            }
-        }
+        //     winston.info("PubModulesManager initialized apps (sms).")
+        // } catch(err) {
+        //     if (err.code == 'MODULE_NOT_FOUND') {
+        //         winston.info("PubModulesManager init apps module not found ");
+        //     } else {
+        //         winston.info("PubModulesManager error initializing init apps module", err);
+        //     }
+        // }
 
         try {
             this.mqttTest = require('./mqttTest');
