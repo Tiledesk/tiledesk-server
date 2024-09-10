@@ -1011,7 +1011,7 @@ router.get('/', function (req, res, next) {
     query.ticket_id = req.query.ticket_id;
   }
 
-  if (req.query.preflight && req.query.preflight === 'true' || req.query.preflight === true) {
+  if (req.query.preflight && (req.query.preflight === 'true' || req.query.preflight === true)) {
     //query.preflight = req.query.preflight;
     delete query.preflight;
   }
