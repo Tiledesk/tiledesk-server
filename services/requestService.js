@@ -2500,6 +2500,30 @@ class RequestService {
 
   }
 
+  async getConversationsCount(id_project, status, preflight, hasBot) {
+    return new Promise( async (resolve, reject) => {
+      let query = { id_project: id_project, status: status, preflight: preflight};
+      if (hasBot != null) {
+        query.hasBot = hasBot;
+      }
+      if (status === 201) {
+        query.status = {
+          $lt: RequestConstants.CLOSED
+        }
+      }
+      if (preflight === null) {
+        delete query.preflight;
+      }
+      let count = await Request.countDocuments(query).catch((err) => {
+        winston.error("Error getting unassigned requests count: ", err);
+        reject(err);
+      })
+      winston.verbose("Requests found for query " + JSON.stringify(query) + ": " + count);
+      resolve(count)
+    })
+  }
+
+
 }
 
 

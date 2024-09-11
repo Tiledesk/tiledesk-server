@@ -1226,6 +1226,47 @@ describe('RequestRoute', () => {
 
     })
 
+    it('countConversations', function (done) {
+      // this.timeout(10000);
+  
+      var email = "test-request-create-" + Date.now() + "@email.com";
+      var pwd = "pwd";
+  
+      userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+  
+          chai.request(server)
+            .post('/' + savedProject._id + '/requests/')
+            .auth(email, pwd)
+            .set('content-type', 'application/json')
+            .send({ "first_text": "first_text" })
+            .end(function (err, res) {
+
+              if (err) { console.log("err: ", err) };
+              if (log) { console.log("res.body: ", res.body) };
+
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              
+              chai.request(server)
+                  .get('/' + savedProject._id + '/requests/count?conversation_quota=true')
+                  .auth(email, pwd)
+                  .end((err, res) => {
+
+                    if (err) { console.log("err: ", err) };
+                    if (log) { console.log("res.body: ", res.body) };
+                    console.log("res.body: ", res.body)
+
+                    res.should.have.status(200);
+
+                    done();
+                  })
+          
+            });
+        });
+      });
+    });
+
     // it('assign', (done) => {
 
 
