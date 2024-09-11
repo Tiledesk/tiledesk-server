@@ -1655,6 +1655,8 @@ router.get('/csv', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
+  let statusArray = [];
+
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
@@ -1667,9 +1669,40 @@ router.get('/csv', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
+  // if (req.query.status) {
+  //   winston.debug('req.query.status', req.query.status);
+  //   query.status = req.query.status;
+  // }
+
   if (req.query.status) {
-    winston.debug('req.query.status', req.query.status);
-    query.status = req.query.status;
+
+    if (req.query.status === 'all') {
+      delete query.status;
+    } else {
+      let statusArray = req.query.status.split(',').map(Number);
+      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null)
+      if (statusArray.length > 0) {
+        query.status = {
+          $in: statusArray
+        }
+      } else {
+        delete query.status;
+      }
+    }
+
+    if (statusArray.length > 0) {
+      query.status = {
+        $in: statusArray
+      }
+    }
+
+  }
+
+  if (req.query.preflight) {
+    let preflight = (req.query.preflight === 'false');
+    if (preflight) {
+      query.preflight = false;
+    }
   }
 
   if (req.query.lead) {
