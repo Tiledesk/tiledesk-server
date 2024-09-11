@@ -286,12 +286,12 @@ class RequestService {
             winston.debug("beforeDepartmentId:" + beforeDepartmentId);
           }
 
+
           let afterDepartmentId;
           if (routedRequest.department) {
             afterDepartmentId = routedRequest.department.toString();
             winston.debug("afterDepartmentId:" + afterDepartmentId);
           }
-
 
           if (requestBeforeRoute.status === routedRequest.status &&
             beforeDepartmentId === afterDepartmentId &&
@@ -512,6 +512,7 @@ class RequestService {
       var followers = request.followers;
       let createdAt = request.createdAt;
 
+
       if (!departmentid) {
         departmentid = 'default';
       }
@@ -526,6 +527,7 @@ class RequestService {
       }
 
       let isTestConversation = false;
+      let isVoiceConversation = false;
 
       var that = this;
 
@@ -549,10 +551,19 @@ class RequestService {
             project: p,
             request: request
           }
+
+          console.log("\nrequest STATUS: ", request.status);
+          console.log("\nrequest PREFLIGHT: ", request.preflight);
+          console.log("\nrequest HAS BOT: ", request.hasBot);
+
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
               isTestConversation = true;
+          }
+          else if (channel && (channel.name === 'voice-vxml')) {
+              winston.verbose("is a voice conversation --> skip quote availability check")
+              isVoiceConversation = true;
           }
           else {
             let available = await qm.checkQuote(p, request, 'requests');
@@ -730,8 +741,8 @@ class RequestService {
 
           requestEvent.emit('request.create.simple', savedRequest);
 
-          if (!isTestConversation) {
-            requestEvent.emit('request.create.quote', payload);;
+          if (!isTestConversation && !isVoiceConversation) {
+            requestEvent.emit('request.create.quote', payload);
           }
 
           return resolve(savedRequest);

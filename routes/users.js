@@ -193,17 +193,14 @@ router.post('/loginemail', function (req, res) {
 
   let project_id = req.body.id_project;
   let chatbot_id = req.body.bot_id;
+  let namespace_id = req.body.namespace_id;
 
   if (!project_id) {
     res.status(500).send({ success: false, error: "missing 'id_project' field" });
   }
 
-  if (!chatbot_id) {
-    res.status(500).send({ success: false, error: "missing 'bot_id' field" });
-  }
-
-  if (!chatbot_id) {
-    res.status(500).send({ success: false, error: "missing 'bot_id' field" });
+  if (!chatbot_id && !namespace_id) {
+    res.status(500).send({ success: false, error: "missing 'bot_id' or 'namespace_id' field" });
   }
 
   User.findById(user_id, (err, user) => {
@@ -212,7 +209,7 @@ router.post('/loginemail', function (req, res) {
     }
     winston.debug("user found: ", user);
 
-    emailService.sendEmailRedirectOnDesktop(user.email, token, project_id, chatbot_id)
+    emailService.sendEmailRedirectOnDesktop(user.email, token, project_id, chatbot_id, namespace_id)
     return res.status(200).send({ success: true, message: "Sending email..."})
   })
 
