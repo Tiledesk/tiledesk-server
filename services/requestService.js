@@ -294,7 +294,7 @@ class RequestService {
           }
 
           console.log("\nEvalutating...")
-          console.log("Request initial status: ", requestBeforeRoute);
+          console.log("Request initial status: ", requestBeforeRoute.status);
           console.log("Request after routing status: ", routedRequest.status);
 
 
