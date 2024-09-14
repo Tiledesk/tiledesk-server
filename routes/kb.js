@@ -906,6 +906,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   let project_id = req.projectid;
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -955,15 +957,20 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   let kbs = [];
   list.forEach(url => {
-    kbs.push({
+    let kb = {
       id_project: project_id,
       name: url,
       source: url,
       type: 'url',
       content: "",
       namespace: namespace_id,
-      status: -1
-    })
+      status: -1,
+      scrape_type: scrape_type
+    }
+    if (scrape_options) {
+      kb.scrape_options = scrape_options
+    }
+    kbs.push(kb)
   })
 
   let operations = kbs.map(doc => {
@@ -977,14 +984,20 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
+  console.log("kbs: ", kbs);
   saveBulk(operations, kbs, project_id).then((result) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    resources = resources.map(({ _id, ...rest }) => {
-      return { id: _id, webhook: webhook, ...rest };
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      if (scrape_type === 4) {
+        return { id: _id, webhook: webhook, tags_to_extract: scrape_options.tags_to_extract, unwanted_tags: scrape_options.unwanted_tags, unwanted_classnames: scrape_options.unwanted_classnames, ...rest };
+      } else {
+        return { id: _id, webhook: webhook, ...rest };
+      }
     });
+    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
-    scheduleScrape(resources);
+    //scheduleScrape(resources);
     res.status(200).send(result);
 
   }).catch((err) => {

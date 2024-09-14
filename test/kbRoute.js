@@ -312,6 +312,7 @@ describe('KbRoute', () => {
 
         }).timeout(10000)
 
+
         /**
          * If you try to add content to a namespace that does not belong to the selected project and 
          * the project has at least one namesapce, it returns 403 forbidden.
@@ -393,6 +394,90 @@ describe('KbRoute', () => {
 
                                     res.should.have.status(200);
                                     expect(res.body.length).to.equal(4)
+
+                                    done();
+
+                                })
+                        })
+                });
+            });
+
+        }).timeout(10000)
+
+        it('add-multiple-urls-with-scrape-option-success-type-4', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
+                                .auth(email, pwd)
+                                .send({ list:["https://gethelp.tiledesk.com/article"], scrape_type: 4,  scrape_options: { tags_to_extract: ["article","p"], unwanted_tags:["script","style"], unwanted_classnames:["header","related-articles"]}})
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+
+                                    res.should.have.status(200);
+                                    expect(res.body.length).to.equal(1)
+
+                                    done();
+
+                                })
+                        })
+                });
+            });
+
+        }).timeout(10000)
+
+        it('add-multiple-urls-with-scrape-option-success-type-3', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
+                                .auth(email, pwd)
+                                .send({ list:["https://gethelp.tiledesk.com/article"], scrape_type: 3 })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+
+                                    res.should.have.status(200);
+                                    expect(res.body.length).to.equal(1)
 
                                     done();
 
