@@ -997,7 +997,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     });
     console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
-    //scheduleScrape(resources);
+    scheduleScrape(resources);
     res.status(200).send(result);
 
   }).catch((err) => {
