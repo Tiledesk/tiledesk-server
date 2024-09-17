@@ -41,25 +41,28 @@ router.post('/', async (req, res) => {
             }
         }
         
+        console.log("before json")
+        let json = await openaiService.toOpenaiJson(body);
+        console.log("json: ", json);
 
-        let json = {
-            "model": body.model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": body.question
-                }
-            ],
-            "max_tokens": body.max_tokens,
-            "temperature": body.temperature
-        }
+        // let json = {
+        //     "model": body.model,
+        //     "messages": [
+        //         {
+        //             "role": "user",
+        //             "content": body.question
+        //         }
+        //     ],
+        //     "max_tokens": body.max_tokens,
+        //     "temperature": body.temperature
+        // }
 
-        let message = { role: "", content: "" };
-        if (body.context) {
-            message.role = "system";
-            message.content = body.context;
-            json.messages.unshift(message);
-        }
+        // let message = { role: "", content: "" };
+        // if (body.context) {
+        //     message.role = "system";
+        //     message.content = body.context;
+        //     json.messages.unshift(message);
+        // }
 
         let multiplier = MODELS_MULTIPLIER[json.model];
         if (!multiplier) {

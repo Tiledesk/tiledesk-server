@@ -221,6 +221,39 @@ class OpenaiService {
     })
   }
 
+  async toOpenaiJson(data) {
+    console.log("toOpenaiJson data: ", data);
+    return new Promise((resolve) => {
+      let json = {
+        model: data.model,
+        messages: [{ role: "user", content: data.question }]
+      }
+
+      console.log("partial json: ", json);
+      if (data.model === "o1-mini" || data.model === 'o1-preview') {
+        json.max_completion_tokens = data.max_tokens;
+        json.temperature = 1;
+      } else {
+        json.max_tokens = data.max_tokens;
+        json.temperature = data.temperature;
+      }
+      console.log("partial json: ", json);
+      let message = { role: "", content: "" };
+      if (data.context) {
+        if (data.model === "o1-mini" || data.model === 'o1-preview') {
+          message.role = "assistant";
+        } else {
+          message.role = "system";
+        }
+        message.content = data.context;
+        json.messages.unshift(message);
+      }
+
+      console.log("(toOpenaiJson) json: ", json);
+      resolve(json);
+    })
+  }
+
 
 }
 
