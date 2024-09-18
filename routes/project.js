@@ -430,6 +430,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.current_agent_my_chats_only"]!=undefined) {
     update["settings.current_agent_my_chats_only"] = req.body["settings.current_agent_my_chats_only"];
   }
+
+  if (req.body["settings.chatbots_attributes_hidden"]!=undefined) {
+    update["settings.chatbots_attributes_hidden"] = req.body["settings.chatbots_attributes_hidden"];
+  }
   
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
