@@ -555,7 +555,7 @@ class RequestService {
               winston.verbose("is a test conversation --> skip quote availability check")
               isTestConversation = true;
           }
-          else if (channel === 'voice-vxml') {
+          else if (channel && (channel.name === 'voice-vxml')) {
               winston.verbose("is a voice conversation --> skip quote availability check")
               isVoiceConversation = true;
           }
