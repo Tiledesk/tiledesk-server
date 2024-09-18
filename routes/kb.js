@@ -967,6 +967,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       status: -1,
       scrape_type: scrape_type
     }
+    console.log("scrape_options: ", scrape_options);
     if (scrape_options) {
       kb.scrape_options = scrape_options
     }
