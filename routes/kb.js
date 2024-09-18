@@ -121,9 +121,11 @@ router.post('/scrape/single', async (req, res) => {
       }
 
       if (kb.scrape_options) {
-        json.tags_to_extract = kb.scrape_options.tags_to_extract;
-        json.unwanted_tags = kb.scrape_options.unwanted_tags;
-        json.unwanted_classnames = kb.scrape_options.unwanted_classnames;
+        json.parameters_scrape_type_4 = {
+          tags_to_extract: kb.scrape_options.tags_to_extract,
+          unwanted_tags: kb.scrape_options.unwanted_tags,
+          unwanted_classnames: kb.scrape_options.unwanted_classnames
+        }
       }
 
       startScrape(json).then((response) => {
