@@ -14,6 +14,7 @@ var mongoose = require('mongoose');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
 let Integration = require('../models/integrations');
+var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
@@ -1005,6 +1006,117 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     winston.error("Unable to save kbs in bulk ", err)
     res.status(500).send(err);
   })
+
+})
+
+router.post('/csv', upload.single('uploadFile'), async (req, res) => {
+
+  let project_id = req.projectid;
+
+  let csv = req.file.buffer.toString('utf8');
+  winston.debug("csv: ", csv);
+
+  let delimiter = req.body.delimiter || ";";
+  winston.debug("delimiter: ", delimiter);
+
+  let namespace_id = req.query.namespace;
+  if (!namespace_id) {
+    return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
+  }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send({ success: false, error: alert });
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let kbs_limit = limits.kbs;
+  winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+  let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
+  winston.verbose("Kbs count: " + kbs_count);
+
+  if (kbs_count >= kbs_limit) {
+    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  }
+
+  let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
+  let kbs = [];
+
+  parsecsv.parseString(csv, { headers: false, delimiter: delimiter })
+    .on("data", (data) => {
+
+      let question = data[0];
+      let answer = data[1];
+
+      console.log("data. ", data)
+      kbs.push({
+        id_project: project_id,
+        name: question,
+        source: question,
+        type: 'faq',
+        content: question + "\n" + answer,
+        namespace: namespace_id,
+        status: -1
+      })
+    })
+    .on("end", () => {
+      winston.debug("kbs after CSV parsing: ", kbs);
+
+      let total_count = kbs_count + kbs.length;
+      if (total_count >= kbs_limit) {
+        return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+      }
+
+      if (kbs.length > 300) {
+        return res.status(403).send({ success: false, error: "Too many faqs. Can't index more than 300 urls at a time." })
+      }
+
+      let operations = kbs.map(doc => {
+        return {
+          updateOne: {
+            filter: { id_project: doc.id_project, type: 'faq', source: doc.source },
+            update: doc,
+            upsert: true,
+            returnOriginal: false
+          }
+        }
+      })
+
+      saveBulk(operations, kbs, project_id).then((result) => {
+        let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
+        resources = resources.map(({ _id, ...rest}) => {
+          return { id: _id, webhooh: webhook, ...rest };
+        })
+        winston.verbose("resources to be sent to worker: ", resources);
+        if (!process.env.NODE_ENV) {
+          scheduleScrape(resources);
+        }
+        res.status(200).send(result);
+      }).catch((err) => {
+        winston.error("Unabled to saved kbs in bulk " + err);
+        res.status(500).send(err);
+      })
+
+    })
+    .on("error", (err) => {
+      winston.error("CSV parsing error: ", err);
+      res.status(400).send({ success: false, error: err });
+    })
 
 })
 
