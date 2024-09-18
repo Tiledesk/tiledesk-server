@@ -65,7 +65,9 @@ var KBSchema = new Schema({
     required: false
   },
   scrape_options: {
+    type: Object,
     required: false,
+    default: undefined,
     tags_to_extract: {
       type: Array,
       required: false

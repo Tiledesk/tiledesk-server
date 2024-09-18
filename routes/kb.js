@@ -67,9 +67,9 @@ router.post('/scrape/single', async (req, res) => {
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
 
-  if (!data.scrape_type) {
-    data.scrape_type = 1;
-  }
+  // if (!data.scrape_type) {
+  //   data.scrape_type = 1;
+  // }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -111,9 +111,19 @@ router.post('/scrape/single', async (req, res) => {
         json.content = kb.content;
       }
 
-      json.scrape_type = 1;
-      if (data.scrape_type) {
-        json.scrape_type = data.scrape_type;
+      // json.scrape_type = 1;
+      // if (data.scrape_type) {
+      //   json.scrape_type = data.scrape_type;
+      // }
+
+      if (kb.scrape_type) {
+        json.scrape_type = kb.scrape_type
+      }
+
+      if (kb.scrape_options) {
+        json.tags_to_extract = kb.scrape_options.tags_to_extract;
+        json.unwanted_tags = kb.scrape_options.unwanted_tags;
+        json.unwanted_classnames = kb.scrape_options.unwanted_classnames;
       }
 
       startScrape(json).then((response) => {
