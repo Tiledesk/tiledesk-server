@@ -335,6 +335,51 @@ describe('KbRoute', () => {
             })
         }).timeout(20000)
 
+        it('add-multiple-faqs-with-csv', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/csv?namespace=' + namespace_id)
+                                .auth(email, pwd)
+                                .set('Content-Type', 'text/csv')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-kb-faqs.csv')), 'example-kb-faqs.csv')
+                                .field('delimiter', ';')
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+                                    console.log("res.body: ", res.body)
+
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                })
+                        })
+                });
+            });
+
+        }).timeout(10000)
+
+
         /**
          * If you try to add content to a project that has no namespace, it returns 403 forbidden.
          */
