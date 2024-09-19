@@ -68,6 +68,7 @@ const mockProjectBasicPlan = {
   "name": "mock-project",
   "activeOperatingHours": false,
   "createdBy": "64e36f5cbf72263f7c05ba36",
+  "isActiveSubscription": true,
   "profile": {
     "name": "Basic",
     "trialDays": 14,
