@@ -51,7 +51,6 @@ class QuoteManager {
         this.project = project;
         let key = await this.generateKey(request, 'requests');
         winston.verbose("[QuoteManager] incrementRequestsCount key: " + key);
-        console.log("[QuoteManager] incrementRequestsCount key: " + key);
 
         await this.tdCache.incr(key)
         this.sendEmailIfQuotaExceeded(project, request, 'requests', key);
@@ -101,19 +100,13 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        console.log("generateKey object ", object)
-        console.log("generateKey type " + type)
+        let objectDate = moment(object.createdAt);
         let subscriptionDate;
 
-        console.log("this.project.profile.subStart: ", this.project.profile.subStart);
-        console.log("this.project.profile.subStart type: ", typeof this.project.profile.subStart);
-        let subDate = moment(this.project.profile.subStart)
-        console.log("subDate: ", subDate);
-        console.log("subDate type: ", typeof subDate);
         if (this.project.isActiveSubscription === true) {
             if (this.project.profile.subStart) {
-                console.log("case 1")
                 subscriptionDate = moment(this.project.profile.subStart);
+                winston.debug("Subscription date from subStart: " + subscriptionDate.toISOString());
             } else {
                 // it should never happen
                 winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
@@ -121,81 +114,66 @@ class QuoteManager {
         } else {
             if (this.project.profile.subEnd) {
                 subscriptionDate = moment(this.project.profile.subEnd);
+                winston.debug("Subscription date from subEnd: " + subscriptionDate.toISOString());
             } else {
                 subscriptionDate = moment(this.project.createdAt);
+                winston.debug("Subscription date from project createdAt: " + subscriptionDate.toISOString());
             }
         }
 
-        console.log("subscriptionDate: ", subscriptionDate);
-        console.log("subscriptionDate type: ", typeof subscriptionDate);
-
-        let objectDate = moment(object.createdAt);
-        console.log("objectDate ", objectDate);
-
-
         // Calculate the difference in months between the object date and the subscription date
         let diffInMonths = objectDate.diff(subscriptionDate, 'months');
-        console.log("diffInMonths between ", objectDate, " and ", subscriptionDate, " : ", diffInMonths, " months");
+        winston.debug("diffInMonths: ", diffInMonths)
 
         // Make a clone of the subscription date --> this operation could be avoided
-
-        // Get the renewal date adding diffInMonths. Moment manage automatically the less longer month. 
+        // Get the renewal date adding diffInMonths. Moment.js manage automatically the less longer month. 
         // E.g. if subscription date is 31 jan the renewals will be, 28/29 feb, 31 mar, 30 apr, etc.
         let renewalDate = subscriptionDate.clone().add(diffInMonths, 'months');
-        console.log("renewalDate: ", renewalDate);
-
         // Force the renewal date equal to the last day of the month --> this operation could be avoided
         if (renewalDate.date() !== subscriptionDate.date()) {
             renewalDate = renewalDate.endOf('month');
         }
+        winston.debug("renewalDate: ", renewalDate)
 
-        console.log("renewalDate (endOf): ", renewalDate);
-
-        console.log("\n")
-        console.log("objectDate ", objectDate);
-        let key = "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('DD/MM/YYYY');
-        console.log("key: ", key)
-
-        console.log("\n")
-        return key;
+        return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('DD/MM/YYYY');
     }
 
-    async _generateKey(object, type) {
+    // async _generateKey(object, type) {
 
-        winston.debug("generateKey object ", object)
-        winston.debug("generateKey type " + type)
-        let subscriptionDate;
+    //     winston.debug("generateKey object ", object)
+    //     winston.debug("generateKey type " + type)
+    //     let subscriptionDate;
 
-        if (this.project.isActiveSubscription === true) {
-            if (this.project.profile.subStart) {
-                subscriptionDate = this.project.profile.subStart;
-            } else {
-                // it should never happen
-                winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
-            }
-        } else {
-            if (this.project.profile.subEnd) {
-                subscriptionDate = this.project.profile.subEnd;
-            } else {
-                subscriptionDate = this.project.createdAt;
-            }
-        }
+    //     if (this.project.isActiveSubscription === true) {
+    //         if (this.project.profile.subStart) {
+    //             subscriptionDate = this.project.profile.subStart;
+    //         } else {
+    //             // it should never happen
+    //             winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+    //         }
+    //     } else {
+    //         if (this.project.profile.subEnd) {
+    //             subscriptionDate = this.project.profile.subEnd;
+    //         } else {
+    //             subscriptionDate = this.project.createdAt;
+    //         }
+    //     }
 
-        let objectDate = object.createdAt;
-        winston.debug("objectDate " + objectDate);
+    //     let objectDate = object.createdAt;
+    //     winston.debug("objectDate " + objectDate);
 
-        // converts date in timestamps and transform from ms to s
-        const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
-        const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
+    //     // converts date in timestamps and transform from ms to s
+    //     const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
+    //     const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
 
-        let ndays = (objectDateTimestamp - subscriptionDateTimestamp) / 86400;  // 86400 is the number of seconds in 1 day
-        let nmonths = floor(ndays / 30); // number of month to add to the initial subscription date;
+    //     let ndays = (objectDateTimestamp - subscriptionDateTimestamp) / 86400;  // 86400 is the number of seconds in 1 day
+    //     let nmonths = floor(ndays / 30); // number of month to add to the initial subscription date;
 
-        let date = new Date(subscriptionDate);
-        date.setMonth(date.getMonth() + nmonths);
+    //     let date = new Date(subscriptionDate);
+    //     date.setMonth(date.getMonth() + nmonths);
 
-        return "quotes:" + type + ":" + this.project._id + ":" + date.toLocaleDateString();
-    }
+    //     return "quotes:" + type + ":" + this.project._id + ":" + date.toLocaleDateString();
+    // }
 
     /**
      * Get current quote for a single type (tokens or request or ...)
