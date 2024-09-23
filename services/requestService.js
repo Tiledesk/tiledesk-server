@@ -292,7 +292,13 @@ class RequestService {
             winston.debug("afterDepartmentId:" + afterDepartmentId);
           }
 
-
+          /**
+           * Case 1
+           * After internal routing:
+           * - same STATUS
+           * - same DEPARTMENT
+           * - same PARTICIPANTS
+           */
           if (requestBeforeRoute.status === routedRequest.status &&
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
@@ -315,6 +321,90 @@ class RequestService {
 
                 return resolve(requestComplete);
               });
+          }
+
+          /**
+           * Case 2 - Leaving TEMP status
+           * After internal routing:
+           * - STATUS changed from 50 to 100 or 200
+           */
+          if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
+            console.log("Case 2 - Leaving TEMP status")
+
+            let q = Project.findOne({ _id: request.id_project, status: 100 });
+            if (cacheEnabler.project) {
+              q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
+              winston.debug('project cache enabled for /project detail');
+            }
+            q.exec(async (err, p) => {
+              if (err) {
+                winston.error('Error getting project ', err);
+              }
+              if (!p) {
+                winston.warn('Project not found ');
+              }
+
+              let payload = {
+                project: p,
+                request: request
+              }
+
+              if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+                console.log("WARNING!! is a test conversation")
+                //isTestConversation = true;
+              } 
+
+              if (request.channel && (request.channel.name === 'voice-vxml')) {
+                console.log("WARNING!! is a voice conversation")
+              }
+
+              // Check quote now!
+
+              requestEvent.emit('request.create.quote', payload);
+
+            })
+          }
+
+          /**
+           * Case 3 - Conversation opened through proactive message  
+           * After internal routing:
+           * - STATUS changed from undefined to 100
+           */
+          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.UNASSIGNED) {
+            console.log("Case 3 - 'Proactive' request")
+
+            let q = Project.findOne({ _id: request.id_project, status: 100 });
+            if (cacheEnabler.project) {
+              q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
+              winston.debug('project cache enabled for /project detail');
+            }
+            q.exec(async (err, p) => {
+              if (err) {
+                winston.error('Error getting project ', err);
+              }
+              if (!p) {
+                winston.warn('Project not found ');
+              }
+
+              let payload = {
+                project: p,
+                request: request
+              }
+
+              if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+                console.log("WARNING!! is a test conversation")
+                //isTestConversation = true;
+              } 
+
+              if (request.channel && (request.channel.name === 'voice-vxml')) {
+                console.log("WARNING!! is a voice conversation")
+              }
+
+              // Check quote now!
+
+              requestEvent.emit('request.create.quote', payload);
+              
+            })
           }
 
           //cacheinvalidation
@@ -560,11 +650,12 @@ class RequestService {
               isVoiceConversation = true;
           }
           else {
-            let available = await qm.checkQuote(p, request, 'requests');
-            if (available === false) {
-              winston.info("Requests limits reached for project " + p._id)
-              return false;
-            }
+            console.log("! check quota moved")
+            // let available = await qm.checkQuote(p, request, 'requests');
+            // if (available === false) {
+            //   winston.info("Requests limits reached for project " + p._id)
+            //   return false;
+            // }
           }
         
 
@@ -736,7 +827,8 @@ class RequestService {
           requestEvent.emit('request.create.simple', savedRequest);
 
           if (!isTestConversation && !isVoiceConversation) {
-            requestEvent.emit('request.create.quote', payload);;
+            console.log("! incr quota moved")
+            // requestEvent.emit('request.create.quote', payload);;
           }
 
           return resolve(savedRequest);
