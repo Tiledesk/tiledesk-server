@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.26
+- Updated tybot-connector to 0.2.105
+- Added route for faqs csv file uploading on /kb
+
 # 2.9.25
 - Updated vxml-connector to 0.1.44
 
