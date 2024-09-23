@@ -370,42 +370,42 @@ class RequestService {
            * After internal routing:
            * - STATUS changed from undefined to 100
            */
-          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.UNASSIGNED) {
-            console.log("Case 3 - 'Proactive' request")
+          // if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.UNASSIGNED) {
+          //   console.log("Case 3 - 'Proactive' request")
 
-            let q = Project.findOne({ _id: request.id_project, status: 100 });
-            if (cacheEnabler.project) {
-              q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
-              winston.debug('project cache enabled for /project detail');
-            }
-            q.exec(async (err, p) => {
-              if (err) {
-                winston.error('Error getting project ', err);
-              }
-              if (!p) {
-                winston.warn('Project not found ');
-              }
+          //   let q = Project.findOne({ _id: request.id_project, status: 100 });
+          //   if (cacheEnabler.project) {
+          //     q.cache(cacheUtil.longTTL, "projects:id:" + request.id_project)  //project_cache
+          //     winston.debug('project cache enabled for /project detail');
+          //   }
+          //   q.exec(async (err, p) => {
+          //     if (err) {
+          //       winston.error('Error getting project ', err);
+          //     }
+          //     if (!p) {
+          //       winston.warn('Project not found ');
+          //     }
 
-              let payload = {
-                project: p,
-                request: request
-              }
+          //     let payload = {
+          //       project: p,
+          //       request: request
+          //     }
 
-              if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
-                console.log("WARNING!! is a test conversation")
-                //isTestConversation = true;
-              } 
+          //     if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+          //       console.log("WARNING!! is a test conversation")
+          //       //isTestConversation = true;
+          //     } 
 
-              if (request.channel && (request.channel.name === 'voice-vxml')) {
-                console.log("WARNING!! is a voice conversation")
-              }
+          //     if (request.channel && (request.channel.name === 'voice-vxml')) {
+          //       console.log("WARNING!! is a voice conversation")
+          //     }
 
-              // Check quote now!
+          //     // Check quote now!
 
-              requestEvent.emit('request.create.quote', payload);
+          //     requestEvent.emit('request.create.quote', payload);
               
-            })
-          }
+          //   })
+          // }
 
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
