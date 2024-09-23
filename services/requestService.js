@@ -526,6 +526,7 @@ class RequestService {
       }
 
       let isTestConversation = false;
+      let isVoiceConversation = false;
 
       var that = this;
 
@@ -553,6 +554,10 @@ class RequestService {
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
               isTestConversation = true;
+          }
+          else if (channel && (channel.name === 'voice-vxml')) {
+              winston.verbose("is a voice conversation --> skip quote availability check")
+              isVoiceConversation = true;
           }
           else {
             let available = await qm.checkQuote(p, request, 'requests');
@@ -730,7 +735,7 @@ class RequestService {
 
           requestEvent.emit('request.create.simple', savedRequest);
 
-          if (!isTestConversation) {
+          if (!isTestConversation && !isVoiceConversation) {
             requestEvent.emit('request.create.quote', payload);;
           }
 
