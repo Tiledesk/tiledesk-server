@@ -719,6 +719,20 @@ class RequestService {
 
             status = RequestConstants.ASSIGNED;
 
+            /**
+             * QUOTAS - START!!!
+             */
+            console.log("Increment")
+            if (!isTestConversation && !isVoiceConversation) {
+              console.log("Icremeneting...")
+              requestEvent.emit('request.create.quote', payload);
+            }
+            /**
+             * QUOTAS - END!!!
+             */
+
+
+
             // botprefix
             if (participants[0].startsWith("bot_")) {
 
