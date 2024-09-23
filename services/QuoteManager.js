@@ -135,7 +135,7 @@ class QuoteManager {
         }
         winston.debug("renewalDate: ", renewalDate)
 
-        return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('DD/MM/YYYY');
+        return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('M/D/YY');
         // return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('MM/DD/YYYY');
         // return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.toLocaleString();
     }
