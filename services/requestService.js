@@ -17,6 +17,7 @@ var UIDGenerator = require("../utils/UIDGenerator");
 const { TdCache } = require('../utils/TdCache');
 const { QuoteManager } = require('./QuoteManager');
 var configGlobal = require('../config/global');
+const projectService = require('./projectService');
 const axios = require("axios").default;
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
@@ -272,7 +273,7 @@ class RequestService {
         var beforeParticipants = requestBeforeRoute.participants;
         winston.debug("beforeParticipants: ", beforeParticipants);
 
-        return that.routeInternal(request, departmentid, id_project, nobot).then(function (routedRequest) {
+        return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
 
           winston.debug("after routeInternal", routedRequest);
           // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
@@ -286,13 +287,22 @@ class RequestService {
             winston.debug("beforeDepartmentId:" + beforeDepartmentId);
           }
 
+
           let afterDepartmentId;
           if (routedRequest.department) {
             afterDepartmentId = routedRequest.department.toString();
             winston.debug("afterDepartmentId:" + afterDepartmentId);
           }
 
-
+          console.log("requestBefore status: ", requestBeforeRoute.status)
+          console.log("routedRequest status: ", routedRequest.status)
+          /**
+           * Case 1
+           * After internal routing:
+           * - same STATUS
+           * - same DEPARTMENT
+           * - same PARTICIPANTS
+           */
           if (requestBeforeRoute.status === routedRequest.status &&
             beforeDepartmentId === afterDepartmentId &&
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
@@ -315,6 +325,62 @@ class RequestService {
 
                 return resolve(requestComplete);
               });
+          }
+
+          let project = await projectService.getCachedProject(id_project).catch((err) => {
+            winston.warn("Error getting cached project. Skip conversation quota check.")
+            winston.warn("Getting cached project error:  ", err)
+          })
+
+
+          let isTestConversation = false;
+          let isVoiceConversation = false;
+          let isStandardConversation = false;
+          
+          let payload = {
+            project: project,
+            request: request
+          }
+
+          if (request.attributes && request.attributes.sourcePage && (request.attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+            winston.verbose("is a test conversation --> skip quote availability check")
+            isTestConversation = true;
+          }
+          else if (request.channel && (request.channel.name === 'voice-vxml')) {
+            winston.verbose("is a voice conversation --> skip quote availability check")
+            isVoiceConversation = true;
+          }
+          else {
+            isStandardConversation = true;
+            let available = await qm.checkQuote(project, request, 'requests');
+            if (available === false) {
+              winston.info("Requests limits reached for project " + project._id)
+              return reject("Requests limits reached for project " + project._id);
+            }
+          }
+
+          /**
+           * Case 2 - Leaving TEMP status
+           * After internal routing:
+           * - STATUS changed from 50 to 100 or 200
+           */
+          if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
+            console.log("Case 2 - Leaving TEMP status")
+            if (isStandardConversation) {
+              requestEvent.emit('request.create.quote', payload);
+            }
+          }
+
+          /**
+           * Case 3 - Conversation opened through proactive message  
+           * After internal routing:
+           * - STATUS changed from undefined to 100
+           */
+          if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
+            console.log("Case 3 - 'Proactive' request")
+            if (isStandardConversation) { 
+              requestEvent.emit('request.create.quote', payload);
+            }
           }
 
           //cacheinvalidation
@@ -469,6 +535,232 @@ class RequestService {
 
   async create(request) {
 
+    if (!request.createdAt)  {
+      request.createdAt = new Date();
+    }
+
+    var request_id = request.request_id;
+    var project_user_id = request.project_user_id;
+    var lead_id = request.lead_id;
+    var id_project = request.id_project;
+    var first_text = request.first_text;
+    var departmentid = request.departmentid;
+    var sourcePage = request.sourcePage;
+    var language = request.language;
+    var userAgent = request.userAgent;
+    var status = request.status;
+    var createdBy = request.createdBy;
+    var attributes = request.attributes;
+    var subject = request.subject;
+    var preflight = request.preflight;
+    var channel = request.channel;
+    var location = request.location;
+    var participants = request.participants || [];
+    var tags = request.tags;
+    var notes = request.notes;
+    var priority = request.priority;
+    var auto_close = request.auto_close;
+    var followers = request.followers;
+    let createdAt = request.createdAt;
+
+    if (!departmentid) {
+      departmentid = 'default';
+    }
+
+    if (!createdBy) {
+      if (project_user_id) {
+        createdBy = project_user_id;
+      } else {
+        createdBy = "system";
+      }
+    }
+
+    // Utils
+    let payload;
+    let isTestConversation = false;
+    let isVoiceConversation = false;
+    let isStandardConversation = false;
+    var that = this;
+
+    return new Promise( async (resolve, reject) => {
+      var context = {
+        request: {
+          request_id: request_id, project_user_id: project_user_id, lead_id: lead_id, id_project: id_project,
+          first_text: first_text, departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: userAgent, status: status,
+          createdBy: createdBy, attributes: attributes, subject: subject, preflight: preflight, channel: channel, location: location,
+          participants: participants, tags: tags, notes: notes,
+          priority: priority, auto_close: auto_close, followers: followers
+        }
+      };
+      winston.debug("context", context);
+
+      var participantsAgents = [];
+      var participantsBots = [];
+      var hasBot = false;
+      var dep_id = undefined;
+      var assigned_at = undefined;
+      var agents = [];
+      var snapshot = {};
+
+      try {
+        // (method) DepartmentService.getOperators(departmentid: any, projectid: any, nobot: any, disableWebHookCall: any, context: any): Promise<any>
+        var result = await departmentService.getOperators(departmentid, id_project, false, undefined, context);
+        winston.debug("getOperators", result);
+
+      } catch (err) {
+        return reject(err);
+      }
+
+      agents = result.agents;
+
+      if (status == 50) {
+        // skip assignment
+        if (participants.length == 0) {
+          dep_id = result.department._id;
+        }
+      } else {
+
+        let project = await projectService.getCachedProject(id_project).catch((err) => {
+          winston.warn("Error getting cached project. Skip conversation quota check.")
+          winston.warn("Getting cached project error:  ", err)
+        })
+
+        payload = {
+          project: project,
+          request: request
+        }
+
+        if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
+          winston.verbose("is a test conversation --> skip quote availability check")
+          isTestConversation = true;
+        }
+        else if (channel && (channel.name === 'voice-vxml')) {
+          winston.verbose("is a voice conversation --> skip quote availability check")
+          isVoiceConversation = true;
+        }
+        else {
+          isStandardConversation = true;
+          let available = await qm.checkQuote(project, request, 'requests');
+          if (available === false) {
+            winston.info("Requests limits reached for project " + project._id)
+            return reject("Requests limits reached for project " + project._id);
+          }
+        }
+
+
+        if (participants.length == 0) {
+          if (result.operators && result.operators.length > 0) {
+            participants.push(result.operators[0].id_user.toString());
+          }
+          // for preflight it is important to save agents in req for trigger. try to optimize it
+          dep_id = result.department._id;
+        }
+
+        if (participants.length > 0) {
+          status = RequestConstants.ASSIGNED;
+          // botprefix
+          if (participants[0].startsWith("bot_")) {
+
+            hasBot = true;
+            winston.debug("hasBot:" + hasBot);
+
+            // botprefix
+            var assigned_operator_idStringBot = participants[0].replace("bot_", "");
+            winston.debug("assigned_operator_idStringBot:" + assigned_operator_idStringBot);
+
+            participantsBots.push(assigned_operator_idStringBot);
+
+          } else {
+
+            participantsAgents.push(participants[0]);
+
+          }
+
+          assigned_at = Date.now();
+
+        } else {
+          status = RequestConstants.UNASSIGNED;
+        }
+      }
+
+      if (dep_id) {
+        snapshot.department = result.department;
+      }
+
+      snapshot.agents = agents;
+      snapshot.availableAgentsCount = that.getAvailableAgentsCount(agents);
+
+      if (request.requester) {
+        snapshot.requester = request.requester;
+      }
+      if (request.lead) {
+        snapshot.lead = request.lead;
+      }
+
+      var newRequest = new Request({
+        request_id: request_id,
+        requester: project_user_id,
+        lead: lead_id,
+        first_text: first_text,
+        subject: subject,
+        status: status,
+        participants: participants,
+        participantsAgents: participantsAgents,
+        participantsBots: participantsBots,
+        hasBot: hasBot,
+        department: dep_id,
+        // agents: agents,                
+        //others
+        sourcePage: sourcePage,
+        language: language,
+        userAgent: userAgent,
+        assigned_at: assigned_at,
+        attributes: attributes,
+        //standard
+        id_project: id_project,
+        createdBy: createdBy,
+        updatedBy: createdBy,
+        preflight: preflight,
+        channel: channel,
+        location: location,
+        snapshot: snapshot,
+        tags: tags,
+        notes: notes,
+        priority: priority,
+        auto_close: auto_close,
+        followers: followers,
+        createdAt: createdAt
+      });
+
+      if (isTestConversation) {
+        newRequest.draft = true;
+      }
+
+      winston.debug('newRequest.', newRequest);
+
+      //cacheinvalidation
+      return newRequest.save( async function (err, savedRequest) {
+
+        if (err) {
+          winston.error('RequestService error for method createWithIdAndRequester for newRequest' + JSON.stringify(newRequest), err);
+          return reject(err);
+        }
+        winston.debug("Request created", savedRequest.toObject());
+
+        requestEvent.emit('request.create.simple', savedRequest);
+
+        if (isStandardConversation) {
+          requestEvent.emit('request.create.quote', payload);;
+        }
+
+        return resolve(savedRequest);
+
+      });
+    })
+  }
+
+  async _create(request) {
+
     var startDate = new Date();
 
     if (!request.createdAt) {
@@ -512,6 +804,7 @@ class RequestService {
       var followers = request.followers;
       let createdAt = request.createdAt;
 
+
       if (!departmentid) {
         departmentid = 'default';
       }
@@ -526,6 +819,7 @@ class RequestService {
       }
 
       let isTestConversation = false;
+      let isVoiceConversation = false;
 
       var that = this;
 
@@ -549,17 +843,27 @@ class RequestService {
             project: p,
             request: request
           }
+
+          console.log("\nrequest STATUS: ", request.status);
+          console.log("\nrequest PREFLIGHT: ", request.preflight);
+          console.log("\nrequest HAS BOT: ", request.hasBot);
+
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
               isTestConversation = true;
           }
+          else if (channel && (channel.name === 'voice-vxml')) {
+              winston.verbose("is a voice conversation --> skip quote availability check")
+              isVoiceConversation = true;
+          }
           else {
-            let available = await qm.checkQuote(p, request, 'requests');
-            if (available === false) {
-              winston.info("Requests limits reached for project " + p._id)
-              return false;
-            }
+            console.log("! check quota moved")
+            // let available = await qm.checkQuote(p, request, 'requests');
+            // if (available === false) {
+            //   winston.info("Requests limits reached for project " + p._id)
+            //   return false;
+            // }
           }
         
 
@@ -620,6 +924,20 @@ class RequestService {
           if (participants.length > 0) {
 
             status = RequestConstants.ASSIGNED;
+
+            /**
+             * QUOTAS - START!!!
+             */
+            console.log("Increment")
+            if (!isTestConversation && !isVoiceConversation) {
+              console.log("Icremeneting...")
+              requestEvent.emit('request.create.quote', payload);
+            }
+            /**
+             * QUOTAS - END!!!
+             */
+
+
 
             // botprefix
             if (participants[0].startsWith("bot_")) {
@@ -730,8 +1048,9 @@ class RequestService {
 
           requestEvent.emit('request.create.simple', savedRequest);
 
-          if (!isTestConversation) {
-            requestEvent.emit('request.create.quote', payload);;
+          if (!isTestConversation && !isVoiceConversation) {
+            console.log("! incr quota moved")
+            // requestEvent.emit('request.create.quote', payload);;
           }
 
           return resolve(savedRequest);
@@ -747,7 +1066,7 @@ class RequestService {
   }
 
 
-  async _create(request) {
+  async __create(request) {
 
     var startDate = new Date();
 
