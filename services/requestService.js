@@ -2508,7 +2508,7 @@ class RequestService {
       }
       if (status === 201) {
         query.status = {
-          $lt: RequestConstants.CLOSED
+          $in: [100,200]
         }
       }
       if (preflight === null) {
