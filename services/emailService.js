@@ -324,7 +324,8 @@ class EmailService {
     winston.debug(' mail.config', mail.config);
 
     if (!mail.to) {
-      return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      // return winston.warn("EmailService send method. to field is not defined", mailOptions);
+      return winston.warn("EmailService send method. to field is not defined");
     }
 
     // send mail with defined transport object
@@ -1802,7 +1803,7 @@ class EmailService {
 
   }
 
-  async sendEmailRedirectOnDesktop(to, token, project_id, chatbot_id) {
+  async sendEmailRedirectOnDesktop(to, token, project_id, chatbot_id, namespace_id) {
     winston.debug("sendEmailRedirectOnDesktop: " + to);
 
     var that = this;
@@ -1817,8 +1818,16 @@ class EmailService {
     let baseScope = JSON.parse(JSON.stringify(that));
     delete baseScope.pass;
 
+    let redirect_url;
+    if (chatbot_id) {
+      redirect_url = `https://panel.tiledesk.com/v3/cds/#/project/${project_id}/chatbot/${chatbot_id}/intent/0?jwt=${token}`;
+    } else {
+      redirect_url = `${baseScope.baseUrl}/#/project/${project_id}/knowledge-bases/${namespace_id}?token=${token}`;
+    }
+
     let replacements = {
       baseScope: baseScope,
+      redirect_url: redirect_url,
       token: token,
       project_id: project_id,
       chatbot_id: chatbot_id

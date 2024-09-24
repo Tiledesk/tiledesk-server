@@ -5,6 +5,24 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.26
+- Updated tybot-connector to 0.2.105
+- Added route for faqs csv file uploading on /kb
+
+# 2.9.25
+- Updated vxml-connector to 0.1.44
+
+# 2.9.24
+- Updated tybot-connector to 0.2.104
+
+# 2.9.23
+- Updated whatsapp-connector to 0.1.73
+
+# 2.9.22
+- Added support for chatbots_attribute_hidden parameter in project update
+- Exclude from count voice conversation
+- Updated: vxml-connector to 0.1.43
+
 # 2.9.21
 - Updated: tybot-connector to 0.2.96
 
