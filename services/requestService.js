@@ -19,6 +19,7 @@ const { QuoteManager } = require('./QuoteManager');
 var configGlobal = require('../config/global');
 const axios = require("axios").default;
 
+
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
 let tdCache = new TdCache({
@@ -2500,7 +2501,7 @@ class RequestService {
 
   }
 
-  async getConversationsCount(id_project, status, preflight, hasBot) {
+  async getConversationsCount(id_project, status, preflight, hasBot, startDate, endDate) {
     return new Promise( async (resolve, reject) => {
       let query = { id_project: id_project, status: status, preflight: preflight};
       if (hasBot != null) {
@@ -2514,8 +2515,12 @@ class RequestService {
       if (preflight === null) {
         delete query.preflight;
       }
+      if (startDate && endDate) {
+        query.createdAt = { $gte: startDate.toDate(), $lte: endDate.toDate() }
+      }
+      console.log("query: ", query)
       let count = await Request.countDocuments(query).catch((err) => {
-        winston.error("Error getting unassigned requests count: ", err);
+        winston.error("Error getting requests count: ", err);
         reject(err);
       })
       winston.verbose("Requests found for query " + JSON.stringify(query) + ": " + count);

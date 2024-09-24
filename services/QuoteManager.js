@@ -3,6 +3,7 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
+const moment = require('moment');
 
 // NEW
 // const PLANS_LIST = {
@@ -371,6 +372,52 @@ class QuoteManager {
             winston.verbose("Default Limits: ", limits)
             return limits;
         }
+    }
+
+    async getCurrentSlot(project) {
+        console.log("getCurrentSlot!!! ", project)
+        let subscriptionDate;
+        if (project.isActiveSubscription === true) {
+            if (project.profile.subStart) {
+                subscriptionDate = moment(project.profile.subStart);
+                winston.debug("Subscription date from subStart: " + subscriptionDate.toISOString());
+            } else {
+                // it should never happen
+                winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+            }
+        } else {
+            if (project.profile.subEnd) {
+                subscriptionDate = moment(project.profile.subEnd);
+                winston.debug("Subscription date from subEnd: " + subscriptionDate.toISOString());
+            } else {
+                subscriptionDate = moment(project.createdAt);
+                winston.debug("Subscription date from project createdAt: " + subscriptionDate.toISOString());
+            }
+        }
+        
+        let now = moment();
+        winston.debug("now: ", now);
+
+        let diffInMonths = now.diff(subscriptionDate, 'months');
+        winston.debug("diffInMonths: ", diffInMonths)
+
+        let renewalDate = subscriptionDate.clone().add(diffInMonths, 'months').startOf('day');
+        winston.debug("renewalDate: ", renewalDate)
+
+        let slotEnd = subscriptionDate.clone().add(diffInMonths + 1, 'month');
+        slotEnd.subtract(1, 'day').endOf('day')
+        winston.debug("slotEnd: ", slotEnd)
+
+        // let slot = {
+        //     startDate: renewalDate.format('DD/MM/YYYY'),
+        //     endDate: slotEnd.format('DD/MM/YYYY')
+        // }
+        let slot = {
+            startDate: renewalDate,
+            endDate: slotEnd
+        }
+
+        return slot;
     }
 
 

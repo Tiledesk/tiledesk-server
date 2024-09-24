@@ -1478,13 +1478,21 @@ router.get('/count', async (req, res) => {
   let human_assigned_count = 0;
   let bot_assigned_count = 0;
 
+  let currentSlot
   let promises = [];
 
   if (quota_count) {
 
+    let quoteManager = req.app.get('quote_manager');
+
+    console.log("quoteManager ok")
+    currentSlot = await quoteManager.getCurrentSlot(req.project);
+    winston.debug("currentSlot: ", currentSlot)
+    console.log("currentSlot: ", currentSlot)
     // Open count
     // Warning: 201 is a fake status -> Logical meaning: status < 1000;
-    promises.push(requestService.getConversationsCount(id_project, 201, null, null).then((count) => {
+    // (method) RequestService.getConversationsCount(id_project: any, status: any, preflight: any, hasBot: any): Promise<any>
+    promises.push(requestService.getConversationsCount(id_project, 201, null, null, currentSlot.startDate, currentSlot.endDate).then((count) => {
       open_count = count;
       winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
     }).catch((err) => {
@@ -1492,7 +1500,7 @@ router.get('/count', async (req, res) => {
     }))
 
     // Closed count
-    promises.push(requestService.getConversationsCount(id_project, RequestConstants.CLOSED, null, null).then((count) => {
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.CLOSED, null, null, currentSlot.startDate, currentSlot.endDate).then((count) => {
       closed_count = count;
       winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
     }).catch((err) => {
@@ -1500,7 +1508,7 @@ router.get('/count', async (req, res) => {
     }))
   } else {
     // Unassigned count
-    promises.push(requestService.getConversationsCount(id_project, RequestConstants.UNASSIGNED, false, null).then((count) => {
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.UNASSIGNED, false, null, null, null).then((count) => {
       unassigned_count = count;
       winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
     }).catch((err) => {
@@ -1508,7 +1516,7 @@ router.get('/count', async (req, res) => {
     }))
   
     // Human assigned count
-    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, false).then((count) => {
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, false, null, null).then((count) => {
       human_assigned_count = count;
       winston.debug("Human assigned count for project " + id_project + ": " + human_assigned_count);
     }).catch((err) => {
@@ -1516,7 +1524,7 @@ router.get('/count', async (req, res) => {
     }))
   
     // Bot assigned count
-    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, true).then((count) => {
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, true, null, null).then((count) => {
       bot_assigned_count = count;
       winston.debug("Bot assigned count for project " + id_project + ": " + bot_assigned_count);
     }).catch((err) => {
@@ -1529,8 +1537,13 @@ router.get('/count', async (req, res) => {
     if (quota_count) {
       let data = {
         open: open_count,
-        closed: closed_count
+        closed: closed_count,
+        slot: {
+          startDate: currentSlot.startDate.format('DD/MM/YYYY'),
+          endDate: currentSlot.endDate.format('DD/MM/YYYY')
+        }
       }
+      console.log("data: ", data)
       return res.status(200).send(data);
     } else {
       if (merge_assigned) {
@@ -1551,6 +1564,7 @@ router.get('/count', async (req, res) => {
     }
 
   }).catch((err) => {
+    console.error("err: ", err);
     return res.status(400).send({ success: false, error: err });
   })
 })

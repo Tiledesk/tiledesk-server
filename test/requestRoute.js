@@ -1248,6 +1248,7 @@ describe('RequestRoute', () => {
               res.should.have.status(200);
               res.body.should.be.a('object');
               
+              console.log("request created")
               chai.request(server)
                   .get('/' + savedProject._id + '/requests/count?conversation_quota=true')
                   .auth(email, pwd)
