@@ -287,6 +287,7 @@ class RequestService {
             winston.debug("beforeDepartmentId:" + beforeDepartmentId);
           }
 
+
           let afterDepartmentId;
           if (routedRequest.department) {
             afterDepartmentId = routedRequest.department.toString();
@@ -803,6 +804,7 @@ class RequestService {
       var followers = request.followers;
       let createdAt = request.createdAt;
 
+
       if (!departmentid) {
         departmentid = 'default';
       }
@@ -841,6 +843,11 @@ class RequestService {
             project: p,
             request: request
           }
+
+          console.log("\nrequest STATUS: ", request.status);
+          console.log("\nrequest PREFLIGHT: ", request.preflight);
+          console.log("\nrequest HAS BOT: ", request.hasBot);
+
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
@@ -2811,6 +2818,30 @@ class RequestService {
     })
 
   }
+
+  async getConversationsCount(id_project, status, preflight, hasBot) {
+    return new Promise( async (resolve, reject) => {
+      let query = { id_project: id_project, status: status, preflight: preflight};
+      if (hasBot != null) {
+        query.hasBot = hasBot;
+      }
+      if (status === 201) {
+        query.status = {
+          $lt: RequestConstants.CLOSED
+        }
+      }
+      if (preflight === null) {
+        delete query.preflight;
+      }
+      let count = await Request.countDocuments(query).catch((err) => {
+        winston.error("Error getting unassigned requests count: ", err);
+        reject(err);
+      })
+      winston.verbose("Requests found for query " + JSON.stringify(query) + ": " + count);
+      resolve(count)
+    })
+  }
+
 
 }
 

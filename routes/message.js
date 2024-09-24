@@ -181,77 +181,82 @@ async (req, res)  => {
                   requester: project_user,
                   priority: req.body.priority,
                   followers: req.body.followers,
+                  proactive: true
                 };
   
                 return requestService.create(new_request).then(function (savedRequest) {
 
+
+                  if (!savedRequest) {
+                    return res.status(403).send({ success: false, message: "Requests quota exceeded"})
+                  }
                   winston.debug("returning savedRequest to", savedRequest.toJSON());
 
                   // createWithIdAndRequester(request_id, project_user_id, lead_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status, 
                   //  createdBy, attributes, subject, preflight, channel, location) {
-                    
-                // return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
-                //   req.body.text, req.body.departmentid, req.body.sourcePage, 
-                //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
+
+                  // return requestService.createWithIdAndRequester(req.params.request_id, req.projectuser._id, createdLead._id, req.projectid, 
+                  //   req.body.text, req.body.departmentid, req.body.sourcePage, 
+                  //   req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, undefined, req.body.channel, req.body.location ).then(function (savedRequest) {
 
 
-             
-                    
-                    // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
-                    return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
-                      req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function(savedMessage){                    
-                        
-                        // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-
-                          let message = savedMessage.toJSON();
-
-                          winston.debug("returning message to", message);
-                          
-                          winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
 
 
-                          savedRequest //bug
-                          // Request.findById(savedRequest.id)
-                            .populate('lead')
-                            .populate('department')
-                            .populate('participatingBots')
-                            .populate('participatingAgents') 
-                            // .populate('followers')  
-                            .populate({path:'requester',populate:{path:'id_user'}})
-                            // .exec(function (err, savedRequestPopulated){    
-                              .execPopulate(function (err, savedRequestPopulated){   //bug with  execPopulate request.attributes are invalid (NOT real data). but this bug is related to chat21 listener changes by reference. i think populate suffer from this problem bacause it it the same obect passed by reference 
+                  // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {
+                  return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
+                    req.projectid, req.user._id, messageStatus, req.body.attributes, req.body.type, req.body.metadata, req.body.language, undefined, req.body.channel).then(function (savedMessage) {
 
-                            if (err) {
-                              return winston.error("Error gettting savedRequestPopulated for send Message", err);
-                            }       
-                            
-                            winston.debug("returning savedRequest221 to", savedRequest.toJSON());
+                      // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+
+                      let message = savedMessage.toJSON();
+
+                      winston.debug("returning message to", message);
+
+                      winston.debug("returning savedRequest2210 to", savedRequest.toJSON());
 
 
-                            winston.debug("savedRequestPopulated", savedRequestPopulated.toJSON());
+                      savedRequest //bug
+                        // Request.findById(savedRequest.id)
+                        .populate('lead')
+                        .populate('department')
+                        .populate('participatingBots')
+                        .populate('participatingAgents')
+                        // .populate('followers')  
+                        .populate({ path: 'requester', populate: { path: 'id_user' } })
+                        // .exec(function (err, savedRequestPopulated){    
+                        .execPopulate(function (err, savedRequestPopulated) {   //bug with  execPopulate request.attributes are invalid (NOT real data). but this bug is related to chat21 listener changes by reference. i think populate suffer from this problem bacause it it the same obect passed by reference 
 
-                            winston.debug("returning savedRequest22 to", savedRequest.toJSON());
+                          if (err) {
+                            return winston.error("Error gettting savedRequestPopulated for send Message", err);
+                          }
+
+                          winston.debug("returning savedRequest221 to", savedRequest.toJSON());
 
 
-                            message.request = savedRequestPopulated;
-                            winston.debug("returning2 message to", message);
+                          winston.debug("savedRequestPopulated", savedRequestPopulated.toJSON());
+
+                          winston.debug("returning savedRequest22 to", savedRequest.toJSON());
 
 
-                            return res.json(message);
-                          });
+                          message.request = savedRequestPopulated;
+                          winston.debug("returning2 message to", message);
+
+
+                          return res.json(message);
                         });
-                    }).catch(function(err){    //pubblica questo
-                      winston.error('Error creating request: '+ JSON.stringify(err));
-                      winston.log({
-                        level: 'error',
-                        message: 'Error creating request: '+ JSON.stringify(err) + " " + JSON.stringify(req.body) ,
-                        label: req.projectid
-                      });
-                      // winston.error("Error creating message", err);
-                      return res.status(500).send({success: false, msg: 'Error creating request', err:err });
-                    });                                
-                      
+                    });
+                }).catch(function (err) {    //pubblica questo
+                  winston.error('Error creating request: ' + JSON.stringify(err));
+                  winston.log({
+                    level: 'error',
+                    message: 'Error creating request: ' + JSON.stringify(err) + " " + JSON.stringify(req.body),
+                    label: req.projectid
                   });
+                  // winston.error("Error creating message", err);
+                  return res.status(500).send({ success: false, msg: 'Error creating request', err: err });
+                });
+
+              });
                             
 
 
