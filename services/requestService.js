@@ -295,8 +295,8 @@ class RequestService {
             winston.debug("afterDepartmentId:" + afterDepartmentId);
           }
 
-          console.log("requestBefore status: ", requestBeforeRoute.status)
-          console.log("routedRequest status: ", routedRequest.status)
+          winston.debug("requestBefore status: ", requestBeforeRoute.status)
+          winston.debug("routedRequest status: ", routedRequest.status)
           /**
            * Case 1
            * After internal routing:
@@ -366,7 +366,7 @@ class RequestService {
            * - STATUS changed from 50 to 100 or 200
            */
           if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
-            console.log("Case 2 - Leaving TEMP status")
+            // console.log("Case 2 - Leaving TEMP status")
             if (isStandardConversation) {
               requestEvent.emit('request.create.quote', payload);
             }
@@ -378,7 +378,7 @@ class RequestService {
            * - STATUS changed from undefined to 100
            */
           if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
-            console.log("Case 3 - 'Proactive' request")
+            // console.log("Case 3 - 'Proactive' request")
             if (isStandardConversation) { 
               requestEvent.emit('request.create.quote', payload);
             }
@@ -844,11 +844,6 @@ class RequestService {
             project: p,
             request: request
           }
-
-          console.log("\nrequest STATUS: ", request.status);
-          console.log("\nrequest PREFLIGHT: ", request.preflight);
-          console.log("\nrequest HAS BOT: ", request.hasBot);
-
     
           if (attributes && attributes.sourcePage && (attributes.sourcePage.indexOf("td_draft=true") > -1)) {
               winston.verbose("is a test conversation --> skip quote availability check")
@@ -859,7 +854,7 @@ class RequestService {
               isVoiceConversation = true;
           }
           else {
-            console.log("! check quota moved")
+            // console.log("! check quota moved")
             // let available = await qm.checkQuote(p, request, 'requests');
             // if (available === false) {
             //   winston.info("Requests limits reached for project " + p._id)
@@ -929,9 +924,7 @@ class RequestService {
             /**
              * QUOTAS - START!!!
              */
-            console.log("Increment")
             if (!isTestConversation && !isVoiceConversation) {
-              console.log("Icremeneting...")
               requestEvent.emit('request.create.quote', payload);
             }
             /**
@@ -1050,7 +1043,6 @@ class RequestService {
           requestEvent.emit('request.create.simple', savedRequest);
 
           if (!isTestConversation && !isVoiceConversation) {
-            console.log("! incr quota moved")
             // requestEvent.emit('request.create.quote', payload);;
           }
 
@@ -2837,7 +2829,7 @@ class RequestService {
       if (startDate && endDate) {
         query.createdAt = { $gte: startDate.toDate(), $lte: endDate.toDate() }
       }
-      console.log("query: ", query)
+      winston.debug("getConversationsCount query: ", query)
       let count = await Request.countDocuments(query).catch((err) => {
         winston.error("Error getting requests count: ", err);
         reject(err);

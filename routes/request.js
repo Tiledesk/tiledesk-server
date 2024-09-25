@@ -1916,10 +1916,8 @@ router.get('/count', async (req, res) => {
 
     let quoteManager = req.app.get('quote_manager');
 
-    console.log("quoteManager ok")
     currentSlot = await quoteManager.getCurrentSlot(req.project);
     winston.debug("currentSlot: ", currentSlot)
-    console.log("currentSlot: ", currentSlot)
     // Open count
     // Warning: 201 is a fake status -> Logical meaning: status < 1000;
     // (method) RequestService.getConversationsCount(id_project: any, status: any, preflight: any, hasBot: any): Promise<any>
@@ -1974,7 +1972,6 @@ router.get('/count', async (req, res) => {
           endDate: currentSlot.endDate.format('DD/MM/YYYY')
         }
       }
-      console.log("data: ", data)
       return res.status(200).send(data);
     } else {
       if (merge_assigned) {

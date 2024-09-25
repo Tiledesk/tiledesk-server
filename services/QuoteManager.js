@@ -418,7 +418,6 @@ class QuoteManager {
     }
 
     async getCurrentSlot(project) {
-        console.log("getCurrentSlot!!! ", project)
         let subscriptionDate;
         if (project.isActiveSubscription === true) {
             if (project.profile.subStart) {
