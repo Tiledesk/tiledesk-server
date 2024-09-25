@@ -4,7 +4,6 @@ let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
 const emailEvent = require('../event/emailEvent');
-const moment = require('moment');
 
 // NEW
 // const PLANS_LIST = {
