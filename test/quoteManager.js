@@ -25,7 +25,7 @@ const emailMock = require('./mock/emailMock');
 const { MockTdCache } = require('./mock/MockTdCache');
 const mockTdCache = new MockTdCache();
 
-let log = true;
+let log = false;
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
@@ -60,6 +60,41 @@ const dateList = [
     "2023-10-29T08:45:54.058Z"
 ]
 
+const dateListStress = [
+    "2024-02-05T10:30:00.058Z",
+    "2024-03-05T10:30:00.058Z",
+    "2024-04-05T10:30:00.058Z",
+    "2024-05-05T10:30:00.058Z",
+    "2024-06-05T10:30:00.058Z",
+    "2024-07-05T10:30:00.058Z",
+    "2024-08-05T10:30:00.058Z",
+    "2024-09-05T10:30:00.058Z",
+    "2024-10-05T10:30:00.058Z",
+    "2024-11-05T10:30:00.058Z",
+    "2024-12-05T10:30:00.058Z",
+    "2025-01-05T10:30:00.058Z",
+    "2025-02-05T10:30:00.058Z",
+    "2025-03-05T10:30:00.058Z"
+]
+
+const expectedSlotStarts = [
+    "31/01/2024",
+    "29/02/2024",
+    "31/03/2024",
+    "30/04/2024",
+    "31/05/2024",
+    "30/06/2024",
+    "31/07/2024",
+    "31/08/2024",
+    "30/09/2024",
+    "31/10/2024",
+    "30/11/2024",
+    "31/12/2024",
+    "31/01/2025",
+    "28/02/2025",
+    "31/03/2025",
+
+]
 // connectRedis();
 
 // function connectRedis() {
@@ -104,11 +139,43 @@ quoteManager.start();
 describe('QuoteManager', function () {
 
 
-
-    it('incrementRequestsCount', async function () {
-        let mockProject = projectMock.mockProjectSandboxPlan;
+    it('incrementRequestsCountStress',  (done) => {
+        /**
+         * For this test the subscription starts on 31 Genuary.
+         * Slots must start on 31 Gen, 28/29 Feb, 31 Mar, 30 Apr, ...
+         */
+        let mockProject = projectMock.mockProjectPremiumPlan2;
         let mockRequest = requestMock.requestMock;
 
+        console.log("Starting stress test with one year long cycle of renewals")
+
+        let i = 0;
+        async function test(date) {
+            
+            mockRequest.createdAt = new Date(date);
+            let key_incremented = await quoteManager.incrementRequestsCount(mockProject, mockRequest);
+            if (log) { console.log("request_date: ", mockRequest.createdAt, "key_incremented: ", key_incremented); }
+            
+            let slot_start = key_incremented.substring(key_incremented.lastIndexOf(':') + 1)
+            expect(slot_start).to.equal(expectedSlotStarts[i]);
+
+            i += 1;
+            if (i < dateListStress.length) {
+                setTimeout(() => {
+                    test(dateListStress[i])
+                }, 250);
+            } else {
+                console.log("All dates tested successfully.")
+                done();
+            }
+        }
+        test(dateListStress[0]);
+
+    }).timeout(5000)
+
+    it('incrementRequestsCount', async function () {
+        let mockProject = projectMock.mockProjectBasicPlan;
+        let mockRequest = requestMock.requestMock;
 
         mockRequest.createdAt = new Date(dateList[0]);
 
@@ -207,8 +274,13 @@ describe('QuoteManager', function () {
                         res.should.have.status(200);
                         res.body.should.be.a('object');
 
-                        let date = new Date().toLocaleDateString();
-
+                        const options = {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                        };                          
+                        let date = new Date().toLocaleDateString(undefined, options);
+                    
                         let key = "quotes:tokens:" + savedProject._id + ":" + date;
                         let message_resp = "value incremented for key " + key;
                         expect(res.body.message).to.equal(message_resp);
