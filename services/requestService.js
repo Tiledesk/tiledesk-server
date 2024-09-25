@@ -1739,8 +1739,6 @@ class RequestService {
             return resolve(request);
           }
 
-          winston.debug("sono qui");
-
           //  un utente può chiudere se appartiene a participatingAgents oppure meglio agents del progetto?
 
 
