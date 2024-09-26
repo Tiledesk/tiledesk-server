@@ -1712,7 +1712,14 @@ class RequestService {
       //  else {
       //   winston.info("force is: " + force);
       //  }
-
+      console.log("closeRequestByRequestId params")
+      console.log("- request_id ", request_id)
+      console.log("- id_project ", id_project)
+      console.log("- skipStatsUpdate ", skipStatsUpdate)
+      console.log("- notify ", notify)
+      console.log("- closed_by ", closed_by)
+      console.log("- force ", force)
+      
       return Request
         .findOne({ request_id: request_id, id_project: id_project })
 
