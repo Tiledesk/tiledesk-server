@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.28
+- Updated number_assigned_request count logic (removed incr/decr)
+
 # 2.9.27
 - Updated tybot-connector to 0.2.107
 - Improved quotas slots
