@@ -46,7 +46,7 @@ class Listener {
     winston.debug("Route queue updateProjectUser start operation: " + operation + "id_user " + id_user + " id_project " + id_project);
     
     return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 } }, (err, requestsCount) => {
-      console.log("requestsCount: ", requestsCount);
+      console.log("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
       if (err) {
         return winston.error(err);
       }
