@@ -466,7 +466,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
 
   let project_id = req.projectid;
   let namespace_id = req.params.id;
-
+  
   let chatbotsArray = [];
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
@@ -492,6 +492,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
+  
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
       let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
