@@ -310,6 +310,18 @@ class RequestService {
 
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
+            if (routedRequest.attributes.everyone_abandoned && routedRequest.attributes.everyone_abandoned === true) {
+              request.attributes.everyone_abandoned = true;
+              request.markModified('attributes');
+              request.save((err, savedRequest) => {
+                if (err) {
+                  winston.error("Error updating request with everyone_abandoned field ", err);
+                } else {
+                  winston.verbose("Field everyone_abandoned added in request: " + savedRequest._id);
+                }
+              })
+            }
+
             if (no_populate === "true" || no_populate === true) {
               winston.debug("no_populate is true");
               return resolve(request);
