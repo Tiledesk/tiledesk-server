@@ -322,7 +322,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           return that.findProjectUsersAllAndAvailableWithOperatingHours(projectid, department, disableWebHookCall, project, context).then(function (value) {
 
             // console.log('D-0 -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) - ROUTING - ', department.routing, '] ', value);
-            console.log("[findProjectUsersAllAndAvailableWithOperatingHours] value: ", value)
+            console.log("\n[findProjectUsersAllAndAvailableWithOperatingHours] value: ", value)
             value['department'] = department
             return resolve(value);
 

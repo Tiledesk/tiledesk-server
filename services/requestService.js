@@ -315,6 +315,8 @@ class RequestService {
               return resolve(request);
             }
 
+            console.log("\n**** case 1 request: ", request)
+            console.log("\n**** case 1 routedRequest: ", routedRequest)
             return request
               .populate('lead')
               .populate('department')
@@ -384,7 +386,7 @@ class RequestService {
             }
           }
 
-          console.log("[route] routedRequest: ", routedRequest)
+          console.log("\n[route] routedRequest: ", routedRequest)
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
