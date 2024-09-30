@@ -310,14 +310,16 @@ class RequestService {
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+            
+            console.log("\n**** case 1 request: ", request)
+            console.log("\n**** case 1 routedRequest: ", routedRequest)
 
             if (no_populate === "true" || no_populate === true) {
+              console.log("\n**** No populate! return")
               winston.debug("no_populate is true");
               return resolve(request);
             }
 
-            console.log("\n**** case 1 request: ", request)
-            console.log("\n**** case 1 routedRequest: ", routedRequest)
             return request
               .populate('lead')
               .populate('department')
