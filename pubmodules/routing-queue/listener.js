@@ -181,6 +181,7 @@ class Listener {
                     // available_agents_not_busy could be equal to 0 --> abandoned by everyone
                     if (available_agents_not_busy.length == 0) {
                       console.log("****** Request abandoned: ", res.context.request);
+                      res.context.request.attributes.everyone_abandoned = true;
                     }
                     winston.debug("available_agents_not_busy after: ", available_agents_not_busy );                           
                   }
