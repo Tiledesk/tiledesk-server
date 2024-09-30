@@ -312,14 +312,17 @@ class RequestService {
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
             
             if (routedRequest.attributes.everyone_abandoned && routedRequest.attributes.everyone_abandoned === true) {
-              request.update({ _id: request._id}, { "attributes.everyone_abandoned": true}, (err, updatedRequest) => {
+              console.log("\nrequest id: ", request._id);
+              console.log("\nroutedRequest id: ", routedRequest._id);
+              request.attributes.everyone_abandoned = true;
+              request.markModified('attributes');
+              request.save((err, savedRequest) => {
                 if (err) {
-                  console.error("request.updated error: ", err);
+                  console.error("\nrequest.updated error: ", err);
                 } else {
-                  console.log("updatedRequest: ", updatedRequest)
+                  console.log("\nsavedRequest id: ", savedRequest._id)
+                  console.log("\nsavedRequest: ", savedRequest)
                 }
-
-
               })
             }
 
