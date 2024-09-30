@@ -168,7 +168,7 @@ class RequestService {
       return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
 
         // winston.debug("getOperators", result);
-        console.log("[routeInternal] get operators result: ", result);
+        console.log("\n***** [routeInternal] get operators result: ", result);
         var assigned_at = undefined;
 
         var status = RequestConstants.UNASSIGNED;
@@ -276,6 +276,7 @@ class RequestService {
 
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
 
+          console.log("\n**** routedRequest after routeInternal: ", routedRequest)
           winston.debug("after routeInternal", routedRequest);
           // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
           // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
@@ -386,7 +387,7 @@ class RequestService {
             }
           }
 
-          console.log("\n[route] routedRequest: ", routedRequest)
+          console.log("\n***** [route] routedRequest: ", routedRequest)
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
