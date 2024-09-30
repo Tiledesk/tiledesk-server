@@ -1174,6 +1174,9 @@ router.get('/', function (req, res, next) {
     query.draft = { $in: [false, null] }
   }
 
+  if (req.query.everyone_abandoned && (req.query.everyone_abandoned === 'false' || req.query.everyone_abandoned === false)) {
+    query.attributes.everyone_abandoned = { $in: [false, null] };
+  }
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
 
   var projection = undefined;
