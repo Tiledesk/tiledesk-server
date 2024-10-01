@@ -311,13 +311,13 @@ class RequestService {
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
             if (routedRequest.attributes.everyone_abandoned && routedRequest.attributes.everyone_abandoned === true) {
-              request.attributes.everyone_abandoned = true;
-              request.markModified('attributes');
+              request.status = RequestConstants.ABANDONED;
+              request.markModified('status');
               request.save((err, savedRequest) => {
                 if (err) {
-                  winston.error("Error updating request with everyone_abandoned field ", err);
+                  winston.error("Error updating request with status ABANDONED ", err);
                 } else {
-                  winston.verbose("Field everyone_abandoned added in request: " + savedRequest._id);
+                  winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
                 }
               })
             }

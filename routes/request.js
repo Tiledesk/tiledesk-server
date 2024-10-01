@@ -903,7 +903,7 @@ router.get('/', function (req, res, next) {
 
   let statusArray = [];
 
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $ne: 150 }, preflight: false };
 
 
   var projectuser = req.projectuser;
@@ -1174,10 +1174,6 @@ router.get('/', function (req, res, next) {
     query.draft = { $in: [false, null] }
   }
 
-  if (req.query.everyone_abandoned && (req.query.everyone_abandoned === 'false' || req.query.everyone_abandoned === false)) {
-    query["attributes.everyone_abandoned"] = { $in: [false, null] };
-  }
-
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
 
   var projection = undefined;
@@ -1193,10 +1189,6 @@ router.get('/', function (req, res, next) {
   // requestcachefarequi populaterequired
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
-
-
-
-
 
   winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
 
