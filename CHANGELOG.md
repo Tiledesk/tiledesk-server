@@ -5,6 +5,18 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.29
+- Fixed bug: try to update non existant project user (bot)
+
+# 2.9.28
+- Updated number_assigned_request count logic (removed incr/decr)
+
+# 2.9.27
+- Updated tybot-connector to 0.2.107
+- Improved quotas slots
+- Improved requests quota count (temporary conversation will no longer counted)
+- Fixed bug: savedFaq is not defined in /importjson
+
 # 2.9.26
 - Updated tybot-connector to 0.2.105
 - Added route for faqs csv file uploading on /kb
