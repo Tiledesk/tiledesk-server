@@ -50,7 +50,7 @@ class Listener {
       return winston.warn("Chatbot is not a project_user. Skip update.")
     }
 
-    return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 } }, (err, requestsCount) => {
+    return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 }, draft: { $in: [false, null] } }, (err, requestsCount) => {
       winston.verbose("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
       if (err) {
         return winston.error(err);
