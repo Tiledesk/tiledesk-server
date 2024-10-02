@@ -883,6 +883,10 @@ router.get('/', function (req, res, next) {
   const DEFAULT_LIMIT = 40;
 
   var limit = DEFAULT_LIMIT; // Number of request per page
+  var page = 0;
+  var skip = 0;
+  let statusArray = [];
+  var projectuser = req.projectuser;
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -891,29 +895,20 @@ router.get('/', function (req, res, next) {
     limit = DEFAULT_LIMIT;
   }
 
-
-  var page = 0;
-
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
-  winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
+  skip = page * limit;
 
-  let statusArray = [];
-
+  // Default query
   var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
 
-
-  var projectuser = req.projectuser;
-
-
   if (req.user instanceof Subscription) {
-    //all request 
+    // All request 
   } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
-    // all request 
-    // per uni mostrare solo quelle proprie quindi solo participants
+    // All request 
+    // Per uni mostrare solo quelle proprie quindi solo participants
     if (req.query.mine) {
       query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
     }
@@ -921,10 +916,8 @@ router.get('/', function (req, res, next) {
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
   }
 
-
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
-    winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
   if (req.query.requester_email) {
@@ -932,27 +925,13 @@ router.get('/', function (req, res, next) {
   }
 
   if (req.query.full_text) {
-    winston.debug('req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
 
-  var history_search = false; // ? serve ancora?
+  var history_search = false;
 
-  // if (req.query.status) {
-  //   winston.debug('req.query.status', req.query.status);
-  //   query.status = req.query.status;
-
-  //   if (req.query.status == 1000 || req.query.status == "1000") {
-  //     history_search = true;
-  //   }
-  //   if (req.query.status === "all") {
-  //     history_search = true;
-  //     delete query.status;
-  //   }
-  // }
-
+  // Multiple status management
   if (req.query.status) {
-
     if (req.query.status === 'all') {
       delete query.status;
     } else {
@@ -966,40 +945,27 @@ router.get('/', function (req, res, next) {
         delete query.status;
       }
     }
-
     if (statusArray.length > 0) {
       query.status = {
         $in: statusArray
       }
     }
-
   }
 
   if (req.query.lead) {
-    winston.debug('req.query.lead', req.query.lead);
     query.lead = req.query.lead;
   }
 
   // USERS & BOTS
   if (req.query.participant) {
-    winston.debug('req.query.participant', req.query.participant);
     query.participants = req.query.participant;
   }
 
-  winston.debug('req.query.hasbot', req.query.hasbot);
   if (req.query.hasbot != undefined) {
-    winston.debug('req.query.hasbot', req.query.hasbot);
     query.hasBot = req.query.hasbot;
   }
 
-  // if (req.query.waiting_time_exists) { //non basta aggiungi anche che nn è null
-  //   query.waiting_time = {"$exists": req.query.waiting_time_exists} //{$ne:null}
-  //   winston.debug('REQUEST ROUTE - QUERY waiting_time_exists', query.waiting_time_exists);
-  // }
-
-
   if (req.query.tags) {
-    winston.debug('req.query.tags', req.query.tags);
     query["tags.tag"] = req.query.tags;
   }
 
@@ -1031,9 +997,7 @@ router.get('/', function (req, res, next) {
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
 
-
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
-
     var enddate = moment().format("YYYY-MM-DD");
 
     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
@@ -1042,11 +1006,8 @@ router.get('/', function (req, res, next) {
     var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
-    // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
-
     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
   }
 
   /**
@@ -1077,9 +1038,6 @@ router.get('/', function (req, res, next) {
     var newdate = new Date(date);
     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
@@ -1097,44 +1055,34 @@ router.get('/', function (req, res, next) {
 
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
-  // }
-
-
 
   if (req.query.snap_department_routing) {
     query["snapshot.department.routing"] = req.query.snap_department_routing;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_routing', query.snap_department_routing);
   }
 
   if (req.query.snap_department_default) {
     query["snapshot.department.default"] = req.query.snap_department_default;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_default', query.snap_department_default);
   }
 
 
   if (req.query.snap_department_id_bot) {
     query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot', query.snap_department_id_bot);
   }
 
   if (req.query.snap_department_id_bot_exists) {
     query["snapshot.department.id_bot"] = { "$exists": req.query.snap_department_id_bot_exists }
-    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
   }
 
   if (req.query.snap_lead_lead_id) {
     query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
-    winston.debug('REQUEST ROUTE - QUERY snap_lead_lead_id', query.snap_lead_lead_id);
   }
 
   if (req.query.snap_lead_email) {
     query["snapshot.lead.email"] = req.query.snap_lead_email;
-    winston.debug('REQUEST ROUTE - QUERY snap_lead_email', query.snap_lead_email);
   }
 
   if (req.query.smartAssignment) {
     query.smartAssignment = req.query.smartAssignment;
-    winston.debug('REQUEST ROUTE - QUERY smartAssignment', query.smartAssignment);
   }
 
   if (req.query.channel) {
@@ -1145,8 +1093,6 @@ router.get('/', function (req, res, next) {
     } else {
       query["channel.name"] = req.query.channel
     }
-
-    winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
   }
 
   if (req.query.priority) {
@@ -1158,46 +1104,53 @@ router.get('/', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  winston.debug("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
-  winston.debug("sort query", sortQuery);
+
+  // VOICE FILTERS - Start
+  if (req.query.caller) {
+    query["attributes.caller_phone"] = req.query.caller;
+  }
+  if (req.query.called) {
+    query["attributes.called_phone"] = req.query.called;
+  }
+  // VOICE FILTERS - End
+
+  if (req.query.duration && req.query.duration_op) {
+    if (req.query.duration_op === 'gt') {
+      query.duration = { $gte: req.query.duration }
+    } else if (req.query.duration_op === 'lt') {
+      query.duration = { $lte: req.query.duration }
+    } else {
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+    }
+  }
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
   }
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
-
   var projection = undefined;
 
   if (req.query.full_text) {
-
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
-      winston.info('fulltext projection on');
+      winston.verbose('fulltext projection on');
       projection = { score: { $meta: "textScore" } };
     }
-
   }
-  // requestcachefarequi populaterequired
+
+  winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
+  
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
-
-
-
-
-  winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
-
   if (req.query.no_populate != "true" && req.query.no_populate != true) {
-    winston.verbose('REQUEST ROUTE - no_polutate false ', req.headers);
     q1.populate('department').
       populate('participatingBots').            //nico già nn gli usa
       populate('participatingAgents').          //nico già nn gli usa
@@ -1205,27 +1158,13 @@ router.get('/', function (req, res, next) {
       populate({ path: 'requester', populate: { path: 'id_user' } });        //toglilo perche nico lo prende già da snapshot
   }
 
-  // cache(cacheUtil.defaultTTL, "requests-"+projectId).    
-
-
-  // if (req.query.select_snapshot) {
-  //   winston.info('select_snapshot');
-  //   q1.select("+snapshot");
-  //   // q1.select({ "snapshot": 1});
-  // }
-
   if (req.query.full_text) {
-    winston.debug('fulltext sort');
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
       q1.sort({ score: { $meta: "textScore" } }) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
     }
   } else {
     q1.sort(sortQuery);
   }
-
-
-  // winston.info('q1',q1);
-
 
   q1.exec();
 
@@ -1239,10 +1178,7 @@ router.get('/', function (req, res, next) {
     q2 = 0;
   }
 
-  var promises = [
-    q1,
-    q2
-  ];
+  var promises = [ q1, q2 ];
 
   Promise.all(promises).then(function (results) {
     var objectToReturn = {
