@@ -1122,7 +1122,9 @@ router.get('/', function (req, res, next) {
   // VOICE FILTERS - End
 
   if (req.query.duration && req.query.duration_op) {
-    let duration = Number(duration) * 60 * 1000;
+    console.log("req.query.duration: ", req.query.duration)
+    let duration = Number(req.query.duration) * 60 * 1000;
+    console.log("duration: ", duration)
     if (req.query.duration_op === 'gt') {
       query.duration = { $gte: duration }
     } else if (req.query.duration_op === 'lt') {
