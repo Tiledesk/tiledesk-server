@@ -1123,9 +1123,9 @@ router.get('/', function (req, res, next) {
 
   if (req.query.duration && req.query.duration_op) {
     if (req.query.duration_op === 'gt') {
-      query.duration = { $gte: req.query.duration }
+      query.duration = { $gtez: req.query.duration * 60 * 1000 }
     } else if (req.query.duration_op === 'lt') {
-      query.duration = { $lte: req.query.duration }
+      query.duration = { $lte: req.query.duration * 60 * 1000 }
     } else {
       winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
