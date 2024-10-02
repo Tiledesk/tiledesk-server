@@ -881,8 +881,10 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   const DEFAULT_LIMIT = 40;
-
+  
+  var page = 0;
   var limit = DEFAULT_LIMIT; // Number of request per page
+  let statusArray = [];
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -891,9 +893,6 @@ router.get('/', function (req, res, next) {
     limit = DEFAULT_LIMIT;
   }
 
-
-  var page = 0;
-
   if (req.query.page) {
     page = req.query.page;
   }
@@ -901,13 +900,10 @@ router.get('/', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
-  let statusArray = [];
-
+  // Default Query
   var query = { "id_project": req.projectid, "status": { $lt: 1000, $ne: 150 }, preflight: false };
 
-
   var projectuser = req.projectuser;
-
 
   if (req.user instanceof Subscription) {
     //all request 
@@ -920,7 +916,6 @@ router.get('/', function (req, res, next) {
   } else {
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
   }
-
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
@@ -1169,6 +1164,10 @@ router.get('/', function (req, res, next) {
   var sortQuery = {};
   sortQuery[sortField] = direction;
   winston.debug("sort query", sortQuery);
+
+  if (req.query.abandonded && (req.query.abandoned === true || req.query.abandoned === 'true')) {
+    query["attributes.fully_abandoned"] = true
+  }
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
