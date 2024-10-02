@@ -1122,10 +1122,11 @@ router.get('/', function (req, res, next) {
   // VOICE FILTERS - End
 
   if (req.query.duration && req.query.duration_op) {
+    let duration = Number(duration) * 60 * 1000;
     if (req.query.duration_op === 'gt') {
-      query.duration = { $gtez: req.query.duration * 60 * 1000 }
+      query.duration = { $gte: duration }
     } else if (req.query.duration_op === 'lt') {
-      query.duration = { $lte: req.query.duration * 60 * 1000 }
+      query.duration = { $lte: duration }
     } else {
       winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
