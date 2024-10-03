@@ -901,8 +901,7 @@ router.get('/', function (req, res, next) {
 
   skip = page * limit;
 
-  // Default query
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $ne: 150 }, preflight: false };
 
   if (req.user instanceof Subscription) {
     // All request 

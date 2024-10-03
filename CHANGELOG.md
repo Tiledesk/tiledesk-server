@@ -5,6 +5,13 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.31
+- Improved conversations queues management
+- Added conversation status 150 (ABANDONED)
+
+# 2.9.30
+- Restore Voice and SMS modules
+
 # 2.9.29
 - Fixed bug: try to update non existant project user (bot)
 
