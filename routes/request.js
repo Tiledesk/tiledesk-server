@@ -1120,13 +1120,17 @@ router.get('/', function (req, res, next) {
   if (req.query.called) {
     query["attributes.called_phone"] = req.query.called;
   }
+  if (req.query.call_id) {
+    query["attributes.call_id"] = req.query.call_id;
+  }
   // VOICE FILTERS - End
 
   if (req.query.duration && req.query.duration_op) {
+    let duration = Number(req.query.duration) * 60 * 1000;
     if (req.query.duration_op === 'gt') {
-      query.duration = { $gte: req.query.duration }
+      query.duration = { $gte: duration }
     } else if (req.query.duration_op === 'lt') {
-      query.duration = { $lte: req.query.duration }
+      query.duration = { $lte: duration }
     } else {
       winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
