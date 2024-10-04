@@ -50,6 +50,47 @@ describe('ProjectRoute', () => {
 
     describe('/create', () => {
 
+        it('getAllProjectsWithSuperAdminCredential', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create-1", savedUser._id).then(() => {
+                    projectService.create("test-project-create-2", savedUser._id).then((savedProject2) => {
+
+                        chai.request(server)
+                        .post('/auth/signin')
+                        .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+                        // .send({ email: email, password: pwd }) // con queste credenziali non si può fare la richiesta /projects/all
+                        .end((err, res) => {
+
+                            if (log) { console.log("login with superadmin res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.success).to.equal(true);
+                            expect(res.body.token).not.equal(null);
+
+                            let superadmin_token = res.body.token;
+
+                            chai.request(server)
+                            .get('/projects/all')
+                            .set('Authorization', superadmin_token)
+                            .end((err, res) => {
+    
+                                console.log("res.body: ", res.body.length);
+                                console.log("example: ", res.body[0]);
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+
+                                done()
+                            })
+                        })
+                    })
+                })
+            })
+        }).timeout(10000)
+        
         it('updateProjectProfileWithSuperAdminCredential', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
