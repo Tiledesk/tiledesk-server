@@ -836,7 +836,7 @@ router.get('/all', [passport.authenticate(['basic', 'jwt'], { session: false }),
       // skipVerificationEmail = true;
       // winston.verbose("skip sending verification email")
     } else {
-      return res.status(403).send({ success: false,  error: "You don't have the permission required to modify the project profile"});
+      return res.status(403).send({ success: false,  error: "You don't have the permission required to perform the operation"});
     }
 
   }
