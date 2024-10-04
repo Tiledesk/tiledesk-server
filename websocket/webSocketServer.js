@@ -197,7 +197,7 @@ class WebSocketServer {
 
         var projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
-        
+
         let q = Project.findOne({ _id: projectId, status: 100 })
 
         if (cacheEnabler.project) {
@@ -310,7 +310,7 @@ class WebSocketServer {
 
                 // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
                 // pubblica dopo toni
-                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50 }, preflight: false, "draft": { $in: [false, null] } };
+                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
                 // add hasBot:false
 
                 // var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
