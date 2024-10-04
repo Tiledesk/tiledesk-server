@@ -881,7 +881,8 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   const DEFAULT_LIMIT = 40;
-
+  
+  var page = 0;
   var limit = DEFAULT_LIMIT; // Number of request per page
   var page = 0;
   var skip = 0;
@@ -902,7 +903,7 @@ router.get('/', function (req, res, next) {
   skip = page * limit;
 
   // Default query
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $ne: 150 }, preflight: false };
 
   if (req.user instanceof Subscription) {
     // All request 
@@ -1134,6 +1135,10 @@ router.get('/', function (req, res, next) {
     } else {
       winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
+  }
+
+  if (req.query.abandonded && (req.query.abandoned === true || req.query.abandoned === 'true')) {
+    query["attributes.fully_abandoned"] = true
   }
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {

@@ -310,6 +310,20 @@ class RequestService {
 
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
+            if (routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
+              request.status = RequestConstants.ABANDONED;
+              request.attributes.fully_abandoned = true;
+              request.markModified('status');
+              request.markModified('attributes');
+              request.save((err, savedRequest) => {
+                if (err) {
+                  winston.error("Error updating request with status ABANDONED ", err);
+                } else {
+                  winston.verbose("Status modified in ABANDONED for request: " + savedRequest._id);
+                }
+              })
+            }
+
             if (no_populate === "true" || no_populate === true) {
               winston.debug("no_populate is true");
               return resolve(request);
