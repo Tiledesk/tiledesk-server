@@ -1841,6 +1841,17 @@ router.get('/csv', function (req, res, next) {
         // element.participatingAgents = participatingAgents;
 
 
+        if (element.attributes) {
+          if (element.attributes.caller_phone) {
+            element.caller_phone = element.attributes.caller_phone;
+          }
+          if (element.attributes.called_phone) {
+            element.called_phone = element.attributes.called_phone;
+          }
+          if (element.attributes.caller_phone) {
+            element.call_id = element.attributes.call_id;
+          }
+        }
 
         delete element.lead;
 
@@ -1861,6 +1872,7 @@ router.get('/csv', function (req, res, next) {
       });
 
       winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
+      console.log("get csv for requests: ", requests)
 
       return res.csv(requests, true);
     });
