@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.32
+- Added voice filters in get requests
+- Added endpoint to get all projects
+- Updated vxml-connector to 0.1.49
+
 # 2.9.31
 - Improved conversations queues management
 - Added conversation status 150 (ABANDONED)
