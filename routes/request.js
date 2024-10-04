@@ -1609,11 +1609,6 @@ router.get('/csv', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
-  // if (req.query.status) {
-  //   winston.debug('req.query.status', req.query.status);
-  //   query.status = req.query.status;
-  // }
-
   if (req.query.status) {
 
     if (req.query.status === 'all') {
@@ -1721,12 +1716,48 @@ router.get('/csv', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
+  if (req.query.channel) {
+    if (req.query.channel === "offline") {
+      query["channel.name"] = { "$in": ["email", "form"] }
+    } else if (req.query.channel === "online") {
+      query["channel.name"] = { "$nin": ["email", "form"] }
+    } else {
+      query["channel.name"] = req.query.channel
+    }
+  }
+
+  // VOICE FILTERS - Start
+  if (req.query.caller) {
+    query["attributes.caller_phone"] = req.query.caller;
+  }
+  if (req.query.called) {
+    query["attributes.called_phone"] = req.query.called;
+  }
+  if (req.query.call_id) {
+    query["attributes.call_id"] = req.query.call_id;
+  }
+  // VOICE FILTERS - End
 
   // TODO ORDER BY SCORE
   // return Faq.find(query,  {score: { $meta: "textScore" } }) 
   // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
 
   // aggiungi filtro per data marco
+
+  if (req.query.duration && req.query.duration_op) {
+    let duration = Number(req.query.duration) * 60 * 1000;
+    if (req.query.duration_op === 'gt') {
+      query.duration = { $gte: duration }
+    } else if (req.query.duration_op === 'lt') {
+      query.duration = { $lte: duration }
+    } else {
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+    }
+  }
+
+  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+    query.draft = { $in: [false, null] }
+  }
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
   return Request.find(query, '-transcript -status -__v').
