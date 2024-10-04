@@ -1872,7 +1872,6 @@ router.get('/csv', function (req, res, next) {
       });
 
       winston.debug('REQUEST ROUTE - REQUEST AS CSV', requests);
-      console.log("get csv for requests: ", requests)
 
       return res.csv(requests, true);
     });
