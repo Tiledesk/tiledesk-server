@@ -1318,6 +1318,71 @@ describe('KbRoute', () => {
             });
         })
 
+        it('create-namespaces-with-engine', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    // Get all namespaces. Create default namespace and return.
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get all namespaces res.body: ", res.body); }
+                            console.log("get all namespaces res.body: ", res.body);
+                            res.should.have.status(200);
+                            res.body.should.be.a('array');
+                            expect(res.body.length).to.equal(1);
+                            should.not.exist(res.body[0]._id);
+                            expect(res.body[0].id).to.equal(savedProject._id.toString());
+                            expect(res.body[0].name).to.equal("Default");
+
+                            // Create another namespace
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/namespace')
+                                .auth(email, pwd)
+                                .send({ name: "MyCustomNamespace" })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) }
+                                    if (log) { console.log("create new namespace res.body: ", res.body) }
+                                    console.log("create new namespace res.body: ", res.body)
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    should.not.exist(res.body._id)
+                                    should.exist(res.body.id)
+                                    expect(res.body.name).to.equal('MyCustomNamespace');
+
+                                    // Get again all namespace. A new default namespace should not be created.
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/kb/namespace/all')
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("get all namespaces res.body: ", res.body); }
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('array');
+                                            expect(res.body.length).to.equal(2);
+                                            should.not.exist(res.body[0]._id);
+                                            should.not.exist(res.body[1]._id);
+                                            should.exist(res.body[0].id);
+                                            should.exist(res.body[1].id);
+
+                                            done();
+                                        })
+                                })
+                        })
+                });
+            });
+        })
 
         /**
          * Update namespaces

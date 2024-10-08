@@ -1,6 +1,7 @@
 var express = require('express');
-var { Namespace } = require('../models/kb_setting');
-var { KB } = require('../models/kb_setting');
+var { Namespace, KB, Engine } = require('../models/kb_setting');
+// var { KB } = require('../models/kb_setting');
+// var { Engine } = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
@@ -17,6 +18,7 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { body } = require('express-validator');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -44,6 +46,12 @@ let default_preview_settings = {
   top_k: 4,
   //context: "You are an awesome AI Assistant."
   context: null
+}
+let default_engine = {
+  name: "pinecone",
+  type: "pod",
+  vector_size: 1536,
+  index_name: "pugliai-tiledesk"
 }
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
@@ -116,6 +124,12 @@ router.post('/scrape/single', async (req, res) => {
       if (data.scrape_type) {
         json.scrape_type = data.scrape_type;
       }
+
+      let ns = namespaces.find(n => n.namespace_id === kb.namespace);
+      json.engine = ns.engine || default_engine;
+
+      winston.verbose("/scrape/single json: ", json);
+      console.log("/scrape/single json: ", json);
 
       startScrape(json).then((response) => {
         winston.verbose("startScrape response: ", response);
@@ -237,9 +251,9 @@ router.post('/qa', async (req, res) => {
     }
   }
 
-  // if (process.env.NODE_ENV === 'test') {
-  //   return res.status(200).send({ success: true, message: "Question skipped in test environment"});
-  // }
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Question skipped in test environment"});
+  }
 
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
@@ -388,13 +402,21 @@ router.get('/namespace/all', async (req, res) => {
     }
     else if (namespaces.length == 0) {
 
+      // let new_engine = new Engine({
+      //   name: default_engine.name,
+      //   type: default_engine.type,
+      //   vectore_size: default_engine.vectore_size,
+      //   index_name: default_engine.index_name
+      // })
+
       // Create Default Namespace
       let new_namespace = new Namespace({
         id_project: project_id,
         id: project_id,
         name: "Default",
         preview_settings: default_preview_settings,
-        default: true
+        default: true,
+        engine: default_engine
       })
 
       new_namespace.save((err, savedNamespace) => {
@@ -521,12 +543,20 @@ router.post('/namespace', async (req, res) => {
   let body = req.body;
   winston.debug("add namespace body: ", body);
 
+  // let new_engine = new Engine({
+  //   name: default_engine.name,
+  //   type: default_engine.type,
+  //   vector_size: default_engine.vectore_size,
+  //   index_name: default_engine.index_name
+  // })
+
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
     id: namespace_id,
     name: body.name,
     preview_settings: default_preview_settings,
+    engine: default_engine
   })
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
@@ -848,6 +878,7 @@ router.post('/', async (req, res) => {
   if (total_count > kbs_limit) {
     return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   }
+
   let new_kb = {
     id_project: project_id,
     name: body.name,
@@ -860,6 +891,7 @@ router.post('/', async (req, res) => {
   if (!new_kb.namespace) {
     new_kb.namespace = project_id;
   }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
@@ -886,6 +918,13 @@ router.post('/', async (req, res) => {
       if (raw.value.content) {
         json.content = raw.value.content;
       }
+
+      let ns = namespaces.find(n => n.namespace_id === body.namespace);
+      if (ns.engine) {
+        json.engine = ns.engine
+      } else {
+        json.engine = default_engine
+      }      
 
       let resources = [];
 
@@ -981,11 +1020,15 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   saveBulk(operations, kbs, project_id).then((result) => {
 
+    let ns = namespaces.find(n => n.namespace_id === namespace_id);
+    let engine = ns.engine || def_engine;
+
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, ...rest }) => {
-      return { id: _id, webhook: webhook, ...rest };
+      return { id: _id, webhook: webhook, engine: engine,  ...rest };
     });
     winston.verbose("resources to be sent to worker: ", resources);
+    console.log("/multi resources to be sent to worker: ", resources);
     scheduleScrape(resources);
     res.status(200).send(result);
 
@@ -1085,9 +1128,13 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       })
 
       saveBulk(operations, kbs, project_id).then((result) => {
+
+        let ns = namespaces.find(n => n.namespace_id === kb.namespace);
+        json.engine = ns.engine || default_engine;
+
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhooh: webhook, ...rest };
+          return { id: _id, webhooh: webhook, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
         if (!process.env.NODE_ENV) {
