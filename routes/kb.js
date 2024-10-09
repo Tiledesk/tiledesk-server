@@ -50,6 +50,7 @@ let default_preview_settings = {
 let default_engine = {
   name: "pinecone",
   type: "pod",
+  apikey: "",
   vector_size: 1536,
   index_name: "pugliai-tiledesk"
 }
