@@ -263,7 +263,7 @@ router.post('/qa', async (req, res) => {
   }
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
-  if (!data.advanced_context) {
+  if (!data.advancedPrompt) {
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contexts[data.model];
     } else {
