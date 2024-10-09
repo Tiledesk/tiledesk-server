@@ -86,10 +86,32 @@ var KBSchema = new Schema({
   status: {
     type: Number,
     required: false
+  },
+  scrape_type: {
+    type: Number,
+    required: false
+  },
+  scrape_options: {
+    type: Object,
+    required: false,
+    default: undefined,
+    tags_to_extract: {
+      type: Array,
+      required: false
+    },
+    unwanted_tags: {
+      type: Array,
+      required: false
+    },
+    unwanted_classnames: {
+      type: Array,
+      required: false
+    }
   }
 }, {
   timestamps: true
 })
+
 
 
 // DEPRECATED !! - Start
