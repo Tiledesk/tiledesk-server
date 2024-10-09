@@ -2,6 +2,29 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
+var EngineSchema = new Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
+  apikey: {
+    type: String,
+    required: false
+  },
+  vector_size: {
+    type: Number,
+    required: true
+  },
+  index_name: {
+    type: String,
+    required: true
+  }
+})
+
 var NamespaceSchema = new Schema({
   id_project: {
     type: String,
@@ -22,6 +45,10 @@ var NamespaceSchema = new Schema({
   default: {
     type: Boolean,
     default: false
+  },
+  engine: {
+    type: EngineSchema,
+    required: false
   }
 }, {
   timestamps: true
@@ -115,7 +142,7 @@ KBSchema.index({ createdAt: -1, updatedAt: -1 })
 
 // DEPRECATED
 const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
-
+const Engine = mongoose.model('Engine', EngineSchema)
 const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
 
@@ -127,5 +154,6 @@ const KB = mongoose.model('KB', KBSchema)
 module.exports = {
   KBSettings: KBSettings,
   Namespace: Namespace,
+  Engine: Engine,
   KB: KB
 }

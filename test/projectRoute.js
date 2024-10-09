@@ -22,12 +22,13 @@ var Group = require('../models/group');
 var expect = chai.expect;
 var assert = chai.assert;
 
-
+let operatingHours = '{"1":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"2":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"3":[{"start":"09:00","end":"11:00"},{"start":"14:00","end":"18:00"}],"4":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"5":[{"start":"09:00","end":"13:00"},{"start":"14:00","end":"18:00"}],"tzname":"Europe/Rome"}';
 let timeSlotsSample = {
     "819559cc": {
         name: "Slot1",
         active: true,
-        hours: "{\"1\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"3\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"5\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
+        //hours: "{\"1\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"3\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"5\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"America/Los_Angeles\"}"
+        hours: "{\"1\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"3\":[{\"start\":\"09:00\",\"end\":\"15:00\"},{\"start\":\"17:00\",\"end\":\"18:00\"}],\"5\":[{\"start\":\"09:00\",\"end\":\"13:00\"},{\"start\":\"14:00\",\"end\":\"18:00\"}],\"tzname\":\"Europe/Rome\"}"
     },
     "5d4368de": {
         name: "Slot2",
@@ -49,6 +50,47 @@ describe('ProjectRoute', () => {
 
     describe('/create', () => {
 
+        it('getAllProjectsWithSuperAdminCredential', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create-1", savedUser._id).then(() => {
+                    projectService.create("test-project-create-2", savedUser._id).then((savedProject2) => {
+
+                        chai.request(server)
+                        .post('/auth/signin')
+                        .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+                        // .send({ email: email, password: pwd }) // con queste credenziali non si può fare la richiesta /projects/all
+                        .end((err, res) => {
+
+                            if (log) { console.log("login with superadmin res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.success).to.equal(true);
+                            expect(res.body.token).not.equal(null);
+
+                            let superadmin_token = res.body.token;
+
+                            chai.request(server)
+                            .get('/projects/all')
+                            .set('Authorization', superadmin_token)
+                            .end((err, res) => {
+    
+                                console.log("res.body: ", res.body.length);
+                                console.log("example: ", res.body[0]);
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+
+                                done()
+                            })
+                        })
+                    })
+                })
+            })
+        }).timeout(10000)
+        
         it('updateProjectProfileWithSuperAdminCredential', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -115,6 +157,9 @@ describe('ProjectRoute', () => {
             })
         }).timeout(10000)
 
+
+
+
         it('updateProjectTimeSlots', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -180,8 +225,47 @@ describe('ProjectRoute', () => {
             })
         }).timeout(10000)
 
-        it('availableUsers', (done) => {
+        it('isOpenOperatingHours', (done) => {
 
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        // .put('/projects/' + savedProject._id + "/update")
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ activeOperatingHours: true, operatingHours: operatingHours })
+                        .end((err, res) => {
+
+                            if (log) { console.log("update project time slots res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            chai.request(server)
+                                .get('/projects/' + savedProject._id + '/isopen')
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body isopen: ", res.body) };
+
+                                    // Unable to do other checks due to currentTime change.
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                })
+                        })
+
+
+                })
+            })
+        }).timeout(10000)
+
+        it('availableUsers', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
 
@@ -198,6 +282,46 @@ describe('ProjectRoute', () => {
 
                             done();
                         })
+                })
+            })
+        })
+
+        it('utcChecker', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-project-create", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        // .put('/projects/' + savedProject._id + "/update")
+                        .put('/projects/' + savedProject._id)
+                        .auth(email, pwd)
+                        .send({ timeSlots: timeSlotsSample })
+                        .end((err, res) => {
+
+                            if (log) { console.log("update project time slots res.body: ", res.body) };
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+
+                            chai.request(server)
+                                .get('/projects/' + savedProject._id + '/isopen?timeSlot=819559cc')
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body isopen: ", res.body) };
+
+                                    // Unable to do other checks due to currentTime change.
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                })
+                        })
+
+
                 })
             })
         }).timeout(10000)
