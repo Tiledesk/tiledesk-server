@@ -235,6 +235,8 @@ router.post('/qa', async (req, res) => {
     } else {
       data.system_context = contexts[data.model];
     }
+  } else {
+    data.system_context = advancedPrompt;
   }
 
   // if (process.env.NODE_ENV === 'test') {
