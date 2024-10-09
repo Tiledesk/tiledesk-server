@@ -2,6 +2,7 @@ const authEvent = require('../../event/authEvent');
 const requestEvent = require('../../event/requestEvent');
 var Project = require('../../models/project');
 var Project_user = require('../../models/project_user');
+var Request = require('../../models/request')
 var winston = require('../../config/winston');
 
 var ProjectUserUtil = require("../../utils/project_userUtil");
@@ -34,44 +35,93 @@ class Listener {
         this.enabled = false;
     }
     winston.debug("Listener this.enabled: "+ this.enabled);
-}
+  }
 
  
-      // db.getCollection('project_users').find({"number_assigned_requests" : {"$lt":0}}).count()
+  // db.getCollection('project_users').find({"number_assigned_requests" : {"$lt":0}}).count()
 
-
-    updateProjectUser(id_user, id_project, operation) {
-      winston.debug("Route queue updateProjectUser start operation: " +operation+ "id_user "+ id_user + " id_project " + id_project );
-      return Project_user       
-                    .findOneAndUpdate({id_user: id_user, id_project: id_project}, {$inc : {'number_assigned_requests' : operation}}, {new: true, upsert:false}, function(err, updatedPU) {
-                    if (err) {
-                     return winston.error(err);
-                    }
-                    winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
-                     winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
-
-                    updatedPU.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
-
-                      var pu = updatedProject_userPopulated.toJSON();
-
-                      return Project.findById(id_project).exec(function(err, project) {
-                        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, project.settings && project.settings.max_agent_assigned_chat);                  
-                        winston.debug("Route queue pu.isBusy: "+ pu.isBusy);
-                                               
-                        authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: undefined, skipArchive: true}); //if queued with jobs -> websocket notification on project_user.update doesn't work??? forse si in quanto viene convertito in .pub.queue e poi rifunziiona
-
-
-                        // project_user.update triggers activityArchiver(tested), cache invalidation(tested), subscriptionNotifierQueued and websocket(tested works from queue i trigger ws)
-                        if (requestEvent.queueEnabled) {  //force to .queue to be catched into the queue (activity archiver, subscriptionNotifierQueued )
-                          authEvent.emit('project_user.update.queue', {updatedProject_userPopulated:pu, req: undefined, skipArchive: true});
-                        }
-
-                      })
-                      
-                    });
-
-                });
+  // New version of updateProjectUser() method.
+  // This will not increment or decrement the number_assigned_requests field but search the exact number of assigned conversation to the project user
+  updateProjectUser(id_user, id_project, operation) {
+    // winston.debug("Route queue updateProjectUser start operation: " + operation + "id_user " + id_user + " id_project " + id_project);
+    
+    // escludi id_user che iniziano con bot_
+    if (id_user.startsWith('bot_')) {
+      return winston.warn("Chatbot is not a project_user. Skip update.")
     }
+
+    return Request.countDocuments({ id_project: id_project, participantsAgents: id_user, status: { $lt: 1000 }, draft: { $in: [null, false] } }, (err, requestsCount) => {
+      winston.verbose("requestsCount for id_user: ", id_user, "and project: ", id_project, "-->", requestsCount);
+      if (err) {
+        return winston.error(err);
+      }
+
+      return Project_user
+        .findOneAndUpdate({ id_user: id_user, id_project: id_project }, { number_assigned_requests: requestsCount }, { new: true, upsert: false }, function (err, updatedPU) {
+          if (err) {
+            return winston.error(err);
+          }
+          // winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+          // winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+          winston.debug("Route queue number_assigned_requests updated to " + requestsCount + "for project user " + updatedPU.id);
+  
+          updatedPU.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, updatedProject_userPopulated) {
+  
+            var pu = updatedProject_userPopulated.toJSON();
+  
+            return Project.findById(id_project).exec(function (err, project) {
+              pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, project.settings && project.settings.max_agent_assigned_chat);
+              winston.debug("Route queue pu.isBusy: " + pu.isBusy);
+  
+              authEvent.emit('project_user.update', { updatedProject_userPopulated: pu, req: undefined, skipArchive: true }); //if queued with jobs -> websocket notification on project_user.update doesn't work??? forse si in quanto viene convertito in .pub.queue e poi rifunziiona
+  
+  
+              // project_user.update triggers activityArchiver(tested), cache invalidation(tested), subscriptionNotifierQueued and websocket(tested works from queue i trigger ws)
+              if (requestEvent.queueEnabled) {  //force to .queue to be catched into the queue (activity archiver, subscriptionNotifierQueued )
+                authEvent.emit('project_user.update.queue', { updatedProject_userPopulated: pu, req: undefined, skipArchive: true });
+              }
+  
+            })
+  
+          });
+  
+        });
+    })
+
+  }
+
+  _updateProjectUser(id_user, id_project, operation) {
+    winston.debug("Route queue updateProjectUser start operation: " + operation + "id_user " + id_user + " id_project " + id_project);
+    return Project_user
+      .findOneAndUpdate({ id_user: id_user, id_project: id_project }, { $inc: { 'number_assigned_requests': operation } }, { new: true, upsert: false }, function (err, updatedPU) {
+        if (err) {
+          return winston.error(err);
+        }
+        winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+        winston.debug("Route queue number_assigned_requests +1 :" + updatedPU.id);
+
+        updatedPU.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, updatedProject_userPopulated) {
+
+          var pu = updatedProject_userPopulated.toJSON();
+
+          return Project.findById(id_project).exec(function (err, project) {
+            pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, project.settings && project.settings.max_agent_assigned_chat);
+            winston.debug("Route queue pu.isBusy: " + pu.isBusy);
+
+            authEvent.emit('project_user.update', { updatedProject_userPopulated: pu, req: undefined, skipArchive: true }); //if queued with jobs -> websocket notification on project_user.update doesn't work??? forse si in quanto viene convertito in .pub.queue e poi rifunziiona
+
+
+            // project_user.update triggers activityArchiver(tested), cache invalidation(tested), subscriptionNotifierQueued and websocket(tested works from queue i trigger ws)
+            if (requestEvent.queueEnabled) {  //force to .queue to be catched into the queue (activity archiver, subscriptionNotifierQueued )
+              authEvent.emit('project_user.update.queue', { updatedProject_userPopulated: pu, req: undefined, skipArchive: true });
+            }
+
+          })
+
+        });
+
+      });
+  }
 
     updateParticipatingProjectUsers(request, operation) {
         winston.debug("Route queue request.participatingAgents", request.participatingAgents);

@@ -177,7 +177,11 @@ class Listener {
                     winston.debug("abandoned_by_project_usersAsArray", abandoned_by_project_usersAsArray);
 
                     var available_agents_not_busy = available_agents_not_busy.filter(projectUser=> !abandoned_by_project_usersAsArray.includes(projectUser._id.toString()))
-                  
+                    
+                    if (available_agents_not_busy.length == 0) {
+                      res.context.request.attributes.fully_abandoned = true;
+                    }
+
                     winston.debug("available_agents_not_busy after: ", available_agents_not_busy );                           
                   }
               }

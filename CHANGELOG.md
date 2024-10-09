@@ -5,6 +5,48 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.9.32
+- Added voice filters in get requests
+- Added endpoint to get all projects
+- Updated vxml-connector to 0.1.49
+
+# 2.9.31
+- Improved conversations queues management
+- Added conversation status 150 (ABANDONED)
+
+# 2.9.30
+- Restore Voice and SMS modules
+
+# 2.9.29
+- Fixed bug: try to update non existant project user (bot)
+
+# 2.9.28
+- Updated number_assigned_request count logic (removed incr/decr)
+
+# 2.9.27
+- Updated tybot-connector to 0.2.107
+- Improved quotas slots
+- Improved requests quota count (temporary conversation will no longer counted)
+- Fixed bug: savedFaq is not defined in /importjson
+
+# 2.9.26
+- Updated tybot-connector to 0.2.105
+- Added route for faqs csv file uploading on /kb
+
+# 2.9.25
+- Updated vxml-connector to 0.1.44
+
+# 2.9.24
+- Updated tybot-connector to 0.2.104
+
+# 2.9.23
+- Updated whatsapp-connector to 0.1.73
+
+# 2.9.22
+- Added support for chatbots_attribute_hidden parameter in project update
+- Exclude from count voice conversation
+- Updated: vxml-connector to 0.1.43
+
 # 2.9.21
 - Updated: tybot-connector to 0.2.96
 

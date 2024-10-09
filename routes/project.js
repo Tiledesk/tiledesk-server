@@ -13,7 +13,7 @@ var Group = require('../models/group');
 
 var winston = require('../config/winston');
 var roleChecker = require('../middleware/has-role');
-
+var config = require('../config/database');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
 var passport = require('passport');
@@ -24,6 +24,24 @@ var cacheUtil = require('../utils/cacheUtil');
 var orgUtil = require("../utils/orgUtil");
 var cacheEnabler = require("../services/cacheEnabler");
 var mongoose = require('mongoose');
+
+var jwt = require('jsonwebtoken');
+// CHECK IT ASAP!!!!
+let configSecret = process.env.GLOBAL_SECRET || config.secret;
+var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+// console.log("pKey",pKey);
+
+if (pKey) {
+  configSecret = pKey.replace(/\\n/g, '\n');
+}
+
+let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
+var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+if (pubKey) {
+  pubConfigSecret = pubKey.replace(/\\n/g, '\n');
+}
+// CHECK IT ASAP!!!!
+
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], async (req, res) => {
   
@@ -430,6 +448,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.current_agent_my_chats_only"]!=undefined) {
     update["settings.current_agent_my_chats_only"] = req.body["settings.current_agent_my_chats_only"];
   }
+
+  if (req.body["settings.chatbots_attributes_hidden"]!=undefined) {
+    update["settings.chatbots_attributes_hidden"] = req.body["settings.chatbots_attributes_hidden"];
+  }
   
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
@@ -731,6 +753,95 @@ Project.findByIdAndUpdate(req.params.projectid, { $pull: { bannedUsers: { "_id":
 
 });
 
+router.get('/all', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
+
+  if (req.headers.authorization) {
+
+    let token = req.headers.authorization.split(" ")[1];
+    let decode = jwt.verify(token, pubConfigSecret)
+    if (decode && (decode.email === process.env.ADMIN_EMAIL)) {
+
+      Project.aggregate([
+        // {
+        //   $match: {
+        //     status: 100,
+        //     //createdAt: { $gte: startDate}
+        //   },
+        // },
+        {
+          $sort: {
+            createdAt: -1
+          },
+        },
+        {
+          $lookup: {
+            from: 'project_users',          
+            localField: '_id',              
+            foreignField: 'id_project',     
+            as: 'project_user',            
+            pipeline: [                     
+              { $match: { role: 'owner' } } 
+            ]
+          }
+        },
+        {
+          $addFields: {
+            project_user: { $arrayElemAt: ['$project_user', 0] }
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'project_user.id_user',              
+            foreignField: '_id',     
+            as: 'user'            
+          },
+        },
+        {
+          $addFields: {
+            user: { $arrayElemAt: ['$user', 0] } 
+          }
+        }
+      ])
+        .then((projects) => {
+          winston.verbose("Projects found " + projects.length)
+          // const fieldsToKeep = ['_id', 'name', 'createdBy', 'createdAt', 'user.email' ];
+
+          const filteredProjects = projects.map(project => {
+            const filteredProject = {};
+            filteredProject._id = project._id;
+            filteredProject.name = project.name;
+            filteredProject.owner = project.user?.email;
+            filteredProject.createdAt = project.createdAt;
+            filteredProject.profile_name = project.profile?.name;
+            // ... add other fields here
+
+            // fieldsToKeep.forEach(field => {
+            //   if (project[field] !== undefined) {
+            //     filteredProject[field] = project[field];
+            //   }
+            // });
+            return filteredProject;
+          });
+
+          return res.status(200).send(filteredProjects);
+        })
+        .catch((err) => {
+          console.error(err);
+          return res.status(500).send({ success: false,  error: err});
+        });
+      
+      // let updatedUser = await User.findByIdAndUpdate(savedUser._id, { emailverified: true }, { new: true }).exec();
+      // winston.debug("updatedUser: ", updatedUser);
+      // skipVerificationEmail = true;
+      // winston.verbose("skip sending verification email")
+    } else {
+      return res.status(403).send({ success: false,  error: "You don't have the permission required to perform the operation"});
+    }
+
+  }
+
+});
 
 
 //roleChecker.hasRole('agent') works because req.params.projectid is valid using :projectid of this method
