@@ -653,7 +653,7 @@ router.put('/namespace/:id', async (req, res) => {
 
 router.delete('/namespace/:id', async (req, res) => {
 
-  let id_project = req.projectid;
+  let project_id = req.projectid;
   let namespace_id = req.params.id;
 
   let namespace = await Namespace.findOne({ id_project: project_id, id: namespace_id }).catch((err) => {
@@ -677,7 +677,7 @@ router.delete('/namespace/:id', async (req, res) => {
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
@@ -711,7 +711,7 @@ router.delete('/namespace/:id', async (req, res) => {
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
