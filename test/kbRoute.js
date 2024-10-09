@@ -58,7 +58,6 @@ describe('KbRoute', () => {
                             expect(res.body.length).to.equal(1);
 
                             let namespace_id = res.body[0].id;
-                            console.log("namespace_id: ", namespace_id);
 
                             let kb = {
                                 name: "example_name5",
@@ -172,14 +171,14 @@ describe('KbRoute', () => {
                                                             if (log) { console.log("create kb3 res.body: ", res.body); }
                                                             res.should.have.status(200);
 
-                                                            let query = "?status=100&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example&namespace=" + namespace_id;
-                                                            //let query = "";
-                                                            console.log("query: ", query);
+                                                            let query = "?status=-1&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example&namespace=" + namespace_id;
+                                                            //let query = "?namespace=" + namespace_id;
 
                                                             chai.request(server)
                                                                 .get('/' + savedProject._id + "/kb" + query)
                                                                 .auth(email, pwd)
                                                                 .end((err, res) => {
+                                                                    if (err) { console.error("err: ", err)}
                                                                     if (log) { console.log("getall res.body: ", res.body); }
                                                                     res.should.have.status(200);
                                                                     res.body.should.be.a('object');
@@ -187,7 +186,7 @@ describe('KbRoute', () => {
                                                                     expect(res.body.kbs.length).to.equal(2);
                                                                     expect(res.body.count).to.equal(2);
                                                                     res.body.query.should.be.a('object');
-                                                                    expect(res.body.query.status).to.equal(100);
+                                                                    expect(res.body.query.status).to.equal(-1);
                                                                     expect(res.body.query.limit).to.equal(5);
                                                                     expect(res.body.query.page).to.equal(0);
                                                                     expect(res.body.query.direction).to.equal(-1);
@@ -255,7 +254,6 @@ describe('KbRoute', () => {
                                     let namespace_id = "fakenamespaceid";
 
                                     let query = "?status=100&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example&namespace=" + namespace_id;
-                                    console.log("query: ", query);
 
                                     chai.request(server)
                                         .get('/' + savedProject._id + "/kb" + query)
@@ -308,7 +306,6 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-                                    console.log("res.body: ", res.body)
 
                                     res.should.have.status(200);
 
@@ -1334,13 +1331,16 @@ describe('KbRoute', () => {
 
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get all namespaces res.body: ", res.body); }
-                            console.log("get all namespaces res.body: ", res.body);
+
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
                             should.not.exist(res.body[0]._id);
                             expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
+                            should.exist(res.body[0].engine)
+                            expect(res.body[0].engine.name).to.equal('pinecone');
+                            expect(res.body[0].engine.type).to.equal('pod');
 
                             // Create another namespace
                             chai.request(server)
@@ -1351,13 +1351,15 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err) }
                                     if (log) { console.log("create new namespace res.body: ", res.body) }
-                                    console.log("create new namespace res.body: ", res.body)
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     should.not.exist(res.body._id)
                                     should.exist(res.body.id)
                                     expect(res.body.name).to.equal('MyCustomNamespace');
+                                    should.exist(res.body.engine)
+                                    expect(res.body.engine.name).to.equal('pinecone');
+                                    expect(res.body.engine.type).to.equal('pod');
 
                                     // Get again all namespace. A new default namespace should not be created.
                                     chai.request(server)
@@ -1411,7 +1413,6 @@ describe('KbRoute', () => {
                             expect(res.body[0].name).to.equal("Default");
 
                             let namespace_id = res.body[0].id;
-                            console.log("namespace_id: ", namespace_id);
 
                             let new_settings = {
                                 model: 'gpt-4o',
@@ -1476,7 +1477,6 @@ describe('KbRoute', () => {
                             expect(res.body[0].name).to.equal("Default");
 
                             let namespace_id = res.body[0].id;
-                            console.log("namespace_id: ", namespace_id);
 
                             // Update namespace
                             chai.request(server)

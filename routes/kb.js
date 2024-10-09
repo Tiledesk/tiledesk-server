@@ -125,11 +125,10 @@ router.post('/scrape/single', async (req, res) => {
         json.scrape_type = data.scrape_type;
       }
 
-      let ns = namespaces.find(n => n.namespace_id === kb.namespace);
+      let ns = namespaces.find(n => n.id === kb.namespace);
       json.engine = ns.engine || default_engine;
 
       winston.verbose("/scrape/single json: ", json);
-      console.log("/scrape/single json: ", json);
 
       startScrape(json).then((response) => {
         winston.verbose("startScrape response: ", response);
@@ -146,6 +145,8 @@ router.post('/scrape/single', async (req, res) => {
 
 router.post('/scrape/status', async (req, res) => {
 
+  let project_id = req.projectid;
+  // (EXAMPLE) body: { id, namespace }
   let data = req.body;
   winston.debug("/scrapeStatus req.body: ", req.body);
 
@@ -156,6 +157,25 @@ router.post('/scrape/status', async (req, res) => {
     (req.query.returnObject === true || req.query.returnObject === 'true')) {
     returnObject = true;
   }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+  if (!namespaceIds.includes(data.namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
 
   openaiService.scrapeStatus(data).then(async (response) => {
 
@@ -251,6 +271,9 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
   }
@@ -331,6 +354,9 @@ router.delete('/delete', async (req, res) => {
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
+  
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
 
   openaiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
@@ -365,6 +391,11 @@ router.delete('/deleteall', async (req, res) => {
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+
+  winston.verbose("/deleteall data: ", data);
 
   openaiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
@@ -470,7 +501,10 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
   }
 
-  openaiService.getContentChunks(namespace_id, content_id).then((resp) => {
+  let ns = namespaces.find(n => n.id === namespace_id);
+  let engine = ns.engine || default_engine;
+
+  openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
     winston.debug("chunks found ", chunks);
@@ -514,7 +548,6 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
-  
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
       let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
@@ -622,8 +655,20 @@ router.delete('/namespace/:id', async (req, res) => {
   let id_project = req.projectid;
   let namespace_id = req.params.id;
 
+  let namespace = await Namespace.findOne({ id_project: project_id, id: namespace_id }).catch((err) => {
+    winston.error("find namespace error: ", err);
+    res.status(500).send({ success: false, error: err });
+  })
+
+  if (!namespace) {
+    let alert = "No namespace found for id " + namespace_id;
+    winston.warn(alert);
+    res.status(404).send({ success: false, error: alert })
+  }
+
   let data = {
-    namespace: namespace_id
+    namespace: namespace_id,
+    engine: namespace.engine || default_engine
   }
 
   if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
@@ -861,7 +906,7 @@ router.post('/', async (req, res) => {
   if (!namespaceIds.includes(body.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
-
+  
   let quoteManager = req.app.get('quote_manager');
   let limits = await quoteManager.getPlanLimits(req.project);
   let kbs_limit = limits.kbs;
@@ -878,7 +923,7 @@ router.post('/', async (req, res) => {
   if (total_count > kbs_limit) {
     return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   }
-
+  
   let new_kb = {
     id_project: project_id,
     name: body.name,
@@ -918,18 +963,15 @@ router.post('/', async (req, res) => {
       if (raw.value.content) {
         json.content = raw.value.content;
       }
-
-      let ns = namespaces.find(n => n.namespace_id === body.namespace);
-      if (ns.engine) {
-        json.engine = ns.engine
-      } else {
-        json.engine = default_engine
-      }      
+      let ns = namespaces.find(n => n.id === body.namespace);
+      json.engine = ns.engine || default_engine;
 
       let resources = [];
 
       resources.push(json);
-      scheduleScrape(resources);
+      if (!process.env.NODE_ENV) {
+        scheduleScrape(resources);
+      }
 
     }
   })
@@ -1130,7 +1172,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       saveBulk(operations, kbs, project_id).then((result) => {
 
         let ns = namespaces.find(n => n.namespace_id === kb.namespace);
-        json.engine = ns.engine || default_engine;
+        let engine = ns.engine || default_engine;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
@@ -1213,7 +1255,6 @@ router.delete('/:kb_id', async (req, res) => {
   let kb_id = req.params.kb_id;
   winston.verbose("delete kb_id " + kb_id);
 
-
   let kb = await KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
     winston.warn("Unable to find kb. Error: ", err);
     return res.status(500).send({ success: false, error: err })
@@ -1232,6 +1273,16 @@ router.delete('/:kb_id', async (req, res) => {
   if (!data.namespace) {
     data.namespace = project_id;
   }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+
+  winston.verbose("/:delete_id data: ", data);
 
   openaiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
