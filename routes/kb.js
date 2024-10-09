@@ -870,6 +870,19 @@ router.post('/', async (req, res) => {
   if (!new_kb.namespace) {
     new_kb.namespace = project_id;
   }
+  if (new_kb.type === 'txt') {
+    new_kb.scrape_type = 1;
+  }
+  if (new_kb.type === 'url') {
+    if (!body.scrape_type || body.scrape_type === 2) {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = await setDefaultScrapeOptions();
+    } else {
+      new_kb.scrape_type = body.scrape_type;
+      new_kb.scrape_options = body.scrape_options;
+    }
+  }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
@@ -881,20 +894,27 @@ router.post('/', async (req, res) => {
 
       res.status(200).send(raw);
 
+      let saved_kb = raw.value;
       let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
       let json = {
-        id: raw.value._id,
-        type: raw.value.type,
-        source: raw.value.source,
+        id: saved_kb._id,
+        type: saved_kb.type,
+        source: saved_kb.source,
         content: "",
-        namespace: raw.value.namespace,
+        namespace: saved_kb.namespace,
         webhook: webhook
       }
       winston.debug("json: ", json);
 
-      if (raw.value.content) {
-        json.content = raw.value.content;
+      if (saved_kb.content) {
+        json.content = saved_kb.content;
+      }
+      if (saved_kb.scrape_type) {
+        json.scrape_type = saved_kb.scrape_type;
+      }
+      if (saved_kb.scrape_options) {
+        json.parameters_scrape_type_4 = saved_kb.scrape_options;
       }
 
       let resources = [];
@@ -968,7 +988,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
   let kbs = [];
-  list.forEach(url => {
+  list.forEach( async (url) => {
     let kb = {
       id_project: project_id,
       name: url,
@@ -979,10 +999,25 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       status: -1,
       scrape_type: scrape_type
     }
-    console.log("scrape_options: ", scrape_options);
-    if (scrape_options) {
-      kb.scrape_options = scrape_options
+
+    if (!kb.scrape_type) {
+      scrape_type = 2;
     }
+
+    if (scrape_type == 2) {
+      kb.scrape_options = {
+        tags_to_extract: ["body"],
+        unwanted_tags: [],
+        unwanted_classnames: []
+      }
+    } else {
+      kb.scrape_options = scrape_options;
+    }
+    // if (scrape_type === 2) {
+    //   kb.scrape_options = await setDefaultScrapeOptions();
+    // } else {
+    //   kb.scrape_options = await setCustomScrapeOptions(scrape_options);
+    // }
     kbs.push(kb)
   })
 
@@ -997,19 +1032,22 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
-  console.log("kbs: ", kbs);
+    console.log("kbs: ", kbs);
+
   saveBulk(operations, kbs, project_id).then((result) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      if (scrape_type === 4) {
-        return { id: _id, webhook: webhook, tags_to_extract: scrape_options.tags_to_extract, unwanted_tags: scrape_options.unwanted_tags, unwanted_classnames: scrape_options.unwanted_classnames, ...rest };
-      } else {
-        return { id: _id, webhook: webhook, ...rest };
-      }
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: { scrape_options }, ...rest}
+      // if (scrape_type === 4) {
+      //   return { id: _id, webhook: webhook, tags_to_extract: scrape_options.tags_to_extract, unwanted_tags: scrape_options.unwanted_tags, unwanted_classnames: scrape_options.unwanted_classnames, ...rest };
+      // } else {
+      //   return { id: _id, webhook: webhook, ...rest };
+      // }
     });
     console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
+
     scheduleScrape(resources);
     res.status(200).send(result);
 
@@ -1281,6 +1319,30 @@ async function getKeyFromIntegrations(project_id) {
       resolve(null);
     }
   })
+}
+
+async function setDefaultScrapeOptions() {
+  return {
+    tags_to_extract: ["body"],
+    unwanted_tags: [],
+    unwanted_classnames: []
+  }
+}
+
+async function setCustomScrapeOptions(options) {
+  if (!options) {
+    options = await setDefaultScrapeOptions();
+  } else {
+    if (!options.tags_to_extract || options.tags_to_extract.length == 0) {
+      options.tags_to_extract = ["body"];
+    }
+    if (!options.unwanted_tags) {
+      options.unwanted_tags = [];
+    }
+    if (!options.unwanted_classnames) {
+      options.unwanted_classnames = [];
+    }
+  }
 }
 /**
 * ****************************************
