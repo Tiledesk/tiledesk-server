@@ -1063,7 +1063,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   saveBulk(operations, kbs, project_id).then((result) => {
 
-    let ns = namespaces.find(n => n.namespace_id === namespace_id);
+    let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || def_engine;
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
