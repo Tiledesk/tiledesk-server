@@ -150,6 +150,70 @@ describe('KbRoute', () => {
 
         })
 
+        it('get-kb-chunks', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_text1",
+                                type: "text",
+                                source: "example_text1",
+                                content: "Example text",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb')
+                                .auth(email, pwd)
+                                .send(kb) // can be empty
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create kb res.body: ", res.body); }
+                                    console.log("create kb res.body: ", res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    let content_id = res.body.value._id;
+
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/kb/namespace/' + namespace_id + '/chunks/' + content_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err )};
+                                            if (log) { console.log("res.body: ", res.body )};
+
+                                            res.should.have.status(200);
+                                            //expect(res.body.length).to.equal(1);
+
+                                            done();
+                                        })
+
+                                })
+                        })
+                });
+            });
+
+        })
+
         it('get-with-queries', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
@@ -1726,6 +1790,7 @@ describe('KbRoute', () => {
                 })
             })
         }).timeout(10000)
+
 
         /**
          * Delete namespace

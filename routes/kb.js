@@ -496,6 +496,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   let project_id = req.projectid;
   let namespace_id = req.params.id;
   let content_id = req.params.content_id;
+  console.log("content_id: ", content_id)
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -518,7 +519,11 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  delete engine._id;
 
+  console.log("**namespace_id: ", namespace_id)
+  console.log("content_id: ", content_id)
+  console.log("engine: ", engine)
   openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
