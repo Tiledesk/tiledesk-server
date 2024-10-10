@@ -1241,7 +1241,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       saveBulk(operations, kbs, project_id).then((result) => {
 
-        let ns = namespaces.find(n => n.namespace_id === kb.namespace);
+        let ns = namespaces.find(n => n.namespace_id === namespace_id);
         let engine = ns.engine || default_engine;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
