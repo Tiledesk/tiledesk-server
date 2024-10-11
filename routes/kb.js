@@ -282,8 +282,6 @@ router.post('/qa', async (req, res) => {
     } else {
       data.system_context = contexts[data.model];
     }
-  } else {
-    data.system_context = advancedPrompt;
   }
 
   let ns = namespaces.find(n => n.id === data.namespace);
