@@ -286,6 +286,8 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
+  delete data.advancedPrompt;
+  winston.verbose("ask data: ", data);
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
@@ -446,13 +448,6 @@ router.get('/namespace/all', async (req, res) => {
     }
     else if (namespaces.length == 0) {
 
-      // let new_engine = new Engine({
-      //   name: default_engine.name,
-      //   type: default_engine.type,
-      //   vectore_size: default_engine.vectore_size,
-      //   index_name: default_engine.index_name
-      // })
-
       // Create Default Namespace
       let new_namespace = new Namespace({
         id_project: project_id,
@@ -494,7 +489,6 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   let project_id = req.projectid;
   let namespace_id = req.params.id;
   let content_id = req.params.content_id;
-  console.log("content_id: ", content_id)
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -519,9 +513,6 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   let engine = ns.engine || default_engine;
   delete engine._id;
 
-  console.log("**namespace_id: ", namespace_id)
-  console.log("content_id: ", content_id)
-  console.log("engine: ", engine)
   openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
@@ -593,13 +584,6 @@ router.post('/namespace', async (req, res) => {
   let project_id = req.projectid;
   let body = req.body;
   winston.debug("add namespace body: ", body);
-
-  // let new_engine = new Engine({
-  //   name: default_engine.name,
-  //   type: default_engine.type,
-  //   vector_size: default_engine.vectore_size,
-  //   index_name: default_engine.index_name
-  // })
 
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
@@ -1120,8 +1104,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
-    console.log("kbs: ", kbs);
-
   saveBulk(operations, kbs, project_id).then((result) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
@@ -1136,7 +1118,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       //   return { id: _id, webhook: webhook, ...rest };
       // }
     });
-    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
 
     scheduleScrape(resources);
@@ -1203,7 +1184,6 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let question = data[0];
       let answer = data[1];
 
-      console.log("data. ", data)
       kbs.push({
         id_project: project_id,
         name: question,

@@ -23,6 +23,8 @@ var EngineSchema = new Schema({
     type: String,
     required: true
   }
+}, {
+  _id: false  // This is schema is always used as an embedded object inside NamespaceSchema 
 })
 
 var NamespaceSchema = new Schema({

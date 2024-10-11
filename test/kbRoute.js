@@ -1310,41 +1310,41 @@ describe('KbRoute', () => {
         // }).timeout(10000)
 
         // Ask KB
-        // it('askkb-key-from-env', (done) => {
+        it('askkb-key-from-env', (done) => {
 
-        //     var email = "test-signup-" + Date.now() + "@email.com";
-        //     var pwd = "pwd";
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
 
-        //     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-        //         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
 
-        //             chai.request(server)
-        //                 .get('/' + savedProject._id + '/kb/namespace/all')
-        //                 .auth(email, pwd)
-        //                 .end((err, res) => {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
 
-        //                     if (err) { console.error("err: ", err); }
-        //                     if (log) { console.log("get all namespaces res.body: ", res.body); }
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get all namespaces res.body: ", res.body); }
                             
-        //                     console.log("namespace created..")
+                            console.log("namespace created..")
 
-        //                     chai.request(server)
-        //                         .post('/' + savedProject._id + "/kb/qa")
-        //                         .auth(email, pwd)
-        //                         .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question" })
-        //                         .end((err, res) => {
+                            chai.request(server)
+                                .post('/' + savedProject._id + "/kb/qa")
+                                .auth(email, pwd)
+                                .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question", advancedPrompt: true, system_context: "You are a robot coming from future" })
+                                .end((err, res) => {
 
-        //                             if (err) { console.error("err: ", err) };
-        //                             if (log) { console.log("res.body: ", res.body) };
-        //                             console.log("res.body: ", res.body)
-        //                             done();
-        //                         })
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+                                    console.log("res.body: ", res.body)
+                                    done();
+                                })
 
 
-        //                 })
-        //         })
-        //     })
-        // }).timeout(10000)
+                        })
+                })
+            })
+        }).timeout(10000)
 
 
         it('webhook', (done) => {
@@ -1427,7 +1427,7 @@ describe('KbRoute', () => {
          * Get all namespaces of a project.
          * If there isn't namespaces for a project_id, the default namespace is created and returned.
          */
-        it('get-namespaces', (done) => {
+        it('get-namespaces-1', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1442,7 +1442,7 @@ describe('KbRoute', () => {
 
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get all namespaces res.body: ", res.body); }
-
+                            console.log("get all namespaces res.body: ", res.body);
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
@@ -1450,6 +1450,8 @@ describe('KbRoute', () => {
                             //expect(res.body[0]._id).to.equal(undefined);
                             expect(res.body[0].id).to.equal(savedProject._id.toString());
                             expect(res.body[0].name).to.equal("Default");
+                            should.exist(res.body[0].engine)
+                            expect(res.body[0].engine.name).to.equal('pinecone')
 
                             done();
 
