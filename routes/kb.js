@@ -235,13 +235,14 @@ router.post('/qa', async (req, res) => {
     } else {
       data.system_context = contexts[data.model];
     }
-  } else {
-    data.system_context = advancedPrompt;
   }
 
-  // if (process.env.NODE_ENV === 'test') {
-  //   return res.status(200).send({ success: true, message: "Question skipped in test environment"});
-  // }
+  delete data.advancedPrompt;
+  winston.verbose("ask data: ", data);
+
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Question skipped in test environment"});
+  }
 
   openaiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
