@@ -7,7 +7,7 @@ let openai_endpoint = process.env.OPENAI_ENDPOINT;
 let kb_endpoint = process.env.KB_ENDPOINT;
 let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
-let secret = process.env.JWT_SECRET_KEY_LLM;
+let secret = process.env.JWT_SECRET_KEY;
 
 class OpenaiService {
 

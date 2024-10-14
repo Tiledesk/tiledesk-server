@@ -434,13 +434,6 @@ router.get('/namespace/all', async (req, res) => {
     }
     else if (namespaces.length == 0) {
 
-      // let new_engine = new Engine({
-      //   name: default_engine.name,
-      //   type: default_engine.type,
-      //   vectore_size: default_engine.vectore_size,
-      //   index_name: default_engine.index_name
-      // })
-
       // Create Default Namespace
       let new_namespace = new Namespace({
         id_project: project_id,
@@ -504,6 +497,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  delete engine._id;
 
   openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
@@ -576,13 +570,6 @@ router.post('/namespace', async (req, res) => {
   let project_id = req.projectid;
   let body = req.body;
   winston.debug("add namespace body: ", body);
-
-  // let new_engine = new Engine({
-  //   name: default_engine.name,
-  //   type: default_engine.type,
-  //   vector_size: default_engine.vectore_size,
-  //   index_name: default_engine.index_name
-  // })
 
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
@@ -1067,11 +1054,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     let engine = ns.engine || default_engine;
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    resources = resources.map(({ _id, ...rest }) => {
-      return { id: _id, webhook: webhook, engine: engine,  ...rest };
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
-    console.log("/multi resources to be sent to worker: ", resources);
     scheduleScrape(resources);
     res.status(200).send(result);
 
@@ -1172,7 +1158,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
       saveBulk(operations, kbs, project_id).then((result) => {
 
-        let ns = namespaces.find(n => n.namespace_id === kb.namespace);
+        let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
@@ -1467,6 +1453,30 @@ async function getKeyFromIntegrations(project_id) {
       resolve(null);
     }
   })
+}
+
+async function setDefaultScrapeOptions() {
+  return {
+    tags_to_extract: ["body"],
+    unwanted_tags: [],
+    unwanted_classnames: []
+  }
+}
+
+async function setCustomScrapeOptions(options) {
+  if (!options) {
+    options = await setDefaultScrapeOptions();
+  } else {
+    if (!options.tags_to_extract || options.tags_to_extract.length == 0) {
+      options.tags_to_extract = ["body"];
+    }
+    if (!options.unwanted_tags) {
+      options.unwanted_tags = [];
+    }
+    if (!options.unwanted_classnames) {
+      options.unwanted_classnames = [];
+    }
+  }
 }
 /**
 * ****************************************
