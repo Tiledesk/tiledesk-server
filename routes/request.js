@@ -881,8 +881,13 @@ router.get('/', function (req, res, next) {
   winston.debug('REQUEST ROUTE - QUERY ', req.query)
 
   const DEFAULT_LIMIT = 40;
-
+  
+  var page = 0;
   var limit = DEFAULT_LIMIT; // Number of request per page
+  var page = 0;
+  var skip = 0;
+  let statusArray = [];
+  var projectuser = req.projectuser;
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -891,27 +896,20 @@ router.get('/', function (req, res, next) {
     limit = DEFAULT_LIMIT;
   }
 
-
-  var page = 0;
-
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
-  winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
+  skip = page * limit;
 
-
-  var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
-
-  var projectuser = req.projectuser;
-
+  // Default query
+  var query = { "id_project": req.projectid, "status": { $lt: 1000, $ne: 150 }, preflight: false };
 
   if (req.user instanceof Subscription) {
-    //all request 
+    // All request 
   } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
-    //all request 
-    // per uni mostrare solo quelle priprio quindi solo participants
+    // All request 
+    // Per uni mostrare solo quelle proprie quindi solo participants
     if (req.query.mine) {
       query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
     }
@@ -919,13 +917,8 @@ router.get('/', function (req, res, next) {
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
   }
 
-  // console.log('REQUEST ROUTE - req ', req); 
-  // console.log('REQUEST ROUTE - req.project ', req.project); 
-
-
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
-    winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
   }
 
   if (req.query.requester_email) {
@@ -933,50 +926,47 @@ router.get('/', function (req, res, next) {
   }
 
   if (req.query.full_text) {
-    winston.debug('req.query.fulltext', req.query.full_text);
     query.$text = { "$search": req.query.full_text };
   }
 
   var history_search = false;
 
+  // Multiple status management
   if (req.query.status) {
-    winston.debug('req.query.status', req.query.status);
-    query.status = req.query.status;
-
-    if (req.query.status == 1000 || req.query.status == "1000") {
-      history_search = true;
-    }
-    if (req.query.status === "all") {
-      history_search = true;
+    if (req.query.status === 'all') {
       delete query.status;
+    } else {
+      let statusArray = req.query.status.split(',').map(Number);
+      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null)
+      if (statusArray.length > 0) {
+        query.status = {
+          $in: statusArray
+        }
+      } else {
+        delete query.status;
+      }
+    }
+    if (statusArray.length > 0) {
+      query.status = {
+        $in: statusArray
+      }
     }
   }
 
   if (req.query.lead) {
-    winston.debug('req.query.lead', req.query.lead);
     query.lead = req.query.lead;
   }
 
   // USERS & BOTS
   if (req.query.participant) {
-    winston.debug('req.query.participant', req.query.participant);
     query.participants = req.query.participant;
   }
 
-  winston.debug('req.query.hasbot', req.query.hasbot);
   if (req.query.hasbot != undefined) {
-    winston.debug('req.query.hasbot', req.query.hasbot);
     query.hasBot = req.query.hasbot;
   }
 
-  // if (req.query.waiting_time_exists) { //non basta aggiungi anche che nn è null
-  //   query.waiting_time = {"$exists": req.query.waiting_time_exists} //{$ne:null}
-  //   winston.debug('REQUEST ROUTE - QUERY waiting_time_exists', query.waiting_time_exists);
-  // }
-
-
   if (req.query.tags) {
-    winston.debug('req.query.tags', req.query.tags);
     query["tags.tag"] = req.query.tags;
   }
 
@@ -986,6 +976,11 @@ router.get('/', function (req, res, next) {
 
   if (req.query.ticket_id) {
     query.ticket_id = req.query.ticket_id;
+  }
+
+  if (req.query.preflight && (req.query.preflight === 'true' || req.query.preflight === true)) {
+    //query.preflight = req.query.preflight;
+    delete query.preflight;
   }
 
   // if (req.query.request_id) {
@@ -1003,9 +998,7 @@ router.get('/', function (req, res, next) {
   //fixato. secondo me qui manca un parentesi tonda per gli or
   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
 
-
     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
-
     var enddate = moment().format("YYYY-MM-DD");
 
     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
@@ -1014,11 +1007,8 @@ router.get('/', function (req, res, next) {
     var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
-    // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
-
     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
-
   }
 
   /**
@@ -1049,9 +1039,6 @@ router.get('/', function (req, res, next) {
     var newdate = new Date(date);
     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
@@ -1069,44 +1056,34 @@ router.get('/', function (req, res, next) {
 
     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
   }
-  // }
-
-
 
   if (req.query.snap_department_routing) {
     query["snapshot.department.routing"] = req.query.snap_department_routing;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_routing', query.snap_department_routing);
   }
 
   if (req.query.snap_department_default) {
     query["snapshot.department.default"] = req.query.snap_department_default;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_default', query.snap_department_default);
   }
 
 
   if (req.query.snap_department_id_bot) {
     query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
-    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot', query.snap_department_id_bot);
   }
 
   if (req.query.snap_department_id_bot_exists) {
     query["snapshot.department.id_bot"] = { "$exists": req.query.snap_department_id_bot_exists }
-    winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
   }
 
   if (req.query.snap_lead_lead_id) {
     query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
-    winston.debug('REQUEST ROUTE - QUERY snap_lead_lead_id', query.snap_lead_lead_id);
   }
 
   if (req.query.snap_lead_email) {
     query["snapshot.lead.email"] = req.query.snap_lead_email;
-    winston.debug('REQUEST ROUTE - QUERY snap_lead_email', query.snap_lead_email);
   }
 
   if (req.query.smartAssignment) {
     query.smartAssignment = req.query.smartAssignment;
-    winston.debug('REQUEST ROUTE - QUERY smartAssignment', query.smartAssignment);
   }
 
   if (req.query.channel) {
@@ -1117,8 +1094,6 @@ router.get('/', function (req, res, next) {
     } else {
       query["channel.name"] = req.query.channel
     }
-
-    winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
   }
 
   if (req.query.priority) {
@@ -1130,46 +1105,61 @@ router.get('/', function (req, res, next) {
   if (req.query.direction) {
     direction = req.query.direction;
   }
-  winston.debug("direction", direction);
 
   var sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
-  winston.debug("sortField", sortField);
 
   var sortQuery = {};
   sortQuery[sortField] = direction;
-  winston.debug("sort query", sortQuery);
+
+  // VOICE FILTERS - Start
+  if (req.query.caller) {
+    query["attributes.caller_phone"] = req.query.caller;
+  }
+  if (req.query.called) {
+    query["attributes.called_phone"] = req.query.called;
+  }
+  if (req.query.call_id) {
+    query["attributes.call_id"] = req.query.call_id;
+  }
+  // VOICE FILTERS - End
+
+  if (req.query.duration && req.query.duration_op) {
+    let duration = Number(req.query.duration) * 60 * 1000;
+    if (req.query.duration_op === 'gt') {
+      query.duration = { $gte: duration }
+    } else if (req.query.duration_op === 'lt') {
+      query.duration = { $lte: duration }
+    } else {
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+    }
+  }
+
+  if (req.query.abandonded && (req.query.abandoned === true || req.query.abandoned === 'true')) {
+    query["attributes.fully_abandoned"] = true
+  }
 
   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
     query.draft = { $in: [false, null] }
   }
 
-  winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
-
   var projection = undefined;
 
   if (req.query.full_text) {
-
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
-      winston.info('fulltext projection on');
+      winston.verbose('fulltext projection on');
       projection = { score: { $meta: "textScore" } };
     }
-
   }
-  // requestcachefarequi populaterequired
+
+  winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
+  
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
-
-
-
-
-  winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
-
   if (req.query.no_populate != "true" && req.query.no_populate != true) {
-    winston.verbose('REQUEST ROUTE - no_polutate false ', req.headers);
     q1.populate('department').
       populate('participatingBots').            //nico già nn gli usa
       populate('participatingAgents').          //nico già nn gli usa
@@ -1177,27 +1167,13 @@ router.get('/', function (req, res, next) {
       populate({ path: 'requester', populate: { path: 'id_user' } });        //toglilo perche nico lo prende già da snapshot
   }
 
-  // cache(cacheUtil.defaultTTL, "requests-"+projectId).    
-
-
-  // if (req.query.select_snapshot) {
-  //   winston.info('select_snapshot');
-  //   q1.select("+snapshot");
-  //   // q1.select({ "snapshot": 1});
-  // }
-
   if (req.query.full_text) {
-    winston.debug('fulltext sort');
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
       q1.sort({ score: { $meta: "textScore" } }) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
     }
   } else {
     q1.sort(sortQuery);
   }
-
-
-  // winston.info('q1',q1);
-
 
   q1.exec();
 
@@ -1211,10 +1187,7 @@ router.get('/', function (req, res, next) {
     q2 = 0;
   }
 
-  var promises = [
-    q1,
-    q2
-  ];
+  var promises = [ q1, q2 ];
 
   Promise.all(promises).then(function (results) {
     var objectToReturn = {
@@ -1238,6 +1211,376 @@ router.get('/', function (req, res, next) {
 
 });
 
+// router.get('/', function (req, res, next) {
+
+//   const startExecTime = new Date();
+
+//   winston.debug("req projectid", req.projectid);
+//   winston.debug("req.query.sort", req.query.sort);
+//   winston.debug('REQUEST ROUTE - QUERY ', req.query)
+
+//   const DEFAULT_LIMIT = 40;
+
+//   var limit = DEFAULT_LIMIT; // Number of request per page
+
+//   if (req.query.limit) {
+//     limit = parseInt(req.query.limit);
+//   }
+//   if (limit > 100) {
+//     limit = DEFAULT_LIMIT;
+//   }
+
+
+//   var page = 0;
+
+//   if (req.query.page) {
+//     page = req.query.page;
+//   }
+
+//   var skip = page * limit;
+//   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
+
+
+//   var query = { "id_project": req.projectid, "status": { $lt: 1000 }, preflight: false };
+
+//   var projectuser = req.projectuser;
+
+
+//   if (req.user instanceof Subscription) {
+//     //all request 
+//   } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+//     //all request 
+//     // per uni mostrare solo quelle priprio quindi solo participants
+//     if (req.query.mine) {
+//       query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+//     }
+//   } else {
+//     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+//   }
+
+//   // console.log('REQUEST ROUTE - req ', req); 
+//   // console.log('REQUEST ROUTE - req.project ', req.project); 
+
+
+//   if (req.query.dept_id) {
+//     query.department = req.query.dept_id;
+//     winston.debug('REQUEST ROUTE - QUERY DEPT ID', query.department);
+//   }
+
+//   if (req.query.requester_email) {
+//     query["snapshot.lead.email"] = req.query.requester_email;
+//   }
+
+//   if (req.query.full_text) {
+//     winston.debug('req.query.fulltext', req.query.full_text);
+//     query.$text = { "$search": req.query.full_text };
+//   }
+
+//   var history_search = false;
+
+//   if (req.query.status) {
+//     winston.debug('req.query.status', req.query.status);
+//     query.status = req.query.status;
+
+//     if (req.query.status == 1000 || req.query.status == "1000") {
+//       history_search = true;
+//     }
+//     if (req.query.status === "all") {
+//       history_search = true;
+//       delete query.status;
+//     }
+//   }
+
+//   if (req.query.lead) {
+//     winston.debug('req.query.lead', req.query.lead);
+//     query.lead = req.query.lead;
+//   }
+
+//   // USERS & BOTS
+//   if (req.query.participant) {
+//     winston.debug('req.query.participant', req.query.participant);
+//     query.participants = req.query.participant;
+//   }
+
+//   winston.debug('req.query.hasbot', req.query.hasbot);
+//   if (req.query.hasbot != undefined) {
+//     winston.debug('req.query.hasbot', req.query.hasbot);
+//     query.hasBot = req.query.hasbot;
+//   }
+
+//   // if (req.query.waiting_time_exists) { //non basta aggiungi anche che nn è null
+//   //   query.waiting_time = {"$exists": req.query.waiting_time_exists} //{$ne:null}
+//   //   winston.debug('REQUEST ROUTE - QUERY waiting_time_exists', query.waiting_time_exists);
+//   // }
+
+
+//   if (req.query.tags) {
+//     winston.debug('req.query.tags', req.query.tags);
+//     query["tags.tag"] = req.query.tags;
+//   }
+
+//   if (req.query.location) {
+//     query.location = req.query.location;
+//   }
+
+//   if (req.query.ticket_id) {
+//     query.ticket_id = req.query.ticket_id;
+//   }
+
+//   if (req.query.preflight) {
+//     query.preflight = req.query.preflight;
+//   }
+
+//   // if (req.query.request_id) {
+//   //   console.log('req.query.request_id', req.query.request_id);
+//   //   query.request_id = req.query.request_id;
+//   // }
+
+//   /**
+//    **! *** DATE RANGE  USECASE 1 ***
+//    *  in the tiledesk dashboard's HISTORY PAGE
+//    *  WHEN THE TRIAL IS EXIPIRED OR THE SUBSCIPTION IS NOT ACTIVE
+//    *  THE SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS ARE DISABLED AND 
+//    *  ARE DISPLAYED ONLY THE REQUESTS OF THE LAST 14 DAYS
+//    */
+//   //fixato. secondo me qui manca un parentesi tonda per gli or
+//   if (history_search === true && req.project && req.project.profile && ((req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false))) {
+
+
+//     var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+
+//     var enddate = moment().format("YYYY-MM-DD");
+
+//     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
+//     winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
+
+//     var enddatePlusOneDay = moment(new Date()).add(1, 'days').toDate()
+//     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
+
+//     // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
+
+//     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
+//     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+
+//   }
+
+//   /**
+//     **! *** DATE RANGE  USECASE 2 ***
+//     *  in the tiledesk dashboard's HISTORY PAGE 
+//     *  WHEN THE USER SEARCH FOR DATE INTERVAL OF THE HISTORY OF REQUESTS
+//     */
+//   if (req.query.start_date && req.query.end_date) {
+//     winston.debug('REQUEST ROUTE - REQ QUERY start_date ', req.query.start_date);
+//     winston.debug('REQUEST ROUTE - REQ QUERY end_date ', req.query.end_date);
+
+//     /**
+//      * USING TIMESTAMP  in MS    */
+//     // var formattedStartDate = new Date(+req.query.start_date);
+//     // var formattedEndDate = new Date(+req.query.end_date);
+//     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
+
+//     /**
+//      * USING MOMENT      */
+//     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+//     var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
+//     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
+//     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
+
+//     // ADD ONE DAY TO THE END DAY
+//     var date = new Date(endDate);
+//     var newdate = new Date(date);
+//     var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+//     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
+//     // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+//     // var endDate_plusOneDay =   endDate.add(1).day();
+//     // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+
+//     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
+//     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
+
+//   } else if (req.query.start_date && !req.query.end_date) {
+//     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
+//     var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+
+//     var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
+//     if (req.query.filterRangeField) {
+//       query[req.query.filterRangeField] = range;
+//     } else {
+//       query.createdAt = range;
+//     }
+
+//     winston.debug('REQUEST ROUTE - QUERY CREATED AT (only for start date)', query.createdAt);
+//   }
+//   // }
+
+
+
+//   if (req.query.snap_department_routing) {
+//     query["snapshot.department.routing"] = req.query.snap_department_routing;
+//     winston.debug('REQUEST ROUTE - QUERY snap_department_routing', query.snap_department_routing);
+//   }
+
+//   if (req.query.snap_department_default) {
+//     query["snapshot.department.default"] = req.query.snap_department_default;
+//     winston.debug('REQUEST ROUTE - QUERY snap_department_default', query.snap_department_default);
+//   }
+
+
+//   if (req.query.snap_department_id_bot) {
+//     query["snapshot.department.id_bot"] = req.query.snap_department_id_bot;
+//     winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot', query.snap_department_id_bot);
+//   }
+
+//   if (req.query.snap_department_id_bot_exists) {
+//     query["snapshot.department.id_bot"] = { "$exists": req.query.snap_department_id_bot_exists }
+//     winston.debug('REQUEST ROUTE - QUERY snap_department_id_bot_exists', query.snap_department_id_bot_exists);
+//   }
+
+//   if (req.query.snap_lead_lead_id) {
+//     query["snapshot.lead.lead_id"] = req.query.snap_lead_lead_id;
+//     winston.debug('REQUEST ROUTE - QUERY snap_lead_lead_id', query.snap_lead_lead_id);
+//   }
+
+//   if (req.query.snap_lead_email) {
+//     query["snapshot.lead.email"] = req.query.snap_lead_email;
+//     winston.debug('REQUEST ROUTE - QUERY snap_lead_email', query.snap_lead_email);
+//   }
+
+//   if (req.query.smartAssignment) {
+//     query.smartAssignment = req.query.smartAssignment;
+//     winston.debug('REQUEST ROUTE - QUERY smartAssignment', query.smartAssignment);
+//   }
+
+//   if (req.query.channel) {
+//     if (req.query.channel === "offline") {
+//       query["channel.name"] = { "$in": ["email", "form"] }
+//     } else if (req.query.channel === "online") {
+//       query["channel.name"] = { "$nin": ["email", "form"] }
+//     } else {
+//       query["channel.name"] = req.query.channel
+//     }
+
+//     winston.debug('REQUEST ROUTE - QUERY channel', query.channel);
+//   }
+
+//   if (req.query.priority) {
+//     query.priority = req.query.priority;
+//   }
+
+
+//   var direction = -1; //-1 descending , 1 ascending
+//   if (req.query.direction) {
+//     direction = req.query.direction;
+//   }
+//   winston.debug("direction", direction);
+
+//   var sortField = "createdAt";
+//   if (req.query.sort) {
+//     sortField = req.query.sort;
+//   }
+//   winston.debug("sortField", sortField);
+
+//   var sortQuery = {};
+//   sortQuery[sortField] = direction;
+//   winston.debug("sort query", sortQuery);
+
+//   if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+//     query.draft = { $in: [false, null] }
+//   }
+
+//   winston.debug('REQUEST ROUTE - REQUEST FIND ', query);
+
+//   var projection = undefined;
+
+//   if (req.query.full_text) {
+
+//     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
+//       winston.info('fulltext projection on');
+//       projection = { score: { $meta: "textScore" } };
+//     }
+
+//   }
+//   // requestcachefarequi populaterequired
+//   var q1 = Request.find(query, projection).
+//     skip(skip).limit(limit);
+
+
+
+
+
+//   winston.debug('REQUEST ROUTE no_populate:' + req.query.no_populate);
+
+//   if (req.query.no_populate != "true" && req.query.no_populate != true) {
+//     winston.verbose('REQUEST ROUTE - no_polutate false ', req.headers);
+//     q1.populate('department').
+//       populate('participatingBots').            //nico già nn gli usa
+//       populate('participatingAgents').          //nico già nn gli usa
+//       populate('lead').
+//       populate({ path: 'requester', populate: { path: 'id_user' } });        //toglilo perche nico lo prende già da snapshot
+//   }
+
+//   // cache(cacheUtil.defaultTTL, "requests-"+projectId).    
+
+
+//   // if (req.query.select_snapshot) {
+//   //   winston.info('select_snapshot');
+//   //   q1.select("+snapshot");
+//   //   // q1.select({ "snapshot": 1});
+//   // }
+
+//   if (req.query.full_text) {
+//     winston.debug('fulltext sort');
+//     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
+//       q1.sort({ score: { $meta: "textScore" } }) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
+//     }
+//   } else {
+//     q1.sort(sortQuery);
+//   }
+
+
+//   // winston.info('q1',q1);
+
+
+//   q1.exec();
+
+//   // TODO if ?onlycount=true do not perform find query but only 
+//   // set q1 to undefined; to skip query
+
+//   var q2 = Request.countDocuments(query).exec();
+
+//   if (req.query.no_count && req.query.no_count == "true") {
+//     winston.info('REQUEST ROUTE - no_count ');
+//     q2 = 0;
+//   }
+
+//   var promises = [
+//     q1,
+//     q2
+//   ];
+
+//   Promise.all(promises).then(function (results) {
+//     var objectToReturn = {
+//       perPage: limit,
+//       count: results[1],
+//       requests: results[0]
+//     };
+//     winston.debug('REQUEST ROUTE - objectToReturn ');
+//     winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
+
+//     const endExecTime = new Date();
+//     winston.verbose('REQUEST ROUTE - exec time:  ' + (endExecTime - startExecTime));
+
+//     return res.json(objectToReturn);
+
+//   }).catch(function (err) {
+//     winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
+//     return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
+//   });
+
+
+// });
+
 
 // TODO converti con fast-csv e stream
 // DOWNLOAD HISTORY REQUESTS AS CSV
@@ -1257,6 +1600,8 @@ router.get('/csv', function (req, res, next) {
   var skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
+  let statusArray = [];
+
   var query = { "id_project": req.projectid };
 
   if (req.query.dept_id) {
@@ -1270,8 +1615,34 @@ router.get('/csv', function (req, res, next) {
   }
 
   if (req.query.status) {
-    winston.debug('req.query.status', req.query.status);
-    query.status = req.query.status;
+
+    if (req.query.status === 'all') {
+      delete query.status;
+    } else {
+      let statusArray = req.query.status.split(',').map(Number);
+      statusArray = statusArray.map(status => { return isNaN(status) ? null : status }).filter(status => status !== null)
+      if (statusArray.length > 0) {
+        query.status = {
+          $in: statusArray
+        }
+      } else {
+        delete query.status;
+      }
+    }
+
+    if (statusArray.length > 0) {
+      query.status = {
+        $in: statusArray
+      }
+    }
+
+  }
+
+  if (req.query.preflight) {
+    let preflight = (req.query.preflight === 'false');
+    if (preflight) {
+      query.preflight = false;
+    }
   }
 
   if (req.query.lead) {
@@ -1350,12 +1721,48 @@ router.get('/csv', function (req, res, next) {
 
   winston.debug("sort query", sortQuery);
 
+  if (req.query.channel) {
+    if (req.query.channel === "offline") {
+      query["channel.name"] = { "$in": ["email", "form"] }
+    } else if (req.query.channel === "online") {
+      query["channel.name"] = { "$nin": ["email", "form"] }
+    } else {
+      query["channel.name"] = req.query.channel
+    }
+  }
+
+  // VOICE FILTERS - Start
+  if (req.query.caller) {
+    query["attributes.caller_phone"] = req.query.caller;
+  }
+  if (req.query.called) {
+    query["attributes.called_phone"] = req.query.called;
+  }
+  if (req.query.call_id) {
+    query["attributes.call_id"] = req.query.call_id;
+  }
+  // VOICE FILTERS - End
 
   // TODO ORDER BY SCORE
   // return Faq.find(query,  {score: { $meta: "textScore" } }) 
   // .sort( { score: { $meta: "textScore" } } ) //https://docs.mongodb.com/manual/reference/operator/query/text/#sort-by-text-search-score
 
   // aggiungi filtro per data marco
+
+  if (req.query.duration && req.query.duration_op) {
+    let duration = Number(req.query.duration) * 60 * 1000;
+    if (req.query.duration_op === 'gt') {
+      query.duration = { $gte: duration }
+    } else if (req.query.duration_op === 'lt') {
+      query.duration = { $lte: duration }
+    } else {
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+    }
+  }
+
+  if (req.query.draft && (req.query.draft === 'false' || req.query.draft === false)) {
+    query.draft = { $in: [false, null] }
+  }
 
   winston.debug('REQUEST ROUTE - REQUEST FIND ', query)
   return Request.find(query, '-transcript -status -__v').
@@ -1435,6 +1842,17 @@ router.get('/csv', function (req, res, next) {
         // element.participatingAgents = participatingAgents;
 
 
+        if (element.attributes) {
+          if (element.attributes.caller_phone) {
+            element.caller_phone = element.attributes.caller_phone;
+          }
+          if (element.attributes.called_phone) {
+            element.called_phone = element.attributes.called_phone;
+          }
+          if (element.attributes.caller_phone) {
+            element.call_id = element.attributes.call_id;
+          }
+        }
 
         delete element.lead;
 
@@ -1464,50 +1882,153 @@ router.get('/csv', function (req, res, next) {
 });
 
 router.get('/count', async (req, res) => {
-  
+
   let id_project = req.projectid;
   let merge_assigned = req.query.merge_assigned;
+  let quota_count = false;
+  if (req.query.conversation_quota === true || req.query.conversation_quota === 'true') {
+    quota_count = true;
+  }
 
+  let open_count = 0;
+  let closed_count = 0;
   let unassigned_count = 0;
   let human_assigned_count = 0;
   let bot_assigned_count = 0;
 
-  unassigned_count = await Request.countDocuments({ id_project: id_project, status: 100, preflight: false }).catch((err) => {
-    winston.error("Error getting unassigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
+  let currentSlot
+  let promises = [];
 
-  human_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: false }).catch((err) => {
-    winston.error("Error getting human unassigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.debug("Human assigned count for project " + id_project + ": " + human_assigned_count);
+  if (quota_count) {
 
-  bot_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: true }).catch((err) => {
-    winston.error("Error getting bot assigned requests count: ", err);
-    res.status(400).send({ success: false, error: err });
-  })
-  winston.debug("Bot assigned count for project " + id_project + ": " + bot_assigned_count);
+    let quoteManager = req.app.get('quote_manager');
 
+    currentSlot = await quoteManager.getCurrentSlot(req.project);
+    winston.debug("currentSlot: ", currentSlot)
+    // Open count
+    // Warning: 201 is a fake status -> Logical meaning: status < 1000;
+    // (method) RequestService.getConversationsCount(id_project: any, status: any, preflight: any, hasBot: any): Promise<any>
+    promises.push(requestService.getConversationsCount(id_project, 201, null, null, currentSlot.startDate, currentSlot.endDate).then((count) => {
+      open_count = count;
+      winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
+    }).catch((err) => {
+      winston.error("Error getting unassigned conversation count");
+    }))
 
-  if (merge_assigned) {
-    let data = {
-      unassigned: unassigned_count,
-      assigned: human_assigned_count + bot_assigned_count
-    }
-    return res.status(200).send(data);
-    
+    // Closed count
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.CLOSED, null, null, currentSlot.startDate, currentSlot.endDate).then((count) => {
+      closed_count = count;
+      winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
+    }).catch((err) => {
+      winston.error("Error getting unassigned conversation count");
+    }))
   } else {
-    let data = {
-      unassigned: unassigned_count,
-      assigned: human_assigned_count,
-      bot_assigned: bot_assigned_count
-    }
-    return res.status(200).send(data);
+    // Unassigned count
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.UNASSIGNED, false, null, null, null).then((count) => {
+      unassigned_count = count;
+      winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
+    }).catch((err) => {
+      winston.error("Error getting unassigned conversation count");
+    }))
+  
+    // Human assigned count
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, false, null, null).then((count) => {
+      human_assigned_count = count;
+      winston.debug("Human assigned count for project " + id_project + ": " + human_assigned_count);
+    }).catch((err) => {
+      winston.error("Error getting human assigned conversation count");
+    }))
+  
+    // Bot assigned count
+    promises.push(requestService.getConversationsCount(id_project, RequestConstants.ASSIGNED, false, true, null, null).then((count) => {
+      bot_assigned_count = count;
+      winston.debug("Bot assigned count for project " + id_project + ": " + bot_assigned_count);
+    }).catch((err) => {
+      winston.error("Error getting bot assigned conversation count");
+    }))
   }
 
+  Promise.all(promises).then((response) => {
+
+    if (quota_count) {
+      let data = {
+        open: open_count,
+        closed: closed_count,
+        slot: {
+          startDate: currentSlot.startDate.format('DD/MM/YYYY'),
+          endDate: currentSlot.endDate.format('DD/MM/YYYY')
+        }
+      }
+      return res.status(200).send(data);
+    } else {
+      if (merge_assigned) {
+        let data = {
+          unassigned: unassigned_count,
+          assigned: human_assigned_count + bot_assigned_count
+        }
+        return res.status(200).send(data);
+  
+      } else {
+        let data = {
+          unassigned: unassigned_count,
+          assigned: human_assigned_count,
+          bot_assigned: bot_assigned_count
+        }
+        return res.status(200).send(data);
+      }
+    }
+
+  }).catch((err) => {
+    console.error("err: ", err);
+    return res.status(400).send({ success: false, error: err });
+  })
 })
+
+// router.get('/count', async (req, res) => {
+  
+//   let id_project = req.projectid;
+//   let merge_assigned = req.query.merge_assigned;
+
+//   let unassigned_count = 0;
+//   let human_assigned_count = 0;
+//   let bot_assigned_count = 0;
+
+//   unassigned_count = await Request.countDocuments({ id_project: id_project, status: 100, preflight: false }).catch((err) => {
+//     winston.error("Error getting unassigned requests count: ", err);
+//     res.status(400).send({ success: false, error: err });
+//   })
+//   winston.debug("Unassigned count for project " + id_project + ": " + unassigned_count);
+
+//   human_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: false }).catch((err) => {
+//     winston.error("Error getting human unassigned requests count: ", err);
+//     res.status(400).send({ success: false, error: err });
+//   })
+//   winston.debug("Human assigned count for project " + id_project + ": " + human_assigned_count);
+
+//   bot_assigned_count = await Request.countDocuments({ id_project: id_project, status: 200, preflight: false, hasBot: true }).catch((err) => {
+//     winston.error("Error getting bot assigned requests count: ", err);
+//     res.status(400).send({ success: false, error: err });
+//   })
+//   winston.debug("Bot assigned count for project " + id_project + ": " + bot_assigned_count);
+
+
+//   if (merge_assigned) {
+//     let data = {
+//       unassigned: unassigned_count,
+//       assigned: human_assigned_count + bot_assigned_count
+//     }
+//     return res.status(200).send(data);
+    
+//   } else {
+//     let data = {
+//       unassigned: unassigned_count,
+//       assigned: human_assigned_count,
+//       bot_assigned: bot_assigned_count
+//     }
+//     return res.status(200).send(data);
+//   }
+
+// })
 
 router.get('/:requestid', function (req, res) {
 

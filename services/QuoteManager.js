@@ -1,4 +1,5 @@
 const { ceil, floor } = require('lodash');
+const moment = require('moment');
 let winston = require('../config/winston');
 const requestEvent = require('../event/requestEvent');
 const messageEvent = require('../event/messageEvent');
@@ -99,40 +100,82 @@ class QuoteManager {
 
     async generateKey(object, type) {
 
-        winston.debug("generateKey object ", object)
-        winston.debug("generateKey type " + type)
+        let objectDate = moment(object.createdAt);
         let subscriptionDate;
 
         if (this.project.isActiveSubscription === true) {
             if (this.project.profile.subStart) {
-                subscriptionDate = this.project.profile.subStart;
+                subscriptionDate = moment(this.project.profile.subStart);
+                winston.debug("Subscription date from subStart: " + subscriptionDate.toISOString());
             } else {
                 // it should never happen
                 winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
             }
         } else {
             if (this.project.profile.subEnd) {
-                subscriptionDate = this.project.profile.subEnd;
+                subscriptionDate = moment(this.project.profile.subEnd);
+                winston.debug("Subscription date from subEnd: " + subscriptionDate.toISOString());
             } else {
-                subscriptionDate = this.project.createdAt;
+                subscriptionDate = moment(this.project.createdAt);
+                winston.debug("Subscription date from project createdAt: " + subscriptionDate.toISOString());
             }
         }
 
-        let objectDate = object.createdAt;
-        winston.debug("objectDate " + objectDate);
+        // Calculate the difference in months between the object date and the subscription date
+        let diffInMonths = objectDate.diff(subscriptionDate, 'months');
+        winston.debug("diffInMonths: ", diffInMonths)
 
-        // converts date in timestamps and transform from ms to s
-        const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
-        const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
+        // Make a clone of the subscription date --> this operation could be avoided
+        // Get the renewal date adding diffInMonths. Moment.js manage automatically the less longer month. 
+        // E.g. if subscription date is 31 jan the renewals will be, 28/29 feb, 31 mar, 30 apr, etc.
+        let renewalDate = subscriptionDate.clone().add(diffInMonths, 'months');
+        // Force the renewal date equal to the last day of the month --> this operation could be avoided
+        if (renewalDate.date() !== subscriptionDate.date()) {
+            renewalDate = renewalDate.endOf('month');
+        }
+        winston.debug("renewalDate: ", renewalDate)
 
-        let ndays = (objectDateTimestamp - subscriptionDateTimestamp) / 86400;  // 86400 is the number of seconds in 1 day
-        let nmonths = floor(ndays / 30); // number of month to add to the initial subscription date;
-
-        let date = new Date(subscriptionDate);
-        date.setMonth(date.getMonth() + nmonths);
-
-        return "quotes:" + type + ":" + this.project._id + ":" + date.toLocaleDateString();
+        return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('M/D/YYYY');
+        // return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.format('MM/DD/YYYY');
+        // return "quotes:" + type + ":" + this.project._id + ":" + renewalDate.toLocaleString();
     }
+
+    // async _generateKey(object, type) {
+
+    //     winston.debug("generateKey object ", object)
+    //     winston.debug("generateKey type " + type)
+    //     let subscriptionDate;
+
+    //     if (this.project.isActiveSubscription === true) {
+    //         if (this.project.profile.subStart) {
+    //             subscriptionDate = this.project.profile.subStart;
+    //         } else {
+    //             // it should never happen
+    //             winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+    //         }
+    //     } else {
+    //         if (this.project.profile.subEnd) {
+    //             subscriptionDate = this.project.profile.subEnd;
+    //         } else {
+    //             subscriptionDate = this.project.createdAt;
+    //         }
+    //     }
+
+    //     let objectDate = object.createdAt;
+    //     winston.debug("objectDate " + objectDate);
+
+    //     // converts date in timestamps and transform from ms to s
+    //     const objectDateTimestamp = ceil(objectDate.getTime() / 1000);
+    //     const subscriptionDateTimestamp = ceil(subscriptionDate.getTime() / 1000);
+
+    //     let ndays = (objectDateTimestamp - subscriptionDateTimestamp) / 86400;  // 86400 is the number of seconds in 1 day
+    //     let nmonths = floor(ndays / 30); // number of month to add to the initial subscription date;
+
+    //     let date = new Date(subscriptionDate);
+    //     date.setMonth(date.getMonth() + nmonths);
+
+    //     return "quotes:" + type + ":" + this.project._id + ":" + date.toLocaleDateString();
+    // }
 
     /**
      * Get current quote for a single type (tokens or request or ...)
@@ -371,6 +414,51 @@ class QuoteManager {
             winston.verbose("Default Limits: ", limits)
             return limits;
         }
+    }
+
+    async getCurrentSlot(project) {
+        let subscriptionDate;
+        if (project.isActiveSubscription === true) {
+            if (project.profile.subStart) {
+                subscriptionDate = moment(project.profile.subStart);
+                winston.debug("Subscription date from subStart: " + subscriptionDate.toISOString());
+            } else {
+                // it should never happen
+                winston.error("Error: quote manager - isActiveSubscription is true but subStart does not exists.")
+            }
+        } else {
+            if (project.profile.subEnd) {
+                subscriptionDate = moment(project.profile.subEnd);
+                winston.debug("Subscription date from subEnd: " + subscriptionDate.toISOString());
+            } else {
+                subscriptionDate = moment(project.createdAt);
+                winston.debug("Subscription date from project createdAt: " + subscriptionDate.toISOString());
+            }
+        }
+        
+        let now = moment();
+        winston.debug("now: ", now);
+
+        let diffInMonths = now.diff(subscriptionDate, 'months');
+        winston.debug("diffInMonths: ", diffInMonths)
+
+        let renewalDate = subscriptionDate.clone().add(diffInMonths, 'months').startOf('day');
+        winston.debug("renewalDate: ", renewalDate)
+
+        let slotEnd = subscriptionDate.clone().add(diffInMonths + 1, 'month');
+        slotEnd.subtract(1, 'day').endOf('day')
+        winston.debug("slotEnd: ", slotEnd)
+
+        // let slot = {
+        //     startDate: renewalDate.format('DD/MM/YYYY'),
+        //     endDate: slotEnd.format('DD/MM/YYYY')
+        // }
+        let slot = {
+            startDate: renewalDate,
+            endDate: slotEnd
+        }
+
+        return slot;
     }
 
 

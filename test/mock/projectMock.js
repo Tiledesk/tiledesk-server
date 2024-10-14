@@ -68,6 +68,7 @@ const mockProjectBasicPlan = {
   "name": "mock-project",
   "activeOperatingHours": false,
   "createdBy": "64e36f5cbf72263f7c05ba36",
+  "isActiveSubscription": true,
   "profile": {
     "name": "Basic",
     "trialDays": 14,
@@ -108,6 +109,33 @@ const mockProjectPremiumPlan = {
     }
   ],
   "createdAt": new Date('2023-10-16T08:45:54.058Z')
+}
+
+const mockProjectPremiumPlan2 = {
+  "_id": "64e36f5dbf72263f7c059999",
+  "status": 100,
+  "ipFilterEnabled": false,
+  "ipFilter": [],
+  "ipFilterDenyEnabled": false,
+  "ipFilterDeny": [],
+  "name": "mock-project",
+  "activeOperatingHours": false,
+  "createdBy": "64e36f5cbf72263f7c05ba36",
+  "isActiveSubscription": true,
+  "profile": {
+    "name": "Premium",
+    "trialDays": 14,
+    "agents": 0,
+    "type": "payment",
+    "subStart": new Date('2024-01-31T10:00:00.058Z')
+  },
+  "versions": 20115,
+  "channels": [
+    {
+      "name": "chat21"
+    }
+  ],
+  "createdAt": new Date('2024-01-20T10:00:00.058Z')
 }
 
 const mockProjectCustomPlan = {
@@ -167,4 +195,4 @@ const mockOldProjecPlusPlan = {
   "ipFilterDenyEnabled": false
 }
 
-module.exports = { mockProjectUser, mockProjectFreeTrialPlan, mockProjectSandboxPlan, mockProjectBasicPlan, mockProjectPremiumPlan, mockProjectCustomPlan, mockOldProjecPlusPlan };
+module.exports = { mockProjectUser, mockProjectFreeTrialPlan, mockProjectSandboxPlan, mockProjectBasicPlan, mockProjectPremiumPlan, mockProjectPremiumPlan2, mockProjectCustomPlan, mockOldProjecPlusPlan };
