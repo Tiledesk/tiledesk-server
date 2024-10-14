@@ -2,6 +2,31 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
 
+var EngineSchema = new Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
+  apikey: {
+    type: String,
+    required: false
+  },
+  vector_size: {
+    type: Number,
+    required: true
+  },
+  index_name: {
+    type: String,
+    required: true
+  }
+}, {
+  _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
+})
+
 var NamespaceSchema = new Schema({
   id_project: {
     type: String,
@@ -22,6 +47,10 @@ var NamespaceSchema = new Schema({
   default: {
     type: Boolean,
     default: false
+  },
+  engine: {
+    type: EngineSchema,
+    required: false
   }
 }, {
   timestamps: true
@@ -59,10 +88,32 @@ var KBSchema = new Schema({
   status: {
     type: Number,
     required: false
+  },
+  scrape_type: {
+    type: Number,
+    required: false
+  },
+  scrape_options: {
+    type: Object,
+    required: false,
+    default: undefined,
+    tags_to_extract: {
+      type: Array,
+      required: false
+    },
+    unwanted_tags: {
+      type: Array,
+      required: false
+    },
+    unwanted_classnames: {
+      type: Array,
+      required: false
+    }
   }
 }, {
   timestamps: true
 })
+
 
 
 // DEPRECATED !! - Start
@@ -93,7 +144,7 @@ KBSchema.index({ createdAt: -1, updatedAt: -1 })
 
 // DEPRECATED
 const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
-
+const Engine = mongoose.model('Engine', EngineSchema)
 const Namespace = mongoose.model('Namespace', NamespaceSchema)
 const KB = mongoose.model('KB', KBSchema)
 
@@ -105,5 +156,6 @@ const KB = mongoose.model('KB', KBSchema)
 module.exports = {
   KBSettings: KBSettings,
   Namespace: Namespace,
+  Engine: Engine,
   KB: KB
 }

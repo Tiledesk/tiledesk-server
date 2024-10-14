@@ -1,6 +1,7 @@
 var express = require('express');
-var { Namespace } = require('../models/kb_setting');
-var { KB } = require('../models/kb_setting');
+var { Namespace, KB, Engine } = require('../models/kb_setting');
+// var { KB } = require('../models/kb_setting');
+// var { Engine } = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
@@ -17,6 +18,7 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { body } = require('express-validator');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -45,6 +47,13 @@ let default_preview_settings = {
   //context: "You are an awesome AI Assistant."
   context: null
 }
+let default_engine = {
+  name: "pinecone",
+  type: "pod",
+  apikey: "",
+  vector_size: 1536,
+  index_name: "pugliai-tiledesk"
+}
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 //let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
@@ -68,9 +77,9 @@ router.post('/scrape/single', async (req, res) => {
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
 
-  if (!data.scrape_type) {
-    data.scrape_type = 1;
-  }
+  // if (!data.scrape_type) {
+  //   data.scrape_type = 1;
+  // }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -112,10 +121,27 @@ router.post('/scrape/single', async (req, res) => {
         json.content = kb.content;
       }
 
-      json.scrape_type = 1;
-      if (data.scrape_type) {
-        json.scrape_type = data.scrape_type;
+      // json.scrape_type = 1;
+      // if (data.scrape_type) {
+      //   json.scrape_type = data.scrape_type;
+      // }
+
+      if (kb.scrape_type) {
+        json.scrape_type = kb.scrape_type
       }
+
+      if (kb.scrape_options) {
+        json.parameters_scrape_type_4 = {
+          tags_to_extract: kb.scrape_options.tags_to_extract,
+          unwanted_tags: kb.scrape_options.unwanted_tags,
+          unwanted_classnames: kb.scrape_options.unwanted_classnames
+        }
+      }
+
+      let ns = namespaces.find(n => n.id === kb.namespace);
+      json.engine = ns.engine || default_engine;
+
+      winston.verbose("/scrape/single json: ", json);
 
       startScrape(json).then((response) => {
         winston.verbose("startScrape response: ", response);
@@ -132,6 +158,8 @@ router.post('/scrape/single', async (req, res) => {
 
 router.post('/scrape/status', async (req, res) => {
 
+  let project_id = req.projectid;
+  // (EXAMPLE) body: { id, namespace }
   let data = req.body;
   winston.debug("/scrapeStatus req.body: ", req.body);
 
@@ -142,6 +170,25 @@ router.post('/scrape/status', async (req, res) => {
     (req.query.returnObject === true || req.query.returnObject === 'true')) {
     returnObject = true;
   }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+  if (!namespaceIds.includes(data.namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
 
   openaiService.scrapeStatus(data).then(async (response) => {
 
@@ -237,6 +284,9 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+  
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
 
@@ -320,6 +370,9 @@ router.delete('/delete', async (req, res) => {
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
+  
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
 
   openaiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
@@ -354,6 +407,11 @@ router.delete('/deleteall', async (req, res) => {
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+
+  winston.verbose("/deleteall data: ", data);
 
   openaiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
@@ -397,7 +455,8 @@ router.get('/namespace/all', async (req, res) => {
         id: project_id,
         name: "Default",
         preview_settings: default_preview_settings,
-        default: true
+        default: true,
+        engine: default_engine
       })
 
       new_namespace.save((err, savedNamespace) => {
@@ -451,7 +510,11 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
   }
 
-  openaiService.getContentChunks(namespace_id, content_id).then((resp) => {
+  let ns = namespaces.find(n => n.id === namespace_id);
+  let engine = ns.engine || default_engine;
+  delete engine._id;
+
+  openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
     winston.debug("chunks found ", chunks);
@@ -495,7 +558,6 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   let chatbots = intents.map(i => i.id_faq_kb);
   let uniqueChatbots = [...new Set(chatbots)];
 
-  
   let chatbotPromises = uniqueChatbots.map(async (c_id) => {
     try {
       let chatbot = await faq_kb.findOne({ _id: c_id, trashed: false });
@@ -530,6 +592,7 @@ router.post('/namespace', async (req, res) => {
     id: namespace_id,
     name: body.name,
     preview_settings: default_preview_settings,
+    engine: default_engine
   })
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
@@ -592,11 +655,23 @@ router.put('/namespace/:id', async (req, res) => {
 
 router.delete('/namespace/:id', async (req, res) => {
 
-  let id_project = req.projectid;
+  let project_id = req.projectid;
   let namespace_id = req.params.id;
 
+  let namespace = await Namespace.findOne({ id_project: project_id, id: namespace_id }).catch((err) => {
+    winston.error("find namespace error: ", err);
+    res.status(500).send({ success: false, error: err });
+  })
+
+  if (!namespace) {
+    let alert = "No namespace found for id " + namespace_id;
+    winston.warn(alert);
+    res.status(404).send({ success: false, error: alert })
+  }
+
   let data = {
-    namespace: namespace_id
+    namespace: namespace_id,
+    engine: namespace.engine || default_engine
   }
 
   if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
@@ -604,7 +679,7 @@ router.delete('/namespace/:id', async (req, res) => {
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
@@ -638,7 +713,7 @@ router.delete('/namespace/:id', async (req, res) => {
     openaiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
-      let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+      let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
         winston.error("deleteMany error: ", err);
         return res.status(500).send({ success: false, error: err });
       })
@@ -834,7 +909,7 @@ router.post('/', async (req, res) => {
   if (!namespaceIds.includes(body.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
-
+  
   let quoteManager = req.app.get('quote_manager');
   let limits = await quoteManager.getPlanLimits(req.project);
   let kbs_limit = limits.kbs;
@@ -851,6 +926,7 @@ router.post('/', async (req, res) => {
   if (total_count > kbs_limit) {
     return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   }
+  
   let new_kb = {
     id_project: project_id,
     name: body.name,
@@ -863,6 +939,19 @@ router.post('/', async (req, res) => {
   if (!new_kb.namespace) {
     new_kb.namespace = project_id;
   }
+  if (new_kb.type === 'txt') {
+    new_kb.scrape_type = 1;
+  }
+  if (new_kb.type === 'url') {
+    if (!body.scrape_type || body.scrape_type === 2) {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = await setDefaultScrapeOptions();
+    } else {
+      new_kb.scrape_type = body.scrape_type;
+      new_kb.scrape_options = body.scrape_options;
+    }
+  }
+
   winston.debug("adding kb: ", new_kb);
 
   KB.findOneAndUpdate({ id_project: project_id, type: 'url', source: new_kb.source }, new_kb, { upsert: true, new: true, rawResult: true }, async (err, raw) => {
@@ -874,26 +963,37 @@ router.post('/', async (req, res) => {
 
       res.status(200).send(raw);
 
+      let saved_kb = raw.value;
       let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
       let json = {
-        id: raw.value._id,
-        type: raw.value.type,
-        source: raw.value.source,
+        id: saved_kb._id,
+        type: saved_kb.type,
+        source: saved_kb.source,
         content: "",
-        namespace: raw.value.namespace,
+        namespace: saved_kb.namespace,
         webhook: webhook
       }
       winston.debug("json: ", json);
 
-      if (raw.value.content) {
-        json.content = raw.value.content;
+      if (saved_kb.content) {
+        json.content = saved_kb.content;
       }
+      if (saved_kb.scrape_type) {
+        json.scrape_type = saved_kb.scrape_type;
+      }
+      if (saved_kb.scrape_options) {
+        json.parameters_scrape_type_4 = saved_kb.scrape_options;
+      }
+      let ns = namespaces.find(n => n.id === body.namespace);
+      json.engine = ns.engine || default_engine;
 
       let resources = [];
 
       resources.push(json);
-      scheduleScrape(resources);
+      if (!process.env.NODE_ENV) {
+        scheduleScrape(resources);
+      }
 
     }
   })
@@ -911,6 +1011,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   let project_id = req.projectid;
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -959,16 +1061,37 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
   let kbs = [];
-  list.forEach(url => {
-    kbs.push({
+  list.forEach( async (url) => {
+    let kb = {
       id_project: project_id,
       name: url,
       source: url,
       type: 'url',
       content: "",
       namespace: namespace_id,
-      status: -1
-    })
+      status: -1,
+      scrape_type: scrape_type
+    }
+
+    if (!kb.scrape_type) {
+      scrape_type = 2;
+    }
+
+    if (scrape_type == 2) {
+      kb.scrape_options = {
+        tags_to_extract: ["body"],
+        unwanted_tags: [],
+        unwanted_classnames: []
+      }
+    } else {
+      kb.scrape_options = scrape_options;
+    }
+    // if (scrape_type === 2) {
+    //   kb.scrape_options = await setDefaultScrapeOptions();
+    // } else {
+    //   kb.scrape_options = await setCustomScrapeOptions(scrape_options);
+    // }
+    kbs.push(kb)
   })
 
   let operations = kbs.map(doc => {
@@ -982,13 +1105,20 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
+    console.log("kbs: ", kbs);
+
   saveBulk(operations, kbs, project_id).then((result) => {
 
+    let ns = namespaces.find(n => n.id === namespace_id);
+    let engine = ns.engine || default_engine;
+
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    resources = resources.map(({ _id, ...rest }) => {
-      return { id: _id, webhook: webhook, ...rest };
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
+    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
+
     scheduleScrape(resources);
     res.status(200).send(result);
 
@@ -1088,9 +1218,13 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       })
 
       saveBulk(operations, kbs, project_id).then((result) => {
+
+        let ns = namespaces.find(n => n.id === namespace_id);
+        let engine = ns.engine || default_engine;
+
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhooh: webhook, ...rest };
+          return { id: _id, webhooh: webhook, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
         if (!process.env.NODE_ENV) {
@@ -1169,7 +1303,6 @@ router.delete('/:kb_id', async (req, res) => {
   let kb_id = req.params.kb_id;
   winston.verbose("delete kb_id " + kb_id);
 
-
   let kb = await KB.findOne({ id_project: project_id, _id: kb_id}).catch((err) => {
     winston.warn("Unable to find kb. Error: ", err);
     return res.status(500).send({ success: false, error: err })
@@ -1188,6 +1321,16 @@ router.delete('/:kb_id', async (req, res) => {
   if (!data.namespace) {
     data.namespace = project_id;
   }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  let ns = namespaces.find(n => n.id === data.namespace);
+  data.engine = ns.engine || default_engine;
+
+  winston.verbose("/:delete_id data: ", data);
 
   openaiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
@@ -1371,6 +1514,30 @@ async function getKeyFromIntegrations(project_id) {
       resolve(null);
     }
   })
+}
+
+async function setDefaultScrapeOptions() {
+  return {
+    tags_to_extract: ["body"],
+    unwanted_tags: [],
+    unwanted_classnames: []
+  }
+}
+
+async function setCustomScrapeOptions(options) {
+  if (!options) {
+    options = await setDefaultScrapeOptions();
+  } else {
+    if (!options.tags_to_extract || options.tags_to_extract.length == 0) {
+      options.tags_to_extract = ["body"];
+    }
+    if (!options.unwanted_tags) {
+      options.unwanted_tags = [];
+    }
+    if (!options.unwanted_classnames) {
+      options.unwanted_classnames = [];
+    }
+  }
 }
 /**
 * ****************************************
