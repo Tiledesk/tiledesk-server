@@ -52,7 +52,7 @@ let default_engine = {
   type: "pod",
   apikey: "",
   vector_size: 1536,
-  index_name: "pugliai-tiledesk"
+  index_name: process.env.PINECONE_INDEX
 }
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
