@@ -77,9 +77,9 @@ router.post('/scrape/single', async (req, res) => {
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
 
-  if (!data.scrape_type) {
-    data.scrape_type = 1;
-  }
+  // if (!data.scrape_type) {
+  //   data.scrape_type = 1;
+  // }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -121,9 +121,21 @@ router.post('/scrape/single', async (req, res) => {
         json.content = kb.content;
       }
 
-      json.scrape_type = 1;
-      if (data.scrape_type) {
-        json.scrape_type = data.scrape_type;
+      // json.scrape_type = 1;
+      // if (data.scrape_type) {
+      //   json.scrape_type = data.scrape_type;
+      // }
+
+      if (kb.scrape_type) {
+        json.scrape_type = kb.scrape_type
+      }
+
+      if (kb.scrape_options) {
+        json.parameters_scrape_type_4 = {
+          tags_to_extract: kb.scrape_options.tags_to_extract,
+          unwanted_tags: kb.scrape_options.unwanted_tags,
+          unwanted_classnames: kb.scrape_options.unwanted_classnames
+        }
       }
 
       let ns = namespaces.find(n => n.id === kb.namespace);
@@ -264,7 +276,7 @@ router.post('/qa', async (req, res) => {
   }
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
-  if (!data.advanced_context) {
+  if (!data.advancedPrompt) {
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contexts[data.model];
     } else {
@@ -274,6 +286,8 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
+  delete data.advancedPrompt;
+  winston.verbose("ask data: ", data);
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
@@ -924,6 +938,18 @@ router.post('/', async (req, res) => {
   if (!new_kb.namespace) {
     new_kb.namespace = project_id;
   }
+  if (new_kb.type === 'txt') {
+    new_kb.scrape_type = 1;
+  }
+  if (new_kb.type === 'url') {
+    if (!body.scrape_type || body.scrape_type === 2) {
+      new_kb.scrape_type = 2;
+      new_kb.scrape_options = await setDefaultScrapeOptions();
+    } else {
+      new_kb.scrape_type = body.scrape_type;
+      new_kb.scrape_options = body.scrape_options;
+    }
+  }
 
   winston.debug("adding kb: ", new_kb);
 
@@ -936,20 +962,27 @@ router.post('/', async (req, res) => {
 
       res.status(200).send(raw);
 
+      let saved_kb = raw.value;
       let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
       let json = {
-        id: raw.value._id,
-        type: raw.value.type,
-        source: raw.value.source,
+        id: saved_kb._id,
+        type: saved_kb.type,
+        source: saved_kb.source,
         content: "",
-        namespace: raw.value.namespace,
+        namespace: saved_kb.namespace,
         webhook: webhook
       }
       winston.debug("json: ", json);
 
-      if (raw.value.content) {
-        json.content = raw.value.content;
+      if (saved_kb.content) {
+        json.content = saved_kb.content;
+      }
+      if (saved_kb.scrape_type) {
+        json.scrape_type = saved_kb.scrape_type;
+      }
+      if (saved_kb.scrape_options) {
+        json.parameters_scrape_type_4 = saved_kb.scrape_options;
       }
       let ns = namespaces.find(n => n.id === body.namespace);
       json.engine = ns.engine || default_engine;
@@ -977,6 +1010,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   let project_id = req.projectid;
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1025,16 +1060,37 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
 
   let kbs = [];
-  list.forEach(url => {
-    kbs.push({
+  list.forEach( async (url) => {
+    let kb = {
       id_project: project_id,
       name: url,
       source: url,
       type: 'url',
       content: "",
       namespace: namespace_id,
-      status: -1
-    })
+      status: -1,
+      scrape_type: scrape_type
+    }
+
+    if (!kb.scrape_type) {
+      scrape_type = 2;
+    }
+
+    if (scrape_type == 2) {
+      kb.scrape_options = {
+        tags_to_extract: ["body"],
+        unwanted_tags: [],
+        unwanted_classnames: []
+      }
+    } else {
+      kb.scrape_options = scrape_options;
+    }
+    // if (scrape_type === 2) {
+    //   kb.scrape_options = await setDefaultScrapeOptions();
+    // } else {
+    //   kb.scrape_options = await setCustomScrapeOptions(scrape_options);
+    // }
+    kbs.push(kb)
   })
 
   let operations = kbs.map(doc => {
@@ -1122,7 +1178,6 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let question = data[0];
       let answer = data[1];
 
-      console.log("data. ", data)
       kbs.push({
         id_project: project_id,
         name: question,
