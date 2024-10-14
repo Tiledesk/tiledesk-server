@@ -1,11 +1,13 @@
 var winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
+const jwt = require("jsonwebtoken")
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
 let kb_endpoint = process.env.KB_ENDPOINT;
 let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
+let secret = process.env.JWT_SECRET_KEY;
 
 class OpenaiService {
 
@@ -162,13 +164,16 @@ class OpenaiService {
     })
   }
 
-  getContentChunks(namespace_id, content_id) {
+  getContentChunks(namespace_id, content_id, engine) {
     winston.info("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
     winston.info(kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id)
     return new Promise((resolve, reject) => {
 
+      let payload = { engine: engine };
+      let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
-        url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id,
+        url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
           'Content-Type': 'application/json'
         },
