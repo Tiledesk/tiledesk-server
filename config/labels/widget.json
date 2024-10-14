@@ -61,6 +61,7 @@
             "CLOSE_CHAT": "Close chat",
             "MINIMIZE":"Minimize",
             "MAXIMIZE":"Maximize",
+            "CONFIRM_CLOSE_CHAT":"Are you sure you wanna close this chat?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"you",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"you have been added ",
@@ -160,6 +161,7 @@
             "CLOSE_CHAT": "Chiudi chat",
             "MINIMIZE":"Minimizza",
             "MAXIMIZE":"Massimizza",
+            "CONFIRM_CLOSE_CHAT":"Vuoi davvero chiudere questa chat?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"tu",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"sei stato aggiunto ",
@@ -259,6 +261,7 @@
             "CLOSE_CHAT": "Fermer le chat",
             "MINIMIZE":"Minimiser",
             "MAXIMIZE":"Maximiser",
+            "CONFIRM_CLOSE_CHAT":"Etes-vous sûr de vouloir fermer cette discussion?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"toi",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"ont été ajoutés à ",
@@ -358,6 +361,7 @@
             "CLOSE_CHAT": "Cerrar chat",
             "MINIMIZE":"Minimizar",
             "MAXIMIZE":"Maximizar",
+            "CONFIRM_CLOSE_CHAT":"¿Estás segura de que quieres cerrar este chat?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"tú",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"han sido agregados a ",
@@ -457,6 +461,7 @@
             "CLOSE_CHAT": "Chat schließen",
             "MINIMIZE":"Minimieren",
             "MAXIMIZE":"Maximieren",
+            "CONFIRM_CLOSE_CHAT":"Möchten Sie diesen Chat wirklich schließen?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "Sie",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "Sie wurden hinzugefügt ",
@@ -556,6 +561,7 @@
             "CLOSE_CHAT": "Fechar bate-papo",
             "MINIMIZE":"Minimizar",
             "MAXIMIZE":"Maximizar",
+            "CONFIRM_CLOSE_CHAT":"Tem certeza de que deseja fechar este bate-papo?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "você",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "você foi adicionado ",
@@ -655,6 +661,7 @@
             "CLOSE_CHAT": "Закрыть чат",
             "MINIMIZE":"Свести к минимуму",
             "MAXIMIZE":"Максимизировать",
+            "CONFIRM_CLOSE_CHAT":"Вы уверены, что хотите закрыть этот чат?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "вы",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "вы добавлены ",
@@ -754,6 +761,7 @@
             "CLOSE_CHAT": "Sohbeti kapat",
             "MINIMIZE":"Küçült",
             "MAXIMIZE":"Büyüt",
+            "CONFIRM_CLOSE_CHAT":"Bu sohbeti kapatmak istediğinizden emin misiniz?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "siz",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "eklendiniz ",
@@ -855,6 +863,7 @@
             "CLOSE_CHAT": "Затвори ћаскање",
             "MINIMIZE":"Минимизирајте",
             "MAXIMIZE":"Максимизирајте",
+            "CONFIRM_CLOSE_CHAT":"Да ли сте сигурни да желите да затворите ово ћаскање?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"ти",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"додани сте",
@@ -956,6 +965,7 @@
             "CLOSE_CHAT": "إغلاق الدردشة",
             "MINIMIZE":"تصغير",
             "MAXIMIZE":"تحقيق أقصى قدر",
+            "CONFIRM_CLOSE_CHAT":"هل أنت متأكد أنك تريد إغلاق هذه الدردشة؟",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "أنت",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "لقد تم اضافتك ",
@@ -1057,6 +1067,7 @@
             "CLOSE_CHAT": "Закрити чат",
             "MINIMIZE":"Згорнути",
             "MAXIMIZE":"Максимізувати",
+            "CONFIRM_CLOSE_CHAT":"Ви впевнені, що бажаєте закрити цей чат?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "ти",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "вас додали ",
@@ -1157,6 +1168,7 @@
             "CLOSE_CHAT":"Stäng chatten",
             "MINIMIZE":"Minimera",
             "MAXIMIZE":"Maximera",
+            "CONFIRM_CLOSE_CHAT":"Är du säker på att du vill stänga den här chatten?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "du",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "du har lagts till ",
@@ -1257,6 +1269,7 @@
             "CLOSE_CHAT":"Чатты жабу",
             "MINIMIZE":"Кішірейту",
             "MAXIMIZE":"Үлкейту",
+            "CONFIRM_CLOSE_CHAT":"Бұл чатты шынымен жапқыңыз келе ме?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "сен",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "сіз қосылдыңыз ",
@@ -1357,6 +1370,7 @@
             "CLOSE_CHAT":"Chatni yopish",
             "MINIMIZE":"Minimallashtirish",
             "MAXIMIZE":"Maksimallashtirish",
+            "CONFIRM_CLOSE_CHAT":"Bu chatni yopmoqchi ekanligingizga ishonchingiz komilmi?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "siz",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "qo'shildingiz ",
@@ -1457,6 +1471,7 @@
             "CLOSE_CHAT": "Söhbəti bağlayın",
             "MINIMIZE":"Minimallaşdırın",
             "MAXIMIZE":"Maksimallaşdırın",
+            "CONFIRM_CLOSE_CHAT":"Bu söhbəti bağlamaq istədiyinizə əminsiniz?",
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT": "Sən",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB": "siz əlavə olundunuz ",
