@@ -918,7 +918,7 @@ router.post('/importjson/:id_faq_kb', upload.single('uploadFile'), async (req, r
 
           if (faq) {
             winston.info("new intent created")
-            faqBotEvent.emit('faq.create', savedFaq);
+            faqBotEvent.emit('faq.create', faq);
           }
         }
 
