@@ -5,6 +5,14 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.0
+- Added support for engine to namespace
+- Added support for advanced context to kb
+- Added support for scrape types to kb
+- Updated tybot-connector to 0.2.112
+- Updated vxml-connector to 0.1.54
+- Updated widget.json translation file
+
 # 2.9.32
 - Added voice filters in get requests
 - Added endpoint to get all projects
