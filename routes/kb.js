@@ -77,9 +77,9 @@ router.post('/scrape/single', async (req, res) => {
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
 
-  if (!data.scrape_type) {
-    data.scrape_type = 1;
-  }
+  // if (!data.scrape_type) {
+  //   data.scrape_type = 1;
+  // }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -121,9 +121,21 @@ router.post('/scrape/single', async (req, res) => {
         json.content = kb.content;
       }
 
-      json.scrape_type = 1;
-      if (data.scrape_type) {
-        json.scrape_type = data.scrape_type;
+      // json.scrape_type = 1;
+      // if (data.scrape_type) {
+      //   json.scrape_type = data.scrape_type;
+      // }
+
+      if (kb.scrape_type) {
+        json.scrape_type = kb.scrape_type
+      }
+
+      if (kb.scrape_options) {
+        json.parameters_scrape_type_4 = {
+          tags_to_extract: kb.scrape_options.tags_to_extract,
+          unwanted_tags: kb.scrape_options.unwanted_tags,
+          unwanted_classnames: kb.scrape_options.unwanted_classnames
+        }
       }
 
       let ns = namespaces.find(n => n.id === kb.namespace);
@@ -264,12 +276,14 @@ router.post('/qa', async (req, res) => {
   }
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
-  if (!data.advanced_context) {
+  if (!data.advancedPrompt) {
     if (data.system_context) {
       data.system_context = data.system_context + " \n" + contexts[data.model];
     } else {
       data.system_context = contexts[data.model];
     }
+  } else {
+    data.system_context = advancedPrompt;
   }
 
   let ns = namespaces.find(n => n.id === data.namespace);
@@ -977,6 +991,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   }
 
   let project_id = req.projectid;
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1026,15 +1042,21 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
   let kbs = [];
   list.forEach(url => {
-    kbs.push({
+    let kb = {
       id_project: project_id,
       name: url,
       source: url,
       type: 'url',
       content: "",
       namespace: namespace_id,
-      status: -1
-    })
+      status: -1,
+      scrape_type: scrape_type
+    }
+    console.log("scrape_options: ", scrape_options);
+    if (scrape_options) {
+      kb.scrape_options = scrape_options
+    }
+    kbs.push(kb)
   })
 
   let operations = kbs.map(doc => {
@@ -1048,6 +1070,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
+  console.log("kbs: ", kbs);
   saveBulk(operations, kbs, project_id).then((result) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
@@ -1057,6 +1080,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
       return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
+    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
     scheduleScrape(resources);
     res.status(200).send(result);
