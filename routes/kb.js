@@ -1038,12 +1038,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: { scrape_options }, ...rest}
-      // if (scrape_type === 4) {
-      //   return { id: _id, webhook: webhook, tags_to_extract: scrape_options.tags_to_extract, unwanted_tags: scrape_options.unwanted_tags, unwanted_classnames: scrape_options.unwanted_classnames, ...rest };
-      // } else {
-      //   return { id: _id, webhook: webhook, ...rest };
-      // }
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
     console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
