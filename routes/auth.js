@@ -857,11 +857,13 @@ router.put('/requestresetpsw', function (req, res) {
 
         //  TODO emit user.update?
           authEvent.emit('user.requestresetpassword', {updatedUser:updatedUser, req:req});
-
           
-
           let userWithoutResetPassword = updatedUser.toJSON();
           delete userWithoutResetPassword.resetpswrequestid;
+          delete userWithoutResetPassword._id;
+          delete userWithoutResetPassword.createdAt;
+          delete userWithoutResetPassword.updatedAt;
+          delete userWithoutResetPassword.__v;
           
           return res.json({ success: true, user: userWithoutResetPassword });
           // }
