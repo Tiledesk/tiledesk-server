@@ -108,7 +108,7 @@ router.post('/signup',
             let obj = { _id: savedUser._id, email: savedUser.email}
             let value = JSON.stringify(obj);
             redis_client.set(key, value, { EX: 900} ) 
-            emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+            emailService.sendVerifyEmailAddress(savedUser.email, savedUser, verify_email_code);
           }
         }
         
