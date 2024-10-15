@@ -159,15 +159,16 @@ router.put('/changepsw', function (req, res) {
 router.get('/resendverifyemail', function (req, res) {
   winston.debug('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
   console.log("resendverifyemail req.user", req.user)
+  let user = req.user;
   try {
     // TODO req.user.email is null for bot visitor
     let verify_email_code = uniqid();
     let redis_client = req.app.get('redis_client');
     let key = "emailverify:verify-" + verify_email_code;
-    let obj = { _id: savedUser._id, email: savedUser.email}
+    let obj = { _id: user._id, email: user.email}
     let value = JSON.stringify(obj);
     redis_client.set(key, value, { EX: 900} ) 
-    emailService.sendVerifyEmailAddress(req.user.email, req.user, verify_email_code);
+    emailService.sendVerifyEmailAddress(user.email, user, verify_email_code);
     res.status(200).json({ success: true, message: 'Verify email successfully sent' });
   } catch (e) {
     winston.debug("RE-SEND VERIFY EMAIL error", e);
