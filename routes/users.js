@@ -156,7 +156,7 @@ router.put('/changepsw', function (req, res) {
   });
 });
 
-router.get('/resendverifyemail', function (req, res) {
+router.get('/resendverifyemail', async function (req, res) {
   winston.debug('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
   console.log("resendverifyemail req.user", req.user)
   let user = req.user;
@@ -167,7 +167,12 @@ router.get('/resendverifyemail', function (req, res) {
     let key = "emailverify:verify-" + verify_email_code;
     let obj = { _id: user._id, email: user.email}
     let value = JSON.stringify(obj);
-    redis_client.set(key, value, { EX: 900} ) 
+    await redis_client.set(key, value, { EX: 900} ) 
+    let rvalue = await redis_client.get(key);
+    console.log("rvalue", rvalue)
+    console.log("resendverifyemail to: ", user.email)
+    console.log("resendverifyemail savedUser: ", user)
+    console.log("resendverifyemail code: ", verify_email_code)
     emailService.sendVerifyEmailAddress(user.email, user, verify_email_code);
     res.status(200).json({ success: true, message: 'Verify email successfully sent' });
   } catch (e) {
