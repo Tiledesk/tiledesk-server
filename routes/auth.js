@@ -101,9 +101,6 @@ router.post('/signup',
             console.log("(Auth) verify_email_code: ", verify_email_code);
 
             let redis_client = req.app.get('redis_client');
-            if (!redis_client) {
-                return res.status(400).send({ error: "Redis not ready"});
-            }
             let key = "emailverify:verify-" + verify_email_code;
             let obj = { _id: savedUser._id, email: savedUser.email}
             let value = JSON.stringify(obj);
