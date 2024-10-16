@@ -895,7 +895,8 @@ router.put('/requestresetpsw', function (req, res) {
           delete userWithoutResetPassword.updatedAt;
           delete userWithoutResetPassword.__v;
           
-          return res.json({ success: true, user: userWithoutResetPassword });
+          // return res.json({ success: true, user: userWithoutResetPassword });
+          return res.json({ success: true, message: "An email has been sent to reset your password" });
           // }
           // catch (err) {
           //   winston.debug('PSW RESET REQUEST - SEND EMAIL ERR ', err)
