@@ -15,6 +15,9 @@ const sharp = require('sharp');
 
 
 const FileGridFsService = require('../services/fileGridFsService.js');
+const faq_kb = require('../models/faq_kb');
+const project_user = require('../models/project_user');
+const roleConstants = require('../models/roleConstants');
 
 const fileService = new FileGridFsService("images");
 
@@ -173,27 +176,57 @@ curl -v -X PUT -u andrea.leo@f21.it:123456 \
   */
 router.put('/users/photo', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],
 // bodymiddleware, 
-uploadAvatar.single('file'), (req, res, next) => {
+uploadAvatar.single('file'), async (req, res, next) => {
   try {
     winston.debug("/users/photo");
-    // winston.info("req.query.folder1:"+req.body.folder);
-
-    // var folder = req.folder || "error";
-    // winston.info("folder:"+folder);
 
     if (req.upload_file_already_exists) {
       winston.warn('Error uploading photo image, file already exists',req.file.filename );
       return res.status(409).send({success: false, msg: 'Error uploading photo image, file already exists'});
     }
 
-    var userid = req.user.id;
+    let userid = req.user.id;
+    let bot_id;
+    let entity_id = userid;
 
-    if (req.query.user_id) {
-      userid = req.query.user_id;
+    // if (req.query.user_id) {
+    //   userid = req.query.user_id;
+    // }
+
+    if (req.query.bot_id) {
+      bot_id = req.query.bot_id;
+
+      let chatbot = await faq_kb.findByid(bot_id).catch((err) => {
+        winston.error("Error finding bot ", err);
+        res.status(500).send({ success: false, error: "Unable to find chatbot with id " + bot_id });
+      })
+
+      if (!chatbot) {
+        res.status(404).send({ success: false, error: "Chatbot not found" })
+      }
+
+      let id_project = chatbot.id_project;
+
+      let project_user = await project_user.findOne({ id_user: userid, id_project: id_project }).catch((err) => {
+        winston.error("Error finding project user: ", err);
+        return res.status(500).send({ success: false, error: "Unable to find project user for user " + userid + "in project " + id_project });
+      })
+
+      if (!project_user) {
+        winston.warn("User" + userid + "don't belongs the project " + id_project);
+        return res.status(401).send({ success: false, error: "You don't belong the chatbot's project" })
+      }
+
+      if ((project_user.role !== roleConstants.ADMIN) || (project_user.role !== roleConstants.OWNER)) {
+        winston.warn("User with role " + project_user.role + "can't modify the chatbot");
+        return res.status(403).send({ success: false, error: "You don't have the role required to modify the chatbot" });
+      }
+
+      entity_id = bot_id;
     }
-    
 
-     var destinationFolder = 'uploads/users/' + userid + "/images/";
+    
+     var destinationFolder = 'uploads/users/' + entity_id + "/images/";
      winston.debug("destinationFolder:"+destinationFolder);
 
      var thumFilename = destinationFolder+'thumbnails_200_200-photo.jpg';
