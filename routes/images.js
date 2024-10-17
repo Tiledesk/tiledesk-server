@@ -196,7 +196,7 @@ uploadAvatar.single('file'), async (req, res, next) => {
     if (req.query.bot_id) {
       bot_id = req.query.bot_id;
 
-      let chatbot = await faq_kb.findByid(bot_id).catch((err) => {
+      let chatbot = await faq_kb.findById(bot_id).catch((err) => {
         winston.error("Error finding bot ", err);
         res.status(500).send({ success: false, error: "Unable to find chatbot with id " + bot_id });
       })
