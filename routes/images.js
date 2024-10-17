@@ -207,18 +207,18 @@ uploadAvatar.single('file'), async (req, res, next) => {
 
       let id_project = chatbot.id_project;
 
-      let project_user = await project_user.findOne({ id_user: userid, id_project: id_project }).catch((err) => {
+      let puser = await project_user.findOne({ id_user: userid, id_project: id_project }).catch((err) => {
         winston.error("Error finding project user: ", err);
         return res.status(500).send({ success: false, error: "Unable to find project user for user " + userid + "in project " + id_project });
       })
 
-      if (!project_user) {
+      if (!puser) {
         winston.warn("User" + userid + "don't belongs the project " + id_project);
         return res.status(401).send({ success: false, error: "You don't belong the chatbot's project" })
       }
 
-      if ((project_user.role !== roleConstants.ADMIN) || (project_user.role !== roleConstants.OWNER)) {
-        winston.warn("User with role " + project_user.role + "can't modify the chatbot");
+      if ((puser.role !== roleConstants.ADMIN) || (puser.role !== roleConstants.OWNER)) {
+        winston.warn("User with role " + puser.role + "can't modify the chatbot");
         return res.status(403).send({ success: false, error: "You don't have the role required to modify the chatbot" });
       }
 
