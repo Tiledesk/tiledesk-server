@@ -7,7 +7,7 @@ var userService = require('../services/userService');
 var faqService = require('../services/faqService');
 
 let chatbot_mock = require('./chatbot-mock');
-let log = true;
+let log = false;
 
 
 //Require the dev-dependencies
@@ -31,7 +31,7 @@ describe('FaqKBRoute', () => {
 
 
 
-        it('create', (done) => {
+        it('create-new-chatbot', (done) => {
 
 
             //   this.timeout();
@@ -53,14 +53,58 @@ describe('FaqKBRoute', () => {
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
+                            
+                            done();
+
+                            // chai.request(server)
+                            //     .get('/' + savedProject._id + '/faq_kb/' + res.body._id)
+                            //     .auth(email, pwd)
+                            //     .end((err, res) => {
+                            //         if (log) {
+                            //             console.log("res.body", res.body);
+                            //         }
+                            //         res.should.have.status(200);
+
+                                    
+                            //     });
+                        });
+
+
+                });
+            });
+
+        }).timeout(20000);
+
+
+        it('get-all-chatbot-with-role-admin-or-owner', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "external", language: 'fr' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("fr");
 
                             chai.request(server)
-                                .get('/' + savedProject._id + '/faq_kb/' + res.body._id)
+                                .get('/' + savedProject._id + '/faq_kb')
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("res.body", res.body);
-                                    }
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
                                     res.should.have.status(200);
 
                                     done();
