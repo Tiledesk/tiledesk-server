@@ -217,7 +217,7 @@ uploadAvatar.single('file'), async (req, res, next) => {
         return res.status(401).send({ success: false, error: "You don't belong the chatbot's project" })
       }
 
-      if ((puser.role !== roleConstants.ADMIN) || (puser.role !== roleConstants.OWNER)) {
+      if ((puser.role !== roleConstants.ADMIN) && (puser.role !== roleConstants.OWNER)) {
         winston.warn("User with role " + puser.role + "can't modify the chatbot");
         return res.status(403).send({ success: false, error: "You don't have the role required to modify the chatbot" });
       }
