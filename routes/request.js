@@ -619,7 +619,7 @@ router.post('/:requestid/notes', async function (req, res) {
 
   let project_user = req.projectuser;
 
-  if (project_user === RoleConstants.AGENT) {
+  if (project_user.role === RoleConstants.AGENT) {
     let request = await Request.findOne({ request_id: request_id }).catch((err) => {
       winston.error("Error finding request ", err);
       return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
@@ -665,7 +665,7 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
   let note_id = req.params.noteid;
   let project_user = req.projectuser;
 
-  if (project_user === RoleConstants.AGENT) {
+  if (project_user.role === RoleConstants.AGENT) {
     let request = await Request.findOne({ request_id: request_id }).catch((err) => {
       winston.error("Error finding request ", err);
       return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
