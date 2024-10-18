@@ -616,7 +616,7 @@ router.post('/:requestid/notes', async function (req, res) {
   note.text = req.body.text;
   note.createdBy = req.user.id;
 
-  let request = Request.findOne({ request_id: request_id }).catch((err) => {
+  let request = await Request.findOne({ request_id: request_id }).catch((err) => {
     winston.error("Error finding request ", err);
     return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
   })
@@ -654,12 +654,12 @@ router.post('/:requestid/notes', async function (req, res) {
 });
 
 
-router.delete('/:requestid/notes/:noteid', function (req, res) {
+router.delete('/:requestid/notes/:noteid', async function (req, res) {
 
   let request_id = req.params.requestid
   let note_id = req.params.noteid;
 
-  let request = Request.findOne({ request_id: request_id }).catch((err) => {
+  let request = await Request.findOne({ request_id: request_id }).catch((err) => {
     winston.error("Error finding request ", err);
     return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
   })
