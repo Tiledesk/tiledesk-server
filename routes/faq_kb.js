@@ -427,8 +427,11 @@ router.delete('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscrip
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
-    botEvent.emit('faqbot.delete', faq_kb);
-    res.json(faq_kb);
+    /**
+     * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
+     */
+    botEvent.emit('faqbot.delete', faq_kb); 
+    res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully"})
   });
 });
 
