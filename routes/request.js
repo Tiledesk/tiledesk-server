@@ -656,8 +656,27 @@ router.post('/:requestid/notes', async function (req, res) {
 
 router.delete('/:requestid/notes/:noteid', function (req, res) {
 
+  let request_id = req.params.requestid
+  let note_id = req.params.noteid;
+
+  let request = findById(request_id).catch((err) => {
+    winston.error("Error finding request ", err);
+    return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+  })
+
+  if (!request) {
+    winston.warn("Request with id " + request_id + " not found.");
+    return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+  }
+
+  // Check if the user is a participant
+  if (!participantsAgents.includes(req.user.id)) {
+    winston.verbose("Trying to delete a note from a non participating agent");
+    return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+  }
+
   //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: req.params.requestid, id_project: req.projectid }, { $pull: { notes: { "_id": req.params.noteid } } }, { new: true, upsert: false })
+  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
