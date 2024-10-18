@@ -29,6 +29,7 @@ csv = require('csv-express');
 csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
+const RoleConstants = require('../models/roleConstants');
 
 // var messageService = require('../services/messageService');
 
@@ -616,21 +617,24 @@ router.post('/:requestid/notes', async function (req, res) {
   note.text = req.body.text;
   note.createdBy = req.user.id;
 
-  let request = await Request.findOne({ request_id: request_id }).catch((err) => {
-    winston.error("Error finding request ", err);
-    return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
-  })
+  let project_user = req.projectuser;
 
-  if (!request) {
-    winston.warn("Request with id " + request_id + " not found.");
-    return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
-  }
+  if (project_user === RoleConstants.AGENT) {
+    let request = await Request.findOne({ request_id: request_id }).catch((err) => {
+      winston.error("Error finding request ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+    })
+  
+    if (!request) {
+      winston.warn("Request with id " + request_id + " not found.");
+      return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+    }
 
-  console.log("request: ", request);
-  // Check if the user is a participant
-  if (!request.participantsAgents.includes(req.user.id)) {
-    winston.verbose("Trying to add a note from a non participating agent");
-    return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+    // Check if the user is a participant
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Trying to add a note from a non participating agent");
+      return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+    }
   }
 
   return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
@@ -659,21 +663,24 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
 
   let request_id = req.params.requestid
   let note_id = req.params.noteid;
+  let project_user = req.projectuser;
 
-  let request = await Request.findOne({ request_id: request_id }).catch((err) => {
-    winston.error("Error finding request ", err);
-    return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
-  })
-
-  if (!request) {
-    winston.warn("Request with id " + request_id + " not found.");
-    return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
-  }
-
-  // Check if the user is a participant
-  if (!request.participantsAgents.includes(req.user.id)) {
-    winston.verbose("Trying to delete a note from a non participating agent");
-    return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+  if (project_user === RoleConstants.AGENT) {
+    let request = await Request.findOne({ request_id: request_id }).catch((err) => {
+      winston.error("Error finding request ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+    })
+  
+    if (!request) {
+      winston.warn("Request with id " + request_id + " not found.");
+      return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+    }
+  
+    // Check if the user is a participant
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Trying to delete a note from a non participating agent");
+      return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+    }
   }
 
   //cacheinvalidation
