@@ -627,7 +627,7 @@ router.post('/:requestid/notes', async function (req, res) {
   }
 
   // Check if the user is a participant
-  if (!participantsAgents.includes(req.user.id)) {
+  if (!request.participantsAgents.includes(req.user.id)) {
     winston.verbose("Trying to add a note from a non participating agent");
     return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
   }
@@ -670,7 +670,7 @@ router.delete('/:requestid/notes/:noteid', function (req, res) {
   }
 
   // Check if the user is a participant
-  if (!participantsAgents.includes(req.user.id)) {
+  if (!request.participantsAgents.includes(req.user.id)) {
     winston.verbose("Trying to delete a note from a non participating agent");
     return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
   }
