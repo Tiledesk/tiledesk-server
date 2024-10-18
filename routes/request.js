@@ -222,9 +222,9 @@ router.patch('/:requestid', function (req, res) {
     update.tags = req.body.tags;
   }
 
-  if (req.body.notes) {
-    update.notes = req.body.notes;
-  }
+  // if (req.body.notes) {
+  //   update.notes = req.body.notes;
+  // }
 
   if (req.body.rating) {
     update.rating = req.body.rating;
@@ -609,14 +609,30 @@ router.patch('/:requestid/attributes', function (req, res) {
 
 });
 
-router.post('/:requestid/notes', function (req, res) {
+router.post('/:requestid/notes', async function (req, res) {
+  
+  let request_id = req.params.requestid
   var note = {};
   note.text = req.body.text;
-  // note.id_project = req.projectid;
   note.createdBy = req.user.id;
 
-  //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: req.params.requestid, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
+  let request = findById(request_id).catch((err) => {
+    winston.error("Error finding request ", err);
+    return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+  })
+
+  if (!request) {
+    winston.warn("Request with id " + request_id + " not found.");
+    return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+  }
+
+  // Check if the user is a participant
+  if (!participantsAgents.includes(req.user.id)) {
+    winston.verbose("Trying to add a note from a non participating agent");
+    return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+  }
+
+  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
