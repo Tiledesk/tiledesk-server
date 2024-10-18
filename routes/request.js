@@ -1841,14 +1841,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
