@@ -63,6 +63,10 @@ router.put('/:cannedResponseid', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
+  /**
+   * Change type from mongoose object to javascript standard object.
+   * Otherwise hasOwnProperty wouldn't works.
+   */
   canned = canned.toObject();
 
   if (user_role === RoleConstants.AGENT) {
@@ -72,13 +76,6 @@ router.put('/:cannedResponseid', async function (req, res) {
     }
   }
   else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
-    console.log("user_role: ", user_role);
-    console.log("canned: ", canned);
-    console.log("typeof canned: ", typeof canned);
-    console.log("canned to String: ", JSON.stringify(canned));
-    console.log("canned.hasOwnProperty('shared'): " + canned.hasOwnProperty('shared'))
-    console.log("canned.hasOwnProperty('text'): " + canned.hasOwnProperty('text'))
-    console.log("canned.shared: ", canned.shared);
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
