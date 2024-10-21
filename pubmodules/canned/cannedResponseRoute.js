@@ -73,6 +73,7 @@ router.put('/:cannedResponseid', async function (req, res) {
     console.log("user_role: ", user_role);
     console.log("canned: ", canned);
     console.log("canned.hasOwnProperty('shared'): ", canned.hasOwnProperty('shared'))
+    console.log("canned.hasOwnProperty('text'): ", canned.hasOwnProperty('text'))
     console.log("canned.shared: ", canned.shared);
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
