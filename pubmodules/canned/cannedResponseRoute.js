@@ -68,7 +68,7 @@ router.put('/:cannedResponseid', async function (req, res) {
    * Otherwise hasOwnProperty wouldn't works.
    */
   canned = canned.toObject();
-  
+
   if (user_role === RoleConstants.AGENT) {
     if (canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
@@ -111,6 +111,12 @@ router.delete('/:cannedResponseid', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
+  /**
+   * Change type from mongoose object to javascript standard object.
+   * Otherwise hasOwnProperty wouldn't works.
+   */
+  canned = canned.toObject();
+  
   if (user_role === RoleConstants.AGENT) {
     if (canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
@@ -152,9 +158,26 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
-  if (canned.createdBy !== req.user.id) {
-    winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
-    return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+  /**
+   * Change type from mongoose object to javascript standard object.
+   * Otherwise hasOwnProperty wouldn't works.
+   */
+  canned = canned.toObject();
+  
+  if (user_role === RoleConstants.AGENT) {
+    if (canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+    }
+  }
+  else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  } else {
+    winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
+    return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
   CannedResponse.remove({ _id: req.params.cannedResponseid }, function (err, cannedResponse) {
