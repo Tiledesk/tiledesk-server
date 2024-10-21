@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var CannedResponse = require("./cannedResponse");
 var winston = require('../../config/winston');
+const RoleConstants = require('../../models/roleConstants');
 // const CannedResponseEvent = require('../event/CannedResponseEvent');
 
 
@@ -38,6 +39,8 @@ router.post('/', function (req, res) {
 router.put('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
   let canned_id = req.params.cannedResponseid;
+  let user_role = req.projectuser.role;
+  
   var update = {};
   
   if (req.body.title!=undefined) {
@@ -60,9 +63,20 @@ router.put('/:cannedResponseid', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
-  if (canned.createdBy !== req.user._id) {
-    winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
-    return res.status(403).send({ success: false, error: "You are not allowed to modify a canned response that is not yours."})
+  if (user_role === RoleConstants.AGENT) {
+    if (canned.createdBy !== req.user._id) {
+      winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "You are not allowed to modify a canned response that is not yours."})
+    }
+  }
+  else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false) {
+      winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
+    }
+  } else {
+    winston.warn("User " + req.user._id + "trying to modify canned with role " + user_role);
+    return res.status(401).send({ success: false, error: "Unauthorized"})
   }
   
   CannedResponse.findByIdAndUpdate(canned_id, update, { new: true, upsert: true }, function (err, updatedCannedResponse) {
@@ -79,6 +93,7 @@ router.put('/:cannedResponseid', async function (req, res) {
 router.delete('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
   let canned_id = req.params.cannedResponseid;
+  let user_role = req.projectuser.role;
 
   let canned = await CannedResponse.findById(canned_id).catch((err) => {
     winston.error("Error finding canned response: ", err);
@@ -90,9 +105,20 @@ router.delete('/:cannedResponseid', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
-  if (canned.createdBy !== req.user._id) {
-    winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
-    return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+  if (user_role === RoleConstants.AGENT) {
+    if (canned.createdBy !== req.user._id) {
+      winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+    }
+  }
+  else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
+    if (canned.hasOwnProperty('shared') && canned.shared === false) {
+      winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+      return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
+    }
+  } else {
+    winston.warn("User " + req.user._id + "trying to delete canned with role " + user_role);
+    return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
   CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
