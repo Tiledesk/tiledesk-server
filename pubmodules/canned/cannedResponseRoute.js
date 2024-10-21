@@ -71,6 +71,7 @@ router.put('/:cannedResponseid', async function (req, res) {
   }
   else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
     console.log("user_role: ", user_role);
+    console.log("canned: ", canned);
     console.log("canned.hasOwnProperty('shared'): ", canned.hasOwnProperty('shared'))
     console.log("canned.shared: ", canned.shared);
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
