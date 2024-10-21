@@ -311,7 +311,7 @@ router.put('/:requestid/close', async function (req, res) {
   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
   const closed_by = req.user.id;
 
-  if (user_role !== RoleConstants.OWNER || user_role !== RoleConstants.ADMIN) {
+  if (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN) {
     let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
       winston.error("Error finding request: ", err);
       return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
