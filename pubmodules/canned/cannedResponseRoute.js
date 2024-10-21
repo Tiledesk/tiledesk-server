@@ -64,18 +64,18 @@ router.put('/:cannedResponseid', async function (req, res) {
   }
 
   if (user_role === RoleConstants.AGENT) {
-    if (canned.createdBy !== req.user._id) {
-      winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
+    if (canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "You are not allowed to modify a canned response that is not yours."})
     }
   }
   else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
-      winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
+      winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to modify a non administration canned response"})
     }
   } else {
-    winston.warn("User " + req.user._id + "trying to modify canned with role " + user_role);
+    winston.warn("User " + req.user.id + "trying to modify canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
   
@@ -106,18 +106,18 @@ router.delete('/:cannedResponseid', async function (req, res) {
   }
 
   if (user_role === RoleConstants.AGENT) {
-    if (canned.createdBy !== req.user._id) {
-      winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+    if (canned.createdBy !== req.user.id) {
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
     }
   }
   else if (user_role === RoleConstants.OWNER || user_role === RoleConstants.ADMIN) {
     if (canned.hasOwnProperty('shared') && canned.shared === false) {
-      winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+      winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
       return res.status(403).send({ success: false, error: "Not allowed to delete a non administration canned response"})
     }
   } else {
-    winston.warn("User " + req.user._id + "trying to delete canned with role " + user_role);
+    winston.warn("User " + req.user.id + "trying to delete canned with role " + user_role);
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
@@ -146,8 +146,8 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
-  if (canned.createdBy !== req.user._id) {
-    winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+  if (canned.createdBy !== req.user.id) {
+    winston.warn("Not allowed. User " + req.user.id + " can't delete a canned response of user " + canned.createdBy);
     return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
   }
 
@@ -164,7 +164,8 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
 
 router.get('/:cannedResponseid', function (req, res) {
   winston.debug(req.body);
-  let user_id = req.user._id;
+  let user_id = req.user.id;
+  console.log("[Canned] user_id: ", user_id);
 
   CannedResponse.findById(req.params.cannedResponseid, function (err, cannedResponse) {
     if (err) {
@@ -190,6 +191,8 @@ router.get('/', function (req, res) {
     page = req.query.page;
   }
 
+  console.log("req.user._id: ", req.user._id)
+  console.log("req.user.id: ", req.user.id)
   var skip = page * limit;
   winston.debug('CannedResponse ROUTE - SKIP PAGE ', skip);
 
