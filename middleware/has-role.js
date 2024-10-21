@@ -105,10 +105,11 @@ class RoleChecker {
 
         // same route doesnt contains projectid so you can't use that
           // winston.debug("req.params.projectid: " + req.params.projectid);
-          if (!req.params.projectid) {
+          if (!req.params.projectid && !req.projectid) {
             return res.status(400).send({success: false, msg: 'req.params.projectid is not defined.'});
           }
 
+          let projectid = req.params.projectid || req.projectid;
 
         //  winston.info("req.user._id: " + req.user._id);
 
@@ -137,12 +138,12 @@ class RoleChecker {
           // project_user_qui_importante
 
           // JWT_HERE
-          var query = { id_project: req.params.projectid, id_user: req.user._id, status: "active"};
-          let cache_key = req.params.projectid+":project_users:iduser:"+req.user._id
+          var query = { id_project: projectid, id_user: req.user._id, status: "active"};
+          let cache_key = projectid+":project_users:iduser:"+req.user._id
 
           if (req.user.sub && (req.user.sub=="userexternal" || req.user.sub=="guest")) {
-            query = { id_project: req.params.projectid, uuid_user: req.user._id, status: "active"};
-            cache_key = req.params.projectid+":project_users:uuid_user:"+req.user._id
+            query = { id_project: projectid, uuid_user: req.user._id, status: "active"};
+            cache_key = projectid+":project_users:uuid_user:"+req.user._id
           }
           winston.debug("hasRoleOrType query " + JSON.stringify(query));
 
