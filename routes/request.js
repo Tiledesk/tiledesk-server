@@ -302,21 +302,35 @@ router.patch('/:requestid', function (req, res) {
 
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
-router.put('/:requestid/close', function (req, res) {
+router.put('/:requestid/close', async function (req, res) {
   winston.debug(req.body);
+  let request_id = req.params.requestid;
 
   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
   const closed_by = req.user.id;
+
+  let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
+    winston.error("Error finding request: ", err);
+    return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
+  })
+
+  if (!request) {
+    winston.verbose("Request with request_id " + request_id)
+    return res.status(404).send({ success: false, error: "Request not found"})
+  }
+
+  if (!request.participantsAgents.includes(req.user.id)) {
+    winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
+    return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
+  }
+
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
-
     winston.verbose("request closed", closedRequest);
-
     return res.json(closedRequest);
-
   });
 
-
 });
+
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
   winston.debug(req.body);
