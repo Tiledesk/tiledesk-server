@@ -63,6 +63,12 @@ router.put('/:cannedResponseid', async function (req, res) {
     return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
   }
 
+  /**
+   * Change type from mongoose object to javascript standard object.
+   * Otherwise hasOwnProperty wouldn't works.
+   */
+  canned = canned.toObject();
+  
   if (user_role === RoleConstants.AGENT) {
     if (canned.createdBy !== req.user.id) {
       winston.warn("Not allowed. User " + req.user.id + " can't modify a canned response of user " + canned.createdBy);
