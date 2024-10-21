@@ -35,8 +35,9 @@ router.post('/', function (req, res) {
   });
 });
 
-router.put('/:cannedResponseid', function (req, res) {
+router.put('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
+  let canned_id = req.params.cannedResponseid;
   var update = {};
   
   if (req.body.title!=undefined) {
@@ -48,23 +49,51 @@ router.put('/:cannedResponseid', function (req, res) {
   if (req.body.attributes!=undefined) {
     update.attributes = req.body.attributes;
   }
+
+  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+    winston.error("Error finding canned response: ", err);
+    return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
+  })
+
+  if (!canned) {
+    winston.verbose("Canned response with id " + canned_id + " not found.");
+    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+  }
+
+  if (canned.createdBy !== req.user._id) {
+    winston.warn("Not allowed. User " + req.user._id + " can't modify a canned response of user " + canned.createdBy);
+    return res.status(403).send({ success: false, error: "You are not allowed to modify a canned response that is not yours."})
+  }
   
-  
-  CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, update, { new: true, upsert: true }, function (err, updatedCannedResponse) {
+  CannedResponse.findByIdAndUpdate(canned_id, update, { new: true, upsert: true }, function (err, updatedCannedResponse) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-
-  
 
     // CannedResponseEvent.emit('CannedResponse.update', updatedCannedResponse);
     res.json(updatedCannedResponse);
   });
 });
 
-router.delete('/:cannedResponseid', function (req, res) {
+router.delete('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
+  let canned_id = req.params.cannedResponseid;
+
+  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+    winston.error("Error finding canned response: ", err);
+    return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
+  })
+
+  if (!canned) {
+    winston.verbose("Canned response with id " + canned_id + " not found.");
+    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+  }
+
+  if (canned.createdBy !== req.user._id) {
+    winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+    return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+  }
 
   CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
     if (err) {
@@ -72,15 +101,29 @@ router.delete('/:cannedResponseid', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-   
-
     // CannedResponseEvent.emit('CannedResponse.delete', updatedCannedResponse);
     res.json(updatedCannedResponse);
   });
 });
 
-router.delete('/:cannedResponseid/physical', function (req, res) {
+router.delete('/:cannedResponseid/physical', async function (req, res) {
   winston.debug(req.body);
+  let canned_id = req.params.cannedResponseid;
+
+  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+    winston.error("Error finding canned response: ", err);
+    return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
+  })
+
+  if (!canned) {
+    winston.verbose("Canned response with id " + canned_id + " not found.");
+    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+  }
+
+  if (canned.createdBy !== req.user._id) {
+    winston.warn("Not allowed. User " + req.user._id + " can't delete a canned response of user " + canned.createdBy);
+    return res.status(403).send({ success: false, error: "You are not allowed to delete a canned response that is not yours."})
+  }
 
   CannedResponse.remove({ _id: req.params.cannedResponseid }, function (err, cannedResponse) {
     if (err) {
@@ -88,15 +131,14 @@ router.delete('/:cannedResponseid/physical', function (req, res) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
-  
     // CannedResponseEvent.emit('CannedResponse.delete', CannedResponse);
-
     res.json(cannedResponse);
   });
 });
 
 router.get('/:cannedResponseid', function (req, res) {
   winston.debug(req.body);
+  let user_id = req.user._id;
 
   CannedResponse.findById(req.params.cannedResponseid, function (err, cannedResponse) {
     if (err) {
@@ -105,6 +147,11 @@ router.get('/:cannedResponseid', function (req, res) {
     if (!cannedResponse) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
+
+    if (cannedResponse.createdBy !== user_id) {
+      return res.status(403).send({ success: false, msg: 'You are not allowed to get a canned response that is not yours.'})
+    }
+
     res.json(cannedResponse);
   });
 });
