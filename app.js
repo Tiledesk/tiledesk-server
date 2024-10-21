@@ -603,7 +603,7 @@ app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { sessio
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
-app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], integration )
+app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
