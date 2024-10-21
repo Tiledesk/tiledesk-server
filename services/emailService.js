@@ -1685,8 +1685,11 @@ class EmailService {
   }
 
   // ok
-  async sendVerifyEmailAddress(to, savedUser) {
+  async sendVerifyEmailAddress(to, savedUser, code) {
 
+    console.log("sendVerifyEmailAddress to: ", to)
+    console.log("sendVerifyEmailAddress savedUser: ", savedUser)
+    console.log("sendVerifyEmailAddress code: ", code)
 
     var that = this;
 
@@ -1705,7 +1708,8 @@ class EmailService {
 
     var replacements = {
       savedUser: savedUser,
-      baseScope: baseScope
+      baseScope: baseScope,
+      code: code
     };
 
     var html = template(replacements);

@@ -558,8 +558,8 @@ app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { sessio
 app.use('/:projectid/faqpub', faqpub);
 
 //deprecated
-app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
-app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq_kb);
+app.use('/:projectid/faq_kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
+app.use('/:projectid/bots', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq_kb);
 
 
 
