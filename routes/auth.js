@@ -40,6 +40,7 @@ if (pubKey) {
 }
 
 var recaptcha = require('../middleware/recaptcha');
+const errorCodes = require('../errorCodes');
 
 
 
@@ -777,7 +778,7 @@ router.put('/verifyemail/:userid/:code', async function (req, res) {
   let verify_email_code = req.params.code;
 
   if (!verify_email_code) {
-    return res.status(401).send({ success: false, error: "Unable to verify email: missing verification code."})
+    return res.status(401).send({ success: false, error: "Unable to verify email: missing verification code.", error_code: errorCodes.AUTH.ERRORS.MISSING_VERIFICATION_CODE})
   }
 
   let redis_client = req.app.get('redis_client');
@@ -785,12 +786,12 @@ router.put('/verifyemail/:userid/:code', async function (req, res) {
   let value = await redis_client.get(key);
   console.log("(Auth) verify value: ", value);
   if (!value) {
-    return res.status(401).send({ success: false, error: "Unable to verify email: the verification code is expired or invalid."})
+    return res.status(401).send({ success: false, error: "Unable to verify email: the verification code is expired or invalid.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_EXPIRED})
   }
 
   let basic_user = JSON.parse(value);
   if (user_id !== basic_user._id) {
-    return res.status(401).send({ success: false, error: "Trying to use a verification code from another user."})
+    return res.status(401).send({ success: false, error: "Trying to use a verification code from another user.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_OTHER_USER})
   }
 
   User.findByIdAndUpdate(user_id, req.body, { new: true, upsert: true }, function (err, findUser) {
@@ -801,7 +802,7 @@ router.put('/verifyemail/:userid/:code', async function (req, res) {
     winston.debug(findUser);
     if (!findUser) {
       winston.warn('User not found for verifyemail' );
-      return res.status(404).send({ success: false, msg: 'User not found' });
+      return res.status(404).send({ success: false, msg: 'User not found', error_code: errorCodes.AUTH.ERRORS.USER_NOT_FOUND});
     }
     winston.debug('VERIFY EMAIL - RETURNED USER ', findUser);
 
