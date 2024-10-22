@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.3
+- Added support for formatType in openai completions
+
 # 2.10.2
 - Updated tybot-connector to 0.2.113
 
