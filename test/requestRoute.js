@@ -85,6 +85,56 @@ describe('RequestRoute', () => {
     });
   });
 
+  it('create-simple-new-note', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+
+            if (err) { console.error("err: ", err); }
+            if (log) { console.log("res.body",  res.body); }
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+
+            let request_id = res.body.request_id;
+            chai.request(server)
+                .post('/' + savedProject._id + '/requests/' + request_id + "/notes")
+                .auth(email, pwd)
+                .send({ text: "test note 1"})
+                .end((err, res) => {
+
+                  if (err) { console.error("err: ", err); }
+                  if (log) { console.log("res.body",  res.body); }
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  expect(res.body.notes.length).to.equal(1);
+                  expect(res.body.notes[0].text).to.equal("test note 1");
+                  expect(res.body.notes[0].createdBy).to.equal(savedUser._id.toString());
+                  
+                  done();
+                  // Project_user.findOneAndUpdate({id_project: savedProject._id, id_user: savedUser._id }, { role: RoleConstants.AGENT }, function(err, savedProject_user){
+                  //   done();
+                  // })
+                })
+
+          });
+      });
+    });
+  });
+
 
   it('createSimpleAndCloseForDuration', function (done) {
     // this.timeout(10000);
