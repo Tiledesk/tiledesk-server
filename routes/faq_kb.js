@@ -565,19 +565,20 @@ router.get('/', roleChecker.hasRole('agent'), function (req, res) {
 
   winston.debug("query", query);
 
-  Faq_kb.find(query, function (err, faq_kbs) {  //TODO add cache_bot_here
+  Faq_kb.find(query).lean().exec((err, faq_kbs) => {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, message: "Unable to get chatbots" });
     }
-
+  
     if (restricted_mode === true) {
       // Returns only: _id, name, id_project, language
       faq_kbs = faq_kbs.map(({ webhook_enabled, type, public, certified, intentsEngine, tags, score, trained, certifiedTags, trashed, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
     }
     
-    res.status(200).send(faq_kbs)
-  });
+    res.json(faq_kbs)
+
+  })
 });
 
 router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) => {
