@@ -310,7 +310,7 @@ class RequestService {
 
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
 
-            if (routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
+            if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
               request.status = RequestConstants.ABANDONED;
               request.attributes.fully_abandoned = true;
               request.markModified('status');
