@@ -573,7 +573,7 @@ router.get('/', roleChecker.hasRole('agent'), function (req, res) {
   
     if (restricted_mode === true) {
       // Returns only: _id, name, id_project, language
-      faq_kbs = faq_kbs.map(({ webhook_enabled, type, public, certified, intentsEngine, tags, score, trained, certifiedTags, trashed, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+      faq_kbs = faq_kbs.map(({ webhook_enabled, type, public, certified, intentsEngine, tags, score, url, attributes, trained, certifiedTags, trashed, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
     }
     
     res.json(faq_kbs)
