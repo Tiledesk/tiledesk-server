@@ -43,15 +43,12 @@ router.post('/', async (req, res) => {
         
 
         let json = {
-            "model": body.model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": body.question
-                }
+            model: body.model,
+            messages: [
+                { role: "user", content: body.question }
             ],
-            "max_tokens": body.max_tokens,
-            "temperature": body.temperature
+            max_tokens: body.max_tokens,
+            temperature: body.temperature
         }
 
         let message = { role: "", content: "" };
@@ -59,6 +56,12 @@ router.post('/', async (req, res) => {
             message.role = "system";
             message.content = body.context;
             json.messages.unshift(message);
+        }
+
+        if (body.formatType && body.formatType !== 'none') {
+            json.response_format = { 
+                type: body.formatType 
+            }
         }
 
         let multiplier = MODELS_MULTIPLIER[json.model];
@@ -73,6 +76,7 @@ router.post('/', async (req, res) => {
                 let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
                 winston.verbose("Tokens quota incremented for key " + incremented_key);
             }
+
             res.status(200).send(response.data);
 
         }).catch((err) => {
