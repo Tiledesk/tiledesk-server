@@ -147,7 +147,7 @@ class PubModulesManager {
         }
 
         if (this.analyticsRoute) {
-            app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], this.analyticsRoute);
+            app.use('/:projectid/analytics', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], this.analyticsRoute);
              winston.info("ModulesManager analytics controller loaded");       
          }
 

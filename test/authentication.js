@@ -186,7 +186,7 @@ describe('/signup', () => {
     //   this.timeout();
 
        var email = "test-signuook-" + Date.now() + "@email.com";
-       var pwd = "pwd";
+       var pwd = "Pwd1234!";
 
           
                     chai.request(server)
@@ -266,7 +266,7 @@ describe('/signup', () => {
         //   this.timeout();
             var now = Date.now();
            var email = "test-signupUpperCaseEmail-" + now + "@email.com";
-           var pwd = "pwd";
+           var pwd = "Pwd1234!";
     
               
                         chai.request(server)
@@ -294,7 +294,7 @@ describe('/signup', () => {
         //   this.timeout();
     
            var email = "test-signuoOk-" + Date.now() + "@email";
-           var pwd = "pwd";
+           var pwd = "Pwd1234!";
     
               
                         chai.request(server)
