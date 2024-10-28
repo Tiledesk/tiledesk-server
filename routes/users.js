@@ -6,6 +6,7 @@ var emailService = require("../services/emailService");
 var winston = require('../config/winston');
 const authEvent = require('../event/authEvent');
 const uuidv4 = require('uuid/v4');
+var uniqid = require('uniqid');
 
 router.put('/', function (req, res) {
 
@@ -167,9 +168,17 @@ router.put('/changepsw', function (req, res) {
 
 router.get('/resendverifyemail', function (req, res) {
   winston.debug('RE-SEND VERIFY EMAIL - LOGGED USER ', req.user);
+  console.log("resendverifyemail req.user", req.user)
+  let user = req.user;
   try {
     // TODO req.user.email is null for bot visitor
-    emailService.sendVerifyEmailAddress(req.user.email, req.user);
+    let verify_email_code = uniqid();
+    let redis_client = req.app.get('redis_client');
+    let key = "emailverify:verify-" + verify_email_code;
+    let obj = { _id: user._id, email: user.email}
+    let value = JSON.stringify(obj);
+    redis_client.set(key, value, { EX: 900} ) 
+    emailService.sendVerifyEmailAddress(user.email, user, verify_email_code);
     res.status(200).json({ success: true, message: 'Verify email successfully sent' });
   } catch (e) {
     winston.debug("RE-SEND VERIFY EMAIL error", e);

@@ -7,7 +7,7 @@ var userService = require('../services/userService');
 var faqService = require('../services/faqService');
 
 let chatbot_mock = require('./chatbot-mock');
-let log = true;
+let log = false;
 
 
 //Require the dev-dependencies
@@ -17,6 +17,8 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 const path = require('path');
+const Project_user = require('../models/project_user');
+const roleConstants = require('../models/roleConstants');
 
 // chai.config.includeStack = true;
 
@@ -29,12 +31,80 @@ describe('FaqKBRoute', () => {
 
     describe('/create', () => {
 
+      it('create-new-chatbot', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+          projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+            
+            chai.request(server)
+              .post('/' + savedProject._id + '/faq_kb')
+              .auth(email, pwd)
+              .send({ "name": "testbot", type: "external", language: 'fr' })
+              .end((err, res) => {
+
+                if (err) { console.error("err: ", err); }
+                if (log) { console.log("res.body", res.body); }
+
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                expect(res.body.name).to.equal("testbot");
+                expect(res.body.language).to.equal("fr");
+
+                chai.request(server)
+                  .get('/' + savedProject._id + '/faq_kb/' + res.body._id)
+                  .auth(email, pwd)
+                  .end((err, res) => {
+
+                    if (err) { console.error("err: ", err); }
+                    if (log) { console.log("res.body", res.body); }
+
+                    res.should.have.status(200);
+
+                    done();
+
+                  });
+              });
+          });
+        });
+
+      })
+
+      it('create-new-chatbot-agent-role', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+          projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+            Project_user.findOneAndUpdate({ id_project: savedProject._id, id_user: savedUser._id }, { role: roleConstants.AGENT }, (err, savedProject_user) => {
+
+              chai.request(server)
+                .post('/' + savedProject._id + '/faq_kb')
+                .auth(email, pwd)
+                .send({ "name": "testbot", type: "external", language: 'fr' })
+                .end((err, res) => {
+  
+                  if (err) { console.error("err: ", err); }
+                  if (log) { console.log("res.body", res.body); }
+  
+                  res.should.have.status(403);
+                  expect(res.body.success).to.equal(false);
+                  expect(res.body.msg).to.equal("you dont have the required role.");
+  
+                  done();
+
+                });
+            })
+          });
+        });
+
+      })
 
 
-        it('create', (done) => {
-
-
-            //   this.timeout();
+        it('get-all-chatbot-with-role-admin-or-owner', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -46,25 +116,71 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "external", language: 'fr' })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
 
                             chai.request(server)
-                                .get('/' + savedProject._id + '/faq_kb/' + res.body._id)
+                                .get('/' + savedProject._id + '/faq_kb')
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("res.body", res.body);
-                                    }
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
                                     res.should.have.status(200);
 
                                     done();
                                 });
+                        });
+
+
+                });
+            });
+
+        }).timeout(20000);
+
+        it('get-all-chatbot-with-role-agent', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "external", language: 'fr' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("fr");
+
+                            Project_user.findOneAndUpdate({ id_project: savedProject._id, id_user: savedUser._id }, { role: roleConstants.AGENT }, (err, savedProject_user) => {
+                                chai.request(server)
+                                    .get('/' + savedProject._id + '/faq_kb')
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+    
+                                        if (err) { console.error("err: ", err); }
+                                        if (log) { console.log("res.body", res.body); }
+                                        console.log("res.body", res.body);
+                                        res.should.have.status(200);
+    
+                                        done();
+                                    });
+                            })
+
                         });
 
 
