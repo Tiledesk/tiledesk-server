@@ -76,6 +76,14 @@ router.post('/signup',
     winston.error("Signup validation error. Email or password is missing", {email: req.body.email, password: req.body.password});
     return res.json({ success: false, msg: 'Please pass email and password.' });
   } else {    
+
+    // TODO: move the regex control inside signup method of UserService.
+    // Warning: the pwd used in every test must be changed!
+    const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
+    if (!regex.test(req.body.password)) {
+      return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
+    }
+
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
       .then( async function (savedUser) {
         
@@ -129,16 +137,16 @@ router.post('/signup',
 
          res.json({ success: true, msg: 'Successfully created new user.', user: userJson });
       }).catch(function (err) {
-
-
       
+        winston.error('Error registering new user', err);
         authEvent.emit("user.signup.error",  {req: req, err:err});       
 
-       
+        if (err.code === 11000) {
+          res.status(403).send({ success: false, message: "Email already registered" });
+        } else {
+          res.status(500).send({ success: false, message: "Registration cannot be completed" });
+        }
 
-
-         winston.error('Error registering new user', err);
-         res.send(err);
       });
   }
 });
