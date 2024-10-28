@@ -29,6 +29,7 @@ csv = require('csv-express');
 csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
+const RoleConstants = require('../models/roleConstants');
 
 // var messageService = require('../services/messageService');
 
@@ -222,9 +223,9 @@ router.patch('/:requestid', function (req, res) {
     update.tags = req.body.tags;
   }
 
-  if (req.body.notes) {
-    update.notes = req.body.notes;
-  }
+  // if (req.body.notes) {
+  //   update.notes = req.body.notes;
+  // }
 
   if (req.body.rating) {
     update.rating = req.body.rating;
@@ -302,21 +303,39 @@ router.patch('/:requestid', function (req, res) {
 
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
-router.put('/:requestid/close', function (req, res) {
+router.put('/:requestid/close', async function (req, res) {
   winston.debug(req.body);
+  let request_id = req.params.requestid;
+  let user_role = req.projectuser.role;
 
   // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
   const closed_by = req.user.id;
+
+  if (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN) {
+    let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
+      winston.error("Error finding request: ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
+    })
+  
+    if (!request) {
+      winston.verbose("Request with request_id " + request_id)
+      return res.status(404).send({ success: false, error: "Request not found"})
+    }
+  
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
+      return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
+    }
+  }
+  
+
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
-
     winston.verbose("request closed", closedRequest);
-
     return res.json(closedRequest);
-
   });
 
-
 });
+
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.put('/:requestid/reopen', function (req, res) {
   winston.debug(req.body);
@@ -609,14 +628,34 @@ router.patch('/:requestid/attributes', function (req, res) {
 
 });
 
-router.post('/:requestid/notes', function (req, res) {
+router.post('/:requestid/notes', async function (req, res) {
+  
+  let request_id = req.params.requestid
   var note = {};
   note.text = req.body.text;
-  // note.id_project = req.projectid;
   note.createdBy = req.user.id;
 
-  //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: req.params.requestid, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
+  let project_user = req.projectuser;
+
+  if (project_user.role === RoleConstants.AGENT) {
+    let request = await Request.findOne({ request_id: request_id }).catch((err) => {
+      winston.error("Error finding request ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+    })
+  
+    if (!request) {
+      winston.warn("Request with id " + request_id + " not found.");
+      return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+    }
+
+    // Check if the user is a participant
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Trying to add a note from a non participating agent");
+      return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+    }
+  }
+
+  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $push: { notes: note } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -638,10 +677,32 @@ router.post('/:requestid/notes', function (req, res) {
 });
 
 
-router.delete('/:requestid/notes/:noteid', function (req, res) {
+router.delete('/:requestid/notes/:noteid', async function (req, res) {
+
+  let request_id = req.params.requestid
+  let note_id = req.params.noteid;
+  let project_user = req.projectuser;
+
+  if (project_user.role === RoleConstants.AGENT) {
+    let request = await Request.findOne({ request_id: request_id }).catch((err) => {
+      winston.error("Error finding request ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with id " +  request_id });
+    })
+  
+    if (!request) {
+      winston.warn("Request with id " + request_id + " not found.");
+      return res.status(404).send({ success: false, error: "Request with id " + request_id + " not found."});
+    }
+  
+    // Check if the user is a participant
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Trying to delete a note from a non participating agent");
+      return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
+    }
+  }
 
   //cacheinvalidation
-  return Request.findOneAndUpdate({ request_id: req.params.requestid, id_project: req.projectid }, { $pull: { notes: { "_id": req.params.noteid } } }, { new: true, upsert: false })
+  return Request.findOneAndUpdate({ request_id: request_id, id_project: req.projectid }, { $pull: { notes: { "_id": note_id } } }, { new: true, upsert: false })
     .populate('lead')
     .populate('department')
     .populate('participatingBots')
@@ -1841,14 +1902,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
