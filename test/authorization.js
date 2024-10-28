@@ -32,7 +32,7 @@ describe('Authorization', () => {
     //   this.timeout();
 
        var email = "test-signup-" + Date.now() + "@email.com";
-       var pwd = "pwd";
+       var pwd = "Pwd1234!";
 
         userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
             projectService.createAndReturnProjectAndProjectUser("test-auth", savedUser._id).then(function(savedProjectAndPU) {
