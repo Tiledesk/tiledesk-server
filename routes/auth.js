@@ -40,6 +40,7 @@ if (pubKey) {
 }
 
 var recaptcha = require('../middleware/recaptcha');
+const errorCodes = require('../errorCodes');
 
 
 
@@ -76,6 +77,14 @@ router.post('/signup',
     winston.error("Signup validation error. Email or password is missing", {email: req.body.email, password: req.body.password});
     return res.json({ success: false, msg: 'Please pass email and password.' });
   } else {    
+
+    // TODO: move the regex control inside signup method of UserService.
+    // Warning: the pwd used in every test must be changed!
+    const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
+    if (!regex.test(req.body.password)) {
+      return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
+    }
+
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
       .then( async function (savedUser) {
         
@@ -96,7 +105,16 @@ router.post('/signup',
 
         if (!req.body.disableEmail){
           if (!skipVerificationEmail) {
-            emailService.sendVerifyEmailAddress(savedUser.email, savedUser);
+
+            let verify_email_code = uniqid();
+            console.log("(Auth) verify_email_code: ", verify_email_code);
+
+            let redis_client = req.app.get('redis_client');
+            let key = "emailverify:verify-" + verify_email_code;
+            let obj = { _id: savedUser._id, email: savedUser.email}
+            let value = JSON.stringify(obj);
+            redis_client.set(key, value, { EX: 900} ) 
+            emailService.sendVerifyEmailAddress(savedUser.email, savedUser, verify_email_code);
           }
         }
         
@@ -129,16 +147,16 @@ router.post('/signup',
 
          res.json({ success: true, msg: 'Successfully created new user.', user: userJson });
       }).catch(function (err) {
-
-
       
+        winston.error('Error registering new user', err);
         authEvent.emit("user.signup.error",  {req: req, err:err});       
 
-       
+        if (err.code === 11000) {
+          res.status(403).send({ success: false, message: "Email already registered" });
+        } else {
+          res.status(500).send({ success: false, message: "Registration cannot be completed" });
+        }
 
-
-         winston.error('Error registering new user', err);
-         res.send(err);
       });
   }
 });
@@ -759,11 +777,32 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 // });
 
 // VERIFY EMAIL
-router.put('/verifyemail/:userid', function (req, res) {
+router.put('/verifyemail/:userid/:code', async function (req, res) {
+
 
   winston.debug('VERIFY EMAIL - REQ BODY ', req.body);
-// controlla
-  User.findByIdAndUpdate(req.params.userid, req.body, { new: true, upsert: true }, function (err, findUser) {
+
+  let user_id = req.params.userid;
+  let verify_email_code = req.params.code;
+
+  if (!verify_email_code) {
+    return res.status(401).send({ success: false, error: "Unable to verify email: missing verification code.", error_code: errorCodes.AUTH.ERRORS.MISSING_VERIFICATION_CODE})
+  }
+
+  let redis_client = req.app.get('redis_client');
+  let key = "emailverify:verify-" + verify_email_code;
+  let value = await redis_client.get(key);
+  console.log("(Auth) verify value: ", value);
+  if (!value) {
+    return res.status(401).send({ success: false, error: "Unable to verify email: the verification code is expired or invalid.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_EXPIRED})
+  }
+
+  let basic_user = JSON.parse(value);
+  if (user_id !== basic_user._id) {
+    return res.status(401).send({ success: false, error: "Trying to use a verification code from another user.", error_code: errorCodes.AUTH.ERRORS.VERIFICATION_CODE_OTHER_USER})
+  }
+
+  User.findByIdAndUpdate(user_id, req.body, { new: true, upsert: true }, function (err, findUser) {
     if (err) {
       winston.error(err);
       return res.status(500).send({ success: false, msg: err });
@@ -771,7 +810,7 @@ router.put('/verifyemail/:userid', function (req, res) {
     winston.debug(findUser);
     if (!findUser) {
       winston.warn('User not found for verifyemail' );
-      return res.status(404).send({ success: false, msg: 'User not found' });
+      return res.status(404).send({ success: false, msg: 'User not found', error_code: errorCodes.AUTH.ERRORS.USER_NOT_FOUND});
     }
     winston.debug('VERIFY EMAIL - RETURNED USER ', findUser);
 
@@ -857,13 +896,16 @@ router.put('/requestresetpsw', function (req, res) {
 
         //  TODO emit user.update?
           authEvent.emit('user.requestresetpassword', {updatedUser:updatedUser, req:req});
-
           
-
           let userWithoutResetPassword = updatedUser.toJSON();
           delete userWithoutResetPassword.resetpswrequestid;
+          delete userWithoutResetPassword._id;
+          delete userWithoutResetPassword.createdAt;
+          delete userWithoutResetPassword.updatedAt;
+          delete userWithoutResetPassword.__v;
           
-          return res.json({ success: true, user: userWithoutResetPassword });
+          // return res.json({ success: true, user: userWithoutResetPassword });
+          return res.json({ success: true, message: "An email has been sent to reset your password" });
           // }
           // catch (err) {
           //   winston.debug('PSW RESET REQUEST - SEND EMAIL ERR ', err)

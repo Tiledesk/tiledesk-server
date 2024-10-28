@@ -186,12 +186,12 @@ describe('/signup', () => {
     //   this.timeout();
 
        var email = "test-signuook-" + Date.now() + "@email.com";
-       var pwd = "pwd";
+       var pwd = "Pwd1234!";
 
           
                     chai.request(server)
                         .post('/auth/signup' )
-                        .send({email:email, password:pwd, lastname:"lastname", firstname: "firstname", disableEmail: true})
+                        .send({email:email, password:pwd, lastname:"lastname", firstname: "firstname", disableEmail: true}) // whi disableEmail true?
                         .end((err, res) => {
                             //console.log("res",  res);
                             console.log("res.body",  res.body);
@@ -207,6 +207,28 @@ describe('/signup', () => {
              
                 
     });
+
+
+    // it('verifyemail', (done) => {
+
+    //     let user_id = "670e55c8187b430e793d644e";
+    //     let code = "4fx6e1hfcm2admb4a";
+    //     chai.request(server)
+    //         .put('/auth/verifyemail/' + user_id + '/' + code)
+    //         .send({ emailVerified: true })
+    //         .end((err, res) => {
+
+    //             console.error("err: ", err)
+    //             console.log("res.body: ", res.body)
+    //             done();
+    //         })
+
+
+
+    // });
+
+
+  
 
     // it('signUpAdminNoVerificationEmail', (done) => {
 
@@ -244,7 +266,7 @@ describe('/signup', () => {
         //   this.timeout();
             var now = Date.now();
            var email = "test-signupUpperCaseEmail-" + now + "@email.com";
-           var pwd = "pwd";
+           var pwd = "Pwd1234!";
     
               
                         chai.request(server)
@@ -272,7 +294,7 @@ describe('/signup', () => {
         //   this.timeout();
     
            var email = "test-signuoOk-" + Date.now() + "@email";
-           var pwd = "pwd";
+           var pwd = "Pwd1234!";
     
               
                         chai.request(server)
