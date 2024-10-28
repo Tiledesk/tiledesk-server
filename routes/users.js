@@ -131,6 +131,16 @@ router.put('/changepsw', function (req, res) {
             winston.debug('* THE PSW MATCH CURRENT PSW * PROCEED WITH THE UPDATE')
             winston.debug('CHANGE PSW - NEW PSW: ', req.body.newpsw);
 
+            if (req.body.newpsw === req.body.oldpsw) {
+              winston.warn("New password can't match the old one");
+              return res.status(403).send({ success: false, message: "The new password must be different from the previous one."})
+            }
+
+            const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
+            if (!regex.test(req.body.newpsw)) {
+              return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
+            }
+            
             user.password = req.body.newpsw
 
             user.save(function (err, saveUser) {
