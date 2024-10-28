@@ -2828,7 +2828,7 @@ class RequestService {
 
   async getConversationsCount(id_project, status, preflight, hasBot, startDate, endDate) {
     return new Promise( async (resolve, reject) => {
-      let query = { id_project: id_project, status: status, preflight: preflight};
+      let query = { id_project: id_project, status: status, preflight: preflight, draft: { $in: [false, null] }};
       if (hasBot != null) {
         query.hasBot = hasBot;
       }
