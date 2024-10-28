@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.4
+- Removed temporary conversation from default query to get all requests
+- Removed draft conversation from requests count
+- Improved security
+
 # 2.10.3
 - Added support for formatType in openai completions
 
