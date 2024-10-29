@@ -531,9 +531,9 @@ router.get('/', roleChecker.hasRole('agent'), function (req, res) {
   let restricted_mode = false;
 
   let project_user = req.projectuser;
-  if (project_user.role === roleConstants.AGENT) {
-    restricted_mode = true;
-  }
+  // if (project_user.role === roleConstants.AGENT) {
+  //   restricted_mode = true;
+  // }
 
 
   /**
