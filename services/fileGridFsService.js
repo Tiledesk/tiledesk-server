@@ -295,7 +295,7 @@ class FileGridFsService extends FileService {
                 if (req.user && req.user.id) {
                   var userid = req.user.id;
 
-                  if (req.query.user_id) {
+                  if (req.query.bot_id) {
                     winston.debug("req.query.user_id: "+ req.query.user_id);
                     // winston.info("req.projectuser ",req.projectuser);
 
@@ -303,7 +303,7 @@ class FileGridFsService extends FileService {
                     // if (req.project_user && req.project_user.role === ) {
 
                     // }
-                    userid = req.query.user_id;
+                    userid = req.query.bot_id;
                   }
                   subfolder = "/users/"+userid;
                 }
