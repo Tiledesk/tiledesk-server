@@ -23,7 +23,7 @@ let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
 
 // Eliminare ? ['bot','subscription']
-router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
+router.post('/', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), async function (req, res) {
   winston.debug('create BOT ', req.body);
 
   let quoteManager = req.app.get('quote_manager');
@@ -224,7 +224,7 @@ router.post('/askbot', roleChecker.hasRoleOrTypes('admin', ['bot','subscription'
 });
 
 // Eliminare ? ['bot','subscription']
-router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) => {
+router.put('/:faq_kbid/publish', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), async (req, res) => {
 
   let id_faq_kb = req.params.faq_kbid;
   winston.debug('id_faq_kb: ' + id_faq_kb);
@@ -269,7 +269,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 });
 
 // Eliminare ? ['bot','subscription']
-router.put('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
+router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -345,7 +345,7 @@ router.put('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
 });
 
 // Eliminare ? ['bot','subscription']
-router.put('/:faq_kbid/language/:language', roleChecker.hasRole('admin'), (req, res) => {
+router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), (req, res) => {
   
   winston.debug("update language: ", req.params);
 
@@ -373,7 +373,7 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRole('admin'), (req, 
 })
 
 // Eliminare ? ['bot','subscription']
-router.patch('/:faq_kbid/attributes', roleChecker.hasRole('admin'), function (req, res) {   //TODO add cache_bot_here
+router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
   // TODO use service method
@@ -420,7 +420,7 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRole('admin'), function (re
 });
 
 // Eliminare ? ['bot','subscription']
-router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
+router.delete('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -481,7 +481,7 @@ router.get('/:faq_kbid',  roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
-router.get('/:faq_kbid/jwt', roleChecker.hasRole('admin'), function (req, res) {
+router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.query);
 
@@ -531,9 +531,9 @@ router.get('/', roleChecker.hasRole('agent'), function (req, res) {
   let restricted_mode = false;
 
   let project_user = req.projectuser;
-  if (project_user.role === roleConstants.AGENT) {
-    restricted_mode = true;
-  }
+  // if (project_user.role === roleConstants.AGENT) {
+  //   restricted_mode = true;
+  // }
 
 
   /**
@@ -581,7 +581,7 @@ router.get('/', roleChecker.hasRole('agent'), function (req, res) {
   })
 });
 
-router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) => {
+router.post('/fork/:id_faq_kb', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.debug('id_faq_kb: ' + id_faq_kb);
@@ -636,7 +636,7 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
 })
 
-router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
+router.post('/importjson/:id_faq_kb', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), upload.single('uploadFile'), async (req, res) => {
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.debug('import on id_faq_kb: ' + id_faq_kb);
@@ -879,7 +879,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   }
 })
 
-router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) => {
+router.get('/exportjson/:id_faq_kb', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), (req, res) => {
 
   winston.debug("exporting bot...")
 
@@ -942,7 +942,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
 
 })
 
-router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
+router.post('/:faq_kbid/training', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.body);
   winston.info(req.params.faq_kbid + "/training called" );
