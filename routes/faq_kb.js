@@ -436,7 +436,7 @@ router.delete('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscrip
   });
 });
 
-router.get('/:faq_kbid',  roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.get('/:faq_kbid',  roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.query);
 
