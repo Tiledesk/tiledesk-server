@@ -522,7 +522,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscri
  * This endpoint should be the only one reachble with role agent.
  * If the role is agent the response must contain only _id, name, or other non relevant info.
  */
-router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), function (req, res) {
+router.get('/', roleChecker.hasRole('agent'), function (req, res) {
 
 
   winston.debug("req.query", req.query);
