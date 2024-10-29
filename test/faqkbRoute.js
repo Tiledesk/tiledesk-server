@@ -72,6 +72,60 @@ describe('FaqKBRoute', () => {
 
       })
 
+      it('get-all-chatbots-with-chatbot-token', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+          projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+            
+            chai.request(server)
+              .post('/' + savedProject._id + '/faq_kb')
+              .auth(email, pwd)
+              .send({ "name": "testbot", type: "external", language: 'fr' })
+              .end((err, res) => {
+
+                if (err) { console.error("err: ", err); }
+                if (log) { console.log("res.body", res.body); }
+
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                
+                let id_faq_kb = res.body._id;
+
+                chai.request(server)
+                    .get('/' + savedProject._id + '/faq_kb/' + id_faq_kb + '/jwt')
+                    .auth(email, pwd)
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        console.log("chatbot token", res.body);
+                        let chatbot_token = res.body.jwt;
+
+                        chai.request(server)
+                          .get('/' + savedProject._id + '/faq_kb/')
+                          .set('Authorization', 'JWT ' + chatbot_token)
+                          .end((err, res) => {
+        
+                            if (err) { console.error("err: ", err); }
+                            console.log("res.body", res.body);
+        
+                            res.should.have.status(200);
+        
+                            done();
+        
+                          });
+
+
+                    })
+
+              });
+          });
+        });
+
+      })
+
       it('create-new-chatbot-agent-role', (done) => {
 
         var email = "test-signup-" + Date.now() + "@email.com";
