@@ -21,8 +21,6 @@ const roleConstants = require('../models/roleConstants');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
-
-// Eliminare ? ['bot','subscription']
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   winston.debug('create BOT ', req.body);
 
@@ -45,7 +43,7 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
 
 });
 
-router.post('/train', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.info('train BOT ', req.body);
 
@@ -116,7 +114,7 @@ router.post('/train', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']
   });
 });
 
-router.post('/aitrain/', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), async (req, res) => {
+router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
   
   let id_faq_kb = req.body.id_faq_kb;
   let webhook_enabled = req.body.webhook_enabled;
@@ -156,7 +154,7 @@ router.post('/aitrain/', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
   })
 })
 
-router.post('/askbot', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug('ASK BOT ', req.body);
 
@@ -223,7 +221,6 @@ router.post('/askbot', roleChecker.hasRoleOrTypes('admin', ['bot','subscription'
   });
 });
 
-// Eliminare ? ['bot','subscription']
 router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) => {
 
   let id_faq_kb = req.params.faq_kbid;
@@ -268,8 +265,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
   }
 });
 
-// Eliminare ? ['bot','subscription']
-router.put('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
+router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -344,8 +340,7 @@ router.put('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
-// Eliminare ? ['bot','subscription']
-router.put('/:faq_kbid/language/:language', roleChecker.hasRole('admin'), (req, res) => {
+router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), (req, res) => {
   
   winston.debug("update language: ", req.params);
 
@@ -372,8 +367,7 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRole('admin'), (req, 
 
 })
 
-// Eliminare ? ['bot','subscription']
-router.patch('/:faq_kbid/attributes', roleChecker.hasRole('admin'), function (req, res) {   //TODO add cache_bot_here
+router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
   // TODO use service method
@@ -419,7 +413,6 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRole('admin'), function (re
   
 });
 
-// Eliminare ? ['bot','subscription']
 router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);
@@ -436,7 +429,7 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
-router.get('/:faq_kbid',  roleChecker.hasRole('admin'), function (req, res) {
+router.get('/:faq_kbid',  roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.query);
 
@@ -481,7 +474,7 @@ router.get('/:faq_kbid',  roleChecker.hasRole('admin'), function (req, res) {
   });
 });
 
-router.get('/:faq_kbid/jwt', roleChecker.hasRole('admin'), function (req, res) {
+router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
 
   winston.debug(req.query);
 
@@ -522,7 +515,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRole('admin'), function (req, res) {
  * This endpoint should be the only one reachble with role agent.
  * If the role is agent the response must contain only _id, name, or other non relevant info.
  */
-router.get('/', roleChecker.hasRole('agent'), function (req, res) {
+router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), function (req, res) {
 
 
   winston.debug("req.query", req.query);
