@@ -524,7 +524,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
   let restricted_mode = false;
 
   let project_user = req.projectuser;
-  if (project_user.role === roleConstants.AGENT) {
+  if (project_user && project_user.role === roleConstants.AGENT) {
     restricted_mode = true;
   }
 
