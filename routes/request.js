@@ -306,28 +306,43 @@ router.patch('/:requestid', function (req, res) {
 router.put('/:requestid/close', async function (req, res) {
   winston.debug(req.body);
   let request_id = req.params.requestid;
-  let user_role = req.projectuser.role;
+  
+  /**
+   * Check on projectuser existence.
+   * If req.projectuser is null then the request was made by a chatbot.
+   */
+  let project_user = req.projectuser;
+  let user_role;
+  if (project_user) {
+    user_role = project_user.role;
+  }
 
-  // closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
   const closed_by = req.user.id;
 
-  if (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN) {
-    let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
-      winston.error("Error finding request: ", err);
-      return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
-    })
   
-    if (!request) {
-      winston.verbose("Request with request_id " + request_id)
-      return res.status(404).send({ success: false, error: "Request not found"})
+  let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
+    winston.error("Error finding request: ", err);
+    return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
+  })
+
+  if (!request) {
+    winston.verbose("Request with request_id " + request_id)
+    return res.status(404).send({ success: false, error: "Request not found"})
+  }
+
+  if (!user_role) {
+    if (!request.participantsBots.includes(req.user.id)) {
+      winston.verbose("Request can't be closed by a non participant bot. Attempt made by bot " + req.user.id);
+      return res.status(403).send({ success: false, error: "Chatbot must be among the participants to close a conversation."})
     }
-  
-    if (!request.participantsAgents.includes(req.user.id)) {
-      winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
-      return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
+  } else {
+    if (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN) {  
+      if (!request.participantsAgents.includes(req.user.id)) {
+        winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
+        return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
+      }
     }
   }
-  
 
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
     winston.verbose("request closed", closedRequest);
