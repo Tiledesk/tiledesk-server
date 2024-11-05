@@ -1105,8 +1105,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
-    console.log("kbs: ", kbs);
-
   saveBulk(operations, kbs, project_id).then((result) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
@@ -1116,9 +1114,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
       return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
-    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
-
     scheduleScrape(resources);
     res.status(200).send(result);
 
@@ -1183,7 +1179,6 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let question = data[0];
       let answer = data[1];
 
-      console.log("data. ", data)
       kbs.push({
         id_project: project_id,
         name: question,
