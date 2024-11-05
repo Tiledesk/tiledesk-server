@@ -80,10 +80,10 @@ router.post('/signup',
 
     // TODO: move the regex control inside signup method of UserService.
     // Warning: the pwd used in every test must be changed!
-    const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
-    if (!regex.test(req.body.password)) {
-      return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
-    }
+    // const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
+    // if (!regex.test(req.body.password)) {
+    //   return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
+    // }
 
     return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
       .then( async function (savedUser) {

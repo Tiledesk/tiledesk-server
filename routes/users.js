@@ -137,10 +137,10 @@ router.put('/changepsw', function (req, res) {
               return res.status(403).send({ success: false, message: "The new password must be different from the previous one."})
             }
 
-            const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
-            if (!regex.test(req.body.newpsw)) {
-              return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
-            }
+            // const regex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/);
+            // if (!regex.test(req.body.newpsw)) {
+            //   return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
+            // }
             
             user.password = req.body.newpsw
 
