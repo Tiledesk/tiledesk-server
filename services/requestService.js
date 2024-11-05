@@ -1749,6 +1749,7 @@ class RequestService {
           if (force == false && request.status == RequestConstants.CLOSED) {
             // qui1000
             //  if (request.statusObj.closed) {
+            requestEvent.emit('request.close', request);
             winston.debug("Request already closed for request_id " + request_id + " and id_project " + id_project);
             return resolve(request);
           }
