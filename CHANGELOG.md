@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.7
+- Update: removed regex in signup and changepsw (temp)
+- Update: fire request.close event even if the request is already closed
+
 # 2.10.6
 - Update: return more chatbot info with restricted_mode
 
