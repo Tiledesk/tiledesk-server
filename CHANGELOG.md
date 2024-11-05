@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.6
+- Update: return more chatbot info with restricted_mode
+
 # 2.10.5
 - Fix bug on access chatbot route rules
 - Fix bug update chatbot avatar
