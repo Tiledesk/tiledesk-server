@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.8
+- Fix bug closing conversation by chatbot
+- Fix bug typo error on import chatbot as json
+
 # 2.10.7
 - Update: removed regex in signup and changepsw (temp)
 - Update: fire request.close event even if the request is already closed
