@@ -220,8 +220,6 @@ router.get('/', function (req, res) {
     page = req.query.page;
   }
 
-  console.log("req.user._id: ", req.user._id)
-  console.log("req.user.id: ", req.user.id)
   var skip = page * limit;
   winston.debug('CannedResponse ROUTE - SKIP PAGE ', skip);
 
