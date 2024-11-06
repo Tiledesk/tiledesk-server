@@ -833,10 +833,10 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
 
           if (savingResult) {
             if (savingResult.lastErrorObject.updatedExisting === true) {
-              winston.info("updated existing intent")
+              winston.verbose("updated existing intent")
               faqBotEvent.emit('faq.update', savingResult.value);
             } else {
-              winston.info("new intent created")
+              winston.verbose("new intent created")
               faqBotEvent.emit('faq.create', savingResult.value);
             }
           }
@@ -849,7 +849,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           let faq = await Faq.create(new_faq).catch((err) => {
             if (err.code == 11000) {
               winston.error("Duplicate intent_display_name.");
-              winston.info("Skip duplicated intent_display_name");
+              winston.verbose("Skip duplicated intent_display_name");
             } else {
               winston.error("Error creating new intent: ", err);
             }
@@ -857,7 +857,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           })
 
           if (faq) {
-            winston.info("new intent created")
+            winston.verbose("new intent created")
             faqBotEvent.emit('faq.create', faq);
           }
         }
