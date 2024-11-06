@@ -319,28 +319,20 @@ router.put('/:requestid/close', async function (req, res) {
 
   const closed_by = req.user.id;
 
+  if (user_role && (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN)) {
+    let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
+      winston.error("Error finding request: ", err);
+      return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
+    })
   
-  let request = await Request.findOne({ id_project: req.projectid, request_id: request_id }).catch((err) => {
-    winston.error("Error finding request: ", err);
-    return res.status(500).send({ success: false, error: "Error finding request with request_id " + request_id })
-  })
-
-  if (!request) {
-    winston.verbose("Request with request_id " + request_id)
-    return res.status(404).send({ success: false, error: "Request not found"})
-  }
-
-  if (!user_role) {
-    if (!request.participantsBots.includes(req.user.id)) {
-      winston.verbose("Request can't be closed by a non participant bot. Attempt made by bot " + req.user.id);
-      return res.status(403).send({ success: false, error: "Chatbot must be among the participants to close a conversation."})
+    if (!request) {
+      winston.verbose("Request with request_id " + request_id)
+      return res.status(404).send({ success: false, error: "Request not found"})
     }
-  } else {
-    if (user_role !== RoleConstants.OWNER && user_role !== RoleConstants.ADMIN) {  
-      if (!request.participantsAgents.includes(req.user.id)) {
-        winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
-        return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
-      }
+  
+    if (!request.participantsAgents.includes(req.user.id)) {
+      winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
+      return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
     }
   }
 
