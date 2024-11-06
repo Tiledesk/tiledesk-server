@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.9
+- Removed logs
+- Updated tiledesk-apps to 1.0.26
+
 # 2.10.8
 - Fix bug closing conversation by chatbot
 - Fix bug typo error on import chatbot as json
