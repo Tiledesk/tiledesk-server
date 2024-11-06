@@ -719,7 +719,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
 
         if (faq) {
           winston.debug("new intent created")
-          faqBotEvent.emit('faq.create', savedFaq);
+          faqBotEvent.emit('faq.create', faq);
         }
       })
     }
