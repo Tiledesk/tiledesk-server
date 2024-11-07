@@ -168,7 +168,6 @@ class RequestService {
       return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
 
         // winston.debug("getOperators", result);
-        console.log("\n***** [routeInternal] get operators result: ", result);
         var assigned_at = undefined;
 
         var status = RequestConstants.UNASSIGNED;
@@ -276,10 +275,7 @@ class RequestService {
 
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
 
-          console.log("\n**** routedRequest after routeInternal: ", routedRequest)
           winston.debug("after routeInternal", routedRequest);
-          // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
-          // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
           winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
           winston.debug("routedRequest.status:" + routedRequest.status);
 
@@ -312,22 +308,14 @@ class RequestService {
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
             
             if (routedRequest.attributes.everyone_abandoned && routedRequest.attributes.everyone_abandoned === true) {
-              console.log("\nrequest id: ", request._id);
-              console.log("\nroutedRequest id: ", routedRequest._id);
               request.attributes.everyone_abandoned = true;
               request.markModified('attributes');
               request.save((err, savedRequest) => {
                 if (err) {
-                  console.error("\nrequest.updated error: ", err);
-                } else {
-                  console.log("\nsavedRequest id: ", savedRequest._id)
-                  console.log("\nsavedRequest: ", savedRequest)
-                }
+                  winston.error("\nrequest.update error: ", err);
+                } 
               })
             }
-
-            console.log("\n**** case 1 request: ", request)
-            console.log("\n**** case 1 routedRequest: ", routedRequest)
 
             if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
               request.status = RequestConstants.ABANDONED;
@@ -344,7 +332,6 @@ class RequestService {
             }
 
             if (no_populate === "true" || no_populate === true) {
-              console.log("\n**** No populate! return")
               winston.debug("no_populate is true");
               return resolve(request);
             }
@@ -400,7 +387,6 @@ class RequestService {
            * - STATUS changed from 50 to 100 or 200
            */
           if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
-            // console.log("Case 2 - Leaving TEMP status")
             if (isStandardConversation) {
               requestEvent.emit('request.create.quote', payload);
             }
@@ -412,13 +398,11 @@ class RequestService {
            * - STATUS changed from undefined to 100
            */
           if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
-            // console.log("Case 3 - 'Proactive' request")
             if (isStandardConversation) { 
               requestEvent.emit('request.create.quote', payload);
             }
           }
 
-          console.log("\n***** [route] routedRequest: ", routedRequest)
           //cacheinvalidation
           return routedRequest.save(function (err, savedRequest) {
             // https://stackoverflow.com/questions/54792749/mongoose-versionerror-no-matching-document-found-for-id-when-document-is-being
@@ -1747,13 +1731,6 @@ class RequestService {
       //  else {
       //   winston.info("force is: " + force);
       //  }
-      console.log("closeRequestByRequestId params")
-      console.log("- request_id ", request_id)
-      console.log("- id_project ", id_project)
-      console.log("- skipStatsUpdate ", skipStatsUpdate)
-      console.log("- notify ", notify)
-      console.log("- closed_by ", closed_by)
-      console.log("- force ", force)
       
       return Request
         .findOne({ request_id: request_id, id_project: id_project })
