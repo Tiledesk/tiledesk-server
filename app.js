@@ -458,11 +458,11 @@ var projectSetter = function (req, res, next) {
       if (err) {
         winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }
-
       winston.debug("projectSetter project:" + project);
       if (!project) {
         winston.warn("ProjectSetter project not found with id: " + projectid);
-        next();
+        //next();
+        return res.status(400).send({ error: "Project not found with id: " + projectid })
       } else {
         req.project = project;
         next(); //call next one time for projectSetter function
