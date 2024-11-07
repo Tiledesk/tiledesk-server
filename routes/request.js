@@ -744,7 +744,7 @@ router.post('/:requestid/email/send',
     winston.debug("request_id: " + request_id);
 
     let subject = req.body.subject;
-    winston.info("subject: " + subject);
+    winston.debug("subject: " + subject);
 
     winston.debug("req.project", req.project);
 
