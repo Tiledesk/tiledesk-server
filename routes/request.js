@@ -766,14 +766,14 @@ router.post('/:requestid/email/send',
 
 
 
-      winston.info("Sending an email with text : " + text + " to request_id " + request_id);
+      winston.debug("Sending an email with text : " + text + " to request_id " + request_id);
 
       if (!request.lead.email) {
         res.json({ "no queued": true });
       }
 
       let newto = request.lead.email
-      winston.info("Sending an email newto " + newto);
+      winston.verbose("Sending an email newto " + newto);
 
       //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
       emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);

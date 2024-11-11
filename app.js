@@ -449,6 +449,11 @@ var projectSetter = function (req, res, next) {
 
   if (projectid) {
     
+    if (!mongoose.Types.ObjectId.isValid(projectid)) {
+      winston.warn(`Invalid ObjectId: ${projectid}`);
+      return res.status(400).send({ error: "Invalid project id: " + projectid });
+    }
+
     let q =  Project.findOne({_id: projectid, status: 100});
     if (cacheEnabler.project) { 
       q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
