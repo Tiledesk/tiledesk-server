@@ -5,9 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.10
+# 2.10.11
 - Updated tybot-connector to 0.2.118
 - Removed logs
+- Removed $clusterTime from add kb response
 
 # 2.10.9
 - Removed logs
