@@ -961,6 +961,9 @@ router.post('/', async (req, res) => {
     }
     else {
 
+      delete raw.ok;
+      delete raw.$clusterTime;
+      delete raw.operationTime;
       res.status(200).send(raw);
 
       let saved_kb = raw.value;
