@@ -38,7 +38,7 @@
   "dependencies": {
     "@tiledesk/tiledesk-apps": "^1.0.26",
     "@tiledesk/tiledesk-chat21-app": "^1.1.8",
-    "@tiledesk/tiledesk-chatbot-templates": "^0.1.2",
+    "@tiledesk/tiledesk-chatbot-templates": "^0.1.3",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
     "@tiledesk/tiledesk-client": "^0.10.10",
     "@tiledesk/tiledesk-dialogflow-connector": "^1.8.4",
