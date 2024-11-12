@@ -474,6 +474,13 @@ router.put('/:requestid/assign', function (req, res) {
       requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
+        console.log("(/assign) updatedRequest: ", JSON.stringify(updatedRequest));
+        console.log("(/assign) updatedRequest status: ", updatedRequest.status);
+
+        if (updatedRequest.status === RequestConstants.ABANDONED) {
+          // fire event
+          console.log("FIRE EVENT REQUEST ABANDONED!")
+        }
 
         return res.json(updatedRequest);
       }).catch(function (error) {
