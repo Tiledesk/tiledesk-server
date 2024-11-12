@@ -2,6 +2,7 @@
 process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
+process.env.PINECONE_INDEX = "test_index"
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
