@@ -1118,7 +1118,6 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
-
     scheduleScrape(resources);
     res.status(200).send(result);
 
