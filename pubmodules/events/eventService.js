@@ -53,8 +53,6 @@ class EventService {
         updatedBy: createdBy,
         status: status
       });
-
-      console.log("(EventService) new event emit: ", newEvent);
     
       //TODO do not save volatile events
       
