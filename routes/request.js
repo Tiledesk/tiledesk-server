@@ -30,6 +30,7 @@ csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
+const eventService = require('../pubmodules/events/eventService');
 
 // var messageService = require('../services/messageService');
 
@@ -451,10 +452,18 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 router.put('/:requestid/assign', function (req, res) {
   winston.debug(req.body);
 
+  let id_project = req.projectid;
+  let user = req.user;
+  let pu;
+  if (req.projectuser) {
+    console.log("(/assign) projectuser: ", req.projectuser);
+    pu = req.projectuser.id;
+  }
+
   // leggi la request se già assegnata o già chiusa (1000) esci 
 
   //cacheinvalidation
-  return Request.findOne({ "request_id": req.params.requestid, "id_project": req.projectid })
+  return Request.findOne({ "request_id": req.params.requestid, "id_project": id_project })
     .exec(function (err, request) {
 
       if (err) {
@@ -471,7 +480,7 @@ router.put('/:requestid/assign', function (req, res) {
         return res.json(request);
       }
       //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      requestService.route(req.params.requestid, req.body.departmentid, id_project, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
         console.log("(/assign) updatedRequest: ", JSON.stringify(updatedRequest));
@@ -480,6 +489,8 @@ router.put('/:requestid/assign', function (req, res) {
         if (updatedRequest.status === RequestConstants.ABANDONED) {
           // fire event
           console.log("FIRE EVENT REQUEST ABANDONED!")
+
+          eventService.emit('request.fully_abandoned', updatedRequest, id_project, pu, user._id, undefined, user);
         }
 
         return res.json(updatedRequest);
