@@ -50,7 +50,7 @@
     "@tiledesk/tiledesk-train-jobworker": "^0.0.11",
     "@tiledesk/tiledesk-tybot-connector": "^0.2.122",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.73",
-    "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.8",
+    "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.10",
     "@tiledesk/tiledesk-sms-connector": "^0.1.10",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.49",
     "amqplib": "^0.5.5",
