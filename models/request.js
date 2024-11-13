@@ -497,6 +497,8 @@ RequestSchema.index({ "channel.name": 1, id_project: 1, preflight: 1, "snapshot.
 RequestSchema.index({ id_project: 1, preflight: 1, "snapshot.agents.id_user": 1, updatedAt: -1, draft: 1, status: 1 })
 RequestSchema.index({ id_project: 1, participants: 1, preflight: 1, updatedAt: -1, draft: 1, status: 1 })
 RequestSchema.index({ id_project: 1, preflight: 1, updatedAt: -1, draft: 1, status: 1 })
+RequestSchema.index({ id_project: 1, preflight: 1, "snapshot.requester.uuid_user": 1, createdAt: -1, status: 1 })
+RequestSchema.index({ department: 1, id_project: 1, participants: 1, preflight: 1, createdAt: -1, status: 1 })
 
 
 //   cannot index parallel arrays [agents] [participants] {"driv
