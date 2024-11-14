@@ -387,7 +387,7 @@ router.post('/internal/send',
   let replyto = req.body.replyto;
   winston.debug("replyto: " + replyto);
 
-  winston.info("Sending an email with text : " + text + " to " + to);
+  //winston.info("Sending an email with text : " + text + " to " + to);
 
   let quoteManager = req.app.get('quote_manager');
 

@@ -5,6 +5,16 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.12
+- Updated tiledesk-chatbot-template to 0.1.3
+- Added check on valid mongo id
+- Removed logs
+
+# 2.10.11
+- Updated tybot-connector to 0.2.118
+- Removed logs
+- Removed $clusterTime from add kb response
+
 # 2.10.9
 - Removed logs
 - Updated tiledesk-apps to 1.0.26
