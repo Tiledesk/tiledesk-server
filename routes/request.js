@@ -30,7 +30,6 @@ csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
-const eventService = require('../pubmodules/events/eventService');
 
 // var messageService = require('../services/messageService');
 
@@ -183,7 +182,7 @@ router.post('/',
 
           winston.debug('res.json(savedRequest)');
           var endTimestamp = new Date();
-          winston.verbose("(Request Route) request create end: " + (endTimestamp - startTimestamp));
+          winston.verbose("request create end: " + (endTimestamp - startTimestamp));
           return res.json(savedRequest);
           // });
           // });
@@ -274,7 +273,7 @@ router.patch('/:requestid', function (req, res) {
 
 
 
-  winston.verbose("(Request Route) Request patch update", update);
+  winston.verbose("Request patch update", update);
 
   //cacheinvalidation
   return Request.findOneAndUpdate({ "request_id": req.params.requestid, "id_project": req.projectid }, { $set: update }, { new: true, upsert: false })
@@ -327,18 +326,18 @@ router.put('/:requestid/close', async function (req, res) {
     })
   
     if (!request) {
-      winston.verbose("(Request Route) Request with request_id " + request_id)
+      winston.verbose("Request with request_id " + request_id)
       return res.status(404).send({ success: false, error: "Request not found"})
     }
   
     if (!request.participantsAgents.includes(req.user.id)) {
-      winston.verbose("(Request Route) Request can't be closed by a non participant. Attempt made by " + req.user.id);
+      winston.verbose("Request can't be closed by a non participant. Attempt made by " + req.user.id);
       return res.status(403).send({ success: false, error: "You must be among the participants to close a conversation."})
     }
   }
 
   return requestService.closeRequestByRequestId(req.params.requestid, req.projectid, false, true, closed_by, req.body.force).then(function (closedRequest) {
-    winston.verbose("(Request Route) request closed", closedRequest);
+    winston.verbose("request closed", closedRequest);
     return res.json(closedRequest);
   });
 
@@ -350,7 +349,7 @@ router.put('/:requestid/reopen', function (req, res) {
   // reopenRequestByRequestId(request_id, id_project) {
   return requestService.reopenRequestByRequestId(req.params.requestid, req.projectid).then(function (reopenRequest) {
 
-    winston.verbose("(Request Route) request reopen", reopenRequest);
+    winston.verbose("request reopen", reopenRequest);
 
     return res.json(reopenRequest);
   });
@@ -381,7 +380,7 @@ router.post('/:requestid/participants',
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addParticipantByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
 
-      winston.verbose("(Request Route) participant added", updatedRequest);
+      winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
     });
@@ -421,7 +420,7 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
-    winston.verbose("(Request Route) participant removed", updatedRequest);
+    winston.verbose("participant removed", updatedRequest);
 
     return res.json(updatedRequest);
   });
@@ -452,16 +451,10 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 router.put('/:requestid/assign', function (req, res) {
   winston.debug(req.body);
 
-  let id_project = req.projectid;
-  let user = req.user;
-  let pu;
-  if (req.projectuser) {
-    pu = req.projectuser.id;
-  }
-
   // leggi la request se già assegnata o già chiusa (1000) esci 
-  // cacheinvalidation
-  return Request.findOne({ "request_id": req.params.requestid, "id_project": id_project })
+
+  //cacheinvalidation
+  return Request.findOne({ "request_id": req.params.requestid, "id_project": req.projectid })
     .exec(function (err, request) {
 
       if (err) {
@@ -474,17 +467,13 @@ router.put('/:requestid/assign', function (req, res) {
       }
 
       if (request.status === RequestConstants.ASSIGNED || request.status === RequestConstants.SERVED || request.status === RequestConstants.CLOSED) {
-        winston.verbose('(Request Route) Request already assigned');
+        winston.info('Request already assigned');
         return res.json(request);
       }
       //route(request_id, departmentid, id_project) {      
-      requestService.route(req.params.requestid, req.body.departmentid, id_project, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
+      requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
-        winston.debug("request routed ", updatedRequest);
-        
-        if (updatedRequest.status === RequestConstants.ABANDONED) {
-          eventService.emit('request.fully_abandoned', updatedRequest, id_project, pu, user._id, undefined, user);
-        }
+        winston.debug("department changed", updatedRequest);
 
         return res.json(updatedRequest);
       }).catch(function (error) {
@@ -635,7 +624,7 @@ router.patch('/:requestid/attributes', function (req, res) {
           winston.error("error saving request attributes", err)
           return res.status(500).send({ success: false, msg: 'Error getting object.' });
         }
-        winston.verbose("(Request Route) saved request attributes", savedRequest.toObject())
+        winston.verbose(" saved request attributes", savedRequest.toObject())
         requestEvent.emit("request.update", savedRequest);
         requestEvent.emit("request.update.comment", { comment: "ATTRIBUTES_PATCH", request: savedRequest });//Deprecated
         requestEvent.emit("request.updated", { comment: "ATTRIBUTES_PATCH", request: savedRequest, patch: { attributes: data } });
@@ -668,7 +657,7 @@ router.post('/:requestid/notes', async function (req, res) {
 
     // Check if the user is a participant
     if (!request.participantsAgents.includes(req.user.id)) {
-      winston.verbose("(Request Route) Trying to add a note from a non participating agent");
+      winston.verbose("Trying to add a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
     }
   }
@@ -714,7 +703,7 @@ router.delete('/:requestid/notes/:noteid', async function (req, res) {
   
     // Check if the user is a participant
     if (!request.participantsAgents.includes(req.user.id)) {
-      winston.verbose("(Request Route) Trying to delete a note from a non participating agent");
+      winston.verbose("Trying to delete a note from a non participating agent");
       return res.status(403).send({ success: false, error: "You are not participating in the conversation"})
     }
   }
@@ -784,7 +773,7 @@ router.post('/:requestid/email/send',
       }
 
       let newto = request.lead.email
-      winston.verbose("(Request Route) Sending an email newto " + newto);
+      winston.verbose("Sending an email newto " + newto);
 
       //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
       emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);
@@ -807,7 +796,7 @@ router.post('/:requestid/followers',
     check('member').notEmpty(),
   ],
   function (req, res) {
-    winston.verbose("(Request Route) followers add", req.body);
+    winston.info("followers add", req.body);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -817,7 +806,7 @@ router.post('/:requestid/followers',
     //addParticipantByRequestId(request_id, id_project, member)
     return requestService.addFollowerByRequestId(req.params.requestid, req.projectid, req.body.member).then(function (updatedRequest) {
 
-      winston.verbose("(Request Route) participant added", updatedRequest);
+      winston.verbose("participant added", updatedRequest);
 
       return res.json(updatedRequest);
     });
@@ -850,7 +839,7 @@ router.delete('/:requestid/followers/:followerid', function (req, res) {
   //removeFollowerByRequestId(request_id, id_project, member)
   return requestService.removeFollowerByRequestId(req.params.requestid, req.projectid, req.params.followerid).then(function (updatedRequest) {
 
-    winston.verbose("(Request Route) follower removed", updatedRequest);
+    winston.verbose("follower removed", updatedRequest);
 
     return res.json(updatedRequest);
   });
@@ -877,7 +866,7 @@ router.delete('/:requestid', function (req, res) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting messages.' });
     }
-    winston.verbose('(Request Route) Messages deleted for the recipient: ' + req.params.requestid);
+    winston.verbose('Messages deleted for the recipient: ' + req.params.requestid);
   });
 
 
@@ -891,7 +880,7 @@ router.delete('/:requestid', function (req, res) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
 
-    winston.verbose('(Request Route) Request deleted with request_id: ' + req.params.requestid);
+    winston.verbose('Request deleted with request_id: ' + req.params.requestid);
 
     requestEvent.emit('request.delete', request);
 
@@ -939,7 +928,7 @@ router.delete('/id/:id', function (req, res) {
       return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
 
-    winston.verbose('(Request Route) Request deleted with id: ' + req.params.id);
+    winston.verbose('Request deleted with id: ' + req.params.id);
 
     requestEvent.emit('request.delete', request);
 
@@ -1212,7 +1201,7 @@ router.get('/', function (req, res, next) {
     } else if (req.query.duration_op === 'lt') {
       query.duration = { $lte: duration }
     } else {
-      winston.verbose("(Request Route) Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
   }
 
@@ -1228,12 +1217,12 @@ router.get('/', function (req, res, next) {
 
   if (req.query.full_text) {
     if (req.query.no_textscore != "true" && req.query.no_textscore != true) {
-      winston.verbose('(Request Route) fulltext projection on');
+      winston.verbose('fulltext projection on');
       projection = { score: { $meta: "textScore" } };
     }
   }
 
-  winston.verbose('(Request Route) Find request with query ', query);
+  winston.verbose('REQUEST ROUTE - REQUEST FIND QUERY ', query);
   
   var q1 = Request.find(query, projection).
     skip(skip).limit(limit);
@@ -1262,7 +1251,7 @@ router.get('/', function (req, res, next) {
   var q2 = Request.countDocuments(query).exec();
 
   if (req.query.no_count && req.query.no_count == "true") {
-    winston.verbose('(Request Route) - no_count');
+    winston.info('REQUEST ROUTE - no_count ');
     q2 = 0;
   }
 
@@ -1274,16 +1263,16 @@ router.get('/', function (req, res, next) {
       count: results[1],
       requests: results[0]
     };
-    winston.debug('(Request Route) - objectToReturn ');
-    winston.debug('(Request Route) - objectToReturn ', objectToReturn);
+    winston.debug('REQUEST ROUTE - objectToReturn ');
+    winston.debug('REQUEST ROUTE - objectToReturn ', objectToReturn);
 
     const endExecTime = new Date();
-    winston.verbose('(Request Route) - exec time:  ' + (endExecTime - startExecTime));
+    winston.verbose('REQUEST ROUTE - exec time:  ' + (endExecTime - startExecTime));
 
     return res.json(objectToReturn);
 
   }).catch(function (err) {
-    winston.error('(Request Route) find request error ', err);
+    winston.error('REQUEST ROUTE - REQUEST FIND ERR ', err);
     return res.status(500).send({ success: false, msg: 'Error getting requests.', err: err });
   });
 
@@ -1835,7 +1824,7 @@ router.get('/csv', function (req, res, next) {
     } else if (req.query.duration_op === 'lt') {
       query.duration = { $lte: duration }
     } else {
-      winston.verbose("(Request Route) Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
+      winston.verbose("Duration operator can be 'gt' or 'lt'. Skip duration_op " + req.query.duration_op)
     }
   }
 
