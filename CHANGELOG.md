@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.13
+- Updated tybot-connector to 0.2.127
+- Added event on request fully abandoned
+
 # 2.10.12
 - Updated tiledesk-chatbot-template to 0.1.3
 - Added check on valid mongo id
