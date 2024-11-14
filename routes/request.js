@@ -483,7 +483,7 @@ router.put('/:requestid/assign', function (req, res) {
         winston.debug("request routed ", updatedRequest);
         
         if (updatedRequest.status === RequestConstants.ABANDONED) {
-          eventService.emit('event.emit.request.fully_abandoned', updatedRequest, id_project, pu, user._id, undefined, user);
+          eventService.emit('request.fully_abandoned', updatedRequest, id_project, pu, user._id, undefined, user);
         }
 
         return res.json(updatedRequest);
