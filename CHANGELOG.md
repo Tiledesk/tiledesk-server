@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.15
+- Readded event on fully_abandoned request
+
 # 2.10.14
 - Updated tybot-connector to 0.2.127
 - Restored request.js file
