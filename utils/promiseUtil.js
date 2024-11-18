@@ -17,7 +17,7 @@ class PromiseUtil {
         values.push(value);
     };
 
-    console.log("values",values);
+    //console.log("values",values);
     // return resolve(values);
     
     // });

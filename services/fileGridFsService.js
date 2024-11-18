@@ -133,8 +133,8 @@ class FileGridFsService extends FileService {
     }
 
     getStorage(folderName) {
-        const storageMongo = new GridFsStorage({ 
-            url : this.mongoURI,
+        const storageMongo = new GridFsStorage({
+            url: this.mongoURI,
             options: { useNewUrlParser: true, useUnifiedTopology: true },
             file: (req, file) => {
                 var folder = uuidv4();
@@ -154,32 +154,31 @@ class FileGridFsService extends FileService {
                 // console.log("XXX file",file)
 
                 // if (req.body.folder) {
-                    
+
                 //     folder = req.body.folder;
                 // }
 
                 var subfolder = "/public";
                 if (req.user && req.user.id) {
-                  subfolder = "/users/"+req.user.id;
+                    subfolder = "/users/" + req.user.id;
                 }
-                const path = 'uploads'+ subfolder + "/" + folderName + "/" + folder ;
+                const path = 'uploads' + subfolder + "/" + folderName + "/" + folder;
                 req.folder = folder;
-
                 // const match = ["image/png", "image/jpeg"];
-    
+
                 // if (match.indexOf(file.mimetype) === -1) {
                 //     const filename = `${Date.now()}-${file.originalname}`;
                 //     return filename;
                 // }
-    
+
                 return {
                     bucketName: folderName,
                     filename: `${path}/${file.originalname}`
                 };
             }
-            });
+        });
 
-       return storageMongo;     
+        return storageMongo;
     }
 
 

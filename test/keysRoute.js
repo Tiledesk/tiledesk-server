@@ -11,6 +11,8 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
 
+let log = false;
+
 // chai.config.includeStack = true;
 
 var expect = chai.expect;
@@ -22,12 +24,7 @@ describe('KeysRoute', () => {
 
   describe('/generate', () => {
  
-   
-
     it('generate', (done) => {
-
-        
-    //   this.timeout();
 
        var email = "test-signup-" + Date.now() + "@email.com";
        var pwd = "pwd";
@@ -39,8 +36,10 @@ describe('KeysRoute', () => {
                         .auth(email, pwd)
                         .send()
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body",  res.body);
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body",  res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.jwtSecret).to.not.equal(null);                                                                              

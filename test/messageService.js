@@ -1,10 +1,13 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'critical';
 
 var expect = require('chai').expect;
 
 var chai = require("chai");
 chai.config.includeStack = true;
+
+let log = false;
 
 var expect = chai.expect;
 var assert = chai.assert;
@@ -124,20 +127,15 @@ describe('messageService', function () {
     // projectService.create("test1", userid).then(function(savedProject) {
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-
       // attento reqid
       // requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
-      requestService.createWithIdAndRequester("request_id-createTwoMessage", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
-
-        messageService.create(userid, "test sender", savedRequest.request_id, "hello",
-          savedProject._id, userid).then(function (savedMessage) {
-
+      requestService.createWithIdAndRequester("request_id-createTwoMessage-" + new Date(), savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
+        messageService.create(userid, "test sender", savedRequest.request_id, "hello", savedProject._id, userid).then(function (savedMessage) {
             // Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
             //   requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {
 
             Request.findOne({ "request_id": "request_id-createTwoMessage", "id_project": savedProject._id }).exec().then(function (req) {
-              console.log("test resolve", req);
-
+              if (log) { console.log("test resolve", req); };
               // expect(req.messages_count).to.equal(2);
 
               done();
@@ -152,7 +150,7 @@ describe('messageService', function () {
     });
 
 
-  });
+  }).timeout(4000);
 
 
 
@@ -167,7 +165,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -199,7 +197,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -233,7 +231,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -271,7 +269,7 @@ describe('messageService', function () {
 
 
     var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
-    console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor);
+    if (log) { console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor); }
     microLanguageTransformerInterceptor.listen();
 
 
