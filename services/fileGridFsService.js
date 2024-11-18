@@ -20,6 +20,9 @@ class FileGridFsService extends FileService {
         // DB
         this.mongoURI = process.env.DATABASE_URI || process.env.MONGODB_URI || config.database;
 
+        if (process.env.NODE_ENV === 'test') {
+            this.mongoURI = config.databasetest;
+        }
 
         // // connection
         this.conn = mongoose.createConnection(this.mongoURI, {

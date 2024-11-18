@@ -51,8 +51,10 @@ describe('RequestRoute', () => {
           .set('content-type', 'application/json')
           .send({ "first_text": "first_text" })
           .end(function (err, res) {
-            //console.log("res",  res);
-            //console.log("res.body",  res.body);
+
+            if (err) { console.error("err: ",  err); }
+            if (log) { console.log("res.body",  res.body); }
+
             res.should.have.status(200);
             res.body.should.be.a('object');
 
@@ -151,12 +153,12 @@ describe('RequestRoute', () => {
           .set('content-type', 'application/json')
           .send({ "first_text": "first_text" })
           .end(function (err, res) {
-            //console.log("res",  res);
-            //console.log("res.body",  res.body);
+            
+            if (err) { console.error("err: ",  err); }
+            if (log) { console.log("res.body",  res.body); }
+
             res.should.have.status(200);
             res.body.should.be.a('object');
-
-            //console.log("res.body: ", res.body)
 
             setTimeout(() => {
 
@@ -166,8 +168,11 @@ describe('RequestRoute', () => {
                   .send()
                   .end((err, res) => {
   
-                    if (err) { console.error("err: ", err) };
-                    console.log("request duration: ", res.body.duration)
+                    if (err) { console.error("err: ",  err); }
+                    if (log) { 
+                      console.log("res.body",  res.body); 
+                      console.log("request duration: ", res.body.duration)
+                    }
 
                     res.body.should.have.property('duration');
                     res.body.duration.should.be.above(2000);
@@ -202,8 +207,10 @@ describe('RequestRoute', () => {
           .set('content-type', 'application/json')
           .send({ "first_text": "first_text" })
           .end(function (err, res) {
-            //console.log("res",  res);
-            console.log("res.body", res.body);
+            
+            if (err) { console.error("err: ",  err); }
+            if (log) { console.log("res.body",  res.body); }
+
             res.should.have.status(200);
             res.body.should.be.a('object');
 
@@ -262,9 +269,9 @@ describe('RequestRoute', () => {
             .get('/' + savedProject._id + '/requests/' + savedRequest.request_id)
             .auth(email, pwd)
             .end(function (err, res) {
-              //console.log("res",  res);
-
-              console.log("res.body", res.body);
+              
+              if (err) { console.error("err: ",  err); }
+              if (log) { console.log("res.body",  res.body); }
 
               res.should.have.status(200);
               res.body.should.be.a('object');
@@ -336,9 +343,9 @@ describe('RequestRoute', () => {
                 .get('/' + savedProject._id + '/requests/' + savedRequest.request_id)
                 .auth(email, pwd)
                 .end(function (err, res) {
-                  //console.log("res",  res);
-
-                  console.log("res.body", res.body);
+                  
+                  if (err) { console.error("err: ",  err); }
+                  if (log) { console.log("res.body",  res.body); }
 
                   res.should.have.status(200);
                   res.body.should.be.a('object');
@@ -386,17 +393,17 @@ describe('RequestRoute', () => {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      console.log("savedUser", savedUser);
+      if (log) { console.log("savedUser", savedUser); }
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
 
-        console.log("savedProjectAndPU", savedProjectAndPU);
+        if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
         leadService.createIfNotExists("leadfullname", "email-getallSimple@email.com", savedProject._id).then(function (createdLead) {
 
-          console.log("createdLead", createdLead);
+          if (log) { console.log("createdLead", createdLead); }
 
           var now = Date.now();
 
@@ -410,7 +417,7 @@ describe('RequestRoute', () => {
 
           requestService.create(new_request).then(function (savedRequest) {
 
-            console.log("savedRequest", savedRequest);
+            if (log) { console.log("savedRequest", savedRequest); }
 
             // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
             //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
@@ -423,14 +430,16 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.body", res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
 
                 expect(res.body.requests[0].department).to.not.equal(null);
                 expect(res.body.requests[0].requester).to.not.equal(null);
-                console.log("res.body.requests[0].requester", res.body.requests[0].requester);
+                if (log) { console.log("res.body.requests[0].requester", res.body.requests[0].requester); }
 
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
@@ -499,8 +508,10 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/?no_populate=true')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.body", res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 // assert.isString(res.body.requests[0].department, 'order placed');
@@ -510,7 +521,7 @@ describe('RequestRoute', () => {
                 // console.log("res.body.requests[0].requester",  res.body.requests[0].requester);
                 // expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
-                console.log("res.body.requests[0].participantsAgents", res.body.requests[0].participantsAgents);
+                if (log) { console.log("res.body.requests[0].participantsAgents", res.body.requests[0].participantsAgents); }
                 expect(res.body.requests[0].participantsAgents).to.have.lengthOf(1);
                 expect(res.body.requests[0].participantsAgents[0]).to.equal(savedUser._id.toString());
                 expect(res.body.requests[0].participantsBots).to.have.lengthOf(0);
@@ -551,17 +562,17 @@ describe('RequestRoute', () => {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      console.log("savedUser", savedUser);
+      if (log) { console.log("savedUser", savedUser); }
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
 
-        console.log("savedProjectAndPU", savedProjectAndPU);
+        if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
         leadService.createIfNotExists("leadfullname", "email-getallfilter@email.com", savedProject._id).then(function (createdLead) {
 
-          console.log("createdLead", createdLead);
+          if (log) { console.log("createdLead", createdLead); }
           var now = Date.now();
 
 
@@ -575,7 +586,7 @@ describe('RequestRoute', () => {
 
           requestService.create(new_request).then(function (savedRequest) {
 
-            console.log("savedRequest", savedRequest);
+            if (log) { console.log("savedRequest", savedRequest); }
 
             // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
             //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
@@ -588,14 +599,16 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/?snap_department_routing=assigned')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.body", res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
 
                 expect(res.body.requests[0].department).to.not.equal(null);
                 expect(res.body.requests[0].requester).to.not.equal(null);
-                console.log("res.body.requests[0].requester", res.body.requests[0].requester);
+                if (log) { console.log("res.body.requests[0].requester", res.body.requests[0].requester); }
 
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
@@ -637,17 +650,17 @@ describe('RequestRoute', () => {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      console.log("savedUser", savedUser);
+      if (log) { console.log("savedUser", savedUser); }
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
 
-        console.log("savedProjectAndPU", savedProjectAndPU);
+        if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
         leadService.createIfNotExists("leadfullname", "email-getallfilter@email.com", savedProject._id).then(function (createdLead) {
 
-          console.log("createdLead", createdLead);
+          if (log) { console.log("createdLead", createdLead); }
 
           var now = Date.now();
 
@@ -661,7 +674,7 @@ describe('RequestRoute', () => {
 
           requestService.create(new_request).then(function (savedRequest) {
 
-            console.log("savedRequest", savedRequest);
+            if (log) { console.log("savedRequest", savedRequest); }
 
             // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
             //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
@@ -674,14 +687,16 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/?snap_department_default=true')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.body", res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
 
                 expect(res.body.requests[0].department).to.not.equal(null);
                 expect(res.body.requests[0].requester).to.not.equal(null);
-                console.log("res.body.requests[0].requester", res.body.requests[0].requester);
+                if (log) { console.log("res.body.requests[0].requester", res.body.requests[0].requester); }
 
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
@@ -723,17 +738,17 @@ describe('RequestRoute', () => {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
 
-      console.log("savedUser", savedUser);
+      if (log) { console.log("savedUser", savedUser); }
 
       projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
 
-        console.log("savedProjectAndPU", savedProjectAndPU);
+        if (log) { console.log("savedProjectAndPU", savedProjectAndPU); }
 
         leadService.createIfNotExists("leadfullname", "email-getallfilter@email.com", savedProject._id).then(function (createdLead) {
 
-          console.log("createdLead", createdLead);
+          if (log) { console.log("createdLead", createdLead); }
 
           var now = Date.now();
 
@@ -747,7 +762,7 @@ describe('RequestRoute', () => {
 
           requestService.create(new_request).then(function (savedRequest) {
 
-            console.log("savedRequest", savedRequest);
+            if (log) { console.log("savedRequest", savedRequest); }
 
             // createWithId(request_id, requester_id, id_project, first_text, departmentid, sourcePage, language, userAgent, status) {
             //  requestService.createWithId("request_id1", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
@@ -760,14 +775,16 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/?snap_department_id_bot_exists=false')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.body", res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
 
                 expect(res.body.requests[0].department).to.not.equal(null);
                 expect(res.body.requests[0].requester).to.not.equal(null);
-                console.log("res.body.requests[0].requester", res.body.requests[0].requester);
+                if (log) { console.log("res.body.requests[0].requester", res.body.requests[0].requester); }
 
                 expect(res.body.requests[0].requester.id_user.firstname).to.equal("Test Firstname");
 
@@ -826,12 +843,12 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/csv/')
               .auth(email, pwd)
               .end(function (err, res) {
-                //console.log("res",  res);
-                console.log("res.text", res.text);
-                //  console.log("res",  res);              
+
+                if (err) { console.error("err: ", err); }
+                if (log) { console.log("res.text", res.text); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
-
 
                 done();
               });
@@ -876,8 +893,10 @@ describe('RequestRoute', () => {
               .get('/' + savedProject._id + '/requests/')
               .auth(email, pwd)
               .end(function (err, res) {
-                // console.log("res",  res);
-                // console.log("res.body",  res.body);
+                
+                if (err) { console.error("err: ",  err); }
+                if (log) { console.log("res.body",  res.body); }
+
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 expect(res.body.requests[0].department).to.not.equal(null);
@@ -922,8 +941,10 @@ describe('RequestRoute', () => {
             .set('content-type', 'application/json')
             .send({ "first_text": "first_text" })
             .end(function (err, res) {
-              //console.log("res",  res);
-              console.log("res.body", res.body);
+              
+              if (err) { console.error("err: ",  err); }
+              if (log) { console.log("res.body",  res.body); }
+
               res.should.have.status(200);
               res.body.should.be.a('object');
 
@@ -949,7 +970,7 @@ describe('RequestRoute', () => {
               res.body.should.have.property('department').not.eql(null);
               // res.body.should.have.property('lead').eql(undefined);
 
-              console.log("res.body.request_id: " + res.body.request_id);
+              if (log) { console.log("res.body.request_id: " + res.body.request_id); }
 
               chai.request(server)
                 .put('/' + savedProject._id + '/requests/' + res.body.request_id + "/departments")
@@ -957,8 +978,10 @@ describe('RequestRoute', () => {
                 .set('content-type', 'application/json')
                 .send({})
                 .end(function (err, res2) {
-                  //console.log("res",  res);
-                  console.log("res.body", res2.body);
+                  
+                  if (err) { console.error("err: ",  err); }
+                  if (log) { console.log("res.body",  res.body); }
+
                   res2.should.have.status(200);
                   res2.body.should.be.a('object');
                   expect(res.body.participants.length).to.equal(1);
@@ -1001,8 +1024,10 @@ describe('RequestRoute', () => {
             .set('content-type', 'application/json')
             .send({ "first_text": "first_text" })
             .end(function (err, res) {
-              //console.log("res",  res);
-              console.log("res.body", res.body);
+              
+              if (err) { console.error("err: ",  err); }
+              if (log) { console.log("res.body",  res.body); }
+
               res.should.have.status(200);
               res.body.should.be.a('object');
 
@@ -1028,7 +1053,7 @@ describe('RequestRoute', () => {
               res.body.should.have.property('department').not.eql(null);
               // res.body.should.have.property('lead').eql(undefined);
 
-              console.log("res.body.request_id: " + res.body.request_id);
+              if (log) { console.log("res.body.request_id: " + res.body.request_id); }
 
               chai.request(server)
                 .put('/' + savedProject._id + '/requests/' + res.body.request_id + "/departments")
@@ -1036,8 +1061,10 @@ describe('RequestRoute', () => {
                 .set('content-type', 'application/json')
                 .send({ "no_populate": "true" })
                 .end(function (err, res2) {
-                  //console.log("res",  res);
-                  console.log("res.body", res2.body);
+                  
+                  if (err) { console.error("err: ",  err); }
+                  if (log) { console.log("res.body",  res.body); }
+
                   res2.should.have.status(200);
                   res2.body.should.be.a('object');
                   expect(res.body.participants.length).to.equal(1);
@@ -1079,8 +1106,10 @@ describe('RequestRoute', () => {
             .set('content-type', 'application/json')
             .send({ "first_text": "first_text" })
             .end(function (err, res) {
-              //console.log("res",  res);
-              console.log("res.body", res.body);
+              
+              if (err) { console.error("err: ",  err); }
+              if (log) { console.log("res.body",  res.body); }
+
               res.should.have.status(200);
               res.body.should.be.a('object');
 
@@ -1106,7 +1135,7 @@ describe('RequestRoute', () => {
               res.body.should.have.property('department').not.eql(null);
               // res.body.should.have.property('lead').eql(undefined);
 
-              console.log("res.body.request_id: " + res.body.request_id);
+              if (log) { console.log("res.body.request_id: " + res.body.request_id); }
 
               chai.request(server)
                 .put('/' + savedProject._id + '/requests/' + res.body.request_id + "/assign")
@@ -1114,8 +1143,10 @@ describe('RequestRoute', () => {
                 .set('content-type', 'application/json')
                 .send({})
                 .end(function (err, res2) {
-                  //console.log("res",  res);
-                  console.log("res.body", res2.body);
+                  
+                  if (err) { console.error("err: ",  err); }
+                  if (log) { console.log("res.body",  res.body); }
+
                   res2.should.have.status(200);
                   res2.body.should.be.a('object');
                   expect(res.body.participants.length).to.equal(1);
@@ -1173,8 +1204,10 @@ describe('RequestRoute', () => {
                 .set('content-type', 'application/json')
                 .send({ "text": "first_text" })
                 .end(function (err, res) {
-                  //console.log("res",  res);
-                  console.log("res.body", res.body);
+                  
+                  if (err) { console.error("err: ",  err); }
+                  if (log) { console.log("res.body",  res.body); }
+
                   res.should.have.status(200);
                   res.body.should.be.a('object');
 
@@ -1298,7 +1331,6 @@ describe('RequestRoute', () => {
               res.should.have.status(200);
               res.body.should.be.a('object');
               
-              console.log("request created")
               chai.request(server)
                   .get('/' + savedProject._id + '/requests/count?conversation_quota=true')
                   .auth(email, pwd)
@@ -1306,7 +1338,6 @@ describe('RequestRoute', () => {
 
                     if (err) { console.log("err: ", err) };
                     if (log) { console.log("res.body: ", res.body) };
-                    console.log("res.body: ", res.body)
 
                     res.should.have.status(200);
 

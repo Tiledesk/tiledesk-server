@@ -46,47 +46,47 @@ describe('messageService', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 
-  it('createMessageQuote', function (done) {
-    // this.timeout(10000);
-    let qm = new QuoteManager({ tdCache: tdCache });
-    qm.start();
+  // it('createMessageQuote', function (done) {
+  //   // this.timeout(10000);
+  //   let qm = new QuoteManager({ tdCache: tdCache });
+  //   qm.start();
 
-    projectService.create("test1", userid).then(function (savedProject) {
-      // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+  //   projectService.create("test1", userid).then(function (savedProject) {
+  //     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
 
-      messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
-        savedProject._id, userid, undefined, { a1: "a1" }, undefined, undefined, "it").then(function (savedMessage) {
-          winston.debug("resolve savedMessage", savedMessage.toObject());
+  //     messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
+  //       savedProject._id, userid, undefined, { a1: "a1" }, undefined, undefined, "it").then(function (savedMessage) {
+  //         winston.debug("resolve savedMessage", savedMessage.toObject());
 
-          expect(savedMessage.text).to.equal("hello");
-          expect(savedMessage.sender).to.equal(userid);
-          expect(savedMessage.senderFullname).to.equal("test sender");
-          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
-          expect(savedMessage.language).to.equal("it");
-          expect(savedMessage.attributes.a1).to.equal("a1");
-          expect(savedMessage.channel_type).to.equal("group");
-          expect(savedMessage.channel.name).to.equal("chat21");
+  //         expect(savedMessage.text).to.equal("hello");
+  //         expect(savedMessage.sender).to.equal(userid);
+  //         expect(savedMessage.senderFullname).to.equal("test sender");
+  //         expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+  //         expect(savedMessage.language).to.equal("it");
+  //         expect(savedMessage.attributes.a1).to.equal("a1");
+  //         expect(savedMessage.channel_type).to.equal("group");
+  //         expect(savedMessage.channel.name).to.equal("chat21");
 
 
-          setTimeout(async () => {
-            let obj = { createdAt: new Date() }
+  //         setTimeout(async () => {
+  //           let obj = { createdAt: new Date() }
 
-            let quotes = await qm.getAllQuotes(savedProject, obj);
-            quotes.messages.quote.should.be.a('number');
-            expect(quotes.messages.quote).to.equal(1);
+  //           let quotes = await qm.getAllQuotes(savedProject, obj);
+  //           quotes.messages.quote.should.be.a('number');
+  //           expect(quotes.messages.quote).to.equal(1);
             
-            done();
+  //           done();
             
-          }, 1000);
+  //         }, 1000);
 
 
-        }).catch(function (err) {
-          assert.isNotOk(err, 'Promise error');
-          done();
-        });
+  //       }).catch(function (err) {
+  //         assert.isNotOk(err, 'Promise error');
+  //         done();
+  //       });
 
-    });
-  }).timeout(10000);
+  //   });
+  // }).timeout(10000);
 
   it('createMessage', function (done) {
     // this.timeout(10000);

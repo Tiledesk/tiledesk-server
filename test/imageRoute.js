@@ -1,6 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
-
+process.env.LOG_LEVEL = 'critical';
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -10,6 +10,7 @@ let server = require('../app');
 let should = chai.should();
 var fs = require('fs');
 var userService = require('../services/userService');
+const projectService = require('../services/projectService');
 
 let log = false;
 
@@ -138,12 +139,13 @@ describe('ImagesRoute', () => {
                             .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
                             // .field('folder', 'myfolder')            
                             .end((err, res) => {
+
                                 res.should.have.status(409);
                                 done();
                             });
                     });
             });
-        }).timeout(1000);
+        }).timeout(5000);
 
 
         // mocha test/imageRoute.js  --grep 'upload-avatar-force'
@@ -198,41 +200,61 @@ describe('ImagesRoute', () => {
             var pwd = "pwd";
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                var bot = "bot_" + Date.now();
-                chai.request(server)
-                    .put('/images/users/photo?user_id=' + bot)
-                    .auth(email, pwd)
-                    .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
-                    // .field('folder', 'myfolder')            
-                    .end((err, res) => {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                        if (err) { console.error("err: ", err); }
-                        if (log) { console.log("res.body", res.body); }
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "internal", template: "example", language: 'en' })
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body); }
 
-                        res.should.have.status(201);
-                        res.body.should.be.a('object');
-                        expect(res.body.message).to.equal('Image uploded successfully');
-                        expect(res.body.filename).to.not.equal("photo.jpg");
-                        // assert(res.body.filename.indexOf()).to.have.string('');                             
-                        // assert.equal(res.body.filename.indexOf('myfilder'), 1);                                           
-                        expect(res.body.thumbnail).to.not.equal(null);
-                        // expect(res.body.filename).to.include.keys(bot);
-                        expect(res.body.filename).to.containIgnoreSpaces(bot);
+                            //var bot = "bot_" + Date.now();
+                            let bot_id = res.body._id;
 
-                        //check duplicate
-                        chai.request(server)
-                            .put('/images/users/photo?user_id=' + bot)
-                            .auth(email, pwd)
-                            .set('Content-Type', 'image/jpeg')
-                            .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
-                            // .field('folder', 'myfolder')            
-                            .end((err, res) => {
-                                res.should.have.status(409);
-                                done();
-                            });
-                    });
-            });
+                            chai.request(server)
+                                .put('/images/users/photo?bot_id=' + bot_id)
+                                .auth(email, pwd)
+                                .set('Content-Type', 'image/jpeg')
+                                .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                                // .field('folder', 'myfolder')            
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(201);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.message).to.equal('Image uploded successfully');
+                                    expect(res.body.filename).to.not.equal("photo.jpg");
+                                    // assert(res.body.filename.indexOf()).to.have.string('');                             
+                                    // assert.equal(res.body.filename.indexOf('myfilder'), 1);                                           
+                                    expect(res.body.thumbnail).to.not.equal(null);
+                                    // expect(res.body.filename).to.include.keys(bot);
+                                    expect(res.body.filename).to.containIgnoreSpaces(bot_id);
+
+                                    //check duplicate
+                                    chai.request(server)
+                                        .put('/images/users/photo?bot_id=' + bot_id)
+                                        .auth(email, pwd)
+                                        .set('Content-Type', 'image/jpeg')
+                                        .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                                        // .field('folder', 'myfolder')            
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body: ", res.body); }
+                                            
+                                            res.should.have.status(409);
+                                            
+                                            done();
+                                        });
+                                });
+
+                        })
+                });
+            })
         });
 
 

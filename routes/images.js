@@ -211,7 +211,6 @@ uploadAvatar.single('file'), async (req, res, next) => {
         winston.error("Error finding project user: ", err);
         return res.status(500).send({ success: false, error: "Unable to find project user for user " + userid + "in project " + id_project });
       })
-
       if (!puser) {
         winston.warn("User" + userid + "don't belongs the project " + id_project);
         return res.status(401).send({ success: false, error: "You don't belong the chatbot's project" })
@@ -225,7 +224,6 @@ uploadAvatar.single('file'), async (req, res, next) => {
       entity_id = bot_id;
     }
 
-    
      var destinationFolder = 'uploads/users/' + entity_id + "/images/";
      winston.debug("destinationFolder:"+destinationFolder);
 

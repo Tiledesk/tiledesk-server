@@ -215,11 +215,11 @@ router.post('/loginemail', function (req, res) {
   let namespace_id = req.body.namespace_id;
 
   if (!project_id) {
-    res.status(500).send({ success: false, error: "missing 'id_project' field" });
+    return res.status(500).send({ success: false, error: "missing 'id_project' field" });
   }
 
   if (!chatbot_id && !namespace_id) {
-    res.status(500).send({ success: false, error: "missing 'bot_id' or 'namespace_id' field" });
+    return res.status(500).send({ success: false, error: "missing 'bot_id' or 'namespace_id' field" });
   }
 
   User.findById(user_id, (err, user) => {

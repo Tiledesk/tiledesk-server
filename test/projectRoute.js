@@ -65,6 +65,7 @@ describe('ProjectRoute', () => {
                         // .send({ email: email, password: pwd }) // con queste credenziali non si può fare la richiesta /projects/all
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("login with superadmin res.body: ", res.body) };
                             res.should.have.status(200);
                             res.body.should.be.a('object');
@@ -78,8 +79,12 @@ describe('ProjectRoute', () => {
                             .set('Authorization', superadmin_token)
                             .end((err, res) => {
     
-                                console.log("res.body: ", res.body.length);
-                                console.log("example: ", res.body[0]);
+
+                                if (err) { console.error("err: ", err); }
+                                if (log) {
+                                    console.log("res.body: ", res.body.length);
+                                    console.log("example: ", res.body[0]);
+                                }
                                 res.should.have.status(200);
                                 res.body.should.be.a('array');
 
@@ -104,7 +109,9 @@ describe('ProjectRoute', () => {
                         .send({ email: "admin@tiledesk.com", password: "adminadmin" })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("login with superadmin res.body: ", res.body) };
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.success).to.equal(true);
@@ -119,7 +126,9 @@ describe('ProjectRoute', () => {
                                 .send({ profile: { name: "Custom", quotes: { kbs: 1000 } } })
                                 .end((err, res) => {
 
+                                    if (err) { console.error("err: ", err); }
                                     if (log) { console.log("update project profile res.body: ", res.body) };
+
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.profile.name).to.equal("Custom");
@@ -147,7 +156,9 @@ describe('ProjectRoute', () => {
                         .send({ profile: { name: "Custom", quotes: { kbs: 1000 } } })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("update project profile res.body: ", res.body) };
+
                             res.should.have.status(403);
                             expect(res.body.success).to.equal(false);
                             expect(res.body.error).to.equal("You don't have the permission required to modify the project profile");
@@ -175,7 +186,9 @@ describe('ProjectRoute', () => {
                         .send({ timeSlots: timeSlotsSample })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("update project time slots res.body: ", res.body) };
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
@@ -200,7 +213,9 @@ describe('ProjectRoute', () => {
                         .send({ timeSlots: timeSlotsSample })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("update project time slots res.body: ", res.body) };
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
@@ -240,7 +255,9 @@ describe('ProjectRoute', () => {
                         .send({ activeOperatingHours: true, operatingHours: operatingHours })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("update project time slots res.body: ", res.body) };
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
@@ -277,8 +294,8 @@ describe('ProjectRoute', () => {
                         .auth(email, pwd)
                         .end((err, res) => {
 
-                            console.error("err: ", err);
-                            console.log("res.body: ", res.body);
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body); }
 
                             done();
                         })
@@ -301,7 +318,9 @@ describe('ProjectRoute', () => {
                         .send({ timeSlots: timeSlotsSample })
                         .end((err, res) => {
 
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("update project time slots res.body: ", res.body) };
+                            
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
