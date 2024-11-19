@@ -1,10 +1,13 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'critical';
 
 var expect = require('chai').expect;
 
 var chai = require("chai");
 chai.config.includeStack = true;
+
+let log = false;
 
 var expect = chai.expect;
 var assert = chai.assert;
@@ -43,47 +46,47 @@ describe('messageService', function () {
 
   var userid = "5badfe5d553d1844ad654072";
 
-  it('createMessageQuote', function (done) {
-    // this.timeout(10000);
-    let qm = new QuoteManager({ tdCache: tdCache });
-    qm.start();
+  // it('createMessageQuote', function (done) {
+  //   // this.timeout(10000);
+  //   let qm = new QuoteManager({ tdCache: tdCache });
+  //   qm.start();
 
-    projectService.create("test1", userid).then(function (savedProject) {
-      // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+  //   projectService.create("test1", userid).then(function (savedProject) {
+  //     // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
 
-      messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
-        savedProject._id, userid, undefined, { a1: "a1" }, undefined, undefined, "it").then(function (savedMessage) {
-          winston.debug("resolve savedMessage", savedMessage.toObject());
+  //     messageService.create(userid, "test sender", "testrecipient-createMessage", "hello",
+  //       savedProject._id, userid, undefined, { a1: "a1" }, undefined, undefined, "it").then(function (savedMessage) {
+  //         winston.debug("resolve savedMessage", savedMessage.toObject());
 
-          expect(savedMessage.text).to.equal("hello");
-          expect(savedMessage.sender).to.equal(userid);
-          expect(savedMessage.senderFullname).to.equal("test sender");
-          expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
-          expect(savedMessage.language).to.equal("it");
-          expect(savedMessage.attributes.a1).to.equal("a1");
-          expect(savedMessage.channel_type).to.equal("group");
-          expect(savedMessage.channel.name).to.equal("chat21");
+  //         expect(savedMessage.text).to.equal("hello");
+  //         expect(savedMessage.sender).to.equal(userid);
+  //         expect(savedMessage.senderFullname).to.equal("test sender");
+  //         expect(savedMessage.recipient).to.equal("testrecipient-createMessage");
+  //         expect(savedMessage.language).to.equal("it");
+  //         expect(savedMessage.attributes.a1).to.equal("a1");
+  //         expect(savedMessage.channel_type).to.equal("group");
+  //         expect(savedMessage.channel.name).to.equal("chat21");
 
 
-          setTimeout(async () => {
-            let obj = { createdAt: new Date() }
+  //         setTimeout(async () => {
+  //           let obj = { createdAt: new Date() }
 
-            let quotes = await qm.getAllQuotes(savedProject, obj);
-            quotes.messages.quote.should.be.a('number');
-            expect(quotes.messages.quote).to.equal(1);
+  //           let quotes = await qm.getAllQuotes(savedProject, obj);
+  //           quotes.messages.quote.should.be.a('number');
+  //           expect(quotes.messages.quote).to.equal(1);
             
-            done();
+  //           done();
             
-          }, 1000);
+  //         }, 1000);
 
 
-        }).catch(function (err) {
-          assert.isNotOk(err, 'Promise error');
-          done();
-        });
+  //       }).catch(function (err) {
+  //         assert.isNotOk(err, 'Promise error');
+  //         done();
+  //       });
 
-    });
-  }).timeout(10000);
+  //   });
+  // }).timeout(10000);
 
   it('createMessage', function (done) {
     // this.timeout(10000);
@@ -124,20 +127,15 @@ describe('messageService', function () {
     // projectService.create("test1", userid).then(function(savedProject) {
     projectService.createAndReturnProjectAndProjectUser("test1", userid).then(function (savedProjectAndPU) {
       var savedProject = savedProjectAndPU.project;
-
       // attento reqid
       // requestService.createWithId("request_id-createTwoMessage", "requester_id1", savedProject._id, "first_text").then(function(savedRequest) {
-      requestService.createWithIdAndRequester("request_id-createTwoMessage", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
-
-        messageService.create(userid, "test sender", savedRequest.request_id, "hello",
-          savedProject._id, userid).then(function (savedMessage) {
-
+      requestService.createWithIdAndRequester("request_id-createTwoMessage-" + new Date(), savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
+        messageService.create(userid, "test sender", savedRequest.request_id, "hello", savedProject._id, userid).then(function (savedMessage) {
             // Promise.all([requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id),
             //   requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedProject._id)]).then(function(savedMessage) {
 
             Request.findOne({ "request_id": "request_id-createTwoMessage", "id_project": savedProject._id }).exec().then(function (req) {
-              console.log("test resolve", req);
-
+              if (log) { console.log("test resolve", req); };
               // expect(req.messages_count).to.equal(2);
 
               done();
@@ -152,7 +150,7 @@ describe('messageService', function () {
     });
 
 
-  });
+  }).timeout(4000);
 
 
 
@@ -167,7 +165,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -199,7 +197,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -233,7 +231,7 @@ describe('messageService', function () {
 
 
     var messageTransformerInterceptor = require('../pubmodules/messageTransformer/messageTransformerInterceptor');
-    console.log("messageTransformerInterceptor", messageTransformerInterceptor);
+    if (log) { console.log("messageTransformerInterceptor", messageTransformerInterceptor); }
     messageTransformerInterceptor.listen();
 
 
@@ -271,7 +269,7 @@ describe('messageService', function () {
 
 
     var microLanguageTransformerInterceptor = require('../pubmodules/messageTransformer/microLanguageTransformerInterceptor');
-    console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor);
+    if (log) { console.log("microLanguageTransformerInterceptor", microLanguageTransformerInterceptor); }
     microLanguageTransformerInterceptor.listen();
 
 

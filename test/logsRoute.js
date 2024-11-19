@@ -1,5 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'critical';
 
 var User = require('../models/user');
 var projectService = require('../services/projectService');
@@ -11,10 +12,14 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
 
+chai.use(chaiHttp);
+
 // chai.config.includeStack = true;
 
 var expect = chai.expect;
 var assert = chai.assert;
+
+let log = false;
 
 let mock_log = {
     json_message: {
@@ -46,7 +51,6 @@ let mock_log = {
     status_code: 3,
     error: null,
 }
-chai.use(chaiHttp);
 
 describe('LogsRoute', () => {
 
@@ -62,16 +66,16 @@ describe('LogsRoute', () => {
 
                     mock_log.id_project = savedProject._id;
                     mock_log.transaction_id = "automation-request-" + savedProject._id;
-                    console.log("mock_log.transaction_id: ", mock_log.transaction_id);
 
                     chai.request(server)
                         .post('/' + savedProject._id + '/logs/whatsapp')
                         .auth(email, pwd)
                         .send(mock_log)
                         .end((err, res) => {
-                            console.log("err: ", err);
-                            // console.log("res.body: ", res.body);
-                            console.log("Added example log")
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body); }
+                            
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
@@ -79,8 +83,10 @@ describe('LogsRoute', () => {
                                 .get('/' + savedProject._id + '/logs/whatsapp/' + mock_log.transaction_id)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    console.log("err: ", err);
-                                    console.log("res.body: ", res.body);
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body); }
+
                                     res.should.have.status(200);
                                     
                                     done();

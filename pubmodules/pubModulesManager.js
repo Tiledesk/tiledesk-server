@@ -39,6 +39,9 @@ class PubModulesManager {
         this.voice = undefined;
         this.voiceRoute = undefined;
 
+        this.voiceTwilio = undefined;
+        this.voiceTwilioRoute = undefined;
+
         this.mqttTest = undefined;
         this.mqttTestRoute = undefined;
 
@@ -104,6 +107,10 @@ class PubModulesManager {
         if (this.voiceRoute) {
             app.use('/modules/voice', this.voiceRoute);
             winston.info("PubModulesManager voiceRoute controller loaded");
+        }
+        if (this.voiceTwilioRoute) {
+            app.use('/modules/voice-twilio', this.voiceTwilioRoute);
+            winston.info("PubModulesManager voiceTwilioRoute controller loaded");
         }
         if (this.mqttTestRoute) {
             app.use('/modules/mqttTest', this.mqttTestRoute);
@@ -361,6 +368,23 @@ class PubModulesManager {
                 } else {
                     winston.info("PubModulesManager error initializing init apps module", err);
                 }
+            }
+        }
+
+        try {
+            this.voiceTwilio = require('./voice-twilio');
+            winston.info("this.voiceTwilio: " + this.voiceTwilio);
+            this.voiceTwilio.listener.listen(config);
+
+            this.voiceTwilioRoute = this.voice.voiceTwilioRoute;
+
+            winston.info("PubModulesManager initialized apps (voiceTwilio).")
+        } catch(err) {
+            console.log("\n Unable to start voiceTwilio connector: ", err);
+            if (err.code == 'MODULE_NOT_FOUND') {
+                winston.info("PubModulesManager init apps module not found ");
+            } else {
+                winston.info("PubModulesManager error initializing init apps module", err);
             }
         }
 

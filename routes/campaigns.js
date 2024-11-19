@@ -325,7 +325,7 @@ router.post('/direct', async function (req, res) {
     channel_type: MessageConstants.CHANNEL_TYPE.DIRECT, 
     channel: req.body.channel
   };
-
+  
   winston.info("message before", message);
 
   jobManager.publish(

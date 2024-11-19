@@ -1,5 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'critical';
 
 var Faq = require('../models/faq');
 var projectService = require('../services/projectService');
@@ -174,7 +175,7 @@ describe('FaqKBRoute', () => {
     
                                         if (err) { console.error("err: ", err); }
                                         if (log) { console.log("res.body", res.body); }
-                                        console.log("res.body", res.body);
+
                                         res.should.have.status(200);
     
                                         done();
@@ -318,9 +319,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+                            
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -330,9 +332,10 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
 
@@ -360,7 +363,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "blank" })
                         .end((err, res) => {
+                            
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -370,7 +376,10 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
+                                    
+                                    if (err) { console.error("err: ", err); }
                                     if (log) { console.log("faq_list: ", JSON.stringify(res.body, null, 2)); }
+                                    
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
 
@@ -399,9 +408,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example", language: "en" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -411,9 +421,10 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
 
@@ -422,9 +433,10 @@ describe('FaqKBRoute', () => {
                                         .put('/' + savedProject._id + '/faq_kb/' + id_faq_kb + '/language/it')
                                         .auth(email, pwd)
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("res.body: ", res.body);
-                                            }
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.name).to.equal("testbot");
@@ -434,9 +446,10 @@ describe('FaqKBRoute', () => {
                                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                                 .auth(email, pwd)
                                                 .end((err, res) => {
-                                                    if (log) {
-                                                        console.log("faq_list: ", res.body);
-                                                    }
+                                                    
+                                                    if (err) { console.error("err: ", err); }
+                                                    if (log) { console.log("res.body", res.body); }
+
                                                     res.should.have.status(200);
                                                     res.body.should.be.an('array').that.is.not.empty;
                                                     
@@ -486,9 +499,10 @@ describe('FaqKBRoute', () => {
                             .auth(email, pwd)
                             .send({ "name": "privateBot", type: "internal", language: 'en', public: "false", template: "blank" })
                             .end((err, res) => {
-                                if (log) {
-                                    console.log("res.body: ", res.body);
-                                }
+                                
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+
                                 res.should.have.status(200);
                                 res.body.should.be.a('object');
                                 expect(res.body.name).to.equal("privateBot");
@@ -500,9 +514,9 @@ describe('FaqKBRoute', () => {
                                     .auth(email, pwd)
                                     .set('Content-Type', 'application/json')
                                     .end((err, res) => {
-                                        if (log) {
-                                            console.log("fork private chatbot res.body: ", res.body)
-                                        }
+                                        
+                                        if (err) { console.error("err: ", err); }
+                                        if (log) { console.log("res.body", res.body); }
                                         res.should.have.status(200);
                                         res.should.have.be.a('object');
                                         expect(res.body.bot_id).to.equal(chatbot_mock.empty_chatbot_mock._id)
@@ -529,9 +543,7 @@ describe('FaqKBRoute', () => {
                     projectService.create("current-project", user1._id).then(function (currentProject) {
                         projectService.create("landing-project", user2._id).then(function (landingProject) {
 
-                            if (log) {
-                                console.log("mock: ", chatbot_mock.existing_chatbot_mock);
-                            }
+                            if (log) { console.log("mock: ", chatbot_mock.existing_chatbot_mock); }
 
                             class chatbot_service {
                                 async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {
@@ -554,9 +566,10 @@ describe('FaqKBRoute', () => {
                                 .auth(email_user1, pwd)
                                 .send({ "name": "publicBot", type: "internal", language: 'en', public: "true", template: "blank" })
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("res.body: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.name).to.equal("publicBot");
@@ -568,9 +581,10 @@ describe('FaqKBRoute', () => {
                                         .auth(email_user2, pwd)
                                         .set('Content-Type', 'application/json')
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("fork public chatbot res.body: ", res.body)
-                                            }
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+                                            
                                             res.should.have.status(200);
 
                                             done();
@@ -596,9 +610,10 @@ describe('FaqKBRoute', () => {
                         .set('Content-Type', 'text/plain')
                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
                         .end((err, res) => {
-                            if (log) {
-                                console.log("import json res: ", JSON.stringify(res.body, null, 2));
-                            }
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.should.be.a('object');
                             expect(res.body.name).to.equal("examplebot");
@@ -610,9 +625,10 @@ describe('FaqKBRoute', () => {
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
                                     res.should.have.status(200);
                                     //res.body.should.be.an('array').that.is.not.empty;
 
@@ -639,9 +655,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -654,9 +671,10 @@ describe('FaqKBRoute', () => {
                                 .set('Content-Type', 'text/plain')
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("import json res: ", JSON.stringify(res.body, null, 2));
-                                    }
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("import json res: ", JSON.stringify(res.body, null, 2)); }
+                                    
                                     res.should.have.status(200);
                                     //res.should.be.a('object');
                                     //expect(res.body.name).to.equal("examplebot");
@@ -683,9 +701,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -698,7 +717,7 @@ describe('FaqKBRoute', () => {
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err )};
-                                    if (log) { console.log("res.body: ", res.doby )};
+                                    if (log) { console.log("res.body: ", res.body )};
 
                                     res.should.have.status(200)
                                     res.body.should.be.a('array');
@@ -710,9 +729,10 @@ describe('FaqKBRoute', () => {
                                         .set('Content-Type', 'text/plain')
                                         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("import json res: ", JSON.stringify(res.body, null, 2));
-                                            }
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("import json res: ", JSON.stringify(res.body, null, 2)); }
+
                                             res.should.have.status(200);
                                             //res.should.be.a('object');
                                             //expect(res.body.name).to.equal("examplebot");
@@ -742,9 +762,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", language: 'fr', template: "blank" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err )};
+                            if (log) { console.log("res.body: ", res.body )};
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -757,9 +778,10 @@ describe('FaqKBRoute', () => {
                                 .set('Content-Type', 'text/plain')
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example.json')), 'example.json')
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("import json res: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err )};
+                                    if (log) { console.log("res.body: ", res.body )};
+
                                     res.should.have.status(200);
                                     res.should.be.a('object');
                                     expect(res.body.name).to.equal("examplebot");
@@ -769,9 +791,10 @@ describe('FaqKBRoute', () => {
                                         .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                         .auth(email, pwd)
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("faq_list: ", res.body);
-                                            }
+
+                                            if (err) { console.error("err: ", err )};
+                                            if (log) { console.log("res.body: ", res.body )};
+
                                             res.should.have.status(200);
                                             res.body.should.be.an('array').that.is.not.empty;
 
@@ -798,9 +821,10 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", language: 'fr', template: "blank" })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err )};
+                            if (log) { console.log("res.body: ", res.body )};
+                            
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
@@ -813,9 +837,10 @@ describe('FaqKBRoute', () => {
                                 .set('Content-Type', 'text/plain')
                                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json.txt')), 'example-json.txt')
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("import json res: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err )};
+                                    if (log) { console.log("res.body: ", res.body )};
+
                                     res.should.have.status(200);
                                     res.should.be.a('object');
                                     expect(res.body.name).to.equal("examplebot");
@@ -825,9 +850,10 @@ describe('FaqKBRoute', () => {
                                         .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                         .auth(email, pwd)
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("faq_list: ", res.body);
-                                            }
+                                            
+                                            if (err) { console.error("err: ", err )};
+                                            if (log) { console.log("res.body: ", res.body )};
+
                                             res.should.have.status(200);
                                             res.body.should.be.an('array').that.is.not.empty;
 
@@ -1024,25 +1050,26 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example", language: 'fr' })
                         .end((err, res) => {
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+                            
+                            if (err) { console.error("err: ", err )};
+                            if (log) { console.log("res.body: ", res.body )};
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
                             let id_faq_kb = res.body._id;
-                            if (log) {
-                                console.log("res.body._id: ", res.body._id)
-                            }
+
+                            if (log) { console.log("id_faq_kb: ", id_faq_kb); }
 
                             chai.request(server)
                                     .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                     .auth(email, pwd)
                                     .end((err, res) => {
-                                        if (log) {
-                                            console.log("faq_list: ", res.body);
-                                        }
+                                        
+                                        if (err) { console.error("err: ", err )};
+                                        if (log) { console.log("res.body: ", res.body )};
+                                        
                                         res.should.have.status(200);
                                         res.body.should.be.an('array').that.is.not.empty;
     
@@ -1050,9 +1077,10 @@ describe('FaqKBRoute', () => {
                                             .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb)
                                             .auth(email, pwd)
                                             .end((err, res) => {
-                                                if (log) {
-                                                    console.log("export json res: ", res.body);
-                                                }
+                                                
+                                                if (err) { console.error("err: ", err )};
+                                                if (log) { console.log("res.body: ", res.body )};
+
                                                 res.should.have.status(200);
                                                 //res.body.should.be.a('string');
     
@@ -1093,26 +1121,25 @@ describe('FaqKBRoute', () => {
                         .auth(email, pwd)
                         .send({ "name": "testbot", type: "internal", template: "example", language: 'fr' })
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            if (log) {
-                                console.log("res.body: ", res.body);
-                            }
+
+                            if (err) { console.error("err: ", err )};
+                            if (log) { console.log("res.body: ", res.body )};
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.name).to.equal("testbot");
                             expect(res.body.language).to.equal("fr");
                             let id_faq_kb = res.body._id;
-                            if (log) {
-                                console.log("res.body._id: ", res.body._id)
-                            }
+                            if (log) { console.log("id_faq_kb: ", id_faq_kb); }
 
                             chai.request(server)
                                 .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
                                 .auth(email, pwd)
                                 .end((err, res) => {
-                                    if (log) {
-                                        console.log("faq_list: ", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err )};
+                                    if (log) { console.log("res.body: ", res.body )};
+
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
 
@@ -1120,9 +1147,10 @@ describe('FaqKBRoute', () => {
                                         .get('/' + savedProject._id + '/faq_kb/exportjson/' + id_faq_kb + "?intentsOnly=true")
                                         .auth(email, pwd)
                                         .end((err, res) => {
-                                            if (log) {
-                                                console.log("export json res: ", res.body);
-                                            }
+                                            
+                                            if (err) { console.error("err: ", err )};
+                                            if (log) { console.log("res.body: ", res.body )};
+
                                             res.should.have.status(200);
                                             //res.body.should.be.a('string');
 
@@ -1168,10 +1196,10 @@ describe('FaqKBRoute', () => {
                                 .auth(email, pwd)
                                 .send({ "id_faq_kb": savedBot._id })
                                 .end((err, res) => {
-                                    //console.log("res",  res);
-                                    if (log) {
-                                        console.log("res.body", res.body);
-                                    }
+                                    
+                                    if (err) { console.error("err: ", err )};
+                                    if (log) { console.log("res.body: ", res.body )};
+
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.train.nlu.intent).to.equal(savedBot.intent_display_name);
