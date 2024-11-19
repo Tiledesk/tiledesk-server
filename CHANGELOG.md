@@ -5,7 +5,13 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.16
+# 2.10.17
+- changed bodyParser.urlencoded extended to TRUE
+- updated tybot-connector to 0.2.130
+- added twilio voice module
+- updated messenger-connectorto 0.1.22
+
+# 2.10.16 - abort
 - changed bodyParser.urlencoded extended to TRUE
 - updated tybot-connector to 0.2.130
 - added twilio voice module
