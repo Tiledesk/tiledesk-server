@@ -294,7 +294,7 @@ app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   }
 }));
 
-app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: false }));
+app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: true }));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
