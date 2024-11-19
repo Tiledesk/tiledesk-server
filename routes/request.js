@@ -30,6 +30,7 @@ csv.separator = ';';
 
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
+const eventService = require('../pubmodules/events/eventService');
 
 // var messageService = require('../services/messageService');
 
@@ -451,6 +452,11 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 router.put('/:requestid/assign', function (req, res) {
   winston.debug(req.body);
 
+  let user = req.user;
+  let pu;
+  if (req.projectuser) {
+    pu = req.projectuser._id
+  }
   // leggi la request se già assegnata o già chiusa (1000) esci 
 
   //cacheinvalidation
@@ -474,6 +480,10 @@ router.put('/:requestid/assign', function (req, res) {
       requestService.route(req.params.requestid, req.body.departmentid, req.projectid, req.body.nobot, req.body.no_populate).then(function (updatedRequest) {
 
         winston.debug("department changed", updatedRequest);
+
+        if (updatedRequest.status === RequestConstants.ABANDONED) {
+          eventService.emit('request.fully_abandoned', updatedRequest, req.projectid, pu, user._id, undefined, user)
+        }
 
         return res.json(updatedRequest);
       }).catch(function (error) {
@@ -766,14 +776,14 @@ router.post('/:requestid/email/send',
 
 
 
-      winston.info("Sending an email with text : " + text + " to request_id " + request_id);
+      winston.debug("Sending an email with text : " + text + " to request_id " + request_id);
 
       if (!request.lead.email) {
         res.json({ "no queued": true });
       }
 
       let newto = request.lead.email
-      winston.info("Sending an email newto " + newto);
+      winston.verbose("Sending an email newto " + newto);
 
       //sendEmailDirect(to, text, project, request_id, subject, tokenQueryString, sourcePage, payload)
       emailService.sendEmailDirect(newto, text, req.project, request_id, subject, undefined, undefined, undefined, replyto);

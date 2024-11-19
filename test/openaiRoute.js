@@ -1,9 +1,10 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
-// process.env.GPTKEY = 'customgptkey';
+process.env.GPTKEY = '';
 //process.env.AI_MODELS = 'gpt-3.5-turbo:0.6;gpt-4:25;gpt-4-turbo-preview:12;gpt-4o:6'
 //process.env.AI_MODELS = 'gpt-3.5-turbo;gpt-4-turbo-preview;gpt-4o'
 process.env.AI_MODELS = '    gpt-3.5-turbo:0   .6;gpt -4:2  5; g  pt-4-tur   bo-preview:12;gp   t-4o:6'
+
 
 let log = false;
 var projectService = require('../services/projectService');
@@ -120,7 +121,10 @@ describe('OpenaiRoute', () => {
                         .auth(email, pwd)
                         .send({ question: "Provide 3 names for a dog", context: "you are an awesome assistant", max_tokens: 100, temperature: 0, model: "gpt-3.5-turbo" })
                         .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body: ", res.body); }
+
                             res.should.have.status(400);
                             res.body.should.be.a('object');
                             expect(res.body.success).to.equal(false);

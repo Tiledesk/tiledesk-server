@@ -8,6 +8,8 @@ var config = require('../config/database');
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
 
+let log = false;
+
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
@@ -27,7 +29,7 @@ describe('ProjectService()', function () {
   it('createProject', function (done) {
 
      projectService.create("test1", userid).then(function(savedProject) {
-        console.log("createProject resolve");
+        if (log) { console.log("createProject resolve"); }
          expect(savedProject.name).to.equal("test1");
         done();
     }).catch(function(err) {

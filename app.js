@@ -280,6 +280,7 @@ if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {
 
 // https://stackoverflow.com/questions/18710225/node-js-get-raw-request-body-using-express
 
+
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '500KB';
 winston.debug("JSON_BODY_LIMIT : " + JSON_BODY_LIMIT);
 
@@ -293,7 +294,7 @@ app.use(bodyParser.json({limit: JSON_BODY_LIMIT,
   }
 }));
 
-app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: false }));
+app.use(bodyParser.urlencoded({limit: JSON_BODY_LIMIT, extended: true }));
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -449,6 +450,11 @@ var projectSetter = function (req, res, next) {
 
   if (projectid) {
     
+    if (!mongoose.Types.ObjectId.isValid(projectid)) {
+      winston.warn(`Invalid ObjectId: ${projectid}`);
+      return res.status(400).send({ error: "Invalid project id: " + projectid });
+    }
+    
     let q =  Project.findOne({_id: projectid, status: 100});
     if (cacheEnabler.project) { 
       q.cache(cacheUtil.longTTL, "projects:id:"+projectid)  //project_cache
@@ -458,11 +464,11 @@ var projectSetter = function (req, res, next) {
       if (err) {
         winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }
-
       winston.debug("projectSetter project:" + project);
       if (!project) {
         winston.warn("ProjectSetter project not found with id: " + projectid);
-        next();
+        //next();
+        return res.status(400).send({ error: "Project not found with id: " + projectid })
       } else {
         req.project = project;
         next(); //call next one time for projectSetter function

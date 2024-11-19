@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test';
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
+let should = chai.should();
 
 chai.use(chaiHttp);
 
@@ -14,6 +15,8 @@ var config = require('../config/database');
 var mongoose = require('mongoose');
 var winston = require('../config/winston');
 
+let log = false;
+
 // var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 // if (!databaseUri) {
 //   console.log('DATABASE_URI not specified, falling back to localhost.');
@@ -23,11 +26,12 @@ var winston = require('../config/winston');
 mongoose.connect(config.databasetest);
 
 var userService = require('../services/userService');
+const projectService = require('../services/projectService');
 
 
 describe('UserService()', function () {
 
-  it('loginemail', (done) => {
+  it('loginemail', function (done) {
     var now = Date.now();
     var email = "test-UserService-signup-" + now + "@email.com";
     var pwd = "pwd";
@@ -36,17 +40,42 @@ describe('UserService()', function () {
       expect(savedUser.email).to.equal("test-userservice-signup-" + now + "@email.com");
       expect(savedUser.firstname).to.equal( "Test Firstname");
       expect(savedUser.lastname).to.equal("Test lastname");
+      projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-      chai.request(server)
-          .post('/users/loginemail')
+        chai.request(server)
+          .post('/' + savedProject._id + '/faq_kb')
           .auth(email, pwd)
-          .send({ "id_project": "123456789" })
+          .send({ "name": "testbot", type: "internal", template: "example", language: 'en' })
           .end((err, res) => {
-            console.log("res.body: ", res.body);
-            console.log("res.status: ", res.status);
-            
-            done();
+  
+            if (err) { console.error("err: ", err); }
+            if (log) { console.log("res.body: ", res.body); }
+  
+            res.should.have.status(200);
+
+            let bot_id = res.body._id;
+  
+            chai.request(server)
+                .post('/users/loginemail')
+                .auth(email, pwd)
+                .send({ "id_project": savedProject._id, bot_id: bot_id })
+                .end((err, res) => {
+      
+                  if (err) { console.error("err: ", err); }
+                  if (log) { console.log("res.body: ", res.body); }
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  expect(res.body.success).to.equal(true);
+                  expect(res.body.message).to.equal("Sending email...");
+
+                  done();
+                })
           })
+      })
+
+
+
 
 
     }).catch(function(err) {

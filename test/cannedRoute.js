@@ -1,5 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'critical';
 
 //Require the dev-dependencies
 let chai = require('chai');
@@ -13,7 +14,7 @@ var RoleConstants = require("../models/roleConstants");
 const Project_user = require('../models/project_user');
 let should = chai.should();
 
-
+let log = false;
 
 chai.use(chaiHttp);
 
@@ -32,6 +33,10 @@ describe('CannedRoute', () => {
                     .set('content-type', 'application/json')
                     .send({ "title": "Test Title", "text": "Test Text" })
                     .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body: ", res.body); }
+
                         res.should.have.status(200);
                         res.body.should.be.a('object');
                         res.body.should.have.property('title').eql("Test Title");
@@ -59,6 +64,10 @@ describe('CannedRoute', () => {
                     .set('content-type', 'application/json')
                     .send({ title: "Test Title", text: "Test Text" })
                     .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body: ", res.body); }
+
                         res.body.should.be.a('object');
                         res.body.should.have.property('title').eql("Test Title");
                         res.body.should.have.property('text').eql("Test Text");
@@ -81,7 +90,7 @@ describe('CannedRoute', () => {
         userService.signup(email_owner, pwd, "Owner Firstname", "Owner Lastname").then(savedOwner => {
             userService.signup(email_agent, pwd, "Agent Firstname", "Agent Lastname").then(savedAgent => {
                 projectService.create("test1", savedOwner._id).then(savedProject => {
-                    
+
                     // invite Agent on savedProject (?)
                     chai.request(server)
                         .post('/' + savedProject._id + "/project_users/invite")
@@ -89,8 +98,11 @@ describe('CannedRoute', () => {
                         .set('content-type', 'application/json')
                         .send({ email: email_agent, role: "agent", userAvailable: false })
                         .end((err, res) => {
-                            res.should.have.status(200);
 
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body); }
+
+                            res.should.have.status(200);
 
                             chai.request(server)
                                 .post('/' + savedProject._id + "/canned/")
@@ -98,6 +110,9 @@ describe('CannedRoute', () => {
                                 .set('content-type', 'application/json')
                                 .send({ title: "Test1 Title", text: "Test1 Text" })
                                 .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body); }
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
@@ -108,7 +123,10 @@ describe('CannedRoute', () => {
                                         .set('content-type', 'application/json')
                                         .send({ title: "Test2 Title", text: "Test2 Text" })
                                         .end((err, res) => {
-                                            
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body: ", res.body); }
+
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
 
@@ -121,7 +139,7 @@ describe('CannedRoute', () => {
 
                                                     res.should.have.status(200);
                                                     //res.body.should.be.a('array');
-                                                    
+
                                                     expect(res.body).to.be.an('array')
                                                     expect(res.body.length).to.equal(1);
 
@@ -132,26 +150,22 @@ describe('CannedRoute', () => {
                                                         .send()
                                                         .end((err, res) => {
 
-                                                        res.should.have.status(200);
-                                                        //res.body.should.be.a('array');
-                                                        
-                                                        expect(res.body).to.be.an('array')
-                                                        expect(res.body.length).to.equal(2);
+                                                            res.should.have.status(200);
+                                                            //res.body.should.be.a('array');
 
-                                                        done();
-                                                    
+                                                            expect(res.body).to.be.an('array')
+                                                            expect(res.body.length).to.equal(2);
+
+                                                            done();
+
                                                         })
-
-
                                                 })
-
-                                                
                                         })
-
                                 })
                         })
                 })
             })
         })
     }).timeout(5000);
+
 })

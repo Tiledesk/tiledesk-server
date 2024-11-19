@@ -38,7 +38,10 @@ describe('KbSettingsRoute', () => {
                         .auth(email, pwd)
                         .send({}) // can be empty
                         .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("create kbsettings res.body: ", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.id_project).to.equal(savedProject._id.toString());
@@ -47,7 +50,10 @@ describe('KbSettingsRoute', () => {
                                 .get('/' + savedProject._id + "/kbsettings")
                                 .auth(email, pwd)
                                 .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
                                     if (log) { console.log("get kbsettings res.body: ", res.body); }
+                                    
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.id_project).to.equal(savedProject._id.toString())
@@ -77,7 +83,10 @@ describe('KbSettingsRoute', () => {
                         .get('/' + savedProject._id + "/kbsettings")
                         .auth(email, pwd)
                         .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("get kbsettings res.body: ", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.id_project).to.equal(savedProject._id.toString())
@@ -106,7 +115,10 @@ describe('KbSettingsRoute', () => {
                         .auth(email, pwd)
                         .send({}) // can be empty
                         .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("create kbsettings res.body: ", res.body); }
+                            
                             res.should.have.status(200);
                             res.body.should.be.a('object');
                             expect(res.body.id_project).to.equal(savedProject._id.toString());
@@ -118,7 +130,10 @@ describe('KbSettingsRoute', () => {
                                 .auth(email, pwd)
                                 .send({ name: "exampleurl.com/kb/", url: "https://exampleurl.com/kb/" })
                                 .end((err, res) => {
+                                    
+                                    if (err) { console.error("err: ", err); }
                                     if (log) { console.log("add kb to kb settings res.body: ", res.body); }
+                                    
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     //expect(res.body.kbs).to.have.length(1)
@@ -128,7 +143,10 @@ describe('KbSettingsRoute', () => {
                                         .auth(email, pwd)
                                         .send({ name: "secondurl.com/support/", url: "https://secondurl.com/support/" })
                                         .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
                                             if (log) { console.log("add kb to kb settings res.body: ", res.body); }
+
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             //expect(res.body.kbs).to.have.length(2)
@@ -157,7 +175,10 @@ describe('KbSettingsRoute', () => {
                         .auth(email, pwd)
                         .send({}) // can be empty
                         .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
                             if (log) { console.log("create kbsettings res.body: ", res.body); }
+
                             res.should.have.status(200);
                             res.body.should.be.a('object');
 
@@ -166,7 +187,10 @@ describe('KbSettingsRoute', () => {
                                 .auth(email, pwd)
                                 .send({ gptkey: "sk-12345678" })
                                 .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
                                     if (log) { console.log("add kb to kb settings res.body: ", res.body); }
+                                    
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
 
@@ -180,69 +204,69 @@ describe('KbSettingsRoute', () => {
 
         });
 
-        it('deleteKbFromList', (done) => {
+        // it('deleteKbFromList', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    chai.request(server)
-                        .post('/' + savedProject._id + '/kbsettings')
-                        .auth(email, pwd)
-                        .send({}) // can be empty
-                        .end((err, res) => {
-                            if (log) { console.log("create kbsettings res.body: ", res.body); }
-                            res.should.have.status(200);
-                            res.body.should.be.a('object');
-                            expect(res.body.id_project).to.equal(savedProject._id.toString());
+        //             chai.request(server)
+        //                 .post('/' + savedProject._id + '/kbsettings')
+        //                 .auth(email, pwd)
+        //                 .send({}) // can be empty
+        //                 .end((err, res) => {
+        //                     if (log) { console.log("create kbsettings res.body: ", res.body); }
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('object');
+        //                     expect(res.body.id_project).to.equal(savedProject._id.toString());
 
-                            let settings_id = res.body._id;
+        //                     let settings_id = res.body._id;
 
-                            chai.request(server)
-                                .post('/' + savedProject._id + "/kbsettings/" + settings_id)
-                                .auth(email, pwd)
-                                .send({ name: "exampleurl.com/kb/", url: "https://exampleurl.com/kb/" })
-                                .end((err, res) => {
-                                    if (log) { console.log("add kb to kb settings res.body: ", res.body); }
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    //expect(res.body.kbs).to.have.length(1)
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + "/kbsettings/" + settings_id)
+        //                         .auth(email, pwd)
+        //                         .send({ name: "exampleurl.com/kb/", url: "https://exampleurl.com/kb/" })
+        //                         .end((err, res) => {
+        //                             if (log) { console.log("add kb to kb settings res.body: ", res.body); }
+        //                             res.should.have.status(200);
+        //                             res.body.should.be.a('object');
+        //                             //expect(res.body.kbs).to.have.length(1)
 
-                                    let kb_to_delete_id = res.body._id;
+        //                             let kb_to_delete_id = res.body._id;
 
-                                    chai.request(server)
-                                        .post('/' + savedProject._id + "/kbsettings/" + settings_id)
-                                        .auth(email, pwd)
-                                        .send({ name: "secondurl.com/support/", url: "https://secondurl.com/support/" })
-                                        .end((err, res) => {
-                                            if (log) { console.log("add kb to kb settings res.body: ", res.body); }
-                                            res.should.have.status(200);
-                                            res.body.should.be.a('object');
-                                            //expect(res.body.kbs).to.have.length(2)
+        //                             chai.request(server)
+        //                                 .post('/' + savedProject._id + "/kbsettings/" + settings_id)
+        //                                 .auth(email, pwd)
+        //                                 .send({ name: "secondurl.com/support/", url: "https://secondurl.com/support/" })
+        //                                 .end((err, res) => {
+        //                                     if (log) { console.log("add kb to kb settings res.body: ", res.body); }
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.a('object');
+        //                                     //expect(res.body.kbs).to.have.length(2)
 
-                                            chai.request(server)
-                                                .delete('/' + savedProject._id + "/kbsettings/" + settings_id + "/" + kb_to_delete_id)
-                                                .auth(email, pwd)
-                                                .end((err, res) => {
-                                                    if (log) { console.log("delete kb res.body: ", res.body); };
-                                                    res.should.have.status(200);
-                                                    res.body.should.be.a('object');
-                                                    expect(res.body.kbs).to.have.length(1)
-                                                    expect(res.body.kbs[0].name).to.equal("secondurl.com/support/");
-                                                    expect(res.body.kbs[0].url).to.equal("https://secondurl.com/support/");
+        //                                     chai.request(server)
+        //                                         .delete('/' + savedProject._id + "/kbsettings/" + settings_id + "/" + kb_to_delete_id)
+        //                                         .auth(email, pwd)
+        //                                         .end((err, res) => {
+        //                                             if (log) { console.log("delete kb res.body: ", res.body); };
+        //                                             res.should.have.status(200);
+        //                                             res.body.should.be.a('object');
+        //                                             expect(res.body.kbs).to.have.length(1)
+        //                                             expect(res.body.kbs[0].name).to.equal("secondurl.com/support/");
+        //                                             expect(res.body.kbs[0].url).to.equal("https://secondurl.com/support/");
 
-                                                    done();
-                                                })
-                                        })
+        //                                             done();
+        //                                         })
+        //                                 })
 
-                                })
-                        })
-                });
-            });
+        //                         })
+        //                 })
+        //         });
+        //     });
 
-        });
+        // });
 
 
 

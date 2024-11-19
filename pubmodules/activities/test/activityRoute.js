@@ -12,6 +12,8 @@ let server = require('../../../app');
 let should = chai.should();
 var winston = require('../../../config/winston');
 
+let log = false;
+
 // chai.config.includeStack = true;
 
 var expect = chai.expect;
@@ -56,8 +58,10 @@ describe('ActivityRoute', () => {
                         .get('/'+ savedProject._id + '/activities')
                         .auth(email, pwd)
                         .end((err, res) => {
-                            //console.log("res",  res);
-                            console.log("res.body",  res.body);
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body",  res.body); }
+                            
                             res.should.have.status(200);
                             res.body.activities.should.be.a('array');
                             expect(res.body.count).to.equal(1);                                                                              
