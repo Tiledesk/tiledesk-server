@@ -38,7 +38,7 @@ class Listener {
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
             API_URL: apiUrl,
-            BASE_URL: apiUrl + "/modules/voice",                     
+            BASE_URL: apiUrl + "/modules/twilio-voice",                     
             REDIS_HOST: host,
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
