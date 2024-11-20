@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.19
+- updated whatsapp-connector to 0.1.74
+- updated whatsapp-worker to 0.1.10
+- updated voice-twilio-connector to 0.1.8
+- updated get transactions endpoint (only broadcast automations are returned)
+
 # 2.10.18
 - updated messenger-connector 0.1.23
 - updated voice-twilio module 
