@@ -21,7 +21,7 @@ router.get('/whatsapp', async (req, res) => {
 
     let project_id = req.projectid;
 
-    Transaction.find({ id_project: project_id }, (err, transactions) => {
+    Transaction.find({ id_project: project_id, broadcast: { $in: [null, true] } }, (err, transactions) => {
         if (err) {
             winston.error("Error find transactions for project_id: " + project_id);
             return res.status(400).send({ success: false, message: "Unable to find transaction for project_id " + project_id });
