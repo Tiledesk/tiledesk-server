@@ -49,7 +49,7 @@
     "@tiledesk/tiledesk-telegram-connector": "^0.1.14",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.11",
     "@tiledesk/tiledesk-tybot-connector": "^0.2.130",
-    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.74",
+    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.75",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.10",
     "@tiledesk/tiledesk-sms-connector": "^0.1.10",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.49",
