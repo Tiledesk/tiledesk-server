@@ -376,7 +376,7 @@ class PubModulesManager {
             winston.info("this.voiceTwilio: " + this.voiceTwilio);
             this.voiceTwilio.listener.listen(config);
 
-            this.voiceTwilio = this.voiceRoute.voiceTwilioRoute;
+            this.voiceTwilioRoute = this.voiceTwilio.voiceTwilioRoute;
 
             winston.info("PubModulesManager initialized apps (voiceTwilio).")
         } catch(err) {
