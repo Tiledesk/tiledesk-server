@@ -187,6 +187,9 @@ router.post('/',
           return res.json(savedRequest);
           // });
           // });
+        }).catch((err) => {
+          winston.error("(Request) create request error ", err)
+          return res.status(500).send({ success: false, message: "Unable to create request", err: err })
         });
 
 
