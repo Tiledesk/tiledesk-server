@@ -849,6 +849,63 @@ router.put('/:requestid/followers', function (req, res) {
 
 });
 
+
+router.put('/:requestid/tag', async (req, res) => {
+
+  let id_project = req.projectid;
+  let request_id = req.params.requestid;
+  let tags_list = req.body;
+  winston.debug("(Request) /tag tags_list: ", tags_list)
+
+  if (tags_list.length == 0) {
+    winston.warn("(Request) /tag no tag specified")
+    return res.status(400).send({ success: false, message: "No tag specified" })
+  }
+
+  let request = await Request.findOne({ id_project: id_project, request_id: request_id }).catch((err) => {
+    winston.error("(Request) /tag error getting request ", err);
+    return res.status(500).send({ success: false, error: "Error getting request with request id " + request_id});
+  })
+
+  if (!request) {
+    winston.warn("(Request) /tag request not found with request_id " + request_id);
+    return res.status(404).send({ success: false, error: "Request not found with request id " + request_id});
+  }
+
+  let current_tags = request.tags;
+
+  tags_list.forEach(t => {
+    // Check if tag already exists in the conversation. If true, skip the adding.
+    if(!current_tags.some(tag => tag.tag === t.tag)) {
+      current_tags.push(t);
+    }
+  })
+
+  let update = {
+    tags: current_tags
+  }
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }, (err, updatedRequest) => {
+    if (err) {
+      winston.error("(Request) /tag error finding and update request ", err);
+      return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
+    }
+
+    if (!updatedRequest) {
+      winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
+      return res.status(404).send({ success: false, error: "The request was deleted while adding tags for request " + request_id })
+    }
+
+    winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
+    res.status(200).send(updatedRequest)
+
+    /**
+    * Step 2
+    * Accodare per incrementare le statistiche di utilizzo di ogni tag
+    */
+  })
+})
+
 router.delete('/:requestid/followers/:followerid', function (req, res) {
   winston.debug(req.body);
 
@@ -1925,14 +1982,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
