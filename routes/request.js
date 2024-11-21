@@ -424,6 +424,9 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
     winston.verbose("participant removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch((err) => {
+    winston.error("(Request) removeParticipantByRequestId error", err)
+    return res.status(400).send({ success: false, error: "Unable to removed the participant " + req.params.participantid +  " from the request " + req.params.requestid})
   });
 
 

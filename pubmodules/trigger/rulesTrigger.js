@@ -877,7 +877,9 @@ class RulesTrigger {
             winston.debug('runAction action id_project: ' + id_project);
 
             //     removeParticipantByRequestId(request_id, id_project, member) {
-            requestService.removeParticipantByRequestId(request_id, id_project, member);                      
+            requestService.removeParticipantByRequestId(request_id, id_project, member).catch((err) => {
+              winston.error("(RulesTrigger) removeParticipantByRequestId error", err)
+            });                      
   
           } catch(e) {
             winston.error("Error runAction", e);
