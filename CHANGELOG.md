@@ -5,8 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.23
+- Removed logs
+
 # 2.10.22
-- Test versione (Alert)
+- Test version (Alert)
 
 # 2.10.21
 - Added catch blocks where necessary (improves error management)
