@@ -2273,7 +2273,7 @@ class RequestService {
             //cacheinvalidation
             return request.save(function (err, savedRequest) {
               if (err) {
-                winston.error("Error saving removed participant ", err);
+                //winston.error("Error saving removed participant ", err);
                 return reject(err);
               }
 

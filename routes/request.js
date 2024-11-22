@@ -420,12 +420,6 @@ router.put('/:requestid/participants', function (req, res) {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
   winston.debug(req.body);
-  console.log("\n/:requestid/participants/:participantid");
-  console.log("Body:", req.body);
-  console.log("Headers:", req.headers);
-  console.log("Full URL:", `${req.protocol}://${req.get('host')}${req.originalUrl}`);
-  console.log("Requestid:", req.params.requestid);
-  console.log("Participantid:", req.params.participantid);
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
@@ -433,8 +427,8 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
 
     return res.json(updatedRequest);
   }).catch((err) => {
-    winston.error("(Request) removeParticipantByRequestId error", err)
-    return res.status(400).send({ success: false, error: "Unable to removed the participant " + req.params.participantid +  " from the request " + req.params.requestid})
+    //winston.error("(Request) removeParticipantByRequestId error", err)
+    return res.status(400).send({ success: false, error: "Unable to remove the participant " + req.params.participantid +  " from the request " + req.params.requestid})
   });
 
 
