@@ -31,8 +31,28 @@ csv.separator = ';';
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
+const { Scheduler } = require('../services/Scheduler');
+const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
+
+const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
+const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-multi';
+const JOB_TOPIC_TAGS = process.env.JOB_TOPIC_TAGS || 'tiledesk-tags';
+
+let jobManager = new JobManager(AMQP_MANAGER_URL, {
+  debug: false,
+  topic: JOB_TOPIC_TAGS,
+  exchange: JOB_TOPIC_EXCHANGE
+})
+
+jobManager.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
+})
 
 
 
@@ -867,11 +887,13 @@ router.put('/:requestid/tag', async (req, res) => {
   }
 
   let current_tags = request.tags;
+  let adding_tags = [];
 
   tags_list.forEach(t => {
     // Check if tag already exists in the conversation. If true, skip the adding.
     if(!current_tags.some(tag => tag.tag === t.tag)) {
       current_tags.push(t);
+      adding_tags.push(t);
     }
   })
 
@@ -893,6 +915,7 @@ router.put('/:requestid/tag', async (req, res) => {
     winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
     res.status(200).send(updatedRequest)
 
+    scheduleTags(id_project, adding_tags);
     /**
     * Step 2
     * Accodare per incrementare le statistiche di utilizzo di ogni tag
@@ -2217,5 +2240,28 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
   })
 
 })
+
+
+async function scheduleTags(id_project, tags) {
+  
+  let scheduler = new Scheduler({ jobManager: jobManager })
+  tags.forEach(t => {
+    let payload = {
+      id_project: id_project,
+      tag: t.tag,
+      type: "conversation-tag",
+      date: new Date()
+    }
+    console.log("payload: ", payload);
+    scheduler.tagSchedule(payload, async (err, result) => {
+      if (err) {
+        winston.error("Scheduling error: ", err);
+      } else {
+        winston.info("Scheduling result: ", result);
+      }
+    })
+  })
+}
+
 
 module.exports = router;
