@@ -207,6 +207,9 @@ router.post('/',
           return res.json(savedRequest);
           // });
           // });
+        }).catch((err) => {
+          winston.error("(Request) create request error ", err)
+          return res.status(500).send({ success: false, message: "Unable to create request", err: err })
         });
 
 
@@ -444,6 +447,9 @@ router.delete('/:requestid/participants/:participantid', function (req, res) {
     winston.verbose("participant removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch((err) => {
+    winston.error("(Request) removeParticipantByRequestId error", err)
+    return res.status(400).send({ success: false, error: "Unable to removed the participant " + req.params.participantid +  " from the request " + req.params.requestid})
   });
 
 
@@ -1999,14 +2005,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }

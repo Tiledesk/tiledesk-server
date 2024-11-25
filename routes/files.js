@@ -30,9 +30,7 @@ curl -u andrea.leo@f21.it:123456 \
   */
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
-
-  console.log("asdasd")
-  winston.info("files/users")
+  winston.verbose("files/users")
   return res.status(201).json({
     message: 'File uploded successfully',
     filename: req.file.filename

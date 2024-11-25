@@ -135,7 +135,9 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             
                             // botprefix
                             // removeParticipantByRequestId(request_id, id_project, member) 
-                            requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId );
+                            requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).catch((err) => {
+                                winston.error("(ConciergeBot) removeParticipantByRequestId error", err)
+                            });
                         }      
                     }
                     
