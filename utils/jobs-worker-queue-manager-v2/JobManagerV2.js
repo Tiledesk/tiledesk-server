@@ -82,15 +82,17 @@ class JobManager {
         var packet = {payload: payload}
         // if (this.debug) {console.log("JobManager this.queueConnected",this.queueStarted);
         if (this.queuePublisherConnected == true) {
-
             if (this.debug) {console.log("[JobWorker] JobManager  this.queuePublisherConnected == true");}
-            this.queueManager.sendJson(packet, "functions", (err, ok) => {
+            // this.queueManager.sendJson(packet, this.routingKey);
+            this.queueManager.sendJson(packet, this.routingKey, (err, ok) => {
                 if (err) {
                     console.error("sendJson error: ", err);
                 } else {
                     if (this.debug) { console.log("sendJson ok"); };
                 }
-                callback(err, ok);
+                if (callback) {
+                    callback(err, ok);
+                }
             });
 
             // this.queueManager.on(fn);
