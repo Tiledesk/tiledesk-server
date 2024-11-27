@@ -9,6 +9,7 @@ var RoleConstants = require("../../models/roleConstants");
 
 var mongoose = require('mongoose');
 var winston = require('../../config/winston');
+var Analytics = require('../../models/analytics');
 var ObjectId = require('mongodb').ObjectId;
 
 
@@ -1742,5 +1743,64 @@ router.get('/messages/count', function(req, res) {
 
   });
 
+router.get('/tags/:type', async (req, res) => {
+
+  let id_project = req.projectid;
+  let type = req.params.type;
+  let startDate = req.query.start_date;
+  let endDate = req.query.end_date;
+
+  if (!type) {
+    return res.status(400).send({ success: false, error: "Missing parameter 'type'" });
+  }
+
+  if (!startDate) {
+    startDate = new Date();
+    startDate.setDate(startDate.getDate() - 6);
+  }
+  if (!endDate) {
+    endDate = new Date();
+  }
+  
+  startDate = new Date(startDate).getTime();
+  endDate = new Date(endDate).getTime();
+
+  if (startDate > endDate) {
+    return res.status(400).send({ success: false, error: "Invalid dates: start_date can't be greater of end_date"})
+  }
+
+  let query = {
+    id_project: id_project,
+    type: type,
+    date: { $gte: startDate, $lte: endDate }
+  }
+
+  let result = await Analytics.find(query).catch((err) => {
+    winston.error("Error finding Analytics: ", err);
+    return res.status(500).send({ success: false, error: "Unable to find analytics" })
+  })
+
+  let dates = result
+    .map(o => o.date.toISOString().split('T')[0]) // Format dates as YYYY-MM-DD
+    .sort();
+  
+    //Step 2: Get all unique tags
+  let allKeys = [...new Set(result.flatMap(o => Object.keys(o.keys)))];
+  
+  //Step 3: Build the series
+  let series = allKeys.map(k => {
+    let values = dates.map(d => {
+      let el = result.find(o => o.date.toISOString().split('T')[0] === d);
+      return el?.keys[k] || 0; // Use 0 if the tag is not present
+    });
+    return { name: k, values };
+  });
+
+  let data = { dates, series };
+  console.log(data);
+
+  return res.status(200).send(data);
+  
+})
 
 module.exports = router;
