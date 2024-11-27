@@ -1,9 +1,7 @@
 var amqp = require('amqplib/callback_api');
-//const { TiledeskWorker } = require('../tiledesk/TiledeskWorker');
-//const { TiledeskWorker } = require('../tiledesk/TiledeskWorker')
-//const { StatusManager } = require('../tiledesk/StatusManager');
 
 var listeners = [];
+
 
 class QueueManager {
 
@@ -18,7 +16,6 @@ class QueueManager {
 
     // if the connection is closed or fails to be established at all, we will reconnect
     this.amqpConn = null;
-    this.channel = null;
 
     this.url = url || "amqp://localhost";
     // process.env.CLOUDAMQP_URL + "?heartbeat=60"
@@ -33,76 +30,49 @@ class QueueManager {
       this.defaultTopic = options.defaultTopic;
     }
 
-    // this.topic = "jobsmanager";
-    // if (options && options.topic != undefined) {
-    //   this.topic = options.topic;
-    // }
-
-    this.prefetch = 1;
-    if (process.env.WORKER_PREFETCH) {
-      this.prefetch = Number(process.env.WORKER_PREFETCH);
+    this.topic = "jobsmanager";
+    if (options && options.topic != undefined) {
+      this.topic = options.topic;
     }
 
-    this.subscribedTopics = [];
     // this.listeners = [];
   }
 
 
   connect(callback) {
     var that = this;
-    amqp.connect(that.url, function (err, conn) {
-
+    // console.log("[JobWorker] connect", this.url);
+    // return new Promise(function (resolve, reject) {
+    amqp.connect(this.url, function (err, conn) {
       if (err) {
-        console.error("[JobWorker] AMQP error", err);
+        // if (this.debug) {console.log("[AMQP]", err.message);
+        if (that.debug) { console.log("[JobWorker] AMQP", err); }
+
         return setTimeout(function () {
-          if (that.debug) { console.log("[JobWorker] AMQP reconnecting"); }
           that.connect()
         }, 1000);
-
       }
       conn.on("error", function (err) {
         if (err.message !== "Connection closing") {
-          console.log("[JobWorker] AMQP conn error", err);
+          if (that.debug) { console.log("[JobWorker] AMQP conn error", err); }
         }
       });
       conn.on("close", function () {
         if (that.debug) { console.log("[JobWorker] AMQP reconnecting"); }
-        return setTimeout(() => {
-          that.connect(callback);
-        }, 1000);
+        return setTimeout(that.connect, 1000);
       });
 
       if (that.debug) { console.log("[JobWorker] AMQP connected"); }
       that.amqpConn = conn;
 
+      // that.whenConnected(callback);
+
       if (callback) {
         callback();
       }
+      //   return resolve();
+      // });
     });
-  }
-
-  createChannel(callback) {
-    var that = this;
-    
-    if (!that.amqpConn) {
-      console.error("[QueueManager] Cannot create channel: No AMQP Connection")
-      return;
-    }
-
-    that.amqpConn.createChannel(function (err, ch) {
-      if (that.closeOnErr(err)) return;
-      ch.on("error", function (err) {
-        if (that.debug) { console.log("[JobWorker] AMQP channel error", err); }
-      });
-      ch.on("close", function () {
-        if (that.debug) { console.log("[JobWorker] AMQP channel closed"); }
-      });
-      ch.prefetch(that.prefetch);
-      if (that.debug) { console.log("[JobWorker] Channel created"); }
-      that.channel = ch;
-
-      callback(ch);
-    })
   }
 
   close(callback) {
@@ -150,6 +120,9 @@ class QueueManager {
 
   // method to publish a message, will queue messages internally if the connection is down and resend later
   publish(exchange, routingKey, content, callback) {
+    console.log("publish exchange: ", exchange)
+    console.log("publish routingKey: ", routingKey)
+
     var that = this;
     if (that.debug) { console.log("[JobWorker] that", that); }
     if (that.debug) { console.log("[JobWorker] that.pubChannel", that.pubChannel); }
@@ -183,55 +156,47 @@ class QueueManager {
 
   // A worker that acks messages only if processed succesfully
   // var channel;
-  startWorker(topics, callback) {
+  startWorker(callback) {
     var that = this;
 
-    console.log("[JobWorker] topics: ", topics)
-    if (!Array.isArray(topics)) {
-      topics = [topics]
-    }
-    this.subscribedTopics.push(...topics);
-
-    that.createChannel((ch) => {
-      /**
-       * To make the queue persistent => durable: true 
-       * The queue will be saved on disk and will be available after a RabbitMQ reboot.
-       */
+    that.amqpConn.createChannel(function (err, ch) {
+      if (that.closeOnErr(err)) return;
+      ch.on("error", function (err) {
+        if (this.debug) { console.log("[JobWorker] AMQP channel error", err); }
+      });
+      ch.on("close", function () {
+        if (this.debug) { console.log("[JobWorker] AMQP channel closed"); }
+      });
+      ch.prefetch(10);
       ch.assertExchange(that.exchange, 'topic', {
-        durable: false 
+        durable: false
       });
 
-      const queueName = `${that.exchange}_queue`;
-      ch.assertQueue(queueName, { durable: false }, function (err, q) {
+      if (that.debug) { console.log("[JobWorker] AMQP that.topic", that.topic); }
+      ch.assertQueue(that.topic, { durable: false }, function (err, _ok) {
         if (that.closeOnErr(err)) return;
-
-        console.log(`[QueueManager] Subscribed to queue: ${q.queue}`);
-
-        topics.forEach((topic) => {
-          ch.bindQueue(q.queue, that.exchange, topic, {}, function (err, ok) {
-            //if (that.debug) { console.log("[JobWorker] Queue bind: " + q.queue + " err: " + err + " key: " + topic); }
-            console.log("[JobWorker] Queue bind: " + q.queue + " err: " + err + " key: " + topic);
-          })
-        })
-        
-        ch.bindQueue(q.queue, that.exchange, "functions", {}, function (err, ok) {
-          //if (that.debug) { console.log("[JobWorker] Queue bind: " + _ok.queue + " err: " + err3 + " key: " + "functions"); }
-          console.log("[JobWorker] Queue bind: " + q.queue + " err: " + err + " key: " + "functions");
+        ch.bindQueue(_ok.queue, that.exchange, that.defaultTopic, {}, function (err3, oka) {
+          if (that.debug) { console.log("[JobWorker] Queue bind: " + _ok.queue + " err: " + err3 + " key: " + that.defaultTopic); }
+          // if (this.debug) {console.log("Data queue", oka)
+        });
+        ch.bindQueue(_ok.queue, that.exchange, "functions", {}, function (err3, oka) {
+          if (that.debug) { console.log("[JobWorker] Queue bind: " + _ok.queue + " err: " + err3 + " key: " + "functions"); }
+          // if (this.debug) {console.log("Data queue", oka)
         });
 
-        ch.consume(q.queue, (msg) => {
-          that.messageHandler(msg, ch);
-          //ch.ack(msg);
-        }, { noAck: false });
-
+        if (that.debug) { console.log("[JobWorker] AMQP that.topic", that.topic); }
+        ch.consume(that.topic, that.processMsg2, { noAck: true });
+        // ch.consume("jobs", that.processMsg, { noAck: false });
         if (that.debug) { console.log("[JobWorker] Worker is started"); }
+
         if (callback) {
           callback();
           if (that.debug) { console.log("[JobWorker] called callback worker"); }
         }
-      })
-    })
+      });
 
+
+    });
   }
 
 
@@ -253,60 +218,6 @@ class QueueManager {
   //   if (this.debug) {console.log("okookokkkkkkk msg:");
   // }
 
-  async messageHandler(msg, ch) {
-    let topic = msg;
-    //console.log("msg: ", msg.fields);
-    console.log("\ntask received on topic: ", topic.fields.routingKey);
-
-    const message_string = msg.content.toString();
-    let fdata = JSON.parse(message_string);
-    let source = fdata.payload;
-    console.log("source: ", source);
-  }
-
-  /**
-   * Specific processMsg function for Scrape operation
-   */
-  // async processMsg3(msg, ch) {
-
-  //   const message_string = msg.content.toString();
-  //   let fdata = JSON.parse(message_string);
-  //   let source = fdata.payload
-
-  //   winston.debug("Source: ", source)
-  //   // console.log("fdata.payload.resources[0]: ", fdata.payload.resources[0]);
-
-  //   const tiledesk_worker = new TiledeskWorker({ gptkey: null, interval: null });
-  //   const status_manager = new StatusManager();
-
-  //   await status_manager.changeStatus(source.id, 200);
-
-  //   tiledesk_worker.train(source, async (err, response) => {
-  //     if (err) {
-  //       winston.error("Error on train: " + err)
-  //       status_manager.changeStatus(source.id, 400).then((updateResponse) => {
-  //         winston.verbose("changeStatus response: ", updateResponse)
-  //         ch.ack(msg);
-  //       }).catch((err) => {
-  //         winston.error("changeStatus error: ", err)
-  //         ch.ack(msg);
-  //       })
-  //     } else {
-  //       status_manager.changeStatus(response.id, response.status).then((updateResponse) => {
-  //         winston.verbose("changeStatus response: ", updateResponse)
-  //         ch.ack(msg);
-  //       }).catch((err) => {
-  //         winston.error("changeStatus error: ", err)
-  //         ch.ack(msg);
-  //       })
-  //     }
-  //   });
-
-  // }
-
-  /**
-   * General porpouse function.
-   */
   processMsg2(msg) {
 
     // console.log("processMsg2:", msg);
@@ -414,7 +325,7 @@ class QueueManager {
 
   closeOnErr(err) {
     if (!err) return false;
-    console.error("[JobWorker] AMQP error", err);
+    if (this.debug) { console.log("[JobWorker] AMQP error", err); }
     this.amqpConn.close();
     return true;
   }
@@ -437,11 +348,7 @@ class QueueManager {
     listeners.push(fn);
   }
 
-
-
 }
-
-
 
 
 module.exports = QueueManager;
