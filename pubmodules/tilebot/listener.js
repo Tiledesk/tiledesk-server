@@ -11,7 +11,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 winston.info("Tilebot endpoint: " + TILEBOT_ENDPOINT);
 
 
-const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+const apiUrl = process.env.API_ENDPOINT || process.env.API_URL || configGlobal.apiUrl;
 winston.info('Rasa apiUrl: '+ apiUrl);
 
 const tybot = require("@tiledesk/tiledesk-tybot-connector");
