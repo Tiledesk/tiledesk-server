@@ -32,18 +32,21 @@ const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
-const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
+const JobManager = require('../utils/jobs-worker-queue/JobManager');
+
 
 // var messageService = require('../services/messageService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
-const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-multi';
-const JOB_TOPIC_TAGS = process.env.JOB_TOPIC_TAGS || 'tiledesk-tags';
+const QUEUE_NAME = process.env.TAGS_QUEUE_NAME || 'tags-queue';
+const EXCHANGE = process.env.TAGS_EXCHANGE || 'tags-exchange';
+const TOPIC = process.env.TAGS_QUEUE_NAME || 'conversation-tags';
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
-  debug: false,
-  topic: JOB_TOPIC_TAGS,
-  exchange: JOB_TOPIC_EXCHANGE
+  debug: true,
+  queueName: QUEUE_NAME,
+  exchange: EXCHANGE,
+  topic: TOPIC
 })
 
 jobManager.connectAndStartPublisher((status, error) => {
@@ -53,7 +56,6 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
-
 
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
