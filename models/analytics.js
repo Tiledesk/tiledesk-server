@@ -25,5 +25,5 @@ var AnalyticsSchema = new Schema({
 
 
 const Analytics = mongoose.model('Analytics', AnalyticsSchema)
-module.exports = { Analytics }
+module.exports = Analytics
 
