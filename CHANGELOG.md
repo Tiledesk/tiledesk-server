@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.24
+# 2.10.26
+- Added missing catch blocks
+
+# 2.10.25
 - updated tybot-connector to 0.2.32
 - updated twilio-voice--connector to 0.1.10
 
