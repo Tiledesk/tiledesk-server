@@ -1820,13 +1820,13 @@ router.get('/tags/:type', async (req, res) => {
     return acc;
   }, {});
   
-  // Costruire la serie dei dati
+  // Build the data series
   let series = allKeys.map(key => {
     let values = dates.map(date => dataMap[date]?.[key] || 0); // Default a 0 se il tag non è presente
     return { name: key, values };
   });
   
-  // Assemblare il risultato finale
+  // Assembly final result
   let data = { dates, series };
   console.log(data);
 
