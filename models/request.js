@@ -505,6 +505,7 @@ RequestSchema.index({ participants: 1, id_project: 1, createdAt: -1, status: 1 }
 RequestSchema.index({ id_project: 1, "snapshot.lead.email": 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, createdAt: -1, status: 1 })
+RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
 
 //   cannot index parallel arrays [agents] [participants] {"driv
 // RequestSchema.index({ id_project: 1, status: 1, preflight:1, participants:1, "agents.id_user":1, updatedAt: -1 }); //NN LO APPLICA
