@@ -40,8 +40,9 @@ const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
   debug: true,
-  topic: JOB_TOPIC_TAGS,
-  exchange: JOB_TOPIC_EXCHANGE
+  queueName: "conversation-tags_queue",
+  exchange: "tiledesk-multi",
+  topic: "conversation-tags",
 })
 
 jobManager.connectAndStartPublisher((status, error) => {
