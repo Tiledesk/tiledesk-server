@@ -23,6 +23,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
+let jobManager = require('@tiledesk/tiledesk-multi-worker');
 
 
 csv = require('csv-express');
@@ -32,7 +33,6 @@ const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
-const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
 
