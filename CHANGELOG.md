@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.28
+- removed duplicated index on Request model
+
 # 2.10.27
 - updated tybot-connector to 0.2.133
 - updated vxml-connector to 0.2.65
