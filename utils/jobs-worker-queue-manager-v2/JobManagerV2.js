@@ -1,4 +1,4 @@
-var QueueManager = require("./queueManagerClass");
+var QueueManager = require("./queueManagerClassV2");
 
 class JobManager {
     constructor(queueUrl, options) {
