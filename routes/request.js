@@ -37,13 +37,15 @@ const { Scheduler } = require('../services/Scheduler');
 // var messageService = require('../services/messageService');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
-const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-multi';
-const JOB_TOPIC_TAGS = process.env.JOB_TOPIC_TAGS || 'tiledesk-tags';
+const QUEUE_NAME = process.env.TAGS_QUEUE_NAME || 'tags-queue';
+const EXCHANGE = process.env.TAGS_EXCHANGE || 'tags-exchange';
+const TOPIC = process.env.TAGS_QUEUE_NAME || 'conversation-tags';
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
-  debug: false,
-  topic: JOB_TOPIC_TAGS,
-  exchange: JOB_TOPIC_EXCHANGE
+  debug: true,
+  queueName: QUEUE_NAME,
+  exchange: EXCHANGE,
+  topic: TOPIC
 })
 
 jobManager.connectAndStartPublisher((status, error) => {
@@ -53,7 +55,6 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
-
 
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
@@ -207,6 +208,9 @@ router.post('/',
           return res.json(savedRequest);
           // });
           // });
+        }).catch((err) => {
+          winston.error("(Request) create request error ", err)
+          return res.status(500).send({ success: false, message: "Unable to create request", err: err })
         });
 
 
@@ -437,13 +441,15 @@ router.put('/:requestid/participants', function (req, res) {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
   winston.debug(req.body);
-
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
     winston.verbose("participant removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch((err) => {
+    //winston.error("(Request) removeParticipantByRequestId error", err)
+    return res.status(400).send({ success: false, error: "Unable to remove the participant " + req.params.participantid +  " from the request " + req.params.requestid})
   });
 
 
@@ -1999,14 +2005,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
