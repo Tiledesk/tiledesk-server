@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 # Accept build arguments
 ARG NPM_TOKEN
 ARG VOICE_TOKEN
+ARG VOICE_TWILIO_TOKEN
 
 COPY .npmrc_ .npmrc
 
