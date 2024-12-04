@@ -1813,10 +1813,23 @@ router.get('/tags/:type', async (req, res) => {
   // let data = { dates, series };
   // console.log(data);
 
-  let parsedDates = result.map(r => ({
-    formatted: new Date(parseInt(r.date)).toISOString().split('T')[0], // Format date as YYYY-MM-DD
-    original: r
-  }));
+
+  // let parsedDates = result.map(r => ({
+  //   formatted: new Date(parseInt(r.date)).toISOString().split('T')[0], // Format date as YYYY-MM-DD
+  //   original: r
+  // }));
+  
+  let parsedDates = result.map(r => {
+    let date = new Date(parseInt(r.date));
+    let day = String(date.getDate()).padStart(2, '0'); // Day with two digit
+    let month = String(date.getMonth() + 1).padStart(2, '0'); // Month with two digit
+    let year = date.getFullYear(); // Complete year
+    
+    return {
+      formatted: `${day}/${month}/${year}`,
+      original: r
+    };
+  });
   
   // Extract and sort all unique dates
   let dates = [...new Set(parsedDates.map(d => d.formatted))].sort();
