@@ -78,7 +78,9 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                     //apply only if the status is temp and no bot is available. with agent you must reroute to assign temp request to an agent 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
-                                    requestService.reroute(message.request.request_id, message.request.id_project, false );     
+                                    requestService.reroute(message.request.request_id, message.request.id_project, false ).catch((err) => {
+                                        winston.error("ConciergeBot error reroute: ", err);
+                                    });     
                                 }
                                 
                                 // updateStatusWitId(lead_id, id_project, status)
@@ -135,7 +137,9 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                             
                             // botprefix
                             // removeParticipantByRequestId(request_id, id_project, member) 
-                            requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId );
+                            requestService.removeParticipantByRequestId(request.request_id, request.id_project,"bot_"+botId ).catch((err) => {
+                                winston.error("(ConciergeBot) removeParticipantByRequestId error", err)
+                            });
                         }      
                     }
                     

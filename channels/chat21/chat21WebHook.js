@@ -95,171 +95,174 @@ router.post('/', function (req, res) {
 
           if (!request) { //the request doen't exists create it
 
-                winston.debug("request not exists with request_id: " + message.recipient);
-                
-                var departmentid = "default";
+            winston.debug("request not exists with request_id: " + message.recipient);
+
+            var departmentid = "default";
 
 
-                var language = message.language;
-                winston.debug("chat21 language", language);
-            
-                var sourcePage;
-                var client;
-                var userEmail;
-                var userFullname;
-                var projectid;  // before request_id id_project unique - commented
-            
-                var requestStatus = undefined;
+            var language = message.language;
+            winston.debug("chat21 language", language);
 
-                if (message.attributes) {
-            
-                  // before request_id id_project unique - commented
-                  projectid = message.attributes.projectId;
-                  winston.debug("chat21 projectid", projectid);
-            
-                  departmentid = message.attributes.departmentId;
-                  winston.debug("chat21 departmentid", departmentid);
-            
-                  sourcePage = message.attributes.sourcePage;
-                  winston.debug("chat21 sourcePage", sourcePage);
-                  
-                  client = message.attributes.client;
-                  winston.debug("chat21 client", client);
-              
-                
-            
-                  userEmail = message.attributes.userEmail;
-                  winston.debug("chat21 userEmail", userEmail);
-            
-                  userFullname = message.attributes.userFullname;
-                  winston.debug("chat21 userFullname", userFullname);
+            var sourcePage;
+            var client;
+            var userEmail;
+            var userFullname;
+            var projectid;  // before request_id id_project unique - commented
 
-                  // TODO proactive status
-                  // if (message.attributes.subtype === "info") {                    
-                  //   requestStatus = 50;
-                  // }
+            var requestStatus = undefined;
+
+            if (message.attributes) {
+
+              // before request_id id_project unique - commented
+              projectid = message.attributes.projectId;
+              winston.debug("chat21 projectid", projectid);
+
+              departmentid = message.attributes.departmentId;
+              winston.debug("chat21 departmentid", departmentid);
+
+              sourcePage = message.attributes.sourcePage;
+              winston.debug("chat21 sourcePage", sourcePage);
+
+              client = message.attributes.client;
+              winston.debug("chat21 client", client);
+
+
+
+              userEmail = message.attributes.userEmail;
+              winston.debug("chat21 userEmail", userEmail);
+
+              userFullname = message.attributes.userFullname;
+              winston.debug("chat21 userFullname", userFullname);
+
+              // TODO proactive status
+              // if (message.attributes.subtype === "info") {                    
+              //   requestStatus = 50;
+              // }
+            }
+
+            winston.debug("requestStatus " + requestStatus);
+
+            // before request_id id_project unique - commented
+            if (!projectid) {
+              winston.verbose("projectid is null. Not a support message");
+              return res.status(400).send({ success: false, msg: 'projectid is null. Not a support message' });
+            }
+
+
+            if (!message.recipient.startsWith("support-group")) {
+              winston.verbose("recipient not starts wiht support-group. Not a support message");
+              return res.status(400).send({ success: false, msg: "recipient not starts wiht support-group. Not a support message" });
+            }
+
+
+            if (!userFullname) {
+              userFullname = message.sender_fullname;
+            }
+
+
+
+
+            var leadAttributes = message.attributes;
+            leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
+
+            // winston.debug("userEmail is defined");
+            // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
+            return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
+              .then(function (createdLead) {
+
+                var rAttributes = message.attributes;
+                rAttributes["senderAuthInfo"] = message.senderAuthInfo;
+                winston.debug("rAttributes", rAttributes);
+
+
+
+
+                // message.sender is the project_user id created with firebase custom auth
+
+                var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
+                winston.debug("isObjectId:" + isObjectId);
+
+                var queryProjectUser = { id_project: projectid, status: "active" };
+
+                if (isObjectId) {
+                  queryProjectUser.id_user = message.sender;
+                } else {
+                  queryProjectUser.uuid_user = message.sender;
                 }
-                
-                winston.debug("requestStatus "+ requestStatus);
-                
-                 // before request_id id_project unique - commented
-                if (!projectid) {
-                  winston.verbose("projectid is null. Not a support message");
-                  return res.status(400).send({success: false, msg: 'projectid is null. Not a support message'});
-                }
-
-                
-                if (!message.recipient.startsWith("support-group")) {
-                  winston.verbose("recipient not starts wiht support-group. Not a support message");
-                  return res.status(400).send({success: false, msg: "recipient not starts wiht support-group. Not a support message"});
-                }
-            
-              
-                if (!userFullname) {
-                  userFullname = message.sender_fullname;
-                }
-
-              
-               
-
-                var leadAttributes = message.attributes;
-                leadAttributes["senderAuthInfo"] = message.senderAuthInfo;
-              
-                  // winston.debug("userEmail is defined");
-                                    // createIfNotExistsWithLeadId(lead_id, fullname, email, id_project, createdBy)
-                  return leadService.createIfNotExistsWithLeadId(message.sender, userFullname, userEmail, projectid, null, leadAttributes)
-                  .then(function(createdLead) {
-
-                    var rAttributes = message.attributes;
-                    rAttributes["senderAuthInfo"] = message.senderAuthInfo;   
-                    winston.debug("rAttributes", rAttributes);
+                winston.debug("queryProjectUser", queryProjectUser);
 
 
+                return Project_user.findOne(queryProjectUser)
+                  // .cache(cacheUtil.defaultTTL, projectid+":project_users:request_id:"+requestid)
+                  .exec(function (err, project_user) {
+
+                    var project_user_id = null;
+
+                    if (err) {
+                      winston.error("Error getting the project_user_id", err);
+                    }
+
+                    if (project_user) {
+                      winston.debug("project_user", project_user);
+                      project_user_id = project_user.id;
+                      winston.debug("project_user_id: " + project_user_id);
+                    } else {
+                      // error->utente bloccato oppure non autenticator request.requester sarà nulll...⁄
+                      return winston.error("project_user not found with query: ", queryProjectUser);
+                    }
 
 
-                      // message.sender is the project_user id created with firebase custom auth
+                    // var auto_close;
 
-                      var isObjectId = mongoose.Types.ObjectId.isValid(message.sender);
-                      winston.debug("isObjectId:"+ isObjectId);
-
-                       var queryProjectUser = {id_project:projectid, status: "active" };
-
-                      if (isObjectId) {
-                        queryProjectUser.id_user = message.sender;
-                      }else {
-                        queryProjectUser.uuid_user = message.sender;
-                      }
-                      winston.debug("queryProjectUser", queryProjectUser);
-                      
-
-                    return Project_user.findOne(queryProjectUser)
-                    // .cache(cacheUtil.defaultTTL, projectid+":project_users:request_id:"+requestid)
-                    .exec(function (err, project_user) {
-
-                      var project_user_id = null; 
-
-                      if (err) {
-                        winston.error("Error getting the project_user_id", err);
-                      }
-
-                      if (project_user) {
-                        winston.debug("project_user", project_user);
-                        project_user_id = project_user.id;
-                        winston.debug("project_user_id: " + project_user_id);
-                      }else {
-                        // error->utente bloccato oppure non autenticator request.requester sarà nulll...⁄
-                        return winston.error("project_user not found with query: ", queryProjectUser);                        
-                      }
+                    // // qui projecy nn c'è devi leggerlo
+                    // // if (req.project.attributes.auto_close === false) {
+                    // //   auto_close = 10;
+                    // // }
 
 
-                      // var auto_close;
+                    var new_request = {
+                      request_id: message.recipient, project_user_id: project_user_id, lead_id: createdLead._id, id_project: projectid, first_text: message.text,
+                      departmentid: departmentid, sourcePage: sourcePage, language: language, userAgent: client, status: requestStatus, createdBy: undefined,
+                      attributes: rAttributes, subject: undefined, preflight: false, channel: undefined, location: undefined,
+                      lead: createdLead, requester: project_user
+                      // , auto_close: auto_close
+                    };
 
-                      // // qui projecy nn c'è devi leggerlo
-                      // // if (req.project.attributes.auto_close === false) {
-                      // //   auto_close = 10;
-                      // // }
+                    winston.debug("new_request", new_request);
 
-                      
-                      var new_request = {
-                        request_id: message.recipient, project_user_id:project_user_id, lead_id:createdLead._id, id_project:projectid, first_text:message.text,
-                        departmentid:departmentid, sourcePage:sourcePage, language:language, userAgent:client, status:requestStatus, createdBy: undefined,
-                        attributes:rAttributes, subject:undefined, preflight:false, channel:undefined, location:undefined,
-                        lead:createdLead, requester:project_user
-                        // , auto_close: auto_close
-                      };
-    
-                      winston.debug("new_request", new_request);
-                      
-                      return requestService.create(new_request).then(function (savedRequest) {
+                    return requestService.create(new_request).then(function (savedRequest) {
 
-                    
+
                       //return requestService.createWithIdAndRequester(message.recipient, project_user_id, createdLead._id, projectid, message.text, 
                       // departmentid, sourcePage, language, client, requestStatus, null, rAttributes).then(function (savedRequest) {
-                 
 
-                        var messageId = undefined;
-                        if (message.attributes && message.attributes.tiledesk_message_id) {
-                          messageId = message.attributes.tiledesk_message_id;
-                        }
 
-                       // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language)
-                        return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
-                          projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata, language).then(function(savedMessage){
-                            return res.json(savedRequest);                                  
-                            // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
-                              // return res.json(savedRequestWithIncrement);
-                            // });
-                          
-                        
-                      }).catch(function (err) {
-                        winston.error( 'Error creating the request object.', err);
-                        return res.status(500).send({success: false, msg: 'Error creating the request object.', err:err});
-                      });
+                      var messageId = undefined;
+                      if (message.attributes && message.attributes.tiledesk_message_id) {
+                        messageId = message.attributes.tiledesk_message_id;
+                      }
+
+                      // upsert(id, sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language)
+                      return messageService.upsert(messageId, message.sender, message.sender_fullname, message.recipient, message.text,
+                        projectid, null, MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED, message.attributes, message.type, message.metadata, language).then(function (savedMessage) {
+                          return res.json(savedRequest);
+                          // return requestService.incrementMessagesCountByRequestId(savedRequest.request_id, savedRequest.id_project).then(function(savedRequestWithIncrement) {
+                          // return res.json(savedRequestWithIncrement);
+                          // });
+
+
+                        }).catch(function (err) {
+                          winston.error('Error creating the request object.', err);
+                          return res.status(500).send({ success: false, msg: 'Error creating the request object.', err: err });
+                        });
+                    }).catch((err) => {
+                      winston.error('(Chat21Webhook) Error creating the request object ', err);
+                      return res.status(500).send({ success: false, msg: 'Error creating the request object.', err: err });
+                    });
                   });
-                });
-                  
+
               });
-              
+
 
 
           } else {

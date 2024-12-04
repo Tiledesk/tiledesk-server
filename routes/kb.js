@@ -49,7 +49,7 @@ let default_preview_settings = {
 }
 let default_engine = {
   name: "pinecone",
-  type: "pod",
+  type: process.env.PINECONE_TYPE,
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX

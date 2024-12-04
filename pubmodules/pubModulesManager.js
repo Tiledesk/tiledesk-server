@@ -371,20 +371,22 @@ class PubModulesManager {
             }
         }
 
-        try {
-            this.voiceTwilio = require('./voice-twilio');
-            winston.info("this.voiceTwilio: " + this.voiceTwilio);
-            this.voiceTwilio.listener.listen(config);
+        if (process.env.VOICE_TWILIO_TOKEN === process.env.VOICE_TWILIO_SECRET) {
+            try {
+                this.voiceTwilio = require('./voice-twilio');
+                winston.info("this.voiceTwilio: " + this.voiceTwilio);
+                this.voiceTwilio.listener.listen(config);
 
-            this.voiceTwilioRoute = this.voiceTwilio.voiceTwilioRoute;
+                this.voiceTwilioRoute = this.voiceTwilio.voiceTwilioRoute;
 
-            winston.info("PubModulesManager initialized apps (voiceTwilio).")
-        } catch(err) {
-            console.log("\n Unable to start voiceTwilio connector: ", err);
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("PubModulesManager init apps module not found ");
-            } else {
-                winston.info("PubModulesManager error initializing init apps module", err);
+                winston.info("PubModulesManager initialized apps (voiceTwilio).")
+            } catch(err) {
+                console.log("\n Unable to start voiceTwilio connector: ", err);
+                if (err.code == 'MODULE_NOT_FOUND') {
+                    winston.info("PubModulesManager init apps module not found ");
+                } else {
+                    winston.info("PubModulesManager error initializing init apps module", err);
+                }
             }
         }
 
