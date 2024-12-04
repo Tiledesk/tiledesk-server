@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.31
+- updated twilio-voice-connector to 0.1.11
+
 # 2.10.30
 - updated tybot-connector to 0.2.134
 
@@ -24,7 +27,7 @@
 
 # 2.10.25
 - updated tybot-connector to 0.2.132
-- updated twilio-voice--connector to 0.1.10
+- updated twilio-voice-connector to 0.1.10
 
 # 2.10.24
 - updated tybot-connector to 0.2.132-rc1
