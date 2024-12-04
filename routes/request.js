@@ -912,6 +912,7 @@ router.put('/:requestid/tag', async (req, res) => {
     }
 
     winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
+    requestEvent.emit("request.update", updatedRequest);
     res.status(200).send(updatedRequest)
 
     scheduleTags(id_project, adding_tags);
