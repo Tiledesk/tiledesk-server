@@ -100,6 +100,59 @@ router.put('/:leadid', function (req, res) {
 });
 
 
+router.put('/:leadid/tag', async (req, res) => {
+
+  let id_project = req.projectid;
+  let lead_id = req.params.leadid;
+  let tags_list = req.body;
+  winston.debug("(Lead) /tag tags_list: ", tags_list)
+  
+  if (tags_list.length == 0) {
+    winston.warn("(Lead) /tag no tag specified")
+    return res.status(400).send({ success: false, message: "No tag specified" })
+  }
+
+  let lead = await Lead.findById(lead_id).catch((err) => {
+    winston.error("(Lead) /tag error getting lead ", err);
+    return res.status(500).send({ success: false, error: "Error getting lead with id " + lead_id});
+  })
+
+  if (!lead) {
+    winston.warn("(Lead) /tag lead not found with lead_id " + lead_id);
+    return res.status(404).send({ success: false, error: "Lead not found with id " + lead_id });
+  }
+
+  let current_tags = lead.tags;
+  tags_list.forEach(t => {
+    // Check if tag already exists in the lead. If true, skip the adding.
+    if (!current_tags.includes(t)) {
+      current_tags.push(t)
+    }
+  })
+
+  let update = {
+    tags: current_tags
+  }
+
+  Lead.findByIdAndUpdate(lead_id, update, { new: true }, (err, updatedLead) => {
+    if (err) {
+      winston.error("(Lead) /tag error finding and update lead ", err);
+      return res.status(500).send({ success: false, error: "Error updating lead with id " + lead_id })
+    }
+
+    if (!updatedLead) {
+      winston.warn("(Lead) /tag The lead was deleted while adding tags for lead " + lead_id);
+      return res.status(404).send({ success: false, error: "The lead was deleted while adding tags for lead " + lead_id })
+    }
+
+    winston.debug("(Lead) /tag Lead updated successfully ", updatedLead);
+    
+    leadEvent.emit('lead.update', updatedLead);
+    res.status(200).send(updatedLead)
+
+  })
+})
+
 
 router.patch('/:leadid/attributes',  function (req, res) {
   var data = req.body;
