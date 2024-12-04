@@ -1757,13 +1757,21 @@ router.get('/tags/:type', async (req, res) => {
   if (!startDate) {
     startDate = new Date();
     startDate.setDate(startDate.getDate() - 6);
+  } else {
+    startDate = new Date(startDate)
   }
+
   if (!endDate) {
     endDate = new Date();
+  } else {
+    endDate = new Date(endDate);
   }
+
+  console.log("startDate: ", startDate);
+  console.log("endDate: ", endDate);
   
-  startDate = new Date(startDate).getTime();
-  endDate = new Date(endDate).getTime();
+  startDate = startDate.setHours(0, 0, 0, 0);
+  endDate = endDate.setHours(0, 0, 0, 0);
 
   if (startDate > endDate) {
     return res.status(400).send({ success: false, error: "Invalid dates: start_date can't be greater of end_date"})
@@ -1774,6 +1782,8 @@ router.get('/tags/:type', async (req, res) => {
     type: type,
     date: { $gte: startDate, $lte: endDate }
   }
+
+  console.log("analytics tags query: ", query)
 
   let result = await Analytics.find(query).catch((err) => {
     winston.error("Error finding Analytics: ", err);
