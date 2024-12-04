@@ -1819,16 +1819,18 @@ router.get('/tags/:type', async (req, res) => {
   //   original: r
   // }));
   
-  let parsedDates = result.map(r => {
-    let date = new Date(parseInt(r.date));
-    let day = String(date.getDate()).padStart(2, '0'); // Day with two digit
-    let month = String(date.getMonth() + 1).padStart(2, '0'); // Month with two digit
-    let year = date.getFullYear(); // Complete year
-    
-    return {
-      formatted: `${day}/${month}/${year}`,
-      original: r
-    };
+  let parsedDates = result
+    .sort((a, b) => parseInt(a.date) - parseInt(b.date))
+    .map(r => {
+      let date = new Date(parseInt(r.date));
+      let day = String(date.getDate()).padStart(2, '0'); // Day with two digit
+      let month = String(date.getMonth() + 1).padStart(2, '0'); // Month with two digit
+      let year = date.getFullYear(); // Complete year
+      
+      return {
+        formatted: `${day}/${month}/${year}`,
+        original: r
+      };
   });
   
   // Extract and sort all unique dates
