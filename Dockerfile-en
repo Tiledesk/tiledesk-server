@@ -10,11 +10,13 @@ WORKDIR /usr/src/app
 # Accept build arguments
 ARG NPM_TOKEN
 ARG VOICE_TOKEN
+ARG VOICE_TWILIO_TOKEN
 
 COPY .npmrc_ .npmrc
 
 # Set environment variable based on build argument
 ENV VOICE_TOKEN=${VOICE_TOKEN}
+ENV VOICE_TWILIO_TOKEN=${VOICE_TWILIO_TOKEN}
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied

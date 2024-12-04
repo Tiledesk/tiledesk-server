@@ -1582,7 +1582,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('passwordChanged.html', undefined, "EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE");
+    var html = await this.readTemplate('passwordChanged.html', undefined, "EMAIL_PASSWORD_CHANGED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1618,7 +1618,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('beenInvitedExistingUser.html', undefined, "EMAIL_EXUSER_INVITED_HTML_TEMPLATE");
+    var html = await this.readTemplate('beenInvitedExistingUser.html', undefined, "EMAIL_EXUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1657,7 +1657,7 @@ class EmailService {
 
     var that = this;
 
-    var html = await this.readTemplateFile('beenInvitedNewUser.html', undefined, "EMAIL_NEWUSER_INVITED_HTML_TEMPLATE");
+    var html = await this.readTemplate('beenInvitedNewUser.html', undefined, "EMAIL_NEWUSER_INVITED_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
@@ -1687,13 +1687,16 @@ class EmailService {
   // ok
   async sendVerifyEmailAddress(to, savedUser, code) {
 
+    console.log("sendVerifyEmailAddress to: ", to)
+    console.log("sendVerifyEmailAddress savedUser: ", savedUser)
+    console.log("sendVerifyEmailAddress code: ", code)
 
     var that = this;
 
     if (savedUser.toJSON) {
       savedUser = savedUser.toJSON();
     }
-    var html = await this.readTemplateFile('verify.html', undefined, "EMAIL_VERIFY_HTML_TEMPLATE");
+    var html = await this.readTemplate('verify.html', undefined, "EMAIL_VERIFY_HTML_TEMPLATE");
 
     winston.debug("html: " + html);
 
