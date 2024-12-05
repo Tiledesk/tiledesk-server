@@ -1214,7 +1214,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let operations = kbs.map(doc => {
         return {
           updateOne: {
-            filter: { id_project: doc.id_project, type: 'faq', source: doc.source },
+            filter: { id_project: doc.id_project, type: 'faq', source: doc.source, namespace: namespace_id },
             update: doc,
             upsert: true,
             returnOriginal: false
