@@ -31,8 +31,28 @@ csv.separator = ';';
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
+const { Scheduler } = require('../services/Scheduler');
+const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
+
+const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
+const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-multi';
+const JOB_TOPIC_TAGS = process.env.JOB_TOPIC_TAGS || 'tiledesk-tags';
+
+let jobManager = new JobManager(AMQP_MANAGER_URL, {
+  debug: false,
+  topic: JOB_TOPIC_TAGS,
+  exchange: JOB_TOPIC_EXCHANGE
+})
+
+jobManager.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
+})
 
 
 
@@ -847,6 +867,66 @@ router.put('/:requestid/followers', function (req, res) {
   });
 
 });
+
+
+router.put('/:requestid/tag', async (req, res) => {
+
+  let id_project = req.projectid;
+  let request_id = req.params.requestid;
+  let tags_list = req.body;
+  winston.debug("(Request) /tag tags_list: ", tags_list)
+
+  if (tags_list.length == 0) {
+    winston.warn("(Request) /tag no tag specified")
+    return res.status(400).send({ success: false, message: "No tag specified" })
+  }
+
+  let request = await Request.findOne({ id_project: id_project, request_id: request_id }).catch((err) => {
+    winston.error("(Request) /tag error getting request ", err);
+    return res.status(500).send({ success: false, error: "Error getting request with request id " + request_id});
+  })
+
+  if (!request) {
+    winston.warn("(Request) /tag request not found with request_id " + request_id);
+    return res.status(404).send({ success: false, error: "Request not found with request id " + request_id});
+  }
+
+  let current_tags = request.tags;
+  let adding_tags = [];
+
+  tags_list.forEach(t => {
+    // Check if tag already exists in the conversation. If true, skip the adding.
+    if(!current_tags.some(tag => tag.tag === t.tag)) {
+      current_tags.push(t);
+      adding_tags.push(t);
+    }
+  })
+
+  let update = {
+    tags: current_tags
+  }
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }, (err, updatedRequest) => {
+    if (err) {
+      winston.error("(Request) /tag error finding and update request ", err);
+      return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
+    }
+
+    if (!updatedRequest) {
+      winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
+      return res.status(404).send({ success: false, error: "The request was deleted while adding tags for request " + request_id })
+    }
+
+    winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
+    res.status(200).send(updatedRequest)
+
+    scheduleTags(id_project, adding_tags);
+    /**
+    * Step 2
+    * Accodare per incrementare le statistiche di utilizzo di ogni tag
+    */
+  })
+})
 
 router.delete('/:requestid/followers/:followerid', function (req, res) {
   winston.debug(req.body);
@@ -2165,5 +2245,28 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
   })
 
 })
+
+
+async function scheduleTags(id_project, tags) {
+  
+  let scheduler = new Scheduler({ jobManager: jobManager })
+  tags.forEach(t => {
+    let payload = {
+      id_project: id_project,
+      tag: t.tag,
+      type: "conversation-tag",
+      date: new Date()
+    }
+    console.log("payload: ", payload);
+    scheduler.tagSchedule(payload, async (err, result) => {
+      if (err) {
+        winston.error("Scheduling error: ", err);
+      } else {
+        winston.info("Scheduling result: ", result);
+      }
+    })
+  })
+}
+
 
 module.exports = router;
