@@ -168,7 +168,6 @@ class RequestService {
       return departmentService.getOperators(departmentid, id_project, nobot, undefined, context).then(function (result) {
 
         // winston.debug("getOperators", result);
-
         var assigned_at = undefined;
 
         var status = RequestConstants.UNASSIGNED;
@@ -277,8 +276,6 @@ class RequestService {
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
 
           winston.debug("after routeInternal", routedRequest);
-          // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
-          // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
           winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
           winston.debug("routedRequest.status:" + routedRequest.status);
 
@@ -309,6 +306,16 @@ class RequestService {
             requestUtil.arraysEqual(beforeParticipants, routedRequest.participants)) {
 
             winston.verbose("Request " + request.request_id + " contains already the same participants at the same request status. Routed to the same participants");
+            
+            if (routedRequest.attributes.everyone_abandoned && routedRequest.attributes.everyone_abandoned === true) {
+              request.attributes.everyone_abandoned = true;
+              request.markModified('attributes');
+              request.save((err, savedRequest) => {
+                if (err) {
+                  winston.error("\nrequest.update error: ", err);
+                } 
+              })
+            }
 
             if (routedRequest.attributes && routedRequest.attributes.fully_abandoned && routedRequest.attributes.fully_abandoned === true) {
               request.status = RequestConstants.ABANDONED;
@@ -380,7 +387,6 @@ class RequestService {
            * - STATUS changed from 50 to 100 or 200
            */
           if (requestBeforeRoute.status === RequestConstants.TEMP && (routedRequest.status === RequestConstants.ASSIGNED || routedRequest.status === RequestConstants.UNASSIGNED)) {
-            // console.log("Case 2 - Leaving TEMP status")
             if (isStandardConversation) {
               requestEvent.emit('request.create.quote', payload);
             }
@@ -392,7 +398,6 @@ class RequestService {
            * - STATUS changed from undefined to 100
            */
           if ((!requestBeforeRoute.status || requestBeforeRoute.status === undefined) && routedRequest.status === RequestConstants.ASSIGNED) {
-            // console.log("Case 3 - 'Proactive' request")
             if (isStandardConversation) { 
               requestEvent.emit('request.create.quote', payload);
             }
@@ -1727,7 +1732,7 @@ class RequestService {
       //  else {
       //   winston.info("force is: " + force);
       //  }
-
+      
       return Request
         .findOne({ request_id: request_id, id_project: id_project })
 
@@ -1754,8 +1759,6 @@ class RequestService {
             winston.debug("Request already closed for request_id " + request_id + " and id_project " + id_project);
             return resolve(request);
           }
-
-          winston.debug("sono qui");
 
           //  un utente può chiudere se appartiene a participatingAgents oppure meglio agents del progetto?
 
