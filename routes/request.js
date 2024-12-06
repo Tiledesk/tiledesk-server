@@ -900,11 +900,7 @@ router.put('/:requestid/tag', async (req, res) => {
     tags: current_tags
   }
 
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }, (err, updatedRequest) => {
-    if (err) {
-      winston.error("(Request) /tag error finding and update request ", err);
-      return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
-    }
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }).then( async (updatedRequest) => {
 
     if (!updatedRequest) {
       winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
@@ -912,17 +908,49 @@ router.put('/:requestid/tag', async (req, res) => {
     }
 
     winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
-    requestEvent.emit("request.update", updatedRequest);
-    res.status(200).send(updatedRequest)
 
-    if (!process.env.NODE_ENV) {
-      scheduleTags(id_project, adding_tags);
-    }
-    /**
-    * Step 2
-    * Accodare per incrementare le statistiche di utilizzo di ogni tag
-    */
+    const populatedRequest = 
+        await updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')
+          .populate({ path: 'requester', populate: { path: 'id_user' } })  
+          .execPopulate();
+
+    requestEvent.emit("request.update", populatedRequest)
+    res.status(200).send(updatedRequest)
+    
+    scheduleTags(id_project, adding_tags);
+
+  }).catch((err) => {
+    winston.error("(Request) /tag error finding and update request ", err);
+    return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
   })
+
+  // Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }, (err, updatedRequest) => {
+  //   if (err) {
+  //     winston.error("(Request) /tag error finding and update request ", err);
+  //     return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
+  //   }
+
+  //   if (!updatedRequest) {
+  //     winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
+  //     return res.status(404).send({ success: false, error: "The request was deleted while adding tags for request " + request_id })
+  //   }
+
+  //   winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
+  //   requestEvent.emit("request.update", updatedRequest);
+  //   res.status(200).send(updatedRequest)
+
+  //   if (!process.env.NODE_ENV) {
+  //     scheduleTags(id_project, adding_tags);
+  //   }
+  //   /**
+  //   * Step 2
+  //   * Accodare per incrementare le statistiche di utilizzo di ogni tag
+  //   */
+  // })
 })
 
 router.delete('/:requestid/followers/:followerid', function (req, res) {
