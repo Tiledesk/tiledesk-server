@@ -141,6 +141,8 @@ var KBSettingSchema = new Schema({
 
 
 KBSchema.index({ createdAt: -1, updatedAt: -1 })
+KBSchema.index({ id_project: 1, namespace: 1, updatedAt: -1 })
+
 
 // DEPRECATED
 const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 

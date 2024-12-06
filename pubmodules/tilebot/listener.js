@@ -10,8 +10,11 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 winston.info("Tilebot endpoint: " + TILEBOT_ENDPOINT);
 
-
-const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+/**
+ * process.env.API_ENDPOINT --> Internal url of the server inside the cluster
+ * process.env.API_URL      --> External/Public server url
+ */
+const apiUrl = process.env.API_ENDPOINT || process.env.API_URL || configGlobal.apiUrl;
 winston.info('Rasa apiUrl: '+ apiUrl);
 
 const tybot = require("@tiledesk/tiledesk-tybot-connector");
