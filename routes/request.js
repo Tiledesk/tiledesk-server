@@ -921,7 +921,12 @@ router.put('/:requestid/tag', async (req, res) => {
     requestEvent.emit("request.update", populatedRequest)
     res.status(200).send(updatedRequest)
     
-    scheduleTags(id_project, adding_tags);
+    //scheduleTags(id_project, adding_tags);
+    console.log("process.env.NODE_ENV: ", process.env.NODE_ENV)
+    if (!process.env.NODE_ENV) {
+      console.log("schedule")
+      scheduleTags(id_project, adding_tags);
+    }
 
   }).catch((err) => {
     winston.error("(Request) /tag error finding and update request ", err);
