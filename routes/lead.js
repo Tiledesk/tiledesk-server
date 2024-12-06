@@ -102,7 +102,6 @@ router.put('/:leadid', function (req, res) {
 
 router.put('/:leadid/tag', async (req, res) => {
 
-  let id_project = req.projectid;
   let lead_id = req.params.leadid;
   let tags_list = req.body;
   winston.debug("(Lead) /tag tags_list: ", tags_list)
@@ -327,6 +326,25 @@ router.patch('/:leadid/properties',  function (req, res) {
 //     res.json(updatedLead);
 //   });
 // });
+router.delete('/:leadid/tag/:tag', async (req, res) => {
+
+  let lead_id = req.params.leadid;
+  let tag = req.params.tag;
+
+  Lead.findByIdAndUpdate(lead_id, { $pull: { tags: tag }}, { new: true}).then((updatedLead) => {
+    if (!updatedLead) {
+      winston.warn("(Lead) /removetag lead not found with id " + lead_id);
+      return res.status(404).send({ success: false, error: "Lead not found with id " + lead_id })
+    }
+
+    winston.debug("(Lead) /removetag updatedLead: ", updatedLead)
+    res.status(200).send(updatedLead)
+  }).catch((err) => {
+    winston.error("(Lead) /removetag error updating lead: ", err);
+    res.status(500).send({ success: false, error: err });
+  })
+})
+
 
 router.delete('/:leadid', function (req, res) {
   winston.debug(req.body);

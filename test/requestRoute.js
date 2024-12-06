@@ -1083,6 +1083,175 @@ describe('RequestRoute', () => {
     });
   });
 
+  // mocha test/requestRoute.js  --grep 'remove-tag-from-conversation'
+  it('remove-tag-from-conversation', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+
+            if (err) { console.log("err: ", err) };
+            if (log) { console.log("res.body: ", res.body) };
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('request_id').not.eql(null);
+            
+            let request_id = res.body.request_id;
+
+            let tags = [
+              { tag: "tag1", color: "#43B1F2" },
+              { tag: "tag2", color: "#43B1F2" }
+            ]
+
+            // First Step: add 2 tags on a conversation no tagged at all
+            chai.request(server)
+                .put('/' + savedProject._id + '/requests/' + request_id + '/tag' )
+                .auth(email, pwd)
+                .send(tags)
+                .end((err, res) => {
+
+                  if (err) { console.log("err: ", err) };
+                  if (log) { console.log("res.body: ", res.body) };
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  expect(res.body.tags).to.have.length(2);
+                  expect(res.body.tags[0].tag).to.equal('tag1');
+                  expect(res.body.tags[1].tag).to.equal('tag2');
+              
+                  let tags2 = [
+                    { tag: "tag2", color: "#43B1F2"},
+                    { tag: "tag3", color: "#43B1F2"}
+                  ]
+
+                  // Second Step: add more 2 tags of which one already existant in the conversation
+                  chai.request(server)
+                      .put('/' + savedProject._id + '/requests/' + request_id + '/tag')
+                      .auth(email, pwd)
+                      .send(tags2)
+                      .end((err, res) => {
+                        
+                        if (err) { console.log("err: ", err) };
+                        if (log) { console.log("res.body: ", res.body) };
+
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.tags).to.have.length(3);
+                        expect(res.body.tags[0].tag).to.equal('tag1');
+                        expect(res.body.tags[1].tag).to.equal('tag2');
+                        expect(res.body.tags[2].tag).to.equal('tag3');
+
+                        let tag_to_delete = res.body.tags[2];
+
+                        chai.request(server)
+                            .delete('/' + savedProject._id + '/requests/' +  request_id + '/tag/' + tag_to_delete._id)
+                            .auth(email, pwd)
+                            .end((err, res) => {
+
+                              if (err) { console.log("err: ", err) };
+                              if (log) { console.log("res.body: ", res.body) };
+                              
+                              res.should.have.status(200);
+                              res.body.should.be.a('object');
+
+                              expect(res.body.tags).to.have.length(2);
+                              expect(res.body.tags[0].tag).to.equal('tag1');
+                              expect(res.body.tags[1].tag).to.equal('tag2');
+
+                              done();
+                            })
+                      })
+
+                })
+        
+          });
+      });
+    });
+  }).timeout(4000);
+
+  it('remove-tag-from-unexistent-conversation', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+
+            if (err) { console.log("err: ", err) };
+            if (log) { console.log("res.body: ", res.body) };
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('request_id').not.eql(null);
+            
+            let request_id = res.body.request_id;
+
+            let tags = [
+              { tag: "tag1", color: "#43B1F2" },
+              { tag: "tag2", color: "#43B1F2" }
+            ]
+
+            // First Step: add 2 tags on a conversation no tagged at all
+            chai.request(server)
+                .put('/' + savedProject._id + '/requests/' + request_id + '/tag' )
+                .auth(email, pwd)
+                .send(tags)
+                .end((err, res) => {
+
+                  if (err) { console.log("err: ", err) };
+                  if (log) { console.log("res.body: ", res.body) };
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  expect(res.body.tags).to.have.length(2);
+                  expect(res.body.tags[0].tag).to.equal('tag1');
+                  expect(res.body.tags[1].tag).to.equal('tag2');
+              
+                  let tag_to_delete = res.body.tags[1];
+                  let fake_request_id = "support-group-6752d23518dbe16860ff2cda-b1f2ecb1c617492fbbc33105b475axxx"
+
+                  chai.request(server)
+                      .delete('/' + savedProject._id + '/requests/' +  fake_request_id + '/tag/' + tag_to_delete._id)
+                      .auth(email, pwd)
+                      .end((err, res) => {
+
+                        if (err) { console.log("err: ", err) };
+                        if (log) { console.log("res.body: ", res.body) };
+                        
+                        res.should.have.status(404);
+                        res.body.should.be.a('object');
+
+                        expect(res.body.success).to.equal(false);
+                        expect(res.body.error).to.equal("Request not found with id " + fake_request_id)
+
+                        done();
+                      })
+
+
+                })
+        
+          });
+      });
+    });
+  }).timeout(4000);
+
 
   describe('/assign', () => {
 

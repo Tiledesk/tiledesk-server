@@ -39,7 +39,7 @@ const { Scheduler } = require('../services/Scheduler');
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
-  debug: true,
+  debug: false,
   queueName: "conversation-tags_queue",
   exchange: "tiledesk-multi",
   topic: "conversation-tags",
@@ -915,7 +915,9 @@ router.put('/:requestid/tag', async (req, res) => {
     requestEvent.emit("request.update", updatedRequest);
     res.status(200).send(updatedRequest)
 
-    scheduleTags(id_project, adding_tags);
+    if (!process.env.NODE_ENV) {
+      scheduleTags(id_project, adding_tags);
+    }
     /**
     * Step 2
     * Accodare per incrementare le statistiche di utilizzo di ogni tag
@@ -939,7 +941,29 @@ router.delete('/:requestid/followers/:followerid', function (req, res) {
 
 
 
+router.delete('/:requestid/tag/:tag_id', async (req, res) => {
 
+  let id_project = req.projectid;
+  let request_id = req.params.requestid;
+  let tag_id = req.params.tag_id;
+
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then((updatedRequest) => {
+    
+    if (!updatedRequest) {
+      winston.warn("(Request) /removetag request not found with id: " + request_id)
+      return res.status(404).send({ success: false, error: "Request not found with id " + request_id})
+    }
+
+    winston.debug("(Request) /removetag updatedRequest: ", updatedRequest)
+    requestEvent.emit("request.update", updatedRequest);
+    res.status(200).send(updatedRequest);
+    
+  }).catch((err) => {
+    winston.error("(Request) /removetag error updating request: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+})
 
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
