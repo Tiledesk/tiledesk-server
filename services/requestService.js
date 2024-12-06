@@ -1623,6 +1623,7 @@ class RequestService {
             return reject(err);
           }
 
+          console.log("RequestService updatedRequest: ", updatedRequest)
           if (updatedRequest.channel.name === 'voice-vxml') {
             requestEvent.emit('request.close.quote', updatedRequest);
           }
