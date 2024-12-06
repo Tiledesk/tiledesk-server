@@ -49,7 +49,7 @@ let default_preview_settings = {
 }
 let default_engine = {
   name: "pinecone",
-  type: "pod",
+  type: process.env.PINECONE_TYPE,
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX
@@ -1104,7 +1104,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let operations = kbs.map(doc => {
     return {
       updateOne: {
-        filter: { id_project: doc.id_project, type: 'url', source: doc.source },
+        filter: { id_project: doc.id_project, type: 'url', source: doc.source, namespace: namespace_id },
         update: doc,
         upsert: true,
         returnOriginal: false
@@ -1214,7 +1214,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let operations = kbs.map(doc => {
         return {
           updateOne: {
-            filter: { id_project: doc.id_project, type: 'faq', source: doc.source },
+            filter: { id_project: doc.id_project, type: 'faq', source: doc.source, namespace: namespace_id },
             update: doc,
             upsert: true,
             returnOriginal: false

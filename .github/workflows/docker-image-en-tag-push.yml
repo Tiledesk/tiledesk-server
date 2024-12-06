@@ -24,6 +24,10 @@ jobs:
      - name: Log Voice Token
        run: |
           echo "Voice token log: ${{ secrets.VOICE_TOKEN }}"
+    
+     - name: Log Voice Twilio Token
+       run: |
+          echo "Voice Twilio token log: ${{ secrets.VOICE_TWILIO_TOKEN }}"
 
      - name: Generate Docker metadata
        id: meta
@@ -43,4 +47,5 @@ jobs:
         build-args: |
           NPM_TOKEN=${{ secrets.NPM_TOKEN }}
           VOICE_TOKEN=${{ secrets.VOICE_TOKEN }}
+          VOICE_TWILIO_TOKEN=${{ secrets.VOICE_TWILIO_TOKEN }}
         tags: ${{ steps.meta.outputs.tags }}
