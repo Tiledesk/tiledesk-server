@@ -955,7 +955,8 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
   let tag_id = req.params.tag_id;
 
 
-  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then((updatedRequest) => {
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
     
     if (!updatedRequest) {
       winston.warn("(Request) /removetag request not found with id: " + request_id)
@@ -963,7 +964,17 @@ router.delete('/:requestid/tag/:tag_id', async (req, res) => {
     }
 
     winston.debug("(Request) /removetag updatedRequest: ", updatedRequest)
-    requestEvent.emit("request.update", updatedRequest);
+
+    const populatedRequest = 
+        await updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')
+          .populate({ path: 'requester', populate: { path: 'id_user' } })  
+          .execPopulate();
+
+    requestEvent.emit("request.update", populatedRequest)
     res.status(200).send(updatedRequest);
     
   }).catch((err) => {
