@@ -511,11 +511,19 @@ class QuoteManager {
             if (quotes_enabled === true) {
                 winston.verbose("request.create.quote event catched");
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
-
-                
                 return result;
             } else {
                 winston.verbose("QUOTES DISABLED - request.create.quote event")
+            }
+        })
+
+        requestEvent.on('request.closed.quote', async (payload) => {
+            if (quotes_enabled === true) {
+                winston.verbose("request.closed.quote event catched");
+                let result = await this.incrementVoiceDurationCount(payload.project, payload.request);
+                return result;
+            } else {
+                winston.verbose("QUOTES DISABLED - request.closed.quote event")
             }
         })
         // REQUESTS EVENTS - END
