@@ -998,7 +998,7 @@ router.post('/', async (req, res) => {
       let resources = [];
 
       resources.push(json);
-      if (!process.env.NODE_ENV) {
+      if (process.env.NODE_ENV !== 'test') {
         scheduleScrape(resources);
       }
 
@@ -1123,7 +1123,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
-    if (!process.env.NODE_ENV) {
+    if (process.env.NODE_ENV !== 'test') {
       scheduleScrape(resources);
     }
     res.status(200).send(result);
@@ -1232,7 +1232,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
           return { id: _id, webhooh: webhook, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
-        if (!process.env.NODE_ENV) {
+        if (process.env.NODE_ENV !== 'test') {
           scheduleScrape(resources);
         }
         res.status(200).send(result);
