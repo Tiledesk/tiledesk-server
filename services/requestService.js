@@ -1612,14 +1612,23 @@ class RequestService {
         .populate('participatingBots')
         .populate('participatingAgents')
         .populate({ path: 'requester', populate: { path: 'id_user' } })
-        .exec(function (err, updatedRequest) {
+        .exec( async function (err, updatedRequest) {
           if (err) {
             winston.error(err);
             return reject(err);
           }
 
+          let project = await projectService.getCachedProject(id_project).catch((err) => {
+            winston.warn("Error getting cached project. Skip conversation quota check.")
+            winston.warn("Getting cached project error:  ", err)
+          })
+
+          let payload = {
+            project: project,
+            request: updatedRequest
+          }
           if (updatedRequest.channel.name === 'voice-vxml') {
-            requestEvent.emit('request.close.quote', updatedRequest);
+            requestEvent.emit('request.close.quote', payload);
           }
           // winston.debug("updatedRequest", updatedRequest);
           return resolve(updatedRequest);
