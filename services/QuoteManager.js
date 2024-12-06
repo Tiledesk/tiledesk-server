@@ -107,10 +107,12 @@ class QuoteManager {
             return key;
         }
 
-        let duration = request.duration
-        await this.tdCache.incrby(key, duration);
-
-        this.sendEmailIfQuotaExceeded(project, request, 'voice-duration', key);
+        if (request?.duration) {
+            let duration = Math.round(request.duration / 1000); // from ms to s
+            await this.tdCache.incrby(key, duration);
+    
+            this.sendEmailIfQuotaExceeded(project, request, 'voice-duration', key);
+        }
     }
     // INCREMENT KEY SECTION - END
 
@@ -517,13 +519,13 @@ class QuoteManager {
             }
         })
 
-        requestEvent.on('request.closed.quote', async (payload) => {
+        requestEvent.on('request.close.quote', async (payload) => {
             if (quotes_enabled === true) {
-                winston.verbose("request.closed.quote event catched");
+                winston.verbose("request.close.quote event catched");
                 let result = await this.incrementVoiceDurationCount(payload.project, payload.request);
                 return result;
             } else {
-                winston.verbose("QUOTES DISABLED - request.closed.quote event")
+                winston.verbose("QUOTES DISABLED - request.close.quote event")
             }
         })
         // REQUESTS EVENTS - END

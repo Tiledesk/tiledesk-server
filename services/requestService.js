@@ -1618,6 +1618,9 @@ class RequestService {
             return reject(err);
           }
 
+          if (updatedRequest.channel.name === 'voice-vxml') {
+            requestEvent.emit('request.close.quote', updatedRequest);
+          }
           // winston.debug("updatedRequest", updatedRequest);
           return resolve(updatedRequest);
         });
