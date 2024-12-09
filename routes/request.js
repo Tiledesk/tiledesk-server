@@ -206,6 +206,9 @@ router.post('/',
           return res.json(savedRequest);
           // });
           // });
+        }).catch((err) => {
+          winston.error("(Request) create request error ", err)
+          return res.status(500).send({ success: false, message: "Unable to create request", err: err })
         });
 
 
@@ -436,13 +439,15 @@ router.put('/:requestid/participants', function (req, res) {
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
   winston.debug(req.body);
-
   //removeParticipantByRequestId(request_id, id_project, member)
   return requestService.removeParticipantByRequestId(req.params.requestid, req.projectid, req.params.participantid).then(function (updatedRequest) {
 
     winston.verbose("participant removed", updatedRequest);
 
     return res.json(updatedRequest);
+  }).catch((err) => {
+    //winston.error("(Request) removeParticipantByRequestId error", err)
+    return res.status(400).send({ success: false, error: "Unable to remove the participant " + req.params.participantid +  " from the request " + req.params.requestid})
   });
 
 

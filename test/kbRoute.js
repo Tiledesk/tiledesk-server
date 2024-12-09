@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
 process.env.PINECONE_INDEX = "test_index"
+process.env.PINECONE_TYPE = "pod"
 process.env.LOG_LEVEL = 'critical'
 
 var userService = require('../services/userService');
@@ -1465,7 +1466,7 @@ describe('KbRoute', () => {
 
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get all namespaces res.body: ", res.body); }
-
+                            console.log("get all namespaces res.body: ", res.body);
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
@@ -1815,6 +1816,7 @@ describe('KbRoute', () => {
                 })
             })
         }).timeout(10000)
+
 
         /**
          * Delete namespace
