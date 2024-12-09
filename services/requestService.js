@@ -20,8 +20,7 @@ var configGlobal = require('../config/global');
 const projectService = require('./projectService');
 const axios = require("axios").default;
 
-
-const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
 
 let tdCache = new TdCache({
     host: process.env.CACHE_REDIS_HOST,
@@ -2273,7 +2272,7 @@ class RequestService {
             //cacheinvalidation
             return request.save(function (err, savedRequest) {
               if (err) {
-                winston.error("Error saving removed participant ", err);
+                //winston.error("Error saving removed participant ", err);
                 return reject(err);
               }
 
@@ -2812,7 +2811,7 @@ class RequestService {
 
     return new Promise( async (resolve, reject) => {
       await axios({
-        url: apiUrl + '/modules/tilebot/ext/reserved/parameters/requests/' + request_id,
+        url: TILEBOT_ENDPOINT + 'reserved/parameters/requests/' + request_id,
         headers: {
           'Content-Type': 'application/json'
         },

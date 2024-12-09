@@ -111,6 +111,8 @@ class MessageActionsInterceptor {
                                 //     {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
                                 // );
 
+                        }).catch((err) => {
+                            winston.error("(MessageActionsInterceptor) route request error ", err)
                         });
                 //    });
                 }   else {
@@ -129,6 +131,8 @@ class MessageActionsInterceptor {
                         //     {"updateconversation" : false, messagelabel: {key: "TOUCHING_OPERATOR"}}
                         // );
 
+                    }).catch((err) => {
+                        winston.error("(MessageActionsInterceptor) reroute request error ", err)
                     });
                 }   
               

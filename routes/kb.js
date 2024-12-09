@@ -49,7 +49,7 @@ let default_preview_settings = {
 }
 let default_engine = {
   name: "pinecone",
-  type: "pod",
+  type: process.env.PINECONE_TYPE,
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX
@@ -298,41 +298,20 @@ router.post('/qa', async (req, res) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    let id = answer.id;
-    let index = id.indexOf("#");
-    if (index != -1) {
-      id = id.substring(index + 1);
+    if (publicKey === true) {
+      let multiplier = MODELS_MULTIPLIER[data.model];
+      if (!multiplier) {
+        multiplier = 1;
+        winston.info("No multiplier found for AI model")
+      }
+      obj.multiplier = multiplier;
+      obj.tokens = answer.prompt_token_size;
+
+      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+      winston.verbose("incremented_key: ", incremented_key);
     }
-
-    KB.findById(id, (err, resource) => {
-
-      if (publicKey === true) {
-        let multiplier = MODELS_MULTIPLIER[data.model];
-        if (!multiplier) {
-          multiplier = 1;
-          winston.info("No multiplier found for AI model")
-        }
-        obj.multiplier = multiplier;
-        obj.tokens = answer.prompt_token_size;
   
-        let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-        winston.verbose("incremented_key: ", incremented_key);
-      }
-
-      if (err) {
-        winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
-        return res.status(200).send(resp.data);
-      }
-
-      if (!resource) {
-        winston.error("Resource with id " + id + " not found in namespace " + answer.namespace + ". The standard answer is returned.")
-        return res.status(200).send(resp.data);
-      }
-
-      answer.source = resource.name;
-      return res.status(200).send(answer);
-    })
-
+    return res.status(200).send(answer);
 
   }).catch((err) => {
     winston.error("qa err: ", err);
@@ -1104,7 +1083,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let operations = kbs.map(doc => {
     return {
       updateOne: {
-        filter: { id_project: doc.id_project, type: 'url', source: doc.source },
+        filter: { id_project: doc.id_project, type: 'url', source: doc.source, namespace: namespace_id },
         update: doc,
         upsert: true,
         returnOriginal: false
@@ -1214,7 +1193,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let operations = kbs.map(doc => {
         return {
           updateOne: {
-            filter: { id_project: doc.id_project, type: 'faq', source: doc.source },
+            filter: { id_project: doc.id_project, type: 'faq', source: doc.source, namespace: namespace_id },
             update: doc,
             upsert: true,
             returnOriginal: false
