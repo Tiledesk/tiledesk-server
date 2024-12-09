@@ -1766,9 +1766,6 @@ router.get('/tags/:type', async (req, res) => {
   } else {
     endDate = new Date(endDate);
   }
-
-  console.log("startDate: ", startDate);
-  console.log("endDate: ", endDate);
   
   startDate = startDate.setHours(0, 0, 0, 0);
   endDate = endDate.setHours(0, 0, 0, 0);
@@ -1790,35 +1787,6 @@ router.get('/tags/:type', async (req, res) => {
     return res.status(500).send({ success: false, error: "Unable to find analytics" })
   })
 
-  // let parsedDates = result.map(r => new Date(parseInt(r.date)));
-  // console.log("parsedDates: ", parsedDates)
-
-  // let dates = parsedDates
-  //   .map(d => d.toISOString().split('T')[0]) // Format dates as YYYY-MM-DD
-  //   .sort();
-  // console.log("dates: ", dates)
-
-  // let allKeys = [...new Set(result.flatMap(o => Object.keys(o.keys)))];
-  // console.log("allKeys: ", allKeys)
-
-
-  // let series = allKeys.map(k => {
-  //   let values = dates.map(d => {
-  //     let count = result.find(r => new Date(parseInt(r.date)).toISOString().split('T')[0] === d);
-  //     return count?.keys[k] || 0; // Use 0 if the tag is not present
-  //   });
-  //   return { name: k, values };
-  // });
-
-  // let data = { dates, series };
-  // console.log(data);
-
-
-  // let parsedDates = result.map(r => ({
-  //   formatted: new Date(parseInt(r.date)).toISOString().split('T')[0], // Format date as YYYY-MM-DD
-  //   original: r
-  // }));
-  
   let parsedDates = result
     .sort((a, b) => parseInt(a.date) - parseInt(b.date))
     .map(r => {
