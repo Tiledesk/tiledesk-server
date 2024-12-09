@@ -20,6 +20,7 @@ var configGlobal = require('../config/global');
 const projectService = require('./projectService');
 const axios = require("axios").default;
 
+let port = process.env.PORT || '3000';
 const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
 
 let tdCache = new TdCache({
