@@ -5,6 +5,41 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.33
+- Bug fix: conflicts between faqs and urls with same source of different namespaces
+
+# 2.10.32
+- Externalized PINECONE_TYPE variable for kb engine
+
+# 2.10.31
+- updated twilio-voice-connector to 0.1.11
+
+# 2.10.30
+- updated tybot-connector to 0.2.134
+
+# 2.10.29
+- Minor improvements external channels
+
+# 2.10.28
+- removed duplicated index on Request model
+
+# 2.10.27
+- updated tybot-connector to 0.2.133
+- updated vxml-connector to 0.2.65
+- updated EmailService methods
+
+# 2.10.26
+- Added missing catch blocks
+
+# 2.10.25
+- updated tybot-connector to 0.2.132
+- updated twilio-voice-connector to 0.1.10
+
+# 2.10.24
+- updated tybot-connector to 0.2.132-rc1
+- updated vxml-connector to 0.2.64
+- updated twilio-voice--connector to 0.1.9
+
 # 2.10.23
 - Removed logs
 
