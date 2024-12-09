@@ -16,12 +16,12 @@ const emailEvent = require('../event/emailEvent');
 
 
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
-    SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,      email: 200,     chatbots: 2,       namespace: 1,   kbs: 50     },
-    BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,     email: 200,     chatbots: 5,       namespace: 1,   kbs: 150    },
-    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,     email: 200,     chatbots: 20,      namespace: 3,   kbs: 300    },
-    TEAM:       { requests: 5000,   messages: 0,    tokens: 10000000,    email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
-    CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,    email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
+    FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,     voice: 0,       email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,     voice: 0,       email: 200,     chatbots: 2,       namespace: 1,   kbs: 50     },
+    BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,    voice: 0,       email: 200,     chatbots: 5,       namespace: 1,   kbs: 150    },
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,    voice: 0,       email: 200,     chatbots: 20,      namespace: 3,   kbs: 300    },
+    TEAM:       { requests: 5000,   messages: 0,    tokens: 10000000,   voice: 0,       email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
+    CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,   voice: 120000,  email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
 }
 
 const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
@@ -94,6 +94,26 @@ class QuoteManager {
         // await this.tdCache.incrby(key, tokens);
         this.sendEmailIfQuotaExceeded(project, data, 'tokens', key);
         return key;
+    }
+
+    async incrementVoiceDurationCount(project, request) {
+
+        console.log("incrementVoiceDurationCount request ", request)
+        this.project = project;
+        let key = await this.generateKey(request, 'voice-duration');
+        winston.verbose("[QuoteManager] incrementVoiceDurationCount key: " + key);
+
+        if (quotes_enabled === false) {
+            winston.debug("QUOTES DISABLED - incrementVoiceDurationCount")
+            return key;
+        }
+
+        if (request?.duration) {
+            let duration = Math.round(request.duration / 1000); // from ms to s
+            await this.tdCache.incrby(key, duration);
+    
+            this.sendEmailIfQuotaExceeded(project, request, 'voice-duration', key);
+        }
     }
     // INCREMENT KEY SECTION - END
 
@@ -494,11 +514,19 @@ class QuoteManager {
             if (quotes_enabled === true) {
                 winston.verbose("request.create.quote event catched");
                 let result = await this.incrementRequestsCount(payload.project, payload.request);
-
-                
                 return result;
             } else {
                 winston.verbose("QUOTES DISABLED - request.create.quote event")
+            }
+        })
+
+        requestEvent.on('request.close.quote', async (payload) => {
+            if (quotes_enabled === true) {
+                winston.verbose("request.close.quote event catched");
+                let result = await this.incrementVoiceDurationCount(payload.project, payload.request);
+                return result;
+            } else {
+                winston.verbose("QUOTES DISABLED - request.close.quote event")
             }
         })
         // REQUESTS EVENTS - END
