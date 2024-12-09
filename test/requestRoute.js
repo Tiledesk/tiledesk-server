@@ -1,40 +1,33 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
-var User = require('../models/user');
-
 var projectService = require('../services/projectService');
 var requestService = require('../services/requestService');
 var userService = require('../services/userService');
 var leadService = require('../services/leadService');
+var faqService = require('../services/faqService');
 
+var Department = require('../models/department');
+var winston = require('../config/winston');
 
 //Require the dev-dependencies
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../app');
 let should = chai.should();
-var winston = require('../config/winston');
+var expect = chai.expect;
+var assert = chai.assert;
 
-var Department = require('../models/department');
-var faqService = require('../services/faqService');
 // require('../services/mongoose-cache-fn')(mongoose);
-
 // chai.config.includeStack = true;
 
 let log = false;
-
-var expect = chai.expect;
-var assert = chai.assert;
 
 chai.use(chaiHttp);
 
 describe('RequestRoute', () => {
 
-
-
   // mocha test/requestRoute.js  --grep 'createSimple'
-
   it('createSimple', function (done) {
     // this.timeout(10000);
 
@@ -87,6 +80,8 @@ describe('RequestRoute', () => {
     });
   });
 
+
+  // mocha test/requestRoute.js  --grep 'create-simple-new-note'
   it('create-simple-new-note', function (done) {
     // this.timeout(10000);
 
@@ -138,6 +133,7 @@ describe('RequestRoute', () => {
   });
 
 
+  // mocha test/requestRoute.js  --grep 'createSimpleAndCloseForDuration'
   it('createSimpleAndCloseForDuration', function (done) {
     // this.timeout(10000);
 
@@ -188,8 +184,7 @@ describe('RequestRoute', () => {
   }).timeout(5000);
 
 
-
-
+  // mocha test/requestRoute.js  --grep 'createUpperCaseEmail'
   it('createUpperCaseEmail', function (done) {
     // this.timeout(10000);
 
@@ -242,8 +237,6 @@ describe('RequestRoute', () => {
       });
     });
   });
-
-
 
 
   // mocha test/requestRoute.js  --grep 'getbyid'
@@ -308,8 +301,9 @@ describe('RequestRoute', () => {
       });
     });
   });
-  // mocha test/requestRoute.js  --grep 'getbyidWithPartecipatingBots'
 
+
+  // mocha test/requestRoute.js  --grep 'getbyidWithPartecipatingBots'
   it('getbyidWithPartecipatingBots', function (done) {
     // this.timeout(10000);
 
@@ -384,7 +378,6 @@ describe('RequestRoute', () => {
 
 
   // mocha test/requestRoute.js  --grep 'getallSimple'
-
   it('getallSimple', function (done) {
     // this.timeout(10000);
 
@@ -470,9 +463,7 @@ describe('RequestRoute', () => {
   });
 
 
-
   // mocha test/requestRoute.js  --grep 'getallNoPopulate'
-
   it('getallNoPopulate', function (done) {
     // this.timeout(10000);
 
@@ -549,11 +540,7 @@ describe('RequestRoute', () => {
   });
 
 
-
-
-
   // mocha test/requestRoute.js  --grep 'getallSimple'
-
   it('getallFilter-snap_department_routing', function (done) {
     // this.timeout(10000);
 
@@ -638,10 +625,7 @@ describe('RequestRoute', () => {
   });
 
 
-
-
   // mocha test/requestRoute.js  --grep 'getallFilter-snap_department_default'
-
   it('getallFilter-snap_department_default', function (done) {
     // this.timeout(10000);
 
@@ -726,10 +710,7 @@ describe('RequestRoute', () => {
   });
 
 
-
-
   // mocha test/requestRoute.js  --grep 'snap_department_id_bot_exists'
-
   it('getallFilter-snap_department_id_bot_exists', function (done) {
     // this.timeout(10000);
 
@@ -864,9 +845,7 @@ describe('RequestRoute', () => {
   });
 
 
-
-
-
+  // mocha test/requestRoute.js  --grep 'getallWithLoLead'
   it('getallWithLoLead', function (done) {
     // this.timeout(10000);
 
@@ -918,13 +897,196 @@ describe('RequestRoute', () => {
   });
 
 
+  // mocha test/requestRoute.js  --grep 'countConversations'
+  it('countConversations', function (done) {
+    // this.timeout(10000);
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+
+            if (err) { console.log("err: ", err) };
+            if (log) { console.log("res.body: ", res.body) };
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            
+            chai.request(server)
+                .get('/' + savedProject._id + '/requests/count?conversation_quota=true')
+                .auth(email, pwd)
+                .end((err, res) => {
+
+                  if (err) { console.log("err: ", err) };
+                  if (log) { console.log("res.body: ", res.body) };
+
+                  res.should.have.status(200);
+
+                  done();
+                })
+        
+          });
+      });
+    });
+  });
+
+
+  // mocha test/requestRoute.js  --grep 'exludeDraftConversations'
+  it('exludeDraftConversations', (done) => {
+
+    var email = "test-signup-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+      projectService.createAndReturnProjectAndProjectUser("test-draft-conversation", savedUser._id).then((savedProjectAndPU) => {
+        let savedProject = savedProjectAndPU.project;
+        let savedPU = savedProjectAndPU.project_user;
+        leadService.createIfNotExists("Lead Fullname", "email@test.com", savedProject._id).then((createdLead) => {
+          let now = Date.now();
+          let request = {
+            request_id: "request_id-exludeDraftConversations-" + now, 
+            project_user_id: savedPU._id,
+            lead_id: createdLead._id,
+            id_project: savedProject._id,
+            first_text: "first_text",
+            lead: createdLead,
+            requester: savedPU,
+            attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" }
+          }
+
+          requestService.create(request).then(async (savedRequest) => {
+            
+            // Case 1 - request with source page that contains td_draft
+            expect(savedRequest.draft).to.equal(true);
+
+            // Case 2 - request without source page that contains td_draft
+            //expect(savedRequest.draft).to.be.undefined;
+
+            // get all requests -> should be 0
+
+            chai.request(server)
+                .get('/' + savedProject._id + '/requests?draft=false')
+                .auth(email, pwd)
+                .end((err, res) => {
+
+                  if (err) { console.error("err: ", err ) };
+                  if (log) { console.log("res.body: ", res.body) }
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  res.body.requests.should.be.a('array');
+
+                  // Case 1 - request with source page that contains td_draft
+                  expect(res.body.requests.length).to.equal(0);
+
+                  // Case 2 - request without source page that contains td_draft
+                  //expect(res.body.requests.length).to.equal(1);
+
+                  done();
+                })
+
+
+          }).catch((err) => {
+            console.error("error creating request: ", err)
+          })
+        })
+
+      })
+    })
+
+  })
+
+
+  // mocha test/requestRoute.js  --grep 'add-tag-to-conversation'
+  it('add-tag-to-conversation', function (done) {
+
+    var email = "test-request-create-" + Date.now() + "@email.com";
+    var pwd = "pwd";
+
+    userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+      projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
+
+        chai.request(server)
+          .post('/' + savedProject._id + '/requests/')
+          .auth(email, pwd)
+          .set('content-type', 'application/json')
+          .send({ "first_text": "first_text" })
+          .end(function (err, res) {
+
+            if (err) { console.log("err: ", err) };
+            if (log) { console.log("res.body: ", res.body) };
+
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('request_id').not.eql(null);
+            
+            let request_id = res.body.request_id;
+
+            let tags = [
+              { tag: "tag1", color: "#43B1F2" },
+              { tag: "tag2", color: "#43B1F2" }
+            ]
+
+            // First Step: add 2 tags on a conversation no tagged at all
+            chai.request(server)
+                .put('/' + savedProject._id + '/requests/' + request_id + '/tag' )
+                .auth(email, pwd)
+                .send(tags)
+                .end((err, res) => {
+
+                  if (err) { console.log("err: ", err) };
+                  if (log) { console.log("res.body: ", res.body) };
+
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  expect(res.body.tags).to.have.length(2);
+                  expect(res.body.tags[0].tag).to.equal('tag1');
+                  expect(res.body.tags[1].tag).to.equal('tag2');
+              
+                  let tags2 = [
+                    { tag: "tag2", color: "#43B1F2"},
+                    { tag: "tag3", color: "#43B1F2"}
+                  ]
+
+                  // Second Step: add more 2 tags of which one already existant in the conversation
+                  chai.request(server)
+                      .put('/' + savedProject._id + '/requests/' + request_id + '/tag')
+                      .auth(email, pwd)
+                      .send(tags2)
+                      .end((err, res) => {
+                        
+                        if (err) { console.log("err: ", err) };
+                        if (log) { console.log("res.body: ", res.body) };
+
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        expect(res.body.tags).to.have.length(3);
+                        expect(res.body.tags[0].tag).to.equal('tag1');
+                        expect(res.body.tags[1].tag).to.equal('tag2');
+                        expect(res.body.tags[2].tag).to.equal('tag3');
+                        
+                        done();
+                      })
+
+                })
+        
+          });
+      });
+    });
+  });
+
+
   describe('/assign', () => {
 
-
-
-
     // mocha test/requestRoute.js  --grep 'createAndReassign'
-
     it('createAndReassign', function (done) {
       // this.timeout(10000);
 
@@ -1005,9 +1167,7 @@ describe('RequestRoute', () => {
     });
 
 
-
     // mocha test/requestRoute.js  --grep 'createAndReassignAndNoPopulate'
-
     it('createAndReassignAndNoPopulate', function (done) {
       // this.timeout(10000);
 
@@ -1087,9 +1247,7 @@ describe('RequestRoute', () => {
     });
 
 
-
     // mocha test/requestRoute.js  --grep 'createAndAssign2'
-
     it('createAndAssign2', function (done) {
       // this.timeout(10000);
 
@@ -1169,7 +1327,6 @@ describe('RequestRoute', () => {
     });
 
 
-
     // mocha test/requestRoute.js  --grep 'removeParticipant'
     it('removeParticipant', function (done) {
       // this.timeout(10000);
@@ -1245,109 +1402,6 @@ describe('RequestRoute', () => {
       });
     });
 
-    it('exludeDraftConversations', (done) => {
-
-      var email = "test-signup-" + Date.now() + "@email.com";
-      var pwd = "pwd";
-
-      userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-        projectService.createAndReturnProjectAndProjectUser("test-draft-conversation", savedUser._id).then((savedProjectAndPU) => {
-          let savedProject = savedProjectAndPU.project;
-          let savedPU = savedProjectAndPU.project_user;
-          leadService.createIfNotExists("Lead Fullname", "email@test.com", savedProject._id).then((createdLead) => {
-            let now = Date.now();
-            let request = {
-              request_id: "request_id-exludeDraftConversations-" + now, 
-              project_user_id: savedPU._id,
-              lead_id: createdLead._id,
-              id_project: savedProject._id,
-              first_text: "first_text",
-              lead: createdLead,
-              requester: savedPU,
-              attributes: { sourcePage: "https://widget-pre.tiledesk.com/v2/index.html?tiledesk_projectid=5ce3d1ceb25ad30017279999&td_draft=true" }
-            }
-
-            requestService.create(request).then(async (savedRequest) => {
-              
-              // Case 1 - request with source page that contains td_draft
-              expect(savedRequest.draft).to.equal(true);
-
-              // Case 2 - request without source page that contains td_draft
-              //expect(savedRequest.draft).to.be.undefined;
-
-              // get all requests -> should be 0
-
-              chai.request(server)
-                  .get('/' + savedProject._id + '/requests?draft=false')
-                  .auth(email, pwd)
-                  .end((err, res) => {
-
-                    if (err) { console.error("err: ", err ) };
-                    if (log) { console.log("res.body: ", res.body) }
-
-                    res.should.have.status(200);
-                    res.body.should.be.a('object');
-                    res.body.requests.should.be.a('array');
-
-                    // Case 1 - request with source page that contains td_draft
-                    expect(res.body.requests.length).to.equal(0);
-
-                    // Case 2 - request without source page that contains td_draft
-                    //expect(res.body.requests.length).to.equal(1);
-
-                    done();
-                  })
-
-
-            }).catch((err) => {
-              console.error("error creating request: ", err)
-            })
-          })
-
-        })
-      })
-
-    })
-
-    it('countConversations', function (done) {
-      // this.timeout(10000);
-  
-      var email = "test-request-create-" + Date.now() + "@email.com";
-      var pwd = "pwd";
-  
-      userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-        projectService.create("request-create", savedUser._id, { email: { template: { assignedRequest: "123" } } }).then(function (savedProject) {
-  
-          chai.request(server)
-            .post('/' + savedProject._id + '/requests/')
-            .auth(email, pwd)
-            .set('content-type', 'application/json')
-            .send({ "first_text": "first_text" })
-            .end(function (err, res) {
-
-              if (err) { console.log("err: ", err) };
-              if (log) { console.log("res.body: ", res.body) };
-
-              res.should.have.status(200);
-              res.body.should.be.a('object');
-              
-              chai.request(server)
-                  .get('/' + savedProject._id + '/requests/count?conversation_quota=true')
-                  .auth(email, pwd)
-                  .end((err, res) => {
-
-                    if (err) { console.log("err: ", err) };
-                    if (log) { console.log("res.body: ", res.body) };
-
-                    res.should.have.status(200);
-
-                    done();
-                  })
-          
-            });
-        });
-      });
-    });
 
     // it('assign', (done) => {
 
@@ -1388,7 +1442,6 @@ describe('RequestRoute', () => {
     //             });
     //             });
     // }).timeout(20000);
-
 
     /*
     it('requestParameterFromChatbot', function (done) {
@@ -1432,8 +1485,6 @@ describe('RequestRoute', () => {
     });
 
     */
-
-
 
   });
 
