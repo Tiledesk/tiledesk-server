@@ -112,6 +112,9 @@ async function main()
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);
 
+    let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+    jobsManager.listenMultiWorker(multiWorkerQueue);
+
 
     winston.info("Jobs started"); 
 

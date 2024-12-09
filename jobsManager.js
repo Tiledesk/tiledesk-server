@@ -87,6 +87,14 @@ class JobsManager {
         // this.whatsappQueue.listen(); // oppure codice
     }
 
+    listenMultiWorker(multiWorkerQueue) {
+        console.log("JobsManager multiWorkerQueue started");
+        console.log("multiWorkerQueue is: ", multiWorkerQueue)
+        if (this.jobWorkerEnabled == true) {
+            return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for MultiWorker Queue");  
+        }
+    }
+
     // listenTrainingQueue(trainingQueue) {
     //     console.log("JobsManager listenTrainingQueue started");
     //     console.log("trainingQueue is: ", trainingQueue)

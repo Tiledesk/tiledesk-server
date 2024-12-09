@@ -165,8 +165,8 @@ class OpenaiService {
   }
 
   getContentChunks(namespace_id, content_id, engine) {
-    winston.info("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
-    winston.info(kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id)
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    winston.verbose(kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id)
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
