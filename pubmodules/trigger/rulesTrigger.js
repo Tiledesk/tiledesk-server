@@ -474,7 +474,9 @@ class RulesTrigger {
             winston.debug('runAction action id_project: ' + id_project);
 
             // route(request_id, departmentid, id_project, nobot) {
-            requestService.route(request_id, departmentid, id_project);
+            requestService.route(request_id, departmentid, id_project).catch((err) => {
+              winston.error("Error runAction route: ", err);
+            });
   
           } catch(e) {
             winston.error("Error runAction", e);
@@ -510,7 +512,9 @@ class RulesTrigger {
               winston.debug('runAction action id_project: ' + id_project);
   
               // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project);                           
+              requestService.reroute(request_id, id_project).catch((err) => {
+                winston.error("Error runAction on reroute", err);
+              });                           
     
             } catch(e) {
               winston.error("Error runAction", e);
@@ -736,6 +740,8 @@ class RulesTrigger {
                 );
     
                   // TODO Add typing? 
+              }).catch((err) => {
+                winston.error("Error runAction on reroute", err);
               })                       
     
 
