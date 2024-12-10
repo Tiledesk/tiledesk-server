@@ -101,7 +101,8 @@ describe('RequestRoute', () => {
 
             if (err) { console.error("err: ", err); }
             if (log) { console.log("res.body",  res.body); }
-
+            console.log("res.body",  res.body);
+            
             res.should.have.status(200);
             res.body.should.be.a('object');
 
