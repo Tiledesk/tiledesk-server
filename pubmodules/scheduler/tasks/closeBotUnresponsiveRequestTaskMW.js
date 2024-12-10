@@ -124,6 +124,7 @@ findUnresponsiveRequests() {
           }
 
           console.log("Try to close request: ", request.request_id);
+          console.log("participant_bot_id: ", participant_bot_id)
 
           Message.find({ id_project: request.id_project, recipient: request.request_id })
               .sort({createdAt: -1})
@@ -149,7 +150,8 @@ findUnresponsiveRequests() {
                     })
                   } else {
 
-                    if (message.sender === participant_bot_id) {
+                    console.log("message.sender: ", message[0].sender)
+                    if (message[0].sender === participant_bot_id) {
                       console.log("Try to close request message.sender === participant_bot_id");
                       //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
                       const closed_by = "_bot_unresponsive";
