@@ -159,7 +159,7 @@ findUnresponsiveRequests() {
                         }
                         
                       })
-                    } else if ((request.createdAt - new Date(Date.now() - queryAfterTimeoutStandard)) < 0) {
+                    } else if ((request.createdAt - new Date(Date.now() - this.queryAfterTimeoutStandard)) < 0) {
                       const closed_by = "_bot_unresponsive";
                       return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
                         winston.info("CloseBotUnresponsiveRequestTaskMW: Request closed with request_id: " + request.request_id);
