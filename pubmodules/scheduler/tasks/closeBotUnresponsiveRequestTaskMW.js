@@ -76,7 +76,8 @@ findUnresponsiveRequests() {
     var query = {hasBot:true, status: { $lt: 1000 }, createdAt:  { $lte :new Date(Date.now() - this.queryAfterTimeout ).toISOString()} };
 
     if (this.queryProject) {
-      query.id_project = JSON.parse(this.queryProject);
+      //query.id_project = JSON.parse(this.queryProject);
+      query.id_project = this.queryProject;
     }
 
     //    TODO dovrei fare una query escludendo tutti gli id_project su cui è disabilitato oppure dovrei salvare un attribute in ogni singola request
