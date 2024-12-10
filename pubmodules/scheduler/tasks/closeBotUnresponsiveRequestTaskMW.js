@@ -123,6 +123,8 @@ findUnresponsiveRequests() {
             participant_bot_id = request.participantsBots[0];
           }
 
+          console.log("Try to close request: ", request.request_id);
+
           Message.find({ id_project: request.id_project, recipient: request.request_id })
               .sort({createdAt: -1})
               .limit(1)
@@ -131,7 +133,9 @@ findUnresponsiveRequests() {
                   winston.error("No messages found for recipient: ", request.request_id); 
                 } else {
 
+                  console.log("Try to close request last message: ", message);
                   if (!participant_bot_id) {
+                    console.log("Try to close request participant_bot_id undefined");
                     const closed_by = "_bot_unresponsive";
                     return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
                       winston.info("CloseBotUnresponsiveRequestTaskMW: Request closed with request_id: " + request.request_id);
@@ -146,6 +150,7 @@ findUnresponsiveRequests() {
                   } else {
 
                     if (message.sender === participant_bot_id) {
+                      console.log("Try to close request message.sender === participant_bot_id");
                       //  closeRequestByRequestId(request_id, id_project, skipStatsUpdate, notify, closed_by)
                       const closed_by = "_bot_unresponsive";
                       return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
@@ -160,6 +165,7 @@ findUnresponsiveRequests() {
                         
                       })
                     } else if ((request.createdAt - new Date(Date.now() - this.queryAfterTimeoutStandard)) < 0) {
+                      console.log("Try to close request elapsed", request.createdAt - new Date(Date.now() - this.queryAfterTimeoutStandard));
                       const closed_by = "_bot_unresponsive";
                       return requestService.closeRequestByRequestId(request.request_id, request.id_project, false, false, closed_by).then(function(updatedStatusRequest) {
                         winston.info("CloseBotUnresponsiveRequestTaskMW: Request closed with request_id: " + request.request_id);
@@ -173,6 +179,7 @@ findUnresponsiveRequests() {
                         
                       })
                     } else {
+                      console.log("Not your moment");
                       winston.debug("Not your moment")
                     }
 
