@@ -110,8 +110,9 @@ router.post('/qa', async (req, res) => {
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("qa err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        //let status = err.response.status;
+        //res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 
@@ -125,8 +126,9 @@ router.post('/startscrape', async (req, res) => {
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("startScrape err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        // let status = err.response.status;
+        // res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 
@@ -172,8 +174,10 @@ router.post('/checkstatus', async (req, res) => {
         res.status(200).send(return_data);
     }).catch((err) => {
         //winston.error("checkstatus err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+
+        // let status = err.response?.status;
+        // res.status(status).send({ statusText: err.response?.statusText, detail: err.response?.data?.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 // PROXY PUGLIA AI - END
