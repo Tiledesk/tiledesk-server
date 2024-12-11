@@ -277,8 +277,6 @@ class RequestService {
         return that.routeInternal(request, departmentid, id_project, nobot).then( async function (routedRequest) {
 
           winston.debug("after routeInternal", routedRequest);
-          // winston.info("requestBeforeRoute.participants " +requestBeforeRoute.request_id , requestBeforeRoute.participants);
-          // console.log("routedRequest.participants " +routedRequest.request_id , routedRequest.participants);
           winston.debug("requestBeforeRoute.status:" + requestBeforeRoute.status);
           winston.debug("routedRequest.status:" + routedRequest.status);
 
@@ -651,7 +649,7 @@ class RequestService {
         }
         else if (channel && (channel.name === 'voice-vxml')) {
           isVoiceConversation = true;
-          let available = await qm.checkQuote(project, request, 'voice-duration');
+          let available = await qm.checkQuote(project, request, 'voice_duration');
           if (available === false) {
             winston.info("Voice duration limits reached for project " + project._id);
             return reject("Voice duration limits reached for project " + project._id);
