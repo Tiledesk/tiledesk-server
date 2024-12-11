@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.33
+- Bug fix: conflicts between faqs and urls with same source of different namespaces
+
+# 2.10.32
+- Externalized PINECONE_TYPE variable for kb engine
+
 # 2.10.31
 - updated twilio-voice-connector to 0.1.11
 
