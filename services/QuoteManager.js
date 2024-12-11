@@ -24,7 +24,7 @@ const PLANS_LIST = {
     CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 120000,  email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
 }
 
-const typesList = ['requests', 'messages', 'email', 'tokens', 'chatbots', 'kbs']
+const typesList = ['requests', 'messages', 'email', 'tokens', 'voice_duration', 'chatbots', 'kbs']
 
 let quotes_enabled = true;
 
