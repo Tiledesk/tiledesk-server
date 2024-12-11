@@ -100,7 +100,7 @@ class QuoteManager {
 
         console.log("incrementVoiceDurationCount request ", request)
         this.project = project;
-        let key = await this.generateKey(request, 'voice-duration');
+        let key = await this.generateKey(request, 'voice_duration');
         winston.verbose("[QuoteManager] incrementVoiceDurationCount key: " + key);
 
         if (quotes_enabled === false) {
@@ -112,7 +112,7 @@ class QuoteManager {
             let duration = Math.round(request.duration / 1000); // from ms to s
             await this.tdCache.incrby(key, duration);
     
-            this.sendEmailIfQuotaExceeded(project, request, 'voice-duration', key);
+            this.sendEmailIfQuotaExceeded(project, request, 'voice_duration', key);
         }
     }
     // INCREMENT KEY SECTION - END

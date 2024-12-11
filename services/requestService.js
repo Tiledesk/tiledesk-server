@@ -656,7 +656,7 @@ class RequestService {
         }
         else if (channel && (channel.name === 'voice-vxml')) {
           isVoiceConversation = true;
-          let available = await qm.checkQuote(project, request, 'voice-duration');
+          let available = await qm.checkQuote(project, request, 'voice_duration');
           console.log("available: ", available)
           if (available === false) {
             winston.info("Voice duration limits reached for project " + project._id);
