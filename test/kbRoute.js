@@ -3,6 +3,7 @@ process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
 process.env.PINECONE_INDEX = "test_index"
+process.env.PINECONE_TYPE = "pod"
 process.env.LOG_LEVEL = 'critical'
 
 var userService = require('../services/userService');
