@@ -661,12 +661,12 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
                                 .auth(email, pwd)
-                                .send({ list:["https://gethelp.tiledesk.com/article"], scrape_type: 3 })
+                                .send({ list:["https://gethelp.tiledesk.com/article"], refresh_rate: 'daily', scrape_type: 3 })
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-
+                                    console.log("res.body: ", res.body)
                                     res.should.have.status(200);
                                     expect(res.body.length).to.equal(1)
                                     expect(res.body[0].scrape_type).to.equal(3)

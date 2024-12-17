@@ -18,7 +18,6 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
-const { body } = require('express-validator');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -926,6 +925,7 @@ router.post('/', async (req, res) => {
     new_kb.scrape_type = 1;
   }
   if (new_kb.type === 'url') {
+    new_kb.refresh = body.refresh;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = await setDefaultScrapeOptions();
@@ -999,6 +999,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let project_id = req.projectid;
   let scrape_type = req.body.scrape_type;
   let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1056,7 +1057,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       content: "",
       namespace: namespace_id,
       status: -1,
-      scrape_type: scrape_type
+      scrape_type: scrape_type,
+      refresh_rate: refresh_rate
     }
 
     if (!kb.scrape_type) {
@@ -1098,7 +1100,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, refresh_rate: refresh_rate, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
