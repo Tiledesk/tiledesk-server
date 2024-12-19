@@ -64,6 +64,8 @@ router.post('/kb/reindex', async (req, res) => {
     source: kb.source,
     content: "",
     namespace: kb.namespace,
+    refresh_rate: refresh_rate,
+    last_refresh: kb.last_refresh
   }
 
   // if (kb.content) {
@@ -152,5 +154,23 @@ router.post('/kb/status', async (req, res) => {
   })
 
 })
+
+async function scheduleScrape(resources) {
+
+  let scheduler = new Scheduler({ jobManager: jobManager });
+
+  resources.forEach(r => {
+    winston.debug("(Webhook) Schedule job with following data: ", r);
+    scheduler.trainSchedule(r, async (err, result) => {
+      if (err) {
+        winston.error("Scheduling error: ", err);
+      } else {
+        winston.info("Scheduling result: ", result);
+      }
+    });
+  })
+
+  return true;
+}
 
 module.exports = router;

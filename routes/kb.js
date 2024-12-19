@@ -1100,7 +1100,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, refresh_rate: refresh_rate, ...rest}
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
@@ -1434,9 +1434,6 @@ async function updateStatus(id, status) {
 
 async function scheduleScrape(resources) {
 
-  // let data = {
-  //     resources: resources
-  // }
   let scheduler = new Scheduler({ jobManager: jobManager });
 
   resources.forEach(r => {
@@ -1452,7 +1449,6 @@ async function scheduleScrape(resources) {
       await updateStatus(r.id, error_code);
     });
   })
-
 
   return true;
 }
