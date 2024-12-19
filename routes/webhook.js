@@ -64,7 +64,7 @@ router.post('/kb/reindex', async (req, res) => {
     source: kb.source,
     content: "",
     namespace: kb.namespace,
-    refresh_rate: refresh_rate,
+    refresh_rate: kb.refresh_rate,
     last_refresh: kb.last_refresh
   }
 
