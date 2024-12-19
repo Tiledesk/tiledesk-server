@@ -5,8 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.34
-- - added tiledesk-multi-worker to 0.1.6
+# 2.10.36
+- updated tybot-connector to 0.2.138
+
+# 2.10.35
+- added tiledesk-multi-worker to 0.1.6
 
 # 2.10.34
 - added add tags endpoint
