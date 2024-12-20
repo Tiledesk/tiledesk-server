@@ -24,6 +24,13 @@ jobManager.connectAndStartPublisher((status, error) => {
   }
 })
 
+let default_engine = {
+  name: "pinecone",
+  type: process.env.PINECONE_TYPE,
+  apikey: "",
+  vector_size: 1536,
+  index_name: process.env.PINECONE_INDEX
+}
 
 router.post('/kb/reindex', async (req, res) => {
 
@@ -99,7 +106,7 @@ router.post('/kb/reindex', async (req, res) => {
     return res.status(500).send({ success: false, error: err })
   }
 
-  json.engine = namespace.engine;
+  json.engine = namespace.engine || default_engine;
 
   let resources = [];
   resources.push(json);
