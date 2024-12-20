@@ -4,6 +4,7 @@ var { KB, Namespace } = require('../models/kb_setting');
 var winston = require('../config/winston');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
+const { AiReindexService } = require('../services/aiReindexService');
 
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
@@ -33,29 +34,37 @@ router.post('/kb/reindex', async (req, res) => {
   winston.info("(webhook) KB_WEBHOOK_TOKEN: " + KB_WEBHOOK_TOKEN);
 
   if (!req.headers['x-auth-token']) {
-    winston.error("Unauthorized: A x-auth-token must be provided")
+    winston.error("(webhook) Unauthorized: A x-auth-token must be provided")
     return res.status(401).send({ success: false, error: "Unauthorized", message: "A x-auth-token must be provided" })
   }
 
   if (req.headers['x-auth-token'] != KB_WEBHOOK_TOKEN) {
-    winston.error("Unauthorized: You don't have the authorization to accomplish this operation")
+    winston.error("(webhook) Unauthorized: You don't have the authorization to accomplish this operation")
     return res.status(401).send({ success: false, error: "Unauthorized", message: "You don't have the authorization to accomplish this operation" });
   }
 
-  winston.verbose('/webhook kb status body: ', req.body);
+  winston.verbose('(webhook) kb status body: ', req.body);
 
   // let id_project = req.body.id_project;
   // let namespace_id = req.body.namespace_id;
   let content_id = req.body.content_id;
 
-  let kb = await KB.findById(content_id).catch((err) => {
-    winston.error("Error getting kb content: ", err);
-    return res.status(500).send({ success: false, error: err })
+  let kb = await KB.findById(content_id).catch( async (err) => {
+    winston.error("(webhook) Error getting kb content: ", err);
+    return res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
   })
 
   if (!kb) {
-    winston.warn("Kb content not found with id ", content_id);
-    return res.status(404).send({ success: false, error: "Content not found with id " + content_id })
+    winston.warn("(webhook) Kb content not found with id ", content_id);
+    // Assuming the content has been deleted. The scheduler should be stopped and deleted.
+    let aiReindexService = new AiReindexService();
+    let deleteResponse = await aiReindexService.delete().catch((err) => {
+      winston.error("(webhook) Error deleting scheduler ", err);
+      return res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
+    });
+    winston.debug("(webhook) delete response: ", deleteResponse);
+
+    return res.status(200).send({ success: true, message: "Content no longer exists. Scheduler deleted." })
   }
 
   let json = {
@@ -67,10 +76,6 @@ router.post('/kb/reindex', async (req, res) => {
     refresh_rate: kb.refresh_rate,
     last_refresh: kb.last_refresh
   }
-
-  // if (kb.content) {
-  //   json.content = kb.content;
-  // }
 
   if (kb.scrape_type) {
     json.scrape_type = kb.scrape_type
@@ -85,12 +90,12 @@ router.post('/kb/reindex', async (req, res) => {
   }
 
   let namespace = await Namespace.findOne({ id: kb.namespace }).catch((err) => {
-    winston.error("Error getting namespace ", err)
+    winston.error("(webhook) Error getting namespace ", err)
     return res.status(500).send({ success: false, error: err })
   })
 
   if (!namespace) {
-    winston.warn("Namespace not found with id " + kb.namespace);
+    winston.warn("(webhook) Namespace not found with id " + kb.namespace);
     return res.status(500).send({ success: false, error: err })
   }
 

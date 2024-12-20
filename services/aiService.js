@@ -9,7 +9,7 @@ let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
 let secret = process.env.JWT_SECRET_KEY;
 
-class OpenaiService {
+class AiService {
 
   // OPEN AI
   completions(data, gptkey) {
@@ -228,6 +228,6 @@ class OpenaiService {
 
 }
 
-var openaiService = new OpenaiService();
+var aiService = new AiService();
 
-module.exports = openaiService;
+module.exports = aiService;
