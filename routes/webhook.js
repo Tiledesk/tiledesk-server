@@ -67,6 +67,7 @@ router.post('/kb/reindex', async (req, res) => {
     let aiReindexService = new AiReindexService();
     let deleteResponse = await aiReindexService.delete().catch((err) => {
       winston.error("(webhook) Error deleting scheduler ", err);
+      winston.error("(webhook) Error deleting scheduler " + err);
       return res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
     });
     winston.debug("(webhook) delete response: ", deleteResponse);
