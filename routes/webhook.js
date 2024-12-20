@@ -64,9 +64,10 @@ router.post('/kb/reindex', async (req, res) => {
   if (!kb) {
     winston.warn("(webhook) Kb content not found with id ", content_id);
     // Assuming the content has been deleted. The scheduler should be stopped and deleted.
-    let aiReindexService = new AiReindexService(content_id);
-    let deleteResponse = await aiReindexService.delete().catch((err) => {
+    let aiReindexService = new AiReindexService();
+    let deleteResponse = await aiReindexService.delete(content_id).catch((err) => {
       winston.error("(webhook) Error deleting scheduler ", err);
+      winston.error("(webhook) Error deleting scheduler " + err);
       return res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
     });
     winston.debug("(webhook) delete response: ", deleteResponse);

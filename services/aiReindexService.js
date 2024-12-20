@@ -30,10 +30,12 @@ class AiReindexService {
 
         return new Promise( async (resolve, reject) => {
 
+            console.log("search and delete scheduler for content ", content_id)
             let scheduler = await this.findScheduler(content_id).catch((err) => {
                 reject(err);
             })
 
+            console.log("scheduler: ", scheduler)
             winston.verbose("(AiReindexService) delete() - scheduler: ", scheduler);
 
             if (!scheduler) {
@@ -73,6 +75,7 @@ class AiReindexService {
                 }
             }).then((response) => {
 
+                console.log("schedulers found: ", response.data.data)
                 let scheduler = response.data.data.find(s => s.processDefinitionName === "auto-reindex-" + id);
                 if (!scheduler) {
                     resolve(null);
