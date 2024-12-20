@@ -34,7 +34,7 @@ class AiReindexService {
                 reject(err);
             })
 
-            winston.verbose("(AiReindexService) delete() - scheduler: ", scheduler);
+            winston.info("(AiReindexService) delete() - scheduler: ", scheduler);
 
             if (!scheduler) {
                 reject("Scheduler not found for content id " + content_id);
@@ -44,19 +44,19 @@ class AiReindexService {
                 reject(err);
             })
 
-            winston.verbose("(AiReindexService) delete() - isOfflineS: ", isOfflineS)
+            winston.info("(AiReindexService) delete() - isOfflineS: ", isOfflineS)
 
             let isOffline = await this.offlineWorkflow(scheduler.processDefinitionCode).catch((err) => {
                 reject(err);
             })
 
-            winston.verbose("(AiReindexService) delete() - isOffline: ", isOffline)
+            winston.info("(AiReindexService) delete() - isOffline: ", isOffline)
 
             let deleteResponse = await this.deleteWorkflow(scheduler.processDefinitionCode).catch((err) => {
                 reject(err);
             })
 
-            winston.verbose("(AiReindexService) delete() - deleteResponse: ", deleteResponse)
+            winston.info("(AiReindexService) delete() - deleteResponse: ", deleteResponse)
             
             resolve(deleteResponse);
         })
