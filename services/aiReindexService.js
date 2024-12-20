@@ -26,6 +26,41 @@ class AiReindexService {
 
     }
 
+    async delete(content_id) {
+
+        return new Promise( async (resolve, reject) => {
+
+            let scheduler = await this.findScheduler(content_id).catch((err) => {
+                reject(err);
+            })
+
+            winston.verbose("(AiReindexService) delete() - scheduler: ", scheduler);
+
+            if (!scheduler) {
+                reject("Scheduler not found for content id " + content_id);
+            }
+
+            let isOfflineS = await this.offlineScheduler(scheduler.id).catch((err) => {
+                reject(err);
+            })
+
+            winston.verbose("(AiReindexService) delete() - isOfflineS: ", isOfflineS)
+
+            let isOffline = await this.offlineWorkflow(scheduler.processDefinitionCode).catch((err) => {
+                reject(err);
+            })
+
+            winston.verbose("(AiReindexService) delete() - isOffline: ", isOffline)
+
+            let deleteResponse = await this.deleteWorkflow(scheduler.processDefinitionCode).catch((err) => {
+                reject(err);
+            })
+
+            winston.verbose("(AiReindexService) delete() - deleteResponse: ", deleteResponse)
+            
+            resolve(deleteResponse);
+        })
+    }
     
     async findScheduler(id) {
 
