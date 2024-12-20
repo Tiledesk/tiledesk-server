@@ -62,7 +62,7 @@ router.post('/kb/reindex', async (req, res) => {
   })
 
   if (!kb) {
-    winston.warn("(webhook) Kb content not found with id ", content_id);
+    winston.warn("(webhook) Kb content not found with id " + content_id);
     // Assuming the content has been deleted. The scheduler should be stopped and deleted.
     res.status(200).send({ success: true, message: "Content no longer exists. Deleting scheduler..." })
 
