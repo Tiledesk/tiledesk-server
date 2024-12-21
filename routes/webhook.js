@@ -66,60 +66,63 @@ router.post('/kb/reindex', async (req, res) => {
     // Assuming the content has been deleted. The scheduler should be stopped and deleted.
     res.status(200).send({ success: true, message: "Content no longer exists. Deleting scheduler..." })
 
-    let aiReindexService = new AiReindexService();
-    let deleteResponse = await aiReindexService.delete(content_id).catch((err) => {
-      winston.error("(webhook) Error deleting scheduler ", err);
-      winston.error("(webhook) Error deleting scheduler " + err);
+    setTimeout( async () => {
+      let aiReindexService = new AiReindexService();
+      let deleteResponse = await aiReindexService.delete(content_id).catch((err) => {
+        winston.error("(webhook) Error deleting scheduler ", err);
+        winston.error("(webhook) Error deleting scheduler " + err);
+        return;
+        // res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
+      });
+      winston.info("(webhook) delete response: ", deleteResponse);
       return;
-      // res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
-    });
-    winston.info("(webhook) delete response: ", deleteResponse);
-    return;
-  }
+    }, 10000);
+  } else {
 
-  let json = {
-    id: kb._id,
-    type: kb.type,
-    source: kb.source,
-    content: "",
-    namespace: kb.namespace,
-    refresh_rate: kb.refresh_rate,
-    last_refresh: kb.last_refresh
-  }
-
-  if (kb.scrape_type) {
-    json.scrape_type = kb.scrape_type
-  }
-
-  if (kb.scrape_options) {
-    json.parameters_scrape_type_4 = {
-      tags_to_extract: kb.scrape_options.tags_to_extract,
-      unwanted_tags: kb.scrape_options.unwanted_tags,
-      unwanted_classnames: kb.scrape_options.unwanted_classnames
+    let json = {
+      id: kb._id,
+      type: kb.type,
+      source: kb.source,
+      content: "",
+      namespace: kb.namespace,
+      refresh_rate: kb.refresh_rate,
+      last_refresh: kb.last_refresh
     }
+  
+    if (kb.scrape_type) {
+      json.scrape_type = kb.scrape_type
+    }
+  
+    if (kb.scrape_options) {
+      json.parameters_scrape_type_4 = {
+        tags_to_extract: kb.scrape_options.tags_to_extract,
+        unwanted_tags: kb.scrape_options.unwanted_tags,
+        unwanted_classnames: kb.scrape_options.unwanted_classnames
+      }
+    }
+  
+    let namespace = await Namespace.findOne({ id: kb.namespace }).catch((err) => {
+      winston.error("(webhook) Error getting namespace ", err)
+      return res.status(500).send({ success: false, error: err })
+    })
+  
+    if (!namespace) {
+      winston.warn("(webhook) Namespace not found with id " + kb.namespace);
+      return res.status(500).send({ success: false, error: err })
+    }
+  
+    json.engine = namespace.engine || default_engine;
+  
+    let resources = [];
+    resources.push(json);
+  
+    if (process.env.NODE_ENV !== 'test') {
+      scheduleScrape(resources);
+    }
+  
+    res.status(200).send({ success: true, message: "Content queued for reindexing" });
+
   }
-
-  let namespace = await Namespace.findOne({ id: kb.namespace }).catch((err) => {
-    winston.error("(webhook) Error getting namespace ", err)
-    return res.status(500).send({ success: false, error: err })
-  })
-
-  if (!namespace) {
-    winston.warn("(webhook) Namespace not found with id " + kb.namespace);
-    return res.status(500).send({ success: false, error: err })
-  }
-
-  json.engine = namespace.engine || default_engine;
-
-  let resources = [];
-  resources.push(json);
-
-  if (process.env.NODE_ENV !== 'test') {
-    scheduleScrape(resources);
-  }
-
-  res.status(200).send({ success: true, message: "Content queued for reindexing" });
-
 })
 
 
