@@ -5,6 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.37
+- added voice-duration quota
+- added webhook endpoint for auto reindexing
+- updated vxml-connector to 0.1.70
+
+
 # 2.10.36
 - updated tybot-connector to 0.2.138
 
