@@ -34,11 +34,8 @@ let default_engine = {
 
 router.post('/kb/reindex', async (req, res) => {
 
-  winston.info("(webhook) kb reindex called");
-  winston.info("(webhook) req.body: ", req.body);
-
-  winston.info("(webhook) x-auth-token: " + req.headers['x-auth-token']);
-  winston.info("(webhook) KB_WEBHOOK_TOKEN: " + KB_WEBHOOK_TOKEN);
+  winston.verbose("/kb/reindex webhook called")
+  winston.debug("(webhook) req.body: ", req.body);
 
   if (!req.headers['x-auth-token']) {
     winston.error("(webhook) Unauthorized: A x-auth-token must be provided")
@@ -49,20 +46,17 @@ router.post('/kb/reindex', async (req, res) => {
     winston.error("(webhook) Unauthorized: You don't have the authorization to accomplish this operation")
     return res.status(401).send({ success: false, error: "Unauthorized", message: "You don't have the authorization to accomplish this operation" });
   }
-
-  winston.verbose('(webhook) kb status body: ', req.body);
-
-  // let id_project = req.body.id_project;
-  // let namespace_id = req.body.namespace_id;
+  
   let content_id = req.body.content_id;
 
   let kb = await KB.findById(content_id).catch( async (err) => {
     winston.error("(webhook) Error getting kb content: ", err);
-    return res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
+    return res.status(500).send({ success: false, error: "Error getting content with id " + content_id });
   })
 
   if (!kb) {
-    winston.warn("(webhook) Kb content not found with id ", content_id);
+    winston.warn("(webhook) Kb content not found with id " + content_id + ". Deleting scheduler...");
+
     // Assuming the content has been deleted. The scheduler should be stopped and deleted.
     res.status(200).send({ success: true, message: "Content no longer exists. Deleting scheduler..." })
 
@@ -72,11 +66,11 @@ router.post('/kb/reindex', async (req, res) => {
         winston.error("(webhook) Error deleting scheduler ", err);
         winston.error("(webhook) Error deleting scheduler " + err);
         return;
-        // res.status(500).send({ success: false, message: "Content no longer exists. Error deleting scheduler", error: err })
       });
-      winston.info("(webhook) delete response: ", deleteResponse);
+      winston.verboser("(webhook) delete response: ", deleteResponse);
       return;
     }, 10000);
+    
   } else {
 
     let json = {

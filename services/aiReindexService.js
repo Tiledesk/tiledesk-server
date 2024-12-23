@@ -7,19 +7,19 @@ class AiReindexService {
     constructor() {
         
         this.BASE_URL = process.env.SCHEDULER_BASEURL;
-        winston.info("(ReindexScheduler) BASE_URL: " + this.BASE_URL)
+        winston.verbose("(ReindexScheduler) BASE_URL: " + this.BASE_URL)
         if (!this.BASE_URL) {
             throw new Error("Missing paramter BASE_URL");
         }
 
         this.TOKEN = process.env.SCHEDULER_TOKEN;
-        winston.info("(ReindexScheduler) TOKEN: " + this.TOKEN)
+        winston.verbose("(ReindexScheduler) TOKEN: " + this.TOKEN)
         if (!this.TOKEN) {
             throw new Error("Missing paramter TOKEN");
         }
 
         this.PROJECT = process.env.SCHEDULER_PROJECT;
-        winston.info("(ReindexScheduler) PROJECT: " + this.PROJECT)
+        winston.verbose("(ReindexScheduler) PROJECT: " + this.PROJECT)
         if (!this.PROJECT) {
             throw new Error("Missing paramter PROJECT");
         }
@@ -34,7 +34,7 @@ class AiReindexService {
                 reject(err);
             })
 
-            winston.info("(AiReindexService) delete() - scheduler: ", scheduler);
+            winston.verbose("(AiReindexService) delete() - scheduler: ", scheduler);
 
             if (!scheduler) {
                 reject("Scheduler not found for content id " + content_id);
@@ -44,19 +44,19 @@ class AiReindexService {
                 reject(err);
             })
 
-            winston.info("(AiReindexService) delete() - isOfflineS: ", isOfflineS)
+            winston.verbose("(AiReindexService) delete() - isOfflineS: ", isOfflineS)
 
             let isOffline = await this.offlineWorkflow(scheduler.processDefinitionCode).catch((err) => {
                 reject(err);
             })
 
-            winston.info("(AiReindexService) delete() - isOffline: ", isOffline)
+            winston.verbose("(AiReindexService) delete() - isOffline: ", isOffline)
 
             let deleteResponse = await this.deleteWorkflow(scheduler.processDefinitionCode).catch((err) => {
                 reject(err);
             })
 
-            winston.info("(AiReindexService) delete() - deleteResponse: ", deleteResponse)
+            winston.verbose("(AiReindexService) delete() - deleteResponse: ", deleteResponse)
             
             resolve(deleteResponse);
         })
