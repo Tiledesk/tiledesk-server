@@ -67,7 +67,7 @@ router.post('/kb/reindex', async (req, res) => {
         winston.error("(webhook) Error deleting scheduler " + err);
         return;
       });
-      winston.verboser("(webhook) delete response: ", deleteResponse);
+      winston.verbose("(webhook) delete response: ", deleteResponse);
       return;
     }, 10000);
     
