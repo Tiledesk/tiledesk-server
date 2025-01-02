@@ -460,12 +460,12 @@ router.put('/:requestid/replace', async (req, res) => {
       return res.status(404).send({ success: false, error: "Chatbot with name '" + name + "' not found" })
     }
 
-    bot_id = chatbot._id;
-    winston.info("Chatbot found: ", bot_id);
+    id = chatbot._id;
+    winston.info("Chatbot found: ", id);
   }
 
   let participants = [];
-  participants.push(bot_id);
+  participants.push(id);
   winston.info("participants to be set: ", participants);
 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
