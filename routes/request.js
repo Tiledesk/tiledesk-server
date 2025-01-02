@@ -443,7 +443,7 @@ router.put('/:requestid/replace', async (req, res) => {
   let name;
 
   if (req.body.id) {
-    id = req.body.id;
+    id = "bot_" + req.body.id;
   } else if (req.body.name) {
     name = req.body.name;
   } else {
@@ -460,7 +460,7 @@ router.put('/:requestid/replace', async (req, res) => {
       return res.status(404).send({ success: false, error: "Chatbot with name '" + name + "' not found" })
     }
 
-    id = chatbot._id;
+    id = "bot_" + chatbot._id;
     winston.info("Chatbot found: ", id);
   }
 
