@@ -441,11 +441,14 @@ router.put('/:requestid/replace', async (req, res) => {
   
   let id;
   let name;
+  let slug;
 
   if (req.body.id) {
     id = "bot_" + req.body.id;
   } else if (req.body.name) {
     name = req.body.name;
+  } else if (req.body.slug) {
+    slug = req.body.slug;
   } else {
     return res.status(400).send({ success: false, error: "Missing field 'id' or 'name' in body" })
   }
@@ -458,6 +461,20 @@ router.put('/:requestid/replace', async (req, res) => {
 
     if (!chatbot) {
       return res.status(404).send({ success: false, error: "Chatbot with name '" + name + "' not found" })
+    }
+
+    id = "bot_" + chatbot._id;
+    winston.info("Chatbot found: ", id);
+  }
+
+  if (slug) {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, slug: slug}).catch((err) => {
+      winston.error("Error finding bot ", err);
+      return res.status(500).send({ success: false, error: "An error occurred getting chatbot with slug " + slug })
+    })
+
+    if (!chatbot) {
+      return res.status(404).send({ success: false, error: "Chatbot with slug '" + slug + "' not found" })
     }
 
     id = "bot_" + chatbot._id;
