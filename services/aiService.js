@@ -9,7 +9,7 @@ let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
 let secret = process.env.JWT_SECRET_KEY;
 
-class OpenaiService {
+class AiService {
 
   // OPEN AI
   completions(data, gptkey) {
@@ -165,12 +165,13 @@ class OpenaiService {
   }
 
   getContentChunks(namespace_id, content_id, engine) {
-    winston.info("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
-    winston.info(kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id)
+    winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
+    winston.verbose(kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id)
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
         url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
@@ -228,6 +229,6 @@ class OpenaiService {
 
 }
 
-var openaiService = new OpenaiService();
+var aiService = new AiService();
 
-module.exports = openaiService;
+module.exports = aiService;

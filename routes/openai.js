@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var { KBSettings } = require('../models/kb_setting');
-var openaiService = require('../services/openaiService');
+var aiService = require('../services/aiService');
 var winston = require('../config/winston');
 const { QuoteManager } = require('../services/QuoteManager');
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
             winston.info("No multiplier found for AI model")
         }
 
-        openaiService.completions(json, gptkey).then(async (response) => {
+        aiService.completions(json, gptkey).then(async (response) => {
             let data = { createdAt: new Date(), tokens: response.data.usage.total_tokens, multiplier: multiplier }
             if (usePublicKey === true) {
                 let incremented_key = await quoteManager.incrementTokenCount(req.project, data);
