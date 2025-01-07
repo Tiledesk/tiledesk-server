@@ -770,6 +770,97 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 }
 );
+
+
+
+router.get("/oauth2", function(req,res,next){
+  winston.debug("redirect_url: "+ req.query.redirect_url );
+  req.session.redirect_url = req.query.redirect_url;
+
+  winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
+  req.session.forced_redirect_url = req.query.forced_redirect_url;
+
+  passport.authenticate(
+      'oauth2'
+  )(req,res,next);
+});
+
+// router.get('/oauth2',
+//   passport.authenticate('oauth2'));
+
+  router.get('/oauth2/callback',
+  passport.authenticate('oauth2', { session: false}),
+  function(req, res) {
+    winston.debug("'/oauth2/callback: ");
+    
+    var user = req.user;
+    winston.debug("user", user);
+    winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
+    
+  
+    var userJson = user.toObject();
+    
+    delete userJson.password;
+  
+  
+      var signOptions = {     
+        issuer:  'https://tiledesk.com',       
+        subject:  'user',
+        audience:  'https://tiledesk.com',
+        jwtid: uuidv4()
+  
+      };
+  
+      var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+      if (alg) {
+        signOptions.algorithm = alg;
+      }
+  
+  
+    var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+  
+  
+    // return the information including token as JSON
+    // res.json(returnObject);
+  
+    let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
+    winston.debug("Google Redirect dashboard_base_url: ", dashboard_base_url);
+  
+    let homeurl = "/#/";
+  
+    if (req.session.redirect_url) {
+      homeurl = req.session.redirect_url;
+    }
+  
+    var url = dashboard_base_url+homeurl+"?token=JWT "+token;
+  
+    if (req.session.forced_redirect_url) {
+      url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+    }
+  
+    winston.debug("Google Redirect: "+ url);
+  
+    res.redirect(url);
+  
+
+    
+  });
+
+router.get(
+  "/keycloak",
+  passport.authenticate("keycloak")
+);
+router.get(
+  "/keycloak/callback",
+  passport.authenticate("keycloak"),
+  function(req, res) {
+    winston.info("'/keycloak/callback: ");
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  }
+);
+
+
 // profile route after successful sign in</em> 
 // router.get("/profile", (req, res) => {
 //   console.log(req);
