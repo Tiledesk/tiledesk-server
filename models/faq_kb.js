@@ -185,8 +185,9 @@ function generateSlug(name) {
     .trim()
     .normalize("NFD") // Normalize characters with accents
     .replace(/[\u0300-\u036f]/g, "") // Removes diacritics (e.g. à becomes a)
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+    .replace(/[^a-z0-9\s-_]/g, "") // Remove special characters
     .replace(/\s+/g, "-") // Replaces spaces with dashes
+    .replace(/_/g, "-")
     .replace(/-+/g, "-"); // Removes consecutive hyphens
 }
 
