@@ -103,7 +103,10 @@ var FaqSchema = new Schema({
   },
   agents_available: {
     type: Boolean,
-    required: false
+    required: false,
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
   }
 }, {
   timestamps: true,
@@ -111,23 +114,6 @@ var FaqSchema = new Schema({
 }
 );
 
-FaqSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    if (ret.agents_available === undefined || ret.agents_available === null) {
-      delete ret.agents_available;
-    }
-    return ret;
-  },
-});
-
-FaqSchema.set("toObject", {
-  transform: (doc, ret) => {
-    if (ret.agents_available === undefined || ret.agents_available === null) {
-      delete ret.agents_available;
-    }
-    return ret;
-  },
-});
 
 FaqSchema.virtual('faq_kb', {
   ref: 'faq_kb', // The model to use
