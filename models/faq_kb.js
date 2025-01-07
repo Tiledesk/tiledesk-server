@@ -140,6 +140,8 @@ var Faq_kbSchema = new Schema({
 
 Faq_kbSchema.set("toJSON", {
   transform: (doc, ret) => {
+    console.log("** toJSON");
+    console.log("** toJSON ret: ", ret);
     if (ret.agents_available === undefined || ret.agents_available === null) {
       delete ret.agents_available;
     }
@@ -149,6 +151,10 @@ Faq_kbSchema.set("toJSON", {
 
 Faq_kbSchema.set("toObject", {
   transform: (doc, ret) => {
+    console.log("** toObject");
+    console.log("** toObject ret: ", ret);
+    // console.log("doc: ", doc)
+    // console.log("ret: ", ret)
     if (ret.agents_available === undefined || ret.agents_available === null) {
       delete ret.agents_available;
     }
