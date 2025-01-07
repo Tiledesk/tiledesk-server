@@ -125,7 +125,9 @@ var Faq_kbSchema = new Schema({
   agents_available: {
     type: Boolean,
     required: false,
-    default: false
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
   },
   slug: {
     type: String,
@@ -138,33 +140,34 @@ var Faq_kbSchema = new Schema({
 }
 );
 
-Faq_kbSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    console.log("** toJSON");
-    console.log("** toJSON ret: ", ret);
-    console.log("** toJSON doc: ", doc);
-    if (ret.agents_available === undefined || ret.agents_available === null) {
-      delete ret.agents_available;
-    }
-    if (doc.agents_available === undefined || doc.agents_available === null) {
-      delete ret.agents_available;
-    }
-    return ret;
-  },
-});
+// Faq_kbSchema.set("toJSON", {
+//   transform: (doc, ret) => {
+//     console.log("** toJSON");
+//     console.log("** toJSON ret: ", ret);
+//     console.log("** toJSON doc: ", doc);
+//     if (ret.agents_available === undefined || ret.agents_available === null) {
+//       delete ret.agents_available;
+//     }
+//     if (doc.agents_available === undefined || doc.agents_available === null) {
+//       delete ret.agents_available;
+//     }
+//     return ret;
+//   },
+// });
 
-Faq_kbSchema.set("toObject", {
-  transform: (doc, ret) => {
-    console.log("** toObject");
-    console.log("** toObject ret: ", ret);
-    // console.log("doc: ", doc)
-    // console.log("ret: ", ret)
-    if (ret.agents_available === undefined || ret.agents_available === null) {
-      delete ret.agents_available;
-    }
-    return ret;
-  },
-})
+// Faq_kbSchema.set("toObject", {
+//   transform: (doc, ret) => {
+//     console.log("** toObject");
+//     console.log("** toObject ret: ", ret);
+//     console.log("** toObject doc: ", doc);
+//     // console.log("doc: ", doc)
+//     // console.log("ret: ", ret)
+//     if (ret.agents_available === undefined || ret.agents_available === null) {
+//       delete ret.agents_available;
+//     }
+//     return ret;
+//   },
+// })
 
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
