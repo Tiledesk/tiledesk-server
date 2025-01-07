@@ -101,11 +101,33 @@ var FaqSchema = new Schema({
   attributes: {
     type: Object,
   },
+  agents_available: {
+    type: Boolean,
+    required: false
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
+
+FaqSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    if (ret.agents_available === undefined || ret.agents_available === null) {
+      delete ret.agents_available;
+    }
+    return ret;
+  },
+});
+
+FaqSchema.set("toObject", {
+  transform: (doc, ret) => {
+    if (ret.agents_available === undefined || ret.agents_available === null) {
+      delete ret.agents_available;
+    }
+    return ret;
+  },
+});
 
 FaqSchema.virtual('faq_kb', {
   ref: 'faq_kb', // The model to use

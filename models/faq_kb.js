@@ -121,11 +121,34 @@ var Faq_kbSchema = new Schema({
   certifiedTags: {
     type: Array,
     required: false
+  },
+  agents_available: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 },{
   timestamps: true
 }
 );
+
+Faq_kbSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    if (ret.agents_available === undefined || ret.agents_available === null) {
+      delete ret.agents_available;
+    }
+    return ret;
+  },
+});
+
+Faq_kbSchema.set("toObject", {
+  transform: (doc, ret) => {
+    if (ret.agents_available === undefined || ret.agents_available === null) {
+      delete ret.agents_available;
+    }
+    return ret;
+  },
+});
 
 Faq_kbSchema.virtual('fullName').get(function () {
   // winston.debug("faq_kb fullName virtual called");
