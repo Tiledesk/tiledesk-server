@@ -15,6 +15,7 @@ csv = require('csv-express');
 csv.separator = ';';
 const axios = require("axios").default;
 var configGlobal = require('../config/global');
+const roleConstants = require('../models/roleConstants');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
@@ -424,6 +425,9 @@ router.put('/:faqid', function (req, res) {
   if (req.body.attributes != undefined) {
     update.attributes = req.body.attributes;
   }
+  if (req.body.agents_available != undefined) {
+    update.agents_available = req.body.agents_available;
+  }
 
   if (faqid.startsWith("intentId")) {
     let intent_id = faqid.substring(8);
@@ -604,6 +608,13 @@ router.get('/', function (req, res, next) {
 
   if (req.query.intent_display_name) {
     query.intent_display_name = req.query.intent_display_name
+  }
+
+  let project_user = req.projectuser;
+  if (project_user && project_user.role === roleConstants.AGENT) {
+    query.agents_available = {
+      $in: [ null, true ]
+    }
   }
 
 
