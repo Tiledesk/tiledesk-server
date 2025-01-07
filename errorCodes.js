@@ -26,6 +26,12 @@ const errorCodes = {
       ACCESS_DENIED: 11003,
     },
   },
+  CHATBOT: {
+    BASE_CODE: 12000,
+    ERRORS: {
+      DUPLICATE_SLUG: 12001
+    }
+  }
   // Aggiungi altre route
 };
 
