@@ -142,7 +142,11 @@ Faq_kbSchema.set("toJSON", {
   transform: (doc, ret) => {
     console.log("** toJSON");
     console.log("** toJSON ret: ", ret);
+    console.log("** toJSON doc: ", doc);
     if (ret.agents_available === undefined || ret.agents_available === null) {
+      delete ret.agents_available;
+    }
+    if (doc.agents_available === undefined || doc.agents_available === null) {
       delete ret.agents_available;
     }
     return ret;
