@@ -324,8 +324,8 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
     update.certifiedTags = req.body.certifiedTags
   }
 
-  if (req.body.agents_visible != undefined) {
-    update.agents_visible = req.body.agents_visible
+  if (req.body.agents_available != undefined) {
+    update.agents_available = req.body.agents_available
   }
   
   winston.debug("update", update);
@@ -533,13 +533,19 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  var query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  let query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  
+  if (restricted_mode === true) {
+    query.agents_available = {
+      $in: [ null, true ]
+    }
+  }
 
   if (req.query.all != "true") {
     query.type = { $ne: "identity" }
   }
 
-  var search_obj = {"$search": req.query.text};
+  let search_obj = {"$search": req.query.text};
 
   if (req.query.text) {    
     if (req.query.language) {
