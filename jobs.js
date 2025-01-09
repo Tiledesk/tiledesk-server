@@ -113,6 +113,8 @@ async function main()
     jobsManager.listenScheduler(scheduler);
 
     let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+    console.log("multiWorkerQueue: ", multiWorkerQueue)
+    multiWorkerQueue.startJobsWorker();
     jobsManager.listenMultiWorker(multiWorkerQueue);
 
 
