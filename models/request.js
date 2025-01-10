@@ -504,6 +504,7 @@ RequestSchema.index({ id_project: 1, preflight: 1, createdAt: 1 })
 RequestSchema.index({ participants: 1, id_project: 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, "snapshot.lead.email": 1, createdAt: -1, status: 1 })
 RequestSchema.index({ id_project: 1, createdAt: -1, status: 1 })
+RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot.department.routing": 1, createdAt: 1, status: 1 })
 
 // ERROR DURING DEPLOY OF 2.10.27
 //RequestSchema.index({ id_project: 1, participants: 1, "snapshot.agents.id_user": 1, createdAt: -1, status: 1 })
