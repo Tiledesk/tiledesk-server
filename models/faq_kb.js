@@ -11,13 +11,13 @@ var Faq_kbSchema = new Schema({
   name: {
     type: String,
     required: true,
-    index:true
+    index: true
   },
   description: {
     type: String,
     // index:true
   },
-  url: { 
+  url: {
     type: String,
     // required: true
   },
@@ -25,7 +25,7 @@ var Faq_kbSchema = new Schema({
     type: String,
     // required: true
   },
-  webhook_enabled: { 
+  webhook_enabled: {
     type: Boolean,
     required: false,
     default: false,
@@ -74,13 +74,13 @@ var Faq_kbSchema = new Schema({
     type: Boolean,
     required: false,
     default: false,
-    index:true
+    index: true
   },
   certified: {
     type: Boolean,
     required: false,
     default: false,
-    index:true
+    index: true
   },
   mainCategory: {
     type: String,
@@ -92,18 +92,18 @@ var Faq_kbSchema = new Schema({
     default: 'none'
   },
   tags: [{
-      type: String
-    }],
+    type: String
+  }],
   score: {
-      type: Number,
-      required: false,
-      index: true,
-      default: 0
-    },
+    type: Number,
+    required: false,
+    index: true,
+    default: 0
+  },
   publishedBy: {
     type: String,
   },
-  publishedAt: { 
+  publishedAt: {
     type: Date
   },
   trained: {
@@ -121,11 +121,44 @@ var Faq_kbSchema = new Schema({
   certifiedTags: {
     type: Array,
     required: false
-  }
+  },
+  agents_available: {
+    type: Boolean,
+    required: false,
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
+  },
+  slug: {
+    type: String,
+    required: false,
+    default: "",
+    index: true
+  },
 },{
   timestamps: true
-}
-);
+});
+
+Faq_kbSchema.pre("save", async function (next) {
+  // Check if the document is new and if the slug has not been set manually
+  if (this.isNew && !this.slug) {
+    const baseSlug = generateSlug(this.name);
+    let uniqueSlug = baseSlug;
+
+    const existingCount = await mongoose.model("faq_kb").countDocuments({
+      id_project: this.id_project,
+      slug: { $regex: `^${baseSlug}(?:-\\d+)?$` }
+    });
+
+    if (existingCount > 0) {
+      uniqueSlug = `${baseSlug}-${existingCount}`;
+    }
+
+    this.slug = uniqueSlug;
+  }
+
+  next();
+});
 
 Faq_kbSchema.virtual('fullName').get(function () {
   // winston.debug("faq_kb fullName virtual called");
@@ -135,8 +168,14 @@ Faq_kbSchema.virtual('fullName').get(function () {
 Faq_kbSchema.index({certified: 1, public: 1}); //suggested by atlas
 
 
-Faq_kbSchema.index({name: 'text', description: 'text', "tags": 'text'},  
- {"name":"faqkb_fulltext","default_language": defaultFullTextLanguage,"language_override": "language"}); // schema level
+Faq_kbSchema.index(
+  {name: 'text', description: 'text', "tags": 'text'},  
+  {"name":"faqkb_fulltext","default_language": defaultFullTextLanguage,"language_override": "language"}); // schema level
+
+Faq_kbSchema.index(
+  { id_project: 1, slug: 1 },
+  { unique: true, partialFilterExpression: { slug: { $exists: true } } }
+);
 
 
 var faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
@@ -146,6 +185,16 @@ if (process.env.MONGOOSE_SYNCINDEX) {
   winston.info("faq_kb syncIndexes")
 }
 
-
+function generateSlug(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize("NFD") // Normalize characters with accents
+    .replace(/[\u0300-\u036f]/g, "") // Removes diacritics (e.g. à becomes a)
+    .replace(/[^a-z0-9\s-_]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replaces spaces with dashes
+    .replace(/_/g, "-")
+    .replace(/-+/g, "-"); // Removes consecutive hyphens
+}
 
 module.exports = faq_kb
