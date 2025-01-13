@@ -23,7 +23,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
-let JobManager = require("@tiledesk/tiledesk-multi-worker");
+let { Publisher } = require("@tiledesk/tiledesk-multi-worker");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -38,7 +38,7 @@ const { Scheduler } = require('../services/Scheduler');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
-let jobManager = new JobManager(AMQP_MANAGER_URL, {
+let jobManager = new Publisher(AMQP_MANAGER_URL, {
   debug: false,
   queueName: "conversation-tags_queue",
   exchange: "tiledesk-multi",
