@@ -6,7 +6,10 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.10.39 (next release)
-- update whatsapp-connector to 0.1.76
+- updated whatsapp-connector to 0.1.76
+- updated tybot-connector to 0.2.139
+- added chatbot slug in faq_kb model
+- added /replace endpoint in request 
 
 # 2.10.38
 - updated whatsapp-worker to 0.1.11
