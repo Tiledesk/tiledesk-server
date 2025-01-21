@@ -7,12 +7,12 @@ const uuidv4 = require('uuid/v4');
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var FaqSchema = new Schema({
-  _id: {
-    type: mongoose.Schema.Types.ObjectId,
-    index: true,
-    required: true,
-    auto: true,
-  },
+  // _id: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   index: true,
+  //   required: true,
+  //   auto: true,
+  // },
   id_faq_kb: {
     type: String,
     index: true
