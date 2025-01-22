@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.39 (next release)
+# 2.10.40
+- bug fix: empty string for slug and index issue
+
+# 2.10.39
 - updated whatsapp-connector to 0.1.76
 - updated tybot-connector to 0.2.139
 - added chatbot slug in faq_kb model
