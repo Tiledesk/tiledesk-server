@@ -32,6 +32,7 @@ const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
+const faq_kb = require('../models/faq_kb');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -435,6 +436,63 @@ router.put('/:requestid/participants', function (req, res) {
   });
 
 });
+
+router.put('/:requestid/replace', async (req, res) => {
+  
+  let id;
+  let name;
+  let slug;
+
+  if (req.body.id) {
+    id = "bot_" + req.body.id;
+  } else if (req.body.name) {
+    name = req.body.name;
+  } else if (req.body.slug) {
+    slug = req.body.slug;
+  } else {
+    return res.status(400).send({ success: false, error: "Missing field 'id' or 'name' in body" })
+  }
+
+  if (name) {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name }).catch((err) => {
+      winston.error("Error finding bot ", err);
+      return res.status(500).send({ success: false, error: "An error occurred getting chatbot with name " + name })
+    })
+
+    if (!chatbot) {
+      return res.status(404).send({ success: false, error: "Chatbot with name '" + name + "' not found" })
+    }
+
+    id = "bot_" + chatbot._id;
+    winston.info("Chatbot found: ", id);
+  }
+
+  if (slug) {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, slug: slug}).catch((err) => {
+      winston.error("Error finding bot ", err);
+      return res.status(500).send({ success: false, error: "An error occurred getting chatbot with slug " + slug })
+    })
+
+    if (!chatbot) {
+      return res.status(404).send({ success: false, error: "Chatbot with slug '" + slug + "' not found" })
+    }
+
+    id = "bot_" + chatbot._id;
+    winston.info("Chatbot found: ", id);
+  }
+
+  let participants = [];
+  participants.push(id);
+  winston.info("participants to be set: ", participants);
+
+  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
+    winston.info("SetParticipant response: ", updatedRequest);
+    res.status(200).send(updatedRequest);
+  }).catch((err) => {
+    winston.error("Error setting participants ", err);
+    res.status(500).send({ success: false, error: "Error setting participants to request"})
+  })
+})
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
