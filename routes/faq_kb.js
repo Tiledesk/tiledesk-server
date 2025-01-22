@@ -245,10 +245,6 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     let forkedChatBotId = forked.bot_id;
     winston.debug("forkedChatBotId: "+forkedChatBotId);
 
-
-    let update = {
-
-    }
     let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, { $unset: { slug: 1 }, trashed: true, publishedBy: req.user.id, publishedAt: new Date().getTime()}, { new: true, upsert: true }).exec();
     winston.debug("updatedForkedChabot: ",updatedForkedChabot);
     botEvent.emit('faqbot.update', updatedForkedChabot);
