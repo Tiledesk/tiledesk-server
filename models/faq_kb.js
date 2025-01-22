@@ -132,7 +132,6 @@ var Faq_kbSchema = new Schema({
   slug: {
     type: String,
     required: false,
-    default: "",
     index: true
   },
 },{
