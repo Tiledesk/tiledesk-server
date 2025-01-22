@@ -101,11 +101,19 @@ var FaqSchema = new Schema({
   attributes: {
     type: Object,
   },
+  agents_available: {
+    type: Boolean,
+    required: false,
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
+
 
 FaqSchema.virtual('faq_kb', {
   ref: 'faq_kb', // The model to use
