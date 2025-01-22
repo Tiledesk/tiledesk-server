@@ -23,7 +23,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
-let JobManager = require("@tiledesk/tiledesk-multi-worker");
+let { Publisher } = require("@tiledesk/tiledesk-multi-worker");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -39,7 +39,7 @@ const faq_kb = require('../models/faq_kb');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
-let jobManager = new JobManager(AMQP_MANAGER_URL, {
+let jobManager = new Publisher(AMQP_MANAGER_URL, {
   debug: false,
   queueName: "conversation-tags_queue",
   exchange: "tiledesk-multi",
@@ -53,7 +53,6 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
-
 
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
@@ -2104,14 +2103,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
@@ -2357,7 +2357,7 @@ async function scheduleTags(id_project, tags) {
       type: "conversation-tag",
       date: new Date()
     }
-    console.log("payload: ", payload);
+    console.log("-> tags payload: ", payload);
     scheduler.tagSchedule(payload, async (err, result) => {
       if (err) {
         winston.error("Scheduling error: ", err);

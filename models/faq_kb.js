@@ -11,13 +11,13 @@ var Faq_kbSchema = new Schema({
   name: {
     type: String,
     required: true,
-    index:true
+    index: true
   },
   description: {
     type: String,
     // index:true
   },
-  url: { 
+  url: {
     type: String,
     // required: true
   },
@@ -25,7 +25,7 @@ var Faq_kbSchema = new Schema({
     type: String,
     // required: true
   },
-  webhook_enabled: { 
+  webhook_enabled: {
     type: Boolean,
     required: false,
     default: false,
@@ -74,13 +74,13 @@ var Faq_kbSchema = new Schema({
     type: Boolean,
     required: false,
     default: false,
-    index:true
+    index: true
   },
   certified: {
     type: Boolean,
     required: false,
     default: false,
-    index:true
+    index: true
   },
   mainCategory: {
     type: String,
@@ -92,18 +92,18 @@ var Faq_kbSchema = new Schema({
     default: 'none'
   },
   tags: [{
-      type: String
-    }],
+    type: String
+  }],
   score: {
-      type: Number,
-      required: false,
-      index: true,
-      default: 0
-    },
+    type: Number,
+    required: false,
+    index: true,
+    default: 0
+  },
   publishedBy: {
     type: String,
   },
-  publishedAt: { 
+  publishedAt: {
     type: Date
   },
   trained: {
@@ -122,6 +122,13 @@ var Faq_kbSchema = new Schema({
     type: Array,
     required: false
   },
+  agents_available: {
+    type: Boolean,
+    required: false,
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
+  },
   slug: {
     type: String,
     required: false,
@@ -129,8 +136,7 @@ var Faq_kbSchema = new Schema({
   },
 },{
   timestamps: true
-}
-);
+});
 
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
