@@ -128,13 +128,12 @@ var Faq_kbSchema = new Schema({
     default: function () {
       return this.isNew ? false : undefined;
     },
-  }
-},{
+  },
   slug: {
     type: String,
     required: false,
     index: true
-  },
+  }
 },{
   timestamps: true
 });
