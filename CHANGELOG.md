@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.42
+- updated tybot-connector to 0.2.140 
+
 # 2.10.41
 - added agents_available field in faq_kb and faq models
 
