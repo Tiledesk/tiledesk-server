@@ -854,7 +854,7 @@ router.get(
   "/keycloak/callback",
   passport.authenticate("keycloak"),
   function(req, res) {
-    winston.info("'/keycloak/callback: ");
+    winston.verbose("'/keycloak/callback: ");
     // Successful authentication, redirect home.
     res.redirect('/');
   }

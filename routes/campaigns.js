@@ -15,7 +15,7 @@ var Segment2MongoConverter = require("../utils/segment2mongoConverter");
 var JobManager = require("jobs-worker-queued");
 
 var JOB_RABBITURI = process.env.JOB_RABBITURI;
-winston.info("JobWorkerQueued uri: " + JOB_RABBITURI);
+winston.verbose("JobWorkerQueued uri: " + JOB_RABBITURI);
 
 var jobManager = new JobManager(JOB_RABBITURI,
   {
@@ -44,7 +44,7 @@ router.post('/', function (req, res) {
     req.body.text, req.body.departmentid, req.body.sourcePage,
     req.body.language, req.body.userAgent, null, req.user._id, req.body.attributes, req.body.subject, true, req.body.channel).then(function (savedRequest) {
 
-      winston.info("savedRequest", savedRequest);
+      winston.debug("savedRequest", savedRequest);
 
       // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type) {
       return messageService.create(req.body.sender || req.user._id, req.body.senderFullname || req.user.fullName, savedRequest.request_id, req.body.text,

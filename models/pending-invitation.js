@@ -36,7 +36,7 @@ var pending= mongoose.model('pending-invitation', PendingInvitation);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   pending.syncIndexes();
-  winston.info("pending syncIndexes")
+  winston.verbose("pending syncIndexes")
 }
 
 module.exports = pending;

@@ -189,7 +189,7 @@ faq.on('index', function (error) {
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   faq.syncIndexes();
-  winston.info("faq syncIndexes")
+  winston.verbose("faq syncIndexes")
 }
 
 

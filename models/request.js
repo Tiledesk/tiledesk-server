@@ -522,7 +522,7 @@ RequestSchema.index({ id_project: 1, preflight: 1, smartAssignment: 1, "snapshot
 var request =  mongoose.model('request', RequestSchema);
 if (process.env.MONGOOSE_SYNCINDEX) {
   request.syncIndexes();
-  winston.info("message syncIndexes")
+  winston.verbose("message syncIndexes")
 
 }
 

@@ -182,7 +182,7 @@ var faq_kb = mongoose.model('faq_kb', Faq_kbSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   faq_kb.syncIndexes();
-  winston.info("faq_kb syncIndexes")
+  winston.verbose("faq_kb syncIndexes")
 }
 
 function generateSlug(name) {
