@@ -2357,7 +2357,6 @@ async function scheduleTags(id_project, tags) {
       type: "conversation-tag",
       date: new Date()
     }
-    console.log("payload: ", payload);
     scheduler.tagSchedule(payload, async (err, result) => {
       if (err) {
         winston.error("Scheduling error: ", err);
