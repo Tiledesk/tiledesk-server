@@ -5,10 +5,38 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.43
+- changed index on fulltext in faq model adding id_faq_kb
+
+# 2.10.42
+- updated tybot-connector to 0.2.140 
+
+# 2.10.41
+- added agents_available field in faq_kb and faq models
+
+# 2.10.40
+- bug fix: empty string for slug and index issue
+
+# 2.10.39
+- updated whatsapp-connector to 0.1.76
+- updated tybot-connector to 0.2.139
+- added chatbot slug in faq_kb model
+- added /replace endpoint in request 
+
+# 2.10.38
+- updated whatsapp-worker to 0.1.11
+- added index to request model
+
+# 2.10.36
+- updated tybot-connector to 0.2.138
+
+# 2.10.35
+- added tiledesk-multi-worker to 0.1.6
+
 # 2.10.34
 - added add tags endpoint
 - added tags analytics endpoint
-- added tiledesk-multi-worker 0.1.5
+- added tiledesk-multi-worker to 0.1.5
 - updated tybot-connector to 0.2.134
 - updated vxml-connector to 0.1.67
 - updated voice-twilio-connector to 0.1.12

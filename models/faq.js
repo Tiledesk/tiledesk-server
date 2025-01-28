@@ -7,12 +7,12 @@ const uuidv4 = require('uuid/v4');
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 
 var FaqSchema = new Schema({
-  _id: {
-    type: mongoose.Schema.Types.ObjectId,
-    index: true,
-    required: true,
-    auto: true,
-  },
+  // _id: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   index: true,
+  //   required: true,
+  //   auto: true,
+  // },
   id_faq_kb: {
     type: String,
     index: true
@@ -101,11 +101,19 @@ var FaqSchema = new Schema({
   attributes: {
     type: Object,
   },
+  agents_available: {
+    type: Boolean,
+    required: false,
+    default: function () {
+      return this.isNew ? false : undefined;
+    },
+  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
 }
 );
+
 
 FaqSchema.virtual('faq_kb', {
   ref: 'faq_kb', // The model to use
@@ -156,8 +164,12 @@ FaqSchema.index({ id_project: 1, id_faq_kb: 1, question: 1 });
 
 // }
 
-FaqSchema.index({ question: 'text' },
-  { "name": "faq_fulltext", "default_language": defaultFullTextLanguage, "language_override": "language" }); // schema level
+// FaqSchema.index({ question: 'text' },
+//   { "name": "faq_fulltext", "default_language": defaultFullTextLanguage, "language_override": "language" }); // schema level
+  
+FaqSchema.index({ id_faq_kb: 1, question: "text" },
+  { name: "faq_fulltext", default_language: defaultFullTextLanguage, language_override: "language" }
+);
 
 //  FaqSchema.index({question: 'text', answer: 'text'},
 //  {"name":"faq_fulltext","default_language": defaultFqullTextLanguage,"language_override": "language", weights: {question: 10,answer: 1}}); // schema level
@@ -181,7 +193,7 @@ faq.on('index', function (error) {
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   faq.syncIndexes();
-  winston.info("faq syncIndexes")
+  winston.verbose("faq syncIndexes")
 }
 
 

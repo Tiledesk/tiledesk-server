@@ -62,7 +62,7 @@ class ChatbotService {
         },
         method: 'GET'
       }).then((resbody) => {
-        winston.info("(CHATBOT SERVICE) forking public chatbot " + resbody.data.name);
+        winston.debug("(CHATBOT SERVICE) forking public chatbot " + resbody.data.name);
         let chatbot = resbody.data;
         return chatbot
       }).catch((err) => {

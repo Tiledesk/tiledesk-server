@@ -18,7 +18,7 @@ var analyticResult= mongoose.model('analyticResult', AnalyticResultSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   analyticResult.syncIndexes();
-  winston.info("analyticResult syncIndexes")
+  winston.verbose("analyticResult syncIndexes")
 }
 
 

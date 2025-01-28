@@ -133,7 +133,7 @@ var UserModel = mongoose.model('user', UserSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
     UserModel.syncIndexes();
-    winston.info("UserModel syncIndexes")
+    winston.verbose("UserModel syncIndexes")
 }
 
 module.exports = UserModel;

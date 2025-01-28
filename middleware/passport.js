@@ -72,6 +72,14 @@ if (process.env.GOOGLE_SIGNIN_ENABLED=="true" || process.env.GOOGLE_SIGNIN_ENABL
 winston.info('Authentication Google Signin enabled : ' + enableGoogleSignin);
 
 
+
+var enableOauth2Signin = false;
+if (process.env.OAUTH2_SIGNIN_ENABLED=="true" || process.env.OAUTH2_SIGNIN_ENABLED == true) {
+  enableOauth2Signin = true;
+}
+winston.info('Authentication Oauth2 Signin enabled : ' + enableOauth2Signin);
+
+
 var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
@@ -571,6 +579,248 @@ if (enableGoogleSignin==true) {
 ));
 
 }
+
+
+if (enableOauth2Signin==true) {
+
+  const OAuth2Strategy = require('passport-oauth2');
+  OAuth2Strategy.prototype.userProfile = function(accessToken, done) {
+
+    winston.debug("accessToken " + accessToken)
+
+
+    /*
+    https://stackoverflow.com/questions/66452108/keycloak-get-users-returns-403-forbidden
+  The service account associated with your client needs to be allowed to view the realm users.
+  Go to http://localhost:8080/auth/admin/{realm_name}/console/#/realms/{realm_name}/clients
+  Select your client (which must be a confidential client)
+  In the settings tab, switch Service Account Enabled to ON
+  Click on save, the Service Account Roles tab will appear
+  In Client Roles, select realm_management
+  Scroll through available roles until you can select view_users
+  Click on Add selected
+  You should have something like this :
+  */
+
+
+  // ATTENTION You have to add a client scope after as described here: https://keycloak.discourse.group/t/issue-on-userinfo-endpoint-at-keycloak-20/18461/4
+
+    // console.log("this._oauth2", this._oauth2)
+    this._oauth2._useAuthorizationHeaderForGET = true;
+    this._oauth2.get( process.env.OAUTH2_USER_INFO_URL, accessToken, (err, body) => {
+      if (err) {
+        return done(err);
+      }
+
+      try {
+        winston.debug("body", body);
+
+        const json = JSON.parse(body);
+        const userInfo = {
+          keycloakId: json.sub,
+          fullName: json.name,
+          firstName: json.given_name,
+          lastName: json.family_name,
+          username: json.preferred_username,
+          email: json.email,
+          // avatar: json.avatar,
+          // realm: this.options.realm,
+        };
+        winston.debug("userInfo", userInfo);
+
+        done(null, userInfo);
+      } catch (e) {
+        done(e);
+      }
+    });
+  };
+
+
+  passport.use(new OAuth2Strategy({
+    authorizationURL: process.env.OAUTH2_AUTH_URL,
+    tokenURL: process.env.OAUTH2_TOKEN_URL, 
+    clientID: process.env.OAUTH2_CLIENT_ID,
+    clientSecret: process.env.OAUTH2_CLIENT_SECRET, 
+    callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback"    
+  },
+  function(accessToken, refreshToken, params, profile, cb) {
+    winston.debug("params", params);
+
+
+    const token = jwt.decode(accessToken); // user id lives in here
+    winston.debug("token", token);
+
+    const profileInfo = jwt.decode(params.id_token); // user email lives in here
+    winston.debug("profileInfo", profileInfo);
+
+    winston.debug("profile", profile);
+
+    winston.debug("accessToken", accessToken);
+
+    winston.debug("refreshToken", refreshToken);
+
+    var issuer = token.iss;
+    var email = profile.email;
+
+    var query = {providerId : issuer, subject: profile.keycloakId};
+    winston.debug("query", query)
+
+    Auth.findOne(query, function(err, cred){     
+      winston.debug("cred", cred, err);
+      if (err) { return cb(err); }
+      if (!cred) {
+        // The oauth account has not logged in to this app before.  Create a
+        // new user record and link it to the oauth account.
+          var password = uniqid()
+        // signup ( email, password, firstname, lastname, emailverified) {
+          userService.signup(email, password,  profile.displayName, "", true)
+          .then(function (savedUser) {
+
+          winston.debug("savedUser", savedUser)    
+
+          var auth = new Auth({
+            providerId: issuer,
+            email: email,
+            subject: profile.keycloakId,
+          });
+          auth.save(function (err, authSaved) {    
+            if (err) { return cb(err); }
+            winston.debug("authSaved", authSaved);
+
+            return cb(null, savedUser);
+          });
+        }).catch(function(err) {
+            winston.error("Error signup oauth ", err);
+            return cb(err);        
+        });
+      } else {
+        // The Oauth account has previously logged in to the app.  Get the
+        // user record linked to the Oauth account and log the user in.
+
+        User.findOne({
+          email: email, status: 100
+        }, 'email firstname lastname emailverified id', function (err, user) {
+
+          winston.debug("user",user, err);
+          // winston.debug("usertoJSON()",user.toJSON());
+
+          if (err) { 
+            winston.error("Error getting user",user, err);
+            return cb(err); 
+          }
+
+          if (!user) { 
+            winston.info("User not found",user, err);
+            return cb(null, false); 
+          }
+
+          return cb(null, user);        
+        });
+      }
+    });
+  }
+  ));
+}
+
+
+
+// const KeycloakStrategy = require('@exlinc/keycloak-passport')
+
+
+// // Register the strategy with passport
+// passport.use(
+//   "keycloak",
+//   new KeycloakStrategy(
+//     {
+//       host: process.env.KEYCLOAK_HOST,
+//       realm: process.env.KEYCLOAK_REALM,
+//       clientID: process.env.KEYCLOAK_CLIENT_ID,
+//       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+//       callbackURL: `${process.env.AUTH_KEYCLOAK_CALLBACK}`,
+//       authorizationURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
+//       tokenURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+//       userInfoURL : `${process.env.KEYCLOAK_HOST}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/userinfo`
+//       // authorizationURL: '123',
+//       // tokenURL : '123',
+//       // userInfoURL: '123'
+//     },
+//     (accessToken, refreshToken, profile, done) => {
+
+
+//       const token = jwt.decode(accessToken); // user id lives in here
+//       console.log("token", token);
+    
+//       console.log("profile", profile);
+    
+//       console.log("accessToken", accessToken);
+    
+//       console.log("refreshToken", refreshToken);
+    
+//       var issuer = token.iss;
+//       var email = profile.email;
+    
+//       var query = {providerId : issuer, subject: profile.keycloakId};
+//       winston.info("query", query)
+    
+//       Auth.findOne(query, function(err, cred){     
+//       winston.info("cred", cred, err);
+//         if (err) { return cb(err); }
+//         if (!cred) {
+//           // The oauth account has not logged in to this app before.  Create a
+//           // new user record and link it to the oauth account.
+//             var password = uniqid()
+//            // signup ( email, password, firstname, lastname, emailverified) {
+//             userService.signup(email, password,  profile.displayName, "", true)
+//             .then(function (savedUser) {
+    
+//             winston.info("savedUser", savedUser)    
+    
+//             var auth = new Auth({
+//               providerId: issuer,
+//               email: email,
+//               subject: profile.keycloakId,
+//             });
+//             auth.save(function (err, authSaved) {    
+//               if (err) { return cb(err); }
+//               winston.info("authSaved", authSaved);
+    
+//               return cb(null, savedUser);
+//             });
+//           }).catch(function(err) {
+//               winston.error("Error signup oauth ", err);
+//               return cb(err);        
+//           });
+//         } else {
+//           // The Oauth account has previously logged in to the app.  Get the
+//           // user record linked to the Oauth account and log the user in.
+    
+//           User.findOne({
+//             email: email, status: 100
+//           }, 'email firstname lastname emailverified id', function (err, user) {
+    
+//             winston.info("user",user, err);
+//             winston.info("usertoJSON()",user.toJSON());
+    
+//             if (err) { 
+//               winston.error("Error getting user",user, err);
+//               return cb(err); 
+//             }
+    
+//             if (!user) { 
+//               winston.info("User not found",user, err);
+//               return cb(null, false); 
+//             }
+    
+//             return done(null, user);
+//           });
+//         }
+//       });
+//     }
+//     ));
+
+
+
+
 
 
 
