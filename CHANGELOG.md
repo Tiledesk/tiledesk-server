@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.44
+- updated tybot-connector to 0.2.141
+
 # 2.10.43
 - changed index on fulltext in faq model adding id_faq_kb
 
