@@ -14,7 +14,7 @@ var channel = mongoose.model('channel', ChannelSchema);;
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   channel.syncIndexes();
-  winston.info("channel syncIndexes")
+  winston.verbose("channel syncIndexes")
 }
 
 

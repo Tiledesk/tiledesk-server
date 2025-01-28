@@ -451,7 +451,7 @@ var projectSetter = function (req, res, next) {
   if (projectid) {
     
     if (!mongoose.Types.ObjectId.isValid(projectid)) {
-      winston.warn(`Invalid ObjectId: ${projectid}`);
+      //winston.warn(`Invalid ObjectId: ${projectid}`);
       return res.status(400).send({ error: "Invalid project id: " + projectid });
     }
     
@@ -462,11 +462,11 @@ var projectSetter = function (req, res, next) {
     }
     q.exec(function(err, project){
       if (err) {
-        winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
+        //winston.warn("Problem getting project with id: " + projectid + " req.originalUrl:  " + req.originalUrl);
       }
       winston.debug("projectSetter project:" + project);
       if (!project) {
-        winston.warn("ProjectSetter project not found with id: " + projectid);
+        //winston.warn("ProjectSetter project not found with id: " + projectid);
         //next();
         return res.status(400).send({ error: "Project not found with id: " + projectid })
       } else {
@@ -553,7 +553,7 @@ app.use('/:projectid/departments', department);
 channelManager.useUnderProjects(app);
 
 app.use('/:projectid/groups', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], group);
-app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], tag);
+app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], tag);
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], resthook);
 
 //deprecated

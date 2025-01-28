@@ -109,6 +109,14 @@ var KBSchema = new Schema({
       type: Array,
       required: false
     }
+  },
+  refresh_rate: {
+    type: String,
+    required: false
+  },
+  last_refresh: {
+    type: Date,
+    required: false
   }
 }, {
   timestamps: true

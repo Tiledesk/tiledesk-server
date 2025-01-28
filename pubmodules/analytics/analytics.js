@@ -9,6 +9,7 @@ var RoleConstants = require("../../models/roleConstants");
 
 var mongoose = require('mongoose');
 var winston = require('../../config/winston');
+var Analytics = require('../../models/analytics');
 var ObjectId = require('mongodb').ObjectId;
 
 
@@ -1742,5 +1743,88 @@ router.get('/messages/count', function(req, res) {
 
   });
 
+router.get('/tags/:type', async (req, res) => {
+
+  let id_project = req.projectid;
+  let type = req.params.type;
+  let startDate = req.query.start_date;
+  let endDate = req.query.end_date;
+
+  if (!type) {
+    return res.status(400).send({ success: false, error: "Missing parameter 'type'" });
+  }
+
+  if (!startDate) {
+    startDate = new Date();
+    startDate.setDate(startDate.getDate() - 6);
+  } else {
+    startDate = new Date(startDate)
+  }
+
+  if (!endDate) {
+    endDate = new Date();
+  } else {
+    endDate = new Date(endDate);
+  }
+  
+  startDate = startDate.setHours(0, 0, 0, 0);
+  endDate = endDate.setHours(0, 0, 0, 0);
+
+  if (startDate > endDate) {
+    return res.status(400).send({ success: false, error: "Invalid dates: start_date can't be greater of end_date"})
+  }
+
+  let query = {
+    id_project: id_project,
+    type: type,
+    date: { $gte: startDate, $lte: endDate }
+  }
+
+  console.log("analytics tags query: ", query)
+
+  let result = await Analytics.find(query).catch((err) => {
+    winston.error("Error finding Analytics: ", err);
+    return res.status(500).send({ success: false, error: "Unable to find analytics" })
+  })
+
+  let parsedDates = result
+    .sort((a, b) => parseInt(a.date) - parseInt(b.date))
+    .map(r => {
+      let date = new Date(parseInt(r.date));
+      let day = String(date.getDate()).padStart(2, '0'); // Day with two digit
+      let month = String(date.getMonth() + 1).padStart(2, '0'); // Month with two digit
+      let year = date.getFullYear(); // Complete year
+      
+      return {
+        formatted: `${day}/${month}/${year}`,
+        original: r
+      };
+  });
+  
+  // Extract and sort all unique dates
+  let dates = [...new Set(parsedDates.map(d => d.formatted))].sort();
+  
+  // Extract all unique keys
+  let allKeys = [...new Set(result.flatMap(r => Object.keys(r.keys)))];
+  
+  // Pre-build a map to optimize data access
+  let dataMap = parsedDates.reduce((acc, { formatted, original }) => {
+    acc[formatted] = original.keys;
+    return acc;
+  }, {});
+  
+  // Build the data series
+  let series = allKeys.map(key => {
+    let values = dates.map(date => dataMap[date]?.[key] || 0); // Default a 0 se il tag non è presente
+    return { name: key, values };
+  });
+  
+  // Assembly final result
+  let data = { dates, series };
+  console.log(data);
+
+  return res.status(200).send(data);
+  
+})
 
 module.exports = router;

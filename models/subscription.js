@@ -49,7 +49,7 @@ var subscription = mongoose.model('subscription', SubscriptionSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   subscription.syncIndexes();
-  winston.info("subscription syncIndexes")
+  winston.verbose("subscription syncIndexes")
 }
 
 module.exports = subscription;

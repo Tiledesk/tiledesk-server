@@ -18,7 +18,7 @@ var requester = mongoose.model('requester', RequesterSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   requester.syncIndexes();
-  winston.info("requester syncIndexes")
+  winston.verbose("requester syncIndexes")
 }
 
 module.exports = requester;
