@@ -1444,7 +1444,7 @@ async function scheduleScrape(resources) {
         winston.error("Scheduling error: ", err);
         error_code = 400;
       } else {
-        winston.info("Scheduling result: ", result);
+        winston.verbose("Scheduling result: ", result);
       }
       await updateStatus(r.id, error_code);
     });

@@ -43,7 +43,7 @@ var property = mongoose.model('property', PropertySchema);
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   property.syncIndexes();
-  winston.info("property syncIndexes")
+  winston.verbose("property syncIndexes")
 }
 
 module.exports = property;
