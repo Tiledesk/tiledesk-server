@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.46 (dedicated version)
+- added reindex system
+- added voice quota on duration
+
 # 2.10.45
 - updated tybot-connector to 0.2.144
 
