@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.10.43",
+  "version": "2.10.45",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -48,7 +48,7 @@
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.14",
     "@tiledesk/tiledesk-train-jobworker": "^0.0.11",
-    "@tiledesk/tiledesk-tybot-connector": "^0.2.140",
+    "@tiledesk/tiledesk-tybot-connector": "^0.2.144",
     "@tiledesk/tiledesk-whatsapp-connector": "^0.1.76",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.11",
     "@tiledesk/tiledesk-sms-connector": "^0.1.11",
