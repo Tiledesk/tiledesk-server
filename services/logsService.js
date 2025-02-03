@@ -54,8 +54,6 @@ class LogsService {
     }
 }
 
-
 let logsService = new LogsService();
-
 
 module.exports = logsService;
