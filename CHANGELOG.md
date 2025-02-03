@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.49
+- changed TILEBOT_ENDPOINT
+
 # 2.10.48
 - updated tybot-connector to 0.2.146
 
