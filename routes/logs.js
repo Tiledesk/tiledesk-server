@@ -101,9 +101,9 @@ router.get('/flows/:request_id', async (req, res) => {
         method = logsService.getLastRows(request_id, 20);
     } else if (direction === 'prev') {
         logsService.get
-        method = logsService.getOlderRows(request_id, new Date(timestamp));
+        method = logsService.getOlderRows(request_id, 10, new Date(timestamp));
     } else if (direction === 'next') {
-        method = logsService.getNewerRows(request_id, new Date(timestamp))
+        method = logsService.getNewerRows(request_id, 10, new Date(timestamp))
     } else {
         return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."})
     }
