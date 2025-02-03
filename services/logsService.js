@@ -14,7 +14,7 @@ class LogsService {
         ]).then(rows => rows.reverse())
     }
 
-    async getOlderLogs(request_id, limit, timestamp) {
+    async getOlderRows(request_id, limit, timestamp) {
 
         return FlowLogs.aggregate([
             { $match: { request_id } },
@@ -25,7 +25,7 @@ class LogsService {
         ]).then(rows => rows.reverse())
     }
 
-    async getNewerLogs(request_id, limit, timestamp) {
+    async getNewerRows(request_id, limit, timestamp) {
 
         return FlowLogs.aggregate([
             { $match: { request_id } },
