@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.50
+- updated tybot-connector to 0.2.147
+- removed logs
+- fix /department/operators bug (Circular Dependency on JSON Stringify)
+
 # 2.10.49
 - changed TILEBOT_ENDPOINT
 
