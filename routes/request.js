@@ -454,7 +454,7 @@ router.put('/:requestid/replace', async (req, res) => {
   }
 
   if (name) {
-    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name }).catch((err) => {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name, trashed: false }).catch((err) => {
       winston.error("Error finding bot ", err);
       return res.status(500).send({ success: false, error: "An error occurred getting chatbot with name " + name })
     })
