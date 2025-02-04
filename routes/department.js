@@ -156,8 +156,8 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
 
     console.log("operatorsResult ", operatorsResult)
 
-  
-    return res.json(operatorsResult);
+    return res.status(200).send(operatorsResult);
+    //return res.json(operatorsResult);
 
 });
 
