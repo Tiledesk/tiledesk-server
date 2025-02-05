@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.51
+- updated /replace endpoint adding trashed: false inside query
+
 # 2.10.50
 - updated tybot-connector to 0.2.147
 - removed logs
