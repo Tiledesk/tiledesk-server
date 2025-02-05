@@ -557,8 +557,8 @@ app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], resthook);
 
 //deprecated
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq);
-app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
+app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
 
 //Deprecated??
 app.use('/:projectid/faqpub', faqpub);
