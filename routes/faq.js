@@ -640,6 +640,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
   return Faq.find(query)
     .skip(skip).limit(limit)
     .populate({ path: 'faq_kb' })
+    .lean()
     .exec(function (err, faqs) {
 
       winston.debug("GET FAQ ", faqs);
