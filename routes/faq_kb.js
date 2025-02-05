@@ -10,7 +10,6 @@ var winston = require('../config/winston');
 var httpUtil = require("../utils/httpUtil");
 const { forEach } = require('lodash');
 var multer = require('multer')
-var upload = multer()
 var configGlobal = require('../config/global');
 const faq = require('../models/faq');
 var jwt = require('jsonwebtoken');
@@ -21,6 +20,19 @@ const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
+
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: MAX_UPLOAD_FILE_SIZE} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
 
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   winston.debug('create BOT ', req.body);
