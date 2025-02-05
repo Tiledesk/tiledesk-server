@@ -651,8 +651,9 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
 
       if (restricted_mode === true) {
         faqs = faqs.map(({ webhook_enabled, faq_kb, actions, attributes, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+        faqs = faqs.filter(f => (f.intent_display_name !== "start" && f.intent_display_name !== 'defaultFallback'));
       }
-      
+
       res.status(200).send(faqs);
     });
 
