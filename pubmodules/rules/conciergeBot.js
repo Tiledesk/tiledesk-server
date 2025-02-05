@@ -79,7 +79,7 @@ devi mandare un messaggio welcome tu altrimenti il bot inserito successivamente 
                                     winston.debug("rerouting");
                                     // reroute(request_id, id_project, nobot)
                                     requestService.reroute(message.request.request_id, message.request.id_project, false ).catch((err) => {
-                                        winston.error("ConciergeBot error reroute: ", err);
+                                        winston.error("ConciergeBot error reroute: " + err);
                                     });     
                                 }
                                 
