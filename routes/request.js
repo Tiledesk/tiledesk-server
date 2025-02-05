@@ -464,7 +464,7 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
-    winston.info("Chatbot found: ", id);
+    winston.verbose("Chatbot found: ", id);
   }
 
   if (slug) {
