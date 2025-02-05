@@ -138,7 +138,6 @@ var Faq_kbSchema = new Schema({
   timestamps: true
 });
 
-
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
   if (this.isNew && !this.slug) {
