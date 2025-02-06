@@ -26,7 +26,7 @@ let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
 
 if (MAX_UPLOAD_FILE_SIZE) {
-  uploadlimits = {fileSize: MAX_UPLOAD_FILE_SIZE} ;
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
   winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
 } else {
   winston.debug("Max upload file size is infinity");
