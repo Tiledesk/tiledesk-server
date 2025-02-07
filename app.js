@@ -199,6 +199,10 @@ let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
 
+let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+winston.info("multiWorkerQueue");
+jobsManager.listenMultiWorker(multiWorkerQueue);
+
 // let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
 // winston.info("trainingQueue");
 // jobsManager.listenTrainingQueue(trainingQueue);
@@ -660,11 +664,17 @@ app.use((err, req, res, next) => {
 
   winston.debug("err.name", err.name)
   if (err.name === "IpDeniedError") {
-    winston.info("IpDeniedError");
+    winston.debug("IpDeniedError");
     return res.status(401).json({ err: "error ip filter" });
+  }
+
+  //emitted by multer when the file is too big
+  if (err.code === "LIMIT_FILE_SIZE") {
+    winston.debug("LIMIT_FILE_SIZE");
+    return res.status(413).json({ err: "Content Too Large" });
   } 
 
-  winston.error("General error", err);
+  winston.error("General error:: ", err);
   return res.status(500).json({ err: "error" });
 });
 
