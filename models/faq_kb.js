@@ -133,6 +133,10 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: false,
     index: true
+  },
+  modified: {
+    type: Boolean,
+    required: false
   }
 },{
   timestamps: true
