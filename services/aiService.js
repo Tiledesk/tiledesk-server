@@ -38,12 +38,12 @@ class AiService {
 
   // LLM
   askllm(data) {
-    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint);
+    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint_qa);
 
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/ask",
+        url: kb_endpoint_qa + "/ask",
         headers: {
           'Content-Type': 'application/json'
         },
