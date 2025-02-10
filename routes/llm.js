@@ -44,8 +44,8 @@ router.post('/preview', async (req, res) => {
         winston.verbose("Askllm response: ", response);
         res.status(200).send(response)
     }).catch((err) => {
-
-        res.status(500).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
+        res.status(500).send({ success: false, error: err });
+        //res.status(500).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
     })
 
 })
