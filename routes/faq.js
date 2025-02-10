@@ -3,7 +3,6 @@ var router = express.Router();
 var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var multer = require('multer')
-var upload = multer()
 const faqBotEvent = require('../event/faqBotEvent');
 var winston = require('../config/winston');
 const faqEvent = require('../event/faqBotEvent')
@@ -19,6 +18,19 @@ const roleConstants = require('../models/roleConstants');
 const roleChecker = require('../middleware/has-role');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
 
 // POST CSV FILE UPLOAD FROM CLIENT
 router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), upload.single('uploadFile'), function (req, res, next) {

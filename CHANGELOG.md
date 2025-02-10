@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.53-rc1
+- updated tybot-connector to 0.2.149-rc1
+- others fix on max upload file size 
+
 # 2.10.52
 - updated tybot-connector to 0.2.148
 - updated faqRoute /get endpoint with restricted mode
