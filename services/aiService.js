@@ -50,12 +50,8 @@ class AiService {
         data: data,
         method: 'POST'
       }).then((resbody) => {
-        console.log("resbody: ", resbody)
         resolve(resbody)
       }).catch((err) => {
-        console.log("err.status: ", err.status)
-        console.log("err.data: ", err.data)
-        console.log("err: ", err)
         reject(err)
       })
     })
