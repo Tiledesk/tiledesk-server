@@ -661,12 +661,12 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
                                 .auth(email, pwd)
-                                .send({ list:["https://gethelp.tiledesk.com/article"], scrape_type: 3 })
+                                .send({ list:["https://gethelp.tiledesk.com/article"], refresh_rate: 'daily', scrape_type: 3 })
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-
+                                    console.log("res.body: ", res.body)
                                     res.should.have.status(200);
                                     expect(res.body.length).to.equal(1)
                                     expect(res.body[0].scrape_type).to.equal(3)
@@ -1425,6 +1425,78 @@ describe('KbRoute', () => {
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.status).to.equal(300);
+
+                                            done();
+
+                                        })
+
+
+                                })
+                        })
+
+
+
+
+                });
+            });
+        }).timeout(10000)
+
+        it('webhook-reindex', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.log("error: ", err) };
+                            if (log) { console.log("res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('array');
+
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_name6",
+                                type: "url",
+                                source: "https://www.exampleurl6.com",
+                                content: "",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/')
+                                .auth(email, pwd)
+                                .send(kb)
+                                .end((err, res) => {
+
+                                    if (err) { console.log("error: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    let kb_id = res.body.value._id;
+
+                                    chai.request(server)
+                                        .post('/webhook/kb/reindex')
+                                        .set("x-auth-token", "testtoken")
+                                        .send({ content_id: kb_id })
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err) };
+                                            if (log) { console.log("res.body: ", res.body) };
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.success).to.equal(true);
+                                            expect(res.body.message).to.equal("Content queued for reindexing");
 
                                             done();
 
