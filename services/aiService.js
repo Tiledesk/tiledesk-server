@@ -36,8 +36,29 @@ class AiService {
 
   }
 
+  // LLM
+  askllm(data) {
+    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint);
 
-  // PUGLIA AI
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint + "/ask",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: data,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  }
+
+
+  // KB
   checkStatus(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 

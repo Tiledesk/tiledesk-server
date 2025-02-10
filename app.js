@@ -122,6 +122,7 @@ var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
+var llm = require('./routes/llm');
 var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
@@ -605,7 +606,7 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
-// app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
+app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
