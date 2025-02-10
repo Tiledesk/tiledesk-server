@@ -3,7 +3,6 @@ var router = express.Router();
 var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var multer = require('multer')
-var upload = multer()
 const faqBotEvent = require('../event/faqBotEvent');
 var winston = require('../config/winston');
 const faqEvent = require('../event/faqBotEvent')
@@ -17,8 +16,22 @@ const axios = require("axios").default;
 var configGlobal = require('../config/global');
 const roleConstants = require('../models/roleConstants');
 const roleChecker = require('../middleware/has-role');
+const { ChatbotService } = require('../services/chatbotService');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
 
 // POST CSV FILE UPLOAD FROM CLIENT
 router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), upload.single('uploadFile'), function (req, res, next) {
@@ -210,6 +223,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
 
   let id_faq_kb = req.body.id_faq_kb;
   let operations = req.body.operations;
+  let chatbotService = new ChatbotService();
 
   for (let op of operations) {
     let HTTPREQUEST;
@@ -234,6 +248,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -261,6 +276,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -284,6 +300,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -310,6 +327,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
