@@ -31,7 +31,7 @@ router.post('/preview', async (req, res) => {
     key = integration.value.apikey;
 
     let json = {
-        question: question,
+        question: body.question,
         llm: body.llm,
         model: body.model,
         llm_key: key,
