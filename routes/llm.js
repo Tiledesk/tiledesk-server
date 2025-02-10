@@ -42,7 +42,7 @@ router.post('/preview', async (req, res) => {
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);
-        res.status(200).send(response)
+        res.status(200).send(response.data)
     }).catch((err) => {
         console.error("error: ", err.response);
         if (err.response?.data?.detail[0]) {
