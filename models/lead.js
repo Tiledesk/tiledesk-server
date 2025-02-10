@@ -111,7 +111,7 @@ LeadSchema.index({status: 1, id_project: 1, createdAt: -1});
 
  if (process.env.MONGOOSE_SYNCINDEX) {
   lead.syncIndexes();
-  winston.info("lead syncIndexes")
+  winston.verbose("lead syncIndexes")
 }
 
 module.exports = lead;

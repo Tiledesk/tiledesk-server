@@ -61,7 +61,7 @@ var segment = mongoose.model('segment', SegmentSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
     segment.syncIndexes();
-  winston.info("segment syncIndexes")
+  winston.verbose("segment syncIndexes")
 }
 
 module.exports = segment;

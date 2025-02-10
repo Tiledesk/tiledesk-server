@@ -33,7 +33,7 @@ const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || '3000';
-const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/" || "http://localhost:" + port+ "/modules/tilebot/ext/";
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class RulesTrigger {

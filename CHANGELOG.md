@@ -5,10 +5,59 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.52
+- updated tybot-connector to 0.2.148
+- updated faqRoute /get endpoint with restricted mode
+
+# 2.10.51
+- updated /replace endpoint adding trashed: false inside query
+
+# 2.10.50
+- updated tybot-connector to 0.2.147
+- removed logs
+- fix /department/operators bug (Circular Dependency on JSON Stringify)
+
+# 2.10.49
+- changed TILEBOT_ENDPOINT
+
+# 2.10.48
+- updated tybot-connector to 0.2.146
+
+# 2.10.44
+- updated tybot-connector to 0.2.141
+
+# 2.10.43
+- changed index on fulltext in faq model adding id_faq_kb
+
+# 2.10.42
+- updated tybot-connector to 0.2.140 
+
+# 2.10.41
+- added agents_available field in faq_kb and faq models
+
+# 2.10.40
+- bug fix: empty string for slug and index issue
+
+# 2.10.39
+- updated whatsapp-connector to 0.1.76
+- updated tybot-connector to 0.2.139
+- added chatbot slug in faq_kb model
+- added /replace endpoint in request 
+
+# 2.10.38
+- updated whatsapp-worker to 0.1.11
+- added index to request model
+
+# 2.10.36
+- updated tybot-connector to 0.2.138
+
+# 2.10.35
+- added tiledesk-multi-worker to 0.1.6
+
 # 2.10.34
 - added add tags endpoint
 - added tags analytics endpoint
-- added tiledesk-multi-worker 0.1.5
+- added tiledesk-multi-worker to 0.1.5
 - updated tybot-connector to 0.2.134
 - updated vxml-connector to 0.1.67
 - updated voice-twilio-connector to 0.1.12

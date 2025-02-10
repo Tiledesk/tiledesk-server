@@ -18,6 +18,7 @@ const uuidv4 = require('uuid/v4');
 const trainingService = require('../services/trainingService');
 var roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
+const errorCodes = require('../errorCodes');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -244,12 +245,12 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     let forkedChatBotId = forked.bot_id;
     winston.debug("forkedChatBotId: "+forkedChatBotId);
 
-    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, {trashed: true, publishedBy: req.user.id, publishedAt: new Date().getTime()}, { new: true, upsert: true }).exec();
+    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, { $unset: { slug: 1 }, trashed: true, publishedBy: req.user.id, publishedAt: new Date().getTime()}, { new: true, upsert: true }).exec();
     winston.debug("updatedForkedChabot: ",updatedForkedChabot);
     botEvent.emit('faqbot.update', updatedForkedChabot);
 
     const port = process.env.PORT || '3000';
-    const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+    const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/" || "http://localhost:" + port+ "/modules/tilebot/ext/";
     winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
     let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();
@@ -324,15 +325,23 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
     update.certifiedTags = req.body.certifiedTags
   }
 
-  if (req.body.agents_visible != undefined) {
-    update.agents_visible = req.body.agents_visible
+  if (req.body.agents_available != undefined) {
+    update.agents_available = req.body.agents_available
+  }
+
+  if (req.body.slug != undefined) {
+    update.slug = req.body.slug;
   }
   
   winston.debug("update", update);
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
     if (err) {
-      return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      if (err.code === 11000 && err.keyValue.slug) {
+        return res.status(500).send({ success: false, msg: 'Error updating object.', error: 'Slug already exists: ' + err.keyValue.slug, error_code: errorCodes.CHATBOT.ERRORS.DUPLICATE_SLUG })
+      } else {
+        return res.status(500).send({ success: false, msg: 'Error updating object.' });
+      }
     }
 
     botEvent.emit('faqbot.update', updatedFaq_kb);
@@ -533,13 +542,19 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  var query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  let query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  
+  if (restricted_mode === true) {
+    query.agents_available = {
+      $in: [ null, true ]
+    }
+  }
 
   if (req.query.all != "true") {
     query.type = { $ne: "identity" }
   }
 
-  var search_obj = {"$search": req.query.text};
+  let search_obj = {"$search": req.query.text};
 
   if (req.query.text) {    
     if (req.query.language) {
@@ -853,7 +868,6 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
             } else {
               winston.error("Error creating new intent: ", err);
             }
-            winston.error("Error creating new intent: ", err);
           })
 
           if (faq) {

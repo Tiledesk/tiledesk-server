@@ -37,7 +37,7 @@ var setting =  mongoose.model('Setting', SettingSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   setting.syncIndexes();
-  winston.info("setting syncIndexes")
+  winston.verbose("setting syncIndexes")
 }
 
 
