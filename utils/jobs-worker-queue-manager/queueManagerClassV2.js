@@ -110,6 +110,7 @@ startPublisher(callback) {
     ch.on("close", function() {
       // if (that.debug) {console.log("[JobWorker] AMQP channel closed");}
       console.log("[JobWorker] - startPublisher AMQP channel closed")
+      setTimeout(() => that.startPublisher(callback), 1000);
     });
 
     // if (this.debug) {console.log("[AMQP] pubChannel");
