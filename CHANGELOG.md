@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.53
+- added voice quota duration
+
 # 2.10.52
 - updated tybot-connector to 0.2.148
 - updated faqRoute /get endpoint with restricted mode
