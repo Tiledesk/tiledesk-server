@@ -23,7 +23,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
-
+let JobManager = require("@tiledesk/tiledesk-multi-worker");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -31,8 +31,28 @@ csv.separator = ';';
 const { check, validationResult } = require('express-validator');
 const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
+const { Scheduler } = require('../services/Scheduler');
+const faq_kb = require('../models/faq_kb');
+//const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
+
+const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
+
+let jobManager = new JobManager(AMQP_MANAGER_URL, {
+  debug: false,
+  queueName: "conversation-tags_queue",
+  exchange: "tiledesk-multi",
+  topic: "conversation-tags",
+})
+
+jobManager.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
+})
 
 
 
@@ -416,6 +436,63 @@ router.put('/:requestid/participants', function (req, res) {
   });
 
 });
+
+router.put('/:requestid/replace', async (req, res) => {
+  
+  let id;
+  let name;
+  let slug;
+
+  if (req.body.id) {
+    id = "bot_" + req.body.id;
+  } else if (req.body.name) {
+    name = req.body.name;
+  } else if (req.body.slug) {
+    slug = req.body.slug;
+  } else {
+    return res.status(400).send({ success: false, error: "Missing field 'id' or 'name' in body" })
+  }
+
+  if (name) {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name, trashed: false }).catch((err) => {
+      winston.error("Error finding bot ", err);
+      return res.status(500).send({ success: false, error: "An error occurred getting chatbot with name " + name })
+    })
+
+    if (!chatbot) {
+      return res.status(404).send({ success: false, error: "Chatbot with name '" + name + "' not found" })
+    }
+
+    id = "bot_" + chatbot._id;
+    winston.verbose("Chatbot found: ", id);
+  }
+
+  if (slug) {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, slug: slug}).catch((err) => {
+      winston.error("Error finding bot ", err);
+      return res.status(500).send({ success: false, error: "An error occurred getting chatbot with slug " + slug })
+    })
+
+    if (!chatbot) {
+      return res.status(404).send({ success: false, error: "Chatbot with slug '" + slug + "' not found" })
+    }
+
+    id = "bot_" + chatbot._id;
+    winston.verbose("Chatbot found: " + id);
+  }
+
+  let participants = [];
+  participants.push(id);
+  winston.verbose("participants to be set: ", participants);
+
+  requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
+    winston.debug("SetParticipant response: ", updatedRequest);
+    res.status(200).send(updatedRequest);
+  }).catch((err) => {
+    winston.error("Error setting participants ", err);
+    res.status(500).send({ success: false, error: "Error setting participants to request"})
+  })
+})
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
 router.delete('/:requestid/participants/:participantid', function (req, res) {
@@ -848,6 +925,76 @@ router.put('/:requestid/followers', function (req, res) {
 
 });
 
+
+router.put('/:requestid/tag', async (req, res) => {
+
+  let id_project = req.projectid;
+  let request_id = req.params.requestid;
+  let tags_list = req.body;
+  winston.debug("(Request) /tag tags_list: ", tags_list)
+
+  if (tags_list.length == 0) {
+    winston.warn("(Request) /tag no tag specified")
+    return res.status(400).send({ success: false, message: "No tag specified" })
+  }
+
+  let request = await Request.findOne({ id_project: id_project, request_id: request_id }).catch((err) => {
+    winston.error("(Request) /tag error getting request ", err);
+    return res.status(500).send({ success: false, error: "Error getting request with request id " + request_id});
+  })
+
+  if (!request) {
+    winston.warn("(Request) /tag request not found with request_id " + request_id);
+    return res.status(404).send({ success: false, error: "Request not found with request id " + request_id});
+  }
+
+  let current_tags = request.tags;
+  let adding_tags = [];
+
+  tags_list.forEach(t => {
+    // Check if tag already exists in the conversation. If true, skip the adding.
+    if(!current_tags.some(tag => tag.tag === t.tag)) {
+      current_tags.push(t);
+      adding_tags.push(t);
+    }
+  })
+
+  let update = {
+    tags: current_tags
+  }
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, update, { new: true }).then( async (updatedRequest) => {
+
+    if (!updatedRequest) {
+      winston.warn("(Request) /tag The request was deleted while adding tags for request " + request_id);
+      return res.status(404).send({ success: false, error: "The request was deleted while adding tags for request " + request_id })
+    }
+
+    winston.debug("(Request) /tag Request updated successfully ", updatedRequest);
+
+    const populatedRequest = 
+        await updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')
+          .populate({ path: 'requester', populate: { path: 'id_user' } })  
+          .execPopulate();
+
+    requestEvent.emit("request.update", populatedRequest)
+    res.status(200).send(updatedRequest)
+    
+    if (process.env.NODE_ENV !== 'test') {
+      scheduleTags(id_project, adding_tags);
+    }
+
+  }).catch((err) => {
+    winston.error("(Request) /tag error finding and update request ", err);
+    return res.status(500).send({ success: false, error: "Error updating request with id " + request_id })
+  })
+
+})
+
 router.delete('/:requestid/followers/:followerid', function (req, res) {
   winston.debug(req.body);
 
@@ -864,7 +1011,40 @@ router.delete('/:requestid/followers/:followerid', function (req, res) {
 
 
 
+router.delete('/:requestid/tag/:tag_id', async (req, res) => {
 
+  let id_project = req.projectid;
+  let request_id = req.params.requestid;
+  let tag_id = req.params.tag_id;
+
+
+
+  Request.findOneAndUpdate({ id_project: id_project, request_id: request_id }, { $pull: { tags: { _id: tag_id } } }, { new: true }).then( async (updatedRequest) => {
+    
+    if (!updatedRequest) {
+      winston.warn("(Request) /removetag request not found with id: " + request_id)
+      return res.status(404).send({ success: false, error: "Request not found with id " + request_id})
+    }
+
+    winston.debug("(Request) /removetag updatedRequest: ", updatedRequest)
+
+    const populatedRequest = 
+        await updatedRequest
+          .populate('lead')
+          .populate('department')
+          .populate('participatingBots')
+          .populate('participatingAgents')
+          .populate({ path: 'requester', populate: { path: 'id_user' } })  
+          .execPopulate();
+
+    requestEvent.emit("request.update", populatedRequest)
+    res.status(200).send(updatedRequest);
+    
+  }).catch((err) => {
+    winston.error("(Request) /removetag error updating request: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+})
 
 
 // TODO make a synchronous chat21 version (with query parameter?) with request.support_group.created
@@ -2165,5 +2345,27 @@ router.get('/:requestid/chatbot/parameters', async (req, res) => {
   })
 
 })
+
+
+async function scheduleTags(id_project, tags) {
+  
+  let scheduler = new Scheduler({ jobManager: jobManager })
+  tags.forEach(t => {
+    let payload = {
+      id_project: id_project,
+      tag: t.tag,
+      type: "conversation-tag",
+      date: new Date()
+    }
+    scheduler.tagSchedule(payload, async (err, result) => {
+      if (err) {
+        winston.error("Scheduling error: ", err);
+      } else {
+        winston.verbose("Scheduling result: ", result);
+      }
+    })
+  })
+}
+
 
 module.exports = router;

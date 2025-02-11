@@ -37,7 +37,6 @@ class Listener {
         sms.startApp({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
-            API_URL: apiUrl,
             BASE_URL: apiUrl + "/modules/sms",
             BRAND_NAME: brand_name,
             REDIS_HOST: host,

@@ -4,7 +4,7 @@ var { KBSettings } = require('../models/kb_setting');
 // var KB = require('../models/kb_setting')
 var router = express.Router();
 var winston = require('../config/winston');
-const openaiService = require('../services/openaiService');
+const aiService = require('../services/aiService');
 
 router.get('/', async (req, res) => {
     let project_id = req.projectid;
@@ -105,13 +105,14 @@ router.post('/qa', async (req, res) => {
     let data = req.body;
     winston.debug("/qa data: ", data);
 
-    openaiService.ask(data).then((resp) => {
+    aiService.ask(data).then((resp) => {
         winston.debug("qa resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("qa err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        //let status = err.response.status;
+        //res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 
@@ -120,13 +121,14 @@ router.post('/startscrape', async (req, res) => {
     let data = req.body;
     winston.debug("/startscrape data: ", data);
 
-    openaiService.startScrape(data).then((resp) => {
+    aiService.startScrape(data).then((resp) => {
         winston.debug("startScrape resp: ", resp.data);
         res.status(200).send(resp.data);
     }).catch((err) => {
         winston.error("startScrape err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        // let status = err.response.status;
+        // res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 
@@ -141,7 +143,7 @@ router.post('/checkstatus', async (req, res) => {
         url_list: [ req.body.full_url ]
     }
 
-    openaiService.checkStatus(data).then((resp) => {
+    aiService.checkStatus(data).then((resp) => {
         winston.debug("checkStatus resp: ", resp);
         winston.debug("checkStatus resp: ", resp.data);
         winston.debug("checkStatus resp: ", resp.data[full_url]);
@@ -172,8 +174,10 @@ router.post('/checkstatus', async (req, res) => {
         res.status(200).send(return_data);
     }).catch((err) => {
         //winston.error("checkstatus err: ", err);
-        let status = err.response.status;
-        res.status(status).send({ statusText: err.response.statusText, detail: err.response.data.detail });
+
+        // let status = err.response?.status;
+        // res.status(status).send({ statusText: err.response?.statusText, detail: err.response?.data?.detail });
+        res.status(400).send({ success: false, error: err });
     })
 })
 // PROXY PUGLIA AI - END

@@ -111,7 +111,7 @@ var message = mongoose.model('message', MessageSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   message.syncIndexes();
-  winston.info("message syncIndexes")
+  winston.verbose("message syncIndexes")
 }
 
 module.exports = message;

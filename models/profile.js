@@ -58,7 +58,7 @@ var profile =mongoose.model('profile', ProfileSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   profile.syncIndexes();
-  winston.info("profile syncIndexes")
+  winston.verbose("profile syncIndexes")
 }
 
 

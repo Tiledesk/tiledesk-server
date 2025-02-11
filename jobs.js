@@ -104,13 +104,11 @@ async function main()
     winston.info("whatsappQueue");
     jobsManager.listenWhatsappQueue(whatsappQueue);
 
-    // let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
-    // winston.info("trainingQueue");
-    // jobsManager.listenTrainingQueue(trainingQueue);
-
-
     let scheduler = require('./pubmodules/scheduler');    
     jobsManager.listenScheduler(scheduler);
+
+    let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+    jobsManager.listenMultiWorker(multiWorkerQueue);
 
 
     winston.info("Jobs started"); 

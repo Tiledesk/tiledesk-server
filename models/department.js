@@ -89,7 +89,7 @@ var department = mongoose.model('department', DepartmentSchema);
 
 if (process.env.MONGOOSE_SYNCINDEX) {
   department.syncIndexes();
-  winston.info("department syncIndexes")
+  winston.verbose("department syncIndexes")
 }
 
 

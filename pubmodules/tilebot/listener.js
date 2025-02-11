@@ -5,7 +5,7 @@ var configGlobal = require('../../config/global');
 
 var port = process.env.PORT || '3000';
 
-const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/" || "http://localhost:" + port+ "/modules/tilebot/ext/";
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 winston.info("Tilebot endpoint: " + TILEBOT_ENDPOINT);

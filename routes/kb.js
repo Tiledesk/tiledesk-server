@@ -6,7 +6,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
-const openaiService = require('../services/openaiService');
+const aiService = require('../services/aiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
@@ -18,7 +18,6 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
-const { body } = require('express-validator');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -49,7 +48,7 @@ let default_preview_settings = {
 }
 let default_engine = {
   name: "pinecone",
-  type: "pod",
+  type: process.env.PINECONE_TYPE,
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX
@@ -190,7 +189,7 @@ router.post('/scrape/status', async (req, res) => {
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
-  openaiService.scrapeStatus(data).then(async (response) => {
+  aiService.scrapeStatus(data).then(async (response) => {
 
     winston.debug("scrapeStatus response.data: ", response.data);
 
@@ -294,45 +293,24 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
   }
 
-  openaiService.askNamespace(data).then((resp) => {
+  aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
-    let id = answer.id;
-    let index = id.indexOf("#");
-    if (index != -1) {
-      id = id.substring(index + 1);
+    if (publicKey === true) {
+      let multiplier = MODELS_MULTIPLIER[data.model];
+      if (!multiplier) {
+        multiplier = 1;
+        winston.info("No multiplier found for AI model")
+      }
+      obj.multiplier = multiplier;
+      obj.tokens = answer.prompt_token_size;
+
+      let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
+      winston.verbose("incremented_key: ", incremented_key);
     }
-
-    KB.findById(id, (err, resource) => {
-
-      if (publicKey === true) {
-        let multiplier = MODELS_MULTIPLIER[data.model];
-        if (!multiplier) {
-          multiplier = 1;
-          winston.info("No multiplier found for AI model")
-        }
-        obj.multiplier = multiplier;
-        obj.tokens = answer.prompt_token_size;
   
-        let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
-        winston.verbose("incremented_key: ", incremented_key);
-      }
-
-      if (err) {
-        winston.error("Unable to find resource with id " + id + " in namespace " + answer.namespace + ". The standard answer is returned.")
-        return res.status(200).send(resp.data);
-      }
-
-      if (!resource) {
-        winston.error("Resource with id " + id + " not found in namespace " + answer.namespace + ". The standard answer is returned.")
-        return res.status(200).send(resp.data);
-      }
-
-      answer.source = resource.name;
-      return res.status(200).send(answer);
-    })
-
+    return res.status(200).send(answer);
 
   }).catch((err) => {
     winston.error("qa err: ", err);
@@ -374,7 +352,7 @@ router.delete('/delete', async (req, res) => {
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
-  openaiService.deleteIndex(data).then((resp) => {
+  aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     res.status(200).send(resp.data);
   }).catch((err) => {
@@ -413,7 +391,7 @@ router.delete('/deleteall', async (req, res) => {
 
   winston.verbose("/deleteall data: ", data);
 
-  openaiService.deleteNamespace(data).then((resp) => {
+  aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
     res.status(200).send(resp.data);
   }).catch((err) => {
@@ -518,7 +496,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(200).send({ success: true, message: "Get chunks skipped in test environment"});
   }
 
-  openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
+  aiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
     winston.debug("chunks found ", chunks);
@@ -680,7 +658,7 @@ router.delete('/namespace/:id', async (req, res) => {
 
   if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
 
-    openaiService.deleteNamespace(data).then(async (resp) => {
+    aiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
       let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
@@ -714,7 +692,7 @@ router.delete('/namespace/:id', async (req, res) => {
       return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
     }
 
-    openaiService.deleteNamespace(data).then(async (resp) => {
+    aiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
       let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
@@ -947,6 +925,7 @@ router.post('/', async (req, res) => {
     new_kb.scrape_type = 1;
   }
   if (new_kb.type === 'url') {
+    new_kb.refresh = body.refresh;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = await setDefaultScrapeOptions();
@@ -998,7 +977,7 @@ router.post('/', async (req, res) => {
       let resources = [];
 
       resources.push(json);
-      if (!process.env.NODE_ENV) {
+      if (process.env.NODE_ENV !== 'test') {
         scheduleScrape(resources);
       }
 
@@ -1020,6 +999,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let project_id = req.projectid;
   let scrape_type = req.body.scrape_type;
   let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1077,7 +1057,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       content: "",
       namespace: namespace_id,
       status: -1,
-      scrape_type: scrape_type
+      scrape_type: scrape_type,
+      refresh_rate: refresh_rate
     }
 
     if (!kb.scrape_type) {
@@ -1104,7 +1085,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let operations = kbs.map(doc => {
     return {
       updateOne: {
-        filter: { id_project: doc.id_project, type: 'url', source: doc.source },
+        filter: { id_project: doc.id_project, type: 'url', source: doc.source, namespace: namespace_id },
         update: doc,
         upsert: true,
         returnOriginal: false
@@ -1123,7 +1104,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
-    if (!process.env.NODE_ENV) {
+    if (process.env.NODE_ENV !== 'test') {
       scheduleScrape(resources);
     }
     res.status(200).send(result);
@@ -1214,7 +1195,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
       let operations = kbs.map(doc => {
         return {
           updateOne: {
-            filter: { id_project: doc.id_project, type: 'faq', source: doc.source },
+            filter: { id_project: doc.id_project, type: 'faq', source: doc.source, namespace: namespace_id },
             update: doc,
             upsert: true,
             returnOriginal: false
@@ -1232,7 +1213,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
           return { id: _id, webhooh: webhook, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
-        if (!process.env.NODE_ENV) {
+        if (process.env.NODE_ENV !== 'test') {
           scheduleScrape(resources);
         }
         res.status(200).send(result);
@@ -1337,7 +1318,7 @@ router.delete('/:kb_id', async (req, res) => {
 
   winston.verbose("/:delete_id data: ", data);
 
-  openaiService.deleteIndex(data).then((resp) => {
+  aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
       KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
@@ -1453,9 +1434,6 @@ async function updateStatus(id, status) {
 
 async function scheduleScrape(resources) {
 
-  // let data = {
-  //     resources: resources
-  // }
   let scheduler = new Scheduler({ jobManager: jobManager });
 
   resources.forEach(r => {
@@ -1466,12 +1444,11 @@ async function scheduleScrape(resources) {
         winston.error("Scheduling error: ", err);
         error_code = 400;
       } else {
-        winston.info("Scheduling result: ", result);
+        winston.verbose("Scheduling result: ", result);
       }
       await updateStatus(r.id, error_code);
     });
   })
-
 
   return true;
 }
@@ -1491,7 +1468,7 @@ async function startScrape(data) {
   winston.verbose("status of kb " + data.id + " updated: " + status_updated);
 
   return new Promise((resolve, reject) => {
-    openaiService.singleScrape(data).then(async (resp) => {
+    aiService.singleScrape(data).then(async (resp) => {
       winston.debug("singleScrape resp: ", resp.data);
       let status_updated = await updateStatus(data.id, 300);
       winston.verbose("status of kb " + data.id + " updated: " + status_updated);

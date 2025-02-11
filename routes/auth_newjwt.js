@@ -135,7 +135,7 @@ function (req, res) {
           
           authEvent.emit("projectuser.create", savedProject_user);         
 
-          winston.info('project user created ', savedProject_user.toObject());
+          winston.verbose('project user created ', savedProject_user.toObject());
 
           
           // JWT_HERE
@@ -215,14 +215,14 @@ router.post('/signinWithCustomToken', [
           
             authEvent.emit("projectuser.create", savedProject_user);         
 
-              winston.info('project user created ', savedProject_user.toObject());
+              winston.verbose('project user created ', savedProject_user.toObject());
 
               
 
             return res.json({ success: true, token: req.headers["authorization"], user: req.user });
         });
       }else {
-        winston.info('project user already exists ');
+        winston.verbose('project user already exists ');
         return res.json({ success: true, token: req.headers["authorization"], user: req.user });
       }
 
