@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.54
+- updated multi-worker to 0.1.19
+- updated queueManagerClass to improves queue reconnect system
+
 # 2.10.53
 - added voice quota duration
 
