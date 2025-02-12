@@ -20,4 +20,4 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: tiledesk/tiledesk-server-worker
         dockerfile: Dockerfile-profiler
-        tags: latest
+        tags: latest-profiler
