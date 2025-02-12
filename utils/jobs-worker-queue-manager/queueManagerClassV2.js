@@ -97,20 +97,16 @@ whenConnected(callback) {
 
 startPublisher(callback) {
   var that = this;
-  that.amqpConn.createConfirmChannel(function(err, ch) {
+  that.amqpConn.createConfirmChannel(function (err, ch) {
     if (that.closeOnErr(err)) return;
-    ch.on("error", function(err) {
-      // if (that.debug) {console.log("[JobWorker] - startPublisher AMQP channel error", err);}
-      console.log("[JobWorker] - startPublisher AMQP channel error", err);
+    ch.on("error", function (err) {
+      if (that.debug) { console.log("[JobWorker] AMQP channel error", err); }
     });
-    ch.on("close", function() {
-      // if (that.debug) {console.log("[JobWorker] AMQP channel closed");}
-      console.log("[JobWorker] - startPublisher AMQP channel closed. Recreating...")
-      setTimeout(() => that.startPublisher(callback), 1000);
+    ch.on("close", function () {
+      if (that.debug) { console.log("[JobWorker] AMQP channel closed"); }
     });
 
     // if (this.debug) {console.log("[AMQP] pubChannel");
-    console.log("[JobWorker] - Channel created")
     that.pubChannel = ch;
     // console.log("[JobWorker] that.pubChannel",that.pubChannel);
     // while (true) {
@@ -120,7 +116,7 @@ startPublisher(callback) {
     // }
 
     if (callback) {
-        callback(err);
+      callback(err);
     }
 
   });
