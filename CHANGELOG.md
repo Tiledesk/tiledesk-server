@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.55
+# 2.10.56
 - bug fix: wrong tilebot_endpoint declaration
 
 # 2.10.54
