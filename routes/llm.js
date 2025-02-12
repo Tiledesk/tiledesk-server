@@ -51,7 +51,7 @@ router.post('/preview', async (req, res) => {
         if (err.response?.data?.detail[0]) {
             res.status(400).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
         } else {
-            res.status(500).send({ success: false, error: err.response });
+            res.status(500).send({ success: false, error: err.response.data });
         }
     })
 
