@@ -10,6 +10,8 @@ router.post('/preview', async (req, res) => {
     let body = req.body;
     let key;
 
+    console.log("preview body: ", req.body)
+
     if (!body.llm) {
         return res.status(400).send({ success: false, error: "Missing required parameter 'llm'" });
     }
@@ -39,6 +41,8 @@ router.post('/preview', async (req, res) => {
         max_tokens: body.max_tokens,
         system_context: body.context
     }
+
+    console.log("preview json: ", json)
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);
