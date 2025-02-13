@@ -10,6 +10,7 @@
 - fix issue on reconnect to rabbit queue (kb indexing)
 - updated multi-worker to 0.1.19
 - fix issue on TILEBOT_ENDPOINT undefined
+- added endpoint for llm preview
 
 # 2.10.56
 - bug fix: wrong tilebot_endpoint declaration
