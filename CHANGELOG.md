@@ -5,6 +5,22 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.57
+- updated tybot-connector to 0.2.150
+- fix issue on reconnect to rabbit queue (kb indexing)
+- updated multi-worker to 0.1.19
+- fix issue on TILEBOT_ENDPOINT undefined
+
+# 2.10.56
+- bug fix: wrong tilebot_endpoint declaration
+
+# 2.10.54
+- updated multi-worker to 0.1.19
+- updated queueManagerClass to improves queue reconnect system
+
+# 2.10.53
+- added voice quota duration
+
 # 2.10.52
 - updated tybot-connector to 0.2.148
 - updated faqRoute /get endpoint with restricted mode
