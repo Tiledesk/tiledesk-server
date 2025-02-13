@@ -35,6 +35,18 @@ const fileFilter = (req, file, cb) => {
   }
 }
 
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+
+
 // const bodymiddleware = function(req, res, next) {
 //   winston.info("YYYYYY req.body.folder:"+req.body.folder);
 //   winston.info("YYYYYY req.body:",req.body);
@@ -42,7 +54,7 @@ const fileFilter = (req, file, cb) => {
 // }
 
 
-const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter });
+const upload = multer({ storage: fileService.getStorage("images"), fileFilter: fileFilter, limits: uploadlimits });
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -96,7 +108,7 @@ upload.single('file'), (req, res, next) => {
 
 
 
-const uploadFixedFolder = multer({ storage: fileService.getStorageFixFolder("images"), fileFilter: fileFilter });
+const uploadFixedFolder = multer({ storage: fileService.getStorageFixFolder("images"), fileFilter: fileFilter, limits: uploadlimits });
 
 /*
 curl -v -X PUT -u andrea.leo@f21.it:123456 \
@@ -158,7 +170,7 @@ uploadFixedFolder.single('file'), (req, res, next) => {
 
 
 
-const uploadAvatar= multer({ storage: fileService.getStorageAvatar("images"), fileFilter: fileFilter });
+const uploadAvatar= multer({ storage: fileService.getStorageAvatar("images"), fileFilter: fileFilter, limits: uploadlimits });
 
 /*
 curl -v -X PUT -u andrea.leo@f21.it:123456 \

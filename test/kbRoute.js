@@ -1538,7 +1538,7 @@ describe('KbRoute', () => {
 
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get all namespaces res.body: ", res.body); }
-
+                            console.log("get all namespaces res.body: ", res.body);
                             res.should.have.status(200);
                             res.body.should.be.a('array');
                             expect(res.body.length).to.equal(1);
@@ -1888,6 +1888,7 @@ describe('KbRoute', () => {
                 })
             })
         }).timeout(10000)
+
 
         /**
          * Delete namespace
