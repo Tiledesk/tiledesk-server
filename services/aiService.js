@@ -38,7 +38,7 @@ class AiService {
 
   // LLM
   askllm(data) {
-    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint);
+    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint_qa);
 
     return new Promise((resolve, reject) => {
 

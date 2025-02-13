@@ -51,8 +51,10 @@ router.post('/preview', async (req, res) => {
             res.status(400).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
         } else if (err.response?.data?.detail?.answer) {
             res.status(400).send({ success: false, error: err.response.data.detail.answer, detail: err.response.data.detail });
-        } else {
+        } else if (err.response?.data) {
             res.status(500).send({ success: false, error: err.response.data });
+        } else {
+            res.status(500).send({ success: false, error: err });
         }
     })
 
