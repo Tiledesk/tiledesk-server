@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.57
+# 2.10.58
 - updated tybot-connector to 0.2.150
 - fix issue on reconnect to rabbit queue (kb indexing)
 - updated multi-worker to 0.1.19
