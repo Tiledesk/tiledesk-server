@@ -663,7 +663,7 @@ app.use((err, req, res, next) => {
   //emitted by multer when the file is too big
   if (err.code === "LIMIT_FILE_SIZE") {
     winston.debug("LIMIT_FILE_SIZE");
-    return res.status(413).json({ err: "Content Too Large" });
+    return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
   } 
 
   winston.error("General error:: ", err);
