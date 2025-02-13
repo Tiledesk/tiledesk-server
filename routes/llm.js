@@ -10,8 +10,6 @@ router.post('/preview', async (req, res) => {
     let body = req.body;
     let key;
 
-    console.log("preview body: ", req.body)
-
     if (!body.llm) {
         return res.status(400).send({ success: false, error: "Missing required parameter 'llm'" });
     }
@@ -38,11 +36,12 @@ router.post('/preview', async (req, res) => {
         model: body.model,
         llm_key: key,
         temperature: body.temperature,
-        max_tokens: body.max_tokens,
-        system_context: body.context
+        max_tokens: body.max_tokens
     }
 
-    console.log("preview json: ", json)
+    if (body.context) {
+        json.system_context = body.context;
+    }
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);
@@ -50,6 +49,8 @@ router.post('/preview', async (req, res) => {
     }).catch((err) => {
         if (err.response?.data?.detail[0]) {
             res.status(400).send({ success: false, error: err.response.data.detail[0]?.msg, detail: err.response.data.detail });
+        } else if (err.response?.data?.detail?.answer) {
+            res.status(400).send({ success: false, error: err.response.data.detail.answer, detail: err.response.data.detail });
         } else {
             res.status(500).send({ success: false, error: err.response.data });
         }
