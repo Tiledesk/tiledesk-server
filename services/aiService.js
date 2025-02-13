@@ -43,7 +43,7 @@ class AiService {
     return new Promise((resolve, reject) => {
 
       axios({
-        url: kb_endpoint + "/ask",
+        url: kb_endpoint_qa + "/ask",
         headers: {
           'Content-Type': 'application/json'
         },
