@@ -21,9 +21,9 @@ const projectService = require('./projectService');
 const axios = require("axios").default;
 
 let port = process.env.PORT || '3000';
-const TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+const TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
