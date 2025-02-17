@@ -5,13 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.60
+# 2.10.59
 - updated tybot-connector to 0.2.152
 - restored old default system contexts
-
-# 2.10.59
-- updated tybot-connector to 0.2.151
-- fixed system contexts
 
 # 2.10.58
 - updated tybot-connector to 0.2.150
