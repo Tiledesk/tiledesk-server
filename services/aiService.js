@@ -37,20 +37,20 @@ class AiService {
 
   }
 
-  transcription(path, gptkey) {
+  transcription(buffer, gptkey) {
 
     winston.debug("[OPENAI SERVICE] openai endpoint: " + openai_endpoint);
 
     return new Promise((resolve, reject) => {
 
       const formData = new FormData();
-      formData.append('file', fs.createReadStream(path)),
+      formData.append('file', buffer, { filename: 'audiofile', contentType: 'audio/mpeg' });  // Invia il buffer direttamente
       formData.append('model', 'whisper-1');
 
       axios({
         url: openai_endpoint + "/audio/transcriptions",
         headers: {
-          'Content-Type': 'application/json',
+          ...formData.getHeaders(),
           'Authorization': "Bearer " + gptkey
         },
         data: formData,
