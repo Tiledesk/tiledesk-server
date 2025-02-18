@@ -133,11 +133,14 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: false,
     index: true
+  },
+  modified: {
+    type: Boolean,
+    required: false
   }
 },{
   timestamps: true
 });
-
 
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
