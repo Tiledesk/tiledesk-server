@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
+const path = require("path");
 const multer = require('multer');
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
