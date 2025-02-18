@@ -3,8 +3,10 @@ var router = express.Router();
 var winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
+const axios = require("axios").default;
 const path = require("path");
 const multer = require('multer');
+const fileUtils = require('../utils/fileUtils');
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -77,8 +79,13 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 
     let id_project = req.projectid;
 
-    if (!req.file) {
-        return res.status(400).send({ success: false, error: "No audio file uploaded" });
+    let file;
+    if (req.body.url) {
+        file = await fileUtils.downloadFromUrl(req.body.url);
+    } else if (req.file) {
+        file = req.file.buffer;
+    } else {
+        return res.status(400).send({ success: false, error: "No audio file or URL provided"})
     }
 
     let key;
@@ -97,11 +104,11 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 
     key = integration.value.apikey;
 
-    aiService.transcription(req.file.buffer, key).then((response) => {
-        winston.verbose("Transcript response: ", response);
-        console.log("Transcript response: ", response);
+    aiService.transcription(file, key).then((response) => {
+        winston.verbose("Transcript response: ", response.data);
         res.status(200).send({ text: response.data.text});
     }).catch((err) => {
+        winston.error("err: ", err.response?.data)
         res.status(500).send({ success: false, error: err });
     })
 

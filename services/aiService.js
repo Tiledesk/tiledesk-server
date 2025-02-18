@@ -2,6 +2,7 @@ var winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
 const jwt = require("jsonwebtoken")
+const FormData = require('form-data');
 const fs = require("fs");
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
