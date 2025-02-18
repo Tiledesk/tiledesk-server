@@ -2,6 +2,7 @@ var winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
 const jwt = require("jsonwebtoken")
+const fs = require("fs");
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
 let kb_endpoint = process.env.KB_ENDPOINT;
@@ -34,6 +35,33 @@ class AiService {
 
     })
 
+  }
+
+  transcription(path, gptkey) {
+
+    winston.debug("[OPENAI SERVICE] openai endpoint: " + openai_endpoint);
+
+    return new Promise((resolve, reject) => {
+
+      const formData = new FormData();
+      formData.append('file', fs.createReadStream(path)),
+      formData.append('model', 'whisper-1');
+
+      axios({
+        url: openai_endpoint + "/audio/transcriptions",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer " + gptkey
+        },
+        data: formData,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody);
+      }).catch((err) => {
+        reject(err);
+      })
+
+    })
   }
 
   // LLM
