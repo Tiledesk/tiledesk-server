@@ -99,7 +99,7 @@ router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 
     key = integration.value.apikey;
 
-    aiService.transcription(path, key).then((response) => {
+    aiService.transcription(audioPath, key).then((response) => {
         winston.verbose("Transcript response: ", response);
         console.log("Transcript response: ", response);
         res.status(200).send({ text: response.data.text});
