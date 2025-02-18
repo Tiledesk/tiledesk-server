@@ -9,7 +9,7 @@ let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
 let secret = process.env.JWT_SECRET_KEY;
 
-class OpenaiService {
+class AiService {
 
   // OPEN AI
   completions(data, gptkey) {
@@ -36,8 +36,29 @@ class OpenaiService {
 
   }
 
+  // LLM
+  askllm(data) {
+    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint_qa);
 
-  // PUGLIA AI
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint_qa + "/ask",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: data,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  }
+
+
+  // KB
   checkStatus(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
@@ -166,11 +187,11 @@ class OpenaiService {
 
   getContentChunks(namespace_id, content_id, engine) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
-
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
         url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
@@ -228,6 +249,6 @@ class OpenaiService {
 
 }
 
-var openaiService = new OpenaiService();
+var aiService = new AiService();
 
-module.exports = openaiService;
+module.exports = aiService;

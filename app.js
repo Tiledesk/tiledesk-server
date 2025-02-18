@@ -122,6 +122,7 @@ var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
+var llm = require('./routes/llm');
 var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
@@ -198,11 +199,6 @@ jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled
 let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
-
-// let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
-// winston.info("trainingQueue");
-// jobsManager.listenTrainingQueue(trainingQueue);
-
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -605,7 +601,7 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
-// app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
+app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
@@ -667,7 +663,7 @@ app.use((err, req, res, next) => {
   //emitted by multer when the file is too big
   if (err.code === "LIMIT_FILE_SIZE") {
     winston.debug("LIMIT_FILE_SIZE");
-    return res.status(413).json({ err: "Content Too Large" });
+    return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
   } 
 
   winston.error("General error:: ", err);
