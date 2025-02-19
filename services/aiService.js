@@ -215,11 +215,11 @@ class AiService {
 
   getContentChunks(namespace_id, content_id, engine) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
-
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
       let token = jwt.sign(payload, secret);
+      console.log("token: ", token)
       axios({
         url: kb_endpoint_train + "/id/" + content_id + "/namespace/" + namespace_id + "/" + token,
         headers: {
