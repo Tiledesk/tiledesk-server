@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.59
+# 2.10.60
 - updated tybot-connector to 0.3.1
 - updated whatsapp-connector to 0.1.78
 - minor fix
