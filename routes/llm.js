@@ -73,7 +73,7 @@ router.post('/preview', async (req, res) => {
 
 })
 
-outer.post('/transcription', upload.single('uploadFile'), async (req, res) => {
+router.post('/transcription', upload.single('uploadFile'), async (req, res) => {
 
     let id_project = req.projectid;
 
