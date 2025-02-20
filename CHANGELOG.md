@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.62
+- bug fix: added missing formData import in aiService
+
 # 2.10.61
 - updated tybot-connector to 0.3.2
 - updated whatsapp-connector to 0.1.78
