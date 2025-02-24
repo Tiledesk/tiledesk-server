@@ -1508,8 +1508,8 @@ class RequestService {
       // winston.debug("newstatus", newstatus);
 
       if (!first_text) {
-        winston.error(err);
-        return reject({ err: " Error changing first text. The field first_text is empty" });
+        winston.error("Error changing first text. The field first_text is empty for request " + request_id);
+        return reject({ err: "Error changing first text. The field first_text is empty" });
       }
 
       return Request
