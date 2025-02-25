@@ -95,7 +95,7 @@ class JobsManager {
             return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for MultiWorker Queue");  
         }
         this.multiWorkerQueue = multiWorkerQueue;
-        this.multiWorkerQueue.startJobsWorker();
+        //this.multiWorkerQueue.startJobsWorker();
     }
 
     // listenTrainingQueue(trainingQueue) {
