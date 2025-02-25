@@ -13,7 +13,11 @@ if (process.env.TILEBOT_ENDPOINT) {
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 
-router.get('/:id_faq_kb/', async (req, res) => {
+router.get('/:chatbot_id/', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let chatbot_id = req.params.chatbot_id;
+
   
 })
 router.post('/', async (req, res) => {
