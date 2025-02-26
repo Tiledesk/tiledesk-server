@@ -186,17 +186,13 @@ router.post('/:webhook_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   })
 
-  console.log("webhook: ", webhook);
-
   if (!webhook) {
     winston.warn("Webhook not found with id " + webhook_id);
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  console.log("TILEBOT_ENDPOINT: ");
   let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
   winston.info("Webhook chatbot URL: ", url);
-  console.log("URL: ", url);
 
   payload.async = webhook.async;
 
@@ -209,8 +205,7 @@ router.post('/:webhook_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   })
 
-  res.status(200).send(response);
-
+  res.status(200).send(response.data);
 })
 
 async function scheduleScrape(resources) {
