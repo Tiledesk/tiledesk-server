@@ -204,7 +204,7 @@ router.post('/:webhook_id', async (req, res) => {
     return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
   }
   
-  let response = httpUtil.post(url, payload).catch((err) => {
+  let response = await httpUtil.post(url, payload).catch((err) => {
     winston.error("Error calling webhook on post: ", err);
     return res.status(500).send({ success: false, error: err });
   })

@@ -31,7 +31,7 @@ class HttpUtil {
     });
   }
 
-  post(url, payload, customHeaders, auth) {
+  async post(url, payload, customHeaders, auth) {
 
     return new Promise((resolve, reject) => {
 
