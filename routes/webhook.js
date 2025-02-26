@@ -9,9 +9,9 @@ const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
 
 const port = process.env.PORT || '3000';
-let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/"
 }
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
