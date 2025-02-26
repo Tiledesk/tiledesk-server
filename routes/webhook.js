@@ -209,9 +209,7 @@ router.post('/:webhook_id', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   })
 
-  console.log("response: ", response)
   res.status(200).send(response.data);
-
 })
 
 async function scheduleScrape(resources) {
