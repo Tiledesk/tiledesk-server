@@ -271,6 +271,8 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();
     winston.debug("updatedOriginalChabot: ",updatedOriginalChabot);
 
+    cs.setModified(id_faq_kb, false);
+
     botEvent.emit('faqbot.update', updatedOriginalChabot);
 
     return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
@@ -347,6 +349,8 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
   if (req.body.slug != undefined) {
     update.slug = req.body.slug;
   }
+
+  update.modified = true;
   
   winston.debug("update", update);
 
@@ -640,6 +644,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
       delete chatbot.attributes.globals
     }
   }
+  
+  delete chatbot.modified;
 
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
