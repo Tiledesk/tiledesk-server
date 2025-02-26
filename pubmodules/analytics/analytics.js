@@ -1802,7 +1802,7 @@ router.get('/tags/:type', async (req, res) => {
   });
   
   // Extract and sort all unique dates
-  let dates = [...new Set(parsedDates.map(d => d.formatted))].sort();
+  let dates = [...new Set(parsedDates.map(d => d.formatted))];
   
   // Extract all unique keys
   let allKeys = [...new Set(result.flatMap(r => Object.keys(r.keys)))];

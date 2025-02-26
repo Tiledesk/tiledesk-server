@@ -12,6 +12,7 @@ class JobsManager {
         this.emailNotificatio = undefined;
         this.activityArchiver = undefined;
         this.whatsappWorker = undefined;
+        this.multiWorkerQueue = undefined;
      
         this.jobWorkerEnabled = jobWorkerEnabled;
         // this.jobWorkerEnabled = false;
@@ -93,6 +94,8 @@ class JobsManager {
         if (this.jobWorkerEnabled == true) {
             return winston.info("JobsManager jobWorkerEnabled is enabled. Skipping listener for MultiWorker Queue");  
         }
+        this.multiWorkerQueue = multiWorkerQueue;
+        //this.multiWorkerQueue.startJobsWorker();
     }
 
     // listenTrainingQueue(trainingQueue) {
