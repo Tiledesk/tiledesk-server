@@ -6,6 +6,7 @@ const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
+const httpUtil = require('../utils/httpUtil');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
