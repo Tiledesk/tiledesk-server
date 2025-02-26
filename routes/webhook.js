@@ -5,6 +5,14 @@ var winston = require('../config/winston');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
+const { Webhook } = require('../models/webhook');
+
+const port = process.env.PORT || '3000';
+let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+if (process.env.TILEBOT_ENDPOINT) {
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+}
+winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
@@ -164,6 +172,43 @@ router.post('/kb/status', async (req, res) => {
     winston.info("kb updated succesfully: ", kb);
     res.status(200).send(kb);
   })
+
+})
+
+router.post('/:webhook_id', async (req, res) => {
+
+  let webhook_id = req.params.webhook_id;
+  let payload = req.body;
+
+  let webhook = await Webhook.findOne({ webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error finding webhook: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+  console.log("webhook: ", webhook);
+
+  if (!webhook) {
+    winston.warn("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  console.log("TILEBOT_ENDPOINT: ");
+  let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
+  winston.info("Webhook chatbot URL: ", url);
+  console.log("URL: ", url);
+
+  payload.async = webhook.async;
+
+  if (process.env.NODE_ENV === 'test') {
+    return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
+  }
+  
+  let response = httpUtil.post(url, payload).catch((err) => {
+    winston.error("Error calling webhook on post: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+  res.status(200).send(response);
 
 })
 
