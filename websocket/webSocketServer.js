@@ -197,7 +197,7 @@ class WebSocketServer {
 
         var projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
-        
+
         let q = Project.findOne({ _id: projectId, status: 100 })
 
         if (cacheEnabler.project) {
