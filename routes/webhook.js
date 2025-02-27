@@ -194,7 +194,7 @@ router.post('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  let chatbot = await Faq_kb.findById(webhook.chatbot_id).catch((err) => {
+  let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
     winston.error("Error finding chatbot ", err);
     return res.status(500).send({ success: false, error: "Error finding chatbot with id " + webhook.chatbot_id})
   })
@@ -205,15 +205,12 @@ router.post('/:webhook_id', async (req, res) => {
   }
 
   let token = await generateChatbotToken(chatbot);
-  console.log("token: ", token)
 
   let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
   winston.info("Webhook chatbot URL: ", url);
 
   payload.async = webhook.async;
-  payload.token = webhook.token;
-
-  console.log("payload: ", payload);
+  payload.token = token;
 
   if (process.env.NODE_ENV === 'test') {
     return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
