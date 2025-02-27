@@ -8,6 +8,7 @@ const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
 const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
+var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 
 const port = process.env.PORT || '3000';
