@@ -1,7 +1,7 @@
 {
   "name": "@tiledesk/tiledesk-server",
   "description": "The Tiledesk server module",
-  "version": "2.10.63",
+  "version": "2.10.64",
   "scripts": {
     "start": "node ./bin/www",
     "pretest": "mongodb-runner start",
@@ -36,7 +36,7 @@
     "@tiledesk-ent/tiledesk-server-visitorcounter": "^1.1.1"
   },
   "dependencies": {
-    "@tiledesk/tiledesk-apps": "^1.0.26",
+    "@tiledesk/tiledesk-apps": "^1.0.27",
     "@tiledesk/tiledesk-chat21-app": "^1.1.8",
     "@tiledesk/tiledesk-chatbot-templates": "^0.1.3",
     "@tiledesk/tiledesk-chatbot-util": "^0.8.33",
@@ -47,13 +47,13 @@
     "@tiledesk/tiledesk-messenger-connector": "^0.1.23",
     "@tiledesk/tiledesk-rasa-connector": "^1.0.10",
     "@tiledesk/tiledesk-telegram-connector": "^0.1.14",
-    "@tiledesk/tiledesk-tybot-connector": "^0.3.3",
-    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.79",
+    "@tiledesk/tiledesk-tybot-connector": "^0.3.4",
+    "@tiledesk/tiledesk-whatsapp-connector": "^0.1.81",
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.11",
     "@tiledesk/tiledesk-sms-connector": "^0.1.11",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.67",
     "@tiledesk/tiledesk-voice-twilio-connector": "^0.1.12",
-    "@tiledesk/tiledesk-multi-worker": "^0.1.20",
+    "@tiledesk/tiledesk-multi-worker": "^0.2.1-rc2",
     "passport-oauth2": "^1.8.0",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",

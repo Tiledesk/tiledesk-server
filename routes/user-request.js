@@ -12,7 +12,6 @@ router.patch('/:requestid/rating', function (req, res) {
   winston.debug(req.body);
   const update = {};
 
-
   if (req.body.rating) {
     update.rating = req.body.rating;
   }
@@ -20,13 +19,16 @@ router.patch('/:requestid/rating', function (req, res) {
   if (req.body.rating_message) {
     update.rating_message = req.body.rating_message;
   }
-
-
   
   winston.debug("Request user patch update",update);
 
-  // var query = {"request_id":req.params.requestid};
-  var query = {"request_id":req.params.requestid, "requester": req.projectuser.id};
+  let query = {
+    request_id: req.params.requestid
+  }
+
+  if (req.projectuser) {
+    query.requester = req.projectuser.id
+  }
 
     //cacheinvalidation
   return Request.findOneAndUpdate(query, { $set: update }, { new: true, upsert: false })
