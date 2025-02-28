@@ -23,7 +23,7 @@ const axios = require("axios").default;
 let port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 if (process.env.TILEBOT_ENDPOINT) {
-    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/";
 }
 
 let tdCache = new TdCache({
@@ -1503,7 +1503,7 @@ class RequestService {
 
 
     return new Promise(function (resolve, reject) {
-      winston.debug("changeFirstTextAndPreflightByRequestId", request_id);
+      winston.debug("changeFirstTextAndPreflightByRequestId" + request_id);
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
 
