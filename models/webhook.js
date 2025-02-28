@@ -30,7 +30,13 @@ const WebhookSchema = mongoose.Schema({
   timestamps: true
 })
 
+WebhookSchema.index({ id_project: 1, chatbot_id: 1}, { unique: true })
 
 const Webhook = mongoose.model("Webhook", WebhookSchema);
+
+if (process.env.MONGOOSE_SYNCINDEX) {
+  Webhook.syncIndexes();
+  winston.verbose("Webhook syncIndexes");
+}
 
 module.exports = { Webhook };
