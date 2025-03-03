@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.66
+- Updated QuoteService with new plans
+
 # 2.10.65
 - fix issue con /rating called by chatbot
 
