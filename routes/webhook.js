@@ -179,7 +179,7 @@ router.post('/kb/status', async (req, res) => {
 
 })
 
-router.post('/:webhook_id', async (req, res) => {
+router.all('/:webhook_id', async (req, res) => {
 
   let webhook_id = req.params.webhook_id;
   let payload = req.body;
