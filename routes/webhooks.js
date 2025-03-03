@@ -3,7 +3,6 @@ var router = express.Router();
 var winston = require('../config/winston');
 const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
-const { deleteOne } = require('../models/routerLogger');
 const { customAlphabet } = require('nanoid');
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 32);
 

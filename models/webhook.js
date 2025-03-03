@@ -25,6 +25,10 @@ const WebhookSchema = mongoose.Schema({
     type: Boolean,
     required: true,
     default: true
+  },
+  copilot: {
+    type: Boolean,
+    required: false
   }
 }, {
   timestamps: true

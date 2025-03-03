@@ -10,6 +10,7 @@ const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
 var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
+const webhookService = require('../services/webhookService');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -194,34 +195,40 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
-    winston.error("Error finding chatbot ", err);
-    return res.status(500).send({ success: false, error: "Error finding chatbot with id " + webhook.chatbot_id})
-  })
-
-  if (!chatbot) {
-    winston.verbose("Chatbot not found with id " + webhook.chatbot_id);
-    return res.status(404).send({ success: false, error: "Chatbot not found with id " + webhook.chatbot_id })
-  }
-
-  let token = await generateChatbotToken(chatbot);
-
-  let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
-  winston.info("Webhook chatbot URL: ", url);
-
-  payload.async = webhook.async;
-  payload.token = token;
-
-  if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
-  }
-  
-  let response = await httpUtil.post(url, payload).catch((err) => {
-    winston.error("Error calling webhook on post: ", err);
+  webhookService.run(webhook).then((response) => {
+    return res.status(200).send(response.data);
+  }).catch((err) => {
     return res.status(500).send({ success: false, error: err });
   })
+  
+  // let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
+  //   winston.error("Error finding chatbot ", err);
+  //   return res.status(500).send({ success: false, error: "Error finding chatbot with id " + webhook.chatbot_id})
+  // })
 
-  res.status(200).send(response.data);
+  // if (!chatbot) {
+  //   winston.verbose("Chatbot not found with id " + webhook.chatbot_id);
+  //   return res.status(404).send({ success: false, error: "Chatbot not found with id " + webhook.chatbot_id })
+  // }
+
+  // let token = await generateChatbotToken(chatbot);
+
+  // let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
+  // winston.info("Webhook chatbot URL: ", url);
+
+  // payload.async = webhook.async;
+  // payload.token = token;
+
+  // if (process.env.NODE_ENV === 'test') {
+  //   return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
+  // }
+  
+  // let response = await httpUtil.post(url, payload).catch((err) => {
+  //   winston.error("Error calling webhook on post: ", err);
+  //   return res.status(500).send({ success: false, error: err });
+  // })
+
+  // res.status(200).send(response.data);
 })
 
 async function scheduleScrape(resources) {
