@@ -404,7 +404,7 @@ class QuoteManager {
 
             if (this.project.isActiveSubscription === false) {
                 limits = PLANS_LIST.SANDBOX;
-                return;
+                return limits;
 
             }
 
