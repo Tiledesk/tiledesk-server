@@ -1,5 +1,6 @@
 const faq_kb = require("../models/faq_kb");
 const httpUtil = require("../utils/httpUtil");
+var winston = require('../config/winston');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
