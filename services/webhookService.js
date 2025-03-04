@@ -2,6 +2,7 @@ const faq_kb = require("../models/faq_kb");
 const httpUtil = require("../utils/httpUtil");
 const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
+var winston = require('../config/winston');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
