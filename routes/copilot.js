@@ -18,6 +18,8 @@ router.get('/', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
     })
 
+    console.log("webhooks: ", webhooks);
+
     let promises = webhooks.map((w) => 
         webhookService.run(w, payload)
             .then((response) => {
@@ -28,8 +30,8 @@ router.get('/', async (req, res) => {
             })
     )
 
-    Promise.all(promises).then((results) => {
-        let result = results.filter(r => r)
+    Promise.all(promises).then((result) => {
+        console.log("result: ", result);
         return res.status(200).send(result);
     }).catch((err) => {
         // Should never executed - check it
