@@ -184,6 +184,11 @@ router.all('/:webhook_id', async (req, res) => {
 
   let webhook_id = req.params.webhook_id;
   let payload = req.body;
+  payload.webhook_http_method = req.method;
+  let params = req.query;
+  if (params) {
+    payload.webhook_query_params = params;
+  }
 
   let webhook = await Webhook.findOne({ webhook_id: webhook_id }).catch((err) => {
     winston.error("Error finding webhook: ", err);
@@ -196,7 +201,7 @@ router.all('/:webhook_id', async (req, res) => {
   }
 
   webhookService.run(webhook, payload).then((response) => {
-    return res.status(200).send(response.data);
+    return res.status(200).send(response);
   }).catch((err) => {
     return res.status(500).send({ success: false, error: err });
   })
