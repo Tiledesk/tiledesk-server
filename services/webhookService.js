@@ -41,7 +41,7 @@ class WebhookService {
 
             let response = await httpUtil.post(url, payload).catch((err) => {
                 winston.error("Error calling webhook on post: ", err);
-                reject(err);
+                return Promise.reject(err);
             })
             
             resolve(response.data);

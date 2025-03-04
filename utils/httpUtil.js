@@ -48,7 +48,6 @@ class HttpUtil {
       }).then((resbody) => {
         resolve(resbody);
       }).catch((err) => {
-        winston.error("axios err ", err)
         if (err.response) {
           reject(err.response);
         } else {

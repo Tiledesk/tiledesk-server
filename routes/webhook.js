@@ -203,7 +203,8 @@ router.all('/:webhook_id', async (req, res) => {
   webhookService.run(webhook, payload).then((response) => {
     return res.status(200).send(response);
   }).catch((err) => {
-    return res.status(500).send({ success: false, error: err });
+    let status = err.status || 500;
+    return res.status(status).send(err.data);
   })
   
   // let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
