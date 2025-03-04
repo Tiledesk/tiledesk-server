@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
             }).catch((err) => {
                 winston.error("Error running webhook: ", err);
                 console.log("err.data", err.data);
-                return err.data;
+                return;
             })
     )
 
