@@ -24,14 +24,17 @@ router.get('/', async (req, res) => {
                 return response;
             }).catch((err) => {
                 winston.error("Error running webhook: ", err);
+                console.log("err.data", err.data);
                 return err.data;
             })
     )
 
     Promise.all(promises).then((result) => {
+        console.log("result: ", result);
         return res.status(200).send(result);
     }).catch((err) => {
         // Should never executed - check it
+        console.error("promise all error: ", err);
         return res.status(500).send({ success: false, error: err });
     })
 
