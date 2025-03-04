@@ -14,15 +14,22 @@ const emailEvent = require('../event/emailEvent');
 //     CUSTOM:     { requests: 3000,   messages: 0,    tokens: 5000000,    email: 200,    chatbots: 20,       kbs: 500}
 // }
 
-
 const PLANS_LIST = {
-    FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,     voice_duration: 0,       email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
-    SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,     voice_duration: 0,       email: 200,     chatbots: 2,       namespace: 1,   kbs: 50     },
-    BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,    voice_duration: 0,       email: 200,     chatbots: 5,       namespace: 1,   kbs: 150    },
-    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,    voice_duration: 0,       email: 200,     chatbots: 20,      namespace: 3,   kbs: 300    },
-    TEAM:       { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 0,       email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
-    CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 120000,  email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
+    //FREE_TRIAL: { requests: 200,    messages: 0,    tokens: 100000,     voice_duration: 0,       email: 200,     chatbots: 20,      namespace: 3,   kbs: 50     }, // same as PREMIUM
+    SANDBOX:    { requests: 200,    messages: 0,    tokens: 100000,     voice_duration: 0,          email: 200,     chatbots: 2,    namespace: 1,   kbs: 50 },
+    BASIC:      { requests: 800,    messages: 0,    tokens: 2000000,    voice_duration: 0,          email: 200,     chatbots: 5,    namespace: 1,   kbs: 150 },
+    PREMIUM:    { requests: 3000,   messages: 0,    tokens: 5000000,    voice_duration: 0,          email: 200,     chatbots: 20,   namespace: 3,   kbs: 300 },
+    TEAM:       { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 0,          email: 200,     chatbots: 50,   namespace: 10,  kbs: 1000 },
+    //CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 120000,  email: 200,     chatbots: 50,      namespace: 10,  kbs: 1000   },
+    // FROM MARCH 2025
+    FREE_TRIAL: { requests: 3000,   messages: 0,    tokens: 5000000,    voice_duration: 120000,     email: 200,     chatbots: 5,    namespace: 1,   kbs: 50 },  // same as PRO
+    STARTER:    { requests: 800,    messages: 0,    tokens: 2000000,    voice_duration: 0,          email: 200,     chatbots: 5,    namespace: 1,   kbs: 150 },
+    PRO:        { requests: 3000,   messages: 0,    tokens: 5000000,    voice_duration: 0,          email: 200,     chatbots: 20,   namespace: 3,   kbs: 300 },
+    BUSINESS:   { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 0,          email: 200,     chatbots: 50,   namespace: 10,  kbs: 1000 },
+    CUSTOM:     { requests: 5000,   messages: 0,    tokens: 10000000,   voice_duration: 120000,     email: 200,     chatbots: 50,   namespace: 10,  kbs: 1000 }
 }
+
+
 
 const typesList = ['requests', 'messages', 'email', 'tokens', 'voice_duration', 'chatbots', 'kbs']
 
@@ -88,7 +95,7 @@ class QuoteManager {
             winston.debug("QUOTES DISABLED - incrementTokenCount")
             return key;
         }
-        
+
         let tokens = data.tokens * data.multiplier;
         await this.tdCache.incrbyfloat(key, tokens);
         // await this.tdCache.incrby(key, tokens);
@@ -98,6 +105,7 @@ class QuoteManager {
 
     async incrementVoiceDurationCount(project, request) {
 
+        console.log("incrementVoiceDurationCount request ", request)
         this.project = project;
         let key = await this.generateKey(request, 'voice_duration');
         winston.verbose("[QuoteManager] incrementVoiceDurationCount key: " + key);
@@ -110,7 +118,7 @@ class QuoteManager {
         if (request?.duration) {
             let duration = Math.round(request.duration / 1000); // from ms to s
             await this.tdCache.incrby(key, duration);
-    
+
             this.sendEmailIfQuotaExceeded(project, request, 'voice_duration', key);
         }
     }
@@ -253,15 +261,19 @@ class QuoteManager {
             return true;
         }
 
+        console.log("quota: ", quote);
+        console.log("limits[type]: ", limits[type]);
         if (quote < limits[type]) {
+            console.log("return true");
             return true;
         } else {
+            console.log("return false");
             return false;
         }
     }
 
     async checkQuoteForAlert(project, object, type) {
-        
+
         if (quotes_enabled === false) {
             winston.verbose("QUOTES DISABLED - checkQuote for type " + type);
             return (null, null);
@@ -283,7 +295,7 @@ class QuoteManager {
     }
 
     async sendEmailIfQuotaExceeded(project, object, type, key) {
-        
+
         let data = await this.checkQuoteForAlert(project, object, type);
         let limits = data.limits;
         let limit = data.limits[type];
@@ -312,7 +324,7 @@ class QuoteManager {
             }
 
             emailEvent.emit('email.send.quote.checkpoint', data);
-            await this.tdCache.set(nKey, 'true', {EX: 2592000}); //seconds in one month = 2592000
+            await this.tdCache.set(nKey, 'true', { EX: 2592000 }); //seconds in one month = 2592000
         } else {
             winston.verbose("Quota checkpoint reached email already sent.")
         }
@@ -320,7 +332,7 @@ class QuoteManager {
     }
 
     async percentageCalculator(limit, quote) {
-        
+
         let p = (quote / limit) * 100;
 
         if (p >= 100) { return 100; }
@@ -339,10 +351,10 @@ class QuoteManager {
         let requests_key = await this.generateKey(obj, 'requests');
         let tokens_key = await this.generateKey(obj, 'tokens');
         let email_key = await this.generateKey(obj, 'email');
-        
+
         let checkpoints = ['50', '75', '95', '100']
 
-        checkpoints.forEach( async (checkpoint) => {
+        checkpoints.forEach(async (checkpoint) => {
             let nrequests_key = requests_key + ":notify:" + checkpoint;
             let ntokens_key = tokens_key + ":notify:" + checkpoint;
             let nemail_key = email_key + ":notify:" + checkpoint;
@@ -390,7 +402,22 @@ class QuoteManager {
 
         if (this.project.profile.type === 'payment') {
 
+            if (this.project.isActiveSubscription === false) {
+                limits = PLANS_LIST.SANDBOX;
+                return limits;
+
+            }
+
             switch (plan) {
+                case 'Starter':
+                    limits = PLANS_LIST.STARTER
+                    break;
+                case 'Pro':
+                    limits = PLANS_LIST.PRO
+                    break;
+                case 'Business':
+                    limits = PLANS_LIST.BUSINESS
+                    break;
                 case 'Basic':
                     limits = PLANS_LIST.BASIC;
                     break;
@@ -415,6 +442,7 @@ class QuoteManager {
                 default:
                     limits = PLANS_LIST.FREE_TRIAL;
             }
+
         } else {
 
             if (this.project.trialExpired === false) {
@@ -424,6 +452,7 @@ class QuoteManager {
             }
 
         }
+
         if (this.project?.profile?.quotes) {
             let profile_quotes = this.project?.profile?.quotes;
             const merged_quotes = Object.assign({}, limits, profile_quotes);
@@ -454,7 +483,7 @@ class QuoteManager {
                 winston.debug("Subscription date from project createdAt: " + subscriptionDate.toISOString());
             }
         }
-        
+
         let now = moment();
         winston.debug("now: ", now);
 
