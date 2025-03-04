@@ -29,8 +29,9 @@ router.get('/', async (req, res) => {
             })
     )
 
-    Promise.all(promises).then((result) => {
-        console.log("result: ", result);
+    Promise.all(promises).then((results) => {
+        console.log("result: ", results);
+        let result = results.filter(r => r)
         return res.status(200).send(result);
     }).catch((err) => {
         // Should never executed - check it
