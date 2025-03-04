@@ -25,6 +25,7 @@ router.post('/', async (req, res) => {
     )
 
     Promise.all(promises).then((result) => {
+        console.log("result: ", result);
         return res.status(200).send(result);
     }).catch((err) => {
         return res.status(500).send({ success: false, error: err });
