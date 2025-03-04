@@ -196,7 +196,7 @@ router.all('/:webhook_id', async (req, res) => {
   }
 
   webhookService.run(webhook, payload).then((response) => {
-    return res.status(200).send(response.data);
+    return res.status(200).send(response);
   }).catch((err) => {
     return res.status(500).send({ success: false, error: err });
   })
