@@ -13,7 +13,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class WebhookService {
 
-    async run(webhook) {
+    async run(webhook, payload) {
 
         return new Promise(async (resolve, reject) => {
 

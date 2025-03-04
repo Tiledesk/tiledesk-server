@@ -195,7 +195,7 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  webhookService.run(webhook).then((response) => {
+  webhookService.run(webhook, payload).then((response) => {
     return res.status(200).send(response.data);
   }).catch((err) => {
     return res.status(500).send({ success: false, error: err });
