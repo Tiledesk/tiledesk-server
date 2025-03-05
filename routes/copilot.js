@@ -10,6 +10,9 @@ router.get('/', async (req, res) => {
     let payload = req.body;
     let params = req.query;
     let request_id = req.query.request_id;
+    if (!request_id) {
+        return res.status(400).send({ success: false, error: "Missing query params request_id" })
+    }
     payload.request_id = request_id;
     payload.webhook_query_params = params;
 
