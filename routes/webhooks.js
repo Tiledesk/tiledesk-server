@@ -122,6 +122,10 @@ router.put("/:chatbot_id", async (req, res) => {
     update.async = req.body.async;
   }
 
+  if (req.body.hasOwnProperty("copilot")) {
+    update.copilot = req.body.copilot;
+  }
+
   let updatedWebhook = await Webhook.findOneAndUpdate({ id_project: id_project, chatbot_id: chatbot_id }, update, { new: true }).catch((err) => {
     winston.error("Error updating webhook ", err);
     return res.status(500).send({ success: false, error: "Error updating webhook for chatbot " + chatbot_id });
