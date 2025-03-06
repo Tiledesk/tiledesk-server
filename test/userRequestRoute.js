@@ -33,6 +33,7 @@ var Bot = require("../models/faq_kb");
 
 var jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
+const chatbotTypes = require('../models/chatbotTypes');
 
 
 describe('UserService()', function () {
@@ -48,7 +49,7 @@ describe('UserService()', function () {
             projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
                 var savedProject = savedProjectAndPU.project;
 
-                faqService.create("testbot", null, savedProject._id, savedUser._id, "tilebot", null, null, null, "en", "blank").then(async function (savedFaq_kb) {
+                faqService.create("testbot", null, savedProject._id, savedUser._id, "tilebot", chatbotTypes.CHATBOT, null, null, null, "en", "blank").then(async function (savedFaq_kb) {
 
                     var signOptions = {
                         issuer: 'https://tiledesk.com',

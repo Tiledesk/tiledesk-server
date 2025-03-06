@@ -25,6 +25,7 @@ var express = require('express');
 const bodyParser = require('body-parser');
 
 var leadService = require('../services/leadService');
+const chatbotTypes = require('../models/chatbotTypes');
 
 // var http = require('http');
 // const { parse } = require('querystring');
@@ -1317,7 +1318,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3019/", true).then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, undefined, "http://localhost:3019/", true).then(function(savedBot) {  
                             
                             var newFaq = new Faq({
                                 id_faq_kb: savedBot._id,
@@ -1429,7 +1430,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3029/", true).then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, undefined, "http://localhost:3029/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1534,7 +1535,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3028/", true).then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, undefined, "http://localhost:3028/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1666,7 +1667,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, "http://localhost:3030/", true).then(function(savedBot) {  
+                        faqService.create("testbot", undefined, savedProject._id, savedUser._id, "internal", undefined, undefined, "http://localhost:3030/", true).then(function(savedBot) {  
                             
                             Faq.findOneAndUpdate({id_project:savedProject._id,id_faq_kb:savedBot._id, question: "defaultFallback" }, {webhook_enabled: true},{new: true, upsert:false}, function (err, savedFaq) {
                             console.log("savedFaq",savedFaq);
@@ -1802,7 +1803,7 @@ describe('bot', () => {
                  userService.signup( email ,pwd, "Test Firstname", "Test lastname").then(function(savedUser) {
                      projectService.create("test-bot", savedUser._id).then(function(savedProject) {    
                         // create(name, url, projectid, user_id, type) 
-                        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal", undefined, undefined, true).then(function(savedBot) {  
+                        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal", undefined, undefined, undefined, true).then(function(savedBot) {  
                             
                             var newFaq = new Faq({
                                 id_faq_kb: savedBot._id,

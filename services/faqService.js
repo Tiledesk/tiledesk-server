@@ -9,7 +9,7 @@ const uuidv4 = require('uuid/v4');
 class FaqService {
 
 
-  create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
+  create(name, url, projectid, user_id, type, subtype, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -22,6 +22,7 @@ class FaqService {
         webhook_url: webhook_url,
         webhook_enabled: webhook_enabled,
         type: type,
+        subtype: subtype,
         language: language,
         public: false,
         certified: false,
