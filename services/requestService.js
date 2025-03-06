@@ -249,13 +249,16 @@ class RequestService {
       winston.debug("id_project:" + id_project);
       winston.debug("nobot:" + nobot);
 
+      winston.info("main_flow_cache_3 route");
+
+
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
 
-      // if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
-      //   q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
-      //   winston.debug('request cache enabled');
-      // }
+      if (cacheEnabler.request) {  //(node:60837) UnhandledPromiseRejectionWarning: VersionError: No matching document found for id "633efe246a6cc0eda5732684" version 0 modifiedPaths "status, participants, participantsAgents, department, assigned_at, snapshot, snapshot.department, snapshot.department.updatedAt, snapshot.agents"
+        q.cache(cacheUtil.defaultTTL, id_project+":requests:request_id:"+request_id+":simple")      //request_cache
+        winston.debug('request cache enabled');
+      }
       return q.exec(function (err, request) {
 
         if (err) {
@@ -328,6 +331,8 @@ class RequestService {
               winston.debug("no_populate is true");
               return resolve(request);
             }
+           winston.info('info: main_flow_cache_2.3.1');
+           winston.info("main_flow_cache_3 populate");
 
             return request
               .populate('lead')
@@ -409,6 +414,10 @@ class RequestService {
 
             winston.debug("after save savedRequest", savedRequest);
 
+
+            // winston.info('info: main_flow_cache_2.3.2');
+            winston.info('info: main_flow_cache_2 route populate ');
+
             return savedRequest
               .populate('lead')
               .populate('department')
@@ -431,6 +440,8 @@ class RequestService {
                   winston.error('Error populating the request.', err);
                   return reject(err);
                 }
+
+                winston.info('info: main_flow_cache_2 route populate end');
 
                 winston.verbose("Request routed", requestComplete.toObject());
 
@@ -480,12 +491,15 @@ class RequestService {
   }
 
 
-  reroute(request_id, id_project, nobot) {
+  reroute(request_id, id_project, nobot, no_populate) {
     var that = this;
     var startDate = new Date();
     return new Promise(function (resolve, reject) {
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
+
+    // winston.info("main_flow_cache_3 reroute"); //but it is cached
+      
 
       let q = Request
         .findOne({ request_id: request_id, id_project: id_project });
@@ -513,7 +527,7 @@ class RequestService {
         }
 
 
-        return that.route(request_id, request.department.toString(), id_project, nobot).then(function (routedRequest) {
+        return that.route(request_id, request.department.toString(), id_project, nobot, no_populate).then(function (routedRequest) {
 
           var endDate = new Date();
           winston.verbose("Performance Request reroute in millis: " + endDate - startDate);
@@ -752,6 +766,8 @@ class RequestService {
       }
 
       winston.debug('newRequest.', newRequest);
+
+      winston.info("main_flow_cache_ requestService create");
 
       //cacheinvalidation
       return newRequest.save( async function (err, savedRequest) {
@@ -1507,6 +1523,10 @@ class RequestService {
         return reject({ err: " Error changing first text. The field first_text is empty" });
       }
 
+
+
+      winston.info("main_flow_cache_3 changeFirstTextAndPreflightByRequestId");
+      
       return Request
         .findOneAndUpdate({ request_id: request_id, id_project: id_project }, { first_text: first_text, preflight: preflight }, { new: true, upsert: false })
         .populate('lead')
@@ -1904,6 +1924,8 @@ class RequestService {
 
   findByRequestId(request_id, id_project) {
     return new Promise(function (resolve, reject) {
+      winston.info("main_flow_cache_3 requestService findByRequestId");
+      
       return Request.findOne({ request_id: request_id, id_project: id_project }, function (err, request) {
         if (err) {
           return reject(err);

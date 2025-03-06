@@ -10,6 +10,8 @@ var cacheUtil = require('../utils/cacheUtil');
 class SendMessageUtil {
 
 async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
+  winston.info("SendMessageUtil send") 
+
     // async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         winston.debug("here0") 
       try {

@@ -45,7 +45,7 @@ router.post('/',
 // ],
 async (req, res)  => {
 
-  winston.debug('req.body post message', req.body);
+  winston.info('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
@@ -68,9 +68,11 @@ async (req, res)  => {
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
 
+  winston.info('router.post create message');
+
       let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
       if (cacheEnabler.request) {
-        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":simple") //request_cache
+        q.cache(cacheUtil.defaultTTL, req.projectid+":requests:request_id:"+req.params.request_id+":basic") //request_cache
         winston.debug('request cache enabled');
       }
       // cacherequest       // requestcachefarequi nocachepopulatereqired
@@ -288,7 +290,7 @@ async (req, res)  => {
                       let message = savedMessage.toJSON();
 
                       winston.debug("getting request for response");
-
+                      winston.info('router.post 2 create message');
                       let q =
                       Request.findOne({request_id:  request.request_id, id_project: request.id_project})
                       // request

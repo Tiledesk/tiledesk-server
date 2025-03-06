@@ -91,6 +91,9 @@ let tdCache = new TdCache({
 
 tdCache.connect();
 
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
+
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
 var auth = require('./routes/auth');
