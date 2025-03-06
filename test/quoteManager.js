@@ -25,7 +25,7 @@ const emailMock = require('./mock/emailMock');
 const { MockTdCache } = require('./mock/MockTdCache');
 const mockTdCache = new MockTdCache();
 
-let log = false;
+let log = true;
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
