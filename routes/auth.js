@@ -85,7 +85,7 @@ router.post('/signup',
     //   return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
     // }
 
-    return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
+    return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false, req.body.phone)
       .then( async function (savedUser) {
         
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());
@@ -107,8 +107,6 @@ router.post('/signup',
           if (!skipVerificationEmail) {
 
             let verify_email_code = uniqid();
-            console.log("(Auth) verify_email_code: ", verify_email_code);
-
             let redis_client = req.app.get('redis_client');
             let key = "emailverify:verify-" + verify_email_code;
             let obj = { _id: savedUser._id, email: savedUser.email}
