@@ -85,7 +85,7 @@ router.post('/signup',
     //   return res.status(403).send({ success: false, message: "The password does not meet the minimum vulnerability requirements"})
     // }
 
-    return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false)
+    return userService.signup(req.body.email, req.body.password, req.body.firstname, req.body.lastname, false, req.body.phone)
       .then( async function (savedUser) {
         
         winston.debug('-- >> -- >> savedUser ', savedUser.toObject());

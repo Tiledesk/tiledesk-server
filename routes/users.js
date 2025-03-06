@@ -37,6 +37,9 @@ router.put('/', function (req, res) {
   if (req.body.public_website != undefined) {
     update.public_website = req.body.public_website;
   }
+  if (req.body.phone != undefined) {
+    update.phone = req.body.phone;
+  }
  
   User.findByIdAndUpdate(req.user.id, update, { new: true, upsert: true }, function (err, updatedUser) {
     if (err) {
