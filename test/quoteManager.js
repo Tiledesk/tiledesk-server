@@ -25,7 +25,7 @@ const emailMock = require('./mock/emailMock');
 const { MockTdCache } = require('./mock/MockTdCache');
 const mockTdCache = new MockTdCache();
 
-let log = true;
+let log = false;
 
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
@@ -193,14 +193,10 @@ describe('QuoteManager', function () {
 
     it('incrementRequestsCount', async function () {
 
-        console.log("\nlog-test incrementRequestsCount start")
         let mockProject = projectMock.mockProjectBasicPlan;
-        console.log("\nlog-test mockProject: ", mockProject)
         let mockRequest = requestMock.requestMock;
-        console.log("\nlog-test mockRequest: ", mockRequest)
 
         mockRequest.createdAt = new Date(dateList[0]);
-        console.log("\nlog-test mockRequest date: ", mockRequest)
 
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
