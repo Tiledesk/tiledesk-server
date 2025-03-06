@@ -30,8 +30,9 @@ let log = true;
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
 let tdCache = new TdCache({
-    host: '127.0.0.1',
-    port: '6379'
+    host: process.env.CACHE_REDIS_HOST || '127.0.0.1',
+    port: process.env.CACHE_REDIS_PORT || '6379',
+    password: process.env.CACHE_REDIS_PASSWORD || undefined
 });
 
 tdCache.connect();
@@ -200,7 +201,7 @@ describe('QuoteManager', function () {
 
         mockRequest.createdAt = new Date(dateList[0]);
         console.log("\nlog-test mockRequest date: ", mockRequest)
-        
+
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
 

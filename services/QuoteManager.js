@@ -213,7 +213,9 @@ class QuoteManager {
         console.log("\nlog-test key generater: ", key)
         winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
 
+
         let quote = await this.tdCache.get(key);
+        console.log("\nlog-test quote: ", quote)
         return Number(quote);
     }
 
