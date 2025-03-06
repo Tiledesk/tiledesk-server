@@ -249,12 +249,6 @@ async (req, res)  => {
                     });
                 }).catch(function (err) {    //pubblica questo
                   winston.error('Error creating request: ' + JSON.stringify(err));
-                  winston.log({
-                    level: 'error',
-                    message: 'Error creating request: ' + JSON.stringify(err) + " " + JSON.stringify(req.body),
-                    label: req.projectid
-                  });
-                  // winston.error("Error creating message", err);
                   return res.status(500).send({ success: false, msg: 'Error creating request', err: err });
                 });
 

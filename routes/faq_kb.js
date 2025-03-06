@@ -262,7 +262,10 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     botEvent.emit('faqbot.update', updatedForkedChabot);
 
     const port = process.env.PORT || '3000';
-    const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/" || "http://localhost:" + port+ "/modules/tilebot/ext/";
+    let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+    if (process.env.TILEBOT_ENDPOINT) {
+      TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    }
     winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
     let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();

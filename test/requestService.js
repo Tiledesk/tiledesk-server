@@ -42,9 +42,10 @@ const projectMock = require('./mock/projectMock');
 // CONNECT REDIS - CHECK IT
 const { TdCache } = require('../utils/TdCache');
 let tdCache = new TdCache({
-    host: '127.0.0.1',
-    port: '6379'
-  });
+  host: process.env.CACHE_REDIS_HOST || '127.0.0.1',
+  port: process.env.CACHE_REDIS_PORT || '6379',
+  password: process.env.CACHE_REDIS_PASSWORD || undefined
+});
 
 tdCache.connect();
 
