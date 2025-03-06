@@ -21,8 +21,6 @@ router.get('/', async (req, res) => {
         return res.status(500).send({ success: false, error: err });
     })
 
-    console.log("webhooks: ", webhooks);
-
     let promises = webhooks.map((w) => 
         webhookService.run(w, payload)
             .then((response) => {
@@ -34,7 +32,6 @@ router.get('/', async (req, res) => {
     )
 
     Promise.all(promises).then((result) => {
-        console.log("result: ", result);
         return res.status(200).send(result);
     }).catch((err) => {
         // Should never executed - check it
@@ -49,6 +46,9 @@ router.post('/', async (req, res) => {
     let payload = req.body;
     let params = req.query;
     let request_id = req.query.request_id;
+    if (!request_id) {
+        return res.status(400).send({ success: false, error: "Missing query params request_id" })
+    }
     payload.request_id = request_id;
     payload.webhook_query_params = params;
 
@@ -63,16 +63,18 @@ router.post('/', async (req, res) => {
                 return response;
             }).catch((err) => {
                 winston.error("Error running webhook: ", err);
-                return null;
+                return;
             })
     )
 
     Promise.all(promises).then((result) => {
         return res.status(200).send(result);
     }).catch((err) => {
+        // Should never executed - check it
         return res.status(500).send({ success: false, error: err });
     })
 
 })
+
 
 module.exports = router;
