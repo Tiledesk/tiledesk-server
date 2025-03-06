@@ -191,11 +191,16 @@ describe('QuoteManager', function () {
     }).timeout(10000)
 
     it('incrementRequestsCount', async function () {
+
+        console.log("\nlog-test incrementRequestsCount start")
         let mockProject = projectMock.mockProjectBasicPlan;
+        console.log("\nlog-test mockProject: ", mockProject)
         let mockRequest = requestMock.requestMock;
+        console.log("\nlog-test mockRequest: ", mockRequest)
 
         mockRequest.createdAt = new Date(dateList[0]);
-
+        console.log("\nlog-test mockRequest date: ", mockRequest)
+        
         let initial_quote = await quoteManager.getCurrentQuote(mockProject, mockRequest, 'requests');
         if (log) { console.log("[Quote Test] initial_quote: ", initial_quote); }
 

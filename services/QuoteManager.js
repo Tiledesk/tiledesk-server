@@ -207,9 +207,10 @@ class QuoteManager {
      * Get current quote for a single type (tokens or request or ...)
      */
     async getCurrentQuote(project, object, type) {
-
+        console.log("\nlog-test getCurrentQuote: ", project, object, type)
         this.project = project;
         let key = await this.generateKey(object, type);
+        console.log("\nlog-test key generater: ", key)
         winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
 
         let quote = await this.tdCache.get(key);
