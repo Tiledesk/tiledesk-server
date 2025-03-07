@@ -4,6 +4,7 @@ var winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 const ActionsConstants = require('../models/actionsConstants');
 const uuidv4 = require('uuid/v4');
+const chatbotTypes = require("../models/chatbotTypes");
 
 
 class FaqService {
@@ -47,6 +48,23 @@ class FaqService {
         winston.debug('type ' + type)
 
         if (type === "internal" || type === "tilebot") {
+
+          if (!subtype) {
+            if (!template) {
+              template = "empty";
+            }
+          } else {
+
+            if (subtype === chatbotTypes.CHATBOT) {
+              if (!template) {
+                template = "empty";
+              }
+            } else if (subtype === chatbotTypes.WEBHOOK || chatbotTypes.COPILOT) {
+              template = "blank_webhook"
+            } else {
+              template = "empty";  
+            }
+          }
 
           if (!template) {
             template = "empty";
@@ -109,76 +127,78 @@ class FaqService {
         //   { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
         //   { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
         // ]
-        faqsArray = [{
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "reply",
-            "text": "I didn't understand. Can you rephrase your question?",
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "reply",
+              "text": "I didn't understand. Can you rephrase your question?",
+              "attributes": {
+                "commands": [{
+                  "type": "wait",
+                  "time": 500
+                }, {
+                  "type": "message",
+                  "message": {
+                    "type": "text",
+                    "text": "I didn't understand. Can you rephrase your question?"
+                  }
+                }]
+              }
+            }],
+            "intent_display_name": "defaultFallback",
             "attributes": {
-              "commands": [{
-                "type": "wait",
-                "time": 500
-              },{
-                "type": "message",
-                "message": {
-                  "type": "text",
-                  "text": "I didn't understand. Can you rephrase your question?"
-                }
-              }]
+              "position": {
+                "x": 714,
+                "y": 528
+              }
             }
-          }],
-          "intent_display_name": "defaultFallback",
-          "attributes": {
-            "position": {
-              "x": 714,
-              "y": 528
-            }
-          }
-        }, {
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "intent",
-            "intentName": "#" + custom_intent_id
-          }],
-          "question": "\\start",
-          "intent_display_name": "start",
-          "attributes": {
-            "position": {
-              "x": 172,
-              "y": 384
-            }
-          }
-        }, {
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "reply",
+          }, {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "\\start",
+            "intent_display_name": "start",
             "attributes": {
-              "disableInputMessage": false,
-              "commands": [{
-                "type": "wait",
-                "time": 500
-              }, {
-                "type": "message",
-                "message": {
-                  "type": "text",
-                  "text": "Hi, how can I help you?"
-                }
-              }]
-            },
-            "text": "Hi, how can I help you?\r\n"
-          }],
-          "intent_display_name": "welcome",
-          "intent_id": custom_intent_id,
-          "attributes": {
-            "position": {
-              "x": 714,
-              "y": 113
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          }, {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "reply",
+              "attributes": {
+                "disableInputMessage": false,
+                "commands": [{
+                  "type": "wait",
+                  "time": 500
+                }, {
+                  "type": "message",
+                  "message": {
+                    "type": "text",
+                    "text": "Hi, how can I help you?"
+                  }
+                }]
+              },
+              "text": "Hi, how can I help you?\r\n"
+            }],
+            "intent_display_name": "welcome",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
+              }
             }
           }
-        }]
+        ]
 
       }
 
@@ -197,7 +217,50 @@ class FaqService {
         faqsArray = [];
       }
 
+      if (template === "blank_webhook") {
+        let custom_intent_id = uuidv4();
 
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "",
+            "intent_display_name": "webhook",
+            "attributes": {
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          },
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "web_response",
+              "status": 200,
+              "payload": {
+                "success": true,
+                "message": "Your webhook is online!"
+              }
+            }],
+            "intent_display_name": "response",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
+              }
+            }
+          }
+        ]
+      }
+
+    
       faqsArray.forEach(faq => {
 
         var newFaq = new Faq({
