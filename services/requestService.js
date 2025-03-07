@@ -1503,7 +1503,7 @@ class RequestService {
 
 
     return new Promise(function (resolve, reject) {
-      winston.debug("changeFirstTextAndPreflightByRequestId", request_id);
+      winston.debug("changeFirstTextAndPreflightByRequestId" + request_id);
       // winston.debug("request_id", request_id);
       // winston.debug("newstatus", newstatus);
 

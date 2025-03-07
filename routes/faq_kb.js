@@ -18,6 +18,7 @@ const trainingService = require('../services/trainingService');
 var roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
+const chatbotTypeConstants = require('../models/chatbotTypes');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -50,7 +51,7 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
     //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
   }
 
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
+  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.subtype,  req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
     res.json(savedFaq_kb);
   });
 
@@ -683,7 +684,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
+    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.subtype, json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
       .catch((err) => {
           winston.error("Error creating new chatbot")
           return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
