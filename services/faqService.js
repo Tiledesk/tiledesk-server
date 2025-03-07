@@ -59,8 +59,10 @@ class FaqService {
               if (!template) {
                 template = "empty";
               }
-            } else if (subtype === chatbotTypes.WEBHOOK || chatbotTypes.COPILOT) {
+            } else if (subtype === chatbotTypes.WEBHOOK) {
               template = "blank_webhook"
+            } else if (subtype === chatbotTypes.COPILOT) {
+              template = "blank_copilot"
             } else {
               template = "empty";  
             }
@@ -108,7 +110,6 @@ class FaqService {
           { 'question': 'Sample Frame', 'answer': 'tdFrame:https://www.emanueleferonato.com/wp-content/uploads/2019/02/runner/\n* What can you do?\n* Back to start tdAction:start', 'topic': 'sample' },
           { 'question': 'Sample Video', 'answer': 'tdVideo:https://www.youtube.com/embed/EngW7tLk6R8\n* What can you do?\n* Back to start tdAction:start', 'topic': 'sample' },
           { 'question': 'Where are you?', 'answer': 'We are here ❤️\ntdFrame:https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6087916.923447935!2d8.234804542117423!3d41.836572992140624!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d4fe82448dd203%3A0xe22cf55c24635e6f!2sItaly!5e0!3m2!1sen!2sit!4v1613657475377!5m2!1sen!2sit\n* Back to start tdAction:start', 'topic': 'sample' },
-
           // { 'question': 'Sample Webhook', 'answer': 'tdWebhook:https://tiledesk-bot-webhook.tiledesk.repl.co', 'topic': 'sample' },    
           { 'question': 'Sample Action', 'answer': 'Hello 👋 Would you like to take a closer look at our offer?\n* Yes, please tdAction:yes_action\n* No tdAction:no_action', 'intent_display_name': 'action1', 'topic': 'sample' },
           { 'question': 'Yes Action', 'answer': 'Great! Take a look here:\n* Tiledesk Pricing https://tiledesk.com/pricing-cloud/', 'intent_display_name': 'yes_action', 'topic': 'sample' },
@@ -243,10 +244,49 @@ class FaqService {
             "actions": [{
               "_tdActionType": "web_response",
               "status": 200,
-              "payload": {
-                "success": true,
-                "message": "Your webhook is online!"
+              "bodyType": "json",
+              "payload": "{'success':true,'message':'Your webhook is online!'}"
+            }],
+            "intent_display_name": "response",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
               }
+            }
+          }
+        ]
+      }
+
+      if (template === "blank_copilot") {
+        let custom_intent_id = uuidv4();
+
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "",
+            "intent_display_name": "webhook",
+            "attributes": {
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          },
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "web_response",
+              "status": 200,
+              "bodyType": "json",
+              "payload": "{'title': 'Official Copilot','text':'This is a suggestion!'}"
             }],
             "intent_display_name": "response",
             "intent_id": custom_intent_id,
