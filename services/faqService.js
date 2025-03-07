@@ -245,7 +245,7 @@ class FaqService {
               "_tdActionType": "web_response",
               "status": 200,
               "bodyType": "json",
-              "payload": "{'success':true,'message':'Your webhook is online!'}"
+              "payload": '{"success": true , "message": "Your webhook is online!"}'
             }],
             "intent_display_name": "response",
             "intent_id": custom_intent_id,
@@ -286,7 +286,7 @@ class FaqService {
               "_tdActionType": "web_response",
               "status": 200,
               "bodyType": "json",
-              "payload": "{'title': 'Official Copilot','text':'This is a suggestion!'}"
+              "payload": '{"title": "Official Copilot", "text": "This is a suggestion!"}'
             }],
             "intent_display_name": "response",
             "intent_id": custom_intent_id,
