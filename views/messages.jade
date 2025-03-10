@@ -19,9 +19,9 @@ block content
           span(class="transcript-chat-msg") #{message.text}
     
     if brandName
-      p(class="transcript-powered-by")  Powered by brandName
-    else if
-      p(class="transcript-powered-by")  Powered by  
+      p(class="transcript-powered-by") Powered by #{brandName}
+    else
+      p(class="transcript-powered-by") Powered by  
         a(href="https://tiledesk.com/", target="_blank") Tiledesk
 
 
