@@ -18,7 +18,6 @@ const trainingService = require('../services/trainingService');
 var roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
-const chatbotTypeConstants = require('../models/chatbotTypes');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -933,6 +932,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
           language: faq_kb.language,
           name: faq_kb.name,
           type: faq_kb.type,
+          subtype: faq_kb.subtype,
           description: faq_kb.description,
           attributes: faq_kb.attributes,
           intents: intents
