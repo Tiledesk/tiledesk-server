@@ -9,30 +9,30 @@ const chatbotTypes = require("../models/chatbotTypes");
 
 class FaqService {
 
-
-  create(name, url, projectid, user_id, type, subtype, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
+  create(id_project, id_user, data) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
       //winston.debug('FAQ-KB POST REQUEST BODY ', req.body);
       var newFaq_kb = new Faq_kb({
-        name: name,
-        description: description,
-        url: url,
-        id_project: projectid,
-        webhook_url: webhook_url,
-        webhook_enabled: webhook_enabled,
-        type: type,
-        subtype: subtype,
-        language: language,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        url: data.url,
+        id_project: id_project,
+        webhook_url: data.webhook_url,
+        webhook_enabled: data.webhook_enabled,
+        type: data.type,
+        subtype: data.subtype,
+        language: data.language,
         public: false,
         certified: false,
-        mainCategory: mainCategory,
-        intentsEngine: intentsEngine,
+        mainCategory: data.mainCategory,
+        intentsEngine: data.intentsEngine,
         trashed: false,
-        createdBy: user_id,
-        updatedBy: user_id,
-        attributes: attributes
+        createdBy: id_user,
+        updatedBy: id_user,
+        attributes: data.attributes
       });
 
 
@@ -45,32 +45,24 @@ class FaqService {
 
         botEvent.emit('faqbot.create', savedFaq_kb);
 
-        winston.debug('type ' + type)
+        winston.debug('type ' + data.type)
 
-        if (type === "internal" || type === "tilebot") {
+        let template = "empty";
 
-          if (!subtype) {
-            if (!template) {
-              template = "empty";
+        if (data.type === "internal" || data.type === "tilebot") {
+
+          if (data.subtype) {
+            if (data.subtype === chatbotTypes.WEBHOOK) {
+              template = "blank_webhook"
+            } else if (data.subtype === chatbotTypes.COPILOT) {
+              template = "blank_copilot"
             }
           } else {
-
-            if (subtype === chatbotTypes.CHATBOT) {
-              if (!template) {
-                template = "empty";
-              }
-            } else if (subtype === chatbotTypes.WEBHOOK) {
-              template = "blank_webhook"
-            } else if (subtype === chatbotTypes.COPILOT) {
-              template = "blank_copilot"
-            } else {
-              template = "empty";  
+            if (data.template) {
+              template = data.template;
             }
           }
 
-          if (!template) {
-            template = "empty";
-          }
           winston.debug('template ' + template);
           that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template);
         } else {
@@ -83,6 +75,80 @@ class FaqService {
       });
     });
   }
+
+  // _create(name, url, projectid, user_id, type, subtype, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
+  //   var that = this;
+  //   return new Promise(function (resolve, reject) {
+
+  //     //winston.debug('FAQ-KB POST REQUEST BODY ', req.body);
+  //     var newFaq_kb = new Faq_kb({
+  //       name: name,
+  //       description: description,
+  //       url: url,
+  //       id_project: projectid,
+  //       webhook_url: webhook_url,
+  //       webhook_enabled: webhook_enabled,
+  //       type: type,
+  //       subtype: subtype,
+  //       language: language,
+  //       public: false,
+  //       certified: false,
+  //       mainCategory: mainCategory,
+  //       intentsEngine: intentsEngine,
+  //       trashed: false,
+  //       createdBy: user_id,
+  //       updatedBy: user_id,
+  //       attributes: attributes
+  //     });
+
+
+  //     newFaq_kb.save(function (err, savedFaq_kb) {
+  //       if (err) {
+  //         winston.error('--- > ERROR ', err)
+  //         return reject('Error saving object.');
+  //       }
+  //       winston.debug('-> -> SAVED FAQFAQ KB ', savedFaq_kb.toObject())
+
+  //       botEvent.emit('faqbot.create', savedFaq_kb);
+
+  //       winston.debug('type ' + type)
+
+  //       if (type === "internal" || type === "tilebot") {
+
+  //         if (!subtype) {
+  //           if (!template) {
+  //             template = "empty";
+  //           }
+  //         } else {
+
+  //           if (subtype === chatbotTypes.CHATBOT) {
+  //             if (!template) {
+  //               template = "empty";
+  //             }
+  //           } else if (subtype === chatbotTypes.WEBHOOK) {
+  //             template = "blank_webhook"
+  //           } else if (subtype === chatbotTypes.COPILOT) {
+  //             template = "blank_copilot"
+  //           } else {
+  //             template = "empty";  
+  //           }
+  //         }
+
+  //         if (!template) {
+  //           template = "empty";
+  //         }
+  //         winston.debug('template ' + template);
+  //         that.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template);
+  //       } else {
+  //         winston.debug('external bot: ', savedFaq_kb);
+  //       }
+
+
+
+  //       return resolve(savedFaq_kb);
+  //     });
+  //   });
+  // }
 
   createGreetingsAndOperationalsFaqs(faq_kb_id, created_by, projectid, template) {
     var that = this;

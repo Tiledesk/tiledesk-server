@@ -315,7 +315,7 @@ describe('RequestRoute', () => {
         var savedProject = savedProjectAndPU.project;
 
 
-        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function (savedBot) {
+        faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function (savedBot) {
 
 
 

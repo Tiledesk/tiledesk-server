@@ -50,9 +50,11 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
     //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
   }
 
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.subtype,  req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
-    res.json(savedFaq_kb);
-  });
+  faqService.create(req.projectid, req.user.id, req.body).then((savedFaq_kb) => {
+    res.status(200).send(savedFaq_kb);
+  }).catch((err) => {
+    res.status(500).send({ succes: false, error: err })
+  })
 
 });
 
@@ -683,7 +685,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.subtype, json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
+    let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
           winston.error("Error creating new chatbot")
           return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
@@ -931,6 +933,7 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
           webhook_url: faq_kb.webhook_url,
           language: faq_kb.language,
           name: faq_kb.name,
+          slug: faq_kb.slug,
           type: faq_kb.type,
           subtype: faq_kb.subtype,
           description: faq_kb.description,
