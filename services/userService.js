@@ -5,7 +5,7 @@ var winston = require('../config/winston');
 
 class UserService {
 
-    signup ( email, password, firstname, lastname, emailverified) {
+    signup ( email, password, firstname, lastname, emailverified, phone) {
         return new Promise(function (resolve, reject) {
                 
             // winston.info("email: " + email);
@@ -21,7 +21,8 @@ class UserService {
                 password: password,
                 firstname: firstname,
                 lastname: lastname,
-                emailverified: emailverified,             
+                emailverified: emailverified,  
+                phone: phone           
             });
             // save the user
             newUser.save(function (err, savedUser) {

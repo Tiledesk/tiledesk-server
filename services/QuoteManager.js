@@ -105,6 +105,7 @@ class QuoteManager {
 
     async incrementVoiceDurationCount(project, request) {
 
+        console.log("incrementVoiceDurationCount request ", request)
         this.project = project;
         let key = await this.generateKey(request, 'voice_duration');
         winston.verbose("[QuoteManager] incrementVoiceDurationCount key: " + key);
@@ -207,7 +208,6 @@ class QuoteManager {
      * Get current quote for a single type (tokens or request or ...)
      */
     async getCurrentQuote(project, object, type) {
-
         this.project = project;
         let key = await this.generateKey(object, type);
         winston.verbose("[QuoteManager] getCurrentQuote key: " + key);
@@ -260,9 +260,13 @@ class QuoteManager {
             return true;
         }
 
+        console.log("quota: ", quote);
+        console.log("limits[type]: ", limits[type]);
         if (quote < limits[type]) {
+            console.log("return true");
             return true;
         } else {
+            console.log("return false");
             return false;
         }
     }
