@@ -42,6 +42,7 @@ router.post('/', async (req, res) => {
     id_project: id_project,
     chatbot_id: req.body.chatbot_id || req.body.id_faq_kb,
     block_id: req.body.block_id,
+    copilot: req.body.copilot,
     async: req.body.async
   })
 
