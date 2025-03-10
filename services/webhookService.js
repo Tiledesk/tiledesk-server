@@ -17,7 +17,7 @@ class WebhookService {
 
         return new Promise(async (resolve, reject) => {
 
-            console.log("run for webhook id ", webhook.webhook_id)
+            winston.verbose("(WebhookService) Run webhook " + webhook.webhook_id);
             let chatbot = await faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
                 winston.error("Error finding chatbot ", err);
                 reject(err);
@@ -41,7 +41,6 @@ class WebhookService {
             }
 
             await httpUtil.post(url, payload).then((response) => {
-                console.log("response for ", webhook.webhook_id, response)
                 resolve(response.data);
             }).catch((err) => {
                 winston.error("Error calling webhook on post: ", err);
