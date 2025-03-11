@@ -43,6 +43,13 @@ var Faq_kbSchema = new Schema({
     default: 'internal',
     index: true
   },
+  subtype: {
+    type: String,
+    default: function() {
+      return this.type === 'tilebot' ? 'chatbot' : undefined;
+    },
+    index: true
+  },
   // external: {
   //   type: Boolean,
   //   default: false

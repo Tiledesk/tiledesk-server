@@ -4,12 +4,13 @@ var winston = require('../config/winston');
 const botEvent = require('../event/botEvent');
 const ActionsConstants = require('../models/actionsConstants');
 const uuidv4 = require('uuid/v4');
+const chatbotTypes = require("../models/chatbotTypes");
 
 
 class FaqService {
 
 
-  create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
+  create(name, url, projectid, user_id, type, subtype, description, webhook_url, webhook_enabled, language, template, mainCategory, intentsEngine, attributes) {
     var that = this;
     return new Promise(function (resolve, reject) {
 
@@ -22,6 +23,7 @@ class FaqService {
         webhook_url: webhook_url,
         webhook_enabled: webhook_enabled,
         type: type,
+        subtype: subtype,
         language: language,
         public: false,
         certified: false,
@@ -46,6 +48,25 @@ class FaqService {
         winston.debug('type ' + type)
 
         if (type === "internal" || type === "tilebot") {
+
+          if (!subtype) {
+            if (!template) {
+              template = "empty";
+            }
+          } else {
+
+            if (subtype === chatbotTypes.CHATBOT) {
+              if (!template) {
+                template = "empty";
+              }
+            } else if (subtype === chatbotTypes.WEBHOOK) {
+              template = "blank_webhook"
+            } else if (subtype === chatbotTypes.COPILOT) {
+              template = "blank_copilot"
+            } else {
+              template = "empty";  
+            }
+          }
 
           if (!template) {
             template = "empty";
@@ -89,7 +110,6 @@ class FaqService {
           { 'question': 'Sample Frame', 'answer': 'tdFrame:https://www.emanueleferonato.com/wp-content/uploads/2019/02/runner/\n* What can you do?\n* Back to start tdAction:start', 'topic': 'sample' },
           { 'question': 'Sample Video', 'answer': 'tdVideo:https://www.youtube.com/embed/EngW7tLk6R8\n* What can you do?\n* Back to start tdAction:start', 'topic': 'sample' },
           { 'question': 'Where are you?', 'answer': 'We are here ❤️\ntdFrame:https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6087916.923447935!2d8.234804542117423!3d41.836572992140624!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12d4fe82448dd203%3A0xe22cf55c24635e6f!2sItaly!5e0!3m2!1sen!2sit!4v1613657475377!5m2!1sen!2sit\n* Back to start tdAction:start', 'topic': 'sample' },
-
           // { 'question': 'Sample Webhook', 'answer': 'tdWebhook:https://tiledesk-bot-webhook.tiledesk.repl.co', 'topic': 'sample' },    
           { 'question': 'Sample Action', 'answer': 'Hello 👋 Would you like to take a closer look at our offer?\n* Yes, please tdAction:yes_action\n* No tdAction:no_action', 'intent_display_name': 'action1', 'topic': 'sample' },
           { 'question': 'Yes Action', 'answer': 'Great! Take a look here:\n* Tiledesk Pricing https://tiledesk.com/pricing-cloud/', 'intent_display_name': 'yes_action', 'topic': 'sample' },
@@ -108,76 +128,78 @@ class FaqService {
         //   { 'question': '\\start', 'answer': 'Hello', 'intent_display_name': 'start', 'topic': 'internal' },            
         //   { 'question': 'defaultFallback', 'answer': 'I can not provide an adequate answer. Write a new question or talk to a human agent.\n* Back to start tdAction:start\n* See the docs https://docs.tiledesk.com/\n* 👨🏻‍🦰 I want an agent', 'intent_display_name': 'defaultFallback', 'topic': 'internal' }, //TODO se metto spazio n * nn va              
         // ]
-        faqsArray = [{
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "reply",
-            "text": "I didn't understand. Can you rephrase your question?",
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "reply",
+              "text": "I didn't understand. Can you rephrase your question?",
+              "attributes": {
+                "commands": [{
+                  "type": "wait",
+                  "time": 500
+                }, {
+                  "type": "message",
+                  "message": {
+                    "type": "text",
+                    "text": "I didn't understand. Can you rephrase your question?"
+                  }
+                }]
+              }
+            }],
+            "intent_display_name": "defaultFallback",
             "attributes": {
-              "commands": [{
-                "type": "wait",
-                "time": 500
-              },{
-                "type": "message",
-                "message": {
-                  "type": "text",
-                  "text": "I didn't understand. Can you rephrase your question?"
-                }
-              }]
+              "position": {
+                "x": 714,
+                "y": 528
+              }
             }
-          }],
-          "intent_display_name": "defaultFallback",
-          "attributes": {
-            "position": {
-              "x": 714,
-              "y": 528
-            }
-          }
-        }, {
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "intent",
-            "intentName": "#" + custom_intent_id
-          }],
-          "question": "\\start",
-          "intent_display_name": "start",
-          "attributes": {
-            "position": {
-              "x": 172,
-              "y": 384
-            }
-          }
-        }, {
-          "webhook_enabled": false,
-          "enabled": true,
-          "actions": [{
-            "_tdActionType": "reply",
+          }, {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "\\start",
+            "intent_display_name": "start",
             "attributes": {
-              "disableInputMessage": false,
-              "commands": [{
-                "type": "wait",
-                "time": 500
-              }, {
-                "type": "message",
-                "message": {
-                  "type": "text",
-                  "text": "Hi, how can I help you?"
-                }
-              }]
-            },
-            "text": "Hi, how can I help you?\r\n"
-          }],
-          "intent_display_name": "welcome",
-          "intent_id": custom_intent_id,
-          "attributes": {
-            "position": {
-              "x": 714,
-              "y": 113
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          }, {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "reply",
+              "attributes": {
+                "disableInputMessage": false,
+                "commands": [{
+                  "type": "wait",
+                  "time": 500
+                }, {
+                  "type": "message",
+                  "message": {
+                    "type": "text",
+                    "text": "Hi, how can I help you?"
+                  }
+                }]
+              },
+              "text": "Hi, how can I help you?\r\n"
+            }],
+            "intent_display_name": "welcome",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
+              }
             }
           }
-        }]
+        ]
 
       }
 
@@ -196,7 +218,89 @@ class FaqService {
         faqsArray = [];
       }
 
+      if (template === "blank_webhook") {
+        let custom_intent_id = uuidv4();
 
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "",
+            "intent_display_name": "webhook",
+            "attributes": {
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          },
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "web_response",
+              "status": 200,
+              "bodyType": "json",
+              "payload": "{'success':true,'message':'Your webhook is online!'}"
+            }],
+            "intent_display_name": "response",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
+              }
+            }
+          }
+        ]
+      }
+
+      if (template === "blank_copilot") {
+        let custom_intent_id = uuidv4();
+
+        faqsArray = [
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "intent",
+              "intentName": "#" + custom_intent_id
+            }],
+            "question": "",
+            "intent_display_name": "webhook",
+            "attributes": {
+              "position": {
+                "x": 172,
+                "y": 384
+              }
+            }
+          },
+          {
+            "webhook_enabled": false,
+            "enabled": true,
+            "actions": [{
+              "_tdActionType": "web_response",
+              "status": 200,
+              "bodyType": "json",
+              "payload": "{'title': 'Official Copilot','text':'This is a suggestion!'}"
+            }],
+            "intent_display_name": "response",
+            "intent_id": custom_intent_id,
+            "attributes": {
+              "position": {
+                "x": 714,
+                "y": 113
+              }
+            }
+          }
+        ]
+      }
+
+    
       faqsArray.forEach(faq => {
 
         var newFaq = new Faq({
