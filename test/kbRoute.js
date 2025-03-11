@@ -1800,8 +1800,8 @@ describe('KbRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
-                    faqService.create("testbot1", null, savedProject._id, savedUser._id).then((savedBot1) => {
-                        faqService.create("testbot2", null, savedProject._id, savedUser._id).then((savedBot2) => {
+                    faqService.create(savedProject._id, savedUser._id, { name: "testbot1" }).then((savedBot1) => {
+                        faqService.create(savedProject._id, savedUser._id, { name: "testbot2" }).then((savedBot2) => {
 
                             chai.request(server)
                                 .get('/' + savedProject._id + '/kb/namespace/all')
@@ -1867,6 +1867,7 @@ describe('KbRoute', () => {
                 })
             })
         }).timeout(10000)
+
 
         /**
          * Delete namespace

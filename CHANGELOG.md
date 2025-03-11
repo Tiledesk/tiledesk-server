@@ -5,6 +5,15 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.68
+- Updated tybot-connector to 0.4.2
+
+# 2.10.67
+- Added route for webhooks
+- Added endpoint to run webhook
+- Added chatbot subtypes
+- Updated tybot-connector to 0.4.0
+
 # 2.10.66
 - Updated QuoteService with new plans
 
