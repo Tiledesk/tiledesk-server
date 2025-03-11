@@ -710,25 +710,26 @@ describe('FaqKBRoute', () => {
 
                             res.should.have.status(200);
                             res.should.be.a('object');
-                            expect(res.body.name).to.equal("examplebot");
+                            expect(res.body.name).to.equal("example bot");
+                            expect(res.body.slug).to.equal("my-example-bot");
                             expect(res.body.language).to.equal("en");
 
                             let id_faq_kb = res.body._id;
 
                             chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
+                            .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                            .auth(email, pwd)
+                            .end((err, res) => {
 
-                                    if (err) { console.error("err: ", err); }
-                                    if (log) { console.log("res.body", res.body); }
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
 
-                                    res.should.have.status(200);
-                                    //res.body.should.be.an('array').that.is.not.empty;
+                                res.should.have.status(200);
+                                //res.body.should.be.an('array').that.is.not.empty;
 
-                                    done();
+                                done();
 
-                                })
+                            })
                         })
 
                 })
