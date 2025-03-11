@@ -46,7 +46,6 @@ class WebhookService {
                 winston.error("Error calling webhook on post: ", err);
                 reject(err);
             })
-
         })
     }
 
