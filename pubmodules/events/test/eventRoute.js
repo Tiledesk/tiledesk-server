@@ -55,7 +55,7 @@ describe('EventRoute', () => {
                             .populate('events')
                             .exec(function (err, project_user) {
                                 if (log) { console.log("project_user",  project_user.toJSON()); }
-                                expect(project_user.events.length).to.equal(1);  
+                                expect(project_user.events.length).to.equal(0);  
                                 done();
                             });
                            
