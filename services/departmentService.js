@@ -462,7 +462,18 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   return new Promise(function (resolve, reject) {
 
     var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-    return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
+
+    var qpu = Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" });
+          
+    // use this. $in doesn't use index very well    
+    if (cacheEnabler.project_user) {
+      qpu.cache(cacheUtil.queryTTL, projectid+":project_users:query:teammates:available") //request_cache
+      winston.debug('project_user cache enabled');
+    }
+    // return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
+    return qpu.exec(function (err, project_users) {
+
+
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
