@@ -5,6 +5,7 @@ var MessageConstants = require('../models/messageConstants');
 var winston = require('../config/winston');
 var User = require('../models/user');
 var cacheUtil = require('../utils/cacheUtil');
+var cacheEnabler = require("../services/cacheEnabler");
 
 
 class SendMessageUtil {
@@ -24,9 +25,13 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             var id = sender.replace("bot_","");     // botprefix
             winston.debug("bot id: "+id);
             sender = id; //change sender removing bot_
-            var bot = await Faq_kb.findById(id)    //TODO add cache_bot_here non sembra scattare.. dove viene usato?
-                    //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id)
-                    .exec();
+            var q = Faq_kb.findById(id);
+            if (cacheEnabler.faq_kb) {
+              q.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id);
+              winston.info("SendMessageUtil send bot cache enabled");
+
+            }              
+            var bot = await q.exec();
             winston.debug("bot",bot);                 
             senderFullname = bot.name;           
         } else {
