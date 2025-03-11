@@ -28,7 +28,7 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             var q = Faq_kb.findById(id);
             if (cacheEnabler.faq_kb) {
               q.cache(cacheUtil.defaultTTL, id_project+":faq_kbs:id:"+id);
-              winston.info("SendMessageUtil send bot cache enabled");
+              winston.debug("SendMessageUtil send bot cache enabled");
 
             }              
             var bot = await q.exec();
