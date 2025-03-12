@@ -47,7 +47,7 @@ class FaqService {
 
         winston.debug('type ' + data.type)
 
-        let template = "empty";
+        let template = "blank";
 
         if (data.type === "internal" || data.type === "tilebot") {
 
