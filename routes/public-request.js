@@ -55,7 +55,12 @@ var printer = new PdfPrinter(fonts);
         return res.status(404).send({success: false, msg: 'Object not found.'});
       }
 
-      return res.render('messages', { title: 'Tiledesk', messages: messages});
+      return res.render('messages', 
+        { title: 'Tiledesk', 
+          messages: messages,
+          brandName: process.env.BRAND_NAME || null,
+          brandLogo: process.env.BRAND_LOGO || null
+        });
     });
 
   });

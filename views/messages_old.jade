@@ -2,11 +2,7 @@ extends layout
 
 block content
   div(class="transcript-container")
-
-    if brandLogo
-      img.className#IdName(src="brandLogo" alt="brand logo")
-    else if !brandLogo && !brandName
-      img.className#IdName(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="tiledesk logo") 
+    img.className#IdName(src="https://tiledesk.com/wp-content/uploads/2022/07/tiledesk_v2.png" alt="tiledesk logo") 
       
     div(class="transcript-wrapper")
       h1(class="transcript-title") Chat Transcript
@@ -17,11 +13,8 @@ block content
           span(class="transcript-chat-date") [#{message.createdAt.toLocaleString('en', { timeZone: 'UTC' })}] 
           span(class="transcript-chat-sender") #{message.senderFullname}: 
           span(class="transcript-chat-msg") #{message.text}
-    
-    if brandName
-      p(class="transcript-powered-by") Powered by #{brandName}
-    else
-      p(class="transcript-powered-by") Powered by  
-        a(href="https://tiledesk.com/", target="_blank") Tiledesk
+      
+    p(class="transcript-powered-by")  Powered by   
+      a(href="https://tiledesk.com/", target="_blank") tiledesk
 
 
