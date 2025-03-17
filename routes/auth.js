@@ -559,7 +559,7 @@ function (req, res) {
   winston.debug("email", email);
   User.findOne({
     email: email, status: 100
-  }, 'email firstname lastname password emailverified id', function (err, user) {
+  }, 'email firstname lastname password emailverified phone id', function (err, user) {
     if (err) {
       winston.error("Error signin", err);
       throw err;
