@@ -370,7 +370,7 @@ describe('AuthenticationJWT', () => {
             // create(name, createdBy, settings)
             projectService.create("test-signinJWt-user", savedUser._id).then(function (savedProject) {
                 // create(name, url, projectid, user_id, type, description, webhook_url, webhook_enabled, language) {                                         
-                faqService.create("testbot", null, savedProject._id, savedUser._id).then(function (savedBot) {
+                faqService.create(savedProject._id, savedUser._id, { name: "testbot"}).then(function (savedBot) {
 
                     var savedBotObj = savedBot.toObject();
                     if (log) { console.log("savedBotObj", savedBotObj); }
