@@ -56,6 +56,10 @@ class FaqService {
               template = "blank_webhook"
             } else if (data.subtype === chatbotTypes.COPILOT) {
               template = "blank_copilot"
+            } else if (data.subtype === chatbotTypes.CHATBOT) {
+              if (data.template) {
+                template = data.template;
+              }
             }
           } else {
             if (data.template) {
