@@ -47,7 +47,7 @@ class FaqService {
 
         winston.debug('type ' + data.type)
 
-        let template = "blank";
+        let template = "empty";
 
         if (data.type === "internal" || data.type === "tilebot") {
 
@@ -56,6 +56,10 @@ class FaqService {
               template = "blank_webhook"
             } else if (data.subtype === chatbotTypes.COPILOT) {
               template = "blank_copilot"
+            } else if (data.subtype === chatbotTypes.CHATBOT) {
+              if (data.template) {
+                template = data.template;
+              }
             }
           } else {
             if (data.template) {
