@@ -13,6 +13,18 @@ const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 32);
 // }
 // winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
+router.get('/', async (req, res) => {
+  
+  let id_project = req.projectid;
+
+  let webhooks = await Webhook.findOne({ id_project: id_project }).catch((err) => {
+    winston.error("Error finding webhooks: ", err);
+    return res.status(500).send({ success: false, error: "Error findin webhooks with for project " + id_project });
+  })
+
+  res.status(200).send(webhooks);
+
+})
 
 router.get('/:chatbot_id/', async (req, res) => {
   
