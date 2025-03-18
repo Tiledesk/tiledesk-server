@@ -151,12 +151,11 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
 
 
     var context = {req:req};
-  var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall, context);
-  winston.debug("Getting department operators operatorsResult", operatorsResult);
+    var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall, context);
+    winston.debug("Getting department operators operatorsResult", operatorsResult);
 
-
-  
-    return res.json(operatorsResult);
+    delete operatorsResult.context;
+    return res.status(200).send(operatorsResult);
 
 });
 

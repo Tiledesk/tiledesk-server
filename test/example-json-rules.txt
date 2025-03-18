@@ -15,7 +15,8 @@
         "buttons"
     ],
     "score" : 0,
-    "name" : "examplebot",
+    "name" : "example bot",
+    "slug": "my-example-bot",
     "id_project" : "64218dfecdb804001380b9ba",
     "trashed" : false,
     "createdBy" : "63a05d755f117f0013541383",

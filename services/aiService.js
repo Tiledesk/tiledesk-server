@@ -2,6 +2,7 @@ var winston = require('../config/winston');
 const axios = require("axios").default;
 require('dotenv').config();
 const jwt = require("jsonwebtoken")
+const FormData = require('form-data');
 
 let openai_endpoint = process.env.OPENAI_ENDPOINT;
 let kb_endpoint = process.env.KB_ENDPOINT;
@@ -9,7 +10,7 @@ let kb_endpoint_train = process.env.KB_ENDPOINT_TRAIN;
 let kb_endpoint_qa = process.env.KB_ENDPOINT_QA;
 let secret = process.env.JWT_SECRET_KEY;
 
-class OpenaiService {
+class AiService {
 
   // OPEN AI
   completions(data, gptkey) {
@@ -36,8 +37,56 @@ class OpenaiService {
 
   }
 
+  transcription(buffer, gptkey) {
 
-  // PUGLIA AI
+    winston.debug("[OPENAI SERVICE] openai endpoint: " + openai_endpoint);
+
+    return new Promise((resolve, reject) => {
+
+      const formData = new FormData();
+      formData.append('file', buffer, { filename: 'audiofile', contentType: 'audio/mpeg' });
+      formData.append('model', 'whisper-1');
+
+      axios({
+        url: openai_endpoint + "/audio/transcriptions",
+        headers: {
+          ...formData.getHeaders(),
+          'Authorization': "Bearer " + gptkey
+        },
+        data: formData,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody);
+      }).catch((err) => {
+        reject(err);
+      })
+
+    })
+  }
+
+  // LLM
+  askllm(data) {
+    winston.debug("[OPENAI SERVICE] llm endpoint: " + kb_endpoint_qa);
+
+    return new Promise((resolve, reject) => {
+
+      axios({
+        url: kb_endpoint_qa + "/ask",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: data,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody)
+      }).catch((err) => {
+        reject(err)
+      })
+    })
+  }
+
+
+  // KB
   checkStatus(data) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint);
 
@@ -166,7 +215,6 @@ class OpenaiService {
 
   getContentChunks(namespace_id, content_id, engine) {
     winston.debug("[OPENAI SERVICE] kb endpoint: " + kb_endpoint_train);
-
     return new Promise((resolve, reject) => {
 
       let payload = { engine: engine };
@@ -228,6 +276,6 @@ class OpenaiService {
 
 }
 
-var openaiService = new OpenaiService();
+var aiService = new AiService();
 
-module.exports = openaiService;
+module.exports = aiService;
