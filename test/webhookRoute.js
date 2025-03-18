@@ -59,6 +59,8 @@ describe('WebhookRoute', () => {
                                 expect(res.body.id_project).to.equal(savedProject._id.toString());
                                 expect(res.body.chatbot_id).to.equal(chatbot_id);
                                 expect(res.body.block_id).to.equal(webhook_intent_id);
+                                expect(res.body.name).to.equal("testbot-webhook");
+                                expect(res.body.enabled).to.equal(false);
                                 should.exist(res.body.webhook_id)
                                 expect(res.body).to.haveOwnProperty('webhook_id')
                                 expect(res.body.webhook_id).to.have.length(32)
