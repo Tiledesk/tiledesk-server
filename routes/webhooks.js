@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
   
   let id_project = req.projectid;
 
-  let webhooks = await Webhook.findOne({ id_project: id_project }).catch((err) => {
+  let webhooks = await Webhook.find({ id_project: id_project }).catch((err) => {
     winston.error("Error finding webhooks: ", err);
     return res.status(500).send({ success: false, error: "Error findin webhooks with for project " + id_project });
   })
