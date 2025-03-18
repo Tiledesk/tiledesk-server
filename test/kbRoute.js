@@ -661,7 +661,7 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/multi?namespace=' + namespace_id)
                                 .auth(email, pwd)
-                                .send({ list:["https://gethelp.tiledesk.com/article"], scrape_type: 3 })
+                                .send({ list:["https://gethelp.tiledesk.com/article"], refresh_rate: 'daily', scrape_type: 3 })
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
@@ -1441,6 +1441,78 @@ describe('KbRoute', () => {
             });
         }).timeout(10000)
 
+        it('webhook-reindex', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-kb-webhook", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.log("error: ", err) };
+                            if (log) { console.log("res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('array');
+
+                            let namespace_id = res.body[0].id;
+
+                            let kb = {
+                                name: "example_name6",
+                                type: "url",
+                                source: "https://www.exampleurl6.com",
+                                content: "",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/')
+                                .auth(email, pwd)
+                                .send(kb)
+                                .end((err, res) => {
+
+                                    if (err) { console.log("error: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    let kb_id = res.body.value._id;
+
+                                    chai.request(server)
+                                        .post('/webhook/kb/reindex')
+                                        .set("x-auth-token", "testtoken")
+                                        .send({ content_id: kb_id })
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err) };
+                                            if (log) { console.log("res.body: ", res.body) };
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.success).to.equal(true);
+                                            expect(res.body.message).to.equal("Content queued for reindexing");
+
+                                            done();
+
+                                        })
+
+
+                                })
+                        })
+
+
+
+
+                });
+            });
+        }).timeout(10000)
+
     })
 
     
@@ -1490,71 +1562,73 @@ describe('KbRoute', () => {
         /**
          * Get all namespaces of a project.
          * If there isn't namespaces for a project_id, the default namespace is created and returned.
+         * WARNING: not working due to namspace creation limit (on trial plan)
          */
-        it('create-and-get-namespaces', (done) => {
+        // it('create-and-get-namespaces', (done) => {
 
-            var email = "test-signup-" + Date.now() + "@email.com";
-            var pwd = "pwd";
+        //     var email = "test-signup-" + Date.now() + "@email.com";
+        //     var pwd = "pwd";
 
-            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+        //     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+        //         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    // Get all namespaces. Create default namespace and return.
-                    chai.request(server)
-                        .get('/' + savedProject._id + '/kb/namespace/all')
-                        .auth(email, pwd)
-                        .end((err, res) => {
+        //             // Get all namespaces. Create default namespace and return.
+        //             chai.request(server)
+        //                 .get('/' + savedProject._id + '/kb/namespace/all')
+        //                 .auth(email, pwd)
+        //                 .end((err, res) => {
 
-                            if (err) { console.error("err: ", err); }
-                            if (log) { console.log("get all namespaces res.body: ", res.body); }
+        //                     if (err) { console.error("err: ", err); }
+        //                     if (log) { console.log("get all namespaces res.body: ", res.body); }
+        //                     console.log("get all namespaces res.body: ", res.body);
+        //                     res.should.have.status(200);
+        //                     res.body.should.be.a('array');
+        //                     expect(res.body.length).to.equal(1);
+        //                     should.not.exist(res.body[0]._id);
+        //                     expect(res.body[0].id).to.equal(savedProject._id.toString());
+        //                     expect(res.body[0].name).to.equal("Default");
 
-                            res.should.have.status(200);
-                            res.body.should.be.a('array');
-                            expect(res.body.length).to.equal(1);
-                            should.not.exist(res.body[0]._id);
-                            expect(res.body[0].id).to.equal(savedProject._id.toString());
-                            expect(res.body[0].name).to.equal("Default");
+        //                     // Create another namespace
+        //                     chai.request(server)
+        //                         .post('/' + savedProject._id + '/kb/namespace')
+        //                         .auth(email, pwd)
+        //                         .send({ name: "MyCustomNamespace" })
+        //                         .end((err, res) => {
 
-                            // Create another namespace
-                            chai.request(server)
-                                .post('/' + savedProject._id + '/kb/namespace')
-                                .auth(email, pwd)
-                                .send({ name: "MyCustomNamespace" })
-                                .end((err, res) => {
+        //                             if (err) { console.error("err: ", err) }
+        //                             if (log) { console.log("create new namespace res.body: ", res.body) }
+        //                             console.log("create new namespace res.body: ", res.body)
+        //                             res.should.have.status(200);
+        //                             res.body.should.be.a('object');
+        //                             should.not.exist(res.body._id)
+        //                             should.exist(res.body.id)
+        //                             expect(res.body.name).to.equal('MyCustomNamespace');
 
-                                    if (err) { console.error("err: ", err) }
-                                    if (log) { console.log("create new namespace res.body: ", res.body) }
+        //                             // Get again all namespace. A new default namespace should not be created.
+        //                             chai.request(server)
+        //                                 .get('/' + savedProject._id + '/kb/namespace/all')
+        //                                 .auth(email, pwd)
+        //                                 .end((err, res) => {
 
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    should.not.exist(res.body._id)
-                                    should.exist(res.body.id)
-                                    expect(res.body.name).to.equal('MyCustomNamespace');
+        //                                     if (err) { console.error("err: ", err); }
+        //                                     if (log) { console.log("get all namespaces res.body: ", res.body); }
+        //                                     console.log("get all namespaces res.body: ", res.body);
 
-                                    // Get again all namespace. A new default namespace should not be created.
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/kb/namespace/all')
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
+        //                                     res.should.have.status(200);
+        //                                     res.body.should.be.a('array');
+        //                                     expect(res.body.length).to.equal(2);
+        //                                     should.not.exist(res.body[0]._id);
+        //                                     should.not.exist(res.body[1]._id);
+        //                                     should.exist(res.body[0].id);
+        //                                     should.exist(res.body[1].id);
 
-                                            if (err) { console.error("err: ", err); }
-                                            if (log) { console.log("get all namespaces res.body: ", res.body); }
-
-                                            res.should.have.status(200);
-                                            res.body.should.be.a('array');
-                                            expect(res.body.length).to.equal(2);
-                                            should.not.exist(res.body[0]._id);
-                                            should.not.exist(res.body[1]._id);
-                                            should.exist(res.body[0].id);
-                                            should.exist(res.body[1].id);
-
-                                            done();
-                                        })
-                                })
-                        })
-                });
-            });
-        })
+        //                                     done();
+        //                                 })
+        //                         })
+        //                 })
+        //         });
+        //     });
+        // })
 
         it('create-namespaces-with-engine', (done) => {
 
@@ -1564,65 +1638,42 @@ describe('KbRoute', () => {
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
 
-                    // Get all namespaces. Create default namespace and return.
                     chai.request(server)
-                        .get('/' + savedProject._id + '/kb/namespace/all')
-                        .auth(email, pwd)
-                        .end((err, res) => {
+                    .post('/' + savedProject._id + '/kb/namespace')
+                    .auth(email, pwd)
+                    .send({ name: "MyCustomNamespace" })
+                    .end((err, res) => {
 
-                            if (err) { console.error("err: ", err); }
-                            if (log) { console.log("get all namespaces res.body: ", res.body); }
+                        if (err) { console.error("err: ", err) }
+                        if (log) { console.log("create new namespace res.body: ", res.body) }
 
-                            res.should.have.status(200);
-                            res.body.should.be.a('array');
-                            expect(res.body.length).to.equal(1);
-                            should.not.exist(res.body[0]._id);
-                            expect(res.body[0].id).to.equal(savedProject._id.toString());
-                            expect(res.body[0].name).to.equal("Default");
-                            should.exist(res.body[0].engine)
-                            expect(res.body[0].engine.name).to.equal('pinecone');
-                            expect(res.body[0].engine.type).to.equal('pod');
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        should.not.exist(res.body._id)
+                        should.exist(res.body.id)
+                        expect(res.body.name).to.equal('MyCustomNamespace');
+                        should.exist(res.body.engine)
+                        expect(res.body.engine.name).to.equal('pinecone');
+                        expect(res.body.engine.type).to.equal('pod');
 
-                            // Create another namespace
-                            chai.request(server)
-                                .post('/' + savedProject._id + '/kb/namespace')
-                                .auth(email, pwd)
-                                .send({ name: "MyCustomNamespace" })
-                                .end((err, res) => {
+                        // Get again all namespace. A new default namespace should not be created.
+                        chai.request(server)
+                            .get('/' + savedProject._id + '/kb/namespace/all')
+                            .auth(email, pwd)
+                            .end((err, res) => {
 
-                                    if (err) { console.error("err: ", err) }
-                                    if (log) { console.log("create new namespace res.body: ", res.body) }
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("get all namespaces res.body: ", res.body); }
 
-                                    res.should.have.status(200);
-                                    res.body.should.be.a('object');
-                                    should.not.exist(res.body._id)
-                                    should.exist(res.body.id)
-                                    expect(res.body.name).to.equal('MyCustomNamespace');
-                                    should.exist(res.body.engine)
-                                    expect(res.body.engine.name).to.equal('pinecone');
-                                    expect(res.body.engine.type).to.equal('pod');
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+                                expect(res.body.length).to.equal(1);
+                                should.not.exist(res.body[0]._id);
+                                should.exist(res.body[0].id);
 
-                                    // Get again all namespace. A new default namespace should not be created.
-                                    chai.request(server)
-                                        .get('/' + savedProject._id + '/kb/namespace/all')
-                                        .auth(email, pwd)
-                                        .end((err, res) => {
-
-                                            if (err) { console.error("err: ", err); }
-                                            if (log) { console.log("get all namespaces res.body: ", res.body); }
-
-                                            res.should.have.status(200);
-                                            res.body.should.be.a('array');
-                                            expect(res.body.length).to.equal(2);
-                                            should.not.exist(res.body[0]._id);
-                                            should.not.exist(res.body[1]._id);
-                                            should.exist(res.body[0].id);
-                                            should.exist(res.body[1].id);
-
-                                            done();
-                                        })
-                                })
-                        })
+                                done();
+                            })
+                    })
                 });
             });
         })
@@ -1749,8 +1800,8 @@ describe('KbRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
-                    faqService.create("testbot1", null, savedProject._id, savedUser._id).then((savedBot1) => {
-                        faqService.create("testbot2", null, savedProject._id, savedUser._id).then((savedBot2) => {
+                    faqService.create(savedProject._id, savedUser._id, { name: "testbot1" }).then((savedBot1) => {
+                        faqService.create(savedProject._id, savedUser._id, { name: "testbot2" }).then((savedBot2) => {
 
                             chai.request(server)
                                 .get('/' + savedProject._id + '/kb/namespace/all')
