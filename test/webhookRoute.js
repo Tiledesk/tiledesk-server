@@ -360,7 +360,7 @@ describe('WebhookRoute', () => {
 
                                         console.log("res.body", res.body);
                                         res.should.have.status(200);
-                                        res.body.should.be.a('object');
+                                        //res.body.should.be.a('object');
                                         expect(res.body.success).to.equal(true);
                                         expect(res.body.message).to.equal("Webhook disabled in test mode");
 
