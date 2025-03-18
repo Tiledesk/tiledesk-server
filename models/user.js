@@ -65,6 +65,13 @@ var UserSchema = new Schema({
     public_website: {
         type: String,
         required: false
+    },
+    phone: {
+        type: String,
+        required: false,
+        unique: true,
+        trim: true,
+        match: [/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format'], // E.164 format
     }
     // authType: { // update db old data
     //     type: String,

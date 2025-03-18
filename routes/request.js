@@ -23,7 +23,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 var Project_user = require("../models/project_user");
 var Lead = require("../models/lead");
 var UIDGenerator = require("../utils/UIDGenerator");
-let JobManager = require("@tiledesk/tiledesk-multi-worker");
+let { Publisher } = require("@tiledesk/tiledesk-multi-worker");
 
 csv = require('csv-express');
 csv.separator = ';';
@@ -39,7 +39,7 @@ const faq_kb = require('../models/faq_kb');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 
-let jobManager = new JobManager(AMQP_MANAGER_URL, {
+let jobManager = new Publisher(AMQP_MANAGER_URL, {
   debug: false,
   queueName: "conversation-tags_queue",
   exchange: "tiledesk-multi",
@@ -53,7 +53,6 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
-
 
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
@@ -454,7 +453,7 @@ router.put('/:requestid/replace', async (req, res) => {
   }
 
   if (name) {
-    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name }).catch((err) => {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name, trashed: false }).catch((err) => {
       winston.error("Error finding bot ", err);
       return res.status(500).send({ success: false, error: "An error occurred getting chatbot with name " + name })
     })
@@ -464,7 +463,7 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
-    winston.info("Chatbot found: ", id);
+    winston.verbose("Chatbot found: ", id);
   }
 
   if (slug) {
@@ -478,15 +477,15 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
-    winston.info("Chatbot found: ", id);
+    winston.verbose("Chatbot found: " + id);
   }
 
   let participants = [];
   participants.push(id);
-  winston.info("participants to be set: ", participants);
+  winston.verbose("participants to be set: ", participants);
 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
-    winston.info("SetParticipant response: ", updatedRequest);
+    winston.debug("SetParticipant response: ", updatedRequest);
     res.status(200).send(updatedRequest);
   }).catch((err) => {
     winston.error("Error setting participants ", err);
@@ -2104,14 +2103,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
