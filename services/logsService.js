@@ -8,8 +8,9 @@ class LogsService {
     async getLastRows(request_id, limit, logLevel) {
         let level = logLevel || default_log_level;
         return FlowLogs.aggregate([
-            { $match: { request_id: request_id, "rows.level": level } },
+            { $match: { request_id: request_id } },
             { $unwind: "$rows" },
+            { $match: { "rows.level": level } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -18,9 +19,9 @@ class LogsService {
     async getOlderRows(request_id, limit, logLevel, timestamp) {
         let level = logLevel || default_log_level;
         return FlowLogs.aggregate([
-            { $match: { request_id: request_id, "rows.level": level } },
+            { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.timestamp": { $lt: timestamp } } },
+            { $match: { "rows.level": level, "rows.timestamp": { $lt: timestamp } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -29,9 +30,9 @@ class LogsService {
     async getNewerRows(request_id, limit, logLevel, timestamp) {
         let level = logLevel || default_log_level;
         return FlowLogs.aggregate([
-            { $match: { request_id: request_id, "rows.level": level } },
+            { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.timestamp": { $gt: timestamp } } },
+            { $match: { "rows.level": level, "rows.timestamp": { $gt: timestamp } } },
             { $sort: { "rows.timestamp": 1, "rows._id": 1 } },
             { $limit: limit }
         ])
