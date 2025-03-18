@@ -29,7 +29,7 @@ describe('FaqService()', function () {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
-        faqService.create("testbot", null, savedProject._id, savedUser._id).then(function (savedBot) {
+        faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
           var newFaq = new Faq({
             id_faq_kb: savedBot._id,
@@ -85,7 +85,7 @@ describe('FaqService()', function () {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
-        faqService.create("testbot", null, savedProject._id, savedUser._id).then(function (savedBot) {
+        faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
           var newFaq = new Faq({
             id_faq_kb: savedBot._id,
@@ -141,7 +141,7 @@ describe('FaqService()', function () {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       projectService.create("test-FaqService", savedUser._id).then(function (savedProject) {
-        faqService.create("testbot", null, savedProject._id, savedUser._id).then(function (savedBot) {
+        faqService.create(savedProject._id, savedUser._id, { name: "testbot" }).then(function (savedBot) {
 
           var newFaq0 = new Faq({
             id_faq_kb: savedBot._id,

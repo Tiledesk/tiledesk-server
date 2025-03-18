@@ -49,7 +49,7 @@ describe('UserService()', function () {
             projectService.createAndReturnProjectAndProjectUser("createWithId", savedUser.id).then(function (savedProjectAndPU) {
                 var savedProject = savedProjectAndPU.project;
 
-                faqService.create("testbot", null, savedProject._id, savedUser._id, "tilebot", chatbotTypes.CHATBOT, null, null, null, "en", "blank").then(async function (savedFaq_kb) {
+                faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "tilebot", subtype: chatbotTypes.CHATBOT, language: "en", template: "blank" }).then(async function (savedFaq_kb) {
 
                     var signOptions = {
                         issuer: 'https://tiledesk.com',

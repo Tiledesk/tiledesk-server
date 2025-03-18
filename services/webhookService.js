@@ -37,7 +37,7 @@ class WebhookService {
             payload.token = token;
 
             if (process.env.NODE_ENV === 'test') {
-                resolve(true);
+                resolve({ success: true, message: "Webhook disabled in test mode" });
             }
 
             await httpUtil.post(url, payload).then((response) => {
