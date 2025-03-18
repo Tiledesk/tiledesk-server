@@ -89,7 +89,7 @@ router.post('/whatsapp', async (req, res) => {
 router.get('/flows/:request_id', async (req, res) => {
 
     let request_id = req.params.request_id;
-    const { timestamp, direction } = req.query;
+    const { timestamp, direction, logLevel } = req.query;
 
     if (!request_id) {
         return res.status(400).send({ success: false, error: "Missing required parameter 'request_id'." });
@@ -98,12 +98,12 @@ router.get('/flows/:request_id', async (req, res) => {
     let method;
 
     if (!timestamp) {
-        method = logsService.getLastRows(request_id, 20);
+        method = logsService.getLastRows(request_id, 20, logLevel);
     } else if (direction === 'prev') {
         logsService.get
-        method = logsService.getOlderRows(request_id, 10, new Date(timestamp));
+        method = logsService.getOlderRows(request_id, 10, logLevel, new Date(timestamp));
     } else if (direction === 'next') {
-        method = logsService.getNewerRows(request_id, 10, new Date(timestamp))
+        method = logsService.getNewerRows(request_id, 10, logLevel, new Date(timestamp))
     } else {
         return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."})
     }
