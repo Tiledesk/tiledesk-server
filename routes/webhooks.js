@@ -157,6 +157,39 @@ router.put("/:chatbot_id", async (req, res) => {
   res.status(200).send(updatedWebhook);
 })
 
+router.put('/update/:webhook_id', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+
+  let update = {};
+
+  if (req.body.hasOwnProperty("async")) {
+    update.async = req.body.async;
+  }
+
+  if (req.body.hasOwnProperty("copilot")) {
+    update.copilot = req.body.copilot;
+  }
+
+  if (req.body.hasOwnProperty('enabled')) {
+    update.enabled = req.body.enabled;
+  }
+
+  let updatedWebhook = await Webhook.findOneAndUpdate({ id_project: id_project, webhook_id: webhook_id }, update, { new: true }).catch((err) => {
+    winston.error("Error updating webhook ", err);
+    return res.status(500).send({ success: false, error: "Error updating webhook for chatbot " + chatbot_id });
+  })
+
+  if (!updatedWebhook) {
+    winston.verbose("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  res.status(200).send(updatedWebhook);
+
+})
+
 router.delete("/:chatbot_id", async (req, res) => {
 
   let id_project = req.projectid;
@@ -168,6 +201,19 @@ router.delete("/:chatbot_id", async (req, res) => {
   })
 
   res.status(200).send({ success: true, message: "Webhook for chatbot " + chatbot_id +  " deleted successfully" });
+})
+
+router.delete("/delete/:webhook_id", async (req, res) => {
+
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+
+  await Webhook.deleteOne({ id_project: id_project, webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error deleting webhook ", err);
+    return res.status(500).send({ success: false, error: "Error deleting webhook with id " + webhook_id });
+  })
+
+  res.status(200).send({ success: true, message: "Webhook " + webhook_id +  " deleted successfully" });
 })
 
 

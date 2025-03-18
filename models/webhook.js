@@ -45,6 +45,7 @@ const WebhookSchema = mongoose.Schema({
 
 // Indexes
 WebhookSchema.index({ id_project: 1, chatbot_id: 1}, { unique: true })
+WebhookSchema.index({ id_project: 1, webhook_id: 1}, { unique: true })
 
 // Middlewares
 WebhookSchema.pre("save", async function (next) {
