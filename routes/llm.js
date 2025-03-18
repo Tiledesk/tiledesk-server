@@ -3,6 +3,8 @@ var router = express.Router();
 var winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
+const axios = require("axios").default;
+const path = require("path");
 const multer = require('multer');
 const fileUtils = require('../utils/fileUtils');
 

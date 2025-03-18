@@ -3,6 +3,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 const { MessageLog } = require('../models/whatsappLog');
 const { Transaction } = require('../models/transaction');
+const logsService = require('../services/logsService');
 
 
 
@@ -51,7 +52,7 @@ router.get('/whatsapp/:transaction_id', async (req, res) => {
 
         winston.verbose("Logs found: ", logs);
 
-        let clearLogs = logs.map(({_id, __v, ...keepAttrs}) => keepAttrs)
+        let clearLogs = logs.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
         winston.verbose("clearLogs: ", clearLogs)
 
         res.status(200).send(clearLogs);
@@ -82,6 +83,37 @@ router.post('/whatsapp', async (req, res) => {
         winston.info("savedLog: ", savedLog);
         res.status(200).send(savedLog);
     })
+})
+
+
+router.get('/flows/:request_id', async (req, res) => {
+
+    let request_id = req.params.request_id;
+    const { timestamp, direction, logLevel } = req.query;
+
+    if (!request_id) {
+        return res.status(400).send({ success: false, error: "Missing required parameter 'request_id'." });
+    }
+
+    let method;
+
+    if (!timestamp) {
+        method = logsService.getLastRows(request_id, 20, logLevel);
+    } else if (direction === 'prev') {
+        logsService.get
+        method = logsService.getOlderRows(request_id, 10, logLevel, new Date(timestamp));
+    } else if (direction === 'next') {
+        method = logsService.getNewerRows(request_id, 10, logLevel, new Date(timestamp))
+    } else {
+        return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."})
+    }
+
+    method.then((logs) => {
+        res.status(200).send(logs);
+    }).catch((err) => {
+        res.status(500).send({ success: false, error: "Error fetching logs: " + err.message });
+    })
+
 })
 
 
