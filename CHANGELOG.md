@@ -7,6 +7,8 @@
 
 # 2.10.71
 - Updated tybot-connector to 2.0.0
+- Bug fix: chatbot loosing slug after import/fork
+- Added: white labelling on messages template (transcript)
 
 # 2.10.69
 - Updated tiledesk-apps to 1.0.28
