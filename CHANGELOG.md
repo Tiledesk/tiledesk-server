@@ -5,7 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.70
+# 2.10.71
+- Updated tybot-connector to 2.0.2
+- Bug fix: chatbot loosing slug after import/fork
+- Added: white labelling on messages template (transcript)
+
+# 2.10.70 /* aborted */
 - Updated tybot-connector to 2.0.0
 - Bug fix: chatbot loosing slug after import/fork
 - Added: white labelling on messages template (transcript)
