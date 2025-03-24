@@ -647,8 +647,10 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     }
   }
 
+  console.log("(fork) chatbot: ", chatbot);
   chatbot.template = "empty";
   delete chatbot.modified;
+  console.log("(fork) chatbot with template: ", chatbot);
 
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
