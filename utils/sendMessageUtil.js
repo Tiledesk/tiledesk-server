@@ -11,7 +11,7 @@ var cacheEnabler = require("../services/cacheEnabler");
 class SendMessageUtil {
 
 async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes) {
-  winston.info("SendMessageUtil send") 
+  winston.debug("SendMessageUtil send") 
 
     // async send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         winston.debug("here0") 
@@ -36,9 +36,15 @@ async send(sender, senderFullname, recipient, text, id_project, createdBy, attri
             senderFullname = bot.name;           
         } else {
             winston.debug("user id: "+sender);
-            var user = await User.findById(sender)                                //TODO user_cache_here
-              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+sender)     //user_cache
-              .exec()   
+
+            // cache_next ?
+            var q = User.findById(sender); //TODO user_cache_here just_to_take_fullname
+            if (cacheEnabler.user) {
+              q.cache(cacheUtil.defaultTTL,  "users:id:"+sender) 
+              winston.debug('user cache enabled for websocket');
+            }                                                         
+            //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+sender)
+            var user = await q.exec()   
             winston.debug("user", user);        
             senderFullname = user.fullName;
         }

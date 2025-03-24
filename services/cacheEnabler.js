@@ -62,10 +62,10 @@ class CacheEnabler {
             this.label = false;
         }
 
-        // this.user = true; //user_cache_here
-        // if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
-        //     this.user = false;
-        // }
+        this.user = true; //user_cache_here
+        if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
+            this.user = false;
+        }
 
         // this.message = true;
         // if (process.env.CACHE_MESSAGE_ENABLED=="false" || process.env.CACHE_MESSAGE_ENABLED==false) {
