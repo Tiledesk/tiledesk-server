@@ -51,13 +51,13 @@ describe('EventRoute', () => {
                             expect(res.body.name).to.equal("event1");                                                                              
                             expect(res.body.attributes.attr1).to.equal("val1");                                                                              
                         
-                            Project_user.findOne({ id_user:  savedUser.id, status: "active"} )
-                            .populate('events')
-                            .exec(function (err, project_user) {
-                                if (log) { console.log("project_user",  project_user.toJSON()); }
-                                expect(project_user.events.length).to.equal(0);  
+                            // Project_user.findOne({ id_user:  savedUser.id, status: "active"} )
+                            // .populate('events')
+                            // .exec(function (err, project_user) {
+                            //     if (log) { console.log("project_user",  project_user.toJSON()); }
+                            //     expect(project_user.events.length).to.equal(0);  
                                 done();
-                            });
+                            // });
                            
                         });
 

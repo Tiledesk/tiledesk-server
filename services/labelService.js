@@ -6,6 +6,7 @@ var labelsDir = __dirname+"/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
 var cacheUtil = require('../utils/cacheUtil');
 var cacheManager = require('../utils/cacheManager');
+var cacheEnabler = require('../services/cacheEnabler');
 
 class LabelService {
     
@@ -60,26 +61,85 @@ async get(id_project, language, key) {
     }
         
  }
+ async getAll(id_project) {
+    winston.debug("cacheEnabler.label: "+cacheEnabler.label);
+    // console.log("cacheEnabler.label: "+cacheEnabler.label);
+
+    if (cacheEnabler.label==true) {
+        let res =  await this.getAll_Cached(id_project);
+        // console.log("getAll res cache ", JSON.stringify(res));
+        return res;
+    } else {
+        let res =  await this.getAll_NoCache(id_project);
+        // console.log("getAll res no cache", JSON.stringify(res));
+        return res;
+    }
+ }
+
+ getAll_NoCache(id_project) {
+    var that = this;
+    return new Promise(function (resolve, reject) {
+        
+        // return that.fetchPivotDefault().then(function(def) {
 
 
-getAll(id_project) {
+                var query = {"id_project": id_project};
+                    
+                winston.debug("query /", query);
+
+
+                return Label.findOne(query).lean()
+                //@DISABLED_CACHE .cache(cacheUtil.longTTL, id_project+":labels:query:all")  //label_cache
+                .exec(function (err, labels) {
+                    if (err) {
+                        winston.error('Label ROUTE - REQUEST FIND ERR ', err)
+                        return reject({ msg: 'Error getting object.' });
+                    }
+
+                    winston.debug("here /", labels);
+                    let returnval;
+                    // if (labels) {
+                        returnval = labels;
+                    // }                    
+                    winston.debug("getAll returnval",returnval);
+                
+                    return resolve(returnval);
+                    
+                });
+
+        });
+    // });
+}
+
+getAll_Cached(id_project) {
     var that = this;
     return new Promise(async function (resolve, reject) {
         
         // return that.fetchPivotDefault().then(function(def) {
 
                 var cacheClient = cacheManager.getClient();
-                var cacheKey = id_project+":labels";
+                winston.debug("cacheClient:",cacheClient);
 
+                if (cacheClient==undefined) {
+                    winston.error("Error reading getAll_Cached from cache. cacheClient is undefined",cacheClient);
+                    return reject("Error reading getAll_Cached from cache. cacheClient is undefined");
+                }
+                var cacheKey = "cacheman:cachegoose-cache:"+id_project+":labels";
+                winston.debug("cacheKey:"+ cacheKey);
+
+                try {
+                    
                 const value = await cacheClient.get(cacheKey);
                 winston.debug("getAll value", value);
+                // console.log("getAll value", value);
+
             
                 if (value) {
                     if (value == "empty") {
-                        winston.debug("getAll value return false");
+                        winston.debug("getAll empty value so i return false");
                         return resolve(null);
                     } else {
-                        winston.debug("getAll value return true");
+                        winston.debug("getAll value is not empty return value");
                         return resolve(value);
                     }
             
@@ -107,17 +167,19 @@ getAll(id_project) {
                     
 
 
-                        if (!label) {
-                            cacheClient.set(cacheKey, label, cacheUtil.longTTL, (err, reply) => {
-                                winston.debug("Created cache for label",{err:err});
+                        if (label!=undefined) {
+                            // await this.tdCache.set(nKey, 'true', { EX: 2592000 }); //seconds in one month = 2592000
+                            // this is a TDCache instance and not a Native Redis client
+                            cacheClient.set(cacheKey, label, { EX:  cacheUtil.longTTL, callback: function() {
+                                winston.verbose("Created cache for label",{err:err});
                                 winston.debug("Created cache for label reply:"+reply);
-                            });
+                            }});
                             
                         } else {
-                            cacheClient.set(cacheKey, "empty", cacheUtil.longTTL, (err, reply) => {
-                                winston.debug("Created empty cache for label",{err:err});
-                                winston.debug("Created empty cache for label reply:"+reply);
-                            });
+                            cacheClient.set(cacheKey, "empty", { EX:  cacheUtil.longTTL, callback: function() {
+                                winston.verbose("Created empty cache for label",{err:err});
+                                winston.debug("Created empty cache for label reply:"+reply);                                                    
+                            }});
                         }
 
                         return resolve(label);
@@ -126,6 +188,11 @@ getAll(id_project) {
 
                     
                 }
+
+            } catch (e) {
+                // console.log(e);
+                winston.error("Error getting from cache the label", e);
+            }
 
         });
     // });

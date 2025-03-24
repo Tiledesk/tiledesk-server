@@ -58,11 +58,11 @@ class CacheEnabler {
         }
 
         this.label = true;
-        if (process.env.CACHE_LABEL_ENABLED=="false" || process.env.CACHE_LABEL_ENABLED==false) {
+       if (process.env.CACHE_LABEL_ENABLED=="false" || process.env.CACHE_LABEL_ENABLED==false) {
             this.label = false;
         }
 
-        // this.user = true;
+        // this.user = true; //user_cache_here
         // if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
         //     this.user = false;
         // }
