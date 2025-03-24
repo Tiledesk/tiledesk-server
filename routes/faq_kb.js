@@ -843,6 +843,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     if (json.intents) {
       await json.intents.forEach( async (intent) => {
 
+        console.log("*** original intent id: ", intent.intent_id)
         let new_faq = {
           id_faq_kb: updatedChatbot._id,
           id_project: req.projectid,
@@ -860,6 +861,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           attributes: intent.attributes
         }
 
+        console.log("*** new intent id: ", new_faq.intent_id)
         // *******************************
         // **** OVERWRITE TRUE option ****
         // *******************************
@@ -894,7 +896,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           })
 
           if (faq) {
-            winston.verbose("new intent created")
+            winston.debug("new intent created: ", faq)
             faqBotEvent.emit('faq.create', faq);
           }
         }
