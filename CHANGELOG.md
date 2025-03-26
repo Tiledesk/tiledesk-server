@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.77
+- Updated whatsapp-jobworker to 0.0.12
+- Fix logs and log levels
+
 # 2.10.76
 - Added support for ollama in llm preview
 
