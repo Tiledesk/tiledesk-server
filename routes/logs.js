@@ -85,63 +85,6 @@ router.post('/whatsapp', async (req, res) => {
     })
 })
 
-// IN DEVELOPMENT
-router.get('/flows/auth/:request_id', async (req, res) => {
-
-    const scope = [
-        `rabbitmq.read:*/*/apps.${appid}.logs.${requestid}.*`,
-    ]
-
-    const now = Math.round(new Date().getTime()/1000);
-        // console.log("now: ", now)
-        const exp = now + 60 * 60 * 24 * 30;
-
-        var payload = {
-            "jti": uuidv4(),
-            "sub": user._id,
-            scope: scope,
-            "client_id": user._id, //"rabbit_client", SEMBRA SIA QUESTO LO USER-ID
-            "cid": user._id, //"rabbit_client",
-            "azp": user._id, //"rabbit_client",
-            // "grant_type": "password", //"password", // client_credentials // REMOVED 2
-            "user_id": user._id,
-            "app_id": appid,
-            // "origin": "uaa", // REMOVED 2
-            // "user_name": user._id, // REMOVED 2
-            // "email": user.email,
-            // "auth_time": now, // REMOVED 2
-            // "rev_sig": "d5cf8503",
-            "iat": now,
-            "exp": exp, // IF REMOVED TOKEN NEVER EXPIRES?
-            // "iss": "http://localhost:8080/uaa/oauth/token", // REMOVED 2
-            // "zid": "uaa", // REMOVED 2
-            "aud": [
-                "rabbitmq",
-                user._id
-            ],
-            // "jku": "https://localhost:8080/uaa/token_keys", // REMOVED 2
-            "kid": "tiledesk-key", //"legacy-token-key",
-            "tiledesk_api_roles": "user"
-        }
-        winston.debug("payload:\n", payload)
-        var token = jwt.sign(
-            payload,
-            jwtSecret,
-            {
-                "algorithm": "HS256"
-            }
-        );
-        const result = {
-            userid: user._id,
-            fullname: user.fullName,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            token: token
-        }
-        return res.status(200).send(result);   
-
-}) 
-
 
 router.get('/flows/:request_id', async (req, res) => {
 
