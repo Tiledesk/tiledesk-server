@@ -5,7 +5,7 @@ const { MessageLog } = require('../models/whatsappLog');
 const { Transaction } = require('../models/transaction');
 const logsService = require('../services/logsService');
 
-
+const jwtSecret = process.env.CHAT21_JWT_SECRET || "tokenKey";
 
 router.get('/', function (req, res, next) {
     winston.info("logs", req.body);
@@ -33,7 +33,6 @@ router.get('/whatsapp', async (req, res) => {
         res.status(200).send(transactions);
     })
 
-    // res.stats(200).send({ success: true });
 })
 
 
@@ -117,10 +116,52 @@ router.get('/flows/:request_id', async (req, res) => {
 })
 
 
+router.get('/flows/auth/:request_id', async (req, res) => {
 
+    const request_id = req.params.request_id;
+    const appid = "tilechat";
 
+    const scope = [
+        `rabbitmq.read:*/*/apps.${appid}.logs.${request_id}.*`,
+    ]
 
+    const now = Math.round(new Date().getTime() / 1000);
+    const exp = now + 60 * 60 * 24 * 30;
 
+    var payload = {
+        "jti": uuidv4(),
+        "sub": request_id,
+        scope: scope,
+        "client_id": request_id,
+        "cid": request_id,
+        "azp": request_id,
+        "user_id": request_id,
+        "app_id": appid,
+        "iat": now,
+        "exp": exp,
+        "aud": [
+            "rabbitmq",
+            request_id
+        ],
+        "kid": "tiledesk-key",
+    }
+
+    var token = jwt.sign(
+        payload,
+        jwtSecret,
+        {
+            "algorithm": "HS256"
+        }
+    );
+
+    const result = {
+        request_id: request_id,
+        token: token
+    }
+
+    return res.status(200).send(result);
+
+}) 
 
 
 module.exports = router;
