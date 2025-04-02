@@ -2,29 +2,61 @@
 'use strict';
 
 var request = require('retry-request', {
-    request: require('request')
-  });
+  request: require('request')
+});
+const axios = require("axios").default;
+
+let defaultHeaders = {
+  'Content-Type': 'application/json'
+}
 
 
 class HttpUtil {
 
-     call(url, headers, json, method) {
-        return new Promise(function (resolve, reject) {
-            request({
-                url: url,
-                headers: headers,
-                json: json,
-                method: method
-            }, function(err, result, json){            
-                //console.log("SENT notify for bot with url " + url +  " with err " + err);
-                if (err) {
-                    //console.log("Error sending notify for bot with url " + url + " with err " + err);
-                    return reject(err);
-                }
-                return resolve(json);
-            });
-        });
-    }
+  call(url, headers, json, method) {
+    return new Promise(function (resolve, reject) {
+      request({
+        url: url,
+        headers: headers,
+        json: json,
+        method: method
+      }, function (err, result, json) {
+        //console.log("SENT notify for bot with url " + url +  " with err " + err);
+        if (err) {
+          //console.log("Error sending notify for bot with url " + url + " with err " + err);
+          return reject(err);
+        }
+        return resolve(json);
+      });
+    });
+  }
+
+  async post(url, payload, customHeaders, auth) {
+
+    return new Promise((resolve, reject) => {
+
+      let headers = customHeaders ? customHeaders : defaultHeaders;
+      if (auth) headers.Authorization = auth;
+
+      axios({
+        url: url,
+        headers: {
+          ...headers
+        },
+        data: payload,
+        method: 'POST'
+      }).then((resbody) => {
+        resolve(resbody);
+      }).catch((err) => {
+        if (err.response) {
+          reject(err.response);
+        } else {
+          reject(err);
+        }
+      })
+
+    })
+  }
 }
 
 
