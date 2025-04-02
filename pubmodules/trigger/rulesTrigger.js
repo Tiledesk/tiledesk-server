@@ -33,7 +33,10 @@ const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
 
 const port = process.env.PORT || '3000';
-const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+if (process.env.TILEBOT_ENDPOINT) {
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+}
 winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class RulesTrigger {
@@ -473,6 +476,8 @@ class RulesTrigger {
             var id_project = eventTrigger.event.id_project;
             winston.debug('runAction action id_project: ' + id_project);
 
+            winston.info('triggerEventEmitter.on(request.department.route)');
+
             // route(request_id, departmentid, id_project, nobot) {
             requestService.route(request_id, departmentid, id_project).catch((err) => {
               winston.error("Error runAction route: ", err);
@@ -511,6 +516,9 @@ class RulesTrigger {
               var id_project = eventTrigger.event.id_project;
               winston.debug('runAction action id_project: ' + id_project);
   
+              winston.info('triggerEventEmitter.on(request.department.route.self)');
+
+
               // reroute(request_id, id_project, nobot) {
               requestService.reroute(request_id, id_project).catch((err) => {
                 winston.error("Error runAction on reroute", err);
@@ -722,9 +730,10 @@ class RulesTrigger {
               }
               winston.debug('runAction action startText: ' + startText);
 
+              winston.info('triggerEventEmitter.on(request.department.bot.launch)');
 
-              // reroute(request_id, id_project, nobot) {
-              requestService.reroute(request_id, id_project).then(function(request) {
+              // reroute(request_id, id_project, nobot, no_populate)
+              requestService.reroute(request_id, id_project, false, true).then(function(request) {
 
                 winston.verbose('request.department.bot.launch action reroute request_id: ' + request_id);
 

@@ -91,6 +91,9 @@ let tdCache = new TdCache({
 
 tdCache.connect();
 
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
+
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
 var auth = require('./routes/auth');
@@ -122,6 +125,7 @@ var key = require('./routes/key');
 var widgets = require('./routes/widget');
 var widgetsLoader = require('./routes/widgetLoader');
 var openai = require('./routes/openai');
+var llm = require('./routes/llm');
 var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
@@ -143,6 +147,8 @@ var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
+var webhooks = require('./routes/webhooks');
+var copilot = require('./routes/copilot');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -198,11 +204,6 @@ jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled
 let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
-
-// let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
-// winston.info("trainingQueue");
-// jobsManager.listenTrainingQueue(trainingQueue);
-
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -557,8 +558,8 @@ app.use('/:projectid/tags', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/subscriptions', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], resthook);
 
 //deprecated
-app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq);
-app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], faq);
+app.use('/:projectid/faq', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
+app.use('/:projectid/intents', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], faq);
 
 //Deprecated??
 app.use('/:projectid/faqpub', faqpub);
@@ -605,7 +606,7 @@ app.use('/:projectid/emails',[passport.authenticate(['basic', 'jwt'], { session:
 app.use('/:projectid/properties',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], property);
 app.use('/:projectid/segments',[passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], segment);
 
-// app.use('/:projectid/openai', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent')], openai);
+app.use('/:projectid/llm', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], llm);
 app.use('/:projectid/openai', openai);
 app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], quotes)
 
@@ -616,7 +617,8 @@ app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: fa
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
-
+app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
+app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 
 
 if (pubModulesManager) {
@@ -660,11 +662,17 @@ app.use((err, req, res, next) => {
 
   winston.debug("err.name", err.name)
   if (err.name === "IpDeniedError") {
-    winston.info("IpDeniedError");
+    winston.debug("IpDeniedError");
     return res.status(401).json({ err: "error ip filter" });
+  }
+
+  //emitted by multer when the file is too big
+  if (err.code === "LIMIT_FILE_SIZE") {
+    winston.debug("LIMIT_FILE_SIZE");
+    return res.status(413).json({ err: "Content Too Large", limit_file_size: process.env.MAX_UPLOAD_FILE_SIZE });
   } 
 
-  winston.error("General error", err);
+  winston.error("General error:: ", err);
   return res.status(500).json({ err: "error" });
 });
 
