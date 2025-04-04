@@ -53,17 +53,9 @@ class FaqService {
 
           if (data.subtype) {
             if (data.subtype === chatbotTypes.WEBHOOK) {
-              if (data.template) {
-                template = data.template;
-              } else {
-                template = "blank_webhook"
-              }
+              template = "blank_webhook"
             } else if (data.subtype === chatbotTypes.COPILOT) {
-              if (data.template) {
-                template = data.template;
-              } else {
-                template = "blank_copilot"
-              }
+              template = "blank_copilot"
             } else if (data.subtype === chatbotTypes.CHATBOT) {
               if (data.template) {
                 template = data.template;
@@ -80,8 +72,6 @@ class FaqService {
         } else {
           winston.debug('external bot: ', savedFaq_kb);
         }
-
-
 
         return resolve(savedFaq_kb);
       });
