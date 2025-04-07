@@ -3,6 +3,8 @@ var router = express.Router();
 var winston = require('../config/winston');
 const { MessageLog } = require('../models/whatsappLog');
 const { Transaction } = require('../models/transaction');
+const { v4: uuidv4 } = require('uuid');
+const jwt = require("jsonwebtoken")
 
 
 
