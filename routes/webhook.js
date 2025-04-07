@@ -202,7 +202,8 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  webhookService.run(webhook, payload, dev).then((response) => {
+  let redis_client = req.app.get('redis_client');
+  webhookService.run(webhook, payload, dev, redis_client).then((response) => {
     return res.status(200).send(response);
   }).catch((err) => {
     let status = err.status || 500;

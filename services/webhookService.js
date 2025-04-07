@@ -13,7 +13,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class WebhookService {
 
-    async run(webhook, payload, dev) {
+    async run(webhook, payload, dev, redis_client) {
 
         return new Promise(async (resolve, reject) => {
 
@@ -34,7 +34,11 @@ class WebhookService {
             }
             if (dev) {
                 chatbot_id = webhook.chatbot_id;
-            }
+                let key = "logs:webhook:" + webhook.id_project + ":" + webhook.webhook_id;
+                let value = await redis_client.get(key);
+                let json_value = JSON.parse(value);
+                payload.request_id = json_value.request_id;
+            }   
 
             let token = await this.generateChatbotToken(chatbot);
 

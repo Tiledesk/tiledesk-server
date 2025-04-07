@@ -5,7 +5,7 @@ const { Webhook } = require('../models/webhook');
 const httpUtil = require('../utils/httpUtil');
 const { customAlphabet } = require('nanoid');
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 32);
-
+var ObjectId = require('mongoose').Types.ObjectId;
 // const port = process.env.PORT || '3000';
 // let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
 // if (process.env.TILEBOT_ENDPOINT) {
@@ -59,6 +59,19 @@ router.post('/', async (req, res) => {
     res.status(200).send(savedWebhook);
   })
 
+})
+
+router.post('/preload/:webhook_id', async (req, res) => {
+
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+  let request_id = "automation-request-" + id_project + "-" + new ObjectId();
+  let redis_client = req.app.get('redis_client');
+  let key = "logs:webhook:" + id_project + ":" + webhook_id;
+  let value = JSON.stringify({ request_id: request_id });
+  redis_client.set(key, value, { EX: 900 });
+
+  res.status(200).send({ success: true, message: "Webhook preloaded successfully", request_id: request_id });
 })
 
 // router.post('/webhook_id', async (req, res) => {
