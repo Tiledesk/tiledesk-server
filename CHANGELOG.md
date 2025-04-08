@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.79
+- Updated tybot-connector to 2.0.8
+
 # 2.10.78
 - Updated vxml-connector to 0.1.76
 - Updated vxml-connector listener
