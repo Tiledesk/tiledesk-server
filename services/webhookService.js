@@ -37,7 +37,7 @@ class WebhookService {
                 let key = "logs:webhook:" + webhook.id_project + ":" + webhook.webhook_id;
                 let value = await redis_client.get(key);
                 let json_value = JSON.parse(value);
-                payload.request_id = json_value.request_id;
+                payload.preloaded_request_id = json_value.request_id;
             }   
 
             let token = await this.generateChatbotToken(chatbot);
