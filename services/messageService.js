@@ -114,9 +114,13 @@ class MessageService {
                 if (messageToCreate.type === "file" && 
                     messageToCreate.metadata &&
                     messageToCreate.metadata.type.startsWith('audio/')) {
-                        let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src);
-                        if (audio_transcription) {
-                            messageToCreate.text = audio_transcription;
+                        try {
+                            let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src);
+                            if (audio_transcription) {
+                                messageToCreate.text = audio_transcription;
+                            }
+                        } catch(err) {
+                            winston.error("Error on getAudioTranscription: ", err);
                         }
                     }
 
@@ -298,7 +302,7 @@ class MessageService {
                     resolve("This is a mock trancripted audio")
                 }
 
-                file = await fileUtils.downloadFromUrl(audio_url);
+                let file = await fileUtils.downloadFromUrl(audio_url);
                 let key;
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
                     winston.error("Error finding integration for openai");
