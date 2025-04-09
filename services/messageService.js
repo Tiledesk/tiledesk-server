@@ -14,7 +14,6 @@ const aiService = require("./aiService");
 
 class MessageService {
 
-
     send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
     }
@@ -113,8 +112,9 @@ class MessageService {
                 winston.debug('messageToCreate', messageToCreate);
 
                 if (messageToCreate.type === "file" && 
-                    messageToCreate.metadata?.type.startsWith('audio/')) {
-                        let audio_transcription = await this.getAudioTranscription(id_project, messageToCreate.metadata.src);
+                    messageToCreate.metadata &&
+                    messageToCreate.metadata.type.startsWith('audio/')) {
+                        let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src);
                         if (audio_transcription) {
                             messageToCreate.text = audio_transcription;
                         }
@@ -196,8 +196,6 @@ class MessageService {
 
     };
 
-
-
     emitMessage(message) {
         if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
             messageEvent.emit('message.received.simple', message);
@@ -240,8 +238,6 @@ class MessageService {
         });
 
     }
-
-
 
     getTranscriptByRequestId(requestid, id_project) {
         winston.debug("requestid", requestid);
@@ -297,6 +293,11 @@ class MessageService {
     getAudioTranscription(id_project, audio_url) {
         return new Promise( async (resolve) => {
             try {
+
+                if (process.env.NODE_ENV === 'test') {
+                    resolve("This is a mock trancripted audio")
+                }
+
                 file = await fileUtils.downloadFromUrl(audio_url);
                 let key;
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
@@ -315,10 +316,6 @@ class MessageService {
                     resolve(null)
                 }
 
-                if (process.env.NODE_ENV === 'test') {
-                    resolve()
-                }
-
                 aiService.transcription(file, key).then((response) => {
                     resolve(response.data.text);
                 }).catch((err) => {
@@ -326,6 +323,7 @@ class MessageService {
                     resolve(null)
                 })
             } catch(err) {
+                winston.error("Error on audio transcription: ", err)
                 resolve(null);
             }
         })
