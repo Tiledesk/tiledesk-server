@@ -8,6 +8,9 @@ const messagePromiseEvent = require('../event/messagePromiseEvent');
 var winston = require('../config/winston');
 var cacheUtil = require("../utils/cacheUtil");
 var cacheEnabler = require("../services/cacheEnabler");
+const fileUtils = require("../utils/fileUtils");
+const Integration = require("../models/integrations");
+const aiService = require("./aiService");
 
 class MessageService {
 
@@ -92,7 +95,7 @@ class MessageService {
 
 
 
-            messagePromiseEvent.emit('message.create.simple.before', { beforeMessage: beforeMessage }).then(results => {
+            messagePromiseEvent.emit('message.create.simple.before', { beforeMessage: beforeMessage }).then(async (results) => {
                 winston.debug('message.create.simple.before results', results);
                 winston.debug('message.create.simple.before results prototype: ' + Object.prototype.toString.call(results));
 
@@ -109,6 +112,13 @@ class MessageService {
 
                 winston.debug('messageToCreate', messageToCreate);
 
+                if (messageToCreate.type === "file" && 
+                    messageToCreate.metadata?.type.startsWith('audio/')) {
+                        let audio_transcription = await this.getAudioTranscription(id_project, messageToCreate.metadata.src);
+                        if (audio_transcription) {
+                            messageToCreate.text = audio_transcription;
+                        }
+                    }
 
                 // if (id_project) {
 
@@ -284,18 +294,40 @@ class MessageService {
         });
     }
 
+    getAudioTranscription(id_project, audio_url) {
+        return new Promise( async (resolve) => {
+            try {
+                file = await fileUtils.downloadFromUrl(audio_url);
+                let key;
+                let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
+                    winston.error("Error finding integration for openai");
+                    resolve(null);
+                })
 
+                if (!integration || !integration?.value?.apikey) {
+                    winston.verbose("Integration for openai not found or apikey is undefined.")
+                    key = process.env.GPTKEY;
+                }
 
+                if (!key) {
+                    winston.verbose("No openai key provided");
+                    resolve(null)
+                }
 
-
-
-
-
+                aiService.transcription(file, key).then((response) => {
+                    resolve(response.data.text);
+                }).catch((err) => {
+                    winston.error("Error getting audio transcription: ", err?.response?.data);
+                    resolve(null)
+                })
+            } catch(err) {
+                resolve(null);
+            }
+        })
+    }
 
 }
 
 
 var messageService = new MessageService();
-
-
 module.exports = messageService;
