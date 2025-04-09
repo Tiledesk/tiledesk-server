@@ -307,12 +307,13 @@ class MessageService {
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
                     winston.error("Error finding integration for openai");
                     resolve(null);
-
                 })
 
                 if (!integration || !integration?.value?.apikey) {
                     winston.verbose("Integration for openai not found or apikey is undefined.")
                     key = process.env.GPTKEY;
+                } else {
+                    key = integration.value.apikey
                 }
 
                 if (!key) {
