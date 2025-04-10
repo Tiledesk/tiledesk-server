@@ -52,13 +52,13 @@ class FaqService {
         if (data.type === "internal" || data.type === "tilebot") {
           if (data.subtype) {
             if (data.subtype === chatbotTypes.WEBHOOK) {
-              if (data.template) {
+              if (data.template && data.template !== 'blank') {
                 template = data.template;
               } else {
                 template = "blank_webhook"
               }
             } else if (data.subtype === chatbotTypes.COPILOT) {
-              if (data.template) {
+              if (data.template && data.template !== 'blank') {
                 template = data.template;
               } else {
                 template = "blank_copilot"
