@@ -5,6 +5,7 @@ var path = require('path');
 var labelsDir = __dirname+"/../config/labels/";
 winston.debug('labelsDir: ' + labelsDir);
 var cacheUtil = require('../utils/cacheUtil');
+var cacheManager = require('../utils/cacheManager');
 
 class LabelService {
     
@@ -63,34 +64,68 @@ async get(id_project, language, key) {
 
 getAll(id_project) {
     var that = this;
-    return new Promise(function (resolve, reject) {
+    return new Promise(async function (resolve, reject) {
         
         // return that.fetchPivotDefault().then(function(def) {
 
+                var cacheClient = cacheManager.getClient();
+                var cacheKey = id_project+":labels";
 
-                var query = {"id_project": id_project};
-                    
-                winston.debug("query /", query);
-
-
-                return Label.findOne(query).lean()
-                //@DISABLED_CACHE .cache(cacheUtil.longTTL, id_project+":labels:query:all")  //label_cache
-                .exec(function (err, labels) {
-                    if (err) {
-                        winston.error('Label ROUTE - REQUEST FIND ERR ', err)
-                        return reject({ msg: 'Error getting object.' });
+                const value = await cacheClient.get(cacheKey);
+                winston.debug("getAll value", value);
+            
+                if (value) {
+                    if (value == "empty") {
+                        winston.debug("getAll value return false");
+                        return resolve(null);
+                    } else {
+                        winston.debug("getAll value return true");
+                        return resolve(value);
                     }
+            
+                } else {
 
-                    winston.debug("here /", labels);
-                    let returnval;
-                    // if (labels) {
-                        returnval = labels;
-                    // }                    
-                    winston.debug("getAll returnval",returnval);
-                
-                    return resolve(returnval);
+                    var query = {"id_project": id_project};
                     
-                });
+                    winston.debug("query /", query);
+    
+                    // add cache
+                    var q = Label.findOne(query).lean();
+                    // if (cacheEnabler.label) { 
+                    //     // essendo che la query ritorna null la cache non funziona bene
+                    //     q.cache(cacheUtil.longTTL, cacheKey)  
+                    //     winston.info('project cache enabled for getAll');
+                    // }
+                    //@DISABLED_CACHE .cache(cacheUtil.longTTL, id_project+":labels:query:all")  //label_cache
+                    return q.exec(function (err, label) {
+                        if (err) {
+                            winston.error('Label ROUTE - REQUEST FIND ERR ', err)
+                            return reject({ msg: 'Error getting object.' });
+                        }
+                       
+                        winston.debug("getAll returnval",label);
+                    
+
+
+                        if (!label) {
+                            cacheClient.set(cacheKey, label, cacheUtil.longTTL, (err, reply) => {
+                                winston.debug("Created cache for label",{err:err});
+                                winston.debug("Created cache for label reply:"+reply);
+                            });
+                            
+                        } else {
+                            cacheClient.set(cacheKey, "empty", cacheUtil.longTTL, (err, reply) => {
+                                winston.debug("Created empty cache for label",{err:err});
+                                winston.debug("Created empty cache for label reply:"+reply);
+                            });
+                        }
+
+                        return resolve(label);
+                        
+                    });
+
+                    
+                }
 
         });
     // });
