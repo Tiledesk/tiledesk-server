@@ -1097,7 +1097,7 @@ describe('FaqKBRoute', () => {
 
                                     if (err) { console.error("err: ", err) };
                                     if (log) { console.log("res.body: ", res.body) };
-                                    console.log("res.body: ", res.body)
+
                                     res.should.have.status(200);
                                     res.body.should.be.an('array').that.is.not.empty;
                                     expect(res.body.length).to.equal(3);

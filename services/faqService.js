@@ -50,12 +50,19 @@ class FaqService {
         let template = "empty";
 
         if (data.type === "internal" || data.type === "tilebot") {
-
           if (data.subtype) {
             if (data.subtype === chatbotTypes.WEBHOOK) {
-              template = "blank_webhook"
+              if (data.template) {
+                template = data.template;
+              } else {
+                template = "blank_webhook"
+              }
             } else if (data.subtype === chatbotTypes.COPILOT) {
-              template = "blank_copilot"
+              if (data.template) {
+                template = data.template;
+              } else {
+                template = "blank_copilot"
+              }
             } else if (data.subtype === chatbotTypes.CHATBOT) {
               if (data.template) {
                 template = data.template;

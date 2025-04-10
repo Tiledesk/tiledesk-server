@@ -643,6 +643,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     }
   }
 
+  chatbot.template = "empty";
+
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
 
@@ -685,6 +687,9 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
+    if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+      json.template = 'empty';
+    }
     let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
           winston.error("Error creating new chatbot")
