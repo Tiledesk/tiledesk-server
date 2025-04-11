@@ -13,7 +13,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class WebhookService {
 
-    async run(webhook, payload) {
+    async run(webhook, payload, dev) {
 
         return new Promise(async (resolve, reject) => {
 
@@ -28,6 +28,14 @@ class WebhookService {
                 reject("Chatbot not found with id " + webhook.chatbot_id);
             }
 
+            let chatbot_id
+            if (chatbot.url) {
+                chatbot_id = chatbot.url.substr(chatbot.url.lastIndexOf("/") + 1)
+            }
+            if (dev) {
+                chatbot_id = webhook.chatbot_id;
+            }
+
             let token = await this.generateChatbotToken(chatbot);
 
             let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
@@ -38,6 +46,7 @@ class WebhookService {
 
             if (process.env.NODE_ENV === 'test') {
                 resolve({ success: true, message: "Webhook disabled in test mode" });
+                return;
             }
 
             await httpUtil.post(url, payload).then((response) => {

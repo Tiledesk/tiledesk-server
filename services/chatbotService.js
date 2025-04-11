@@ -1,15 +1,13 @@
 const axios = require("axios").default;
 const winston = require('../config/winston');
-var Faq_kb = require("../models/faq_kb");
+let Faq_kb = require("../models/faq_kb");
 
 class ChatbotService {
 
-  constructor() {
-    
-  }
+  constructor() {}
 
   async fork(id_faq_kb, api_url, token, project_id) {
-    winston.debug("[CHATBOT SERVICE] fork");
+    winston.debug("(ChatbotService) fork");
 
     return await axios({
       url: api_url + '/' + project_id + '/faq_kb/fork/'+id_faq_kb+"?projectid="+project_id+"&public=false&globals=true",
@@ -20,10 +18,10 @@ class ChatbotService {
       // data: chatbot,
       method: 'POST'
     }).then((resbody) => {
-      winston.debug("(CHATBOT SERVICE) fork resbody: ", resbody.data);
+      winston.debug("(ChatbotService) fork resbody: ", resbody.data);
       return resbody.data;
     }).catch((err) => {
-      winston.error("(CHATBOT SERVICE) fork error " + err);
+      winston.error("(ChatbotService) fork error " + err);
       return err;
     })
 
@@ -31,7 +29,7 @@ class ChatbotService {
 
   async getBotById(id_faq_kb, published, api_url, chatbot_templates_api_url, token, project_id, globals) {
 
-    winston.debug("[CHATBOT SERVICE] getBotById");
+    winston.debug("(ChatbotService) getBotById");
 
     // private bot
     if (published == "false") {
@@ -44,11 +42,11 @@ class ChatbotService {
         },
         method: 'GET'
       }).then((resbody) => {
-        winston.debug("(CHATBOT SERVICE) forking private chatbot " + resbody.data.name)
+        winston.debug("(ChatbotService) forking private chatbot " + resbody.data.name)
         let chatbot = resbody.data;
         return chatbot;
       }).catch((err) => {
-        winston.error('(CHATBOT SERVICE) FAQ_KB EXPORTJSON ERROR ' + err);
+        winston.error('(ChatbotService) FAQ_KB EXPORTJSON ERROR ' + err);
         return err;
       })
 
@@ -62,11 +60,11 @@ class ChatbotService {
         },
         method: 'GET'
       }).then((resbody) => {
-        winston.debug("(CHATBOT SERVICE) forking public chatbot " + resbody.data.name);
+        winston.debug("(ChatbotService) forking public chatbot " + resbody.data.name);
         let chatbot = resbody.data;
         return chatbot
       }).catch((err) => {
-        winston.error('(CHATBOT SERVICE) FAQ_KB CHATBOT TEMPLATES ERROR ' + err);
+        winston.error('(ChatbotService) FAQ_KB CHATBOT TEMPLATES ERROR ' + err);
         return err;
       })
     }
@@ -75,7 +73,7 @@ class ChatbotService {
 
   async createBot(api_url, token, chatbot, project_id) {
 
-    winston.debug("(CHATBOT SERVICE) createBot");
+    winston.debug("(ChatbotService) createBot");
 
     return await axios({
       url: api_url + '/' + project_id + '/faq_kb/',
@@ -86,10 +84,10 @@ class ChatbotService {
       data: chatbot,
       method: 'POST'
     }).then((resbody) => {
-      winston.debug("(CHATBOT SERVICE) createBot resbody: ", resbody.data);
+      winston.debug("(ChatbotService) createBot resbody: ", resbody.data);
       return resbody.data;
     }).catch((err) => {
-      winston.error("(CHATBOT SERVICE) CREATE NEW CHATBOT ERROR " + err);
+      winston.error("(ChatbotService) CREATE NEW CHATBOT ERROR " + err);
       return err;
     })
 
@@ -97,7 +95,7 @@ class ChatbotService {
 
   async importFaqs(api_url, id_faq_kb, token, chatbot, project_id) {
   
-    winston.debug("[CHATBOT SERVICE] importFaqs");
+    winston.debug("(ChatbotService) importFaqs");
 
     return await axios({
       url: api_url + '/' + project_id + '/faq_kb/importjson/' + id_faq_kb + "?intentsOnly=true",
@@ -108,14 +106,22 @@ class ChatbotService {
       data: chatbot,
       method: 'POST'
     }).then((resbody) => {
-      winston.debug("(CHATBOT SERVICE) importFaqs resbody: ", resbody.data);
+      winston.debug("(ChatbotService) importFaqs resbody: ", resbody.data);
       return resbody.data;
     }).catch((err) => {
-      winston.error("(CHATBOT SERVICE) IMPORT FAQS ERROR " + err);
+      winston.error("(ChatbotService) IMPORT FAQS ERROR " + err);
       return err;
     })
   }
 
+  async setModified(chatbot_id, modified) {
+    return Faq_kb.findByIdAndUpdate(chatbot_id, { modified: modified }).then((faqKb) => {
+        winston.debug("(ChatbotService) set chatbot to modified response: ", faqKb);
+        return true;
+      }).catch((err) => {
+        return Promise.reject(err);
+      });
+  }
 }
 
 module.exports = { ChatbotService }

@@ -1,0 +1,114 @@
+//During the test the env variable is set to test
+process.env.NODE_ENV = 'test';
+process.env.LOG_LEVEL = 'error';
+process.env.OPENAI_ENDPOINT = "https://api.openai.com/v1";
+
+
+var projectService = require('../services/projectService');
+var userService = require('../services/userService');
+
+let log = false;
+
+
+//Require the dev-dependencies
+let chai = require('chai');
+let chaiHttp = require('chai-http');
+let server = require('../app');
+let should = chai.should();
+var fs = require('fs');
+const path = require('path');
+
+var expect = chai.expect;
+var assert = chai.assert;
+
+chai.use(chaiHttp);
+
+describe('llmRoute', () => {
+
+
+    it('transcription-from-file', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+            projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+
+                chai.request(server)
+                    .post('/' + savedProject._id + '/integration/')
+                    .auth(email, pwd)
+                    .send({ name: "openai", value: { apikey: "your-api-key"} })
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body", res.body); }
+
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/llm/transcription')
+                            .auth(email, pwd)
+                            .set('Content-Type', 'text/plain')
+                            .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './harvard.wav')), 'example-audio')
+                            .end((err, res) => {
+        
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+        
+                                res.should.have.status(200);
+        
+                                done()
+        
+                            })
+                    })
+
+
+
+            })
+        })
+
+    }).timeout(10000)
+
+    it('transcription-from-url', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+            projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+
+                chai.request(server)
+                    .post('/' + savedProject._id + '/integration/')
+                    .auth(email, pwd)
+                    .send({ name: "openai", value: { apikey: "your_api_key"} })
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body", res.body); }
+
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/llm/transcription')
+                            .auth(email, pwd)
+                            .send({ url: "https://storage.googleapis.com/kagglesdsdata/datasets/829978/1417968/harvard.wav?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=databundle-worker-v2%40kaggle-161607.iam.gserviceaccount.com%2F20250216%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20250216T003324Z&X-Goog-Expires=345600&X-Goog-SignedHeaders=host&X-Goog-Signature=06fcf95c9846de68ab35e05ade38d15ccc9024ab6708b36ce400c5b54a6343a562681db3a30ec340b98d0b3172008b54ce4efdfd19e82c094b3862b5b3e3931684091ce3221a20e1b0fb3b9aa2ce43245110a4a859cb4155b6a70d038f88f1aea07360d5a2c40181bbd2781070076b2b143b65d90ffeae36d79cb104c2e467c6eaa53d007f5d5323c4de67581f23aed2dc2a6aab35ff492427ab8b0da0966f8fca4d217656afcde6428a003a83839feb3a23eac68d48bc296d849137dc52886a587a752c05a9bae0d6cd12bfb8e417ebadec238ab0b3385a5f0f71c4bc9efdd5b25d2598b52bb9300dade250aa8c5681c266bcd3fd209049a03384aa4e39d426"})
+                            .end((err, res) => {
+        
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+        
+                                res.should.have.status(200);
+        
+                                done()
+        
+                            })
+                    })
+
+
+
+            })
+        })
+
+    }).timeout(10000)
+
+});
