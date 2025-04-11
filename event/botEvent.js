@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 const cacheUtil = require("../utils/cacheUtil");
 const cacheEnabler = require("../services/cacheEnabler");
 var Faq = require("../models/faq");
+let faq_kb = require("../models/faq_kb");
 
 // class BotEvent extends EventEmitter {}
 class BotEvent extends EventEmitter {
@@ -133,7 +134,7 @@ class BotEvent extends EventEmitter {
                 winston.error("Event faqbot.update.virtual.delete error updating faqs ", err);
             })
 
-            let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
+            let publishedChatbots = await faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
 
@@ -149,7 +150,7 @@ class BotEvent extends EventEmitter {
                 }
 
                 for (const batch of batches) {
-                    await Faq_kb.updateMany(
+                    await faq_kb.updateMany(
                         { _id: { $in: batch } },
                         { $set: { trashed: true, trashedAt: now } }
                     );
