@@ -415,7 +415,6 @@ describe('FaqKBRoute', () => {
 
     });
 
-
     describe('Update', () => {
 
         it('update-chatbot-no-slug', (done) => {
@@ -1111,6 +1110,70 @@ describe('FaqKBRoute', () => {
         })
         
 
+    })
+
+    describe('Delete', () => {
+
+        it('logical-delete-with-ttl', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "testbot", type: "tilebot", subtype: "chatbot", template: "blank", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+
+                            let chatbot_id = res.body._id;
+
+                            chai.request(server)
+                                .put('/' + savedProject._id + '/faq_kb/' + chatbot_id)
+                                .auth(email, pwd)
+                                .send({ trashed: true })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.trashed).to.equal(true);
+                                    expect(res.body.trashedAt).to.exist;
+;
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/faq/?id_faq_kb=' + chatbot_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('array');
+                                            expect(res.body.length).to.equal(3);
+                                            expect(res.body[0].trashed).to.equal(true);
+                                            expect(res.body[0].trashedAt).to.exist;
+
+                                            done();
+                                        })
+
+                                })
+                        });
+                });
+            });
+        })
     })
 
     // describe('Train', () => {
