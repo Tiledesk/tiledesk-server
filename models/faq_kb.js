@@ -3,12 +3,9 @@ var Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
 var winston = require('../config/winston');
 const { stringify } = require('uuid');
-const botEvent = require('../event/botEvent');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
-
-
 
 var Faq_kbSchema = new Schema({
   name: {
@@ -183,21 +180,27 @@ Faq_kbSchema.pre("save", async function (next) {
 });
 
 Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
+
   const update = this.getUpdate();
-  
-  if (update.trashed === true) {
+  const isUnsetSlug = update?.$unset?.slug !== undefined;
+
+  // $unset.slug is used only on publishing. In this case, skip the slug change and the set of trashedAt
+  if (update.trashed === true && !isUnsetSlug) {
+
     const docToUpdate = await this.model.findOne(this.getQuery());
     const timestamp = Date.now();
-    let slug;
-    if (docToUpdate) {
+
+    if (docToUpdate && docToUpdate.slug) {
+      let slug;
       slug = docToUpdate.slug;
+      update.trashedAt = new Date();
+      update.slug = `${slug || 'undefined'}-trashed-${timestamp}`;
     }
-    update.trashedAt = new Date();
-    update.slug = `${slug || 'undefined'}-trashed-${timestamp}`;
     this.setUpdate(update);
   }
 
   next();
+
 });
 
 Faq_kbSchema.post('findOneAndUpdate', async function (doc) {
@@ -250,3 +253,8 @@ function generateSlug(name) {
 }
 
 module.exports = faq_kb
+
+
+
+// Import botEvent after model declaration to avoid circular dependency issues
+const botEvent = require('../event/botEvent');

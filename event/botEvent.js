@@ -5,6 +5,7 @@ var winston = require('../config/winston');
 const cacheUtil = require("../utils/cacheUtil");
 const cacheEnabler = require("../services/cacheEnabler");
 var Faq = require("../models/faq");
+const { Webhook } = require('../models/webhook');
 
 // class BotEvent extends EventEmitter {}
 class BotEvent extends EventEmitter {
@@ -127,10 +128,19 @@ class BotEvent extends EventEmitter {
         });
 
         botEvent.on('faqbot.update.virtual.delete', async (chatbot) => {
-            winston.verbose("--> botEvent ON faqbot.update.virtual.delete: ", chatbot);
+            winston.verbose("botEvent ON faqbot.update.virtual.delete: ", chatbot);
+
+            if (chatbot.publishedAt) {
+                // Stop the flow if the chatbot is a published one
+                return;
+            }
 
             await Faq.updateMany({ id_faq_kb: chatbot._id }, { trashed: true, trashedAt: chatbot.trashedAt }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error updating faqs ", err);
+            })
+
+            await Webhook.findOneAndDelete({ chatbot_id: chatbot._id }).catch((err) => {
+                winston.error("Error deleting webhook on chatbot deleting: ", err);
             })
 
             let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
@@ -151,12 +161,12 @@ class BotEvent extends EventEmitter {
                 for (const batch of batches) {
                     await Faq_kb.updateMany(
                         { _id: { $in: batch } },
-                        { $set: { trashed: true, trashedAt: now } }
+                        { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
 
                     await Faq.updateMany(
                         { id_faq_kb: { $in: batch } },
-                        { $set: { trashed: true, trashedAt: now } }
+                        { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
                 
                     await sleep(sleep_ms);
