@@ -154,12 +154,12 @@ class BotEvent extends EventEmitter {
                 for (const batch of batches) {
                     await Faq_kb.updateMany(
                         { _id: { $in: batch } },
-                        { $set: { trashed: true, trashedAt: now } }
+                        { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
 
                     await Faq.updateMany(
                         { id_faq_kb: { $in: batch } },
-                        { $set: { trashed: true, trashedAt: now } }
+                        { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
                 
                     await sleep(sleep_ms);

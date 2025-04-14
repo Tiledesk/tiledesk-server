@@ -188,6 +188,7 @@ Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
   
   const isUnsetSlug = update?.$unset?.slug !== undefined;
 
+  // $unset.slug is used only on publishing. In this case, skip the slug change and the set of trashedAt
   if (update.trashed === true && !isUnsetSlug) {
     const docToUpdate = await this.model.findOne(this.getQuery());
     const timestamp = Date.now();
