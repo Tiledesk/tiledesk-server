@@ -140,7 +140,10 @@ class BotEvent extends EventEmitter {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
 
+            console.log("publishedChatbots: ", publishedChatbots)
+
             const publishedChatbotIds = publishedChatbots.map(c => c._id);
+            console.log("publishedChatbotIds: ", publishedChatbotIds)
 
             if (publishedChatbotIds.length > 0) {
 
