@@ -3,7 +3,6 @@ var Schema = mongoose.Schema;
 const uuidv4 = require('uuid/v4');
 var winston = require('../config/winston');
 const { stringify } = require('uuid');
-const botEvent = require('../event/botEvent');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
 let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
@@ -252,3 +251,4 @@ function generateSlug(name) {
 }
 
 module.exports = faq_kb
+const botEvent = require('../event/botEvent');
