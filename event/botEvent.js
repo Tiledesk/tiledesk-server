@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const messageEvent = require('../event/messageEvent');
+require('../models/faq_kb');
 const Faq_kb = require('../models/faq_kb');
 var winston = require('../config/winston');
 const cacheUtil = require("../utils/cacheUtil");
