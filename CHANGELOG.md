@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.82
+- Updated whatsapp-connector to 0.1.83
+
 # 2.10.81
 - Fix bug on webhook import and fork (wrong blank template)
 - Updated whatsapp-connector to 0.1.82
