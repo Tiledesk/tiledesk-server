@@ -186,7 +186,9 @@ Faq_kbSchema.pre("save", async function (next) {
 Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
   const update = this.getUpdate();
   
-  if (update.trashed === true) {
+  const isUnsetSlug = update?.$unset?.slug !== undefined;
+
+  if (update.trashed === true && !isUnsetSlug) {
     const docToUpdate = await this.model.findOne(this.getQuery());
     const timestamp = Date.now();
     console.log("docToUpdate slug: ", docToUpdate.slug)
