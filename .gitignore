@@ -7,3 +7,4 @@ data
 .env
 copyfiles
 logs
+automerge.sh

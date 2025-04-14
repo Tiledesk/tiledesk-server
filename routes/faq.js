@@ -16,6 +16,7 @@ const axios = require("axios").default;
 var configGlobal = require('../config/global');
 const roleConstants = require('../models/roleConstants');
 const roleChecker = require('../middleware/has-role');
+const { ChatbotService } = require('../services/chatbotService');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
@@ -222,6 +223,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
 
   let id_faq_kb = req.body.id_faq_kb;
   let operations = req.body.operations;
+  let chatbotService = new ChatbotService();
 
   for (let op of operations) {
     let HTTPREQUEST;
@@ -246,6 +248,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -273,6 +276,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -296,6 +300,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )
@@ -322,6 +327,7 @@ router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscrip
               winston.error("err performing operation: ", err);
             } else {
               winston.debug("\n\nresbody operation: ", resbody);
+              chatbotService.setModified(id_faq_kb, true)
             }
           }
         )

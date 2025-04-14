@@ -30,24 +30,24 @@ class Listener {
     winston.debug("Listener this.enabled: "+ this.enabled);
 }
 
-     nextOperator(array, index) {
-        // console.log('array: ', array);
-        // console.log('index: ' + index);
-    
-        index = index || 0;
-    
-        if (array === undefined || array === null)
-          array = [];
-        else if (!Array.isArray(array))
-          throw new Error('Expecting argument to RoundRound to be an Array');
-    
-        // return function () {
-            index++;
-          if (index >= array.length) index = 0;
-          // console.log('index: ' + index);
-          return array[index];
-        // };
-      }
+  nextOperator(array, index) {
+    // console.log('array: ', array);
+    // console.log('index: ' + index);
+
+    index = index || 0;
+
+    if (array === undefined || array === null)
+      array = [];
+    else if (!Array.isArray(array))
+      throw new Error('Expecting argument to RoundRound to be an Array');
+
+    // return function () {
+    index++;
+    if (index >= array.length) index = 0;
+    // console.log('index: ' + index);
+    return array[index];
+    // };
+  }
 
 
     listen() {

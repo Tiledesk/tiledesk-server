@@ -13,6 +13,18 @@ const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 32);
 // }
 // winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
+router.get('/', async (req, res) => {
+  
+  let id_project = req.projectid;
+
+  let webhooks = await Webhook.find({ id_project: id_project }).catch((err) => {
+    winston.error("Error finding webhooks: ", err);
+    return res.status(500).send({ success: false, error: "Error findin webhooks with for project " + id_project });
+  })
+
+  res.status(200).send(webhooks);
+
+})
 
 router.get('/:chatbot_id/', async (req, res) => {
   
@@ -40,6 +52,7 @@ router.post('/', async (req, res) => {
 
   let webhook = new Webhook({
     id_project: id_project,
+    name: "webhook-" + this.webhook_id,
     chatbot_id: req.body.chatbot_id || req.body.id_faq_kb,
     block_id: req.body.block_id,
     copilot: req.body.copilot,
@@ -127,6 +140,10 @@ router.put("/:chatbot_id", async (req, res) => {
     update.copilot = req.body.copilot;
   }
 
+  if (req.body.hasOwnProperty('enabled')) {
+    update.enabled = req.body.enabled;
+  }
+
   let updatedWebhook = await Webhook.findOneAndUpdate({ id_project: id_project, chatbot_id: chatbot_id }, update, { new: true }).catch((err) => {
     winston.error("Error updating webhook ", err);
     return res.status(500).send({ success: false, error: "Error updating webhook for chatbot " + chatbot_id });
@@ -140,6 +157,39 @@ router.put("/:chatbot_id", async (req, res) => {
   res.status(200).send(updatedWebhook);
 })
 
+router.put('/update/:webhook_id', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+
+  let update = {};
+
+  if (req.body.hasOwnProperty("async")) {
+    update.async = req.body.async;
+  }
+
+  if (req.body.hasOwnProperty("copilot")) {
+    update.copilot = req.body.copilot;
+  }
+
+  if (req.body.hasOwnProperty('enabled')) {
+    update.enabled = req.body.enabled;
+  }
+
+  let updatedWebhook = await Webhook.findOneAndUpdate({ id_project: id_project, webhook_id: webhook_id }, update, { new: true }).catch((err) => {
+    winston.error("Error updating webhook ", err);
+    return res.status(500).send({ success: false, error: "Error updating webhook for chatbot " + chatbot_id });
+  })
+
+  if (!updatedWebhook) {
+    winston.verbose("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  res.status(200).send(updatedWebhook);
+
+})
+
 router.delete("/:chatbot_id", async (req, res) => {
 
   let id_project = req.projectid;
@@ -151,6 +201,19 @@ router.delete("/:chatbot_id", async (req, res) => {
   })
 
   res.status(200).send({ success: true, message: "Webhook for chatbot " + chatbot_id +  " deleted successfully" });
+})
+
+router.delete("/delete/:webhook_id", async (req, res) => {
+
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+
+  await Webhook.deleteOne({ id_project: id_project, webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error deleting webhook ", err);
+    return res.status(500).send({ success: false, error: "Error deleting webhook with id " + webhook_id });
+  })
+
+  res.status(200).send({ success: true, message: "Webhook " + webhook_id +  " deleted successfully" });
 })
 
 

@@ -84,6 +84,7 @@ class BotEvent extends EventEmitter {
 
             }
 
+            console.log("botEvent message Faq_kb: ", Faq_kb)
             // qui potresti leggere anche +secret ed evitare prossima query in botNotification
             // let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
             let qbot = Faq_kb.findById(botId).select('+secret')
