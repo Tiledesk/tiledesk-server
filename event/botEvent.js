@@ -147,6 +147,7 @@ class BotEvent extends EventEmitter {
 
             if (publishedChatbotIds.length > 0) {
 
+                console.log("\n\nINSIDEEEE")
                 const batchSize = 20;
                 const sleep_ms = 500;
                 const batches = [];
@@ -160,6 +161,7 @@ class BotEvent extends EventEmitter {
                         { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
 
+                    console.log("\n\n\nFAQQQQQQQQ!!!!!!!!")
                     await Faq.updateMany(
                         { id_faq_kb: { $in: batch } },
                         { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
