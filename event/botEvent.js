@@ -131,11 +131,17 @@ class BotEvent extends EventEmitter {
         botEvent.on('faqbot.update.virtual.delete', async function (chatbot) {
             winston.verbose("--> botEvent ON faqbot.update.virtual.delete: ", chatbot);
 
+            if (chatbot.publishedAt) {
+                // Stop the flow if the chatbot is a published one
+                return;
+            }
+
+            console.log("\n\nShould not be printed")
             await Faq.updateMany({ id_faq_kb: chatbot._id }, { trashed: true, trashedAt: chatbot.trashedAt }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error updating faqs ", err);
             })
 
-            console.log("\n\nBotEventFaq_kb: ", Faq_kb)
+            
             let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
