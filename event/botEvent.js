@@ -6,6 +6,7 @@ var winston = require('../config/winston');
 const cacheUtil = require("../utils/cacheUtil");
 const cacheEnabler = require("../services/cacheEnabler");
 var Faq = require("../models/faq");
+const { Webhook } = require('../models/webhook');
 
 // class BotEvent extends EventEmitter {}
 class BotEvent extends EventEmitter {
@@ -84,7 +85,6 @@ class BotEvent extends EventEmitter {
 
             }
 
-            console.log("botEvent message Faq_kb: ", Faq_kb)
             // qui potresti leggere anche +secret ed evitare prossima query in botNotification
             // let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
             let qbot = Faq_kb.findById(botId).select('+secret')
@@ -129,31 +129,28 @@ class BotEvent extends EventEmitter {
         });
 
         botEvent.on('faqbot.update.virtual.delete', async function (chatbot) {
-            winston.verbose("--> botEvent ON faqbot.update.virtual.delete: ", chatbot);
+            winston.verbose("botEvent ON faqbot.update.virtual.delete: ", chatbot);
 
             if (chatbot.publishedAt) {
                 // Stop the flow if the chatbot is a published one
                 return;
             }
 
-            console.log("\n\nShould not be printed")
             await Faq.updateMany({ id_faq_kb: chatbot._id }, { trashed: true, trashedAt: chatbot.trashedAt }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error updating faqs ", err);
             })
 
-            
+            await Webhook.findOneAndDelete({ chatbot_id: chatbot._id }).catch((err) => {
+                winston.error("Error deleting webhook on chatbot deleting: ", err);
+            })
+    
             let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
 
-            console.log("publishedChatbots: ", publishedChatbots)
-
             const publishedChatbotIds = publishedChatbots.map(c => c._id);
-            console.log("publishedChatbotIds: ", publishedChatbotIds)
-
             if (publishedChatbotIds.length > 0) {
 
-                console.log("\n\nINSIDEEEE")
                 const batchSize = 20;
                 const sleep_ms = 500;
                 const batches = [];
@@ -167,7 +164,6 @@ class BotEvent extends EventEmitter {
                         { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
                     );
 
-                    console.log("\n\n\nFAQQQQQQQQ!!!!!!!!")
                     await Faq.updateMany(
                         { id_faq_kb: { $in: batch } },
                         { $set: { trashed: true, trashedAt: chatbot.trashedAt } }
