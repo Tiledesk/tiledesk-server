@@ -189,12 +189,12 @@ Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
   if (update.trashed === true) {
     const docToUpdate = await this.model.findOne(this.getQuery());
     const timestamp = Date.now();
-    let slug;
-    if (docToUpdate) {
+    if (docToUpdate && docToUpdate.slug) {
+      let slug;
       slug = docToUpdate.slug;
+      update.trashedAt = new Date();
+      update.slug = `${slug || 'undefined'}-trashed-${timestamp}`;
     }
-    update.trashedAt = new Date();
-    update.slug = `${slug || 'undefined'}-trashed-${timestamp}`;
     this.setUpdate(update);
   }
 
