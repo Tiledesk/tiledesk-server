@@ -84,6 +84,7 @@ class BotEvent extends EventEmitter {
 
             }
 
+            console.log("botEvent message Faq_kb: ", Faq_kb)
             // qui potresti leggere anche +secret ed evitare prossima query in botNotification
             // let qbot = Faq_kb.findById(botId);  //TODO add cache_bot_here
             let qbot = Faq_kb.findById(botId).select('+secret')
@@ -127,7 +128,7 @@ class BotEvent extends EventEmitter {
 
         });
 
-        botEvent.on('faqbot.update.virtual.delete', async (chatbot) => {
+        botEvent.on('faqbot.update.virtual.delete', async function (chatbot) {
             winston.verbose("--> botEvent ON faqbot.update.virtual.delete: ", chatbot);
 
             await Faq.updateMany({ id_faq_kb: chatbot._id }, { trashed: true, trashedAt: chatbot.trashedAt }).catch((err) => {
