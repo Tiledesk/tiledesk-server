@@ -121,7 +121,7 @@ describe('FaqKBRoute', () => {
 
     describe('Create', () => {
 
-        it('create-new-chatbot', (done) => {
+        it('create-new-external-chatbot', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -152,6 +152,107 @@ describe('FaqKBRoute', () => {
                                     if (log) { console.log("res.body", res.body); }
 
                                     res.should.have.status(200);
+
+                                    done();
+
+                                });
+                        });
+                });
+            });
+
+        })
+
+        it('create-new-tilebot-chatbot', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "tilebot", subtype: "chatbot", language: 'en', template: "blank" })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+
+                            let id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('array');
+                                    expect(res.body.length).to.equal(3);
+
+                                    let intents = res.body;
+                                    let webhook_block = intents.find(i => i.intent_display_name === "start");
+                                    expect(webhook_block).to.not.equal(null);
+                                    expect(webhook_block).to.not.equal(undefined);
+
+
+                                    done();
+
+                                });
+                        });
+                });
+            });
+
+        })
+
+        it('create-new-copilot-chatbot', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ "name": "testbot", type: "tilebot", subtype: "copilot", language: 'en', template: "blank" })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+
+                            let id_faq_kb = res.body._id;
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('array');
+                                    expect(res.body.length).to.equal(2);
+
+                                    let intents = res.body;
+                                    let webhook_block = intents.find(i => i.intent_display_name === "webhook");
+                                    expect(webhook_block).to.not.equal(null);
+                                    expect(webhook_block).to.not.equal(undefined);
 
                                     done();
 
@@ -367,6 +468,50 @@ describe('FaqKBRoute', () => {
                         });
                 })
             })
+        })
+
+        it('create-new-webhook', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "testflow", type: "tilebot", subtype: "webhook", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testflow");
+                            expect(res.body.language).to.equal("en");
+                            expect(res.body.type).to.equal("tilebot");
+                            expect(res.body.subtype).to.equal("webhook")
+
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + res.body._id)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    console.log("res.body", res.body);
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                });
+                        });
+                });
+            });
+
         })
 
     });
@@ -717,19 +862,19 @@ describe('FaqKBRoute', () => {
                             let id_faq_kb = res.body._id;
 
                             chai.request(server)
-                            .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                            .auth(email, pwd)
-                            .end((err, res) => {
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
 
-                                if (err) { console.error("err: ", err); }
-                                if (log) { console.log("res.body", res.body); }
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
 
-                                res.should.have.status(200);
-                                //res.body.should.be.an('array').that.is.not.empty;
+                                    res.should.have.status(200);
+                                    //res.body.should.be.an('array').that.is.not.empty;
 
-                                done();
+                                    done();
 
-                            })
+                                })
                         })
 
                 })
@@ -1020,6 +1165,52 @@ describe('FaqKBRoute', () => {
             });
 
         }).timeout(20000);
+
+        it('import-webhook-json', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb/importjson/null?create=true')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-webhook-json.txt')), 'example-webhook-json.txt')
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err) };
+                            if (log) { console.log("res.body: ", res.body) };
+                            console.log("res.body: ", res.body)
+                            res.should.have.status(200);
+                            res.should.be.a('object');
+                            expect(res.body.name).to.equal("Flow 1");
+                            expect(res.body.language).to.equal("en");
+
+                            let id_faq_kb = res.body._id
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+                                    expect(res.body.length).to.equal(3);
+
+                                    done();
+
+                                })
+                        })
+                })
+            })
+        })
+        
 
     })
 

@@ -49,7 +49,6 @@ async (req, res)  => {
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
-
   // const errors = validationResult(req);
   // if (!errors.isEmpty()) {
   //   return res.status(422).json({ errors: errors.array() });

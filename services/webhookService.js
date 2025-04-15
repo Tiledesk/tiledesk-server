@@ -46,8 +46,8 @@ class WebhookService {
 
             let token = await this.generateChatbotToken(chatbot);
 
-            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + chatbot_id + "/" + webhook.block_id;
-            winston.info("Webhook chatbot URL: ", url);
+            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
+            winston.info("Webhook chatbot URL: " + url);
 
             payload.async = webhook.async;
             payload.token = token;
@@ -60,7 +60,7 @@ class WebhookService {
             await httpUtil.post(url, payload).then((response) => {
                 resolve(response.data);
             }).catch((err) => {
-                winston.error("Error calling webhook on post: ", err);
+                winston.error("Error calling webhook on post. Status " + err?.status + " " + err?.statusText + JSON.stringify(err?.response?.data));
                 reject(err);
             })
 
