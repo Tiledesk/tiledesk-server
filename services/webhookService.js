@@ -3,6 +3,7 @@ const httpUtil = require("../utils/httpUtil");
 const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
 var winston = require('../config/winston');
+const errorCodes = require("../errorCodes");
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -36,6 +37,9 @@ class WebhookService {
                 chatbot_id = webhook.chatbot_id;
                 let key = "logs:webhook:" + webhook.id_project + ":" + webhook.webhook_id;
                 let value = await redis_client.get(key);
+                if (!value) {
+                    reject({ success: false, code: errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST, message: "No preloaded dev request"})
+                }
                 let json_value = JSON.parse(value);
                 payload.request_id = json_value.request_id;
             }   

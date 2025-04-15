@@ -11,6 +11,7 @@ const httpUtil = require('../utils/httpUtil');
 var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const webhookService = require('../services/webhookService');
+const errorCodes = require('../errorCodes');
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -206,8 +207,12 @@ router.all('/:webhook_id', async (req, res) => {
   webhookService.run(webhook, payload, dev, redis_client).then((response) => {
     return res.status(200).send(response);
   }).catch((err) => {
-    let status = err.status || 500;
-    return res.status(status).send(err.data);
+    if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
+      return res.status(422).send({ success: false, message: "Development webhook is currently turned off", code: err.code })
+    } else {
+      let status = err.status || 500;
+      return res.status(status).send(err.data);
+    }
   })
   
   // let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {

@@ -67,11 +67,34 @@ router.post('/preload/:webhook_id', async (req, res) => {
   let webhook_id = req.params.webhook_id;
   let request_id = "automation-request-" + id_project + "-" + new ObjectId();
   let redis_client = req.app.get('redis_client');
-  let key = "logs:webhook:" + id_project + ":" + webhook_id;
-  let value = JSON.stringify({ request_id: request_id });
-  redis_client.set(key, value, { EX: 900 });
 
-  res.status(200).send({ success: true, message: "Webhook preloaded successfully", request_id: request_id });
+  try {
+    let key = "logs:webhook:" + id_project + ":" + webhook_id;
+    let value = JSON.stringify({ request_id: request_id });
+    redis_client.set(key, value, { EX: 900 });
+    res.status(200).send({ success: true, message: "Webhook preloaded successfully", request_id: request_id });
+  } catch(err) {
+    winston.error("Error adding key in cache ", err);
+    res.status(500).send({ success: false, message: "Unable to start development webhook" })
+  }
+
+})
+
+router.delete('/preload/:webhook_id', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+  let key = "logs:webhook:" + id_project + ":" + webhook_id;
+  let redis_client = req.app.get('redis_client');
+  
+  try {
+    redis_client.del(key);
+    res.status(200).send({ success: true, message: "Development webhook stopped" })
+  } catch(err) {
+    winston.error("Error deleting key from cache ", err);
+    res.status(500).send({ success: false, message: "Unable to stop development webhook" })
+  }
+
 })
 
 // router.post('/webhook_id', async (req, res) => {
