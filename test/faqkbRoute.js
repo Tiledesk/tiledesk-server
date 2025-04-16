@@ -303,20 +303,23 @@ describe('FaqKBRoute', () => {
                             expect(res.body.name).to.equal("testbot");
                             var id_faq_kb = res.body._id;
 
-                            chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
+                            setTimeout(() => {
 
-                                    if (err) { console.error("err: ", err); }
-                                    if (log) { console.log("res.body", res.body); }
-
-                                    res.should.have.status(200);
-                                    res.body.should.be.an('array').that.is.not.empty;
-
-                                    done();
-
-                                })
+                                chai.request(server)
+                                    .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+    
+                                        if (err) { console.error("err: ", err); }
+                                        if (log) { console.log("res.body", res.body); }
+    
+                                        res.should.have.status(200);
+                                        res.body.should.be.an('array').that.is.not.empty;
+    
+                                        done();
+    
+                                    })
+                            }, 1000)
 
 
 
@@ -401,7 +404,7 @@ describe('FaqKBRoute', () => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body", res.body); }
-                                    console.log("res.body", res.body);
+
                                     res.should.have.status(200);
 
                                     done();
@@ -835,9 +838,10 @@ describe('FaqKBRoute', () => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
 
                     chai.request(server)
-                        .post('/' + savedProject._id + '/faq_kb?replace=true')
+                        //.post('/' + savedProject._id + '/faq_kb?replace=true')
+                        .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
+                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "empty" })
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err); }
@@ -870,11 +874,11 @@ describe('FaqKBRoute', () => {
 
                                             if (err) { console.error("err: ", err); }
                                             if (log) { console.log("import json res: ", JSON.stringify(res.body, null, 2)); }
-
+                                            
                                             res.should.have.status(200);
-                                            //res.should.be.a('object');
-                                            //expect(res.body.name).to.equal("examplebot");
-                                            //expect(res.body.language).to.equal("en");
+                                            res.should.be.a('object');
+                                            expect(res.body.name).to.equal("example bot");
+                                            expect(res.body.language).to.equal("en");
 
                                             done();
                                         })
@@ -1082,7 +1086,7 @@ describe('FaqKBRoute', () => {
 
                             if (err) { console.error("err: ", err) };
                             if (log) { console.log("res.body: ", res.body) };
-                            console.log("res.body: ", res.body)
+
                             res.should.have.status(200);
                             res.should.be.a('object');
                             expect(res.body.name).to.equal("Flow 1");
