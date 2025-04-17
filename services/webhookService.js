@@ -13,7 +13,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class WebhookService {
 
-    async run(webhook, payload) {
+    async run(webhook, payload, dev, redis_client) {
 
         return new Promise(async (resolve, reject) => {
 
@@ -28,25 +28,37 @@ class WebhookService {
                 reject("Chatbot not found with id " + webhook.chatbot_id);
             }
 
+            let chatbot_id
+            if (chatbot.url) {
+                chatbot_id = chatbot.url.substr(chatbot.url.lastIndexOf("/") + 1)
+            }
+            if (dev) {
+                chatbot_id = webhook.chatbot_id;
+                let key = "logs:webhook:" + webhook.id_project + ":" + webhook.webhook_id;
+                let value = await redis_client.get(key);
+                let json_value = JSON.parse(value);
+                payload.preloaded_request_id = json_value.request_id;
+            }   
+
             let token = await this.generateChatbotToken(chatbot);
 
             let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
-            winston.info("Webhook chatbot URL: ", url);
+            winston.info("Webhook chatbot URL: " + url);
 
             payload.async = webhook.async;
             payload.token = token;
 
             if (process.env.NODE_ENV === 'test') {
-                resolve(true);
+                resolve({ success: true, message: "Webhook disabled in test mode" });
+                return;
             }
 
             await httpUtil.post(url, payload).then((response) => {
                 resolve(response.data);
             }).catch((err) => {
-                winston.error("Error calling webhook on post: ", err);
+                winston.error("Error calling webhook on post. Status " + err?.status + " " + err?.statusText + JSON.stringify(err?.response?.data));
                 reject(err);
             })
-
         })
     }
 

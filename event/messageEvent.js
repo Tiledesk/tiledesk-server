@@ -59,6 +59,7 @@ function populateMessageWithRequest(message, eventPrefix) {
 
   
     // cacherequest      // requestcachefarequi populaterequired cacheveryhightpriority
+  winston.info("main_flow_cache_message event populateMessageWithRequest");
     
   let q = Request.findOne({request_id:  message.recipient, id_project: message.id_project}).
   populate('lead').
@@ -74,10 +75,10 @@ function populateMessageWithRequest(message, eventPrefix) {
   // request.department._id DA CORREGGERE ANCHE PER REQUEST.CREATE
   // request.department.hasBot 
   // request.isOpen
-  winston.debug('message Event populate');
+  winston.debug('messageEvent populate');
   if (cacheEnabler.request) {
     q.cache(cacheUtil.defaultTTL, message.id_project+":requests:request_id:"+message.recipient) //request_cache ma con lean????attento metti a parte
-    winston.debug('request cache enabled');
+    winston.debug('messageEvent populate cache enabled');
   }
   q.exec(function (err, request) {
 
@@ -86,7 +87,7 @@ function populateMessageWithRequest(message, eventPrefix) {
       return messageEvent.emit(eventPrefix, message);
     }
 
-    winston.debug('message Event populate after query');
+    winston.info('message Event populate after query');
 
 
   if (request) {

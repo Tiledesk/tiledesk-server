@@ -91,6 +91,9 @@ let tdCache = new TdCache({
 
 tdCache.connect();
 
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
+
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
 var auth = require('./routes/auth');
@@ -201,6 +204,10 @@ jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled
 let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
+
+let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+winston.info("multiWorkerQueue from App")
+jobsManager.listenMultiWorker(multiWorkerQueue);
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 

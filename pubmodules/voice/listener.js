@@ -19,6 +19,9 @@ class Listener {
         var pooling_delay = process.env.BASE_POOLING_DELAY || 250;
         winston.debug("Pooling_delay: "+ pooling_delay);
 
+        var max_polling_time = process.env.MAX_POOLING_TIME || 30000;
+        winston.debug("Pooling_delay: "+ pooling_delay);
+
         var port = process.env.CACHE_REDIS_PORT || 6379;
         winston.debug("Redis port: "+ port);
 
@@ -39,12 +42,14 @@ class Listener {
         voice.startApp({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
+            //API_URL: apiUrl,
             BASE_URL: apiUrl + "/modules/voice",                     
             REDIS_HOST: host,
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
             BRAND_NAME: brand_name,
             BASE_POOLING_DELAY: pooling_delay,
+            MAX_POLLING_TIME: max_polling_time,
             log: log
         }, (err) => {
             if (!err) {
