@@ -1151,7 +1151,7 @@ describe('FaqKBRoute', () => {
                                     res.body.should.be.a('object');
                                     expect(res.body.trashed).to.equal(true);
                                     expect(res.body.trashedAt).to.exist;
-;
+
                                     chai.request(server)
                                         .get('/' + savedProject._id + '/faq/?id_faq_kb=' + chatbot_id)
                                         .auth(email, pwd)
@@ -1170,6 +1170,81 @@ describe('FaqKBRoute', () => {
                                         })
 
                                 })
+                        });
+                });
+            });
+        })
+
+        it('logical-webhook-delete-with-ttl', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "test-webhook", type: "tilebot", subtype: "webhook", template: "blank_webhook", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("test-webhook");
+                            expect(res.body.language).to.equal("en");
+
+                            let chatbot_id = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/webhooks')
+                                .auth(email, pwd)
+                                .send({ chatbot_id: chatbot_id, block_id: "example-block-id", async: false })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    console.log("res.body", res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    chai.request(server)
+                                        .put('/' + savedProject._id + '/faq_kb/' + chatbot_id)
+                                        .auth(email, pwd)
+                                        .send({ trashed: true })
+                                        .end((err, res) => {
+        
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+        
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.trashed).to.equal(true);
+                                            expect(res.body.trashedAt).to.exist;
+        
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + chatbot_id)
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    
+                                                    if (err) { console.error("err: ", err); }
+                                                    if (log) { console.log("res.body", res.body); }
+        
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.a('array');
+                                                    expect(res.body.length).to.equal(2);
+                                                    expect(res.body[0].trashed).to.equal(true);
+                                                    expect(res.body[0].trashedAt).to.exist;
+        
+                                                    done();
+                                                })
+        
+                                        })
+                                })
+
                         });
                 });
             });

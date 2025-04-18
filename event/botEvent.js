@@ -139,10 +139,11 @@ class BotEvent extends EventEmitter {
                 winston.error("Event faqbot.update.virtual.delete error updating faqs ", err);
             })
 
-            await Webhook.findOneAndDelete({ chatbot_id: chatbot._id }).catch((err) => {
+            let deletedW = await Webhook.findOneAndDelete({ chatbot_id: chatbot._id }).catch((err) => {
                 winston.error("Error deleting webhook on chatbot deleting: ", err);
             })
 
+            console.log("\n\ndeletedW on event: ", deletedW);
             let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
