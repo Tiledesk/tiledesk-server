@@ -28,7 +28,28 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.info("Max upload file size is infinity");
 }
+
+
+// const storage = multer.diskStorage(
+//   { dest: '/tmp/my-uploads/' }
+  
+//   // {
+//   // destination: function (req, file, cb) {
+//   //   cb(null, '/tmp/my-uploads')
+//   // },
+//   // // filename: function (req, file, cb) {
+//   // //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+//   // //   cb(null, file.fieldname + '-' + uniqueSuffix)
+//   // // }
+//   // }
+// )
+
+
+// const upload = multer({ storage: storage, limits: {fileSize: 1000}});
+// const upload = multer({ storage: storage, limits: uploadlimits});
+
 const upload = multer({ storage: fileService.getStorage("files"),limits: uploadlimits});
+console.log("upload", upload);
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -38,6 +59,7 @@ curl -u andrea.leo@f21.it:123456 \
   */
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
+
   winston.verbose("files/users")
   return res.status(201).json({
     message: 'File uploded successfully',
