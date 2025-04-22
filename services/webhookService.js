@@ -3,6 +3,7 @@ const httpUtil = require("../utils/httpUtil");
 const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
 var winston = require('../config/winston');
+const errorCodes = require("../errorCodes");
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -13,7 +14,7 @@ winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 class WebhookService {
 
-    async run(webhook, payload) {
+    async run(webhook, payload, dev, redis_client) {
 
         return new Promise(async (resolve, reject) => {
 
@@ -28,6 +29,21 @@ class WebhookService {
                 reject("Chatbot not found with id " + webhook.chatbot_id);
             }
 
+            let chatbot_id
+            if (chatbot.url) {
+                chatbot_id = chatbot.url.substr(chatbot.url.lastIndexOf("/") + 1)
+            }
+            if (dev) {
+                chatbot_id = webhook.chatbot_id;
+                let key = "logs:webhook:" + webhook.id_project + ":" + webhook.webhook_id;
+                let value = await redis_client.get(key);
+                if (!value) {
+                    reject({ success: false, code: errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST, message: "No preloaded dev request"})
+                }
+                let json_value = JSON.parse(value);
+                payload.preloaded_request_id = json_value.request_id;
+            }   
+
             let token = await this.generateChatbotToken(chatbot);
 
             let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
@@ -38,6 +54,7 @@ class WebhookService {
 
             if (process.env.NODE_ENV === 'test') {
                 resolve({ success: true, message: "Webhook disabled in test mode" });
+                return;
             }
 
             await httpUtil.post(url, payload).then((response) => {
@@ -46,7 +63,6 @@ class WebhookService {
                 winston.error("Error calling webhook on post. Status " + err?.status + " " + err?.statusText + JSON.stringify(err?.response?.data));
                 reject(err);
             })
-
         })
     }
 
