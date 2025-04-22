@@ -1,3 +1,3 @@
-module.exports = function generateTemplate() {
+module.exports = function generateTemplate(options) {
     return []
 }

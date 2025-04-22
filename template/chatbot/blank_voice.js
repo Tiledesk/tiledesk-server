@@ -1,6 +1,6 @@
 const uuidv4 = require('uuid/v4');
 
-module.exports = function generateTemplate() {
+module.exports = function generateTemplate(options) {
 
     const custom_intent_id = uuidv4();
 

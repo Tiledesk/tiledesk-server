@@ -50,7 +50,12 @@ class FaqService {
           let template = this.#resolveTemplate(data.subtype, data.template);
           winston.debug('template ' + template);
 
-          this.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template);
+          let options = {};
+          if (data.namespace_id) {
+            options.namespace_id = data.namespace_id;
+          }
+
+          this.createGreetingsAndOperationalsFaqs(savedFaq_kb._id, savedFaq_kb.createdBy, savedFaq_kb.id_project, template, options);
 
         } else {
           winston.debug('(FaqService) Chatbot type: external bot');
@@ -71,13 +76,13 @@ class FaqService {
     return defaultTemplate;
   }
 
-  createGreetingsAndOperationalsFaqs(faq_kb_id, created_by, projectid, template) {
+  createGreetingsAndOperationalsFaqs(faq_kb_id, created_by, projectid, template, options) {
     
     return new Promise( async (resolve, reject) =>  {
 
       winston.debug('(FaqService) create faqs from template: ' + template);
 
-      let faqsArray = templates[template]();
+      let faqsArray = templates[template](options);
 
       faqsArray.forEach(faq => {
 

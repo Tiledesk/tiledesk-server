@@ -8,8 +8,8 @@ module.exports = {
         templates: ['empty', 'blank_webhook']
     },
     copilot: {
-        default: 'blank_copilot',
-        templates: ['empty', 'blank_copilot']
+        default: 'official_copilot',
+        templates: ['empty', 'blank_copilot', 'official_copilot']
     },
     voice: {
         default: 'blank_voice',
