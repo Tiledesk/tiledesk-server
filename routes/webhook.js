@@ -203,6 +203,11 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
+  if (!webhook.enabled) {
+    winston.verbose("Webhook " + webhook_id + " is currently turned off")
+    return res.status(422).send({ success: false, error: "Webhook " + webhook_id + " is currently turned off"})
+  }
+
   // To delete - Start
   let redis_client = req.app.get('redis_client');
   // and substitute currect run with the following one
