@@ -5,6 +5,7 @@ var { nanoid } = require("nanoid");
 const uuidv4 = require('uuid/v4');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
+let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
 
 var FaqSchema = new Schema({
   // _id: {
@@ -107,7 +108,15 @@ var FaqSchema = new Schema({
     default: function () {
       return this.isNew ? false : undefined;
     },
-  }
+  },
+  trashed: {
+    type: Boolean,
+    index: true
+  },
+  trashedAt: {
+    type: Date,
+    required: false
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
@@ -183,6 +192,10 @@ FaqSchema.index(
   { partialFilterExpression: { "actions.namespace": { $exists: true } } }
 );
 
+FaqSchema.index(
+  { trashedAt: 1 },
+  { expireAfterSeconds: trashExpirationTime }
+);
 
 var faq = mongoose.model('faq', FaqSchema);
 

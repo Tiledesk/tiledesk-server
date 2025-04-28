@@ -209,6 +209,8 @@ router.all('/:webhook_id', async (req, res) => {
   }
 
   // To delete - Start
+  // This endpoint will be used only for production webhooks, so is no longer
+  // necessary to pass dev and redis_client to webhookService.run().
   let redis_client = req.app.get('redis_client');
   // and substitute currect run with the following one
   //webhookService.run(webhook, payload)

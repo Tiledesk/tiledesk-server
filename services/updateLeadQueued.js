@@ -94,7 +94,7 @@ class UpdateLeadQueued {
             return 0;
           }
           if (!requests || (requests && requests.length == 0)) {
-            winston.warn("sendMessageUpdateLead No request found for lead id " + lead._id);
+            winston.verbose("sendMessageUpdateLead No request found for lead id " + lead._id);
             return 0;
           }
 

@@ -5,7 +5,7 @@ var winston = require('../config/winston');
 const { stringify } = require('uuid');
 
 var defaultFullTextLanguage = process.env.DEFAULT_FULLTEXT_INDEX_LANGUAGE || "none";
-
+let trashExpirationTime = Number(process.env.CHATBOT_TRASH_TTL_SECONDS) || 60 * 60 * 24 * 30; // 30 days
 
 var Faq_kbSchema = new Schema({
   name: {
@@ -57,6 +57,10 @@ var Faq_kbSchema = new Schema({
   trashed: {
     type: Boolean,
     index: true
+  },
+  trashedAt: {
+    type: Date,
+    required: false
   },
   secret: {
     type: String,
@@ -140,6 +144,10 @@ var Faq_kbSchema = new Schema({
     type: String,
     required: false,
     index: true
+  },
+  original_id: {
+    type: String,
+    required: false
   }
 },{
   timestamps: true
@@ -171,6 +179,37 @@ Faq_kbSchema.pre("save", async function (next) {
   next();
 });
 
+Faq_kbSchema.pre('findOneAndUpdate', async function (next) {
+
+  const update = this.getUpdate();
+  const isUnsetSlug = update?.$unset?.slug !== undefined;
+
+  // $unset.slug is used only on publishing. In this case, skip the slug change and the set of trashedAt
+  if (update.trashed === true && !isUnsetSlug) {
+
+    const docToUpdate = await this.model.findOne(this.getQuery());
+    const timestamp = Date.now();
+
+    if (docToUpdate && docToUpdate.slug) {
+      let slug;
+      slug = docToUpdate.slug;
+      update.trashedAt = new Date();
+      update.slug = `${slug || 'undefined'}-trashed-${timestamp}`;
+    }
+    this.setUpdate(update);
+  }
+
+  next();
+
+});
+
+Faq_kbSchema.post('findOneAndUpdate', async function (doc) {
+  if (doc && doc.trashed === true) {
+    botEvent.emit('faqbot.update.virtual.delete', doc)
+  }
+})
+
+
 Faq_kbSchema.virtual('fullName').get(function () {
   // winston.debug("faq_kb fullName virtual called");
   return (this.name);
@@ -186,6 +225,11 @@ Faq_kbSchema.index(
 Faq_kbSchema.index(
   { id_project: 1, slug: 1 },
   { unique: true, partialFilterExpression: { slug: { $exists: true } } }
+);
+
+Faq_kbSchema.index(
+  { trashedAt: 1 },
+  { expireAfterSeconds: trashExpirationTime }
 );
 
 
@@ -209,3 +253,8 @@ function generateSlug(name) {
 }
 
 module.exports = faq_kb
+
+
+
+// Import botEvent after model declaration to avoid circular dependency issues
+const botEvent = require('../event/botEvent');

@@ -168,11 +168,11 @@ class ModulesManager {
 
             winston.info("ModulesManager jwthistory initialized");
         } catch(err) {
-            if (err.code == 'MODULE_NOT_FOUND') {
-                winston.info("ModulesManager init jwthistory module not found");
-            }else {
+            // if (err.code == 'MODULE_NOT_FOUND') {
+            //     winston.info("ModulesManager init jwthistory module not found");
+            // }else {
                 winston.error("ModulesManager error initializing init jwthistory module", err);
-            }
+            // }
         }
 
 
