@@ -146,7 +146,7 @@ class MessageActionsInterceptor {
 
         messageActionEvent.on("close", function(message) {
             
-            winston.info("called \\close action");
+            winston.verbose("called \\close action");
             
             var request = message.request;
             

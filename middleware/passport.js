@@ -255,7 +255,7 @@ module.exports = function(passport) {
 
   passport.use(new JwtStrategy(opts, async(req, jwt_payload, done)  => {
   // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
-    winston.info("jwt_payload",jwt_payload);
+    winston.verbose("jwt_payload",jwt_payload);
     // console.log("req",req);
     
 
@@ -289,7 +289,7 @@ module.exports = function(passport) {
       winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
-    winston.info("jwthistory passport",jwthistory);
+    winston.verbose("jwthistory passport",jwthistory);
 
     //TODO check into DB if JWT is revoked 
     if (jwthistory && JWT_HISTORY_ENABLED==true) {

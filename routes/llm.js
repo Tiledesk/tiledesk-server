@@ -37,7 +37,7 @@ router.post('/preview', async (req, res) => {
         return res.status(404).send({ success: false, error: "Integration for " + body.llm + " not found."})
     }
 
-    if (!integration?.value?.apikey) {
+    if (!integration?.value?.apikey && body.llm !== 'ollama') {
         return res.status(422).send({ success: false, error: "The key provided for " + body.llm + " is not valid or undefined." })
     }
 
@@ -55,6 +55,18 @@ router.post('/preview', async (req, res) => {
     if (body.context) {
         json.system_context = body.context;
     }
+
+    if (body.llm === 'ollama') {
+        json.llm_key = "";
+        json.model = {
+            name: body.model,
+            url: integration.value.url,
+            token: integration.value.token
+        },
+        json.stream = false;
+    }
+
+    winston.debug("Preview LLM json: ", json);
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);

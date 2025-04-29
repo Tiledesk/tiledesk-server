@@ -148,6 +148,8 @@ var email = require('./routes/email');
 var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
+var webhooks = require('./routes/webhooks');
+var copilot = require('./routes/copilot');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
@@ -203,6 +205,10 @@ jobsManager.listen(); //listen after pubmodules to enabled queued *.queueEnabled
 let whatsappQueue = require('@tiledesk/tiledesk-whatsapp-jobworker');
 winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
+
+let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
+winston.info("multiWorkerQueue from App")
+jobsManager.listenMultiWorker(multiWorkerQueue);
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -616,7 +622,8 @@ app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: fa
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 
-
+app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
+app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 
 
 if (pubModulesManager) {

@@ -58,7 +58,8 @@ html
       a{
         color:#00B7FF
       }
-    title= "tiledesk chat transcript"
-    link(rel='stylesheet', href='/stylesheets/style.css')
+
+    title= (brandName ? brandName + " Chat Transcript" : (title ? title + " Chat Transcript" : "Chat Transcript"))
+    //- link(rel='stylesheet', href='/stylesheets/style.css')
   body
     block content

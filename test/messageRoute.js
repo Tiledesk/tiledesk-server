@@ -39,9 +39,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req_" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "text" })
@@ -49,19 +50,19 @@ describe('MessageRoute', () => {
             
             if (err) { console.error("err", err); }
             if (log) { console.log("res.body", res.body); }
-            
+
             res.should.have.status(200);
             res.body.should.be.a('object');
 
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(0);
-            expect(res.body.request.request_id).to.equal("req123");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -94,9 +95,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req_" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "" })
@@ -123,9 +125,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req_" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({})
@@ -152,9 +155,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req-createSimpleWithAttributes-" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123-createSimpleWithAttributes/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "text", "attributes": { "a": "b" } })
@@ -168,13 +172,13 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123-createSimpleWithAttributes");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(0);
             expect(res.body.attributes.a).to.equal("b");
-            expect(res.body.request.request_id).to.equal("req123-createSimpleWithAttributes");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -226,8 +230,10 @@ describe('MessageRoute', () => {
           });
           pu2.save(function (err, savedProject_user2) {
 
+            let request_id = "req-createwithsender-" + Date.now();
+
             chai.request(server)
-              .post('/' + savedProject._id + '/requests/req123-createwithsender/messages')
+              .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
               .auth(email, pwd)
               .set('content-type', 'application/json')
               .send({ "text": "text", "sender": savedUser2._id.toString() })
@@ -241,12 +247,12 @@ describe('MessageRoute', () => {
                 expect(res.body.sender).to.equal(savedUser2._id.toString());
                 // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
                 expect(res.body.senderFullname).to.equal("Test Firstname22 Test lastname22");
-                expect(res.body.recipient).to.equal("req123-createwithsender");
+                expect(res.body.recipient).to.equal(request_id);
                 expect(res.body.text).to.equal("text");
                 expect(res.body.id_project).to.equal(savedProject._id.toString());
                 expect(res.body.createdBy).to.equal(savedUser._id.toString());
                 expect(res.body.status).to.equal(0);
-                expect(res.body.request.request_id).to.equal("req123-createwithsender");
+                expect(res.body.request.request_id).to.equal(request_id);
                 expect(res.body.request.requester._id).to.equal(savedProject_user2._id.toString());
                 expect(res.body.request.requester.id_user.email).to.equal(email2);
                 expect(res.body.request.requester.id_user.firstname).to.equal("Test Firstname22");
@@ -362,9 +368,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req-createWithLocation-" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req-createWithLocation/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ text: "text", location: { country: "Italy", streetAddress: "Via Roma, 767b", ipAddress: "192.168.1.1", geometry: { type: "Point", coordinates: [-109, 41] } } })
@@ -372,17 +379,17 @@ describe('MessageRoute', () => {
             
             if (err) { console.error("err", err); }
             if (log) { console.log("res.body", res.body); }
-            
+
             res.should.have.status(200);
             res.body.should.be.a('object');
 
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req-createWithLocation");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
-            expect(res.body.request.request_id).to.equal("req-createWithLocation");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -410,9 +417,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req-createWithLocationAsAttributes-" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req-createWithLocationAsAttributes/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ text: "text", attributes: { ipAddress: "95.255.73.34" } })
@@ -427,17 +435,17 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req-createWithLocationAsAttributes");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
-            expect(res.body.request.request_id).to.equal("req-createWithLocationAsAttributes");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
             expect(res.body.request.id_project).to.equal(savedProject._id.toString());
 
             chai.request(server)
-              .get('/' + savedProject._id + '/requests/req-createWithLocationAsAttributes')
+              .get('/' + savedProject._id + '/requests/' + request_id)
               .auth(email, pwd)
               .set('content-type', 'application/json')
               .send()
@@ -448,7 +456,7 @@ describe('MessageRoute', () => {
                 
                 res.should.have.status(200);
                 res.body.should.be.a('object');
-                expect(res.body.request_id).to.equal("req-createWithLocationAsAttributes");
+                expect(res.body.request_id).to.equal(request_id);
                 expect(res.body.location.country).to.equal("IT");
                 expect(res.body.location.ipAddress).to.equal("95.255.73.34");
                 expect(res.body.location.geometry.type).to.equal("Point");
@@ -471,9 +479,10 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
+        let request_id = "req-channel1-" + Date.now();
 
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123-channel1/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ text: "text", channel: { name: "channel1" } })
@@ -487,12 +496,12 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123-channel1");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(0);
-            expect(res.body.request.request_id).to.equal("req123-channel1");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -525,9 +534,9 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
-
+        let request_id = "req_createWithMessageStatus-" + Date.now();
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123-createWithMessageStatus/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "text", "status": 999 })
@@ -541,12 +550,12 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123-createWithMessageStatus");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(999);
-            expect(res.body.request.request_id).to.equal("req123-createWithMessageStatus");
+            expect(res.body.request.request_id).to.equal(request_id);
             if (log) { console.log("res.body.request.requester", JSON.stringify(res.body.request.requester)); }
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
@@ -580,9 +589,9 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
-
+        let request_id = "req_createWithParticipants-" + Date.now();
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123-createWithParticipants/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "text", "participants": [savedUser._id] })
@@ -596,12 +605,12 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123-createWithParticipants");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(0);
-            expect(res.body.request.request_id).to.equal("req123-createWithParticipants");
+            expect(res.body.request.request_id).to.equal(request_id);
             // expect(res.body.request.requester).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -694,9 +703,9 @@ describe('MessageRoute', () => {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
 
         var savedProject = savedProjectAndPU.project;
-
+        let request_id = "req_createSimpleWithFollowers-" + Date.now();
         chai.request(server)
-          .post('/' + savedProject._id + '/requests/req123-createSimpleWithFollowers/messages')
+          .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
           .auth(email, pwd)
           .set('content-type', 'application/json')
           .send({ "text": "text", "followers": [savedProjectAndPU.project_user._id.toString()] })
@@ -710,12 +719,12 @@ describe('MessageRoute', () => {
             expect(res.body.sender).to.equal(savedUser._id.toString());
             // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.senderFullname).to.equal("senderFullname");
-            expect(res.body.recipient).to.equal("req123-createSimpleWithFollowers");
+            expect(res.body.recipient).to.equal(request_id);
             expect(res.body.text).to.equal("text");
             expect(res.body.id_project).to.equal(savedProject._id.toString());
             expect(res.body.createdBy).to.equal(savedUser._id.toString());
             expect(res.body.status).to.equal(0);
-            expect(res.body.request.request_id).to.equal("req123-createSimpleWithFollowers");
+            expect(res.body.request.request_id).to.equal(request_id);
             expect(res.body.request.requester._id).to.equal(savedProjectAndPU.project_user._id.toString());
             // expect(res.body.request.requester_id).to.equal("sender");
             expect(res.body.request.first_text).to.equal("text");
@@ -1069,16 +1078,16 @@ describe('MessageRoute', () => {
       // projectService.create("message-create", savedUser._id).then(function(savedProject) {
       projectService.createAndReturnProjectAndProjectUser("message-create", savedUser._id).then(function (savedProjectAndPU) {
         var savedProject = savedProjectAndPU.project;
-
         leadService.createIfNotExists("leadfullname-message-getall", "andrea.leo@-subscription-message-getall.it", savedProject._id).then(function (createdLead) {
           // requestService.createWithId("request_id-message-getall", createdLead._id, savedProject._id, "first_text").then(function(savedRequest) {
-          requestService.createWithIdAndRequester("request_id-message-getall", savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
+          let request_id = "req_message-getall-" + Date.now();
+          requestService.createWithIdAndRequester(request_id, savedProjectAndPU.project_user._id, null, savedProject._id, "first_text").then(function (savedRequest) {
             messageService.create(savedUser._id, "senderFullname", savedRequest.request_id, "hello",
               savedProject._id, savedUser._id).then(function (savedMessage) {
                 expect(savedMessage.text).to.equal("hello");
 
                 chai.request(server)
-                  .get('/' + savedProject._id + '/requests/request_id-message-getall/messages')
+                  .get('/' + savedProject._id + '/requests/' + request_id + '/messages')
                   .auth(email, pwd)
                   .set('content-type', 'application/json')
                   .end(function (err, res) {
@@ -1089,7 +1098,7 @@ describe('MessageRoute', () => {
 
                     expect(res.body[0].sender).to.equal(savedUser._id.toString());
                     expect(res.body[0].senderFullname).to.equal("senderFullname");
-                    expect(res.body[0].recipient).to.equal("request_id-message-getall");
+                    expect(res.body[0].recipient).to.equal(request_id);
                     expect(res.body[0].text).to.equal("hello");
                     expect(res.body[0].id_project).to.equal(savedProject._id.toString());
                     expect(res.body[0].createdBy).to.equal(savedUser._id.toString());
@@ -1171,8 +1180,9 @@ describe('MessageRoute', () => {
                   expect(res.body.token).to.not.equal(undefined);
                   expect(res.body.token).to.equal('JWT ' + jwtToken);
 
+                  let request_id = "req_customtoken-" + Date.now();
                   chai.request(server)
-                    .post('/' + savedProject._id + '/requests/sendMessageSigninWithCustomTokenOk/messages')
+                    .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
                     .set('Authorization', 'JWT ' + jwtToken)
                     .set('content-type', 'application/json')
                     .send({ "text": "text" })
@@ -1185,12 +1195,12 @@ describe('MessageRoute', () => {
                       expect(res.body.sender).to.equal(externalUserId);
                       // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
                       // expect(res.body.senderFullname).to.equal("senderFullname");
-                      expect(res.body.recipient).to.equal("sendMessageSigninWithCustomTokenOk");
+                      expect(res.body.recipient).to.equal(request_id);
                       expect(res.body.text).to.equal("text");
                       expect(res.body.id_project).to.equal(savedProject._id.toString());
                       expect(res.body.createdBy).to.equal(externalUserId);
                       expect(res.body.status).to.equal(0);
-                      expect(res.body.request.request_id).to.equal("sendMessageSigninWithCustomTokenOk");
+                      expect(res.body.request.request_id).to.equal(request_id);
                       expect(res.body.request.first_text).to.equal("text");
                       expect(res.body.request.id_project).to.equal(savedProject._id.toString());
                       expect(res.body.request.createdBy).to.equal(externalUserId);
@@ -1202,7 +1212,7 @@ describe('MessageRoute', () => {
                       expect(res.body.request.lead).to.not.equal(null);
 
                       chai.request(server)
-                        .get('/' + savedProject._id + '/requests/sendMessageSigninWithCustomTokenOk')
+                        .get('/' + savedProject._id + '/requests/' + request_id)
                         .auth(email, pwd)
                         .set('content-type', 'application/json')
                         .end(function (err, res) {
@@ -1281,8 +1291,9 @@ describe('MessageRoute', () => {
                   expect(res.body.token).to.not.equal(undefined);
                   expect(res.body.token).to.equal('JWT ' + jwtToken);
 
+                  let request_id = "req_customtokenmodified-" + Date.now();
                   chai.request(server)
-                    .post('/' + savedProject._id + '/requests/sendMessageSigninWithCustomTokenModified/messages')
+                    .post('/' + savedProject._id + '/requests/' + request_id + '/messages')
                     .set('Authorization', 'JWT ' + jwtToken)
                     .set('content-type', 'application/json')
                     .send({ "text": "text" })
@@ -1295,12 +1306,12 @@ describe('MessageRoute', () => {
                       expect(res.body.sender).to.equal(externalUserId);
                       // expect(res.body.sender).to.equal(savedProjectAndPU.project_user._id.toString());
                       // expect(res.body.senderFullname).to.equal("senderFullname");
-                      expect(res.body.recipient).to.equal("sendMessageSigninWithCustomTokenModified");
+                      expect(res.body.recipient).to.equal(request_id);
                       expect(res.body.text).to.equal("text");
                       expect(res.body.id_project).to.equal(savedProject._id.toString());
                       expect(res.body.createdBy).to.equal(externalUserId);
                       expect(res.body.status).to.equal(0);
-                      expect(res.body.request.request_id).to.equal("sendMessageSigninWithCustomTokenModified");
+                      expect(res.body.request.request_id).to.equal(request_id);
                       expect(res.body.request.first_text).to.equal("text");
                       expect(res.body.request.id_project).to.equal(savedProject._id.toString());
                       expect(res.body.request.createdBy).to.equal(externalUserId);
@@ -1313,7 +1324,7 @@ describe('MessageRoute', () => {
                       expect(res.body.request.lead.email).to.equal("email2@email.com");
 
                       chai.request(server)
-                        .get('/' + savedProject._id + '/requests/sendMessageSigninWithCustomTokenModified')
+                        .get('/' + savedProject._id + '/requests/' + request_id)
                         .auth(email, pwd)
                         .set('content-type', 'application/json')
                         .end(function (err, res) {
@@ -1345,8 +1356,10 @@ describe('MessageRoute', () => {
                               expect(res.body.user.email).to.equal("email33@email.com");
                               expect(res.body.user.firstname).to.equal("andrea");
 
+                              let request2_id = "req_customtokenmodified2-" + Date.now();
+                              
                               chai.request(server)
-                                .post('/' + savedProject._id + '/requests/sendMessageSigninWithCustomTokenModified33/messages')
+                                .post('/' + savedProject._id + '/requests/' + request2_id + '/messages')
                                 .set('Authorization', 'JWT ' + jwtToken)
                                 .set('content-type', 'application/json')
                                 .send({ "text": "text" })
