@@ -242,7 +242,16 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
   let id_faq_kb = req.params.faq_kbid;
   winston.debug('id_faq_kb: ' + id_faq_kb);
 
-  let release_note = req.body.release_note || "No comment";
+  let chatbot_id;
+  let release_note;
+
+  if (req.body.restore_from) {
+    chatbot_id = req.body.restore_from;
+    release_note = "Restored from " + published_id;
+  } else {
+    chatbot_id = id_faq_kb;
+    release_note = req.body.release_note || "No comment";
+  }
 
   const api_url = process.env.API_URL || configGlobal.apiUrl;
   winston.debug("fork --> base_url: " + api_url); // check if correct
@@ -256,7 +265,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
   try {
     //  fork(id_faq_kb, api_url, token, project_id)
-    let forked = await cs.fork(id_faq_kb, api_url, token, current_project_id);
+    let forked = await cs.fork(chatbot_id, api_url, token, current_project_id);
     // winston.debug("forked: ", forked)
 
     let forkedChatBotId = forked.bot_id;
@@ -512,7 +521,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
   let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
     .sort({ publishedAt: -1 })
     .limit(20)
-    .populate('publishedBy')
+    .populate('publishedBy', '_id firstname lastname email')
     .catch((err) => {
       winston.error("Error finding published chatbots: ", err);
       return res.status(500).send({ success: false, error: "Error finding published chatbots from root " + chatbot_id });
