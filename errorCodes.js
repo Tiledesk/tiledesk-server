@@ -31,6 +31,12 @@ const errorCodes = {
     ERRORS: {
       DUPLICATE_SLUG: 12001
     }
+  },
+  WEBHOOK: {
+    BASE_CODE: 13000,
+    ERRORS: {
+      NO_PRELOADED_DEV_REQUEST: 13001
+    }
   }
   // Aggiungi altre route
 };

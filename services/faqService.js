@@ -80,8 +80,6 @@ class FaqService {
           winston.debug('external bot: ', savedFaq_kb);
         }
 
-
-
         return resolve(savedFaq_kb);
       });
     });
