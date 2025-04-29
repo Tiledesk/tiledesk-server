@@ -144,7 +144,7 @@ class BotEvent extends EventEmitter {
             })
 
             console.log("\n\ndeletedW on event: ", deletedW);
-            let publishedChatbots = await Faq_kb.find({ original_id: chatbot._id }, { _id: 1 }).catch((err) => {
+            let publishedChatbots = await Faq_kb.find({ root_id: chatbot._id }, { _id: 1 }).catch((err) => {
                 winston.error("Event faqbot.update.virtual.delete error getting all published chatbots ", err);
             })
 

@@ -111,8 +111,13 @@ var Faq_kbSchema = new Schema({
     index: true,
     default: 0
   },
+  // publishedBy: {
+  //   type: String,
+  // },
   publishedBy: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'user',
+    required: false
   },
   publishedAt: {
     type: Date
@@ -145,7 +150,11 @@ var Faq_kbSchema = new Schema({
     required: false,
     index: true
   },
-  original_id: {
+  root_id: {
+    type: String,
+    required: false
+  },
+  release_note: {
     type: String,
     required: false
   }
