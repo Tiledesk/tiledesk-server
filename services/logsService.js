@@ -13,10 +13,11 @@ class LogsService {
             level = default_log_level
         }
         let nlevel = levels[level];
+        console.log("Level num: ", nlevel);
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.level": { $lt: nlevel } } },
+            { $match: { "rows.nlevel": { $lte: nlevel } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -31,7 +32,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.level": { $lt: nlevel }, "rows.timestamp": { $lt: timestamp } } },
+            { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $lt: timestamp } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -46,7 +47,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.level": { $lt: nlevel }, "rows.timestamp": { $gt: timestamp } } },
+            { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $gt: timestamp } } },
             { $sort: { "rows.timestamp": 1, "rows._id": 1 } },
             { $limit: limit }
         ])
