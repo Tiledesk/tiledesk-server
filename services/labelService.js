@@ -172,13 +172,13 @@ getAll_Cached(id_project) {
                             // this is a TDCache instance and not a Native Redis client
                             cacheClient.set(cacheKey, label, { EX:  cacheUtil.longTTL, callback: function() {
                                 winston.verbose("Created cache for label",{err:err});
-                                winston.debug("Created cache for label reply:"+reply);
+                                winston.debug("Created cache for label: " + label);
                             }});
                             
                         } else {
                             cacheClient.set(cacheKey, "empty", { EX:  cacheUtil.longTTL, callback: function() {
                                 winston.verbose("Created empty cache for label",{err:err});
-                                winston.debug("Created empty cache for label reply:"+reply);                                                    
+                                winston.debug("Created empty cache for label: " + label);                                                    
                             }});
                         }
 

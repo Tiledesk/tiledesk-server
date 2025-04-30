@@ -247,7 +247,7 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
   if (req.body.restore_from) {
     chatbot_id = req.body.restore_from;
-    release_note = "Restored from " + published_id;
+    release_note = "Restored from " + chatbot_id;
   } else {
     chatbot_id = id_faq_kb;
     release_note = req.body.release_note || "No comment";
