@@ -520,7 +520,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
 
   let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
     .sort({ publishedAt: -1 })
-    .limit(20)
+    .limit(100)
     .populate('publishedBy', '_id firstname lastname email')
     .catch((err) => {
       winston.error("Error finding published chatbots: ", err);
