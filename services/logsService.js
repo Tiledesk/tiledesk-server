@@ -16,7 +16,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.level": { $lt: nlevel } } },
+            { $match: { "rows.nlevel": { $lt: nlevel } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
