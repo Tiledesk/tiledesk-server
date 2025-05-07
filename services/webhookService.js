@@ -43,7 +43,7 @@ class WebhookService {
                 }
                 let json_value = JSON.parse(value);
                 payload.request_id = json_value.request_id;
-            }   
+            }
 
             let token = await this.generateChatbotToken(chatbot);
 
