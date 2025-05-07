@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 
 })
 
-router.get('/:chatbot_id/', async (req, res) => {
+router.get('/:chatbot_id', async (req, res) => {
   
   let id_project = req.projectid;
   let chatbot_id = req.params.chatbot_id;
@@ -43,6 +43,24 @@ router.get('/:chatbot_id/', async (req, res) => {
 
   res.status(200).send(webhook);
 
+})
+
+router.get('/id/:webhook_id', async (req, res) => {
+
+  let id_project = req.projectid;
+  let webhook_id = req.params.webhook_id;
+
+  let webhook = await Webhook.findOne({ id_project: id_project, webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error finding webhook: ", err);
+    return res.status(500).send({ success: false, error: "Error findin webhook with id " + webhook_id });
+  })
+
+  if (!webhook) {
+    winston.verbose("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  res.status(200).send(webhook);
 })
 
 

@@ -60,7 +60,7 @@ describe('WebhookRoute', () => {
                                 expect(res.body.chatbot_id).to.equal(chatbot_id);
                                 expect(res.body.block_id).to.equal(webhook_intent_id);
                                 expect(res.body.name).to.equal("testbot-webhook");
-                                expect(res.body.enabled).to.equal(false);
+                                expect(res.body.enabled).to.equal(true);
                                 should.exist(res.body.webhook_id)
                                 expect(res.body).to.haveOwnProperty('webhook_id')
                                 expect(res.body.webhook_id).to.have.length(32)
@@ -125,6 +125,26 @@ describe('WebhookRoute', () => {
                                         should.exist(res.body.webhook_id)
                                         expect(res.body).to.haveOwnProperty('webhook_id')
                                         expect(res.body.webhook_id).to.have.length(32)
+
+                                        let webhook_id = res.body.webhook_id;
+
+                                        chai.request(server)
+                                            .get('/' + savedProject._id + '/webhooks/id/' + webhook_id)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+                                                if (err) { console.error("err: ", err); }
+                                                if (log) { console.log("res.body", res.body); }
+
+                                                res.should.have.status(200);
+                                                res.body.should.be.a('object');
+                                                expect(res.body.async).to.equal(true);
+                                                expect(res.body.id_project).to.equal(savedProject._id.toString());
+                                                expect(res.body.chatbot_id).to.equal(chatbot_id);
+                                                expect(res.body.block_id).to.equal(webhook_intent_id);
+                                                should.exist(res.body.webhook_id)
+                                                expect(res.body).to.haveOwnProperty('webhook_id')
+                                                expect(res.body.webhook_id).to.have.length(32)
+                                            })
 
                                     })
 
@@ -303,7 +323,7 @@ describe('WebhookRoute', () => {
                                         res.should.have.status(200);
                                         res.body.should.be.a('object');
                                         expect(res.body.success).to.equal(true);
-                                        expect(res.body.message).to.equal("Webhook for chatbot " + chatbot_id +  " deleted successfully")
+                                        expect(res.body.message).to.equal("Webhook for chatbot " + chatbot_id + " deleted successfully")
 
                                         done();
 
@@ -360,7 +380,6 @@ describe('WebhookRoute', () => {
                                         if (err) { console.error("err: ", err); }
                                         if (log) { console.log("res.body", res.body); }
 
-                                        console.log("res.body", res.body);
                                         res.should.have.status(200);
                                         res.body.should.be.a('object');
                                         expect(res.body.success).to.equal(true);
