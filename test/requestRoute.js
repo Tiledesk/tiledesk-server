@@ -101,7 +101,8 @@ describe('RequestRoute', () => {
 
             if (err) { console.error("err: ", err); }
             if (log) { console.log("res.body",  res.body); }
-
+            console.log("res.body",  res.body);
+            
             res.should.have.status(200);
             res.body.should.be.a('object');
 
@@ -315,7 +316,7 @@ describe('RequestRoute', () => {
         var savedProject = savedProjectAndPU.project;
 
 
-        faqService.create("testbot", null, savedProject._id, savedUser._id, "internal").then(function (savedBot) {
+        faqService.create(savedProject._id, savedUser._id, { name: "testbot", type: "internal" }).then(function (savedBot) {
 
 
 

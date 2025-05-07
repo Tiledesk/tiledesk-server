@@ -26,7 +26,6 @@ router.get('/', async (req, res) => {
             .then((response) => {
                 return response;
             }).catch((err) => {
-                winston.error("Error running webhook: ", err);
                 return;
             })
     )
@@ -62,7 +61,6 @@ router.post('/', async (req, res) => {
             .then((response) => {
                 return response;
             }).catch((err) => {
-                winston.error("Error running webhook: ", err);
                 return;
             })
     )
