@@ -37,7 +37,7 @@ const WebhookSchema = mongoose.Schema({
   enabled: {
     type: Boolean,
     required: true,
-    default: false
+    default: true
   }
 }, {
   timestamps: true
