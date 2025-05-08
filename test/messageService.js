@@ -119,6 +119,30 @@ describe('messageService', function () {
     });
   });
 
+  it('createMessageAndFillTextWithTranslation', function (done) {
+    // this.timeout(10000);
+
+    projectService.create("test1", userid).then(function (savedProject) {
+      // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language) {
+
+      let quoteManager = new QuoteManager({ project: savedProject, tdCache: tdCache })
+      quoteManager.start();
+
+      messageService.create(userid, "test sender", "testrecipient-createMessage", "",
+        savedProject._id, userid, undefined, { a1: "a1" }, "file", { name: "filename", type: "audio/mpeg", src: "filenameurl.com"}, "it").then(function (savedMessage) {
+          winston.debug("resolve savedMessage", savedMessage.toObject());
+
+          expect(savedMessage.text).to.equal("This is a mock trancripted audio");
+          done();
+
+        }).catch(function (err) {
+          assert.isNotOk(err, 'Promise error');
+          done();
+        });
+
+    });
+  });
+
 
 
 

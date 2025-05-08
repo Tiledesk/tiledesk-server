@@ -303,20 +303,23 @@ describe('FaqKBRoute', () => {
                             expect(res.body.name).to.equal("testbot");
                             var id_faq_kb = res.body._id;
 
-                            chai.request(server)
-                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
-                                .auth(email, pwd)
-                                .end((err, res) => {
+                            setTimeout(() => {
 
-                                    if (err) { console.error("err: ", err); }
-                                    if (log) { console.log("res.body", res.body); }
-
-                                    res.should.have.status(200);
-                                    res.body.should.be.an('array').that.is.not.empty;
-
-                                    done();
-
-                                })
+                                chai.request(server)
+                                    .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+    
+                                        if (err) { console.error("err: ", err); }
+                                        if (log) { console.log("res.body", res.body); }
+    
+                                        res.should.have.status(200);
+                                        res.body.should.be.an('array').that.is.not.empty;
+    
+                                        done();
+    
+                                    })
+                            }, 1000)
 
 
 
@@ -369,8 +372,51 @@ describe('FaqKBRoute', () => {
             })
         })
 
-    });
+        it('create-new-webhook', (done) => {
 
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "testflow", type: "tilebot", subtype: "webhook", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testflow");
+                            expect(res.body.language).to.equal("en");
+                            expect(res.body.type).to.equal("tilebot");
+                            expect(res.body.subtype).to.equal("webhook")
+
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + res.body._id)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+
+                                    done();
+
+                                });
+                        });
+                });
+            });
+
+        })
+
+    });
 
     describe('Update', () => {
 
@@ -791,9 +837,10 @@ describe('FaqKBRoute', () => {
                 projectService.create('test-faqkb-create', savedUser._id).then((savedProject) => {
 
                     chai.request(server)
-                        .post('/' + savedProject._id + '/faq_kb?replace=true')
+                        //.post('/' + savedProject._id + '/faq_kb?replace=true')
+                        .post('/' + savedProject._id + '/faq_kb')
                         .auth(email, pwd)
-                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "blank " })
+                        .send({ "name": "testbot", type: "tilebot", language: "en", template: "empty" })
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err); }
@@ -826,11 +873,11 @@ describe('FaqKBRoute', () => {
 
                                             if (err) { console.error("err: ", err); }
                                             if (log) { console.log("import json res: ", JSON.stringify(res.body, null, 2)); }
-
+                                            
                                             res.should.have.status(200);
-                                            //res.should.be.a('object');
-                                            //expect(res.body.name).to.equal("examplebot");
-                                            //expect(res.body.language).to.equal("en");
+                                            res.should.be.a('object');
+                                            expect(res.body.name).to.equal("example bot");
+                                            expect(res.body.language).to.equal("en");
 
                                             done();
                                         })
@@ -942,6 +989,9 @@ describe('FaqKBRoute', () => {
 
                                             if (err) { console.error("err: ", err) };
                                             if (log) { console.log("res.body: ", res.body) };
+                                            
+                                            console.error("err: ", err)
+                                            console.log("res.body: ", res.body)
 
                                             res.should.have.status(200);
                                             //res.body.should.be.a('string');
@@ -1021,6 +1071,191 @@ describe('FaqKBRoute', () => {
 
         }).timeout(20000);
 
+        it('import-webhook-json', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb/importjson/null?create=true')
+                        .auth(email, pwd)
+                        .set('Content-Type', 'text/plain')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-webhook-json.txt')), 'example-webhook-json.txt')
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err) };
+                            if (log) { console.log("res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.should.be.a('object');
+                            expect(res.body.name).to.equal("Flow 1");
+                            expect(res.body.language).to.equal("en");
+
+                            let id_faq_kb = res.body._id
+
+                            chai.request(server)
+                                .get('/' + savedProject._id + '/faq?id_faq_kb=' + id_faq_kb)
+                                .auth(email, pwd)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.an('array').that.is.not.empty;
+                                    expect(res.body.length).to.equal(3);
+
+                                    done();
+
+                                })
+                        })
+                })
+            })
+        })
+        
+
+    })
+
+    describe('Delete', () => {
+
+        it('logical-delete-with-ttl', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "testbot", type: "tilebot", subtype: "chatbot", template: "blank", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("testbot");
+                            expect(res.body.language).to.equal("en");
+
+                            let chatbot_id = res.body._id;
+
+                            chai.request(server)
+                                .put('/' + savedProject._id + '/faq_kb/' + chatbot_id)
+                                .auth(email, pwd)
+                                .send({ trashed: true })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.trashed).to.equal(true);
+                                    expect(res.body.trashedAt).to.exist;
+
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/faq/?id_faq_kb=' + chatbot_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('array');
+                                            expect(res.body.length).to.equal(3);
+                                            expect(res.body[0].trashed).to.equal(true);
+                                            expect(res.body[0].trashedAt).to.exist;
+
+                                            done();
+                                        })
+
+                                })
+                        });
+                });
+            });
+        })
+
+        it('logical-webhook-delete-with-ttl', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/' + savedProject._id + '/faq_kb')
+                        .auth(email, pwd)
+                        .send({ name: "test-webhook", type: "tilebot", subtype: "webhook", template: "blank_webhook", language: 'en' })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body", res.body); }
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.name).to.equal("test-webhook");
+                            expect(res.body.language).to.equal("en");
+
+                            let chatbot_id = res.body._id;
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/webhooks')
+                                .auth(email, pwd)
+                                .send({ chatbot_id: chatbot_id, block_id: "example-block-id", async: false })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+                                    console.log("res.body", res.body);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+
+                                    chai.request(server)
+                                        .put('/' + savedProject._id + '/faq_kb/' + chatbot_id)
+                                        .auth(email, pwd)
+                                        .send({ trashed: true })
+                                        .end((err, res) => {
+        
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+        
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.trashed).to.equal(true);
+                                            expect(res.body.trashedAt).to.exist;
+        
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/faq/?id_faq_kb=' + chatbot_id)
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    
+                                                    if (err) { console.error("err: ", err); }
+                                                    if (log) { console.log("res.body", res.body); }
+        
+                                                    res.should.have.status(200);
+                                                    res.body.should.be.a('array');
+                                                    expect(res.body.length).to.equal(2);
+                                                    expect(res.body[0].trashed).to.equal(true);
+                                                    expect(res.body[0].trashedAt).to.exist;
+        
+                                                    done();
+                                                })
+        
+                                        })
+                                })
+
+                        });
+                });
+            });
+        })
     })
 
     // describe('Train', () => {
