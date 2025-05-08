@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Request = require("../models/request");
 var winston = require('../config/winston');
+var moment = require('moment');
 const requestEvent = require('../event/requestEvent');
 const { check, validationResult } = require('express-validator');
 var requestService = require('../services/requestService');

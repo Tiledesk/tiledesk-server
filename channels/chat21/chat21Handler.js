@@ -199,7 +199,7 @@ class Chat21Handler {
                         return 0;
                     }
                     if (!requests || (requests && requests.length==0)) {
-                        winston.warn("No request found for lead id " +lead._id );
+                        winston.verbose("No request found for lead id " +lead._id );
                         return 0;
                     }
                     

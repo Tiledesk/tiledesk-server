@@ -5,6 +5,40 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.83
+- Fix bug: missing moment.js import on /requests/me
+
+# 2.10.82
+- Updated whatsapp-connector to 0.1.83
+
+# 2.10.81
+- Fix bug on webhook import and fork (wrong blank template)
+- Updated whatsapp-connector to 0.1.82
+
+# 2.10.80
+- Updated tybot-connector to 2.0.9
+
+# 2.10.79
+- Updated tybot-connector to 2.0.8
+
+# 2.10.78
+- Updated vxml-connector to 0.1.76
+- Updated vxml-connector listener
+- Fix bug on message transcript template (brandLogo)
+
+# 2.10.77
+- Updated whatsapp-jobworker to 0.0.12
+- Fix logs and log levels
+
+# 2.10.76
+- Added support for ollama in llm preview
+
+# 2.10.75
+- Updated tybot-connector to 2.0.7
+
+# 2.10.74
+- Updated tybot-connector to 2.0.6
+
 # 2.10.73
 - Updated tybot-connector to 2.0.4
 
