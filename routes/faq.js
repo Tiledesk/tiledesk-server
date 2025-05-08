@@ -3,7 +3,6 @@ var router = express.Router();
 var Faq = require("../models/faq");
 var Faq_kb = require("../models/faq_kb");
 var multer = require('multer')
-var upload = multer()
 const faqBotEvent = require('../event/faqBotEvent');
 var winston = require('../config/winston');
 const faqEvent = require('../event/faqBotEvent')
@@ -16,11 +15,25 @@ csv.separator = ';';
 const axios = require("axios").default;
 var configGlobal = require('../config/global');
 const roleConstants = require('../models/roleConstants');
+const roleChecker = require('../middleware/has-role');
 
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
+
 // POST CSV FILE UPLOAD FROM CLIENT
-router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next) {
+router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), upload.single('uploadFile'), function (req, res, next) {
   winston.debug(' -> -> REQ BODY ', req.body);
   winston.debug(' -> ID FAQ-KB  ', req.body.id_faq_kb);
   winston.debug(' -> DELIMITER ', req.body.delimiter);
@@ -138,7 +151,7 @@ router.post('/uploadcsv', upload.single('uploadFile'), function (req, res, next)
 });
 
 
-router.post('/', function (req, res) {
+router.post('/', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -205,7 +218,7 @@ router.post('/', function (req, res) {
   });
 });
 
-router.post('/ops_update', async (req, res) => {
+router.post('/ops_update', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async (req, res) => {
 
   let id_faq_kb = req.body.id_faq_kb;
   let operations = req.body.operations;
@@ -321,7 +334,7 @@ router.post('/ops_update', async (req, res) => {
 
 })
 
-router.patch('/:faqid/attributes', function (req, res) {
+router.patch('/:faqid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
   let data = req.body;
   winston.debug("data: ", data);
 
@@ -374,7 +387,7 @@ router.patch('/:faqid/attributes', function (req, res) {
   })
 })
 
-router.put('/:faqid', function (req, res) {
+router.put('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug('UPDATE FAQ ', req.body);
   let faqid = req.params.faqid;
@@ -470,7 +483,7 @@ router.put('/:faqid', function (req, res) {
 
 
 // DELETE REMOTE AND LOCAL FAQ
-router.delete('/:faqid', function (req, res) {
+router.delete('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug('DELETE FAQ - FAQ ID ', req.params.faqid);
 
@@ -521,7 +534,7 @@ router.delete('/:faqid', function (req, res) {
 });
 
 // EXPORT FAQ TO CSV
-router.get('/csv', function (req, res) {
+router.get('/csv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
   var query = {};
 
   winston.debug('req.query', req.query);
@@ -554,7 +567,7 @@ router.get('/csv', function (req, res) {
 });
 
 
-router.get('/:faqid', function (req, res) {
+router.get('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -570,11 +583,17 @@ router.get('/:faqid', function (req, res) {
 });
 
 
-
-router.get('/', function (req, res, next) {
+router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res, next) {
   var query = {};
 
   winston.debug("GET ALL FAQ OF THE BOT ID (req.query): ", req.query);
+
+  let restricted_mode;
+
+  let project_user = req.projectuser;
+  if (project_user && project_user.role === roleConstants.AGENT) {
+    restricted_mode = true;
+  }
 
   if (req.query.id_faq_kb) {
     query.id_faq_kb = req.query.id_faq_kb;
@@ -610,8 +629,7 @@ router.get('/', function (req, res, next) {
     query.intent_display_name = req.query.intent_display_name
   }
 
-  let project_user = req.projectuser;
-  if (project_user && project_user.role === roleConstants.AGENT) {
+  if (restricted_mode) {
     query.agents_available = {
       $in: [ null, true ]
     }
@@ -631,21 +649,26 @@ router.get('/', function (req, res, next) {
   //   console.log("result: ", result);
   // })
 
-  return Faq.find(query).
-    skip(skip).limit(limit).
-    populate({ path: 'faq_kb' })//, match: { trashed: { $in: [null, false] } }}).
-    .exec(function (err, faq) {
-      winston.debug("GET FAQ ", faq);
+  return Faq.find(query)
+    .skip(skip).limit(limit)
+    .populate({ path: 'faq_kb' })
+    .lean()
+    .exec(function (err, faqs) {
+
+      winston.debug("GET FAQ ", faqs);
 
       if (err) {
         winston.debug('GET FAQ err ', err)
         return next(err)
       };
-      winston.debug('GET FAQ  ', faq)
-      res.json(faq);
 
+      if (restricted_mode === true) {
+        faqs = faqs.map(({ webhook_enabled, faq_kb, actions, attributes, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+        faqs = faqs.filter(f => (f.intent_display_name !== "start" && f.intent_display_name !== 'defaultFallback'));
+      }
+
+      res.status(200).send(faqs);
     });
-
 
 });
 

@@ -5,6 +5,131 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.83
+- Fix bug: missing moment.js import on /requests/me
+
+# 2.10.82
+- Updated whatsapp-connector to 0.1.83
+
+# 2.10.81
+- Fix bug on webhook import and fork (wrong blank template)
+- Updated whatsapp-connector to 0.1.82
+
+# 2.10.80
+- Updated tybot-connector to 2.0.9
+
+# 2.10.79
+- Updated tybot-connector to 2.0.8
+
+# 2.10.78
+- Updated vxml-connector to 0.1.76
+- Updated vxml-connector listener
+- Fix bug on message transcript template (brandLogo)
+
+# 2.10.77
+- Updated whatsapp-jobworker to 0.0.12
+- Fix logs and log levels
+
+# 2.10.76
+- Added support for ollama in llm preview
+
+# 2.10.75
+- Updated tybot-connector to 2.0.7
+
+# 2.10.74
+- Updated tybot-connector to 2.0.6
+
+# 2.10.73
+- Updated tybot-connector to 2.0.4
+
+# 2.10.72
+- Updated tybot-connector to 2.0.3
+
+# 2.10.71
+- Updated tybot-connector to 2.0.2
+- Bug fix: chatbot loosing slug after import/fork
+- Added: white labelling on messages template (transcript)
+
+# 2.10.70 /* aborted */
+- Updated tybot-connector to 2.0.0
+- Bug fix: chatbot loosing slug after import/fork
+- Added: white labelling on messages template (transcript)
+
+# 2.10.69
+- Updated tiledesk-apps to 1.0.28
+
+# 2.10.68
+- Updated tybot-connector to 0.4.2
+
+# 2.10.67
+- Added route for webhooks
+- Added endpoint to run webhook
+- Added chatbot subtypes
+- Updated tybot-connector to 0.4.0
+
+# 2.10.66
+- Updated QuoteService with new plans
+
+# 2.10.65
+- fix issue con /rating called by chatbot
+
+# 2.10.64
+- updated tybot-connector to 0.3.4
+- updated whatsapp-connector to 0.1.81
+- fix bug: not existing err variable on requestService 
+
+# 2.10.63
+- updated tybot-connector to 0.3.3
+- updated multi-worker to 0.1.20
+
+# 2.10.62
+- bug fix: added missing formData import in aiService
+
+# 2.10.61
+- updated tybot-connector to 0.3.2
+- updated whatsapp-connector to 0.1.78
+- minor fix
+
+# 2.10.59
+- updated tybot-connector to 0.2.152
+- restored old default system contexts
+
+# 2.10.58
+- updated tybot-connector to 0.2.150
+- fix issue on reconnect to rabbit queue (kb indexing)
+- updated multi-worker to 0.1.19
+- fix issue on TILEBOT_ENDPOINT undefined
+- added endpoint for llm preview
+- updated default contexts for gpt-4o and gpt-4o-mini
+
+# 2.10.56
+- bug fix: wrong tilebot_endpoint declaration
+
+# 2.10.54
+- updated multi-worker to 0.1.19
+- updated queueManagerClass to improves queue reconnect system
+
+# 2.10.53
+- added voice quota duration
+
+# 2.10.52
+- updated tybot-connector to 0.2.148
+- updated faqRoute /get endpoint with restricted mode
+
+# 2.10.51
+- updated /replace endpoint adding trashed: false inside query
+
+# 2.10.50
+- updated tybot-connector to 0.2.147
+- removed logs
+- fix /department/operators bug (Circular Dependency on JSON Stringify)
+
+# 2.10.49
+- changed TILEBOT_ENDPOINT
+
+# 2.10.48
+- updated tybot-connector to 0.2.146
+
 # 2.10.44
 - updated tybot-connector to 0.2.141
 
