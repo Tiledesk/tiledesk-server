@@ -54,7 +54,7 @@
     "@tiledesk/tiledesk-sms-connector": "^0.1.11",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.75",
     "@tiledesk/tiledesk-voice-twilio-connector": "^0.1.13",
-    "@tiledesk/tiledesk-multi-worker": "^0.3.1-rc13",
+    "@tiledesk/tiledesk-multi-worker": "^0.3.1-rc14",
     "passport-oauth2": "^1.8.0",
     "amqplib": "^0.5.5",
     "app-root-path": "^3.0.0",
