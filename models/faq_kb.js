@@ -148,8 +148,12 @@ var Faq_kbSchema = new Schema({
 
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
-  if (this.isNew && !this.slug) {
-    const baseSlug = generateSlug(this.name);
+  if (this.isNew) {
+    
+    let baseSlug = this.slug;
+    if (!this.slug) {
+      baseSlug = generateSlug(this.name);
+    }
     let uniqueSlug = baseSlug;
 
     const existingCount = await mongoose.model("faq_kb").countDocuments({
