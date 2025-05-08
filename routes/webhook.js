@@ -11,6 +11,8 @@ const httpUtil = require('../utils/httpUtil');
 var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const webhookService = require('../services/webhookService');
+const errorCodes = require('../errorCodes');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -186,6 +188,8 @@ router.all('/:webhook_id', async (req, res) => {
   let payload = req.body;
   payload.webhook_http_method = req.method;
   let params = req.query;
+  let dev = params.dev;
+  delete params.dev;
   if (params) {
     payload.webhook_query_params = params;
   }
@@ -200,41 +204,64 @@ router.all('/:webhook_id', async (req, res) => {
     return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
   }
 
-  webhookService.run(webhook, payload).then((response) => {
+  if (!webhook.enabled) {
+    winston.verbose("Webhook " + webhook_id + " is currently turned off")
+    return res.status(422).send({ success: false, error: "Webhook " + webhook_id + " is currently turned off"})
+  }
+
+  payload.request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook_id;
+
+  // To delete - Start
+  let redis_client = req.app.get('redis_client');
+  // and substitute currect run with the following one
+  //webhookService.run(webhook, payload)
+  // To delete - End
+  webhookService.run(webhook, payload, dev, redis_client).then((response) => {
     return res.status(200).send(response);
   }).catch((err) => {
-    let status = err.status || 500;
-    return res.status(status).send(err.data);
+    if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
+      return res.status(422).send({ success: false, message: "Development webhook is currently turned off", code: err.code })
+    } else {
+      let status = err.status || 500;
+      return res.status(status).send(err.data);
+    }
   })
   
-  // let chatbot = await Faq_kb.findById(webhook.chatbot_id).select("+secret").catch((err) => {
-  //   winston.error("Error finding chatbot ", err);
-  //   return res.status(500).send({ success: false, error: "Error finding chatbot with id " + webhook.chatbot_id})
-  // })
+})
 
-  // if (!chatbot) {
-  //   winston.verbose("Chatbot not found with id " + webhook.chatbot_id);
-  //   return res.status(404).send({ success: false, error: "Chatbot not found with id " + webhook.chatbot_id })
-  // }
+router.all('/:webhook_id/dev', async (req, res) => {
 
-  // let token = await generateChatbotToken(chatbot);
+  let webhook_id = req.params.webhook_id;
+  let payload = req.body;
+  payload.webhook_http_method = req.method;
+  let params = req.query;
+  delete params.dev;
+  if (params) {
+    payload.webhook_query_params = params;
+  }
 
-  // let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
-  // winston.info("Webhook chatbot URL: ", url);
+  let webhook = await Webhook.findOne({ webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error finding webhook: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
 
-  // payload.async = webhook.async;
-  // payload.token = token;
+  if (!webhook) {
+    winston.warn("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
 
-  // if (process.env.NODE_ENV === 'test') {
-  //   return res.status(200).send({ success: true, message: "Webhook disabled in test mode"})
-  // }
+  let redis_client = req.app.get('redis_client');
+  webhookService.run(webhook, payload, true, redis_client).then((response) => {
+    return res.status(200).send(response);
+  }).catch((err) => {
+    if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
+      return res.status(422).send({ success: false, message: "Development webhook is currently turned off", code: err.code })
+    } else {
+      let status = err.status || 500;
+      return res.status(status).send(err.data);
+    }
+  })
   
-  // let response = await httpUtil.post(url, payload).catch((err) => {
-  //   winston.error("Error calling webhook on post: ", err);
-  //   return res.status(500).send({ success: false, error: err });
-  // })
-
-  // res.status(200).send(response.data);
 })
 
 async function scheduleScrape(resources) {
