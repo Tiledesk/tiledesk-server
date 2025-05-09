@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.84
+- Added: missing default contexts for gpt-4.1 models
+- Updated tybot-connector to 2.0.10
+
 # 2.10.83
 - Fix bug: missing moment.js import on /requests/me
 
