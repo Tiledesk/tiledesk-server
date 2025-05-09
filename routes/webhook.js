@@ -1,10 +1,25 @@
 var express = require('express');
 var router = express.Router();
+const uuidv4 = require('uuid/v4');
 var { KB, Namespace } = require('../models/kb_setting');
 var winston = require('../config/winston');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 const { AiReindexService } = require('../services/aiReindexService');
+const { Webhook } = require('../models/webhook');
+const httpUtil = require('../utils/httpUtil');
+var jwt = require('jsonwebtoken');
+const Faq_kb = require('../models/faq_kb');
+const webhookService = require('../services/webhookService');
+const errorCodes = require('../errorCodes');
+var ObjectId = require('mongoose').Types.ObjectId;
+
+const port = process.env.PORT || '3000';
+let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
+if (process.env.TILEBOT_ENDPOINT) {
+    TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/"
+}
+winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
@@ -167,6 +182,88 @@ router.post('/kb/status', async (req, res) => {
 
 })
 
+router.all('/:webhook_id', async (req, res) => {
+
+  let webhook_id = req.params.webhook_id;
+  let payload = req.body;
+  payload.webhook_http_method = req.method;
+  let params = req.query;
+  let dev = params.dev;
+  delete params.dev;
+  if (params) {
+    payload.webhook_query_params = params;
+  }
+
+  let webhook = await Webhook.findOne({ webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error finding webhook: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+  if (!webhook) {
+    winston.warn("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  if (!webhook.enabled) {
+    winston.verbose("Webhook " + webhook_id + " is currently turned off")
+    return res.status(422).send({ success: false, error: "Webhook " + webhook_id + " is currently turned off"})
+  }
+
+  payload.request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook_id;
+
+  // To delete - Start
+  let redis_client = req.app.get('redis_client');
+  // and substitute currect run with the following one
+  //webhookService.run(webhook, payload)
+  // To delete - End
+  webhookService.run(webhook, payload, dev, redis_client).then((response) => {
+    return res.status(200).send(response);
+  }).catch((err) => {
+    if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
+      return res.status(422).send({ success: false, message: "Development webhook is currently turned off", code: err.code })
+    } else {
+      let status = err.status || 500;
+      return res.status(status).send(err.data);
+    }
+  })
+  
+})
+
+router.all('/:webhook_id/dev', async (req, res) => {
+
+  let webhook_id = req.params.webhook_id;
+  let payload = req.body;
+  payload.webhook_http_method = req.method;
+  let params = req.query;
+  delete params.dev;
+  if (params) {
+    payload.webhook_query_params = params;
+  }
+
+  let webhook = await Webhook.findOne({ webhook_id: webhook_id }).catch((err) => {
+    winston.error("Error finding webhook: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+  if (!webhook) {
+    winston.warn("Webhook not found with id " + webhook_id);
+    return res.status(404).send({ success: false, error: "Webhook not found with id " + webhook_id });
+  }
+
+  let redis_client = req.app.get('redis_client');
+  webhookService.run(webhook, payload, true, redis_client).then((response) => {
+    return res.status(200).send(response);
+  }).catch((err) => {
+    if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
+      return res.status(422).send({ success: false, message: "Development webhook is currently turned off", code: err.code })
+    } else {
+      let status = err.status || 500;
+      return res.status(status).send(err.data);
+    }
+  })
+  
+})
+
 async function scheduleScrape(resources) {
 
   let scheduler = new Scheduler({ jobManager: jobManager });
@@ -183,6 +280,21 @@ async function scheduleScrape(resources) {
   })
 
   return true;
+}
+
+async function generateChatbotToken(chatbot) {
+  let signOptions = {
+    issuer: 'https://tiledesk.com',
+    subject: 'bot',
+    audience: 'https://tiledesk.com/bots/' + chatbot._id,
+    jwtid: uuidv4()
+  };
+
+  let botPayload = chatbot.toObject();
+  let botSecret = botPayload.secret;
+
+  var bot_token = jwt.sign(botPayload, botSecret, signOptions);
+  return bot_token;
 }
 
 module.exports = router;

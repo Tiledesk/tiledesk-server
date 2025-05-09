@@ -18,6 +18,7 @@ const trainingService = require('../services/trainingService');
 var roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
+const faq_kb = require('../models/faq_kb');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
 
@@ -26,12 +27,12 @@ let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
 
 if (MAX_UPLOAD_FILE_SIZE) {
-  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  uploadlimits = { fileSize: parseInt(MAX_UPLOAD_FILE_SIZE) };
   winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({limits: uploadlimits});
+var upload = multer({ limits: uploadlimits });
 
 
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
@@ -50,9 +51,11 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
     //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
   }
 
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
-    res.json(savedFaq_kb);
-  });
+  faqService.create(req.projectid, req.user.id, req.body).then((savedFaq_kb) => {
+    res.status(200).send(savedFaq_kb);
+  }).catch((err) => {
+    res.status(500).send({ succes: false, error: err })
+  })
 
 });
 
@@ -128,7 +131,7 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
 });
 
 router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
-  
+
   let id_faq_kb = req.body.id_faq_kb;
   let webhook_enabled = req.body.webhook_enabled;
 
@@ -239,6 +242,17 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
   let id_faq_kb = req.params.faq_kbid;
   winston.debug('id_faq_kb: ' + id_faq_kb);
 
+  let chatbot_id;
+  let release_note;
+
+  if (req.body.restore_from) {
+    chatbot_id = req.body.restore_from;
+    release_note = "Restored from " + published_id;
+  } else {
+    chatbot_id = id_faq_kb;
+    release_note = req.body.release_note || "No comment";
+  }
+
   const api_url = process.env.API_URL || configGlobal.apiUrl;
   winston.debug("fork --> base_url: " + api_url); // check if correct
 
@@ -251,14 +265,15 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
 
   try {
     //  fork(id_faq_kb, api_url, token, project_id)
-    let forked = await cs.fork(id_faq_kb, api_url, token, current_project_id);
+    let forked = await cs.fork(chatbot_id, api_url, token, current_project_id);
     // winston.debug("forked: ", forked)
 
     let forkedChatBotId = forked.bot_id;
-    winston.debug("forkedChatBotId: "+forkedChatBotId);
+    winston.debug("forkedChatBotId: " + forkedChatBotId);
 
-    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, { $unset: { slug: 1 }, trashed: true, publishedBy: req.user.id, publishedAt: new Date().getTime()}, { new: true, upsert: true }).exec();
-    winston.debug("updatedForkedChabot: ",updatedForkedChabot);
+    let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, { $unset: { slug: 1 }, trashed: true, root_id: id_faq_kb, release_note: release_note, publishedBy: req.user.id, publishedAt: new Date().getTime() }, { new: true, upsert: true }).exec();
+    //let updatedForkedChabot = await Faq_kb.findByIdAndUpdate(forkedChatBotId, { $unset: { slug: 1 }, trashed: true, root_id: id_faq_kb, publishedBy: req.user.id, publishedAt: new Date().getTime() }, { new: true }).exec();
+    winston.debug("updatedForkedChabot: ", updatedForkedChabot);
     botEvent.emit('faqbot.update', updatedForkedChabot);
 
     const port = process.env.PORT || '3000';
@@ -268,20 +283,20 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     }
     winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
-    let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();
-    winston.debug("updatedOriginalChabot: ",updatedOriginalChabot);
+    let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb, { url: TILEBOT_ENDPOINT + forkedChatBotId }, { new: true, upsert: true }).exec();
+    winston.debug("updatedOriginalChabot: ", updatedOriginalChabot);
 
     botEvent.emit('faqbot.update', updatedOriginalChabot);
 
     return res.status(200).send({ message: "Chatbot published successfully", bot_id: forkedChatBotId });
 
-  } catch(e) {
+  } catch (e) {
     winston.error("Error Unable publish chatbot: ", e);
     return res.status(500).send({ success: false, message: "Unable publish chatbot" });
   }
 });
 
-router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.body);
 
@@ -347,7 +362,7 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
   if (req.body.slug != undefined) {
     update.slug = req.body.slug;
   }
-  
+
   winston.debug("update", update);
 
   Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true, upsert: true }, function (err, updatedFaq_kb) {   //TODO add cache_bot_here
@@ -364,8 +379,8 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot','subscriptio
   });
 });
 
-router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), (req, res) => {
-  
+router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), (req, res) => {
+
   winston.debug("update language: ", req.params);
 
   let update = {};
@@ -391,7 +406,7 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
 
 })
 
-router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {   //TODO add cache_bot_here
+router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
   // TODO use service method
@@ -401,40 +416,40 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot'
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
-     if (!updatedBot) {
-        return res.status(404).send({ success: false, msg: 'Object not found.' });
+    if (!updatedBot) {
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
+    }
+
+    if (!updatedBot.attributes) {
+      winston.debug("empty attributes")
+      updatedBot.attributes = {};
+    }
+
+    winston.debug(" updatedBot attributes", updatedBot.attributes)
+
+    Object.keys(data).forEach(function (key) {
+      var val = data[key];
+      winston.debug("data attributes " + key + " " + val)
+      updatedBot.attributes[key] = val;
+    });
+
+    winston.debug("updatedBot attributes", updatedBot.attributes)
+
+    // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
+    updatedBot.markModified('attributes');
+
+    //cacheinvalidation
+    updatedBot.save(function (err, savedProject) {
+      if (err) {
+        winston.error("error saving bot attributes", err)
+        return res.status(500).send({ success: false, msg: 'Error getting object.' });
       }
-      
-      if (!updatedBot.attributes) {
-        winston.debug("empty attributes")
-        updatedBot.attributes = {};
-      }
-
-      winston.debug(" updatedBot attributes", updatedBot.attributes)
-        
-        Object.keys(data).forEach(function(key) {
-          var val = data[key];
-          winston.debug("data attributes "+key+" " +val)
-          updatedBot.attributes[key] = val;
-        });     
-        
-        winston.debug("updatedBot attributes", updatedBot.attributes)
-
-        // https://stackoverflow.com/questions/24054552/mongoose-not-saving-nested-object
-        updatedBot.markModified('attributes');
-
-          //cacheinvalidation
-          updatedBot.save(function (err, savedProject) {
-          if (err) {
-            winston.error("error saving bot attributes",err)
-            return res.status(500).send({ success: false, msg: 'Error getting object.' });
-          }
-          winston.verbose(" saved bot attributes",updatedBot.toObject())
-          botEvent.emit('faqbot.update', updatedBot);
-            res.json(updatedBot);
-        });
+      winston.verbose(" saved bot attributes", updatedBot.toObject())
+      botEvent.emit('faqbot.update', updatedBot);
+      res.json(updatedBot);
+    });
   });
-  
+
 });
 
 router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
@@ -448,12 +463,12 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
     /**
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
      */
-    botEvent.emit('faqbot.delete', faq_kb); 
-    res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully"})
+    botEvent.emit('faqbot.delete', faq_kb);
+    res.status(200).send({ success: true, message: "Chatbot with id " + req.params.faq_kbid + " deleted successfully" })
   });
 });
 
-router.get('/:faq_kbid',  roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.query);
 
@@ -498,7 +513,25 @@ router.get('/:faq_kbid',  roleChecker.hasRoleOrTypes('admin', ['bot','subscripti
   });
 });
 
-router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscription']), function (req, res) {
+router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async function (req, res) {
+
+  let id_project = req.projectid;
+  let chatbot_id = req.params.faq_kbid;
+
+  let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
+    .sort({ publishedAt: -1 })
+    .limit(100)
+    .populate('publishedBy', '_id firstname lastname email')
+    .catch((err) => {
+      winston.error("Error finding published chatbots: ", err);
+      return res.status(500).send({ success: false, error: "Error finding published chatbots from root " + chatbot_id });
+    })
+
+  res.status(200).send(published_chatbots);
+
+})
+
+router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
 
   winston.debug(req.query);
 
@@ -511,10 +544,10 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscri
     }
 
     var signOptions = {
-      issuer:  'https://tiledesk.com',
-      subject:  'bot',
-      audience:  'https://tiledesk.com/bots/'+faq_kb._id,   
-      jwtid: uuidv4()       
+      issuer: 'https://tiledesk.com',
+      subject: 'bot',
+      audience: 'https://tiledesk.com/bots/' + faq_kb._id,
+      jwtid: uuidv4()
     };
 
     // TODO metti bot_? a user._id
@@ -531,7 +564,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscri
 
     var token = jwt.sign(botPayload, botSecret, signOptions);
 
-    res.json({"jwt":token});
+    res.json({ "jwt": token });
   });
 });
 
@@ -539,7 +572,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot','subscri
  * This endpoint should be the only one reachble with role agent.
  * If the role is agent the response must contain only _id, name, or other non relevant info.
  */
-router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), function (req, res) {
+router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res) {
 
 
   winston.debug("req.query", req.query);
@@ -558,10 +591,10 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
   let query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
-  
+
   if (restricted_mode === true) {
     query.agents_available = {
-      $in: [ null, true ]
+      $in: [null, true]
     }
   }
 
@@ -569,13 +602,13 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
     query.type = { $ne: "identity" }
   }
 
-  let search_obj = {"$search": req.query.text};
+  let search_obj = { "$search": req.query.text };
 
-  if (req.query.text) {    
+  if (req.query.text) {
     if (req.query.language) {
       search_obj["$language"] = req.query.language;
     }
-    query.$text = search_obj;    
+    query.$text = search_obj;
   }
 
   if (req.query.public) {
@@ -584,7 +617,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
 
   if (req.query.certified) {
     query.certified = req.query.certified;
-  }             
+  }
 
   winston.debug("query", query);
 
@@ -593,12 +626,12 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot','subscription']), fun
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, message: "Unable to get chatbots" });
     }
-  
+
     if (restricted_mode === true) {
       // Returns only: _id, name, id_project, language
       faq_kbs = faq_kbs.map(({ webhook_enabled, intentsEngine, score, url, attributes, trained, certifiedTags, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
     }
-    
+
     res.json(faq_kbs)
 
   })
@@ -641,6 +674,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     }
   }
 
+  chatbot.template = "empty";
+  
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
 
@@ -663,11 +698,11 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
 
   let id_faq_kb = req.params.id_faq_kb;
   winston.debug('import on id_faq_kb: ' + id_faq_kb);
-  
+
   winston.debug('import with option create: ' + req.query.create);
   winston.debug('import with option replace: ' + req.query.replace);
   winston.debug('import with option overwrite: ' + req.query.overwrite);
-  
+
   let json_string;
   let json;
   if (req.file) {
@@ -683,12 +718,15 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
+    if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+      json.template = 'empty';
+    }
+    let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
-          winston.error("Error creating new chatbot")
-          return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
+        winston.error("Error creating new chatbot")
+        return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
       })
-    
+
     // Edit attributes.rules
     let attributes = json.attributes;
     if (attributes &&
@@ -706,7 +744,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
         }
       })
     }
-    
+
     let chatbot_edited = { attributes: attributes };
 
     let updatedChatbot = await Faq_kb.findByIdAndUpdate(savedChatbot._id, chatbot_edited, { new: true }).catch((err) => {
@@ -718,8 +756,8 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     botEvent.emit('faqbot.create', savedChatbot);
 
     if (json.intents) {
-      
-      json.intents.forEach( async (intent) => {
+
+      json.intents.forEach(async (intent) => {
 
         let new_faq = {
           id_faq_kb: savedChatbot._id,
@@ -794,7 +832,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     if (json.description) {
       chatbot.description = json.description;
     }
-    
+
     if (json.attributes) {
       let attributes = json.attributes;
       if (attributes.rules &&
@@ -818,7 +856,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
     })
 
-    botEvent.emit('faqbot.update', updatedChatbot);    
+    botEvent.emit('faqbot.update', updatedChatbot);
 
     // *****************************
     // **** REPLACE TRUE option ****
@@ -833,7 +871,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     }
 
     if (json.intents) {
-      await json.intents.forEach( async (intent) => {
+      await json.intents.forEach(async (intent) => {
 
         let new_faq = {
           id_faq_kb: updatedChatbot._id,
@@ -871,9 +909,9 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
             }
           }
 
-        // ********************************
-        // **** OVERWRITE FALSE option ****
-        // ********************************
+          // ********************************
+          // **** OVERWRITE FALSE option ****
+          // ********************************
         } else {
 
           let faq = await Faq.create(new_faq).catch((err) => {
@@ -886,7 +924,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           })
 
           if (faq) {
-            winston.verbose("new intent created")
+            winston.debug("new intent created: ", faq)
             faqBotEvent.emit('faq.create', faq);
           }
         }
@@ -931,7 +969,9 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
           webhook_url: faq_kb.webhook_url,
           language: faq_kb.language,
           name: faq_kb.name,
+          slug: faq_kb.slug,
           type: faq_kb.type,
+          subtype: faq_kb.subtype,
           description: faq_kb.description,
           attributes: faq_kb.attributes,
           intents: intents
@@ -967,12 +1007,12 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
 router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);
-  winston.info(req.params.faq_kbid + "/training called" );
+  winston.info(req.params.faq_kbid + "/training called");
 
   var update = {};
   update.trained = true;
   // update._id = req.params.faq_kbid;
-  
+
   winston.debug("update", update);
   // "$set": req.params.faq_kbid
 
