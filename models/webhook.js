@@ -13,6 +13,10 @@ const WebhookSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  name: {
+    type: String,
+    required: false
+  },
   chatbot_id: {
     type: String,
     required: true
@@ -29,12 +33,38 @@ const WebhookSchema = mongoose.Schema({
   copilot: {
     type: Boolean,
     required: false
+  },
+  enabled: {
+    type: Boolean,
+    required: true,
+    default: true
   }
 }, {
   timestamps: true
 })
 
+// Indexes
 WebhookSchema.index({ id_project: 1, chatbot_id: 1}, { unique: true })
+WebhookSchema.index({ id_project: 1, webhook_id: 1}, { unique: true })
+
+// Middlewares
+WebhookSchema.pre("save", async function (next) {
+  if (this.isNew) {
+
+    try {
+      const chatbot = await mongoose.model("faq_kb").findById(this.chatbot_id);
+      if (chatbot) {
+        this.name = chatbot.name + "-webhook";
+      }
+
+      next();
+
+    } catch(error) {
+      next(error);
+    }
+  }
+});
+
 
 const Webhook = mongoose.model("Webhook", WebhookSchema);
 
