@@ -49,7 +49,6 @@ async (req, res)  => {
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
-
   // const errors = validationResult(req);
   // if (!errors.isEmpty()) {
   //   return res.status(422).json({ errors: errors.array() });
@@ -247,12 +246,6 @@ async (req, res)  => {
                     });
                 }).catch(function (err) {    //pubblica questo
                   winston.error('Error creating request: ' + JSON.stringify(err));
-                  winston.log({
-                    level: 'error',
-                    message: 'Error creating request: ' + JSON.stringify(err) + " " + JSON.stringify(req.body),
-                    label: req.projectid
-                  });
-                  // winston.error("Error creating message", err);
                   return res.status(500).send({ success: false, msg: 'Error creating request', err: err });
                 });
 
