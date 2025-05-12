@@ -1,8 +1,8 @@
-name: Publish Tiledesk Server ECR
+name: Publish Tiledesk Server-worker ECR
 
 env:
   REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}/tiledesk
-  IMAGE_NAME: tiledesk-server
+  IMAGE_NAME: tiledesk-server-worker
 
 on:
   push:	 
@@ -55,7 +55,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: ./Dockerfile
+        file: ./Dockerfile-jobs
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ env.COMMIT_ID }}
   
@@ -86,13 +86,13 @@ jobs:
     - name: Update values.yaml
       run: |
         cd ${{ secrets.GIT_REPO }}/helm
-        yq -i '.server.image.tag = "${{ env.VERSION }}-${{ env.COMMIT_ID }}"' values.yaml
-        yq -i '.server.image.repository = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"' values.yaml
+        yq -i '.serverworker.image.tag = "${{ env.VERSION }}-${{ env.COMMIT_ID }}"' values.yaml
+        yq -i '.serverworker.image.repository = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"' values.yaml
         
     - name: Commit and push changes
       run: |
         cd ${{ secrets.GIT_REPO }}
         git config user.name "Tiledesk Bot"
         git config user.email "tiledeskdeveloper@gmail.com"
-        git commit -am "Update image tiledesk/tiledesk-server to ${{ env.VERSION }}-${{ env.COMMIT_ID }}"
+        git commit -am "Update image tiledesk/tiledesk-server-worker to ${{ env.VERSION }}-${{ env.COMMIT_ID }}"
         git push
