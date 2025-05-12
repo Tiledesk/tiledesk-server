@@ -1,0 +1,98 @@
+name: Publish Tiledesk Chatbot ECR
+
+env:
+  REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}/tiledesk
+  IMAGE_NAME: tiledesk-server
+
+on:
+  push:	 
+    branches: [ dev ]
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to ECR
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract_version.outputs.VERSION }}
+      commit-id: ${{ steps.get_commit_id.outputs.COMMIT_ID }}
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    
+    - name: Extract version from package.json
+      id: extract_version
+      run: |
+        VERSION=$(jq -r '.version' package.json)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Get short commit ID
+      id: get_commit_id
+      run: |
+        echo "COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Build and push to Amazon ECR
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ env.COMMIT_ID }}
+  
+  update_helm_chart:
+    name: Update Helm Chart
+    runs-on: ubuntu-latest
+    needs: push_to_registry
+
+    env:
+      COMMIT_ID: ${{ needs.push_to_registry.outputs.commit-id }}
+      VERSION: ${{ needs.push_to_registry.outputs.version }}
+
+    steps:
+    - name: Check out the Helm Chart repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ secrets.GIT_ORG }}/${{ secrets.GIT_REPO }}
+        token: ${{ secrets.GIT_ACTIONS_TOKEN }}
+        path: ${{ secrets.GIT_REPO }}
+        ref: dev  
+      
+    - name: Install yq
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+        sudo chmod +x /usr/local/bin/yq
+        yq --version
+
+    - name: Update values.yaml
+      run: |
+        cd ${{ secrets.GIT_REPO }}/helm
+        yq -i '.server.image.tag = "${{ env.VERSION }}-${{ env.COMMIT_ID }}"' values.yaml
+        yq -i '.server.image.repository = "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"' values.yaml
+        
+    - name: Commit and push changes
+      run: |
+        cd ${{ secrets.GIT_REPO }}
+        git config user.name "Tiledesk Bot"
+        git config user.email "tiledeskdeveloper@gmail.com"
+        git commit -am "Update image tiledesk/tiledesk-server to ${{ env.VERSION }}-${{ env.COMMIT_ID }}"
+        git push
