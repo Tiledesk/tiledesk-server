@@ -4,6 +4,8 @@ var winston = require('../config/winston');
 const { MessageLog } = require('../models/whatsappLog');
 const { Transaction } = require('../models/transaction');
 const logsService = require('../services/logsService');
+const { v4: uuidv4 } = require('uuid');
+const jwt = require("jsonwebtoken")
 
 const jwtSecret = process.env.CHAT21_JWT_SECRET || "tokenKey";
 
