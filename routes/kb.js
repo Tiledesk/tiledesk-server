@@ -6,7 +6,7 @@ var router = express.Router();
 var winston = require('../config/winston');
 var multer = require('multer')
 var upload = multer()
-const openaiService = require('../services/openaiService');
+const aiService = require('../services/aiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
@@ -18,12 +18,24 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
-const { body } = require('express-validator');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
+
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
   debug: false,
@@ -61,8 +73,11 @@ let contexts = {
   "gpt-3.5-turbo":        "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say: \"I don't know<NOANS>\"\n\n####{context}####",
   "gpt-4":                "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
   "gpt-4-turbo-preview":  "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
-  "gpt-4o":               "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf the context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n####{context}####",
-  "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf the context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n####{context}####"
+  "gpt-4o":               "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1":              "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-mini":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-nano":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
 }
 
 /**
@@ -190,7 +205,7 @@ router.post('/scrape/status', async (req, res) => {
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
-  openaiService.scrapeStatus(data).then(async (response) => {
+  aiService.scrapeStatus(data).then(async (response) => {
 
     winston.debug("scrapeStatus response.data: ", response.data);
 
@@ -294,7 +309,7 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
   }
 
-  openaiService.askNamespace(data).then((resp) => {
+  aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
@@ -353,7 +368,7 @@ router.delete('/delete', async (req, res) => {
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
-  openaiService.deleteIndex(data).then((resp) => {
+  aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     res.status(200).send(resp.data);
   }).catch((err) => {
@@ -392,7 +407,7 @@ router.delete('/deleteall', async (req, res) => {
 
   winston.verbose("/deleteall data: ", data);
 
-  openaiService.deleteNamespace(data).then((resp) => {
+  aiService.deleteNamespace(data).then((resp) => {
     winston.debug("delete namespace resp: ", resp.data);
     res.status(200).send(resp.data);
   }).catch((err) => {
@@ -497,7 +512,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
     return res.status(200).send({ success: true, message: "Get chunks skipped in test environment"});
   }
 
-  openaiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
+  aiService.getContentChunks(namespace_id, content_id, engine).then((resp) => {
     let chunks = resp.data;
     winston.debug("chunks for content " + content_id);
     winston.debug("chunks found ", chunks);
@@ -659,7 +674,7 @@ router.delete('/namespace/:id', async (req, res) => {
 
   if (req.query.contents_only && (req.query.contents_only === true || req.query.contents_only === 'true')) {
 
-    openaiService.deleteNamespace(data).then(async (resp) => {
+    aiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
       let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
@@ -693,7 +708,7 @@ router.delete('/namespace/:id', async (req, res) => {
       return res.status(403).send({ success: false, error: "Default namespace cannot be deleted" });
     }
 
-    openaiService.deleteNamespace(data).then(async (resp) => {
+    aiService.deleteNamespace(data).then(async (resp) => {
       winston.debug("delete namespace resp: ", resp.data);
 
       let deleteResponse = await KB.deleteMany({ id_project: project_id, namespace: namespace_id }).catch((err) => {
@@ -926,6 +941,7 @@ router.post('/', async (req, res) => {
     new_kb.scrape_type = 1;
   }
   if (new_kb.type === 'url') {
+    new_kb.refresh = body.refresh;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = await setDefaultScrapeOptions();
@@ -999,6 +1015,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
   let project_id = req.projectid;
   let scrape_type = req.body.scrape_type;
   let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
 
   let namespace_id = req.query.namespace;
   if (!namespace_id) {
@@ -1056,7 +1073,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
       content: "",
       namespace: namespace_id,
       status: -1,
-      scrape_type: scrape_type
+      scrape_type: scrape_type,
+      refresh_rate: refresh_rate
     }
 
     if (!kb.scrape_type) {
@@ -1316,7 +1334,7 @@ router.delete('/:kb_id', async (req, res) => {
 
   winston.verbose("/:delete_id data: ", data);
 
-  openaiService.deleteIndex(data).then((resp) => {
+  aiService.deleteIndex(data).then((resp) => {
     winston.debug("delete resp: ", resp.data);
     if (resp.data.success === true) {
       KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
@@ -1432,9 +1450,6 @@ async function updateStatus(id, status) {
 
 async function scheduleScrape(resources) {
 
-  // let data = {
-  //     resources: resources
-  // }
   let scheduler = new Scheduler({ jobManager: jobManager });
 
   resources.forEach(r => {
@@ -1450,7 +1465,6 @@ async function scheduleScrape(resources) {
       await updateStatus(r.id, error_code);
     });
   })
-
 
   return true;
 }
@@ -1470,7 +1484,7 @@ async function startScrape(data) {
   winston.verbose("status of kb " + data.id + " updated: " + status_updated);
 
   return new Promise((resolve, reject) => {
-    openaiService.singleScrape(data).then(async (resp) => {
+    aiService.singleScrape(data).then(async (resp) => {
       winston.debug("singleScrape resp: ", resp.data);
       let status_updated = await updateStatus(data.id, 300);
       winston.verbose("status of kb " + data.id + " updated: " + status_updated);

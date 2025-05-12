@@ -10,7 +10,6 @@ var winston = require('../config/winston');
 var httpUtil = require("../utils/httpUtil");
 const { forEach } = require('lodash');
 var multer = require('multer')
-var upload = multer()
 var configGlobal = require('../config/global');
 const faq = require('../models/faq');
 var jwt = require('jsonwebtoken');
@@ -21,6 +20,19 @@ const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 
 let chatbot_templates_api_url = process.env.CHATBOT_TEMPLATES_API_URL
+
+
+let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
+let uploadlimits = undefined;
+
+if (MAX_UPLOAD_FILE_SIZE) {
+  uploadlimits = {fileSize: parseInt(MAX_UPLOAD_FILE_SIZE)} ;
+  winston.debug("Max upload file size is : " + MAX_UPLOAD_FILE_SIZE);
+} else {
+  winston.debug("Max upload file size is infinity");
+}
+var upload = multer({limits: uploadlimits});
+
 
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
   winston.debug('create BOT ', req.body);
@@ -38,9 +50,11 @@ router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
     //return res.status(403).send({ success: false, error: "Maximum number of chatbots reached for the current plan", plan_limit: chatbots_limit })
   }
 
-  faqService.create(req.body.name, req.body.url, req.projectid, req.user.id, req.body.type, req.body.description, req.body.webhook_url, req.body.webhook_enabled, req.body.language, req.body.template, req.body.mainCategory, req.body.intentsEngine, req.body.attributes).then(function (savedFaq_kb) {
-    res.json(savedFaq_kb);
-  });
+  faqService.create(req.projectid, req.user.id, req.body).then((savedFaq_kb) => {
+    res.status(200).send(savedFaq_kb);
+  }).catch((err) => {
+    res.status(500).send({ succes: false, error: err })
+  })
 
 });
 
@@ -250,7 +264,10 @@ router.put('/:faq_kbid/publish', roleChecker.hasRole('admin'), async (req, res) 
     botEvent.emit('faqbot.update', updatedForkedChabot);
 
     const port = process.env.PORT || '3000';
-    const TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT || "http://localhost:" + port+ "/modules/tilebot/ext/";
+    let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/ext/";;
+    if (process.env.TILEBOT_ENDPOINT) {
+      TILEBOT_ENDPOINT = process.env.TILEBOT_ENDPOINT + "/ext/"
+    }
     winston.debug("TILEBOT_ENDPOINT: " + TILEBOT_ENDPOINT);
 
     let updatedOriginalChabot = await Faq_kb.findByIdAndUpdate(id_faq_kb,  {url:TILEBOT_ENDPOINT+forkedChatBotId}, { new: true, upsert: true }).exec();
@@ -626,6 +643,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
     }
   }
 
+  chatbot.template = "empty";
+
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
 
@@ -668,7 +687,10 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    let savedChatbot = await faqService.create(json.name, undefined, req.projectid, req.user.id, "tilebot", json.description, json.webhook_url, json.webhook_enabled, json.language, undefined, undefined, undefined, json.attributes)
+    if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+      json.template = 'empty';
+    }
+    let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
           winston.error("Error creating new chatbot")
           return res.status(400).send({ succes: false, message: "Error creatings new chatbot", error: err })
@@ -916,7 +938,9 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
           webhook_url: faq_kb.webhook_url,
           language: faq_kb.language,
           name: faq_kb.name,
+          slug: faq_kb.slug,
           type: faq_kb.type,
+          subtype: faq_kb.subtype,
           description: faq_kb.description,
           attributes: faq_kb.attributes,
           intents: intents

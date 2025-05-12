@@ -454,7 +454,7 @@ router.put('/:requestid/replace', async (req, res) => {
   }
 
   if (name) {
-    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name }).catch((err) => {
+    let chatbot = await faq_kb.findOne({ id_project: req.projectid, name: name, trashed: false }).catch((err) => {
       winston.error("Error finding bot ", err);
       return res.status(500).send({ success: false, error: "An error occurred getting chatbot with name " + name })
     })
@@ -464,7 +464,7 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
-    winston.info("Chatbot found: ", id);
+    winston.verbose("Chatbot found: ", id);
   }
 
   if (slug) {
@@ -478,15 +478,15 @@ router.put('/:requestid/replace', async (req, res) => {
     }
 
     id = "bot_" + chatbot._id;
-    winston.info("Chatbot found: ", id);
+    winston.verbose("Chatbot found: " + id);
   }
 
   let participants = [];
   participants.push(id);
-  winston.info("participants to be set: ", participants);
+  winston.verbose("participants to be set: ", participants);
 
   requestService.setParticipantsByRequestId(req.params.requestid, req.projectid, participants).then((updatedRequest) => {
-    winston.info("SetParticipant response: ", updatedRequest);
+    winston.debug("SetParticipant response: ", updatedRequest);
     res.status(200).send(updatedRequest);
   }).catch((err) => {
     winston.error("Error setting participants ", err);
