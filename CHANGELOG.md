@@ -5,6 +5,14 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.84-rc5
+- Added: modified field in faq_kb model
+- Added: chatbot template refactoring
+- Added: ttl when a chatbot is deleted
+- Added: flow logs apis
+- Added: webhooks apis
+- Added: user_phone field in user model
+
 # 2.10.83
 - Fix bug: missing moment.js import on /requests/me
 
