@@ -8,9 +8,11 @@ const messagePromiseEvent = require('../event/messagePromiseEvent');
 var winston = require('../config/winston');
 var cacheUtil = require("../utils/cacheUtil");
 var cacheEnabler = require("../services/cacheEnabler");
+const fileUtils = require("../utils/fileUtils");
+const Integration = require("../models/integrations");
+const aiService = require("./aiService");
 
 class MessageService {
-
 
     send(sender, senderFullname, recipient, text, id_project, createdBy, attributes, type, metadata, language) {
         return this.create(sender, senderFullname, recipient, text, id_project, createdBy, MessageConstants.CHAT_MESSAGE_STATUS.SENDING, attributes, type, metadata, language);
@@ -92,7 +94,7 @@ class MessageService {
 
 
 
-            messagePromiseEvent.emit('message.create.simple.before', { beforeMessage: beforeMessage }).then(results => {
+            messagePromiseEvent.emit('message.create.simple.before', { beforeMessage: beforeMessage }).then(async (results) => {
                 winston.debug('message.create.simple.before results', results);
                 winston.debug('message.create.simple.before results prototype: ' + Object.prototype.toString.call(results));
 
@@ -109,6 +111,18 @@ class MessageService {
 
                 winston.debug('messageToCreate', messageToCreate);
 
+                if (messageToCreate.type === "file" && 
+                    messageToCreate.metadata &&
+                    messageToCreate.metadata.type.startsWith('audio/')) {
+                        try {
+                            let audio_transcription = await that.getAudioTranscription(id_project, messageToCreate.metadata.src);
+                            if (audio_transcription) {
+                                messageToCreate.text = audio_transcription;
+                            }
+                        } catch(err) {
+                            winston.error("Error on getAudioTranscription: ", err);
+                        }
+                    }
 
                 // if (id_project) {
 
@@ -187,8 +201,6 @@ class MessageService {
 
     };
 
-
-
     emitMessage(message) {
         if (message.status === MessageConstants.CHAT_MESSAGE_STATUS.RECEIVED) {
             messageEvent.emit('message.received.simple', message);
@@ -232,8 +244,6 @@ class MessageService {
         });
 
     }
-
-
 
     getTranscriptByRequestId(requestid, id_project) {
         winston.debug("requestid", requestid);
@@ -286,18 +296,49 @@ class MessageService {
         });
     }
 
+    getAudioTranscription(id_project, audio_url) {
+        return new Promise( async (resolve) => {
+            try {
 
+                if (process.env.NODE_ENV === 'test') {
+                    resolve("This is a mock trancripted audio")
+                }
 
+                let file = await fileUtils.downloadFromUrl(audio_url);
+                let key;
+                let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
+                    winston.error("Error finding integration for openai");
+                    resolve(null);
 
+                })
 
+                if (!integration || !integration?.value?.apikey) {
+                    winston.verbose("Integration for openai not found or apikey is undefined.")
+                    key = process.env.GPTKEY;
+                } else {
+                    key = integration.value.apikey;
+                }
 
+                if (!key) {
+                    winston.verbose("No openai key provided");
+                    resolve(null)
+                }
 
-
+                aiService.transcription(file, key).then((response) => {
+                    resolve(response.data.text);
+                }).catch((err) => {
+                    winston.error("Error getting audio transcription: ", err?.response?.data);
+                    resolve(null)
+                })
+            } catch(err) {
+                winston.error("Error on audio transcription: ", err)
+                resolve(null);
+            }
+        })
+    }
 
 }
 
 
 var messageService = new MessageService();
-
-
 module.exports = messageService;
