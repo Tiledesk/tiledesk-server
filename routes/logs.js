@@ -125,6 +125,8 @@ router.get('/flows/auth/:request_id', async (req, res) => {
 
     const scope = [
         `rabbitmq.read:*/*/apps.${appid}.logs.${request_id}.*`,
+        `rabbitmq.write:*/*/apps.${appid}.logs.${request_id}.*`,
+        `rabbitmq.configure:*/*/*`
     ]
 
     const now = Math.round(new Date().getTime() / 1000);
