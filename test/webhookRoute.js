@@ -546,6 +546,10 @@ describe('WebhookRoute', () => {
                         let forked_bot_id = id_faq_kb.substr(id_faq_kb, id_faq_kb.length - 4) + "1111";
                         return { bot_id: forked_bot_id }
                     }
+
+                    async setModified(chatbot_id, modified) {
+                        return true;
+                    }
                 }
 
                 server.set('chatbot_service', new chatbot_service());
