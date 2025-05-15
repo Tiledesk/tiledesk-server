@@ -120,7 +120,7 @@ router.delete('/preload/:webhook_id', async (req, res) => {
   
   try {
     console.log("\nredis_client: ", redis_client)
-    let deleted = redis_client.del(key);
+    let deleted = await redis_client.del(key);
     console.log("deleted: ", deleted);
     res.status(200).send({ success: true, message: "Development webhook stopped" })
   } catch(err) {
