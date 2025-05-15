@@ -47,7 +47,7 @@ class WebhookService {
 
             let token = await this.generateChatbotToken(chatbot);
 
-            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
+            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + chatbot_id + "/" + webhook.block_id;
             winston.info("Webhook chatbot URL: " + url);
 
             payload.async = webhook.async;
