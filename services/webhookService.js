@@ -40,6 +40,7 @@ class WebhookService {
                 let value = await redis_client.get(key);
                 if (!value) {
                     reject({ success: false, code: errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST})
+                    return;
                 }
                 let json_value = JSON.parse(value);
                 payload.preloaded_request_id = json_value.request_id;
