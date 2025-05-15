@@ -188,8 +188,6 @@ router.all('/:webhook_id', async (req, res) => {
   let payload = req.body;
   payload.webhook_http_method = req.method;
   let params = req.query;
-  let dev = params.dev;
-  delete params.dev;
   if (params) {
     payload.webhook_query_params = params;
   }
@@ -211,12 +209,7 @@ router.all('/:webhook_id', async (req, res) => {
 
   payload.request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook_id;
 
-  // To delete - Start
-  let redis_client = req.app.get('redis_client');
-  // and substitute currect run with the following one
-  //webhookService.run(webhook, payload)
-  // To delete - End
-  webhookService.run(webhook, payload, dev, redis_client).then((response) => {
+  webhookService.run(webhook, payload).then((response) => {
     return res.status(200).send(response);
   }).catch((err) => {
     if (err.code === errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST) {
