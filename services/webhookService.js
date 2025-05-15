@@ -42,7 +42,7 @@ class WebhookService {
                     reject({ success: false, code: errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST})
                 }
                 let json_value = JSON.parse(value);
-                payload.request_id = json_value.request_id;
+                payload.preloaded_request_id = json_value.request_id;
             }
 
             let token = await this.generateChatbotToken(chatbot);
