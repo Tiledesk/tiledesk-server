@@ -724,9 +724,10 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
-      json.template = 'empty';
-    }
+    // if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+    //   json.template = 'empty';
+    // }
+    json.template = 'empty';
     let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
         winston.error("Error creating new chatbot")
