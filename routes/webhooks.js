@@ -119,9 +119,7 @@ router.delete('/preload/:webhook_id', async (req, res) => {
   let redis_client = req.app.get('redis_client');
   
   try {
-    console.log("\nredis_client: ", redis_client)
-    let deleted = await redis_client.del(key);
-    console.log("deleted: ", deleted);
+    await redis_client.del(key);
     res.status(200).send({ success: true, message: "Development webhook stopped" })
   } catch(err) {
     winston.error("Error deleting key from cache ", err);
