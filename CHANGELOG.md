@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.86
+- Updated voice-twilio-connector to 0.1.16
+
 # 2.10.85
 - Updated: default system context for gpt-4.1 models
 
