@@ -52,7 +52,7 @@
     "@tiledesk/tiledesk-whatsapp-jobworker": "^0.0.12",
     "@tiledesk/tiledesk-sms-connector": "^0.1.11",
     "@tiledesk/tiledesk-vxml-connector": "^0.1.76",
-    "@tiledesk/tiledesk-voice-twilio-connector": "^0.1.16",
+    "@tiledesk/tiledesk-voice-twilio-connector": "^0.1.18",
     "@tiledesk/tiledesk-multi-worker": "^0.1.20",
     "passport-oauth2": "^1.8.0",
     "amqplib": "^0.5.5",
