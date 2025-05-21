@@ -5,13 +5,26 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.84-rc5
+# 2.10.88
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
 - Added: ttl when a chatbot is deleted
 - Added: flow logs apis
 - Added: webhooks apis
 - Added: user_phone field in user model
+
+# 2.10.87
+- Updated voice-twilio-connector to 0.1.18
+
+# 2.10.86
+- Updated voice-twilio-connector to 0.1.16
+
+# 2.10.85
+- Updated: default system context for gpt-4.1 models
+
+# 2.10.84
+- Added: missing default contexts for gpt-4.1 models
+- Updated tybot-connector to 2.0.10
 
 # 2.10.83
 - Fix bug: missing moment.js import on /requests/me

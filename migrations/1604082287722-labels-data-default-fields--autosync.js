@@ -8,8 +8,8 @@ var winston = require('../config/winston');
 async function up () {
   await new Promise((resolve, reject) => {
    
-                                                              // { $exists: true } to fix: The positional operator did not find the match needed from the query.
-    Label.updateMany({$where: "this.data.length == 1","data":  { $exists: true } }, {"$set": {"data.$.default": true}}, function (err, updates) {
+    // { $exists: true } to fix: The positional operator did not find the match needed from the query.
+    Label.updateMany({ data:  { $exists: true }, "data.1": { $exists: false } }, {"$set": {"data.$.default": true}}, function (err, updates) {
       if (err) { 
         winston.error("Schema migration: label err1", err);
       }
@@ -19,19 +19,19 @@ async function up () {
     // {"data": { $elemMatch: {"lang": {  $ne: "EN" }}}}  
     // Label.updateMany({$where: "this.data.length > 1", 'data.lang': {$ne: "EN"}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
     // Label.updateMany({$where: "this.data.length > 1", 'data.lang': {$nin: ["EN"]}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
-      Label.updateMany({$where: "this.data.length > 1", "data":  { $elemMatch: {"lang": {  $ne: "EN" }}}} , {"$set": {"data.$[].default": false}}, function (err, updates) {
-        if (err) {
-          winston.error("Schema migration: label err2", err);
-        }
-      winston.info("Schema updated for " + updates.nModified + " label to default false field")
+    Label.updateMany({ data: { $elemMatch: { "lang": {  $ne: "EN" } } }, "data.1": { $exists: true } } , {"$set": {"data.$[].default": false}}, function (err, updates) {
+      if (err) {
+        winston.error("Schema migration: label err2", err);
+      }
+    winston.info("Schema updated for " + updates.nModified + " label to default false field")
 
-      Label.updateMany({$where: "this.data.length > 1", "data.lang": "EN"}, {"$set": {"data.$.default": true}}, function (err, updates) {
-        if (err) {
-          winston.error("Schema migration: label err3", err);
-        }
-        winston.info("Schema updated for " + updates.nModified + " label with multiple data to default field")
-         return resolve('ok'); 
-      });  
+    Label.updateMany({"data.lang": "EN", "data.1": { $exists: true } }, {"$set": {"data.$.default": true}}, function (err, updates) {
+      if (err) {
+        winston.error("Schema migration: label err3", err);
+      }
+      winston.info("Schema updated for " + updates.nModified + " label with multiple data to default field")
+        return resolve('ok'); 
+    });  
 
           // return resolve('ok');    
     });  
