@@ -145,6 +145,7 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 
 var bootDataLoader = require('./services/bootDataLoader');
@@ -620,6 +621,7 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 
 if (pubModulesManager) {
