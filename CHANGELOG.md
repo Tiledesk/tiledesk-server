@@ -8,6 +8,7 @@
 # 2.10.88
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
+- Added: clearing logic for chatbot
 - Added: ttl when a chatbot is deleted
 - Added: flow logs apis
 - Added: webhooks apis
