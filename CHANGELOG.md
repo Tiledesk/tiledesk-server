@@ -5,7 +5,17 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.88
+# 2.10.89
+- Added: modified field in faq_kb model
+- Added: chatbot template refactoring
+- Added: clearing logic for chatbot
+- Added: ttl when a chatbot is deleted
+- Added: flow logs apis
+- Added: webhooks apis
+- Added: user_phone field in user model
+- Updated tybot-connector to 2.0.14
+
+# 2.10.88 (aborted)
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
 - Added: clearing logic for chatbot
