@@ -75,6 +75,7 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
@@ -90,6 +91,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -204,8 +208,13 @@ winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
 
 let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
-winston.info("multiWorkerQueue from App")
+winston.info("multiWorkerQueue");
 jobsManager.listenMultiWorker(multiWorkerQueue);
+
+// let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
+// winston.info("trainingQueue");
+// jobsManager.listenTrainingQueue(trainingQueue);
+
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 
@@ -680,5 +689,5 @@ app.use((err, req, res, next) => {
 });
 
 
-
+// conflict here! 2
 module.exports = app;

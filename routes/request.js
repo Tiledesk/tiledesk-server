@@ -33,6 +33,7 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -53,7 +54,6 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
-
 
 
 router.post('/simple', [check('first_text').notEmpty()], async (req, res) => {
@@ -2104,14 +2104,15 @@ router.get('/csv', function (req, res, next) {
         // // da terminare e testare. potrebbe essere troppo lenta la query per tanti record
         // element.participatingAgents = participatingAgents;
 
+
         if (element.attributes) {
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.caller_phone = element.attributes.caller_phone;
           }
-          if (element.attributes.called_phone) {
+          if (element.attributes.called_phone) {
             element.called_phone = element.attributes.called_phone;
           }
-          if (element.attributes.caller_phone) {
+          if (element.attributes.caller_phone) {
             element.call_id = element.attributes.call_id;
           }
         }
