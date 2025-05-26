@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.90
+- Updated: /qa service to return chunks (debug: true)
+
 # 2.10.89
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
