@@ -109,7 +109,8 @@ router.get('/', async(req, res) => {
   winston.debug('ROLE ROUTE - SKIP PAGE ', skip);
 
 
-  var query = {};
+  var query = {"id_project": req.projectid};
+
 
 
   var direction = -1; //-1 descending , 1 ascending
