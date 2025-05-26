@@ -578,6 +578,53 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   res.status(200).send(chatbotsArray);
 })
 
+router.get('/export/:id', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let namespace_id = req.params.id;
+
+  let query = {};
+  query.id_project = id_project;
+  query.namespace = namespace_id;
+
+  if (req.query.status) {
+    query.status = parseInt(req.query.status)
+  }
+
+  if (req.query.type) {
+    query.type = req.query.type
+  }
+
+  let namespace = Namespace.findById(namespace_id).catch((err) => {
+    winston.error("Error getting namepsace for export ", err);
+    return res.status(500).send({ success: false, error: "Unable to get namespace with id " + namespace_id })
+  })
+
+  let name = namespace.name;
+  let preview_settings = namespace.preview_settings;
+
+  let contents = KB.find(query).catch((err) => {
+    winston.error("Error getting contents for export ", err);
+    return res.status(500).send({ success: false, error: "Unable to get contents for namespace " + namespace_id })
+  })
+
+  try {
+    let filename = await generateFilename(name);
+    let json = {
+      name: name,
+      preview_settings: preview_settings,
+      contents: contents
+    }
+    let json_string = JSON.stringify(json);
+    res.set({ "Content-Disposition": `attachment; filename="${filename}.json"` });
+    return res.send(json_string);
+  } catch(err) {
+    winston.error("Error genereting json ", err);
+    return res.status(500).send({ success: false, error: "Error genereting json file" })
+  }
+  
+})
+
 router.post('/namespace', async (req, res) => {
 
   let project_id = req.projectid;
@@ -1537,6 +1584,20 @@ async function setCustomScrapeOptions(options) {
     }
   }
 }
+
+async function generateFilename(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize("NFD") // Normalize characters with accents
+    .replace(/[\u0300-\u036f]/g, "") // Removes diacritics (e.g. à becomes a)
+    .replace(/[^a-z0-9\s-_]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replaces spaces with dashes
+    .replace(/_/g, "-")
+    .replace(/-+/g, "-"); // Removes consecutive hyphens
+}
+
+
 /**
 * ****************************************
 * Utils Methods Section - End
