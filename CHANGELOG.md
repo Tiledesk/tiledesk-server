@@ -7,6 +7,7 @@
 
 # 2.10.90
 - Updated: /qa service to return chunks (debug: true)
+- Updated: tybot-connector to 2.0.15
 
 # 2.10.89
 - Added: modified field in faq_kb model
