@@ -11,6 +11,8 @@
  var triggerEventEmitter = require("../trigger/event/triggerEventEmitter"); 
  var subscriptionEvent =  require("../../event/subscriptionEvent"); 
  var leadEvent = require("../../event/leadEvent"); 
+ var roleEvent = require("../../event/roleEvent");   
+
  var winston = require('../../config/winston');
 
  var cachegoose = require('cachegoose');
@@ -945,7 +947,43 @@
                 });   
             });
         });
+
+
+        roleEvent.on('role.create', function(role) {   
+            setImmediate(() => {    
+                var key =role.id_project+":roles:"+role.name;
+                winston.verbose("Deleting cache for role.create with key: " + key);
+                winston.verbose("Creating cache for department.create with key: " + key);
+                client.set(key, role, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Created cache for role.create",reply);
+                    winston.verbose("Created cache for role.create",{err:err});
+                });
+            
+            });
+        });
+
+         roleEvent.on('role.update', function(role) {   
+            setImmediate(() => {    
+                var key =role.id_project+":roles:"+role.name;
+                winston.verbose("Deleting cache for role.update with key: " + key);
+                client.set(key, role, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Updated cache for role.update",reply);
+                    winston.verbose("Updated cache for role.update",{err:err});
+                });
+            });
+        });
     
+         roleEvent.on("role.delete", function(role) {     
+            setImmediate(() => {      
+                var key =role.id_project+":roles:"+role.name;
+                winston.verbose("Deleting cache for role.delete with key: " + key);
+                del(client._cache._engine.client, key, function (err, reply) {  
+                    winston.debug("Deleted cache for role.delete",reply);
+                    winston.verbose("Deleted cache for role.delete",{err:err});
+                });   
+            });
+        });
+        
     }
     
 

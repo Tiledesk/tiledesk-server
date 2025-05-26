@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Role = require("../models/role");
 var winston = require('../config/winston');
+const roleEvent = require('../event/roleEvent');
 
 router.post('/', function (req, res) {
 
@@ -22,6 +23,8 @@ router.post('/', function (req, res) {
         return res.status(500).send({ success: false, msg: 'Error inserting object.' });
       }            
 
+      roleEvent.emit('role.create', savedRole);
+      
       return res.json(savedRole);
   })
 
@@ -46,7 +49,9 @@ router.put('/:roleid', function (req, res) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-  
+    
+    roleEvent.emit('role.update', updatedRole);
+
     res.json(updatedRole);
   });
 });
@@ -56,12 +61,14 @@ router.put('/:roleid', function (req, res) {
 router.delete('/:roleid', function (req, res) {
   winston.debug(req.body);
 
-  Role.remove({ _id: req.params.roleid }, function (err, role) {
+  // Role.remove({ _id: req.params.roleid }, function (err, role) {
+  Role.findOneAndDelete({  _id: req.params.roleid }, (err, role) => {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
     }
 
+    roleEvent.emit('role.delete', role);
 
     res.json(role);
   });
@@ -102,7 +109,8 @@ router.get('/', async(req, res) => {
   winston.debug('ROLE ROUTE - SKIP PAGE ', skip);
 
 
-  var query = {};
+  var query = {"id_project": req.projectid};
+
 
 
   var direction = -1; //-1 descending , 1 ascending

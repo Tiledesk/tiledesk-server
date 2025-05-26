@@ -66,11 +66,13 @@ class CacheEnabler {
         if (process.env.CACHE_USER_ENABLED=="false" || process.env.CACHE_USER_ENABLED==false) {
             this.user = false;
         }
+        
+        this.role = true;
+        if (process.env.CACHE_ROLE_ENABLED=="false" || process.env.CACHE_ROLE_ENABLED==false) {
+            this.role = false;
+        }
 
-        // this.message = true;
-        // if (process.env.CACHE_MESSAGE_ENABLED=="false" || process.env.CACHE_MESSAGE_ENABLED==false) {
-        //     this.message = false;
-        // }
+       
     }
 }
 

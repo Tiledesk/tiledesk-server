@@ -63,6 +63,7 @@ var TagSchema = require("../models/tag");
       type: Object,
     },
     tags: [TagSchema],
+    permissions: [String],
     createdBy: {
       type: String,
       required: true
@@ -99,6 +100,72 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
   }
 });
 
+Project_userSchema.methods.getAllPermissions = function () {
+  // console.log("this", this);
+  winston.debug("this.permissions", this.permissions);
+
+  // console.log("this.rolePermissions", this.rolePermissions);
+  winston.debug("this._doc.rolePermissions", this._doc.rolePermissions);
+
+  let all = this.permissions;
+
+  if (this._doc.rolePermissions) {
+    all = [...new Set([...this.permissions, ...this._doc.rolePermissions])]; //https://medium.com/@rivoltafilippo/javascript-merge-arrays-without-duplicates-3fbd8f4881be
+  }
+  // const all = this.permissions.concat(this._doc.rolePermissions);
+  winston.debug("getAllPermissions all", all);
+
+  return all;
+  
+}
+
+
+
+Project_userSchema.methods.hasPermissionOrRole = function (permission, roles) {
+  var all_permissions = this.getAllPermissions();
+  // var all_permissions = this.getAllPermissions();
+  // console.log("hasPermissionOrRole", all_permissions, permission,  this.role, roles)
+  if (all_permissions && all_permissions.length>0 ) {
+    if (all_permissions.includes(permission)) {
+      // console.log("hasPermissionOrRole found", permission)
+      return true;
+    } else {
+      return false;
+    }
+  }else {
+    if (roles instanceof Array) {
+      // console.log("hasPermissionOrRole roles instanceof Array");
+      for (var i = 0; i < roles.length; i++) {
+        if (roles[i]==this.role) {
+          return true;
+        }
+      }
+      return false;
+
+    } else {
+      // console.log("hasPermissionOrRole role ");
+      if (this.roles==roles) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    
+    
+  }
+}
+
+Project_userSchema.methods.hasPermission = function (permission) {
+  if (this.permissions && this.permissions.length>0 ) {
+    if (this.permissions.includes(permission)) {
+      return true;
+    } else {
+      return false;
+    }
+  }else {
+    return false;
+  }
+}
 
 
   // var query = { id_project: req.params.projectid, id_user: req.user._id};
