@@ -107,8 +107,6 @@ router.post('/signup',
           if (!skipVerificationEmail) {
 
             let verify_email_code = uniqid();
-            console.log("(Auth) verify_email_code: ", verify_email_code);
-
             let redis_client = req.app.get('redis_client');
             let key = "emailverify:verify-" + verify_email_code;
             let obj = { _id: savedUser._id, email: savedUser.email}
@@ -561,7 +559,7 @@ function (req, res) {
   winston.debug("email", email);
   User.findOne({
     email: email, status: 100
-  }, 'email firstname lastname password emailverified id', function (err, user) {
+  }, 'email firstname lastname password emailverified phone id', function (err, user) {
     if (err) {
       winston.error("Error signin", err);
       throw err;
