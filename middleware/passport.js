@@ -289,7 +289,7 @@ module.exports = function(passport) {
       winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
-    winston.verbose("jwthistory passport",jwthistory);
+    winston.debug("jwthistory passport",jwthistory);
 
     //TODO check into DB if JWT is revoked 
     if (jwthistory && JWT_HISTORY_ENABLED==true) {

@@ -113,7 +113,7 @@ Project_userSchema.methods.getAllPermissions = function () {
     all = [...new Set([...this.permissions, ...this._doc.rolePermissions])]; //https://medium.com/@rivoltafilippo/javascript-merge-arrays-without-duplicates-3fbd8f4881be
   }
   // const all = this.permissions.concat(this._doc.rolePermissions);
-  winston.debug("getAllPermissions all", all);
+  winston.verbose("getAllPermissions all", all);
 
   return all;
   
