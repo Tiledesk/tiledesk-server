@@ -4,7 +4,7 @@ process.env.LOG_LEVEL = 'error';
 
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
-let chatbot_mock = require('./chatbot-mock');
+let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
 
 //Require the dev-dependencies

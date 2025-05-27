@@ -676,6 +676,7 @@ router.post('/namespace', async (req, res) => {
 
 router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, res) => {
 
+  let id_project = req.projectid;
   let namespace_id = req.params.id;
 
   let json_string;
@@ -687,7 +688,124 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     json = req.body;
   }
 
-  res.status(200).send();
+  console.log("json: ", json);
+
+  if (!json.contents) {
+    winston.warn("Imported json don't contain contents array");
+    return res.status(400).send({ success: false, error: "Imported json must contain the contents array" });
+  }
+
+  if (!Array.isArray(json.contents)) {
+    winston.warn("Invalid contents type. Expected type: array");
+    return res.status(400).send({ success: false, error: "The content field must be of type Array[]" });
+  }
+
+  let contents = json.contents;
+
+  let namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + id_project + ". Cannot add content to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let kbs_limit = limits.kbs;
+  winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+  let kbs_count = await KB.countDocuments({ id_project: id_project }).exec();
+  winston.verbose("Kbs count: " + kbs_count);
+
+  if (kbs_count >= kbs_limit) {
+    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  }
+
+  let total_count = kbs_count + contents.length;
+  if (total_count > kbs_limit) {
+    return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+  }
+
+  let addingContents = [];
+  contents.forEach( async (e) => {
+    let content = {
+      id_project: id_project,
+      name: e.name,
+      source: e.source,
+      type: e.type,
+      content: e.content,
+      namespace: namespace_id,
+      status: -1
+    }
+
+    const optionalFields = ['scrape_type', 'scrape_options', 'refresh_rate'];
+
+    for (const key of optionalFields) {
+      if (e[key] !== undefined) {
+        content[key] = e[key];
+      }
+    }
+
+    addingContents.push(content);
+  })
+
+  console.log("addingContents: ", addingContents);
+
+  const operations = addingContents.map(({ _id, ...doc }) => ({
+    replaceOne: {
+      filter: {
+        id_project: doc.id_project,
+        type: doc.type,
+        source: doc.source,
+        namespace: namespace_id
+      },
+      replacement: doc,
+      upsert: true
+    }
+  }));
+
+  // Try without delete all contents before imports
+
+  console.log("1")
+  saveBulk(operations, addingContents, id_project).then((result) => {
+    console.log("2")
+    let ns = namespaces.find(n => n.id === namespace_id);
+    console.log("3")
+    let engine = ns.engine || default_engine;
+    console.log("4")
+    let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+    console.log("5")
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+    });
+
+    console.log("6")
+    console.log("resources to be sent to worker: ", resources);
+    winston.verbose("resources to be sent to worker: ", resources);
+
+    if (process.env.NODE_ENV !== 'test') {
+      scheduleScrape(resources);
+    }
+    
+    //res.status(200).send(result);
+    res.status(200).send({ success: true, message: "Contents imported successfully"});
+
+  }).catch((err) => {
+    winston.error("Unable to save kbs in bulk ", err)
+    console.log("\n\nerr: ", err)
+    res.status(500).send(err);
+  })
+
   
 })
 
