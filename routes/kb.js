@@ -18,6 +18,7 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { kbTypes } = require('../models/kbConstants');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -578,7 +579,7 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   res.status(200).send(chatbotsArray);
 })
 
-router.get('/export/:id', async (req, res) => {
+router.get('/namespace/export/:id', async (req, res) => {
   
   let id_project = req.projectid;
   let namespace_id = req.params.id;
@@ -591,9 +592,7 @@ router.get('/export/:id', async (req, res) => {
     query.status = parseInt(req.query.status)
   }
 
-  if (req.query.type) {
-    query.type = req.query.type
-  }
+  query.type = { $in: [ kbTypes.URL, kbTypes.TEXT, kbTypes.FAQ ] };
 
   let namespace = await Namespace.findOne({ id: namespace_id}).catch((err) => {
     winston.error("Error getting namepsace for export ", err);
@@ -605,9 +604,7 @@ router.get('/export/:id', async (req, res) => {
     return res.status(404).send({ success: false, error: "No namespace found with id " + namespace_id })
   }
 
-  console.log("namespace: ", namespace)
   let name = namespace.name;
-  console.log("name: ", name)
   let preview_settings = namespace.preview_settings;
 
   let contents = await KB.find(query).catch((err) => {
@@ -676,6 +673,24 @@ router.post('/namespace', async (req, res) => {
     return res.status(200).send(namespaceObj);
   })
 })
+
+router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, res) => {
+
+  let namespace_id = req.params.id;
+
+  let json_string;
+  let json;
+  if (req.file) {
+    json_string = req.file.buffer.toString('utf-8');
+    json = JSON.parse(json_string);
+  } else {
+    json = req.body;
+  }
+
+  res.status(200).send();
+  
+})
+
 
 router.put('/namespace/:id', async (req, res) => {
 
@@ -1418,7 +1433,7 @@ router.delete('/:kb_id', async (req, res) => {
     }
 
   }).catch((err) => {
-    let status = err.response.status;
+    let status = err.response?.status || 500;
     res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
   })
 
