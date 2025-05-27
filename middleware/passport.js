@@ -84,8 +84,16 @@ var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
-  winston.debug("jwthistory not present");
+  winston.info("jwthistory not present", err);
 }
+
+let JWT_HISTORY_ENABLED = false;
+if (process.env.JWT_HISTORY_ENABLED==true || process.env.JWT_HISTORY_ENABLED=="true") {
+  JWT_HISTORY_ENABLED = true;
+}
+winston.debug("JWT_HISTORY_ENABLED: " + JWT_HISTORY_ENABLED);
+
+
 
 module.exports = function(passport) {
     
@@ -281,9 +289,10 @@ module.exports = function(passport) {
       winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
+    winston.debug("jwthistory passport",jwthistory);
 
     //TODO check into DB if JWT is revoked 
-    if (jwthistory) {
+    if (jwthistory && JWT_HISTORY_ENABLED==true) {
       var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
       winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
       if (jwtRevoked) {
