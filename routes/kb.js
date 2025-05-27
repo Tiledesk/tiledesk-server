@@ -600,7 +600,9 @@ router.get('/export/:id', async (req, res) => {
     return res.status(500).send({ success: false, error: "Unable to get namespace with id " + namespace_id })
   })
 
+  console.log("namespace: ", namespace)
   let name = namespace.name;
+  console.log("name: ", name)
   let preview_settings = namespace.preview_settings;
 
   let contents = KB.find(query).catch((err) => {
@@ -1586,6 +1588,7 @@ async function setCustomScrapeOptions(options) {
 }
 
 async function generateFilename(name) {
+  winston.info("generateFilename from " + name)
   return name
     .toLowerCase()
     .trim()
