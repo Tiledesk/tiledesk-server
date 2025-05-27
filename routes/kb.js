@@ -595,15 +595,22 @@ router.get('/export/:id', async (req, res) => {
     query.type = req.query.type
   }
 
-  let namespace = Namespace.findById(namespace_id).catch((err) => {
+  let namespace = await Namespace.findOne({ id: namespace_id}).catch((err) => {
     winston.error("Error getting namepsace for export ", err);
     return res.status(500).send({ success: false, error: "Unable to get namespace with id " + namespace_id })
   })
 
+  if (!namespace) {
+    winston.warn("No namespace found with id ", namespace_id);
+    return res.status(404).send({ success: false, error: "No namespace found with id " + namespace_id })
+  }
+
+  console.log("namespace: ", namespace)
   let name = namespace.name;
+  console.log("name: ", name)
   let preview_settings = namespace.preview_settings;
 
-  let contents = KB.find(query).catch((err) => {
+  let contents = await KB.find(query).catch((err) => {
     winston.error("Error getting contents for export ", err);
     return res.status(500).send({ success: false, error: "Unable to get contents for namespace " + namespace_id })
   })
