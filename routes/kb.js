@@ -1593,6 +1593,7 @@ async function setCustomScrapeOptions(options) {
 }
 
 async function generateFilename(name) {
+  winston.info("generateFilename from " + name)
   return name
     .toLowerCase()
     .trim()
