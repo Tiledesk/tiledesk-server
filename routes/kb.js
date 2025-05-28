@@ -502,7 +502,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   })
 
   if(!content) {
-    return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
+    return res.status(403).send({ success: false, error: "Not allowed. The content does not belong to the current namespace." })
   }
 
   let ns = namespaces.find(n => n.id === namespace_id);
@@ -757,44 +757,93 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     addingContents.push(content);
   })
 
-  const operations = addingContents.map(({ _id, ...doc }) => ({
-    replaceOne: {
-      filter: {
-        id_project: doc.id_project,
-        type: doc.type,
-        source: doc.source,
-        namespace: namespace_id
-      },
-      replacement: doc,
-      upsert: true
-    }
-  }));
+  // const operations = addingContents.map(({ _id, ...doc }) => ({
+  //   replaceOne: {
+  //     filter: {
+  //       id_project: doc.id_project,
+  //       type: doc.type,
+  //       source: doc.source,
+  //       namespace: namespace_id
+  //     },
+  //     replacement: doc,
+  //     upsert: true
+  //   }
+  // }));
 
   // Try without delete all contents before imports
+  // Issue 1: the indexes of the content replaced are not deleted from Pinecone
+  // Issue 2: isn't possibile to know how many content will be replaced, so isn't possibile to determine if after the
+  //          import operation the content's limit is respected
+  let ns = namespaces.find(n => n.id === namespace_id);
+  let engine = ns.engine || default_engine;
 
-  saveBulk(operations, addingContents, id_project).then((result) => {
-    
-    let ns = namespaces.find(n => n.id === namespace_id);
-    let engine = ns.engine || default_engine;
-
-    let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+  if (process.env.NODE_ENV !== "test") {
+    await aiService.deleteNamespace({
+      namespace: namespace_id,
+      engine: engine
+    }).catch((err) => {
+      winston.error("Error deleting namespace contents: ", err)
+      return res.status(500).send({ success: true, error: "Unable to delete namespace contents" })
     });
+  }
 
-    winston.verbose("resources to be sent to worker: ", resources);
-
-    if (process.env.NODE_ENV !== 'test') {
-      scheduleScrape(resources);
-    }
-    
-    //res.status(200).send(result);
-    res.status(200).send({ success: true, message: "Contents imported successfully"});
-
-  }).catch((err) => {
-    winston.error("Unable to save kbs in bulk ", err)
-    res.status(500).send(err);
+  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+    winston.error("deleteMany error: ", err);
+    return res.status(500).send({ success: false, error: err });
   })
+
+  winston.verbose("Content deletetion response: ", deleteResponse);
+
+  await KB.insertMany(addingContents).catch((err) => {
+    winston.error("Error adding contents with insertMany: ", err);
+    return res.status(500).send({ success: true, error: "Error importing contents" });
+  })
+
+  let new_contents;
+  try {
+    new_contents = await KB.find({ id_project: id_project, namespace: namespace_id }).lean();
+  } catch (err) {
+    winston.error("Error getting new contents: ", err);
+    return res.status(500).send({ success: false, error: "Unable to get new content" });
+  }
+
+  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+  resources = resources.map(({ _id, scrape_options, ...rest }) => {
+    return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+  });
+  
+  winston.verbose("resources to be sent to worker: ", resources);
+
+  if (process.env.NODE_ENV !== "test") {
+    scheduleScrape(resources);
+  }
+
+  res.status(200).send({ success: true, message: "Contents imported successfully" });
+
+
+  // saveBulk(operations, addingContents, id_project).then((result) => {
+    
+  //   let ns = namespaces.find(n => n.id === namespace_id);
+  //   let engine = ns.engine || default_engine;
+
+  //   let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+  //   resources = resources.map(({ _id, scrape_options, ...rest }) => {
+  //     return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+  //   });
+
+  //   winston.verbose("resources to be sent to worker: ", resources);
+
+  //   if (process.env.NODE_ENV !== 'test') {
+  //     scheduleScrape(resources);
+  //   }
+    
+  //   //res.status(200).send(result);
+  //   res.status(200).send({ success: true, message: "Contents imported successfully"});
+
+  // }).catch((err) => {
+  //   winston.error("Unable to save kbs in bulk ", err)
+  //   res.status(500).send(err);
+  // })
   
 })
 

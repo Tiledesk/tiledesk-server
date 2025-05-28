@@ -1141,7 +1141,6 @@ describe('KbRoute', () => {
                             expect(res.body[0].name).to.equal("Default");
 
                             let namespace_id = res.body[0].id;
-                            console.log("namespace_id: ", namespace_id);
 
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/namespace/import/' + namespace_id)
@@ -1151,7 +1150,7 @@ describe('KbRoute', () => {
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
-                                    if (log) { console.log("get all namespaces res.body: ", res.body); }
+                                    if (log) { console.log("import contents res.body: ", res.body); }
 
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
