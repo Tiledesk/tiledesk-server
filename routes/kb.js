@@ -310,6 +310,8 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
   }
 
+  data.debug = true;
+
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
