@@ -390,7 +390,6 @@ class QuoteManager {
         if (project) {
             this.project = project
         };
-        console.log("\n\n\ngetPlanLimits called: ", project)
 
         let limits;
         const plan = this.project.profile.name;

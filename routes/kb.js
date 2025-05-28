@@ -688,8 +688,6 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     json = req.body;
   }
 
-  console.log("json: ", json);
-
   if (!json.contents) {
     winston.warn("Imported json don't contain contents array");
     return res.status(400).send({ success: false, error: "Imported json must contain the contents array" });
@@ -759,8 +757,6 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     addingContents.push(content);
   })
 
-  console.log("addingContents: ", addingContents);
-
   const operations = addingContents.map(({ _id, ...doc }) => ({
     replaceOne: {
       filter: {
@@ -776,21 +772,16 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   // Try without delete all contents before imports
 
-  console.log("1")
   saveBulk(operations, addingContents, id_project).then((result) => {
-    console.log("2")
+    
     let ns = namespaces.find(n => n.id === namespace_id);
-    console.log("3")
     let engine = ns.engine || default_engine;
-    console.log("4")
+
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    console.log("5")
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
       return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
     });
 
-    console.log("6")
-    console.log("resources to be sent to worker: ", resources);
     winston.verbose("resources to be sent to worker: ", resources);
 
     if (process.env.NODE_ENV !== 'test') {
@@ -802,10 +793,8 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
 
   }).catch((err) => {
     winston.error("Unable to save kbs in bulk ", err)
-    console.log("\n\nerr: ", err)
     res.status(500).send(err);
   })
-
   
 })
 
