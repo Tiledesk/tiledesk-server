@@ -722,15 +722,15 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   let kbs_limit = limits.kbs;
   winston.verbose("Limit of kbs for current plan: " + kbs_limit);
 
-  let kbs_count = await KB.countDocuments({ id_project: id_project }).exec();
-  winston.verbose("Kbs count: " + kbs_count);
+  // let kbs_count = await KB.countDocuments({ id_project: id_project }).exec();
+  // winston.verbose("Kbs count: " + kbs_count);
 
-  if (kbs_count >= kbs_limit) {
-    return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
-  }
+  // if (kbs_count >= kbs_limit) {
+  //   return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  // }
 
-  let total_count = kbs_count + contents.length;
-  if (total_count > kbs_limit) {
+  // let total_count = kbs_count + contents.length;
+  if (contents.length > kbs_limit) {
     return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   }
 
