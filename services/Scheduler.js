@@ -32,12 +32,13 @@ class Scheduler {
     tagSchedule(data, callback) {
 
         winston.debug("(tagScheduler) data: ", data);
-        this.jobManager.publish(data, (err, ok) => {
-            let response_data = { success: true, message: "Scheduled" };
-            if (callback) {
-                callback(err, response_data);
-            }
-        })
+        this.jobManager.publish(data);
+        let response_data = { success: true, message: "Scheduled" };
+        if (callback) {
+            callback(err, response_data);
+        }
+        // this.jobManager.publish(data, (err, ok) => {
+        // })
     }
     
 }
