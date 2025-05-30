@@ -5,6 +5,14 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.92
+- Updated voice-twilio-connector to 0.1.22
+- Bug fix: tags scheduling
+
+# 2.10.91
+- Updated: /qa service to return chunks (debug: true)
+- Updated: tybot-connector to 2.0.15
+
 # 2.10.89
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
