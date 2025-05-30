@@ -943,7 +943,7 @@ router.post('/', async (req, res) => {
     new_kb.scrape_type = 1;
   }
   if (new_kb.type === 'url') {
-    new_kb.refresh = body.refresh;
+    new_kb.refresh_rate = body.refresh_rate;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = await setDefaultScrapeOptions();
