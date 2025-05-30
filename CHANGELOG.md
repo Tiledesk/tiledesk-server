@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.93
+- Added: endpoints to import/export namespaces
+
 # 2.10.92
 - Updated voice-twilio-connector to 0.1.22
 - Bug fix: tags scheduling
