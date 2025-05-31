@@ -271,9 +271,25 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           // console.log('OPERATORS - »»»» BOT IS DEFINED - !!! DEPT HAS NOT GROUP ID')
           // console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           // console.log('OPERATORS - »»»» nobot ', nobot)
-          var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-// attento indice
-          return Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" }).exec(function (err, project_users) {
+          winston.debug("main_flow_cache_2 departmentService project users");
+          
+          
+          // rolequery
+          // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+          // var qpu = Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" });
+          var qpu = Project_user.find({ id_project: projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active" });
+
+          
+          // use this. $in doesn't use index very well
+          // var qpu = Project_user.findOne({ id_project: projectid, $or: [{ "role": RoleConstants.AGENT }, { "role": RoleConstants.SUPERVISOR }, { "role":  RoleConstants.ADMIN }, { "role": RoleConstants.OWNER }], status: "active" })
+          
+          if (cacheEnabler.project_user) {
+            qpu.cache(cacheUtil.queryTTL, projectid+":project_users:query:teammates:available") //request_cache
+            winston.debug('project_user cache enabled');
+          }
+  
+  
+          return qpu.exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
               return reject(err);
@@ -369,12 +385,12 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS LENGHT: ', group[0].members.length);
         // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS ID: ', group[0].members);
 
-        // , user_available: true
-        //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
-        // riprodurre su v2
-         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {          
-          // uni error round robin
-        //return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {
+   
+
+        // rolequery
+        
+         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, roleType: RoleConstants.TYPE_AGENTS, status: "active" }).exec(function (err, project_users) {          
+        //  return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {         
 
           // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> PROJECT ID ', projectid);
           if (err) {
@@ -436,8 +452,20 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
   return new Promise(function (resolve, reject) {
 
-    var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-    return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
+    // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+// rolequery
+    var qpu = Project_user.find({ id_project: projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active" });
+    // var qpu = Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" });
+          
+    // use this. $in doesn't use index very well    
+    if (cacheEnabler.project_user) {
+      qpu.cache(cacheUtil.queryTTL, projectid+":project_users:query:teammates:available") //request_cache
+      winston.debug('project_user cache enabled');
+    }
+    // return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
+    return qpu.exec(function (err, project_users) {
+
+
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);

@@ -888,8 +888,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
+// rolequery
 
-  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
+  Project_user.find({ id_user: req.user._id , roleType: RoleConstants.TYPE_AGENTS, status: "active"}).
+  // Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
       path: 'id_project',
@@ -1025,8 +1027,10 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   if (isOpen === false) {
     return res.json(available_agents_array);
   }
+// rolequery
+  let query = { id_project: projectid, user_available: true, roleType: RoleConstants.TYPE_AGENTS };
+  // let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
-  let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
   if (dep_id) {
     let department = await Department.findById(dep_id).catch((err) => {
