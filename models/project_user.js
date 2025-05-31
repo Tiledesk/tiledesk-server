@@ -31,6 +31,10 @@ var TagSchema = require("../models/tag");
       index: true
       // required: true
     },
+    roleType: {
+      type: Number,  //1 for agents 2 for users
+      index: true
+    },
     user_available: {
       type: Boolean,
       default: true, 

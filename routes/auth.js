@@ -195,6 +195,7 @@ function (req, res) {
       id_project: req.body.id_project, //attentoqui
       uuid_user: req.user._id,
       role: RoleConstants.GUEST,
+      roleType : RoleConstants.TYPE_USERS,
       user_available: true,
       createdBy: req.user._id,
       updatedBy: req.user._id
@@ -334,7 +335,7 @@ router.post('/signinWithCustomToken', [
           let createNewUser = false;
           winston.debug('role2: '+ role)
 
-          
+          // rolecheck
           if (role === RoleConstants.OWNER || role === RoleConstants.ADMIN || role === RoleConstants.AGENT) {            
            createNewUser = true;
            winston.debug('role owner or admin or agent');
@@ -406,6 +407,7 @@ router.post('/signinWithCustomToken', [
               uuid_user: req.user._id,
               // id_user: req.user._id,
               role: role,
+              roleType : RoleConstants.TYPE_USERS, //RICONtROLLA QUIA 
               user_available: true,
               createdBy: req.user._id, //oppure req.user.id attento problema
               updatedBy: req.user._id
@@ -484,7 +486,7 @@ router.post('/signinWithCustomToken', [
              } else {
                winston.debug('different role : '+role + " " + project_user.role);
              }
-
+            // rolecheck
             if (req.user.role && (req.user.role === RoleConstants.OWNER || req.user.role === RoleConstants.ADMIN || req.user.role === RoleConstants.AGENT)) {
               let userFromDB = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
 
