@@ -17,7 +17,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.nlevel": { $lte: nlevel } } },
+            { $match: { "rows.nlevel": { $lt: nlevel } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -32,7 +32,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $lt: timestamp } } },
+            { $match: { "rows.nlevel": { $lt: nlevel }, "rows.timestamp": { $lt: timestamp } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
             { $limit: limit }
         ]).then(rows => rows.reverse())
@@ -47,7 +47,7 @@ class LogsService {
         return FlowLogs.aggregate([
             { $match: { request_id: request_id } },
             { $unwind: "$rows" },
-            { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $gt: timestamp } } },
+            { $match: { "rows.nlevel": { $lt: nlevel }, "rows.timestamp": { $gt: timestamp } } },
             { $sort: { "rows.timestamp": 1, "rows._id": 1 } },
             { $limit: limit }
         ])

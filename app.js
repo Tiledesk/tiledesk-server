@@ -207,13 +207,8 @@ winston.info("whatsappQueue");
 jobsManager.listenWhatsappQueue(whatsappQueue);
 
 let multiWorkerQueue = require('@tiledesk/tiledesk-multi-worker');
-winston.info("multiWorkerQueue");
+winston.info("multiWorkerQueue from App")
 jobsManager.listenMultiWorker(multiWorkerQueue);
-
-// let trainingQueue = require('@tiledesk/tiledesk-train-jobworker');
-// winston.info("trainingQueue");
-// jobsManager.listenTrainingQueue(trainingQueue);
-
 
 var channelManager = require('./channels/channelManager');
 channelManager.listen(); 

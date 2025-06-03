@@ -36,7 +36,7 @@ describe('ImagesRoute', () => {
                     .post('/images/users/')
                     .auth(email, pwd)
                     .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'test-image.png')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
                     // .field('delimiter', ';')            
                     .end((err, res) => {
 
@@ -69,7 +69,7 @@ describe('ImagesRoute', () => {
                     .put('/images/users')
                     .auth(email, pwd)
                     .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                     // .field('folder', 'myfolder')            
                     .end((err, res) => {
 
@@ -91,7 +91,7 @@ describe('ImagesRoute', () => {
                             .put('/images/users')
                             .auth(email, pwd)
                             .set('Content-Type', 'image/jpeg')
-                            .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                            .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                             // .field('folder', 'myfolder')            
                             .end((err, res) => {
                                 res.should.have.status(409);
@@ -114,7 +114,7 @@ describe('ImagesRoute', () => {
                     .put('/images/users/photo')
                     .auth(email, pwd)
                     .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                     // .field('folder', 'myfolder')            
                     .end((err, res) => {
 
@@ -136,7 +136,7 @@ describe('ImagesRoute', () => {
                             .put('/images/users/photo')
                             .auth(email, pwd)
                             .set('Content-Type', 'image/jpeg')
-                            .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                            .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                             // .field('folder', 'myfolder')            
                             .end((err, res) => {
 
@@ -160,7 +160,7 @@ describe('ImagesRoute', () => {
                     .put('/images/users/photo?force=true')
                     .auth(email, pwd)
                     .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                     // .field('folder', 'myfolder')            
                     .end((err, res) => {
 
@@ -182,7 +182,7 @@ describe('ImagesRoute', () => {
                             .put('/images/users/photo?force=true')
                             .auth(email, pwd)
                             .set('Content-Type', 'image/jpeg')
-                            .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                            .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                             // .field('folder', 'myfolder')            
                             .end((err, res) => {
                                 res.should.have.status(201);
@@ -217,7 +217,7 @@ describe('ImagesRoute', () => {
                                 .put('/images/users/photo?bot_id=' + bot_id)
                                 .auth(email, pwd)
                                 .set('Content-Type', 'image/jpeg')
-                                .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                                .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                                 // .field('folder', 'myfolder')            
                                 .end((err, res) => {
 
@@ -239,7 +239,7 @@ describe('ImagesRoute', () => {
                                         .put('/images/users/photo?bot_id=' + bot_id)
                                         .auth(email, pwd)
                                         .set('Content-Type', 'image/jpeg')
-                                        .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                                        .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                                         // .field('folder', 'myfolder')            
                                         .end((err, res) => {
 
@@ -270,7 +270,7 @@ describe('ImagesRoute', () => {
                     .put('/images/users')
                     .auth(email, pwd)
                     .set('Content-Type', 'image/jpeg')
-                    .attach('file', fs.readFileSync('./test/test-image.png'), 'profile.png')
+                    .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'profile.png')
                     // .field('folder', 'myfolder')            
                     .end((err, res) => {
 
@@ -308,7 +308,7 @@ describe('ImagesRoute', () => {
             chai.request(server)
                 .post('/images/public/')
                 .set('Content-Type', 'image/jpeg')
-                .attach('file', fs.readFileSync('./test/test-image.png'), 'test-image.png')
+                .attach('file', fs.readFileSync('./test/fixtures/test-image.png'), 'test-image.png')
                 // .field('delimiter', ';')            
                 .end((err, res) => {
 

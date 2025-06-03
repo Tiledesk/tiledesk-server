@@ -4,7 +4,7 @@ process.env.LOG_LEVEL = 'error';
 
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
-let chatbot_mock = require('./chatbot-mock');
+let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
 
 //Require the dev-dependencies
@@ -545,6 +545,10 @@ describe('WebhookRoute', () => {
                     async fork(id_faq_kb, api_url, token, project_id) {
                         let forked_bot_id = id_faq_kb.substr(id_faq_kb, id_faq_kb.length - 4) + "1111";
                         return { bot_id: forked_bot_id }
+                    }
+
+                    async setModified(chatbot_id, modified) {
+                        return true;
                     }
                 }
 

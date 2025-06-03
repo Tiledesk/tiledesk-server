@@ -22,7 +22,7 @@ const projectMock = require('./mock/projectMock');
 const requestMock = require('./mock/requestMock');
 const messageMock = require('./mock/messageMock');
 const emailMock = require('./mock/emailMock');
-const { MockTdCache } = require('./mock/MockTdCache');
+const { MockTdCache } = require('./mock/tdCacheMock');
 const mockTdCache = new MockTdCache();
 
 let log = false;

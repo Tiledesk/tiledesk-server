@@ -1,0 +1,62 @@
+{
+    "name": "export2",
+    "preview_settings": {
+        "model": "gpt-4o",
+        "max_tokens": 256,
+        "temperature": 0.7,
+        "top_k": 4,
+        "context": null
+    },
+    "contents": [
+        {
+            "_id": "6835bee22c061f7021f4f7c0",
+            "id_project": "62c3f10152dc7400352bab0d",
+            "source": "Example content",
+            "type": "text",
+            "__v": 0,
+            "content": "This is an example content.",
+            "createdAt": "2025-05-27T13:32:18.078Z",
+            "name": "Example content",
+            "namespace": "6835be87d0a352002d806f73",
+            "status": -1,
+            "updatedAt": "2025-05-27T13:32:18.078Z"
+        },
+        {
+            "_id": "6835bed02c061f7021f46e99",
+            "id_project": "62c3f10152dc7400352bab0d",
+            "source": "custom question",
+            "type": "faq",
+            "__v": 0,
+            "content": "custom question\nthis is the answer!",
+            "createdAt": "2025-05-27T13:32:00.574Z",
+            "name": "custom question",
+            "namespace": "6835be87d0a352002d806f73",
+            "status": -1,
+            "updatedAt": "2025-05-27T13:32:00.574Z"
+        },
+        {
+            "_id": "6835bebc2c061f7021f3daa4",
+            "id_project": "62c3f10152dc7400352bab0d",
+            "namespace": "6835be87d0a352002d806f73",
+            "source": "https://gethelp.tiledesk.com/articles/configure-a-whatsapp-business-account/",
+            "type": "url",
+            "content": "",
+            "createdAt": "2025-05-27T13:31:40.958Z",
+            "name": "https://gethelp.tiledesk.com/articles/configure-a-whatsapp-business-account/",
+            "refresh_rate": "never",
+            "scrape_options": {
+                "tags_to_extract": [
+                    "article"
+                ],
+                "unwanted_tags": [
+                    "h1",
+                    "h2"
+                ],
+                "unwanted_classnames": []
+            },
+            "scrape_type": 4,
+            "status": 400,
+            "updatedAt": "2025-05-27T13:31:41.022Z"
+        }
+    ]
+}

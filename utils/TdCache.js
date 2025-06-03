@@ -261,11 +261,11 @@ class TdCache {
     
     async del(key, callback) {
       return new Promise( async (resolve, reject) => {
-        await this.client.del(key);
+        let result = await this.client.del(key);
         if (callback) {
-            callback();
+            callback(result);
         }
-        return resolve();
+        return resolve(result);
       })
     }
 

@@ -40,14 +40,15 @@ class WebhookService {
                 let value = await redis_client.get(key);
                 if (!value) {
                     reject({ success: false, code: errorCodes.WEBHOOK.ERRORS.NO_PRELOADED_DEV_REQUEST})
+                    return;
                 }
                 let json_value = JSON.parse(value);
                 payload.preloaded_request_id = json_value.request_id;
-            }   
+            }
 
             let token = await this.generateChatbotToken(chatbot);
 
-            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + webhook.chatbot_id + "/" + webhook.block_id;
+            let url = TILEBOT_ENDPOINT + 'block/' + webhook.id_project + "/" + chatbot_id + "/" + webhook.block_id;
             winston.info("Webhook chatbot URL: " + url);
 
             payload.async = webhook.async;
@@ -55,6 +56,7 @@ class WebhookService {
 
             if (process.env.NODE_ENV === 'test') {
                 resolve({ success: true, message: "Webhook disabled in test mode" });
+                return;
             }
 
             await httpUtil.post(url, payload).then((response) => {

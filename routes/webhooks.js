@@ -96,7 +96,7 @@ router.post('/preload/:webhook_id', async (req, res) => {
 
   let id_project = req.projectid;
   let webhook_id = req.params.webhook_id;
-  let request_id = "automation-request-" + id_project + "-" + new ObjectId();
+  let request_id = "automation-request-" + id_project + "-" + new ObjectId() + "-" + webhook_id;
   let redis_client = req.app.get('redis_client');
 
   try {
@@ -119,7 +119,7 @@ router.delete('/preload/:webhook_id', async (req, res) => {
   let redis_client = req.app.get('redis_client');
   
   try {
-    redis_client.del(key);
+    await redis_client.del(key);
     res.status(200).send({ success: true, message: "Development webhook stopped" })
   } catch(err) {
     winston.error("Error deleting key from cache ", err);

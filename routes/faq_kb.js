@@ -524,7 +524,7 @@ router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', '
 
   let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
     .sort({ publishedAt: -1 })
-    .limit(20)
+    .limit(100)
     .populate('publishedBy', '_id firstname lastname email')
     .catch((err) => {
       winston.error("Error finding published chatbots: ", err);
@@ -681,6 +681,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   chatbot.template = "empty";
   delete chatbot.modified;
 
+  chatbot.template = "empty";
+  
   let savedChatbot = await cs.createBot(api_url, token, chatbot, landing_project_id);
   winston.debug("savedChatbot: ", savedChatbot)
 
@@ -723,9 +725,10 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // **** CREATE TRUE option ****
   // ****************************
   if (req.query.create === 'true') {
-    if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
-      json.template = 'empty';
-    }
+    // if (json.subtype && (json.subtype === 'webhook' || json.subtype === 'copilot')) {
+    //   json.template = 'empty';
+    // }
+    json.template = 'empty';
     let savedChatbot = await faqService.create(req.projectid, req.user.id, json)
       .catch((err) => {
         winston.error("Error creating new chatbot")

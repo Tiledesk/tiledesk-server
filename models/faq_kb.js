@@ -150,15 +150,16 @@ var Faq_kbSchema = new Schema({
     required: false,
     index: true
   },
+  modified: {
+    type: Boolean,
+    required: false
+  },
   root_id: {
     type: String,
     required: false
   },
   release_note: {
     type: String,
-  },
-  modified: {
-    type: Boolean,
     required: false
   }
 },{

@@ -31,6 +31,11 @@ class Listener {
             brand_name = process.env.BRAND_NAME
         }
 
+        let openai_endpoint = process.env.OPENAI_ENDPOINT;
+        winston.debug("OpenAI Endpoint: ", openai_endpoint);
+
+        let gpt_key = process.env.GPTKEY;
+
         let log = process.env.VOICE_TWILIO_LOG || false
         winston.debug("Voice log: "+ log);
         
@@ -42,6 +47,8 @@ class Listener {
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
             BRAND_NAME: brand_name,
+            OPENAI_ENDPOINT: openai_endpoint,
+            GPT_KEY: gpt_key,
             log: log
         }, (err) => {
             if (!err) {

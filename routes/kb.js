@@ -18,6 +18,7 @@ let Integration = require('../models/integrations');
 var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
+const { kbTypes } = require('../models/kbConstants');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -74,7 +75,10 @@ let contexts = {
   "gpt-4":                "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
   "gpt-4-turbo-preview":  "You are an helpful assistant for question-answering tasks.\nUse ONLY the pieces of retrieved context delimited by #### to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf and only if none of the retrieved context is useful for your task, add this word to the end <NOANS>\n\n####{context}####",
   "gpt-4o":               "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
-  "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
+  "gpt-4o-mini":          "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, return <NOANS>\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1":              "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-mini":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end==",
+  "gpt-4.1-nano":         "You are an helpful assistant for question-answering tasks. Follow these steps carefully:\n1. Answer in the same language of the user question, regardless of the retrieved context language\n2. Use ONLY the pieces of the retrieved context to answer the question.\n3. If the retrieved context does not contain sufficient information to generate an accurate and informative answer, append <NOANS> at the end of the answer\n\n==Retrieved context start==\n{context}\n==Retrieved context end=="
 }
 
 /**
@@ -306,6 +310,8 @@ router.post('/qa', async (req, res) => {
     return res.status(200).send({ success: true, message: "Question skipped in test environment"});
   }
 
+  data.debug = true;
+
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
@@ -498,7 +504,7 @@ router.get('/namespace/:id/chunks/:content_id', async (req, res) => {
   })
 
   if(!content) {
-    return res.status(403).send({ success: false, error: "Not allowed. The conten does not belong to the current namespace." })
+    return res.status(403).send({ success: false, error: "Not allowed. The content does not belong to the current namespace." })
   }
 
   let ns = namespaces.find(n => n.id === namespace_id);
@@ -575,6 +581,56 @@ router.get('/namespace/:id/chatbots', async (req, res) => {
   res.status(200).send(chatbotsArray);
 })
 
+router.get('/namespace/export/:id', async (req, res) => {
+  
+  let id_project = req.projectid;
+  let namespace_id = req.params.id;
+
+  let query = {};
+  query.id_project = id_project;
+  query.namespace = namespace_id;
+
+  if (req.query.status) {
+    query.status = parseInt(req.query.status)
+  }
+
+  query.type = { $in: [ kbTypes.URL, kbTypes.TEXT, kbTypes.FAQ ] };
+
+  let namespace = await Namespace.findOne({ id: namespace_id}).catch((err) => {
+    winston.error("Error getting namepsace for export ", err);
+    return res.status(500).send({ success: false, error: "Unable to get namespace with id " + namespace_id })
+  })
+
+  if (!namespace) {
+    winston.warn("No namespace found with id ", namespace_id);
+    return res.status(404).send({ success: false, error: "No namespace found with id " + namespace_id })
+  }
+
+  let name = namespace.name;
+  let preview_settings = namespace.preview_settings;
+
+  let contents = await KB.find(query).catch((err) => {
+    winston.error("Error getting contents for export ", err);
+    return res.status(500).send({ success: false, error: "Unable to get contents for namespace " + namespace_id })
+  })
+
+  try {
+    let filename = await generateFilename(name);
+    let json = {
+      name: name,
+      preview_settings: preview_settings,
+      contents: contents
+    }
+    let json_string = JSON.stringify(json);
+    res.set({ "Content-Disposition": `attachment; filename="${filename}.json"` });
+    return res.send(json_string);
+  } catch(err) {
+    winston.error("Error genereting json ", err);
+    return res.status(500).send({ success: false, error: "Error genereting json file" })
+  }
+  
+})
+
 router.post('/namespace', async (req, res) => {
 
   let project_id = req.projectid;
@@ -619,6 +675,180 @@ router.post('/namespace', async (req, res) => {
     return res.status(200).send(namespaceObj);
   })
 })
+
+router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, res) => {
+
+  let id_project = req.projectid;
+  let namespace_id = req.params.id;
+
+  let json_string;
+  let json;
+  if (req.file) {
+    json_string = req.file.buffer.toString('utf-8');
+    json = JSON.parse(json_string);
+  } else {
+    json = req.body;
+  }
+
+  if (!json.contents) {
+    winston.warn("Imported json don't contain contents array");
+    return res.status(400).send({ success: false, error: "Imported json must contain the contents array" });
+  }
+
+  if (!Array.isArray(json.contents)) {
+    winston.warn("Invalid contents type. Expected type: array");
+    return res.status(400).send({ success: false, error: "The content field must be of type Array[]" });
+  }
+
+  let contents = json.contents;
+
+  let namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + id_project + ". Cannot add content to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace_id)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let quoteManager = req.app.get('quote_manager');
+  let limits = await quoteManager.getPlanLimits(req.project);
+  let kbs_limit = limits.kbs;
+  winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+  // let kbs_count = await KB.countDocuments({ id_project: id_project }).exec();
+  // winston.verbose("Kbs count: " + kbs_count);
+
+  // if (kbs_count >= kbs_limit) {
+  //   return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: kbs_limit })
+  // }
+
+  // let total_count = kbs_count + contents.length;
+  if (contents.length > kbs_limit) {
+    return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+  }
+
+  let addingContents = [];
+  contents.forEach( async (e) => {
+    let content = {
+      id_project: id_project,
+      name: e.name,
+      source: e.source,
+      type: e.type,
+      content: e.content,
+      namespace: namespace_id,
+      status: -1
+    }
+
+    const optionalFields = ['scrape_type', 'scrape_options', 'refresh_rate'];
+
+    for (const key of optionalFields) {
+      if (e[key] !== undefined) {
+        content[key] = e[key];
+      }
+    }
+
+    addingContents.push(content);
+  })
+
+  // const operations = addingContents.map(({ _id, ...doc }) => ({
+  //   replaceOne: {
+  //     filter: {
+  //       id_project: doc.id_project,
+  //       type: doc.type,
+  //       source: doc.source,
+  //       namespace: namespace_id
+  //     },
+  //     replacement: doc,
+  //     upsert: true
+  //   }
+  // }));
+
+  // Try without delete all contents before imports
+  // Issue 1: the indexes of the content replaced are not deleted from Pinecone
+  // Issue 2: isn't possibile to know how many content will be replaced, so isn't possibile to determine if after the
+  //          import operation the content's limit is respected
+  let ns = namespaces.find(n => n.id === namespace_id);
+  let engine = ns.engine || default_engine;
+
+  if (process.env.NODE_ENV !== "test") {
+    await aiService.deleteNamespace({
+      namespace: namespace_id,
+      engine: engine
+    }).catch((err) => {
+      winston.error("Error deleting namespace contents: ", err)
+      return res.status(500).send({ success: true, error: "Unable to delete namespace contents" })
+    });
+  }
+
+  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+    winston.error("deleteMany error: ", err);
+    return res.status(500).send({ success: false, error: err });
+  })
+
+  winston.verbose("Content deletetion response: ", deleteResponse);
+
+  await KB.insertMany(addingContents).catch((err) => {
+    winston.error("Error adding contents with insertMany: ", err);
+    return res.status(500).send({ success: true, error: "Error importing contents" });
+  })
+
+  let new_contents;
+  try {
+    new_contents = await KB.find({ id_project: id_project, namespace: namespace_id }).lean();
+  } catch (err) {
+    winston.error("Error getting new contents: ", err);
+    return res.status(500).send({ success: false, error: "Unable to get new content" });
+  }
+
+  let resources = new_contents.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+  resources = resources.map(({ _id, scrape_options, ...rest }) => {
+    return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+  });
+  
+  winston.verbose("resources to be sent to worker: ", resources);
+
+  if (process.env.NODE_ENV !== "test") {
+    scheduleScrape(resources);
+  }
+
+  res.status(200).send({ success: true, message: "Contents imported successfully" });
+
+
+  // saveBulk(operations, addingContents, id_project).then((result) => {
+    
+  //   let ns = namespaces.find(n => n.id === namespace_id);
+  //   let engine = ns.engine || default_engine;
+
+  //   let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+  //   resources = resources.map(({ _id, scrape_options, ...rest }) => {
+  //     return { id: _id, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+  //   });
+
+  //   winston.verbose("resources to be sent to worker: ", resources);
+
+  //   if (process.env.NODE_ENV !== 'test') {
+  //     scheduleScrape(resources);
+  //   }
+    
+  //   //res.status(200).send(result);
+  //   res.status(200).send({ success: true, message: "Contents imported successfully"});
+
+  // }).catch((err) => {
+  //   winston.error("Unable to save kbs in bulk ", err)
+  //   res.status(500).send(err);
+  // })
+  
+})
+
 
 router.put('/namespace/:id', async (req, res) => {
 
@@ -938,7 +1168,7 @@ router.post('/', async (req, res) => {
     new_kb.scrape_type = 1;
   }
   if (new_kb.type === 'url') {
-    new_kb.refresh = body.refresh;
+    new_kb.refresh_rate = body.refresh_rate;
     if (!body.scrape_type || body.scrape_type === 2) {
       new_kb.scrape_type = 2;
       new_kb.scrape_options = await setDefaultScrapeOptions();
@@ -1361,7 +1591,7 @@ router.delete('/:kb_id', async (req, res) => {
     }
 
   }).catch((err) => {
-    let status = err.response.status;
+    let status = err.response?.status || 500;
     res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
   })
 
@@ -1534,6 +1764,20 @@ async function setCustomScrapeOptions(options) {
     }
   }
 }
+
+async function generateFilename(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize("NFD") // Normalize characters with accents
+    .replace(/[\u0300-\u036f]/g, "") // Removes diacritics (e.g. à becomes a)
+    .replace(/[^a-z0-9\s-_]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replaces spaces with dashes
+    .replace(/_/g, "-")
+    .replace(/-+/g, "-"); // Removes consecutive hyphens
+}
+
+
 /**
 * ****************************************
 * Utils Methods Section - End

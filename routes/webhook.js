@@ -12,6 +12,7 @@ var jwt = require('jsonwebtoken');
 const Faq_kb = require('../models/faq_kb');
 const webhookService = require('../services/webhookService');
 const errorCodes = require('../errorCodes');
+var ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -207,6 +208,8 @@ router.all('/:webhook_id', async (req, res) => {
     winston.verbose("Webhook " + webhook_id + " is currently turned off")
     return res.status(422).send({ success: false, error: "Webhook " + webhook_id + " is currently turned off"})
   }
+
+  payload.request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook_id;
 
   // To delete - Start
   // This endpoint will be used only for production webhooks, so is no longer
