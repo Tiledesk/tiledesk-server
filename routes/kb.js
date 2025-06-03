@@ -1213,6 +1213,10 @@ router.post('/', async (req, res) => {
       let ns = namespaces.find(n => n.id === body.namespace);
       json.engine = ns.engine || default_engine;
 
+      if (json.engine.type === 'serverless') {
+        json.hybrid = true;
+      }
+
       let resources = [];
 
       resources.push(json);
@@ -1336,6 +1340,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
+
+    if (json.engine.type === 'serverless') {
+      json.hybrid = true;
+    }
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
