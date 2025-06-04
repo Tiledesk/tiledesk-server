@@ -105,7 +105,7 @@ class WebSocketServer {
               //   winston.debug('hasRoleAsPromise project_user',project_user);
               // winston.debug('ok websocket');
 
-              User.findOne({ _id: identifier, status: 100 }, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
+             User.findOne({ _id: identifier, status: 100 }, 'email firstname lastname emailverified id')     //TODO user_cache_here ma attento select.. ATTENTO SERVER SELECT??
                 //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, "users:id:"+identifier)    //user_cache
                 .exec(function (err, user) {
 
@@ -197,7 +197,7 @@ class WebSocketServer {
 
         var projectId = urlSub[1];
         winston.debug('projectId: ' + projectId);
-        
+
         let q = Project.findOne({ _id: projectId, status: 100 })
 
         if (cacheEnabler.project) {
@@ -238,7 +238,8 @@ class WebSocketServer {
 
                 var queryRequest = { id_project: projectId, request_id: recipientId };
 
-                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                // request_role_check_imp
+                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
                   winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
                 } else {
                   queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
@@ -246,6 +247,8 @@ class WebSocketServer {
                 }
 
                 // requestcachefarequi nocachepopulatereqired
+                winston.debug("main_flow_cache_3 websocket1");
+                
                 Request.findOne(queryRequest)
                   .exec(function (err, request) {
 
@@ -308,28 +311,18 @@ class WebSocketServer {
                 }
                 winston.debug('projectuser', projectuser.toObject());
 
-                // db.getCollection('requests').find({"id_project":"5e15bef09877c800176d217f","status":{"$lt":1000},"$or":[{"agents":{"id_user":"5ddd30bff0195f0017f72c6d"}},{"participants":"5ddd30bff0195f0017f72c6d"}]})
-                // pubblica dopo toni
                 var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
-                // add hasBot:false
-
-                // var query = {"id_project":projectId, "status": { $lt: 1000, $gt: 50 }, $or:[ {preflight:false}, { preflight : { $exists: false } } ] };
-
-                //  qui1000
-                // var query = { id_project: projectId, statusObj: {closed:false, preflight:false} };
-
-                var cacheUserId;
-                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                
+                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
                   winston.debug('query admin: ' + JSON.stringify(query));
-                  cacheUserId = "/admin-owner";
                 } else {
                   query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
                   winston.debug('query agent: ' + JSON.stringify(query));
-                  cacheUserId = "/agent/" + req.user.id;
                 }
 
                 //cacheimportantehere
                 // requestcachefarequi populaterequired
+                winston.debug('found Request.find(query)');
 
                 //  TODO  proviamo a fare esempio con 100 agenti tutti
                 // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
@@ -601,14 +594,26 @@ class WebSocketServer {
                 var query = { id_project: projectId, request_id: recipientId };
                 winston.debug('query: ' + JSON.stringify(query));
 
-                if (projectuser.role == "owner" || projectuser.role == "admin") {
+                // request_role_check
+
+                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
                   winston.debug('query admin: ' + JSON.stringify(query));
-                } else {
+                } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
                   query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
-                  winston.debug('query agent: ' + JSON.stringify(query));
+
+                } 
+                // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+                //   query["participants"] = req.user.id;
+                // }
+                else {
+                  query["participants"] = req.user.id;
+                  // generate empty requests response
                 }
+                          
 
                 // requestcachefarequi populaterequired
+                winston.debug('info: main_flow_cache_2.2');
 
                 Request.findOne(query)
                   .populate('lead')
@@ -702,6 +707,8 @@ class WebSocketServer {
 
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
+            winston.debug("main_flow_cache_ws request find");
+            
             var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
@@ -753,6 +760,8 @@ class WebSocketServer {
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
 
           try {
+            winston.debug("main_flow_cache_ws request find 2");
+            // cache_next
             var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
