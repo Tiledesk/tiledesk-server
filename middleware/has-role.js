@@ -95,35 +95,39 @@ class RoleChecker {
 
           let projectid = req.params.projectid || req.projectid;
 
-         
+          var project_user = req.projectuser;
+          winston.debug("hasPermission project_user hasPermission", project_user);
 
-          try {
-           var project_user = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-          } catch(e) {
-            winston.error("Error getting project_user for hasrole",err);
-            return next(err);
-          }
-          winston.debug("project_user: ", JSON.stringify(project_user));
-                        
+          if (!project_user) {
+
+            try {
+              project_user = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(e) {
+              winston.error("Error getting project_user for hasrole",err);
+              return next(err);
+            }
+            winston.debug("project_user: ", JSON.stringify(project_user));
+          }     
+
           if (project_user) {
             
             req.projectuser = project_user;
             winston.debug("hasPermission req.projectuser", req.projectuser);
 
-            var permissions = project_user.permissions;
+            var permissions = project_user._doc.rolePermissions;
            
             winston.debug("hasPermission permissions", permissions);
   
             winston.debug("hasPermission permission: "+ permission);
 
-            if (permissions.length>0) {
+            if (permissions!=undefined && permissions.length>0) {
               if (permissions.includes(permission)) {
                 next();
               }else {                         
-                res.status(403).send({success: false, msg: 'you dont have the required role.'});                
+                res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
               }
-            } else { //fallback to role check
-              next();            
+            } else { 
+              res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
             }
           } else {
           
@@ -154,7 +158,7 @@ class RoleChecker {
         return this.hasRoleOrTypes(role);
       }
 
-       hasRoleOrTypes(role, types) {
+       hasRoleOrTypes(role, types, permission) {
         // console.log("hasRoleOrTypes",role,types);
 
         var that = this;
@@ -224,6 +228,7 @@ class RoleChecker {
 
             var userRole = project_user.role;
             winston.debug("userRole", userRole);
+
   
             if (!role) { //????
               next();
@@ -232,12 +237,43 @@ class RoleChecker {
               var hierarchicalRoles = that.ROLES[userRole];
               winston.debug("hierarchicalRoles", hierarchicalRoles);
   
-              if ( hierarchicalRoles && hierarchicalRoles.includes(role)) {
-                next();
-              }else {
-                res.status(403).send({success: false, msg: 'you dont have the required role.'});
+              if ( hierarchicalRoles ) {  //standard role
+                winston.debug("standard role: "+ userRole);
+                if (hierarchicalRoles.includes(role)) {
+                  next();
+                } else {
+                  res.status(403).send({success: false, msg: 'you dont have the required role.'});
+                }
+              } else { //custom role
+                winston.debug("custom role: "+ userRole);
+
+                if (permission==undefined) {
+                  winston.debug("permission is empty go next");
+                  return next();
+                }
+
+                // invece di questo codice richiama hasPermission()
+                var permissions = project_user._doc.rolePermissions;
+           
+                winston.debug("hasPermission permissions", permissions);
+      
+                winston.debug("hasPermission permission: "+ permission);               
+
+                if (permissions!=undefined && permissions.length>0) {
+                  if (permissions.includes(permission)) {
+                    next();
+                  }else {                         
+                    res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
+                  }
+                } else { 
+                  res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
+                }
+
+
               }
+                
             }
+          
           } else {
           
             /**
