@@ -120,6 +120,11 @@ class RoleChecker {
   
             winston.debug("hasPermission permission: "+ permission);
 
+            if (permission==undefined) {
+                winston.debug("permission is empty go next");
+                return next();
+            }
+
             if (permissions!=undefined && permissions.length>0) {
               if (permissions.includes(permission)) {
                 next();
@@ -245,29 +250,31 @@ class RoleChecker {
                   res.status(403).send({success: false, msg: 'you dont have the required role.'});
                 }
               } else { //custom role
+                
                 winston.debug("custom role: "+ userRole);
+                return that.hasPermission(permission)(req, res, next);
 
-                if (permission==undefined) {
-                  winston.debug("permission is empty go next");
-                  return next();
-                }
+                // if (permission==undefined) {
+                //   winston.debug("permission is empty go next");
+                //   return next();
+                // }
 
-                // invece di questo codice richiama hasPermission()
-                var permissions = project_user._doc.rolePermissions;
+                // // invece di questo codice richiama hasPermission()
+                // var permissions = project_user._doc.rolePermissions;
            
-                winston.debug("hasPermission permissions", permissions);
+                // winston.debug("hasPermission permissions", permissions);
       
-                winston.debug("hasPermission permission: "+ permission);               
+                // winston.debug("hasPermission permission: "+ permission);               
 
-                if (permissions!=undefined && permissions.length>0) {
-                  if (permissions.includes(permission)) {
-                    next();
-                  }else {                         
-                    res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
-                  }
-                } else { 
-                  res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
-                }
+                // if (permissions!=undefined && permissions.length>0) {
+                //   if (permissions.includes(permission)) {
+                //     next();
+                //   }else {                         
+                //     res.status(403).send({success: false, msg: 'you dont have the required permission.'});                
+                //   }
+                // } else { 
+                //   res.status(403).send({success: false, msg: 'you dont have the required permission. Is is empty'});                       
+                // }
 
 
               }
