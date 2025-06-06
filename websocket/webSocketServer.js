@@ -24,6 +24,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
+var projectUserService = require("../services/projectUserService");
 
 let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;
 
