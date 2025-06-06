@@ -310,7 +310,7 @@ class WebSocketServer {
 
 
             try {
-              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+              projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
             } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
