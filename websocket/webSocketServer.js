@@ -238,12 +238,15 @@ class WebSocketServer {
 
                 var queryRequest = { id_project: projectId, request_id: recipientId };
 
-                // request_role_check_imp
+                // request_role_check_imp              
                 if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
                   winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
-                } else {
+                } 
+                else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
                   queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+                } else {
                   winston.debug('queryRequest agent: ' + JSON.stringify(queryRequest));
+                  queryRequest["participants"] = req.user.id;
                 }
 
                 // requestcachefarequi nocachepopulatereqired
@@ -315,10 +318,13 @@ class WebSocketServer {
                 
                 if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
                   winston.debug('query admin: ' + JSON.stringify(query));
-                } else {
+                } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
                   query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+                } else {
                   winston.debug('query agent: ' + JSON.stringify(query));
+                  query["participants"] = req.user.id;
                 }
+                             
 
                 //cacheimportantehere
                 // requestcachefarequi populaterequired
