@@ -317,12 +317,13 @@ class WebSocketServer {
                 var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
                 
                 if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
-                  winston.debug('query admin: ' + JSON.stringify(query));
+                  winston.info('ws requests query admin: ' + JSON.stringify(query));
                 } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-                  query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+                  query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+                  winston.info('ws requests query agent: ' + JSON.stringify(query));
                 } else {
-                  winston.debug('query agent: ' + JSON.stringify(query));
                   query["participants"] = req.user.id;
+                  winston.info('ws requests query agent limited: ' + JSON.stringify(query));                
                 }
                              
 
