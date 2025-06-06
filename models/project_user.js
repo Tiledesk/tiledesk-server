@@ -147,10 +147,15 @@ Project_userSchema.methods.hasPermissionOrRole = function (permission, roles) {
       return false;
 
     } else {
-      // console.log("hasPermissionOrRole role ");
-      if (this.roles==roles) {
+      // console.log("roles instanceof  ", roles instanceof );
+      // console.log("this.role instanceof  ", this.role instanceof );
+      
+      // console.log("hasPermissionOrRole role ", this.role, roles);
+      if (this.role==roles) {
+        // console.log("role ok");
         return true;
       } else {
+        // console.log("role ko");
         return false;
       }
     }
