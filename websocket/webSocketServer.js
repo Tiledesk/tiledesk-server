@@ -224,7 +224,7 @@ class WebSocketServer {
             // winston.debug(' req.: ',req);
 
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" })
+            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
               //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
               .exec(function (err, projectuser) {
                 if (err) {
@@ -301,7 +301,7 @@ class WebSocketServer {
             winston.debug('find project_user');
 
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" })
+            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
               //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
               .exec(function (err, projectuser) {
                 if (err) {
@@ -411,7 +411,7 @@ class WebSocketServer {
             winston.debug('userId: ' + userId);
 
             //check if current user can see the data
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" })
+            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
               //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
               .exec(function (err, currentProjectuser) {
                 if (err) {
@@ -480,7 +480,7 @@ class WebSocketServer {
             winston.debug('puId: ' + puId);
 
             //var query = { _id: puId, id_project: projectId};
-            var query = { _id: puId, id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" };
+            var query = { _id: puId, id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" };
             winston.debug(' query: ', query);
 
             Project_user.findOne(query)
@@ -585,7 +585,7 @@ class WebSocketServer {
             var recipientId = urlSub[3];
             winston.debug('recipientId: ' + recipientId);
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, $or: [{ "role": "agent" }, { "role": "admin" }, { "role": "owner" }], status: "active" })
+            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
               // @DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
               .exec(function (err, projectuser) {
                 if (err) {
