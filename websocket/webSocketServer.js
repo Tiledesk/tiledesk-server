@@ -205,7 +205,7 @@ class WebSocketServer {
           winston.debug('project cache enabled for websocket');
         }
 
-        return q.exec(function (err, project) {
+        return q.exec(async (err, project) => {
           if (err) {
             winston.error('WebSocket - Error getting  Project', err);
             return reject(err);
@@ -224,74 +224,81 @@ class WebSocketServer {
             // winston.debug(' req.: ',req);
 
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
-              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
-              .exec(function (err, projectuser) {
-                if (err) {
-                  winston.error('WebSocket error getting Project_user', err);
-                  return reject(err);
-                }
-                if (!projectuser) {
-                  winston.verbose('WebSocket project_user not found for user id ' + req.user._id + ' and projectid ' + projectId);
-                  return reject({ err: 'Project_user not found for user id ' + req.user._id + ' and projectid ' + projectId });
-                }
+            try {
+              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(e) {
+              winston.error('WebSocket error getting Project_user', err);
+              return reject(err);
+            }
 
-                var queryRequest = { id_project: projectId, request_id: recipientId };
+            // Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
+            //   //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+            //   .exec(function (err, projectuser) {
+            //     if (err) {
+            //       winston.error('WebSocket error getting Project_user', err);
+            //       return reject(err);
+            //     }
+              if (!projectuser) {
+                winston.verbose('WebSocket project_user not found for user id ' + req.user._id + ' and projectid ' + projectId);
+                return reject({ err: 'Project_user not found for user id ' + req.user._id + ' and projectid ' + projectId });
+              }
 
-                // request_role_check_imp              
-                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
-                  winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
-                } 
-                else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-                  queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
-                } else {
-                  winston.debug('queryRequest agent: ' + JSON.stringify(queryRequest));
-                  queryRequest["participants"] = req.user.id;
-                }
+              var queryRequest = { id_project: projectId, request_id: recipientId };
 
-                // requestcachefarequi nocachepopulatereqired
-                winston.debug("main_flow_cache_3 websocket1");
-                
-                Request.findOne(queryRequest)
-                  .exec(function (err, request) {
+              // request_role_check_imp              
+              if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
+                winston.debug('queryRequest admin: ' + JSON.stringify(queryRequest));
+              } 
+              else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+                queryRequest["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+              } else {
+                winston.debug('queryRequest agent: ' + JSON.stringify(queryRequest));
+                queryRequest["participants"] = req.user.id;
+              }
 
-                    if (err) {
-                      winston.error('WebSocket Error finding request for onSubscribeCallback', err);
-                      return reject(err);
-                    }
-                    if (!request) {
-                      winston.verbose('WebSocket Request query not found for user id ' + req.user._id + ' and projectid ' + projectId);
-                      return reject({ err: 'Request query not found for user id ' + req.user._id + ' and projectid ' + projectId });
-                    }
+              // requestcachefarequi nocachepopulatereqired
+              winston.debug("main_flow_cache_3 websocket1");
+              
+              Request.findOne(queryRequest)
+                .exec(function (err, request) {
 
-                    winston.debug('found request for onSubscribeCallback', request);
+                  if (err) {
+                    winston.error('WebSocket Error finding request for onSubscribeCallback', err);
+                    return reject(err);
+                  }
+                  if (!request) {
+                    winston.verbose('WebSocket Request query not found for user id ' + req.user._id + ' and projectid ' + projectId);
+                    return reject({ err: 'Request query not found for user id ' + req.user._id + ' and projectid ' + projectId });
+                  }
+
+                  winston.debug('found request for onSubscribeCallback', request);
 
 
 
-                    var query = { id_project: projectId, recipient: recipientId };
-                    winston.debug('query : ' + JSON.stringify(query));
+                  var query = { id_project: projectId, recipient: recipientId };
+                  winston.debug('query : ' + JSON.stringify(query));
 
-                    Message.find(query).sort({ createdAt: 'asc' })
-                      .limit(messagesLimit).exec(function (err, messages) {
+                  Message.find(query).sort({ createdAt: 'asc' })
+                    .limit(messagesLimit).exec(function (err, messages) {
 
-                        if (err) {
-                          winston.error('WebSocket Error finding message for onSubscribeCallback', err);
-                          return reject(err);
+                      if (err) {
+                        winston.error('WebSocket Error finding message for onSubscribeCallback', err);
+                        return reject(err);
+                      }
+                      winston.debug('onSubscribeCallback find', messages);
+
+
+                      return resolve({
+                        publishFunction: function () {
+                          // handlePublishMessageToClientId (topic, message, clientId, method) {
+                          pubSubServer.handlePublishMessageToClientId(topic, messages, clientId, "CREATE");
                         }
-                        winston.debug('onSubscribeCallback find', messages);
-
-
-                        return resolve({
-                          publishFunction: function () {
-                            // handlePublishMessageToClientId (topic, message, clientId, method) {
-                            pubSubServer.handlePublishMessageToClientId(topic, messages, clientId, "CREATE");
-                          }
-                        });
-
                       });
-                  });
 
-              });
+                    });
+                });
+
+              // });
 
           } else if (topic.endsWith('/requests')) {
 
@@ -301,109 +308,115 @@ class WebSocketServer {
             winston.debug('find project_user');
 
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
-              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
-              .exec(function (err, projectuser) {
+            try {
+              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(e) {
+              winston.error('WebSocket error getting Project_user', err);
+              return reject(err);
+            }
+            // Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
+            //   //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+            //   .exec(function (err, projectuser) {
+            //     if (err) {
+            //       winston.error('WebSocket error getting Project_user', err);
+            //       return reject(err);
+            //     }
+            if (!projectuser) {
+              winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
+              return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
+            }
+            winston.debug('projectuser', projectuser.toObject());
+
+            var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
+            
+            if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
+              winston.debug('ws requests query admin: ' + JSON.stringify(query));
+            } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+              query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+              winston.debug('ws requests query agent: ' + JSON.stringify(query));
+            } else {
+              query["participants"] = req.user.id;
+              winston.debug('ws requests query agent limited: ' + JSON.stringify(query));                
+            }
+                          
+
+            //cacheimportantehere
+            // requestcachefarequi populaterequired
+            winston.debug('found Request.find(query)');
+
+            //  TODO  proviamo a fare esempio con 100 agenti tutti
+            // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
+            var startDate = new Date();
+            Request.find(query)
+              .select("+snapshot.agents")
+              // .populate('lead') //??
+              // .populate('department')
+              // .populate('participatingBots')
+              // .populate('participatingAgents')  
+              // .populate({path:'requester',populate:{path:'id_user'}})
+              .sort({ updatedAt: 'desc' })
+              .limit(lastRequestsLimit)
+              // DISABLED 23Marzo2021 per problema request.snapshot.requester.isAuthenticated = undefined 
+              .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
+              //@DISABLED_CACHE .cache(cacheUtil.queryTTL, projectId+":requests:query:status-50-1000:preflight-false:select_snapshot_agents:"+cacheUserId) 
+              .exec(function (err, requests) {
+
                 if (err) {
-                  winston.error('WebSocket error getting Project_user', err);
+                  winston.error('WebSocket Error finding request for onSubscribeCallback', err);
                   return reject(err);
                 }
-                if (!projectuser) {
-                  winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
-                  return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
-                }
-                winston.debug('projectuser', projectuser.toObject());
+                winston.debug('found requests for onSubscribeCallback', requests);
 
-                var query = { "id_project": projectId, "status": { $lt: 1000, $gt: 50, $ne: 150 }, preflight: false, "draft": { $in: [false, null] } };
-                
-                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
-                  winston.info('ws requests query admin: ' + JSON.stringify(query));
-                } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-                  query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-                  winston.info('ws requests query agent: ' + JSON.stringify(query));
-                } else {
-                  query["participants"] = req.user.id;
-                  winston.info('ws requests query agent limited: ' + JSON.stringify(query));                
-                }
-                             
+                if (requests && requests.length > 0) {
+                  requests.forEach(request => {
 
-                //cacheimportantehere
-                // requestcachefarequi populaterequired
-                winston.debug('found Request.find(query)');
-
-                //  TODO  proviamo a fare esempio con 100 agenti tutti
-                // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
-                var startDate = new Date();
-                Request.find(query)
-                  .select("+snapshot.agents")
-                  // .populate('lead') //??
-                  // .populate('department')
-                  // .populate('participatingBots')
-                  // .populate('participatingAgents')  
-                  // .populate({path:'requester',populate:{path:'id_user'}})
-                  .sort({ updatedAt: 'desc' })
-                  .limit(lastRequestsLimit)
-                  // DISABLED 23Marzo2021 per problema request.snapshot.requester.isAuthenticated = undefined 
-                  .lean() //https://www.tothenew.com/blog/high-performance-find-query-using-lean-in-mongoose-2/ https://stackoverflow.com/questions/33104136/mongodb-mongoose-slow-query-when-fetching-10k-documents
-                  //@DISABLED_CACHE .cache(cacheUtil.queryTTL, projectId+":requests:query:status-50-1000:preflight-false:select_snapshot_agents:"+cacheUserId) 
-                  .exec(function (err, requests) {
-
-                    if (err) {
-                      winston.error('WebSocket Error finding request for onSubscribeCallback', err);
-                      return reject(err);
-                    }
-                    winston.debug('found requests for onSubscribeCallback', requests);
-
-                    if (requests && requests.length > 0) {
-                      requests.forEach(request => {
-
-                        request.id = request._id; //importante
+                    request.id = request._id; //importante
 
 
-                        if (request.lead) {
-                          //    request.requester_id =    request.lead._id; //parla con NICO di questo
-                          request.requester_id = request.lead;
-                        } else {
-                          request.requester_id = null;
-                        }
-
-                        if (request.snapshot.requester) {
-                          if (request.snapshot.requester.role === RoleConstants.GUEST) {
-                            request.snapshot.requester.isAuthenticated = false;
-                          } else {
-                            request.snapshot.requester.isAuthenticated = true;
-                          }
-
-                        }
-
-                        // attento qui
-                        if (request.snapshot.agents && request.snapshot.agents.length > 0) {
-                          var agentsnew = [];
-                          request.snapshot.agents.forEach(a => {
-                            agentsnew.push({ id_user: a.id_user })  //remove unnecessary request.agents[].project_user fields. keep only id_user
-                          });
-                          request.snapshot.agents = agentsnew;
-                        }
-
-
-
-
-                      });
+                    if (request.lead) {
+                      //    request.requester_id =    request.lead._id; //parla con NICO di questo
+                      request.requester_id = request.lead;
+                    } else {
+                      request.requester_id = null;
                     }
 
-                    var endDate = new Date();
-                    winston.debug('ws count: ' + query + ' ' + requests.length + ' ' + startDate + ' ' + endDate + ' ' + endDate - startDate)
-                    return resolve({
-                      publishFunction: function () {
-                        // handlePublishMessageToClientId (topic, message, clientId, method) {
-                        pubSubServer.handlePublishMessageToClientId(topic, requests, clientId, "CREATE");
+                    if (request.snapshot.requester) {
+                      if (request.snapshot.requester.role === RoleConstants.GUEST) {
+                        request.snapshot.requester.isAuthenticated = false;
+                      } else {
+                        request.snapshot.requester.isAuthenticated = true;
                       }
-                    });
+
+                    }
+
+                    // attento qui
+                    if (request.snapshot.agents && request.snapshot.agents.length > 0) {
+                      var agentsnew = [];
+                      request.snapshot.agents.forEach(a => {
+                        agentsnew.push({ id_user: a.id_user })  //remove unnecessary request.agents[].project_user fields. keep only id_user
+                      });
+                      request.snapshot.agents = agentsnew;
+                    }
+
+
 
 
                   });
+                }
+
+                var endDate = new Date();
+                winston.debug('ws count: ' + query + ' ' + requests.length + ' ' + startDate + ' ' + endDate + ' ' + endDate - startDate)
+                return resolve({
+                  publishFunction: function () {
+                    // handlePublishMessageToClientId (topic, message, clientId, method) {
+                    pubSubServer.handlePublishMessageToClientId(topic, requests, clientId, "CREATE");
+                  }
+                });
+
 
               });
+
+              // });
 
 
           } else if (topic.indexOf('/project_users/users/') > -1) {
@@ -411,63 +424,70 @@ class WebSocketServer {
             var userId = urlSub[4];
             winston.debug('userId: ' + userId);
 
-            //check if current user can see the data
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
-              //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
-              .exec(function (err, currentProjectuser) {
+            try {
+              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(e) {
+              winston.error('WebSocket error getting Project_user', err);
+              return reject(err);
+            }
+
+            // //check if current user can see the data
+            // Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
+            //   //@DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+            //   .exec(function (err, currentProjectuser) {
+            //     if (err) {
+            //       winston.error('WebSocket error getting  Project_user', err);
+            //       return reject(err);
+            //     }
+            if (!currentProjectuser) {
+              winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
+              return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
+            }
+            winston.debug('currentProjectuser', currentProjectuser.toObject());
+
+
+            var isObjectId = mongoose.Types.ObjectId.isValid(userId);
+            winston.debug("isObjectId:" + isObjectId);
+
+            var query = { id_project: projectId, status: "active" };
+            winston.debug(' query: ', query);
+
+            if (isObjectId) {
+              query.id_user = userId;
+            } else {
+              query.uuid_user = userId;
+            }
+
+            Project_user.findOne(query)
+              // @DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
+              .exec(function (err, projectuser) {
                 if (err) {
                   winston.error('WebSocket error getting  Project_user', err);
                   return reject(err);
                 }
-                if (!currentProjectuser) {
-                  winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
-                  return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
-                }
-                winston.debug('currentProjectuser', currentProjectuser.toObject());
-
-
-                var isObjectId = mongoose.Types.ObjectId.isValid(userId);
-                winston.debug("isObjectId:" + isObjectId);
-
-                var query = { id_project: projectId, status: "active" };
-                winston.debug(' query: ', query);
-
-                if (isObjectId) {
-                  query.id_user = userId;
-                } else {
-                  query.uuid_user = userId;
+                if (!projectuser) {
+                  winston.verbose('WebSocket Project_user not found with user id ' + userId + ' and projectid ' + projectId);
+                  return reject({ err: 'Project_user not found with user id ' + userId + ' and projectid ' + projectId });
                 }
 
-                Project_user.findOne(query)
-                  // @DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:users:"+userId)
-                  .exec(function (err, projectuser) {
-                    if (err) {
-                      winston.error('WebSocket error getting  Project_user', err);
-                      return reject(err);
-                    }
-                    if (!projectuser) {
-                      winston.verbose('WebSocket Project_user not found with user id ' + userId + ' and projectid ' + projectId);
-                      return reject({ err: 'Project_user not found with user id ' + userId + ' and projectid ' + projectId });
-                    }
+
+                var pu = projectuser.toJSON();
+                pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
 
 
-                    var pu = projectuser.toJSON();
-                    pu.isBusy = ProjectUserUtil.isBusy(projectuser, project.settings && project.settings.max_agent_assigned_chat);
-
-
-                    return resolve({
-                      publishFunction: function () {
-                        // handlePublishMessageToClientId (topic, message, clientId, method) {
-                        pubSubServer.handlePublishMessageToClientId(topic, pu, clientId, "CREATE");
-                      }
-                    });
-
-                  });
-
-
-
+                return resolve({
+                  publishFunction: function () {
+                    // handlePublishMessageToClientId (topic, message, clientId, method) {
+                    pubSubServer.handlePublishMessageToClientId(topic, pu, clientId, "CREATE");
+                  }
+                });
 
               });
+
+
+
+
+              // });
 
 
             // tilebase.send('{ "action": "subscribe", "payload": { "topic": "/5e71139f61dd040bc9594cee/project_users/5e71139f61dd040bc9594cef"}}')
@@ -586,66 +606,73 @@ class WebSocketServer {
             var recipientId = urlSub[3];
             winston.debug('recipientId: ' + recipientId);
 
-            Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
-              // @DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
-              .exec(function (err, projectuser) {
+            try {
+              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
+            } catch(e) {
+              winston.error('WebSocket error getting Project_user', err);
+              return reject(err);
+            }
+
+            // Project_user.findOne({ id_project: projectId, id_user: req.user._id, roleType: RoleConstants.TYPE_AGENTS, status: "active" })
+            //   // @DISABLED_CACHE .cache(cacheUtil.defaultTTL, projectId+":project_users:role:teammate:"+req.user._id)
+            //   .exec(function (err, projectuser) {
+            //     if (err) {
+            //       winston.error('WebSocket error getting Project_user', err);
+            //       return reject(err);
+            //     }
+            if (!projectuser) {
+              winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
+              return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
+            }
+
+            var query = { id_project: projectId, request_id: recipientId };
+            winston.debug('query: ' + JSON.stringify(query));
+
+            // request_role_check
+
+            if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
+              winston.debug('query admin: ' + JSON.stringify(query));
+            } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
+              query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
+
+            } 
+            // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+            //   query["participants"] = req.user.id;
+            // }
+            else {
+              query["participants"] = req.user.id;
+              // generate empty requests response
+            }
+                      
+
+            // requestcachefarequi populaterequired
+            winston.debug('info: main_flow_cache_2.2');
+
+            Request.findOne(query)
+              .populate('lead')
+              .populate('department')
+              .populate('participatingBots')
+              .populate('participatingAgents')
+              .populate({ path: 'requester', populate: { path: 'id_user' } })
+              .sort({ updatedAt: 'asc' }).exec(function (err, request) {
+
                 if (err) {
-                  winston.error('WebSocket error getting Project_user', err);
+                  winston.error('WebSocket Error finding request for onSubscribeCallback', err);
                   return reject(err);
                 }
-                if (!projectuser) {
-                  winston.verbose('WebSocket Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId);
-                  return reject({ err: 'Project_user not found with user id ' + req.user._id + ' and projectid ' + projectId });
-                }
+                winston.debug('onSubscribeCallback find', request);
 
-                var query = { id_project: projectId, request_id: recipientId };
-                winston.debug('query: ' + JSON.stringify(query));
-
-                // request_role_check
-
-                if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
-                  winston.debug('query admin: ' + JSON.stringify(query));
-                } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
-
-                  query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }]
-
-                } 
-                // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
-                //   query["participants"] = req.user.id;
-                // }
-                else {
-                  query["participants"] = req.user.id;
-                  // generate empty requests response
-                }
-                          
-
-                // requestcachefarequi populaterequired
-                winston.debug('info: main_flow_cache_2.2');
-
-                Request.findOne(query)
-                  .populate('lead')
-                  .populate('department')
-                  .populate('participatingBots')
-                  .populate('participatingAgents')
-                  .populate({ path: 'requester', populate: { path: 'id_user' } })
-                  .sort({ updatedAt: 'asc' }).exec(function (err, request) {
-
-                    if (err) {
-                      winston.error('WebSocket Error finding request for onSubscribeCallback', err);
-                      return reject(err);
-                    }
-                    winston.debug('onSubscribeCallback find', request);
-
-                    return resolve({
-                      publishFunction: function () {
-                        // handlePublishMessageToClientId (topic, message, clientId, method) {
-                        pubSubServer.handlePublishMessageToClientId(topic, request, clientId, "CREATE");
-                      }
-                    });
-
-                  });
+                return resolve({
+                  publishFunction: function () {
+                    // handlePublishMessageToClientId (topic, message, clientId, method) {
+                    pubSubServer.handlePublishMessageToClientId(topic, request, clientId, "CREATE");
+                  }
+                });
 
               });
+
+              // });
 
           }
 
