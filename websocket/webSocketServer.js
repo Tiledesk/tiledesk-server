@@ -227,7 +227,7 @@ class WebSocketServer {
 
             try {
               projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -311,7 +311,7 @@ class WebSocketServer {
 
             try {
               projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -609,7 +609,7 @@ class WebSocketServer {
 
             try {
               projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
