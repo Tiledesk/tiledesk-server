@@ -44,10 +44,10 @@ class ProjectUserService {
 
      async getWithPermissions(id_user, id_project, user_sub) {       
         var project_user = await this.get(id_user, id_project, user_sub);
-        winston.debug("getWithPermissions for id_user " + id_user + " project_user ", project_user);
+        winston.info("getWithPermissions for id_user " + id_user + " project_user ", project_user);
 
         if (project_user) {
-            winston.debug("getWithPermissions project_user role: " + project_user.role);
+            winston.info("getWithPermissions project_user role: " + project_user.role);
 
             var role = await this.getPermissions(project_user.role, id_project);
 
