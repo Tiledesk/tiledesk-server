@@ -1,10 +1,15 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
-process.env.KB_WEBHOOK_TOKEN = "testtoken"
-process.env.PINECONE_INDEX = "test_index"
-process.env.PINECONE_TYPE = "pod"
 process.env.LOG_LEVEL = 'critical'
+process.env.KB_WEBHOOK_TOKEN = "testtoken"
+// Similarity
+// process.env.PINECONE_INDEX = "test_index"
+// process.env.PINECONE_TYPE = "pod"
+// Hybrid
+process.env.PINECONE_INDEX = "test_hybrid_index"
+process.env.PINECONE_TYPE = "serverless"
+
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -58,7 +63,7 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].engine.index_name).to.equal('test_index')
+                            expect(res.body[0].engine.index_name).to.equal('test_hybrid_index')
 
                             let namespace_id = res.body[0].id;
 
@@ -829,7 +834,10 @@ describe('KbRoute', () => {
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("get all namespaces res.body: ", res.body); }
 
-                            console.log("get all namespaces res.body: ", res.body);    
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+                            expect(res.body[0].type === "serverless");
+
 
                             chai.request(server)
                                 .post('/' + savedProject._id + "/kb/qa")
@@ -839,6 +847,10 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err) };
                                     if (log) { console.log("res.body: ", res.body) };
+
+                                    res.should.have.status(200);
+                                    expect(res.body.data);
+                                    expect(res.body.data.search_type === "hybrid");
 
                                     done();
                                 })
@@ -1132,7 +1144,7 @@ describe('KbRoute', () => {
                         expect(res.body.name).to.equal('MyCustomNamespace');
                         should.exist(res.body.engine)
                         expect(res.body.engine.name).to.equal('pinecone');
-                        expect(res.body.engine.type).to.equal('pod');
+                        expect(res.body.engine.type).to.equal('serverless');
 
                         // Get again all namespace. A new default namespace should not be created.
                         chai.request(server)

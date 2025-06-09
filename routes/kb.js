@@ -299,7 +299,7 @@ router.post('/qa', async (req, res) => {
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
-  if (data.engine === 'serverless') {
+  if (data.engine.type === 'serverless') {
     data.search_type = 'hybrid';
   }
   
@@ -307,7 +307,7 @@ router.post('/qa', async (req, res) => {
   winston.verbose("ask data: ", data);
   
   if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Question skipped in test environment"});
+    return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
 
   data.debug = true;
