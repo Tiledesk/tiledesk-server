@@ -3,7 +3,7 @@
 const { FlowLogs } = require("../models/flowLogs");
 const default_log_level = 'info';
 
-const levels = { error: 0, warn: 1, info: 2, debug: 3 };
+const levels = { error: 0, warn: 1, info: 2, debug: 3, native: 4 };
 
 class LogsService {
 
