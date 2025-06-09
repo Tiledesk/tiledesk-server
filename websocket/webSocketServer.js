@@ -426,7 +426,7 @@ class WebSocketServer {
             winston.debug('userId: ' + userId);
 
             try {
-              var projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
+              var currentProjectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
             } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
