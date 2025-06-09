@@ -102,7 +102,7 @@ class RoleChecker {
 
             try {
               project_user = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+            } catch(err) {
               winston.error("Error getting project_user for hasrole",err);
               return next(err);
             }
