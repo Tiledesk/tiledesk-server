@@ -813,6 +813,42 @@ describe('KbRoute', () => {
             })
         }).timeout(10000)
 
+        it('askkb-with-hybrid-search', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get all namespaces res.body: ", res.body); }
+
+                            console.log("get all namespaces res.body: ", res.body);    
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + "/kb/qa")
+                                .auth(email, pwd)
+                                .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question", advancedPrompt: true, system_context: "You are a robot coming from future" })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) };
+                                    if (log) { console.log("res.body: ", res.body) };
+
+                                    done();
+                                })
+
+
+                        })
+                })
+            })
+        }).timeout(10000)
+
         it('webhook', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
