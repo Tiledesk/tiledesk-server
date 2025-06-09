@@ -24,6 +24,7 @@ var cacheUtil = require('../utils/cacheUtil');
 var mongoose = require('mongoose');
 const requestConstants = require("../models/requestConstants");
 var RoleConstants = require('../models/roleConstants');
+var projectUserService = require("../services/projectUserService");
 
 let configSecretOrPubicKay = process.env.GLOBAL_SECRET || config.secret;
 
@@ -225,8 +226,8 @@ class WebSocketServer {
 
 
             try {
-              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+              var projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -309,8 +310,8 @@ class WebSocketServer {
 
 
             try {
-              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+              var projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -425,8 +426,8 @@ class WebSocketServer {
             winston.debug('userId: ' + userId);
 
             try {
-              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+              var projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -607,8 +608,8 @@ class WebSocketServer {
             winston.debug('recipientId: ' + recipientId);
 
             try {
-              projectuser = await projectUserService.getWithPermissions(req.user._id, projectid, req.user.sub);            
-            } catch(e) {
+              var projectuser = await projectUserService.getWithPermissions(req.user._id, projectId, req.user.sub);            
+            } catch(err) {
               winston.error('WebSocket error getting Project_user', err);
               return reject(err);
             }
@@ -760,6 +761,7 @@ class WebSocketServer {
             winston.error('Error getting snapshotAgents in ws. This is a mongo issue', e);
           }
 
+          // aggiungere controllo sui permessi qui
           pubSubServer.handlePublishMessage('/' + request.id_project + '/requests', request, undefined, true, "CREATE");
           pubSubServer.handlePublishMessage('/' + request.id_project + '/requests/' + request.request_id, request, undefined, true, "CREATE");
         }
@@ -813,6 +815,8 @@ class WebSocketServer {
           } catch (e) {
             winston.error('Error getting snapshotAgents in ws. This is a mongo issue', e);
           }
+
+          // aggiungere controllo sui permessi qui
 
           if (requestJSON.draft !== true) {
             pubSubServer.handlePublishMessage('/' + request.id_project + '/requests', requestJSON, undefined, true, "UPDATE");
