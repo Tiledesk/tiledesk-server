@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.95
+- Added: support for hybrid search
+- Added: support for chunks_only option
+- Added: support for native logs
+
 # 2.10.94
 - Update: fix uncaughtException in tagSchedule method
 
