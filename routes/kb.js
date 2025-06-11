@@ -1346,13 +1346,14 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
 
-    if (json.engine.type === 'serverless') {
-      json.hybrid = true;
+    let hybrid;
+    if (engine.type === 'serverless') {
+      hybrid = true;
     }
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, ...rest}
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
