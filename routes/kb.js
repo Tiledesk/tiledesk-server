@@ -57,8 +57,9 @@ let default_preview_settings = {
   max_tokens: 256,
   temperature: 0.7,
   top_k: 4,
-  //context: "You are an awesome AI Assistant."
+  alpha: 0.5,
   context: null
+  //context: "You are an awesome AI Assistant."
 }
 let default_engine = {
   name: "pinecone",
@@ -92,10 +93,6 @@ router.post('/scrape/single', async (req, res) => {
 
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
-
-  // if (!data.scrape_type) {
-  //   data.scrape_type = 1;
-  // }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -137,11 +134,6 @@ router.post('/scrape/single', async (req, res) => {
         json.content = kb.content;
       }
 
-      // json.scrape_type = 1;
-      // if (data.scrape_type) {
-      //   json.scrape_type = data.scrape_type;
-      // }
-
       if (kb.scrape_type) {
         json.scrape_type = kb.scrape_type
       }
@@ -156,6 +148,10 @@ router.post('/scrape/single', async (req, res) => {
 
       let ns = namespaces.find(n => n.id === kb.namespace);
       json.engine = ns.engine || default_engine;
+
+      if (json.engine.type === 'serverless') {
+        json.hybrid = true;
+      }
 
       winston.verbose("/scrape/single json: ", json);
 
@@ -302,12 +298,17 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
+
+  if (data.engine.type === 'serverless') {
+    data.search_type = 'hybrid';
+  }
+
   
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   
   if (process.env.NODE_ENV === 'test') {
-    return res.status(200).send({ success: true, message: "Question skipped in test environment"});
+    return res.status(200).send({ success: true, message: "Question skipped in test environment", data: data });
   }
 
   data.debug = true;
@@ -1217,6 +1218,10 @@ router.post('/', async (req, res) => {
       let ns = namespaces.find(n => n.id === body.namespace);
       json.engine = ns.engine || default_engine;
 
+      if (json.engine.type === 'serverless') {
+        json.hybrid = true;
+      }
+
       let resources = [];
 
       resources.push(json);
@@ -1340,6 +1345,10 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
+
+    if (json.engine.type === 'serverless') {
+      json.hybrid = true;
+    }
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
