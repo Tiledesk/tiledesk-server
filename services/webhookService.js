@@ -44,6 +44,7 @@ class WebhookService {
                 }
                 let json_value = JSON.parse(value);
                 payload.preloaded_request_id = json_value.request_id;
+                payload.draft = true;
             }
 
             let token = await this.generateChatbotToken(chatbot);
