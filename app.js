@@ -127,6 +127,7 @@ var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
 var kb = require('./routes/kb');
+var unanswered = require('./routes/unanswered');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -615,6 +616,7 @@ app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { se
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
+app.use('/:projectid/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);
 

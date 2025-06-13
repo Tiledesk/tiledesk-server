@@ -1,5 +1,6 @@
 var express = require('express');
 var { Namespace, KB, Engine } = require('../models/kb_setting');
+const UnansweredQuestion = require('../models/unanswered_question');
 // var { KB } = require('../models/kb_setting');
 // var { Engine } = require('../models/kb_setting')
 var router = express.Router();
@@ -1610,6 +1611,273 @@ router.delete('/:kb_id', async (req, res) => {
 /**
 * ****************************************
 * Content Section - End
+* ****************************************
+*/
+
+
+//----------------------------------------
+
+
+/**
+* ****************************************
+* Unanswered Questions Section - Start
+* ****************************************
+*/
+
+// Add a new unanswered question
+router.post('/unanswered', async (req, res) => {
+  let project_id = req.projectid;
+  let body = req.body;
+
+  if (!body.namespace) {
+    return res.status(400).send({ success: false, error: "parameter 'namespace' is not defined" });
+  }
+
+  if (!body.question) {
+    return res.status(400).send({ success: false, error: "parameter 'question' is not defined" });
+  }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id + ". Cannot add unanswered question to a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(body.namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let new_unanswered = new UnansweredQuestion({
+    id_project: project_id,
+    namespace: body.namespace,
+    question: body.question
+  });
+
+  new_unanswered.save((err, savedQuestion) => {
+    if (err) {
+      winston.error("Save unanswered question error: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+    return res.status(200).send(savedQuestion);
+  });
+});
+
+// Get all unanswered questions for a namespace
+router.get('/unanswered', async (req, res) => {
+  let project_id = req.projectid;
+  let namespace = req.query.namespace;
+  
+  if (!namespace) {
+    return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
+  }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id + ". Cannot get unanswered questions from a non-existent namespace."
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  let limit = 200;
+  let page = 0;
+  let direction = -1;
+  let sortField = "created_at";
+
+  if (req.query.limit) {
+    limit = parseInt(req.query.limit);
+  }
+
+  if (req.query.page) {
+    page = parseInt(req.query.page);
+  }
+
+  if (req.query.direction) {
+    direction = parseInt(req.query.direction)
+  }
+
+  if (req.query.sortField) {
+    sortField = req.query.sortField;
+  }
+
+  let skip = page * limit;
+
+  let sortQuery = {};
+  sortQuery[sortField] = direction;
+
+  console.log("project_id: ", project_id);
+  console.log("namespace: ", namespace);
+  UnansweredQuestion.countDocuments({ id_project: project_id, namespace: namespace }, (err, count) => {
+    if (err) {
+      winston.error("Count unanswered questions error: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+
+    UnansweredQuestion.find({ id_project: project_id, namespace: namespace })
+      .skip(skip)
+      .limit(limit)
+      .sort(sortQuery)
+      .exec((err, questions) => {
+        if (err) {
+          winston.error("Find unanswered questions error: ", err);
+          return res.status(500).send({ success: false, error: err });
+        }
+
+        let response = {
+          count: count,
+          query: {
+            limit: limit,
+            page: page,
+            sortField: sortField,
+            direction: direction
+          },
+          questions: questions
+        }
+
+        return res.status(200).send(response);
+      });
+  });
+});
+
+// Delete a specific unanswered question
+router.delete('/unanswered/:id', async (req, res) => {
+  let project_id = req.projectid;
+  let question_id = req.params.id;
+
+  UnansweredQuestion.findOneAndDelete({ _id: question_id, id_project: project_id }, (err, deletedQuestion) => {
+    if (err) {
+      winston.error("Delete unanswered question error: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+
+    if (!deletedQuestion) {
+      return res.status(404).send({ success: false, error: "Question not found or not authorized" });
+    }
+
+    return res.status(200).send({ success: true, message: "Question deleted successfully" });
+  });
+});
+
+// Delete all unanswered questions for a namespace
+router.delete('/unanswered/namespace/:namespace', async (req, res) => {
+  let project_id = req.projectid;
+  let namespace = req.params.namespace;
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id;
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  UnansweredQuestion.deleteMany({ id_project: project_id, namespace: namespace }, (err, result) => {
+    if (err) {
+      winston.error("Delete all unanswered questions error: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+
+    return res.status(200).send({ 
+      success: true, 
+      message: "All questions deleted successfully",
+      deletedCount: result.deletedCount 
+    });
+  });
+});
+
+// Update an unanswered question
+router.put('/unanswered/:id', async (req, res) => {
+  let project_id = req.projectid;
+  let question_id = req.params.id;
+  let body = req.body;
+
+  if (!body.question) {
+    return res.status(400).send({ success: false, error: "parameter 'question' is not defined" });
+  }
+
+  UnansweredQuestion.findOneAndUpdate(
+    { _id: question_id, id_project: project_id },
+    { question: body.question },
+    { new: true },
+    (err, updatedQuestion) => {
+      if (err) {
+        winston.error("Update unanswered question error: ", err);
+        return res.status(500).send({ success: false, error: err });
+      }
+
+      if (!updatedQuestion) {
+        return res.status(404).send({ success: false, error: "Question not found or not authorized" });
+      }
+
+      return res.status(200).send(updatedQuestion);
+    }
+  );
+});
+
+// Get count of unanswered questions for a namespace
+router.get('/unanswered/count', async (req, res) => {
+  let project_id = req.projectid;
+  let namespace = req.query.namespace;
+  
+  if (!namespace) {
+    return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
+  }
+
+  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+    winston.error("find namespaces error: ", err)
+    res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespaces || namespaces.length == 0) {
+    let alert = "No namespace found for the selected project " + project_id;
+    winston.warn(alert);
+    res.status(403).send(alert);
+  }
+
+  let namespaceIds = namespaces.map(namespace => namespace.id);
+
+  if (!namespaceIds.includes(namespace)) {
+    return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
+  }
+
+  UnansweredQuestion.countDocuments({ id_project: project_id, namespace: namespace }, (err, count) => {
+    if (err) {
+      winston.error("Count unanswered questions error: ", err);
+      return res.status(500).send({ success: false, error: err });
+    }
+    console.log("count: ", count);
+    return res.status(200).send({ count: count });
+  });
+});
+
+/**
+* ****************************************
+* Unanswered Questions Section - End
 * ****************************************
 */
 
