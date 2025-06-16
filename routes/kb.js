@@ -1341,7 +1341,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     }
   })
 
-  saveBulk(operations, kbs, project_id).then((result) => {
+  saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
@@ -1456,7 +1456,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         }
       })
 
-      saveBulk(operations, kbs, project_id).then((result) => {
+      saveBulk(operations, kbs, project_id, namespace_id).then((result) => {
 
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
@@ -1623,13 +1623,13 @@ router.delete('/:kb_id', async (req, res) => {
 * ****************************************
 */
 
-async function saveBulk(operations, kbs, project_id) {
+async function saveBulk(operations, kbs, project_id, namespace) {
 
   return new Promise((resolve, reject) => {
     KB.bulkWrite(operations, { ordered: false }).then((result) => {
       winston.verbose("bulkWrite operations result: ", result);
 
-      KB.find({ id_project: project_id, source: { $in: kbs.map(kb => kb.source) } }).lean().then((documents) => {
+      KB.find({ id_project: project_id, namespace: namespace, source: { $in: kbs.map(kb => kb.source) } }).lean().then((documents) => {
         winston.debug("documents: ", documents);
         resolve(documents)
       }).catch((err) => {
