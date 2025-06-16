@@ -5,11 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.96
+# 2.10.97
 - Added: support for hybrid search
 - Added: support for chunks_only option
 - Added: support for native logs
 - Bug fix: unexpceted indexing run of all urls in the project
+- Added: BASE_FILE_URL to twilio voice listener
 
 # 2.10.95 (Aborted)
 - Added: support for hybrid search
