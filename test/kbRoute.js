@@ -1510,7 +1510,7 @@ describe('KbRoute', () => {
                             }
 
                             chai.request(server)
-                                .post('/' + savedProject._id + '/unanswered')
+                                .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
                                 .send(question)
                                 .end((err, res) => {
@@ -1550,7 +1550,7 @@ describe('KbRoute', () => {
                             }
 
                             chai.request(server)
-                                .post('/' + savedProject._id + '/unanswered')
+                                .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
                                 .send(question)
                                 .end((err, res) => {
@@ -1559,12 +1559,12 @@ describe('KbRoute', () => {
 
                                     // Then get all questions
                                     chai.request(server)
-                                        .get('/' + savedProject._id + '/unanswered?namespace=' + namespace_id)
+                                        .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
                                         .auth(email, pwd)
                                         .end((err, res) => {
                                             if (err) { console.error("err: ", err); }
                                             if (log) { console.log("get unanswered questions res.body: ", res.body); }
-                                            console.log("get unanswered questions res.body: ", res.body);
+
                                             res.should.have.status(200);
                                             res.body.should.be.a('object');
                                             expect(res.body.count).to.equal(1);
@@ -1602,7 +1602,7 @@ describe('KbRoute', () => {
                             }
 
                             chai.request(server)
-                                .post('/' + savedProject._id + '/unanswered')
+                                .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
                                 .send(question)
                                 .end((err, res) => {
@@ -1612,7 +1612,7 @@ describe('KbRoute', () => {
 
                                     // Then delete it
                                     chai.request(server)
-                                        .delete('/' + savedProject._id + '/unanswered/' + questionId)
+                                        .delete('/' + savedProject._id + '/kb/unanswered/' + questionId)
                                         .auth(email, pwd)
                                         .end((err, res) => {
                                             if (err) { console.error("err: ", err); }
@@ -1623,7 +1623,7 @@ describe('KbRoute', () => {
 
                                             // Verify it's deleted
                                             chai.request(server)
-                                                .get('/' + savedProject._id + '/unanswered?namespace=' + namespace_id)
+                                                .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
                                                 .auth(email, pwd)
                                                 .end((err, res) => {
                                                     if (err) { console.error("err: ", err); }
@@ -1669,13 +1669,13 @@ describe('KbRoute', () => {
 
                             Promise.all(questions.map(q => 
                                 chai.request(server)
-                                    .post('/' + savedProject._id + '/unanswered')
+                                    .post('/' + savedProject._id + '/kb/unanswered')
                                     .auth(email, pwd)
                                     .send(q)
                             )).then(() => {
                                 // Then delete all questions
                                 chai.request(server)
-                                    .delete('/' + savedProject._id + '/unanswered/namespace/' + namespace_id)
+                                    .delete('/' + savedProject._id + '/kb/unanswered/namespace/' + namespace_id)
                                     .auth(email, pwd)
                                     .end((err, res) => {
                                         if (err) { console.error("err: ", err); }
@@ -1687,7 +1687,7 @@ describe('KbRoute', () => {
 
                                         // Verify they're deleted
                                         chai.request(server)
-                                            .get('/' + savedProject._id + '/unanswered?namespace=' + namespace_id)
+                                            .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
                                             .auth(email, pwd)
                                             .end((err, res) => {
                                                 if (err) { console.error("err: ", err); }
@@ -1726,7 +1726,7 @@ describe('KbRoute', () => {
                             }
 
                             chai.request(server)
-                                .post('/' + savedProject._id + '/unanswered')
+                                .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
                                 .send(question)
                                 .end((err, res) => {
@@ -1736,7 +1736,7 @@ describe('KbRoute', () => {
 
                                     // Then update it
                                     chai.request(server)
-                                        .put('/' + savedProject._id + '/unanswered/' + questionId)
+                                        .put('/' + savedProject._id + '/kb/unanswered/' + questionId)
                                         .auth(email, pwd)
                                         .send({ question: "Come funziona il prodotto aggiornato?" })
                                         .end((err, res) => {
@@ -1783,13 +1783,13 @@ describe('KbRoute', () => {
 
                             Promise.all(questions.map(q => 
                                 chai.request(server)
-                                    .post('/' + savedProject._id + '/unanswered')
+                                    .post('/' + savedProject._id + '/kb/unanswered')
                                     .auth(email, pwd)
                                     .send(q)
                             )).then(() => {
                                 // Then count them
                                 chai.request(server)
-                                    .get('/' + savedProject._id + '/unanswered/count?namespace=' + namespace_id)
+                                    .get('/' + savedProject._id + '/kb/unanswered/count?namespace=' + namespace_id)
                                     .auth(email, pwd)
                                     .end((err, res) => {
                                         if (err) { console.error("err: ", err); }

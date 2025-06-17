@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Namespace } = require('../models/kb_setting');
-const UnansweredQuestion = require('../models/unanswered_question');
+const { Namespace, UnansweredQuestion } = require('../models/kb_setting');
 var winston = require('../config/winston');
 
 // Add a new unanswered question
@@ -17,15 +16,9 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // Get all namespaces for the project
-        const namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
-            winston.error("find namespaces error: ", err)
-            res.status(500).send({ success: false, error: err })
-        })
-        const namespaceIds = namespaces.map(ns => ns.id);
-
         // Check if namespace belongs to project
-        if (!namespaceIds.includes(namespace)) {
+        const isValidNamespace = await validateNamespace(id_project, namespace);
+        if (!isValidNamespace) {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
@@ -63,15 +56,9 @@ router.get('/', async (req, res) => {
             });
         }
 
-        // Get all namespaces for the project
-        const namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
-            winston.error("find namespaces error: ", err)
-            res.status(500).send({ success: false, error: err })
-        })
-        const namespaceIds = namespaces.map(ns => ns.id);
-
         // Check if namespace belongs to project
-        if (!namespaceIds.includes(namespace)) {
+        const isValidNamespace = await validateNamespace(id_project, namespace);
+        if (!isValidNamespace) {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
@@ -151,15 +138,9 @@ router.delete('/namespace/:namespace', async (req, res) => {
         const { namespace } = req.params;
         const id_project = req.projectid;
 
-        // Get all namespaces for the project
-        const namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
-            winston.error("find namespaces error: ", err)
-            res.status(500).send({ success: false, error: err })
-        })
-        const namespaceIds = namespaces.map(ns => ns.id);
-
         // Check if namespace belongs to project
-        if (!namespaceIds.includes(namespace)) {
+        const isValidNamespace = await validateNamespace(id_project, namespace);
+        if (!isValidNamespace) {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
@@ -233,15 +214,9 @@ router.get('/count', async (req, res) => {
             });
         }
 
-        // Get all namespaces for the project
-        const namespaces = await Namespace.find({ id_project: id_project }).catch((err) => {
-            winston.error("find namespaces error: ", err)
-            res.status(500).send({ success: false, error: err })
-        })
-        const namespaceIds = namespaces.map(ns => ns.id);
-
         // Check if namespace belongs to project
-        if (!namespaceIds.includes(namespace)) {
+        const isValidNamespace = await validateNamespace(id_project, namespace);
+        if (!isValidNamespace) {
             return res.status(403).json({
                 success: false,
                 error: "Not allowed. The namespace does not belong to the current project."
@@ -263,5 +238,19 @@ router.get('/count', async (req, res) => {
         });
     }
 });
+
+// Helper function to validate namespace
+async function validateNamespace(id_project, namespace_id) {
+    try {
+        const namespace = await Namespace.findOne({ 
+            id_project: id_project,
+            id: namespace_id 
+        });
+        return !!namespace; // return true if namespace exists, false otherwise
+    } catch (err) {
+        winston.error("validate namespace error: ", err);
+        throw err;
+    }
+}
 
 module.exports = router; 
