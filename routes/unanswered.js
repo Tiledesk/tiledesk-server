@@ -244,7 +244,7 @@ async function validateNamespace(id_project, namespace_id) {
     try {
         const namespace = await Namespace.findOne({ 
             id_project: id_project,
-            namespace: namespace_id 
+            id: namespace_id 
         });
         return !!namespace; // return true if namespace exists, false otherwise
     } catch (err) {
