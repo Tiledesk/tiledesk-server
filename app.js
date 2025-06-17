@@ -146,6 +146,7 @@ var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
 var copilot = require('./routes/copilot');
+var voice = require('./routes/voice');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
