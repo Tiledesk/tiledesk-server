@@ -202,9 +202,9 @@ router.put('/:id', async (req, res) => {
 });
 
 // Count unanswered questions for a namespace
-router.get('/count', async (req, res) => {
+router.get('/count/:namespace', async (req, res) => {
     try {
-        const { namespace } = req.query;
+        const { namespace } = req.params;
         const id_project = req.projectid;
 
         if (!namespace) {
