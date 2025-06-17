@@ -631,7 +631,7 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
 app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
-
+app.use('/:projectid/voice', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], voice);
 
 if (pubModulesManager) {
   pubModulesManager.useUnderProjects(app);
