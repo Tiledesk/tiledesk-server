@@ -677,7 +677,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
       delete chatbot.attributes.globals
     }
   }
-  
+
+  chatbot.template = "empty";
   delete chatbot.modified;
 
   chatbot.template = "empty";

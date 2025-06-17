@@ -623,8 +623,13 @@ router.get('/namespace/export/:id', async (req, res) => {
       contents: contents
     }
     let json_string = JSON.stringify(json);
-    res.set({ "Content-Disposition": `attachment; filename="${filename}.json"` });
+
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}.json"`);
+
     return res.send(json_string);
+    // res.set({ "Content-Disposition": `attachment; filename="${filename}.json"` });
+    // return res.send(json_string);
   } catch(err) {
     winston.error("Error genereting json ", err);
     return res.status(500).send({ success: false, error: "Error genereting json file" })
@@ -1776,6 +1781,7 @@ async function setCustomScrapeOptions(options) {
 }
 
 async function generateFilename(name) {
+  winston.info("generateFilename from " + name)
   return name
     .toLowerCase()
     .trim()
