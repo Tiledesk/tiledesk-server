@@ -274,7 +274,6 @@ class AiService {
     })
   }
 
-
 }
 
 var aiService = new AiService();
