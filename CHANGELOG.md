@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.98
+- Update: whatsapp-connector to 0.1.84
+
 # 2.10.97
 - Added: support for hybrid search
 - Added: support for chunks_only option
