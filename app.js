@@ -151,6 +151,7 @@ var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
 var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
+var voice = require('./routes/voice');
 
 var bootDataLoader = require('./services/bootDataLoader');
 var settingDataLoader = require('./services/settingDataLoader');
