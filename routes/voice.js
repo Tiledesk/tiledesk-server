@@ -5,6 +5,33 @@ const Integration = require('../models/integration');
 const voiceService = require('../services/voiceService');
 
 // Get voices settings
+/**
+ * @api {get} /api/:projectid/voice/voices Get Available Voices
+ * @apiName GetVoices
+ * @apiGroup Voice
+ * @apiDescription Retrieves all available voices from ElevenLabs for the current project
+ *
+ * @apiHeader {String} Authorization Bearer token for authentication
+ * 
+ * @apiSuccess {Array} voices List of available voices with their details
+ * @apiSuccess {String} voice.voice_id Unique identifier of the voice
+ * @apiSuccess {String} voice.name Name of the voice
+ * @apiSuccess {String} voice.category Category of the voice (e.g. premade, cloned)
+ * @apiSuccess {Object} voice.settings Voice settings like stability and similarity boost
+ * @apiSuccess {Object} voice.labels Additional voice metadata
+ * 
+ * @apiError (404) {Object} NotFound Integration not found for the project
+ * @apiError (400) {Object} InvalidKey Integration API key is missing or invalid
+ * @apiError (500) {Object} ServerError Internal server error
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "success": false,
+ *       "error": "Integration not found"
+ *     }
+ */
+
 router.get('/voices', async (req, res) => {
     try {
         const id_project = req.projectid;
@@ -55,7 +82,32 @@ router.get('/voices', async (req, res) => {
     }
 });
 
-// Get available voices
+// Get available models
+/**
+ * @api {get} /api/:projectid/voice/models Get Available Models
+ * @apiName GetModels
+ * @apiGroup Voice
+ * @apiDescription Retrieves all available models from ElevenLabs for the current project
+ *
+ * @apiHeader {String} Authorization Bearer token for authentication
+ * 
+ * @apiSuccess {Array} models List of available models with their details
+ * @apiSuccess {String} model.model_id Unique identifier of the model
+ * @apiSuccess {String} model.name Name of the model
+ * @apiSuccess {String} model.category Category of the model (e.g. text-to-speech, audio-to-audio)
+ * @apiSuccess {Object} model.settings Model settings like stability and similarity boost
+ * 
+ * @apiError (404) {Object} NotFound Integration not found for the project
+ * @apiError (400) {Object} InvalidKey Integration API key is missing or invalid
+ * @apiError (500) {Object} ServerError Internal server error
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "success": false,
+ *       "error": "Integration not found"
+ *     }
+ */
 router.get('/models', async (req, res) => {
     try {
         const id_project = req.projectid;
