@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const winston = require('../config/winston');
-const Integration = require('../models/integration');
 const voiceService = require('../services/voiceService');
+const Integration = require('../models/integrations');
 
 // Get voices settings
 /**
