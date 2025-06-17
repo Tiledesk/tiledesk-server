@@ -42,7 +42,8 @@ class Listener {
         voice_twilio.startApp({
             MONGODB_URI: config.databaseUri,          
             dbconnection: dbConnection,
-            BASE_URL: apiUrl + "/modules/voice-twilio",                     
+            BASE_URL: apiUrl + "/modules/voice-twilio",
+            BASE_FILE_URL: apiUrl,                     
             REDIS_HOST: host,
             REDIS_PORT: port,
             REDIS_PASSWORD: password,
