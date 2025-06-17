@@ -44,9 +44,9 @@ router.post('/', async (req, res) => {
 });
 
 // Get all unanswered questions for a namespace
-router.get('/', async (req, res) => {
+router.get('/:namespace', async (req, res) => {
     try {
-        const { namespace } = req.query;
+        const { namespace } = req.params;
         const id_project = req.projectid;
 
         if (!namespace) {
