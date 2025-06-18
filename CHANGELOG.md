@@ -6,6 +6,9 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.10.98
+- Update: messenger-connector to 0.1.24
+
+# 2.10.98
 - Update: whatsapp-connector to 0.1.84
 
 # 2.10.97
