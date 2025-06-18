@@ -13,8 +13,14 @@ class LogsService {
             level = default_log_level
         }
         let nlevel = levels[level];
+
+        // Build match condition based on queryField
+        const matchCondition = queryField === 'webhook_id' 
+            ? { [queryField]: id, longExp: { $exists: true } }
+            : { [queryField]: id };
+
         return FlowLogs.aggregate([
-            { $match: { [queryField]: id } },
+            { $match: matchCondition },
             { $unwind: "$rows" },
             { $match: { "rows.nlevel": { $lte: nlevel } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
@@ -28,8 +34,14 @@ class LogsService {
             level = default_log_level
         }
         let nlevel = levels[level];
+
+        // Build match condition based on queryField
+        const matchCondition = queryField === 'webhook_id' 
+            ? { [queryField]: id, longExp: { $exists: true } }
+            : { [queryField]: id };
+
         return FlowLogs.aggregate([
-            { $match: { [queryField]: id } },
+            { $match: matchCondition },
             { $unwind: "$rows" },
             { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $lt: timestamp } } },
             { $sort: { "rows.timestamp": -1, "rows._id": -1 } },
@@ -43,8 +55,14 @@ class LogsService {
             level = default_log_level
         }
         let nlevel = levels[level];
+
+        // Build match condition based on queryField
+        const matchCondition = queryField === 'webhook_id' 
+            ? { [queryField]: id, longExp: { $exists: true } }
+            : { [queryField]: id };
+
         return FlowLogs.aggregate([
-            { $match: { [queryField]: id } },
+            { $match: matchCondition },
             { $unwind: "$rows" },
             { $match: { "rows.nlevel": { $lte: nlevel }, "rows.timestamp": { $gt: timestamp } } },
             { $sort: { "rows.timestamp": 1, "rows._id": 1 } },

@@ -33,6 +33,14 @@ const FlowLogsSchema = new Schema(
       type: String,
       required: false,
     },
+    shortExp: {
+      type: Date,
+      required: false
+    },
+    longExp: {
+      type: Date,
+      required: false
+    },
     level: {
       type: String,
       required: true,
@@ -48,6 +56,8 @@ const FlowLogsSchema = new Schema(
 
 FlowLogsSchema.index({ request_id: 1 }, { unique: true });
 FlowLogsSchema.index({ webhook_id: 1 });
+FlowLogsSchema.index({ shortExp: 1 }, { expireAfterSeconds: 300 });  // 5 minutes
+FlowLogsSchema.index({ longExp: 1 }, { expireAfterSeconds: 1800 }); // 30 minutes
 
 // FlowLogsSchema.pre('findOneAndUpdate', async function (next) {
 //   const update = this.getUpdate();
