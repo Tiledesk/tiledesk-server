@@ -5,7 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.98
+# 2.10.100
+- Update: removed verbose logs
+
+# 2.10.99
 - Update: messenger-connector to 0.1.24
 
 # 2.10.98
