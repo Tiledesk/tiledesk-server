@@ -30,15 +30,10 @@ if (MAX_UPLOAD_FILE_SIZE) {
 }
 const upload = multer({ storage: fileService.getStorage("files"),limits: uploadlimits});
 
-/*
-curl -u andrea.leo@f21.it:123456 \
-  -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
-  http://localhost:3000/files/users/
 
-  */
+
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
-
   winston.verbose("files/users")
   return res.status(201).json({
     message: 'File uploded successfully',
@@ -67,22 +62,37 @@ router.post('/public', upload.single('file'), (req, res, next) => {
 
 
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   winston.debug('path', req.query.path);
-  // if (path.indexOf("/users/"))
-  fileService.getFileDataAsStream(req.query.path).pipe(res);
-  // const file = gfs
-  //   .find({
-  //     filename: req.query.path
-  //   })
-  //   .toArray((err, files) => {
-  //     if (!files || files.length === 0) {
-  //       return res.status(404).json({
-  //         err: "no files exist"
-  //       });
-  //     }
-  //     gfs.openDownloadStreamByName(req.query.path).pipe(res);
-  //   });
+  
+
+  try {
+    let file = await fileService.find(req.query.path);
+    // console.log("file", file);
+
+    res.set({ "Content-Length": file.length});
+    res.set({ "Content-Type": file.contentType});
+
+  } catch (e) {
+    if (e.code == "ENOENT") {
+      winston.debug('File not found: '+req.query.path);
+      return res.status(404).send({success: false, msg: 'File not found.'});
+    }else {
+      winston.error('Error getting the image', e);
+      return res.status(500).send({success: false, msg: 'Error getting file.'});
+    }      
+  }
+  
+  fileService.getFileDataAsStream(req.query.path).on('error', (e)=> {
+        if (e.code == "ENOENT") {
+          winston.debug('File not found: '+req.query.path);
+          return res.status(404).send({success: false, msg: 'File not found.'});
+        }else {
+          winston.error('Error getting the file', e);
+          return res.status(500).send({success: false, msg: 'Error getting file.'});
+        }      
+      }).pipe(res);
+  
 });
 
 
