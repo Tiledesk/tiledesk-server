@@ -29,6 +29,10 @@ const FlowLogsSchema = new Schema(
       type: String,
       required: false,
     },
+    webhook_id: {
+      type: String,
+      required: false,
+    },
     level: {
       type: String,
       required: true,
@@ -43,6 +47,7 @@ const FlowLogsSchema = new Schema(
 );
 
 FlowLogsSchema.index({ request_id: 1 }, { unique: true });
+FlowLogsSchema.index({ webhook_id: 1 });
 
 // FlowLogsSchema.pre('findOneAndUpdate', async function (next) {
 //   const update = this.getUpdate();
