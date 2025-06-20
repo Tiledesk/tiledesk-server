@@ -790,7 +790,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
     });
   }
 
-  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id }).catch((err) => {
+  let deleteResponse = await KB.deleteMany({ id_project: id_project, namespace: namespace_id, type: { $in: ['url', 'text', 'faq'] } }).catch((err) => {
     winston.error("deleteMany error: ", err);
     return res.status(500).send({ success: false, error: err });
   })
