@@ -145,6 +145,7 @@ class MessageService {
                 });
 
                 // winston.debug("create new message", newMessage);
+                winston.info("main_flow_cache_3 messageService before saving message");
 
                 return newMessage.save(function (err, savedMessage) {
                     if (err) {
@@ -227,7 +228,8 @@ class MessageService {
         return new Promise(function (resolve, reject) {
             // winston.debug("request_id", request_id);
             // winston.debug("newstatus", newstatus);
-
+            winston.info("main_flow_cache_2 message changeStatus");
+            
             return Message.findByIdAndUpdate(message_id, { status: newstatus }, { new: true, upsert: false }, function (err, updatedMessage) {
                 if (err) {
                     winston.error(err);
@@ -307,7 +309,6 @@ class MessageService {
                 let integration = await Integration.findOne({ id_project: id_project, name: 'openai' }).catch((err) => {
                     winston.error("Error finding integration for openai");
                     resolve(null);
-
                 })
 
                 if (!integration || !integration?.value?.apikey) {
