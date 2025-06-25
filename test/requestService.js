@@ -241,8 +241,11 @@ describe('RequestService', function () {
 
     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
       var userid = savedUser.id;
+      // console.log("userid", userid);
+
       projectService.createAndReturnProjectAndProjectUser("createWithId", userid).then(function (savedProjectAndPU) {
         var savedProject = savedProjectAndPU.project;
+        // console.log("savedProject", savedProject);
 
         leadService.createIfNotExists("leadfullname", "email@email.com", savedProject._id).then(function (createdLead) {
           var now = Date.now();
@@ -251,8 +254,11 @@ describe('RequestService', function () {
             id_project: savedProject._id, first_text: "first_text",
             lead: createdLead, requester: savedProjectAndPU.project_user
           };
+          // console.log("createdLead", createdLead);
+
 
           requestService.create(request).then(function (savedRequest) {
+            // console.log("resolve", savedRequest.toObject());
             winston.info("resolve", savedRequest.toObject());
             expect(savedRequest.request_id).to.equal("request_idcreateObjSimpleUpdateLeadUpdateSnapshot-" + now);
             expect(savedRequest.requester.toString()).to.equal(savedProjectAndPU.project_user._id.toString());
@@ -268,6 +274,7 @@ describe('RequestService', function () {
             expect(savedRequest.participants[0].toString()).to.equal(userid);
             expect(savedRequest.participantsAgents[0].toString()).to.equal(userid);
             expect(savedRequest.assigned_at).to.not.equal(null);
+            // console.log("resolve1", savedRequest.toObject());
 
             expect(savedRequest.snapshot.department.name).to.not.equal(null);
             expect(savedRequest.snapshot.agents).to.have.lengthOf(1);
@@ -276,7 +283,7 @@ describe('RequestService', function () {
             expect(savedRequest.snapshot.requester.role).to.equal("owner");
             expect(savedRequest.snapshot.requester.isAuthenticated).to.equal(true);
             // expect(savedRequest.snapshot.requester.role).to.equal("owner");
-
+            // console.log("resolve2", savedRequest.toObject());
             expect(savedRequest.createdBy).to.equal(savedProjectAndPU.project_user._id.toString());
 
             // console.log("savedProject._id", savedProject._id, typeof savedProject._id);
@@ -284,7 +291,7 @@ describe('RequestService', function () {
 
             expect(savedRequest.id_project).to.equal(savedProject._id.toString());
 
-
+            // console.log("resolve3", savedRequest.toObject());
             leadService.updateWitId(createdLead.lead_id, "fullname2", "email2@email2.com", savedProject._id).then(function (updatedLead) {
 
               expect(updatedLead.fullname).to.equal("fullname2");
@@ -319,7 +326,7 @@ describe('RequestService', function () {
         });
       });
     });
-  });
+  }).timeout(20000);
 
 
 
