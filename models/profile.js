@@ -1,11 +1,19 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
+const { customAlphabet } = require('nanoid');
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 6);
+let isCommunity = false;
+if (process.env.COMMUNITY_VERSION === true || process.env.COMMUNITY_VERSION === 'true') {
+  isCommunity = true;
+}
 
 var ProfileSchema = new Schema({
   name: {
     type: String,
-    default: 'Sandbox',
+    default: function() {
+      return (isCommunity) ? 'Custom' : 'Sandbox';
+    },
     index: true
   },
   trialDays: {
@@ -14,23 +22,59 @@ var ProfileSchema = new Schema({
   },
   agents: {
     type: Number,
-    default: 0 //??
+    default: function() {
+      return (isCommunity) ? 5 : 0;
+    }
   },
   type: {
     type: String,
-    default: 'free',
+    default: function() {
+      return (isCommunity) ? 'payment' : 'free';
+    }
   },
   quotes: {
     type: Object
   },
   customization: {
-    type: Object
+    type: Object,
+    default: function() {
+      if (isCommunity) {
+        return {
+          copilot: true,
+          webhook: true,
+          voice: true,
+          voice_twilio: true,
+          widgetUnbranding: true,
+          smtpSettings: true,
+          knowledgeBases: true,
+          reindex: true,
+          whatsapp: true,
+          messanger: true,
+          telegram: true,
+          chatbot: true
+        };
+      }
+      return undefined;
+    }
   },
   subStart: {
     type: Date,
+    default: function() {
+      if (isCommunity) {
+        return new Date();
+      }
+      return undefined;
+    }
   },
   subEnd: {
     type: Date,
+    default: function() {
+      if (isCommunity) {
+        // Set date to 31 December 2099
+        return new Date('2099-12-31T23:59:59.999Z');
+      }
+      return undefined;
+    }
   },
   subscriptionId:  {
     type: String,
