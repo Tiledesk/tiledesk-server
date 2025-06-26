@@ -576,24 +576,61 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
   }
 
 
-  if (req.body["settings.email.from"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.from")) {
     update["settings.email.from"] = req.body["settings.email.from"];
   }
-  if (req.body["settings.email.config.host"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.config.host")) {
     update["settings.email.config.host"] = req.body["settings.email.config.host"];
   }
-  if (req.body["settings.email.config.port"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.config.port")) {
     update["settings.email.config.port"] = req.body["settings.email.config.port"];
   }
-  if (req.body["settings.email.config.secure"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.config.secure")) {
     update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
   }
-  if (req.body["settings.email.config.user"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.config.user")) {
     update["settings.email.config.user"] = req.body["settings.email.config.user"];
   }
-  if (req.body["settings.email.config.pass"]!=undefined) {
+  if (req.body.hasOwnProperty("settings.email.config.pass")) {
     update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
   }
+
+  // compact version
+  // const keys = [
+  //   "settings.email.from",
+  //   "settings.email.config.host",
+  //   "settings.email.config.port",
+  //   "settings.email.config.secure",
+  //   "settings.email.config.user",
+  //   "settings.email.config.pass"
+  // ];
+  
+  // const update = {};
+  
+  // keys.forEach(key => {
+  //   if (req.body.hasOwnProperty(key)) {
+  //     update[key] = req.body[key];
+  //   }
+  // });
+
+  // if (req.body["settings.email.from"]!=undefined) {
+  //   update["settings.email.from"] = req.body["settings.email.from"];
+  // }
+  // if (req.body["settings.email.config.host"]!=undefined) {
+  //   update["settings.email.config.host"] = req.body["settings.email.config.host"];
+  // }
+  // if (req.body["settings.email.config.port"]!=undefined) {
+  //   update["settings.email.config.port"] = req.body["settings.email.config.port"];
+  // }
+  // if (req.body["settings.email.config.secure"]!=undefined) {
+  //   update["settings.email.config.secure"] = req.body["settings.email.config.secure"];
+  // }
+  // if (req.body["settings.email.config.user"]!=undefined) {
+  //   update["settings.email.config.user"] = req.body["settings.email.config.user"];
+  // }
+  // if (req.body["settings.email.config.pass"]!=undefined) {
+  //   update["settings.email.config.pass"] = req.body["settings.email.config.pass"];
+  // }
 
 
   if (req.body["settings.chat_limit_on"]!=undefined) {
@@ -896,8 +933,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
+// rolequery
 
-  Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
+  Project_user.find({ id_user: req.user._id , roleType: RoleConstants.TYPE_AGENTS, status: "active"}).
+  // Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
       path: 'id_project',
@@ -1033,8 +1072,10 @@ router.get('/:projectid/users/availables', async  (req, res) => {
   if (isOpen === false) {
     return res.json(available_agents_array);
   }
+// rolequery
+  let query = { id_project: projectid, user_available: true, roleType: RoleConstants.TYPE_AGENTS };
+  // let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
-  let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
   if (dep_id) {
     let department = await Department.findById(dep_id).catch((err) => {
