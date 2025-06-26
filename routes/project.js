@@ -452,6 +452,14 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.allow_send_emoji"]!=undefined) {
     update["settings.allow_send_emoji"] = req.body["settings.allow_send_emoji"];
   }
+
+  if (req.body["settings.allowed_urls"]!=undefined) {
+    update["settings.allowed_urls"] = req.body["settings.allowed_urls"];
+  }
+
+  if (req.body["settings.allowed_urls_list"]!=undefined) {
+    update["settings.allowed_urls_list"] = req.body["settings.allowed_urls_list"];
+  }
   
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
