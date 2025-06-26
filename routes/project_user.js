@@ -74,13 +74,14 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
        * FIND THE PROJECT USERS FOR THE PROJECT ID PASSED BY THE CLIENT IN THE BODY OF THE REQUEST
        * IF THE ID OF THE USER FOUND FOR THE EMAIL (PASSED IN THE BODY OF THE REQUEST - see above)
        * MATCHES ONE OF THE USER ID CONTENTS IN THE PROJECTS USER OBJECT STOP THE WORKFLOW AND RETURN AN ERROR */
-
-      var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];     
-      winston.debug("role", role);
+      
+      // rolequery
+      // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];     
+      // winston.debug("role", role);
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
-
-        return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
+      return Project_user.find({ id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, projectuser) {
+      // return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
 
       
         winston.debug('PRJCT-USERS FOUND (FILTERED FOR THE PROJECT ID) ', projectuser)
@@ -136,7 +137,8 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             // _id: new mongoose.Types.ObjectId(),
             id_project: req.projectid,
             id_user: user._id,
-            role: req.body.role,           
+            role: req.body.role,         
+            roleType : RoleConstants.TYPE_AGENTS,   
             user_available: user_available, 
             createdBy: req.user.id,
             updatedBy: req.user.id
@@ -196,6 +198,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,
+    roleType : RoleConstants.TYPE_USERS,   
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -362,6 +365,20 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
   });
 });
 
+router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
+  var project_user = req.projectuser;
+
+  var pu = project_user.toJSON();
+   
+  pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+  res.json([pu]);
+
+
+});
+
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
@@ -420,7 +437,7 @@ router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: 
 /**
  * GET PROJECT-USER BY PROJECT ID AND CURRENT USER ID 
 //  */
- 
+
 
 router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
   winston.debug("--> users USER ID ", req.params.user_id);
@@ -491,14 +508,20 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  */                                                                                       
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+  // rolequery
+  // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
+  var query;
   if (req.query.role) {
     role = req.query.role;
+    winston.debug("role", role);
+    query =  {id_project: req.projectid, role: { $in : role } };
+  } else {
+     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
-  winston.debug("role", role);
 
-  var query =  {id_project: req.projectid, role: { $in : role } };
+  // var query =  {id_project: req.projectid, role: { $in : role } };
+  
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
