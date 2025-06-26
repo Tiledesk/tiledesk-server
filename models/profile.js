@@ -42,13 +42,10 @@ var ProfileSchema = new Schema({
         return {
           copilot: true,
           webhook: true,
-          voice: true,
-          voice_twilio: true,
           widgetUnbranding: true,
           smtpSettings: true,
           knowledgeBases: true,
           reindex: true,
-          whatsapp: true,
           messanger: true,
           telegram: true,
           chatbot: true
