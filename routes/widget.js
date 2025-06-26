@@ -202,12 +202,12 @@ router.get('/', async (req, res, next) => {
           // 'allowed_urls', 'allowed_urls_list', and 'allowed_send_emoji', removing all others.
           // Removed the "-settings" command from the query that excluded the entire "settings" field from the selection
           if (project && project.settings) {
-            const { allowed_urls, allowed_urls_list, allowed_send_emoji } = project.settings;
+            const { allowed_urls, allowed_urls_list, allow_send_emoji } = project.settings;
             project.settings = {};
             Object.assign(project.settings, 
               allowed_urls !== undefined ? { allowed_urls } : {},
               allowed_urls_list !== undefined ? { allowed_urls_list } : {},
-              allowed_send_emoji !== undefined ? { allowed_send_emoji } : {}
+              allow_send_emoji !== undefined ? { allow_send_emoji } : {}
             );
           }
 
