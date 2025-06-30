@@ -240,7 +240,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         }
         // console.log("department", department);
         if (!department) {
-          winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+          // TODO: error log removed due to attempt to reduces logs when no department is found
+          winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
           return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
@@ -562,7 +563,8 @@ getDefaultDepartment(projectid) {
       }
       // console.log("department", department);
       if (!department) {
-        winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
         return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
       }
       winston.debug('department ', department);

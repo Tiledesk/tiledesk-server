@@ -569,7 +569,8 @@ router.put('/:requestid/assign', function (req, res) {
 
         return res.json(updatedRequest);
       }).catch(function (error) {
-        winston.error('Error changing the department.', error)
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
     });
@@ -585,7 +586,8 @@ router.put('/:requestid/departments', function (req, res) {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 });
@@ -619,7 +621,8 @@ router.put('/:requestid/agent', async (req, res) => {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 

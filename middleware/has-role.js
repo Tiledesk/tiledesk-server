@@ -155,6 +155,7 @@ class RoleChecker {
           }
             q.exec(function (err, project_user) {
               if (err) {
+                winston.error("Error on Request path: " + req.originalUrl);
                 winston.error("Error getting project_user for hasrole",err);
                 return next(err);
               }
