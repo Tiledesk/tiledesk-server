@@ -5,9 +5,12 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.100
+# 2.10.101
 - Update: messenger-connector to 0.1.27
 - Update: multi-worker to 0.3.3
+- Added: endpoints for unanswered questions
+- Update: endppoints to static logs
+- Improved knowledge base import/export
 
 # 2.10.100
 - Update: removed verbose logs
