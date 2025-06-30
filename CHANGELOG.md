@@ -6,6 +6,10 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.10.100
+- Update: messenger-connector to 0.1.27
+- Update: multi-worker to 0.3.3
+
+# 2.10.100
 - Update: removed verbose logs
 
 # 2.10.99
