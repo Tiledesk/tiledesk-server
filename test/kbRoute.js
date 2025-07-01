@@ -3,13 +3,11 @@ process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.LOG_LEVEL = 'critical'
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
-// Similarity
-// process.env.PINECONE_INDEX = "test_index"
-// process.env.PINECONE_TYPE = "pod"
-// Hybrid
-process.env.PINECONE_INDEX = "test_hybrid_index"
-process.env.PINECONE_TYPE = "serverless"
-
+process.env.PINECONE_INDEX = "test_index";
+process.env.PINECONE_TYPE = "pod";
+process.env.PINECONE_INDEX_HYBRID = "test_index_hybrid";
+process.env.PINECONE_TYPE_HYBRID = "serverless";
+process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -35,6 +33,14 @@ const faq = require('../models/faq');
 
 var expect = chai.expect;
 var assert = chai.assert;
+
+let custom_profile_sample = { 
+    name: "Custom",
+    type: "payment",
+    subStart: new Date(),
+    subEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    customization: { hybrid: true } 
+}
 
 mongoose.connect(config.databasetest);
 
@@ -1119,7 +1125,7 @@ describe('KbRoute', () => {
         //     });
         // })
 
-        it('create-namespaces-with-engine', (done) => {
+        it('create-namespaces-with-engine-similarity', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1143,7 +1149,7 @@ describe('KbRoute', () => {
                         expect(res.body.name).to.equal('MyCustomNamespace');
                         should.exist(res.body.engine)
                         expect(res.body.engine.name).to.equal('pinecone');
-                        expect(res.body.engine.type).to.equal('serverless');
+                        expect(res.body.engine.type).to.equal('pod');
 
                         // Get again all namespace. A new default namespace should not be created.
                         chai.request(server)
@@ -1164,6 +1170,99 @@ describe('KbRoute', () => {
                             })
                     })
                 });
+            });
+        })
+
+        it('create-namespaces-with-engine-hybrid-rejected', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                    .post('/' + savedProject._id + '/kb/namespace')
+                    .auth(email, pwd)
+                    .send({ name: "MyCustomNamespace", hybrid: true })
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err) }
+                        if (log) { console.log("create new namespace res.body: ", res.body) }
+
+                        res.should.have.status(403);
+                        res.body.should.be.a('object');
+                        expect(res.body.success).to.equal(false);
+                        expect(res.body.error).to.equal('Hybrid mode is not allowed for the current project');
+                        
+                        done();
+                    })
+                });
+            });
+        })
+        
+        it('create-namespaces-with-engine-hybrid-accepted', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/auth/signin')
+                        .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err) }
+                            if (log) { console.log("login with superadmin res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.success).to.equal(true);
+                            expect(res.body.token).not.equal(null);
+
+                            let superadmin_token = res.body.token;
+
+
+                            chai.request(server)
+                                .put('/projects/' + savedProject._id)
+                                .set('Authorization', superadmin_token)
+                                .send({ profile: custom_profile_sample })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) }
+                                    if (log) { console.log("update project res.body: ", res.body) }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.profile.customization.hybrid).to.equal(true);
+
+                                    chai.request(server)
+                                        .post('/' + savedProject._id + '/kb/namespace')
+                                        .auth(email, pwd)
+                                        .send({ name: "MyCustomNamespace", hybrid: true })
+                                        .end((err, res) => {
+                
+                                            if (err) { console.error("err: ", err) }
+                                            if (log) { console.log("create new namespace res.body: ", res.body) }
+                
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            should.not.exist(res.body._id)
+                                            should.exist(res.body.id)
+                                            expect(res.body.name).to.equal('MyCustomNamespace');
+                                            should.exist(res.body.engine)
+                                            expect(res.body.engine.name).to.equal('pinecone');
+                                            expect(res.body.engine.type).to.equal('serverless');
+                
+                                            done();
+                                        })
+                                })
+                            
+                        })
+                    
+                })
             });
         })
 
@@ -1488,6 +1587,7 @@ describe('KbRoute', () => {
     })
 
     describe('Unanswered Questions', () => {
+        
         it('add-unanswered-question', (done) => {
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
