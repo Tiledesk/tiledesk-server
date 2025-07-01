@@ -888,7 +888,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   var sortQuery={};
   sortQuery[sortField] = direction;
 
-
+  // GROUPS_PU123 - Un utente disabled può vedere la lista dei progetti a cui appartiene?
   Project_user.find({ id_user: req.user._id , role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active"}).
     // populate('id_project').
     populate({
@@ -1026,6 +1026,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
     return res.json(available_agents_array);
   }
 
+  // GROUPS_PU123 - Qui bisogna cercare oltre che per user_available: true anche disabled: false | null. A meno che un pu disabled non diventi automaticamente non disponibile
   let query = { id_project: projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]} };
 
   if (dep_id) {
@@ -1041,6 +1042,7 @@ router.get('/:projectid/users/availables', async  (req, res) => {
 
     let group_id = department.id_group;
     if (group_id) {
+      // GROUPS_PU123 - Qui il gruppo deve essere enabled
       let group = await Group.findById(group_id).catch((err) => {
         winston.error("(Users Availables) find group error: ", err)
         return res.status(500).send({ success: false, error: err })

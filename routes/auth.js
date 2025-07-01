@@ -321,6 +321,7 @@ router.post('/signinWithCustomToken', [
     winston.debug("id_project: " + id_project + " uuid_user " + req.user._id + " role " + role);
 
 
+      // GROUPS_PU123 - Cosa deve succedere sulla signInWithCustomToken se il PU è disabled?
       Project_user.findOne({ id_project: id_project, uuid_user: req.user._id}).              
       // Project_user.findOne({ id_project: id_project, uuid_user: req.user._id,  role: role}).              
       exec(async (err, project_user) => {
@@ -352,7 +353,8 @@ router.post('/signinWithCustomToken', [
               newUser = await User.findOne({email: req.user.email.toLowerCase(), status: 100}).exec();
               winston.debug('signup found')
                   // qui dovresti cercare pu sul progetto con id di newUser se c'è 
-              var  project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
+              // GROUPS_PU123    
+              var project_userUser = await Project_user.findOne({ id_project: id_project, id_user: newUser._id}).exec();
                   if (project_userUser) {
                     winston.debug('project user found')
                     if (project_userUser.status==="active") {

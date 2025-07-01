@@ -46,6 +46,7 @@ router.put('/:groupid', function (req, res) {
   }
   
 
+  // GROUPS_PU123 - Modifica di un gruppo disabled
   Group.findByIdAndUpdate(req.params.groupid, update, { new: true, upsert: true }, function (err, updatedGroup) {
     if (err) {
       winston.error('Error putting the group ', err);
@@ -83,6 +84,7 @@ router.delete('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
+  // GROUPS_PU123 - Si può rimuovere un gruppo disabilitato
   Group.findOneAndRemove({_id: req.params.groupid}, function (err, group) {
     // Group.remove({ _id: req.params.groupid }, function (err, group) {
     if (err) {
@@ -101,6 +103,7 @@ router.get('/:groupid', function (req, res) {
 
   winston.debug(req.body);
 
+  // GROUPS_PU123 - Si può prendere un gruppo disabilitato
   Group.findById(req.params.groupid, function (err, group) {
     if (err) {
       winston.error('Error getting the group ', err);
@@ -128,6 +131,7 @@ router.get('/', function (req, res) {
   
   winston.debug("query", query);
   
+  // GROUPS_PU123 - Si protrebbero separare i gruppi enabled e quelli disabled
   Group.find(query, function (err, groups) {        
     if (err) {
       winston.error('Error getting the group ', err);

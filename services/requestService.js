@@ -2260,6 +2260,7 @@ class RequestService {
                 winston.verbose("pu",pu);
                 */
 
+                // GROUPS_PU123 - Si può rimuovere un pu da una conversazione
                 var pu = await Project_user.findOne({ id_user: member, id_project: id_project }).exec();
                 winston.debug("pu", pu);
 

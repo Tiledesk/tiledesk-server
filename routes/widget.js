@@ -81,7 +81,8 @@ router.get('/', async (req, res, next) => {
         }
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
-          if (isOpen) {            
+          if (isOpen) {
+            // GROUPS_PU123 - A cosa serve questo endpoint? NB: non è gestito il caso in cui non viene trovato un pu            
             Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).
               populate('id_user').
               exec(function (err, project_users) {

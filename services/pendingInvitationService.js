@@ -1,6 +1,7 @@
 var express = require('express');
 var PendingInvitation = require("../models/pending-invitation");
 var emailService = require("../services/emailService");
+// GROUPS_PU123 - Nulla da fare in questa classe??
 var Project_user = require("../models/project_user");
 var mongoose = require('mongoose');
 var winston = require('../config/winston');

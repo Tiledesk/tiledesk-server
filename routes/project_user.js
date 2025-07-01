@@ -80,6 +80,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
     
       // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
 
+        // GROUPS_PU123 - Non si dobvrebbe poter invitare un pu disabled, non capisco l'active
         return Project_user.find({ id_project: req.projectid, role: { $in : role }, status: "active"}, function (err, projectuser) {
 
       
@@ -250,7 +251,7 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
 
 
-
+  // GROUPS_PU123 - Modifica un utente disabled credo si possa fare
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
@@ -318,6 +319,7 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 
   winston.debug("project_userid update", update);
 
+  // GROUPS_PU123 - Modifica un utente disabled credo si possa fare
   Project_user.findByIdAndUpdate(req.params.project_userid, update, { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
@@ -346,6 +348,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 
   winston.debug(req.body);
 
+  // GROUPS_PU123 - Cancellazione di un utente disabled si deve fare
   Project_user.findByIdAndRemove(req.params.project_userid, { new: false}, function (err, project_user) {
     if (err) {
       winston.error("Error gettting project_user for delete", err);
@@ -365,6 +368,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
+  // GROUPS_PU123 - Get di utente disabled si può fare
   Project_user.findOne({ _id: req.params.project_userid, id_project: req.projectid}).
     populate('id_user'). //qui cache importante ma populatevirtual
     exec(function (err, project_user) {
@@ -404,7 +408,7 @@ router.get('/users/search', [passport.authenticate(['basic', 'jwt'], { session: 
     return res.status(404).send({ success: false, msg: 'Object not found.' });
   }
  
-
+  // GROUPS_PU123 - A cosa serve il search??
   let project_user = await Project_user.findOne({id_user: user._id, id_project: req.projectid}).exec();
   winston.debug('project_user: ', project_user);
   
@@ -441,6 +445,7 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
     queryProjectUser.uuid_user = req.params.user_id
   }
 
+  // GROUPS_PU123 - A cosa server /users/:user_id??
   var q1 = Project_user.findOne(queryProjectUser);
 
   if (isObjectId) {    
@@ -506,6 +511,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
 
   winston.debug("query", query);
 
+  // GROUPS_PU123 - Quando si recuperano tutti i pu, bisognerebbe dividerli in enabled e disabled (?)
   Project_user.find(query).
     populate('id_user').
     // lean().                   

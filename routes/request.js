@@ -126,6 +126,7 @@ router.post('/',
 
       winston.debug("queryProjectUser", queryProjectUser);
 
+      // GROUPS_PU123 - Un pu disabled non dovrebbe poter aprire conversazioni
       project_user = await Project_user.findOne(queryProjectUser).populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1, 'email': 1 } })
       winston.debug("project_user", project_user);
 

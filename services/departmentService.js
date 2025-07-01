@@ -273,7 +273,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
           // console.log('OPERATORS - »»»» BOT IS DEFINED -> ID BOT', department.id_bot);
           // console.log('OPERATORS - »»»» nobot ', nobot)
           var role = [RoleConstants.OWNER, RoleConstants.ADMIN,RoleConstants.SUPERVISOR, RoleConstants.AGENT];
-// attento indice
+          // attento indice
+          // GROUPS_PU123 - Il metodo getOperators cerca i pu active. Anche qui, o si filtra per disabled false | null o si assume che se disabled è anche inactive
           return Project_user.find({ id_project: projectid, role: { $in : role }, status: "active" }).exec(function (err, project_users) {
             if (err) {
               winston.error('-- > 2 DEPT FIND BY ID ERR ', err)
@@ -360,6 +361,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
   return new Promise(function (resolve, reject) {
 
+    // GROUPS_PU123 - Si deve aggiungere il filtro su disabled
     return Group.find({ _id: department.id_group }).exec(function (err, group) {
       if (err) {
         winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
@@ -373,7 +375,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
         // riprodurre su v2
-         return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {          
+        // GROUPS_PU123 - Quando si prendono i pu di un gruppo bisogna filtrare per disabled false | null in quanto il gruppo potrebbe essere attivo ma un pu no.
+        return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {          
           // uni error round robin
         //return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {
 
@@ -438,6 +441,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   return new Promise(function (resolve, reject) {
 
     var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+    // GROUPS_PU123 - Se il pu non appartiene al gruppo bisogna comunque filtrare per disabled, a meno che pu disabled => status inactive
     return Project_user.find({ id_project: projectid , role: { $in : role }, status: "active" }).exec(function (err, project_users) {
       if (err) {
         winston.error('D-3 NO GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)

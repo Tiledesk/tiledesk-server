@@ -37,6 +37,7 @@ class RecipientEmailUtil {
       if (to.indexOf('@')==-1) {   //group
         // console.log("indexOf-1", to);
         let tonewArr = []
+        // GROUPS_PU123 - Non so a cosa serve
         let group = await Group.findOne({name: to, id_project: projectid}).exec();
         if (group) {
             // console.log("group", group);  

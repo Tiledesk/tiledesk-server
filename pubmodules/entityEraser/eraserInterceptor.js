@@ -25,6 +25,7 @@ class EntityInterceptor {
             winston.debug("query: ", query);
 
                 setImmediate(() => {
+                    // GROUPS_PU123 - Tutto liscio in fase di cancellazione del progetto
                     Project_user.find(query).populate('id_user')
                         .exec(function (err, project_users) {
                          if (project_users && project_users.length>0) {

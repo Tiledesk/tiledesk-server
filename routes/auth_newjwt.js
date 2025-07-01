@@ -185,7 +185,8 @@ router.post('/signinWithCustomToken', [
     }
 
   
-// evitare inserimenti multipli
+    // GROUPS_PU123 - Cosa deve succedere sulla signInWithCustomToken se il PU è disabled?
+    // evitare inserimenti multipli
     Project_user.findOne({ id_project: AudienceId, uuid_user: req.user._id,  role: RoleConstants.USER}).              
       exec(function (err, project_users) {
       if (err) {

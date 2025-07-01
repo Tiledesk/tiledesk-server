@@ -223,6 +223,7 @@ listen() {
               {
 
               //send email to admin
+              // GROUPS_PU123 - Invio di email a owner o admin disabilitati. (L'owner si può disabilitare?)
               Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]}, status: "active"} ).populate('id_user')
               .exec(function (err, project_users) {
 
@@ -597,7 +598,7 @@ sendToAgentEmailChannelEmail(projectid, message) {
                       //  }
   
   
-                      
+                      // GROUPS_PU123 - Invio di email ad agente disabled (?)
                       Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) //attento in 2.1.14.2
                       .exec(function (err, project_user) {
                         
@@ -767,7 +768,7 @@ sendUserEmail(projectid, message) {
         }
         winston.debug("queryProjectUser", queryProjectUser);
 
-        
+        // GROUPS_PU123 - Un utente con ruolo GUEST non si può disabilitare
         Project_user.findOne( queryProjectUser)
         .exec(function (err, project_user) {
 
@@ -969,7 +970,7 @@ sendAgentEmail(projectid, savedRequest) {
                     //  }
 
 
-                    
+                    // GROUPS_PU123 - Cosa cambia dal metodo sendToAgentEmailChannelEmail ?
                     Project_user.findOne( { id_user:assignedId, id_project: projectid, status: "active"}) 
                     .exec(function (err, project_user) {
                       
