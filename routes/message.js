@@ -120,6 +120,7 @@ async (req, res)  => {
             
                 winston.debug("queryProjectUser", queryProjectUser);
                 
+                // GROUPS_PU123 - Invio di un messaggio da parte di un project user disabilitato (?)
                 project_user = await Project_user.findOne(queryProjectUser).populate({path:'id_user', select:{'firstname':1, 'lastname':1, 'email':1}})
                 winston.debug("project_user", project_user);
             
