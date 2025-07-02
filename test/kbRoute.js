@@ -69,7 +69,7 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].engine.index_name).to.equal('test_hybrid_index')
+                            expect(res.body[0].engine.index_name).to.equal('test_index')
 
                             let namespace_id = res.body[0].id;
 
@@ -1594,17 +1594,21 @@ describe('KbRoute', () => {
 
             userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
                 projectService.create("test-unanswered-create", savedUser._id).then(function (savedProject) {
+
                     chai.request(server)
                         .get('/' + savedProject._id + '/kb/namespace/all')
                         .auth(email, pwd)
                         .end((err, res) => {
+                            
                             if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
 
                             let namespace_id = res.body[0].id;
 
-                            let question = {
+                            let data = {
                                 namespace: namespace_id,
                                 question: "Come funziona il prodotto?"
                             }
@@ -1612,9 +1616,12 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
-                                .send(question)
+                                .send(data)
                                 .end((err, res) => {
+                                    
                                     if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create unanswered question res.body: ", res.body); }
+
                                     res.should.have.status(200);
                                     res.body.should.be.a('object');
                                     expect(res.body.namespace).to.equal(namespace_id);
@@ -1638,13 +1645,15 @@ describe('KbRoute', () => {
                         .auth(email, pwd)
                         .end((err, res) => {
                             if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
+
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
 
                             let namespace_id = res.body[0].id;
 
                             // First add a question
-                            let question = {
+                            let data = {
                                 namespace: namespace_id,
                                 question: "Come funziona il prodotto?"
                             }
@@ -1652,14 +1661,16 @@ describe('KbRoute', () => {
                             chai.request(server)
                                 .post('/' + savedProject._id + '/kb/unanswered')
                                 .auth(email, pwd)
-                                .send(question)
+                                .send(data)
                                 .end((err, res) => {
                                     if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("add unanswered question res.body: ", res.body); }
+
                                     res.should.have.status(200);
 
                                     // Then get all questions
                                     chai.request(server)
-                                        .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
+                                        .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
                                         .auth(email, pwd)
                                         .end((err, res) => {
                                             if (err) { console.error("err: ", err); }
@@ -1723,7 +1734,7 @@ describe('KbRoute', () => {
 
                                             // Verify it's deleted
                                             chai.request(server)
-                                                .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
+                                                .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
                                                 .auth(email, pwd)
                                                 .end((err, res) => {
                                                     if (err) { console.error("err: ", err); }
@@ -1787,7 +1798,7 @@ describe('KbRoute', () => {
 
                                         // Verify they're deleted
                                         chai.request(server)
-                                            .get('/' + savedProject._id + '/kb/unanswered?namespace=' + namespace_id)
+                                            .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
                                             .auth(email, pwd)
                                             .end((err, res) => {
                                                 if (err) { console.error("err: ", err); }
@@ -1889,7 +1900,7 @@ describe('KbRoute', () => {
                             )).then(() => {
                                 // Then count them
                                 chai.request(server)
-                                    .get('/' + savedProject._id + '/kb/unanswered/count?namespace=' + namespace_id)
+                                    .get('/' + savedProject._id + '/kb/unanswered/count/' + namespace_id)
                                     .auth(email, pwd)
                                     .end((err, res) => {
                                         if (err) { console.error("err: ", err); }

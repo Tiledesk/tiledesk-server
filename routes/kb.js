@@ -156,7 +156,7 @@ router.post('/scrape/single', async (req, res) => {
       let ns = namespaces.find(n => n.id === kb.namespace);
       json.engine = ns.engine || default_engine;
 
-      if (json.engine.type === 'serverless') {
+      if (ns.hybrid === true) {
         json.hybrid = true;
       }
 
@@ -305,6 +305,7 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
+  data.hybrid = ns.hybrid;
 
   if (data.engine.type === 'serverless') {
     data.search_type = 'hybrid';
@@ -647,7 +648,14 @@ router.post('/namespace', async (req, res) => {
 
   let engine = default_engine;
 
-  let hybrid = req.body.hybrid;
+  let hybrid = false;
+  if ('hybrid' in req.body) {
+    if (typeof req.body.hybrid !== 'boolean') {
+      return res.status(400).send({ success: false, error: "Value not accepted for 'hybrid' field. Expected boolean." });
+    }
+    hybrid = req.body.hybrid;
+  }
+
   if (hybrid) {
     if (req.project?.profile?.customization?.hybrid) {
       engine = default_engine_hybrid;
@@ -661,6 +669,7 @@ router.post('/namespace', async (req, res) => {
     id_project: project_id,
     id: namespace_id,
     name: body.name,
+    hybrid: hybrid,
     preview_settings: default_preview_settings,
     engine: engine
   })
