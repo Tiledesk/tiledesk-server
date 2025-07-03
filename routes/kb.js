@@ -63,10 +63,17 @@ let default_preview_settings = {
 }
 let default_engine = {
   name: "pinecone",
-  type: process.env.PINECONE_TYPE,
+  type: process.env.PINECONE_TYPE || "pod",
   apikey: "",
   vector_size: 1536,
   index_name: process.env.PINECONE_INDEX
+}
+let default_engine_hybrid = {
+  name: "pinecone",
+  type: process.env.PINECONE_TYPE_HYBRID || "serverless",
+  apikey: "",
+  vector_size: 1536,
+  index_name: process.env.PINECONE_INDEX_HYBRID
 }
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
@@ -149,7 +156,7 @@ router.post('/scrape/single', async (req, res) => {
       let ns = namespaces.find(n => n.id === kb.namespace);
       json.engine = ns.engine || default_engine;
 
-      if (json.engine.type === 'serverless') {
+      if (ns.hybrid === true) {
         json.hybrid = true;
       }
 
@@ -298,6 +305,7 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
+  data.hybrid = ns.hybrid;
 
   if (data.engine.type === 'serverless') {
     data.search_type = 'hybrid';
@@ -638,13 +646,32 @@ router.post('/namespace', async (req, res) => {
   let body = req.body;
   winston.debug("add namespace body: ", body);
 
+  let engine = default_engine;
+
+  let hybrid = false;
+  if ('hybrid' in req.body) {
+    if (typeof req.body.hybrid !== 'boolean') {
+      return res.status(400).send({ success: false, error: "Value not accepted for 'hybrid' field. Expected boolean." });
+    }
+    hybrid = req.body.hybrid;
+  }
+
+  if (hybrid) {
+    if (req.project?.profile?.customization?.hybrid) {
+      engine = default_engine_hybrid;
+    } else {
+      return res.status(403).send({ success: false, error: "Hybrid mode is not allowed for the current project" });
+    }
+  }
+
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
     id: namespace_id,
     name: body.name,
+    hybrid: hybrid,
     preview_settings: default_preview_settings,
-    engine: default_engine
+    engine: engine
   })
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
