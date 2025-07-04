@@ -22,6 +22,7 @@ const { kbTypes } = require('../models/kbConstants');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
+const JOB_TOPIC_EXCHANGE_HYBRID = process.env.JOB_TOPIC_EXCHANGE_TRAIN_HYBRID || 'tiledesk-trainer-hybrid';
 const KB_WEBHOOK_TOKEN = process.env.KB_WEBHOOK_TOKEN || 'kbcustomtoken';
 const apiUrl = process.env.API_URL || configGlobal.apiUrl;
 
@@ -51,6 +52,21 @@ jobManager.connectAndStartPublisher((status, error) => {
     winston.info("KbRoute - ConnectPublisher done with status: ", status);
   }
 })
+
+let jobManagerHybrid = new JobManager(AMQP_MANAGER_URL, {
+  debug: false,
+  topic: JOB_TOPIC_EXCHANGE_HYBRID,
+  exchange: JOB_TOPIC_EXCHANGE_HYBRID
+})
+
+jobManagerHybrid.connectAndStartPublisher((status, error) => {
+  if (error) {
+    winston.error("connectAndStartPublisher error: ", error);
+  } else {
+    winston.info("KbRoute - ConnectPublisher done with status: ", status);
+  }
+})
+
 
 let default_preview_settings = {
   model: 'gpt-4o',
@@ -806,6 +822,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   //          import operation the content's limit is respected
   let ns = namespaces.find(n => n.id === namespace_id);
   let engine = ns.engine || default_engine;
+  let hybrid = ns.hybrid;
 
   if (process.env.NODE_ENV !== "test") {
     await aiService.deleteNamespace({
@@ -845,7 +862,7 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   winston.verbose("resources to be sent to worker: ", resources);
 
   if (process.env.NODE_ENV !== "test") {
-    scheduleScrape(resources);
+    scheduleScrape(resources, hybrid);
   }
 
   res.status(200).send({ success: true, message: "Contents imported successfully" });
@@ -1244,16 +1261,14 @@ router.post('/', async (req, res) => {
       }
       let ns = namespaces.find(n => n.id === body.namespace);
       json.engine = ns.engine || default_engine;
-
-      if (json.engine.type === 'serverless') {
-        json.hybrid = true;
-      }
-
+      json.hybrid = ns.hybrid;
+      
       let resources = [];
 
       resources.push(json);
+      
       if (process.env.NODE_ENV !== 'test') {
-        scheduleScrape(resources);
+        scheduleScrape(resources, ns.hybrid);
       }
 
     }
@@ -1372,11 +1387,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
-
-    let hybrid;
-    if (engine.type === 'serverless') {
-      hybrid = true;
-    }
+    let hybrid = ns.hybrid;
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
@@ -1385,7 +1396,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     winston.verbose("resources to be sent to worker: ", resources);
 
     if (process.env.NODE_ENV !== 'test') {
-      scheduleScrape(resources);
+      scheduleScrape(resources, hybrid);
     }
     res.status(200).send(result);
 
@@ -1487,6 +1498,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
+        let hybrid = ns.hybrid;
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
@@ -1494,7 +1506,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         })
         winston.verbose("resources to be sent to worker: ", resources);
         if (process.env.NODE_ENV !== 'test') {
-          scheduleScrape(resources);
+          scheduleScrape(resources, hybrid);
         }
         res.status(200).send(result);
       }).catch((err) => {
@@ -1712,9 +1724,19 @@ async function updateStatus(id, status) {
   })
 }
 
-async function scheduleScrape(resources) {
+async function scheduleScrape(resources, hybrid) {
 
-  let scheduler = new Scheduler({ jobManager: jobManager });
+  let scheduler;
+  if (hybrid) {
+    scheduler = new Scheduler({ jobManager: jobManagerHybrid });
+  } else {
+    scheduler = new Scheduler({ jobManager: jobManager });
+  }
+
+  if (!scheduler) {
+    winston.error("ScheduleScrape JobManager is not defined");
+    return false;
+  }
 
   resources.forEach(r => {
     winston.debug("Schedule job with following data: ", r);
