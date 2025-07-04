@@ -28,6 +28,7 @@ class MessageHandlebarsTransformerInterceptor {
             if (message.attributes && message.attributes.templateProcessor == true) { 
 
                 // TODO if variables are presents
+                winston.info('info: main_flow_cache_2.1');
 
                 var q1 = Request.findOne({request_id:  message.recipient, id_project: message.id_project});
 
