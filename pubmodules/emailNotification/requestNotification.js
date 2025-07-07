@@ -223,7 +223,7 @@ listen() {
               {
 
               //send email to admin
-              // GROUPS_PU123 - Invio di email a owner o admin disabilitati. (L'owner si può disabilitare?)
+              // GROUPS_PU123 - Invio di email a owner o admin disabilitati. (L'owner si può disabilitare?) (Che senso ha active se tutti sono active?)
               Project_user.find({ id_project: id_project,  role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN]}, status: "active"} ).populate('id_user')
               .exec(function (err, project_users) {
 
