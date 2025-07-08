@@ -589,6 +589,11 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
     restricted_mode = true;
   }
 
+  let limit = 20;
+  let page = 0;
+  let direction = -1;
+  let sortField = "updatedAt";
+
 
   /**
    * if filter only for 'trashed = false', 
@@ -623,21 +628,47 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
     query.certified = req.query.certified;
   }
 
+  
+  if (req.query.limit) {
+    limit = Math.min(parseInt(req.query.limit), 100);
+  }
+
+  if (req.query.page) {
+    page = parseInt(req.query.page);
+  }
+
+  let skip = page * limit;
+
+  if (req.query.direction) {
+    direction = parseInt(req.query.direction);
+  }
+
+  if (req.query.sortField) {
+    sortField = req.query.sortField;
+  }
+
+  let sortQuery = {};
+  sortQuery[sortField] = direction;
+
   winston.debug("query", query);
 
-  Faq_kb.find(query).lean().exec((err, faq_kbs) => {
-    if (err) {
-      winston.error('GET FAQ-KB ERROR ', err)
-      return res.status(500).send({ success: false, message: "Unable to get chatbots" });
-    }
+  Faq_kb.find(query)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortQuery)
+        .exec((err, faq_kbs) => {
+          
+          if (err) {
+            winston.error('GET FAQ-KB ERROR ', err)
+            return res.status(500).send({ success: false, message: "Unable to get chatbots" });
+          }
 
-    if (restricted_mode === true) {
-      // Returns only: _id, name, id_project, language
-      faq_kbs = faq_kbs.map(({ webhook_enabled, intentsEngine, score, url, attributes, trained, certifiedTags, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
-    }
+          if (restricted_mode === true) {
+            // Returns only: _id, name, id_project, language
+            faq_kbs = faq_kbs.map(({ webhook_enabled, intentsEngine, score, url, attributes, trained, certifiedTags, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+          }
 
-    res.json(faq_kbs)
-
+          res.json(faq_kbs)
   })
 });
 
