@@ -1694,6 +1694,9 @@ class EmailService {
   // ok
   async sendVerifyEmailAddress(to, savedUser, code) {
 
+    console.log("sendVerifyEmailAddress to: ", to)
+    console.log("sendVerifyEmailAddress savedUser: ", savedUser)
+    console.log("sendVerifyEmailAddress code: ", code)
 
     var that = this;
 

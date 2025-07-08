@@ -82,7 +82,9 @@ router.get('/', async (req, res, next) => {
       operatingHoursService.projectIsOpenNow(req.projectid, function (isOpen, err) {    
           winston.debug('isOpen:'+ isOpen);
           if (isOpen) {            
-            Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).
+            // rolequery
+            Project_user.find({ id_project: req.projectid, user_available: true, roleType: RoleConstants.TYPE_AGENTS, status: "active" }).
+            // Project_user.find({ id_project: req.projectid, user_available: true, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).
               populate('id_user').
               exec(function (err, project_users) {
                 winston.debug('project_users:'+ project_users);
@@ -188,7 +190,7 @@ router.get('/', async (req, res, next) => {
 
        //@DISABLED_CACHE .cache(cacheUtil.queryTTL, "projects:query:id:status:100:"+req.projectid+":select:-settings")            
       
-      Project.findOne({_id: req.projectid, status: 100}).select('-settings -ipFilter -ipFilterEnabled').exec(function(err, project) {
+      Project.findOne({_id: req.projectid, status: 100}).select('-ipFilter -ipFilterEnabled').exec(function(err, project) {
         // not use .lean I need project.trialExpired 
 
           if (err) {
@@ -197,6 +199,19 @@ router.get('/', async (req, res, next) => {
 
 
           winston.debug("project", project);
+
+          // This code filters the project settings to only include the properties
+          // 'allowed_urls', 'allowed_urls_list', and 'allowed_send_emoji', removing all others.
+          // Removed the "-settings" command from the query that excluded the entire "settings" field from the selection
+          if (project && project.settings) {
+            const { allowed_urls, allowed_urls_list, allow_send_emoji } = project.settings;
+            project.settings = {};
+            Object.assign(project.settings, 
+              allowed_urls !== undefined ? { allowed_urls } : {},
+              allowed_urls_list !== undefined ? { allowed_urls_list } : {},
+              allow_send_emoji !== undefined ? { allow_send_emoji } : {}
+            );
+          }
 
           // ProjectSetter project not found with id: 62d8cf8b2b10b30013bb9b99
           // Informazioni
