@@ -518,7 +518,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   }
   winston.debug("role", role);
 
-  var query =  { id_project: req.projectid, role: { $in : role }, status: 'active' };
+  var query = { id_project: req.projectid, role: { $in : role } }; //, status: 'active'
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
