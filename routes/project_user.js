@@ -362,7 +362,7 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
     });
   } else {
 
-    Project_user.findByIdAndUpdate(req.params.project_userid, { status: "disabled" }, { new: true }, function (err, project_user) {
+    Project_user.findByIdAndUpdate(req.params.project_userid, { status: "disabled", user_available: false }, { new: true }, function (err, project_user) {
         if (err) {
           winston.error("Error gettting project_user for logical delete", err);
           return res.status(500).send({ success: false, msg: 'Error disabling object.' });
