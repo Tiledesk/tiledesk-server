@@ -69,6 +69,7 @@ var TagSchema = require("../models/tag");
     },
     status: {
       type: String,
+      enum: ['active', 'disabled'],
       default: "active",
       index: true,
       required: true
