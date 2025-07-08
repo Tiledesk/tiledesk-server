@@ -33,6 +33,7 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
