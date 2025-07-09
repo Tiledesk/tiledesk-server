@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.103
+- Update: standard/hybrid namespace management
+
 # 2.10.102
 - Update: substituted encode with DOMPurify.sanitize for direct email
 
