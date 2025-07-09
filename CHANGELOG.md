@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.10.102
+- Update: substituted encode with DOMPurify.sanitize for direct email
+
 # 2.10.101
 - Update: messenger-connector to 0.1.27
 - Update: multi-worker to 0.3.3
