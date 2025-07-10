@@ -641,7 +641,8 @@ if (enableOauth2Signin==true) {
     tokenURL: process.env.OAUTH2_TOKEN_URL, 
     clientID: process.env.OAUTH2_CLIENT_ID,
     clientSecret: process.env.OAUTH2_CLIENT_SECRET, 
-    callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback"    
+    callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback",
+    scope: ['openid']
   },
   function(accessToken, refreshToken, params, profile, cb) {
     winston.debug("params", params);
