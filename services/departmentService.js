@@ -360,7 +360,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
   return new Promise(function (resolve, reject) {
 
-    return Group.find({ _id: department.id_group }).exec(function (err, group) {
+    return Group.find({ _id: department.id_group, enabled: true }).exec(function (err, group) {
       if (err) {
         winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
@@ -603,6 +603,21 @@ getDefaultDepartment(projectid) {
   }
 }
 
+  /**
+   * Checks if the group belongs to a department of the project
+   * @param {String} projectId
+   * @param {String} groupId
+   * @returns {Promise<Boolean>} true if the group belongs to a department of the project, otherwise false
+   */
+  async isGroupInProjectDepartment(projectId, groupId) {
+    try {
+      const department = await Department.findOne({ id_project: projectId, id_group: groupId });
+      return !!department;
+    } catch (err) {
+      winston.error('Error in isGroupInProjectDepartment', err);
+      return false;
+    }
+  }
 
 
 }

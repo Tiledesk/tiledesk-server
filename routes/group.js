@@ -3,6 +3,7 @@ var router = express.Router();
 var Group = require("../models/group");
 var groupEvent = require("../event/groupEvent");
 var winston = require('../config/winston');
+const departmentService = require('../services/departmentService');
 
 
 
@@ -57,6 +58,38 @@ router.put('/:groupid', function (req, res) {
   });
 });
 
+router.put('/enable/:groupid', (req, res) => {
+
+  let group_id = req.params.groupid;
+
+  Group.findByIdAndUpdate(group_id, { enabled: true }, { new: true, upsert: true }, (err, updatedGroup) => {
+    if (err) {
+      winston.error("Error enabling the group: ", err);
+      return res.status(500).send({ success: false, error: "Error enabling group" })
+    }
+
+    groupEvent.emit('group.update', updatedGroup);
+    res.status(200).send(updatedGroup);
+  })
+
+})
+
+router.put('/enable/:groupid', (req, res) => {
+
+  let group_id = req.params.groupid;
+
+  Group.findByIdAndUpdate(group_id, { enabled: false }, { new: true, upsert: true }, (err, updatedGroup) => {
+    if (err) {
+      winston.error("Error disabling the group: ", err);
+      return res.status(500).send({ success: false, error: "Error disabling group" })
+    }
+
+    groupEvent.emit('group.update', updatedGroup);
+    res.status(200).send(updatedGroup);
+  })
+
+})
+
 // router.put('/:groupid', function (req, res) {
 
 //   winston.debug(req.body);
@@ -79,21 +112,51 @@ router.put('/:groupid', function (req, res) {
 //   });
 // });
 
-router.delete('/:groupid', function (req, res) {
+router.delete('/:groupid', async (req, res) => {
 
-  winston.debug(req.body);
+  let id_project = req.projectid;
+  let group_id = req.params.groupid;
 
-  Group.findOneAndRemove({_id: req.params.groupid}, function (err, group) {
-    // Group.remove({ _id: req.params.groupid }, function (err, group) {
-    if (err) {
-      winston.error('Error removing the group ', err);
-      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
-    }
-// nn funziuona perchje nn c'è id_project
-    groupEvent.emit('group.delete', group);
+  const isInDepartment = await departmentService.isGroupInProjectDepartment(id_project, group_id).catch((err) => {
+    winston.error("Error checking if group belongs to the department: ", err);
+    return res.status(500).send({ success: false, error: "Unable to verify group-department association due to an error" })
+  })
 
-    res.json(group);
-  });
+  if (isInDepartment) {
+    winston.verbose("The group " + group_id + " belongs to a department and cannot be deleted");
+    return res.status(403).send({ success: false, error: "Unable to delete a group associated with a department" })
+  }
+
+  if (req.query.force === "true") {
+    
+    Group.findByIdAndRemove(group_id, function (err, group) {
+      if (err) {
+        winston.error('Error removing the group ', err);
+        return res.status(500).send({ success: false, msg: 'Error deleting group' });
+      }
+      winston.debug("Physically removed group", group);
+      // nn funziuona perchje nn c'è id_project
+      groupEvent.emit('group.delete', group);
+      res.status(200).send(group);
+    });
+
+  } else {
+
+    Group.findByIdAndUpdate(group_id, { enabled: false, trashed: true }, { new: true }, function (err, group) {
+        if (err) {
+          winston.error('Error removing the group ', err);
+          return res.status(500).send({ success: false, msg: 'Error deleting group' });
+        }
+
+        winston.debug("Group logical deleted", group);
+
+        groupEvent.emit('group.update', group);
+
+        res.status(200).send({ success: true, message: "Group successfully deleted"})
+      }
+    );
+  }
+
 });
 
 

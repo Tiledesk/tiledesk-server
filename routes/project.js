@@ -1051,6 +1051,11 @@ router.get('/:projectid/users/availables', async  (req, res) => {
         return res.status(404).send({ success: false, error: "Group " + group_id + " not found" })
       }
 
+      if (group.enabled === false) {
+        winston.error("(Users Availables) group disabled")
+        return res.status(403).send({ success: false, error: "Group " + group_id + " is currently disabled" })
+      }
+
       query.id_user = { $in: group.members.map(id => mongoose.Types.ObjectId(id) )}
     }
   } 
