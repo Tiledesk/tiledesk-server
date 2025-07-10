@@ -355,7 +355,10 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           store: redisStore,
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
-          secret: sessionSecret
+          secret: sessionSecret,
+          secure: true,
+          httpOnly: true,
+          sameSite: 'None'
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
