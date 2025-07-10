@@ -776,10 +776,14 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 router.get("/oauth2", function(req,res,next){
   winston.debug("redirect_url: "+ req.query.redirect_url );
   req.session.redirect_url = req.query.redirect_url;
-
+  
   winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
+  const redirect_url = req.query.redirect_url;
+  const forced_redirect_url = req.query.forced_redirect_url;
+
+  
   const state = JSON.stringify({
     redirect_url,
     forced_redirect_url
