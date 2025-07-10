@@ -789,7 +789,7 @@ router.get("/oauth2", function(req,res,next){
 //   passport.authenticate('oauth2'));
 
   router.get('/oauth2/callback',
-  passport.authenticate('oauth2', { session: false}),
+  passport.authenticate('oauth2', { session: true}),
   function(req, res) {
     winston.debug("'/oauth2/callback: ");
     
