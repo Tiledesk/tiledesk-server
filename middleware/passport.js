@@ -642,7 +642,8 @@ if (enableOauth2Signin==true) {
     clientID: process.env.OAUTH2_CLIENT_ID,
     clientSecret: process.env.OAUTH2_CLIENT_SECRET, 
     callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback",
-    scope: ['openid']
+    scope: ['openid'],
+    state: true
   },
   function(accessToken, refreshToken, params, profile, cb) {
     console.log("params", params);
