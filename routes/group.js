@@ -58,7 +58,7 @@ router.put('/:groupid', function (req, res) {
   });
 });
 
-router.put('/enable/:groupid', (req, res) => {
+router.put('/enable/:groupid', async (req, res) => {
 
   let group_id = req.params.groupid;
 
@@ -74,9 +74,20 @@ router.put('/enable/:groupid', (req, res) => {
 
 })
 
-router.put('/enable/:groupid', (req, res) => {
+router.put('/disable/:groupid', async (req, res) => {
 
+  let id_project = req.projectid;
   let group_id = req.params.groupid;
+
+  const isInDepartment = await departmentService.isGroupInProjectDepartment(id_project, group_id).catch((err) => {
+    winston.error("Error checking if group belongs to the department: ", err);
+    return res.status(500).send({ success: false, error: "Unable to verify group-department association due to an error" })
+  })
+
+  if (isInDepartment) {
+    winston.verbose("The group " + group_id + " belongs to a department and cannot be disabled");
+    return res.status(403).send({ success: false, error: "Unable to disabled a group associated with a department" })
+  }
 
   Group.findByIdAndUpdate(group_id, { enabled: false }, { new: true, upsert: true }, (err, updatedGroup) => {
     if (err) {
