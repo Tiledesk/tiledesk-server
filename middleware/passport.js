@@ -655,20 +655,16 @@ if (enableOauth2Signin==true) {
     state: true
   },
   function(accessToken, refreshToken, params, profile, cb) {
-    console.log("params", params);
     winston.debug("params", params);
 
 
     const token = jwt.decode(accessToken); // user id lives in here
     winston.debug("token", token);
-    console.log("token", token);
 
     const profileInfo = jwt.decode(params.id_token); // user email lives in here
     winston.debug("profileInfo", profileInfo);
-    console.log("profileInfo", profileInfo);
 
     winston.debug("profile", profile);
-    console.log("profile", profile);
 
     winston.debug("accessToken", accessToken);
 
