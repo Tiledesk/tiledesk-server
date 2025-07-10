@@ -1,4 +1,3 @@
-let JobManager = require("jobs-worker-queued");
 let winston = require('../config/winston');
 
 let jobManager;
