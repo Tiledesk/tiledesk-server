@@ -785,8 +785,9 @@ router.get("/oauth2", function(req,res,next){
     forced_redirect_url
   });
 
+  console.log('stateeeeeee', state)
   passport.authenticate(
-    'oauth2', { state }
+    'oauth2'
   )(req,res,next);
 });
 
