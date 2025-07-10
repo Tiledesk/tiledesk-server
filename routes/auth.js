@@ -783,7 +783,7 @@ router.get("/oauth2", function(req,res,next){
   const redirect_url = req.query.redirect_url;
   const forced_redirect_url = req.query.forced_redirect_url;
 
-  const ststateObjectate = JSON.stringify({
+  const stateObject = JSON.stringify({
     redirect_url,
     forced_redirect_url
   });
@@ -820,7 +820,7 @@ router.get('/oauth2/callback',
     } catch (err) {
       winston.error("Failed to parse state param:", err);
     }
-    
+
     var user = req.user;
     winston.debug("user", user);
     winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
