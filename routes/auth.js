@@ -776,22 +776,12 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 router.get("/oauth2", function(req,res,next){
   winston.debug("redirect_url: "+ req.query.redirect_url );
   req.session.redirect_url = req.query.redirect_url;
-  
+
   winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
-  const redirect_url = req.query.redirect_url;
-  const forced_redirect_url = req.query.forced_redirect_url;
-
-  const stateObject = JSON.stringify({
-    redirect_url,
-    forced_redirect_url
-  });
-  const state = Buffer.from(JSON.stringify(stateObject)).toString('base64');
-
-  console.log('stateeeeeee', state)
   passport.authenticate(
-    'oauth2', { state }
+    'oauth2'
   )(req,res,next);
 });
 
@@ -802,30 +792,12 @@ router.get('/oauth2/callback',
   passport.authenticate('oauth2', { session: false}),
   function(req, res) {
     winston.debug("'/oauth2/callback: ", req.query);
-    
-    let redirect_url = '/#/';
-    let forced_redirect_url = null;
-
-    try {
-      const stateRaw = req.query.state;
-      const decoded = Buffer.from(stateRaw, 'base64').toString('utf8');
-      const state = JSON.parse(decoded);
-
-      redirect_url = state.redirect_url || redirect_url;
-      forced_redirect_url = state.forced_redirect_url || null;
-
-      winston.debug("/oauth2/callback --> redirect_url", redirect_url);
-      winston.debug("/oauth2/callback --> forced_redirect_url", forced_redirect_url);
-
-    } catch (err) {
-      winston.error("Failed to parse state param:", err);
-    }
+    winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
+    winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
 
     var user = req.user;
     winston.debug("user", user);
-    winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
-    
-  
+    winston.debug("req.session.redirect_url: "+ req.session.redirect_url); 
     var userJson = user.toObject();
     
     delete userJson.password;
