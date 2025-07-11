@@ -356,9 +356,11 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
           secret: sessionSecret,
-          secure: true,
-          httpOnly: true,
-          sameSite: 'None'
+          cookie: {
+            secure: true,           // ✅ Use HTTPS
+            httpOnly: true,         // ✅ Only accessible by the server (not client-side JS)
+            sameSite: 'None'        // ✅ Allows cross-origin (e.g., Keycloak on a different domain)
+          }
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
