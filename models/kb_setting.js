@@ -49,6 +49,10 @@ var NamespaceSchema = new Schema({
     type: Boolean,
     default: false
   },
+  hybrid: {
+    type: Boolean,
+    default: false
+  },
   engine: {
     type: EngineSchema,
     required: false

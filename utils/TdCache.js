@@ -29,6 +29,7 @@ class TdCache {
             // });
             this.client.on('ready',function() {
                 resolve();
+                // onsole.log("Redis is ready.");
                 if (callback) {
                     callback();
                 }
@@ -74,6 +75,11 @@ class TdCache {
         return resolve();
       });
     }
+
+
+
+
+
 
     async incr(key) {
       // console.log("incr key:", key)
@@ -261,6 +267,11 @@ class TdCache {
         }
         return resolve(result);
       })
+    }
+
+
+    getClient() {
+      return this.client;
     }
 }
 

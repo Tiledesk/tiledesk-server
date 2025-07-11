@@ -246,6 +246,8 @@ class WebSocketServer {
                 }
 
                 // requestcachefarequi nocachepopulatereqired
+                winston.info("main_flow_cache_3 websocket1");
+                
                 Request.findOne(queryRequest)
                   .exec(function (err, request) {
 
@@ -330,6 +332,7 @@ class WebSocketServer {
 
                 //cacheimportantehere
                 // requestcachefarequi populaterequired
+                winston.info('found Request.find(query)');
 
                 //  TODO  proviamo a fare esempio con 100 agenti tutti
                 // elimina capo availableAgents (chiedi a Nico se gli usa altrimenti metti a select false)
@@ -609,6 +612,7 @@ class WebSocketServer {
                 }
 
                 // requestcachefarequi populaterequired
+                winston.info('info: main_flow_cache_2.2');
 
                 Request.findOne(query)
                   .populate('lead')
@@ -702,6 +706,8 @@ class WebSocketServer {
 
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
           try {
+            winston.info("main_flow_cache_ws request find");
+            
             var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
@@ -753,6 +759,8 @@ class WebSocketServer {
           // ATTENTO  https://stackoverflow.com/questions/64059795/mongodb-get-error-message-mongoerror-path-collision-at-activity
 
           try {
+            winston.info("main_flow_cache_ws request find 2");
+
             var snapshotAgents = await Request.findById(request.id).select({ "snapshot": 1 }).exec(); //SEMBRA CHE RITORNI TUTTO LO SNAPSHOT INVECE CHE SOLO AGENTS
             winston.debug('snapshotAgents', snapshotAgents);
             // requestJSON.snapshot.agents = snapshotAgents;
