@@ -248,23 +248,18 @@ router.put('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     update.tags = req.body.tags;
   }
 
-
-
-
   Project_user.findByIdAndUpdate(req.projectuser.id, update,  { new: true, upsert: true }, function (err, updatedProject_user) {
     if (err) {
       winston.error("Error gettting project_user for update", err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
-      updatedProject_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, updatedProject_userPopulated){    
-
-        var pu = updatedProject_userPopulated.toJSON();
-        pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
-        
-        authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
-      });
     
-
+    updatedProject_user.populate({ path:'id_user', select: { 'firstname': 1, 'lastname': 1 }}, function (err, updatedProject_userPopulated) {    
+      var pu = updatedProject_userPopulated.toJSON();
+      pu.isBusy = ProjectUserUtil.isBusy(updatedProject_userPopulated, req.project.settings && req.project.settings.max_agent_assigned_chat);
+      authEvent.emit('project_user.update', {updatedProject_userPopulated:pu, req: req});
+    });
+    
     res.json(updatedProject_user);
   });
 });
@@ -300,8 +295,9 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
     update.attributes = req.body.attributes;
   }
 
-  if (req.body.status!=undefined) {
-    update.status = req.body.status;
+  const allowedStatuses = ['active', 'disabled'];
+  if (req.body.status !== undefined && allowedStatuses.includes(req.body.status)) {
+      update.status = req.body.status;
   }
 
   if (req.body["settings.email.notification.conversation.assigned.toyou"]!=undefined) {
@@ -345,21 +341,45 @@ router.put('/:project_userid', [passport.authenticate(['basic', 'jwt'], { sessio
 router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug(req.body);
+  
+  if (req.query.force === "true") {
 
-  Project_user.findByIdAndRemove(req.params.project_userid, { new: false}, function (err, project_user) {
-    if (err) {
-      winston.error("Error gettting project_user for delete", err);
-      return res.status(500).send({ success: false, msg: 'Error deleting object.' });
-    }
+    Project_user.findByIdAndRemove(req.params.project_userid, { new: false }, function (err, project_user) {
+      if (err) {
+        winston.error("Error gettting project_user for delete", err);
+        return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+      }
 
-    winston.debug("Removed project_user", project_user);
+      winston.debug("Physically removed project_user", project_user);
 
-    project_user.populate({path:'id_user', select:{'firstname':1, 'lastname':1}},function (err, project_userPopulated){   
-      authEvent.emit('project_user.delete', {req: req, project_userPopulated: project_userPopulated});
+      if (project_user) {
+        project_user.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, project_userPopulated) {
+          authEvent.emit('project_user.delete', { req: req, project_userPopulated: project_userPopulated });
+        });
+      }
+
+      res.json(project_user);
     });
-    
-    res.json(project_user);
-  });
+  } else {
+
+    Project_user.findByIdAndUpdate(req.params.project_userid, { status: "disabled" }, { new: true }, function (err, project_user) {
+        if (err) {
+          winston.error("Error gettting project_user for logical delete", err);
+          return res.status(500).send({ success: false, msg: 'Error disabling object.' });
+        }
+
+        winston.debug("Logically disabled project_user", project_user);
+
+        if (project_user) {
+          project_user.populate({ path: 'id_user', select: { 'firstname': 1, 'lastname': 1 } }, function (err, project_userPopulated) {
+            authEvent.emit('project_user.delete', { req: req, project_userPopulated: project_userPopulated });
+          });
+        }
+
+        res.json(project_user);
+      }
+    );
+  }
 });
 
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
@@ -498,13 +518,17 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
   }
   winston.debug("role", role);
 
-  var query =  {id_project: req.projectid, role: { $in : role } };
+  var query = { id_project: req.projectid, role: { $in : role } }; //, status: 'active'
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
   }
 
   winston.debug("query", query);
+
+  if (req.query.status) {
+    query["status"] = req.query.status;
+  }
 
   Project_user.find(query).
     populate('id_user').
