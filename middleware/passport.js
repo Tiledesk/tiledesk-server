@@ -674,7 +674,7 @@ if (enableOauth2Signin==true) {
         // new user record and link it to the oauth account.
           var password = uniqid()
         // signup ( email, password, firstname, lastname, emailverified) {
-          userService.signup(email, password,  profile.name || profile.preferred_username, "", true)
+          userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true)
           .then(function (savedUser) {
 
           winston.debug("savedUser", savedUser)    
