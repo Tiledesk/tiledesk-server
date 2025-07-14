@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.10.105
+# 2.11.0
 - Added: authentication via Keycloak
 
 # 2.10.104
