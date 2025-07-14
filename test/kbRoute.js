@@ -3,13 +3,11 @@ process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.LOG_LEVEL = 'critical'
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
-// Similarity
-// process.env.PINECONE_INDEX = "test_index"
-// process.env.PINECONE_TYPE = "pod"
-// Hybrid
-process.env.PINECONE_INDEX = "test_hybrid_index"
-process.env.PINECONE_TYPE = "serverless"
-
+process.env.PINECONE_INDEX = "test_index";
+process.env.PINECONE_TYPE = "pod";
+process.env.PINECONE_INDEX_HYBRID = "test_index_hybrid";
+process.env.PINECONE_TYPE_HYBRID = "serverless";
+process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
 var userService = require('../services/userService');
 var projectService = require('../services/projectService');
@@ -35,6 +33,14 @@ const faq = require('../models/faq');
 
 var expect = chai.expect;
 var assert = chai.assert;
+
+let custom_profile_sample = { 
+    name: "Custom",
+    type: "payment",
+    subStart: new Date(),
+    subEnd: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    customization: { hybrid: true } 
+}
 
 mongoose.connect(config.databasetest);
 
@@ -63,7 +69,7 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].engine.index_name).to.equal('test_hybrid_index')
+                            expect(res.body[0].engine.index_name).to.equal('test_index')
 
                             let namespace_id = res.body[0].id;
 
@@ -1102,7 +1108,6 @@ describe('KbRoute', () => {
 
         //                                     if (err) { console.error("err: ", err); }
         //                                     if (log) { console.log("get all namespaces res.body: ", res.body); }
-        //                                     console.log("get all namespaces res.body: ", res.body);
 
         //                                     res.should.have.status(200);
         //                                     res.body.should.be.a('array');
@@ -1120,7 +1125,7 @@ describe('KbRoute', () => {
         //     });
         // })
 
-        it('create-namespaces-with-engine', (done) => {
+        it('create-namespaces-with-engine-similarity', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";
             var pwd = "pwd";
@@ -1144,7 +1149,7 @@ describe('KbRoute', () => {
                         expect(res.body.name).to.equal('MyCustomNamespace');
                         should.exist(res.body.engine)
                         expect(res.body.engine.name).to.equal('pinecone');
-                        expect(res.body.engine.type).to.equal('serverless');
+                        expect(res.body.engine.type).to.equal('pod');
 
                         // Get again all namespace. A new default namespace should not be created.
                         chai.request(server)
@@ -1165,6 +1170,99 @@ describe('KbRoute', () => {
                             })
                     })
                 });
+            });
+        })
+
+        it('create-namespaces-with-engine-hybrid-rejected', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                    .post('/' + savedProject._id + '/kb/namespace')
+                    .auth(email, pwd)
+                    .send({ name: "MyCustomNamespace", hybrid: true })
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err) }
+                        if (log) { console.log("create new namespace res.body: ", res.body) }
+
+                        res.should.have.status(403);
+                        res.body.should.be.a('object');
+                        expect(res.body.success).to.equal(false);
+                        expect(res.body.error).to.equal('Hybrid mode is not allowed for the current project');
+                        
+                        done();
+                    })
+                });
+            });
+        })
+        
+        it('create-namespaces-with-engine-hybrid-accepted', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .post('/auth/signin')
+                        .send({ email: "admin@tiledesk.com", password: "adminadmin" })
+                        .end((err, res) => {
+
+                            if (err) { console.error("err: ", err) }
+                            if (log) { console.log("login with superadmin res.body: ", res.body) };
+
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            expect(res.body.success).to.equal(true);
+                            expect(res.body.token).not.equal(null);
+
+                            let superadmin_token = res.body.token;
+
+
+                            chai.request(server)
+                                .put('/projects/' + savedProject._id)
+                                .set('Authorization', superadmin_token)
+                                .send({ profile: custom_profile_sample })
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err) }
+                                    if (log) { console.log("update project res.body: ", res.body) }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.profile.customization.hybrid).to.equal(true);
+
+                                    chai.request(server)
+                                        .post('/' + savedProject._id + '/kb/namespace')
+                                        .auth(email, pwd)
+                                        .send({ name: "MyCustomNamespace", hybrid: true })
+                                        .end((err, res) => {
+                
+                                            if (err) { console.error("err: ", err) }
+                                            if (log) { console.log("create new namespace res.body: ", res.body) }
+                
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            should.not.exist(res.body._id)
+                                            should.exist(res.body.id)
+                                            expect(res.body.name).to.equal('MyCustomNamespace');
+                                            should.exist(res.body.engine)
+                                            expect(res.body.engine.name).to.equal('pinecone');
+                                            expect(res.body.engine.type).to.equal('serverless');
+                
+                                            done();
+                                        })
+                                })
+                            
+                        })
+                    
+                })
             });
         })
 
@@ -1487,558 +1585,335 @@ describe('KbRoute', () => {
         // })
 
     })
-});
 
-// OLD TESTS
-// it('createNewKb', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb = {
-//                 name: "example_name5",
-//                 type: "url",
-//                 source: "https://www.exampleurl5.com",
-//                 content: "",
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb')
-//                 .auth(email, pwd)
-//                 .send(kb) // can be empty
-//                 .end((err, res) => {
-
-//                     if (err) { console.error("err: ", err); }
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-
-//                     done();
-
-
-//                 })
-
-//         });
-//     });
-
-// }).timeout(10000);
-
-// logic in standby
-// it('createNewKb-namespaceNotBelongsProject', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb = {
-//                 name: "example_name5",
-//                 type: "url",
-//                 source: "https://www.exampleurl5.com",
-//                 content: "",
-//                 namespace: "fakenamespace"
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb')
-//                 .auth(email, pwd)
-//                 .send(kb) // can be empty
-//                 .end((err, res) => {
-
-//                     if (err) { console.error("err: ", err); }
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-
-//                     res.should.have.status(403);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.success).to.equal(false);
-//                     expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
-
-//                     done();
-
-
-//                 })
-
-//         });
-//     });
-
-//}).timeout(10000);
-
-// it('createNewKb-replaceNamespace', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb = {
-//                 name: "example_name5",
-//                 type: "url",
-//                 source: "https://www.exampleurl5.com",
-//                 content: "",
-//                 namespace: "fakenamespace"
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb')
-//                 .auth(email, pwd)
-//                 .send(kb) // can be empty
-//                 .end((err, res) => {
-
-//                     if (err) { console.error("err: ", err); }
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     expect(res.body.value.namespace).not.equal("fakenamespace");
-//                     expect(res.body.value.namespace).to.equal(savedProject._id.toString());
-
-//                     done();
-
-
-//                 })
-
-//         });
-//     });
-
-// }).timeout(10000);
-
-// it('getWithQueries', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb1 = {
-//                 name: "example_name1",
-//                 type: "url",
-//                 source: "https://www.exampleurl1.com",
-//                 content: ""
-//             }
-
-//             let kb2 = {
-//                 name: "example_name2",
-//                 type: "text",
-//                 source: "example_name2",
-//                 content: "example content"
-//             }
-
-//             let kb3 = {
-//                 name: "example_name3",
-//                 type: "url",
-//                 source: "https://www.exampleurl3.com",
-//                 content: ""
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + "/kb")
-//                 .auth(email, pwd)
-//                 .send(kb1)
-//                 .end((err, res) => {
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-//                     res.should.have.status(200);
-
-//                     setTimeout(() => {
-//                         chai.request(server)
-//                             .post('/' + savedProject._id + "/kb")
-//                             .auth(email, pwd)
-//                             .send(kb2)
-//                             .end((err, res) => {
-//                                 if (log) { console.log("create kb res.body: ", res.body); }
-//                                 res.should.have.status(200);
-
-//                                 setTimeout(() => {
-//                                     chai.request(server)
-//                                         .post('/' + savedProject._id + "/kb")
-//                                         .auth(email, pwd)
-//                                         .send(kb3)
-//                                         .end((err, res) => {
-//                                             if (log) { console.log("create kb res.body: ", res.body); }
-//                                             res.should.have.status(200);
-
-//                                             let query = "?status=100&type=url&limit=5&page=0&direction=-1&sortField=updatedAt&search=example";
-//                                             //let query = "";
-//                                             console.log("query: ", query);
-
-//                                             chai.request(server)
-//                                                 .get('/' + savedProject._id + "/kb" + query)
-//                                                 .auth(email, pwd)
-//                                                 .end((err, res) => {
-//                                                     if (log) { console.log("getall res.body: ", res.body); }
-//                                                     res.should.have.status(200);
-//                                                     res.body.should.be.a('object');
-//                                                     res.body.kbs.should.be.a('array');
-//                                                     expect(res.body.kbs.length).to.equal(2);
-//                                                     expect(res.body.count).to.equal(2);
-//                                                     res.body.query.should.be.a('object');
-//                                                     expect(res.body.query.status).to.equal(100);
-//                                                     expect(res.body.query.limit).to.equal(5);
-//                                                     expect(res.body.query.page).to.equal(0);
-//                                                     expect(res.body.query.direction).to.equal(-1);
-//                                                     expect(res.body.query.sortField).to.equal("updatedAt");
-//                                                     expect(res.body.query.search).to.equal("example");
-
-//                                                     done();
-
-//                                                 })
-
-//                                         })
-//                                 }, 1000)
-//                             })
-//                     }, 1000)
-
-
-//                 })
-//         })
-//     })
-// }).timeout(20000)
-
-// it('scrapeSingle', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb = {
-//                 name: "example_name6",
-//                 type: "url",
-//                 source: "https://www.exampleurl6.com",
-//                 content: ""
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb')
-//                 .auth(email, pwd)
-//                 .send(kb) // can be empty
-//                 .end((err, res) => {
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-//                     res.should.have.status(200);
-
-//                     let kbid = res.body.value._id;
-//                     console.log("kbid: ", kbid)
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + "/kb/scrape/single")
-//                         .auth(email, pwd)
-//                         .send({ id: kbid })
-//                         .end((err, res) => {
-//                             if (log) { console.log("single scrape res.body: ", res.body); }
-//                             //res.should.have.status(200);
-//                             // res.body.should.be.a('object');
-//                             // expect(res.body.id_project).to.equal(savedProject._id.toString())
-//                             // expect(res.body.maxKbsNumber).to.equal(3);
-//                             // expect(res.body.maxPagesNumber).to.equal(1000);
-//                             // expect(res.body.kbs).is.an('array').that.is.empty;
-//                             done();
-
-//                         })
-
-
-//                     // res.body.should.be.a('object');
-//                     // expect(res.body.id_project).to.equal(savedProject._id.toString());
-
-
-
-
-//                 })
-
-//         });
-//     });
-
-// });
-
-// it('scrapeSingle-namespaceNotBelongsProject', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             let kb = {
-//                 name: "example_name6",
-//                 type: "url",
-//                 source: "https://www.exampleurl6.com",
-//                 content: ""
-//             }
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb')
-//                 .auth(email, pwd)
-//                 .send(kb) // can be empty
-//                 .end((err, res) => {
-//                     if (log) { console.log("create kb res.body: ", res.body); }
-//                     res.should.have.status(200);
-
-//                     let kbid = res.body.value._id;
-//                     console.log("kbid: ", kbid)
-//                     chai.request(server)
-//                         .post('/' + savedProject._id + "/kb/scrape/single")
-//                         .auth(email, pwd)
-//                         .send({ id: kbid })
-//                         .end((err, res) => {
-//                             if (log) { console.log("single scrape res.body: ", res.body); }
-//                             //res.should.have.status(200);
-//                             // res.body.should.be.a('object');
-//                             // expect(res.body.id_project).to.equal(savedProject._id.toString())
-//                             // expect(res.body.maxKbsNumber).to.equal(3);
-//                             // expect(res.body.maxPagesNumber).to.equal(1000);
-//                             // expect(res.body.kbs).is.an('array').that.is.empty;
-//                             done();
-
-//                         })
-
-
-//                     // res.body.should.be.a('object');
-//                     // expect(res.body.id_project).to.equal(savedProject._id.toString());
-
-
-
-
-//                 })
-//         });
-//     });
-// });
-
-// it('multiadd', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb/multi')
-//                 .auth(email, pwd)
-//                 .set('Content-Type', 'text/plain')
-//                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
-//                 .end((err, res) => {
-
-//                     // console.log("res.body: ", res.body)
-//                     res.should.have.status(200);
-//                     expect(res.body.length).to.equal(4)
-
-//                     done();
-
-//                     // setTimeout(() => {
-
-//                     //     chai.request(server)
-//                     //         .post('/' + savedProject._id + '/kb/multi')
-//                     //         .auth(email, pwd)
-//                     //         .set('Content-Type', 'text/plain')
-//                     //         .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
-//                     //         .end((err, res) => {
-
-//                     //             // console.log("res.body: ", res.body);
-//                     //             res.should.have.status(200);
-//                     //             expect(res.body.length).to.equal(4)
-
-//                     //             done()
-//                     //         })
-//                     // }, 2000)
-
-//                 })
-
-//         });
-//     });
-
-// }).timeout(10000)
-
-// it('multiaddFail', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb/multi')
-//                 .auth(email, pwd)
-//                 .set('Content-Type', 'text/plain')
-//                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
-//                 .end((err, res) => {
-
-//                     // console.log("res.body: ", res.body)
-//                     res.should.have.status(200);
-//                     expect(res.body.length).to.equal(4)
-
-//                     setTimeout(() => {
-
-//                         chai.request(server)
-//                             .post('/' + savedProject._id + '/kb/multi')
-//                             .auth(email, pwd)
-//                             .set('Content-Type', 'text/plain')
-//                             .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './kbUrlsList.txt')), 'kbUrlsList.txt')
-//                             .end((err, res) => {
-
-//                                 // console.log("res.body: ", res.body);
-//                                 res.should.have.status(200);
-//                                 expect(res.body.length).to.equal(4)
-
-//                                 done()
-//                             })
-//                     }, 2000)
-
-//                 })
-
-//         });
-//     });
-
-// }).timeout(10000)
-
-// it('tooManyUrls', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb/multi')
-//                 .auth(email, pwd)
-//                 .set('Content-Type', 'text/plain')
-//                 .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './TooManykbUrlsList.txt')), 'TooManykbUrlsList.txt')
-//                 .end((err, res) => {
-
-//                     // console.log("res.body: ", res.body)
-//                     res.should.have.status(403);
-//                     expect(res.body.success).to.equal(false);
-//                     expect(res.body.error).to.equal("Too many urls. Can't index more than 300 urls at a time.");
-
-//                     done()
-
-//                 })
-
-//         });
-//     });
-
-// })
-
-// logic in standby
-// it('askkb-namespaceNotBelongsProject', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-//         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
-
-//             /**
-//              * README
-//              * Namespace should be equal to savedProject._id;
-//              * A generic mongodb ID (like user id) is used instead for test porpouse
-//              */
-//             chai.request(server)
-//                 .post('/' + savedProject._id + "/kb/qa")
-//                 .auth(email, pwd)
-//                 .send({ model: "gpt-4", namespace: savedUser._id, question: "sample question"})
-//                 .end((err, res) => {
-
-//                     if (err) { console.log("error: ", err) };
-//                     if (log) { console.log("res.body: ", res.body) };
-
-//                     res.should.have.status(403); 
-//                     res.body.should.be.a('object');
-//                     expect(res.body.success).to.equal(false);
-//                     expect(res.body.error).to.equal("Not allowed. The namespace does not belong to the current project.");
-
-//                     done();                            
-//                 })
-//         })
-//     })
-// }).timeout(10000)
-
-
-// it('sitemap', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
-//         projectService.create("test-faqkb-create", savedUser._id).then(function (savedProject) {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + '/kb/sitemap')
-//                 .auth(email, pwd)
-//                 // .send({ sitemap: "https://www.wired.it/sitemap.xml" })
-//                 .send({ sitemap: "https://gethelp.tiledesk.com/sitemap.xml" })
-//                 .end((err, res) => {
-
-//                     if (err) { console.log("error: ", err) };
-//                     if (log) { console.log("res.body: ", res.body) }
-
-//                     res.should.have.status(200);
-//                     res.body.should.be.a('object');
-//                     res.body.sites.should.be.a('array');
-
-//                     done();
-
-//                 })
-
-//         });
-//     });
-
-// }).timeout(10000)
-
-// Ask KB
-// it('askkb-key-from-integrations', (done) => {
-
-//     var email = "test-signup-" + Date.now() + "@email.com";
-//     var pwd = "pwd";
-
-//     userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
-//         projectService.create("test-kb-qa", savedUser._id).then((savedProject) => {
-
-//             chai.request(server)
-//                 .post('/' + savedProject._id + "/integration/")
-//                 .auth(email, pwd)
-//                 .send({ name: "openai", value: { apikey: "sk-testkey", organization: "Testkey" } })
-//                 .end((err, res) => {
-
-//                     if (err) { console.error("err: ", err) };
-//                     if (log) { console.log("res.body: ", res.body) };
-//                     console.log("Integration created..")
-
-//                     chai.request(server)
-//                         .get('/' + savedProject._id + '/kb/namespace/all')
-//                         .auth(email, pwd)
-//                         .end((err, res) => {
-
-//                             if (err) { console.error("err: ", err); }
-//                             if (log) { console.log("get all namespaces res.body: ", res.body); }
+    describe('Unanswered Questions', () => {
+        
+        it('add-unanswered-question', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-create", savedUser._id).then(function (savedProject) {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
                             
-//                             console.log("namespace created..")
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
 
-//                             chai.request(server)
-//                                 .post('/' + savedProject._id + "/kb/qa")
-//                                 .auth(email, pwd)
-//                                 .send({ model: "gpt-4o", namespace: savedProject._id, question: "sample question" })
-//                                 .end((err, res) => {
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
 
-//                                     if (err) { console.error("err: ", err) };
-//                                     if (log) { console.log("res.body: ", res.body) };
-//                                     console.log("res.body: ", res.body)
-//                                     done();
-//                                 })
+                            let namespace_id = res.body[0].id;
 
+                            let data = {
+                                namespace: namespace_id,
+                                question: "Come funziona il prodotto?"
+                            }
 
-//                         })
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/unanswered')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+                                    
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("create unanswered question res.body: ", res.body); }
 
-//                 })
-//         })
-//     })
-// }).timeout(10000)
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.namespace).to.equal(namespace_id);
+                                    expect(res.body.question).to.equal("Come funziona il prodotto?");
+                                    expect(res.body.id_project).to.equal(savedProject._id.toString());
+                                    done();
+                                });
+                        });
+                });
+            });
+        });
 
+        it('get-unanswered-questions', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
 
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-get", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("get namespaces res.body: ", res.body); }
 
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            // First add a question
+                            let data = {
+                                namespace: namespace_id,
+                                question: "Come funziona il prodotto?"
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/unanswered')
+                                .auth(email, pwd)
+                                .send(data)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("add unanswered question res.body: ", res.body); }
+
+                                    res.should.have.status(200);
+
+                                    // Then get all questions
+                                    chai.request(server)
+                                        .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("get unanswered questions res.body: ", res.body); }
+
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.count).to.equal(1);
+                                            expect(res.body.questions).to.be.an('array');
+                                            expect(res.body.questions[0].question).to.equal("Come funziona il prodotto?");
+                                            expect(res.body.questions[0].namespace).to.equal(namespace_id);
+                                            done();
+                                        });
+                                });
+                        });
+                });
+            });
+        });
+
+        it('delete-unanswered-question', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-delete", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            // First add a question
+                            let question = {
+                                namespace: namespace_id,
+                                question: "Come funziona il prodotto?"
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/unanswered')
+                                .auth(email, pwd)
+                                .send(question)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    res.should.have.status(200);
+                                    let questionId = res.body._id;
+
+                                    // Then delete it
+                                    chai.request(server)
+                                        .delete('/' + savedProject._id + '/kb/unanswered/' + questionId)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.success).to.be.true;
+                                            expect(res.body.message).to.equal("Question deleted successfully");
+
+                                            // Verify it's deleted
+                                            chai.request(server)
+                                                .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
+                                                .auth(email, pwd)
+                                                .end((err, res) => {
+                                                    if (err) { console.error("err: ", err); }
+                                                    res.should.have.status(200);
+                                                    expect(res.body.count).to.equal(0);
+                                                    expect(res.body.questions).to.be.an('array').that.is.empty;
+                                                    done();
+                                                });
+                                        });
+                                });
+                        });
+                });
+            });
+        });
+
+        it('delete-all-unanswered-questions', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-delete-all", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            // First add two questions
+                            let questions = [
+                                {
+                                    namespace: namespace_id,
+                                    question: "Come funziona il prodotto?"
+                                },
+                                {
+                                    namespace: namespace_id,
+                                    question: "Quali sono i prezzi?"
+                                }
+                            ];
+
+                            Promise.all(questions.map(q => 
+                                chai.request(server)
+                                    .post('/' + savedProject._id + '/kb/unanswered')
+                                    .auth(email, pwd)
+                                    .send(q)
+                            )).then(() => {
+                                // Then delete all questions
+                                chai.request(server)
+                                    .delete('/' + savedProject._id + '/kb/unanswered/namespace/' + namespace_id)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+                                        if (err) { console.error("err: ", err); }
+                                        res.should.have.status(200);
+                                        res.body.should.be.a('object');
+                                        expect(res.body.success).to.be.true;
+                                        expect(res.body.count).to.equal(2);
+                                        expect(res.body.message).to.equal("All questions deleted successfully");
+
+                                        // Verify they're deleted
+                                        chai.request(server)
+                                            .get('/' + savedProject._id + '/kb/unanswered/' + namespace_id)
+                                            .auth(email, pwd)
+                                            .end((err, res) => {
+                                                if (err) { console.error("err: ", err); }
+                                                res.should.have.status(200);
+                                                expect(res.body.count).to.equal(0);
+                                                expect(res.body.questions).to.be.an('array').that.is.empty;
+                                                done();
+                                            });
+                                    });
+                            });
+                        });
+                });
+            });
+        });
+
+        it('update-unanswered-question', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-update", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            // First add a question
+                            let question = {
+                                namespace: namespace_id,
+                                question: "Come funziona il prodotto?"
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/unanswered')
+                                .auth(email, pwd)
+                                .send(question)
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    res.should.have.status(200);
+                                    let questionId = res.body._id;
+
+                                    // Then update it
+                                    chai.request(server)
+                                        .put('/' + savedProject._id + '/kb/unanswered/' + questionId)
+                                        .auth(email, pwd)
+                                        .send({ question: "Come funziona il prodotto aggiornato?" })
+                                        .end((err, res) => {
+                                            if (err) { console.error("err: ", err); }
+                                            res.should.have.status(200);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.question).to.equal("Come funziona il prodotto aggiornato?");
+                                            expect(res.body.namespace).to.equal(namespace_id);
+                                            done();
+                                        });
+                                });
+                        });
+                });
+            });
+        });
+
+        it('count-unanswered-questions', (done) => {
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+                projectService.create("test-unanswered-count", savedUser._id).then(function (savedProject) {
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            if (err) { console.error("err: ", err); }
+                            res.should.have.status(200);
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            // First add two questions
+                            let questions = [
+                                {
+                                    namespace: namespace_id,
+                                    question: "Come funziona il prodotto?"
+                                },
+                                {
+                                    namespace: namespace_id,
+                                    question: "Quali sono i prezzi?"
+                                }
+                            ];
+
+                            Promise.all(questions.map(q => 
+                                chai.request(server)
+                                    .post('/' + savedProject._id + '/kb/unanswered')
+                                    .auth(email, pwd)
+                                    .send(q)
+                            )).then(() => {
+                                // Then count them
+                                chai.request(server)
+                                    .get('/' + savedProject._id + '/kb/unanswered/count/' + namespace_id)
+                                    .auth(email, pwd)
+                                    .end((err, res) => {
+                                        if (err) { console.error("err: ", err); }
+                                        res.should.have.status(200);
+                                        res.body.should.be.a('object');
+                                        expect(res.body.count).to.equal(2);
+                                        done();
+                                    });
+                            });
+                        });
+                });
+            });
+        });
+    });
+
+});
