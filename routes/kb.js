@@ -463,7 +463,7 @@ router.get('/namespace/all', async (req, res) => {
 
   let project_id = req.projectid;
 
-  Namespace.find({ id_project: project_id }).lean().exec((err, namespaces) => {
+  Namespace.find({ id_project: project_id }).lean().exec( async (err, namespaces) => {
 
     if (err) {
       winston.error("find namespaces error: ", err);
@@ -500,7 +500,18 @@ router.get('/namespace/all', async (req, res) => {
 
     } else {
 
-      const namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      let namespaceObjArray = [];
+      if (req.query.count) {
+        namespaceObjArray = await Promise.all(
+          namespaces.map(async ({ _id, __v, ...keepAttrs }) => {
+            const count = await KB.countDocuments({ id_project: keepAttrs.id_project, namespace: keepAttrs.id });
+            return { ...keepAttrs, count };
+          })
+        );
+      } else {
+        namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      }
+        
       winston.debug("namespaceObjArray: ", namespaceObjArray);
       return res.status(200).send(namespaceObjArray);
     }
