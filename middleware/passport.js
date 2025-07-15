@@ -575,11 +575,11 @@ if (enableGoogleSignin==true) {
         winston.debug("else")
         // The Google account has previously logged in to the app.  Get the
         // user record linked to the Google account and log the user in.
-
+        console.log('GOOGLE User.findOne ----> ', email)  
         User.findOne({
           email: email, status: 100
         }, 'email firstname lastname password emailverified id', function (err, user) {
-
+          console.log('GOOGLE User.findOne return ----> ', user, err)
           winston.debug("user",user, err);
         // db.get('SELECT * FROM users WHERE id = ?', [ cred.user_id ], function(err, user) {
           if (err) { return cb(err); }
