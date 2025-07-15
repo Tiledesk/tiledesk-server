@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.5
+- Added: log in requestService
+
 # 2.11.4
 - Added: authentication via Keycloak
 - Added: project settings fields for allowed_urls, allowed_urls_list, allow_send_emoji
