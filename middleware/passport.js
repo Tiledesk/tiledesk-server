@@ -483,7 +483,7 @@ if (enableGoogleSignin==true) {
 
     console.log('GOOGLE issuer ----> ', issuer)
     console.log('GOOGLE profile ----> ', profile)
-    
+
     winston.debug("issuer: "+issuer)
     winston.debug("profile", profile)
     // winston.info("cb", cb)
@@ -494,7 +494,8 @@ if (enableGoogleSignin==true) {
     var query = {providerId : issuer, subject: profile.id};
     winston.debug("query", query)
 
-    Auth.findOne(query, function(err, cred){     
+    Auth.findOne(query, function(err, cred){   
+    console.log('GOOGLE Auth.findOne cred ----> ', cred, err)  
     winston.debug("cred", cred, err)
 
       // db.get('SELECT * FROM federated_credentials WHERE provider = ? AND subject = ?', [
