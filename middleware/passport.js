@@ -481,6 +481,9 @@ if (enableGoogleSignin==true) {
   },
   function(issuer, profile, cb) {
 
+    console.log('GOOGLE issuer ----> ', issuer)
+    console.log('GOOGLE profile ----> ', profile)
+    
     winston.debug("issuer: "+issuer)
     winston.debug("profile", profile)
     // winston.info("cb", cb)
