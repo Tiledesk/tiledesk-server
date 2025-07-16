@@ -27,6 +27,9 @@ var GroupSchema = new Schema({
     type: Boolean,
     index: true
   },
+  attributes: {
+    type: Object,
+  },
   createdBy: {
     type: String,
     required: true
