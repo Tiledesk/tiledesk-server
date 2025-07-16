@@ -321,9 +321,8 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
-  data.hybrid = ns.hybrid;
 
-  if (data.engine.type === 'serverless') {
+  if (ns.hybrid === true) {
     data.search_type = 'hybrid';
   }
 
