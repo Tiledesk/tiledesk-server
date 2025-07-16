@@ -1502,6 +1502,7 @@ describe('KbRoute', () => {
             })
         }).timeout(10000)
 
+
         /**
          * Delete namespace
          * !! Unable to test it due to external request
