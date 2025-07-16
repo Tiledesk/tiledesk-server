@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.6
+- Added: possibility to enable/disable groups
+- Updated: delete project user endpoint to logical delete
+
 # 2.11.5
 - Added: log in requestService
 
