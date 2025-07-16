@@ -8,6 +8,9 @@
 # 2.11.6
 - Added: possibility to enable/disable groups
 - Updated: delete project user endpoint to logical delete
+- Updated: tybot-connector to 2.0.23
+- Updated: get all namespace adding counter
+- Added: attributes field in groups model
 
 # 2.11.5
 - Added: log in requestService
