@@ -359,13 +359,11 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
-    console.log("findPU on projectid " + projectid + " department " + department)
-    return Group.find({ _id: department.id_group, enabled: true }).exec(function (err, group) {
+    return Group.find({ _id: department.id_group, $or: [ { enabled: true }, { enabled: { $exists: false } } ] }).exec(function (err, group) {
       if (err) {
         winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
       }
-      console.log("findPU group: ", group);
       if (group) {
         // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> GROUP FOUND:: ', group);
         // console.log('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> MEMBERS LENGHT: ', group[0].members.length);
@@ -374,7 +372,6 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         // , user_available: true
         //Project_user.findAllProjectUsersByProjectIdWhoBelongsToMembersOfGroup(id_prject, group[0]);
         // riprodurre su v2
-        console.log("findPU group inside search group[0]");
          return Project_user.find({ id_project: projectid, id_user: { $in : group[0].members}, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT]}, status: "active" }).exec(function (err, project_users) {          
           // uni error round robin
         //return Project_user.find({ id_project: projectid, id_user: group[0].members, role: { $in : [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.AGENT]} }).exec(function (err, project_users) {

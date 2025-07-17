@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.7
+- Hotfix: solved bug on findProjectUsersAllAndAvailableWithOperatingHours_group on searching group
+
 # 2.11.6
 - Added: possibility to enable/disable groups
 - Updated: delete project user endpoint to logical delete
