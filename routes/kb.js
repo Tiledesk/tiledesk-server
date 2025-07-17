@@ -326,7 +326,6 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
   }
 
-  
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   

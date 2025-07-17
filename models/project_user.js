@@ -81,14 +81,16 @@ var TagSchema = require("../models/tag");
   );
 
  
-Project_userSchema.virtual('events', {
-    ref: 'event', // The model to use
-    localField: '_id', // Find people where `localField`
-    foreignField: 'project_user', // is equal to `foreignField`
-    justOne: false,
-    // options: { getters: true }
-    options: { sort: { createdAt: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
-});
+
+  //TODO COMMENT IT unused. Now events are not saved to the db
+// Project_userSchema.virtual('events', {
+//     ref: 'event', // The model to use
+//     localField: '_id', // Find people where `localField`
+//     foreignField: 'project_user', // is equal to `foreignField`
+//     justOne: false,
+//     // options: { getters: true }
+//     options: { sort: { createdAt: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+// });
 
 Project_userSchema.virtual('isAuthenticated').get(function () {
   if (this.role === RoleConstants.GUEST ) {
