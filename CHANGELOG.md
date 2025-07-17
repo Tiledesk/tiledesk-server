@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.8
+- Added: migration file to migrate namespace engine
+
 # 2.11.7
 - Hotfix: solved bug on findProjectUsersAllAndAvailableWithOperatingHours_group on searching group
 
