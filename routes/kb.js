@@ -1538,10 +1538,12 @@ router.post('/sitemap', async (req, res) => {
 
   const sitemap = new Sitemapper({
     url: sitemap_url,
-    timeout: 15000
+    timeout: 15000,
+    debug: true
   });
 
   sitemap.fetch().then((data) => {
+    // TODO - check on data.errors to catch error
     winston.debug("data: ", data);
     res.status(200).send(data);
   }).catch((err) => {
