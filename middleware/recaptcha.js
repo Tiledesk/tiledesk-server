@@ -21,7 +21,7 @@ module.exports =
               next();
                 // success code
             } else {
-              winston.error("Signup recaptcha ko");
+              winston.error("Signup recaptcha ko", error);
             //   next({status:"Signup recaptcha ko"});
                 res.status(403).send({success: false, msg: 'Recaptcha error.'});
 
