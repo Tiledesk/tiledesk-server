@@ -74,6 +74,11 @@ var TagSchema = require("../models/tag");
       index: true,
       required: true
     },
+    trashed: {
+      type: Boolean,
+      default: false,
+      required: false
+    }
   }, {
       timestamps: true,
       toJSON: { virtuals: true } //used to polulate messages in toJSON// https://mongoosejs.com/docs/populate.html
@@ -116,7 +121,24 @@ Project_userSchema.virtual('isAuthenticated').get(function () {
   Project_userSchema.index({ id_project: 1, role: 1, status: 1, createdAt: 1  }); 
 
 
+  Project_userSchema.pre('findOneAndUpdate', async function(next) {
+    // Get the update object
+    const update = this.getUpdate();
 
+    // Check if 'trashed' is being set to true
+    if (update && (
+        (update.trashed === true) ||
+        (update.$set && update.$set.trashed === true)
+      )) {
+      // Set status to "disabled"
+      if (!update.$set) {
+        update.$set = {};
+      }
+      update.$set.status = "disabled";
+      this.setUpdate(update);
+    }
+    next();
+  });
 
 
   module.exports = mongoose.model('project_user', Project_userSchema);;
