@@ -89,7 +89,7 @@ router.put('/disable/:groupid', async (req, res) => {
 
   if (isInDepartment) {
     winston.verbose("The group " + group_id + " belongs to a department and cannot be disabled");
-    return res.status(403).send({ success: false, error: "Unable to disabled a group associated with a department" })
+    return res.status(403).send({ success: false, error: "Unable to disable a group associated with a department" })
   }
 
   Group.findByIdAndUpdate(group_id, { enabled: false }, { new: true, upsert: true }, (err, updatedGroup) => {

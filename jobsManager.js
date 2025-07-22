@@ -13,7 +13,7 @@ class JobsManager {
         this.activityArchiver = undefined;
         this.whatsappWorker = undefined;
         this.multiWorkerQueue = undefined;
-
+     
         this.jobWorkerEnabled = jobWorkerEnabled;
         // this.jobWorkerEnabled = false;
         // if (process.env.JOB_WORKER_ENABLED=="true" || process.env.JOB_WORKER_ENABLED == true) {
