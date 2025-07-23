@@ -61,13 +61,28 @@ let default_preview_settings = {
   context: null
   //context: "You are an awesome AI Assistant."
 }
+
 let default_engine = {
-  name: "pinecone",
-  type: process.env.PINECONE_TYPE,
+  name: process.env.VECTOR_STORE_NAME || "pinecone",
+  type: process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "severless",
   apikey: "",
-  vector_size: 1536,
-  index_name: process.env.PINECONE_INDEX
+  vector_size: process.env.VECTOR_SIZE || 1536,
+  index_name: process.env.INDEX_NAME || process.env.PINECONE_INDEX || "llm-sample-index",
+  host: process.env.VECTOR_STORE_HOST,
+  port: process.env.VECTOR_STORE_PORT,
+  deployment: process.env.VECTOR_STORE_DEPLOYMENT
 }
+
+// let default_engine = {
+//   name: "qdrant",  //qdrant         // process.env.VECTOR_STORE_NAME || pinecone
+//   type: "none",                     // process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "serverless"
+//   vector_size: 1536,                // process.env.VECTOR_SIZE || 1536
+//   index_name: "test-index-qdrant",  // process.env.INDEX_NAME || process.env.PINECONE_INDEX || "llm-index"
+//   host: "qdrant",                   // process.env.VECTOR_STORE_HOST
+//   port: 6333,                       // process.env.VECTOR_STORE_PORT
+//   deployment: "local"               // process.env.VECTOR_STORE_DEPLOYMENT
+// }
+
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 //let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
@@ -638,6 +653,7 @@ router.post('/namespace', async (req, res) => {
   let body = req.body;
   winston.debug("add namespace body: ", body);
 
+  console.log("default_engine: ", default_engine)
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
@@ -646,6 +662,7 @@ router.post('/namespace', async (req, res) => {
     preview_settings: default_preview_settings,
     engine: default_engine
   })
+  console.log("new_namespace: ", new_namespace);
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -670,6 +687,7 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    console.log("savedNamespace: ", savedNamespace);
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;

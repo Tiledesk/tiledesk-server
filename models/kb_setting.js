@@ -22,6 +22,18 @@ var EngineSchema = new Schema({
   index_name: {
     type: String,
     required: true
+  },
+  host: {
+    type: String,
+    required: false
+  },
+  port: {
+    type: Number,
+    required: false
+  },
+  deployment: {
+    type: String,
+    required: false
   }
 }, {
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
