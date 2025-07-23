@@ -6,11 +6,12 @@ const recaptcha_key = process.env.RECAPTCHA_KEY;
 const recaptcha_secret = process.env.RECAPTCHA_SECRET;
 
 winston.info("Recaptcha key: " + recaptcha_key + " and secret: " + recaptcha_secret );
-var recaptcha = new Recaptcha(recaptcha_key, recaptcha_secret)
+let recaptcha;
 
 let RECAPTCHA_ENABLED =  false;
 
 if (process.env.RECAPTCHA_ENABLED === true || process.env.RECAPTCHA_ENABLED ==="true") {
+    recaptcha = new Recaptcha(recaptcha_key, recaptcha_secret);
     RECAPTCHA_ENABLED = true;
 }
 
