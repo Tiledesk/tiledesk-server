@@ -711,11 +711,25 @@ class Chat21Handler {
                         winston.debug("Chat21Sender deleting conversations for ",request.participants);
 
                         chat21.conversations.delete(request.request_id).then((data) => {
-                            winston.verbose("Chat21 conversation archived result "+ JSON.stringify(data));
-                            chat21Event.emit('conversation.deleted', data);                                               
+                            winston.verbose("Chat21 conversation archived result " + JSON.stringify(data));
+                            chat21Event.emit('conversation.deleted', data);
+
+                            // In cascata cancella anche i messaggi
+                            return chat21.messages.delete(request.request_id).catch((msgErr) => {
+                                // Wrap errore con info specifica
+                                throw { source: 'messages.delete', error: msgErr };
+                            });
+                        }).then((msgDeleteData) => {
+                            winston.verbose("Chat21 messages deleted result " + JSON.stringify(msgDeleteData));
+                            chat21Event.emit('messages.deleted', msgDeleteData);
                         }).catch((err) => {
-                            winston.error("Chat21 deleted err", err);
-                            chat21Event.emit('conversation.deleted.error', err);
+                            if (err.source === 'messages.delete') {
+                                winston.error("Chat21 messages delete error", err.error);
+                                chat21Event.emit('messages.deleted.error', err.error);
+                            } else {
+                                winston.error("Chat21 conversation delete error", err);
+                                chat21Event.emit('conversation.deleted.error', err);
+                            }
                         })
                     }
                 })
