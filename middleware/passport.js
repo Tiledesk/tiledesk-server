@@ -84,8 +84,16 @@ var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
-  winston.debug("jwthistory not present");
+  winston.info("jwthistory not present", err);
 }
+
+let JWT_HISTORY_ENABLED = false;
+if (process.env.JWT_HISTORY_ENABLED==true || process.env.JWT_HISTORY_ENABLED=="true") {
+  JWT_HISTORY_ENABLED = true;
+}
+winston.debug("JWT_HISTORY_ENABLED: " + JWT_HISTORY_ENABLED);
+
+
 
 module.exports = function(passport) {
     
@@ -247,7 +255,7 @@ module.exports = function(passport) {
 
   passport.use(new JwtStrategy(opts, async(req, jwt_payload, done)  => {
   // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
-    winston.debug("jwt_payload",jwt_payload);
+    winston.verbose("jwt_payload",jwt_payload);
     // console.log("req",req);
     
 
@@ -281,9 +289,10 @@ module.exports = function(passport) {
       winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
+    winston.verbose("jwthistory passport",jwthistory);
 
     //TODO check into DB if JWT is revoked 
-    if (jwthistory) {
+    if (jwthistory && JWT_HISTORY_ENABLED==true) {
       var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
       winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
       if (jwtRevoked) {
@@ -641,7 +650,8 @@ if (enableOauth2Signin==true) {
     tokenURL: process.env.OAUTH2_TOKEN_URL, 
     clientID: process.env.OAUTH2_CLIENT_ID,
     clientSecret: process.env.OAUTH2_CLIENT_SECRET, 
-    callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback"    
+    callbackURL: process.env.OAUTH2_CALLBACK_URL || "http://localhost:3000/auth/oauth2/callback",
+    scope: ['openid'],
   },
   function(accessToken, refreshToken, params, profile, cb) {
     winston.debug("params", params);
@@ -650,7 +660,7 @@ if (enableOauth2Signin==true) {
     const token = jwt.decode(accessToken); // user id lives in here
     winston.debug("token", token);
 
-    const profileInfo = jwt.decode(params.id_token); // user email lives in here
+    const profileInfo = jwt.decode(params.access_token); // user email lives in here
     winston.debug("profileInfo", profileInfo);
 
     winston.debug("profile", profile);
@@ -673,7 +683,7 @@ if (enableOauth2Signin==true) {
         // new user record and link it to the oauth account.
           var password = uniqid()
         // signup ( email, password, firstname, lastname, emailverified) {
-          userService.signup(email, password,  profile.displayName, "", true)
+          userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true)
           .then(function (savedUser) {
 
           winston.debug("savedUser", savedUser)    
