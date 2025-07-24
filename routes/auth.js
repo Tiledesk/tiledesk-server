@@ -835,6 +835,7 @@ router.get('/oauth2/callback',
     var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
   
     if (req.session.forced_redirect_url) {
+      const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
       url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
     }
   
