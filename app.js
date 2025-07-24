@@ -75,6 +75,7 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
@@ -90,6 +91,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -255,7 +259,7 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -344,7 +348,12 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           store: redisStore,
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
-          secret: sessionSecret
+          secret: sessionSecret,
+          cookie: {
+            secure: true,           // ✅ Use HTTPS
+            httpOnly: true,         // ✅ Only accessible by the server (not client-side JS)
+            sameSite: 'None'        // ✅ Allows cross-origin (e.g., Keycloak on a different domain)
+          }
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);

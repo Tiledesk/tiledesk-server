@@ -3,7 +3,7 @@ var winston = require('../config/winston');
 var Recaptcha = require('express-recaptcha').RecaptchaV3
 var recaptcha = new Recaptcha('6Lf1khcpAAAAABMNHJfnJm43vVTxFzXM7ADqDAp5', '6Lf1khcpAAAAAG6t7LuOfl9vThGPFOOJIiAoMIhs')
 
-const RECAPTCHA_ENABLED =  false;
+let RECAPTCHA_ENABLED =  false;
 
 if (process.env.RECAPTCHA_ENABLED === true || process.env.RECAPTCHA_ENABLED ==="true") {
     RECAPTCHA_ENABLED = true;
