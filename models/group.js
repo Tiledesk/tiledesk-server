@@ -18,9 +18,17 @@ var GroupSchema = new Schema({
     index: true
     // required: true
   },
+  enabled: {
+    type: Boolean,
+    default: true,
+    index: true
+  },
   trashed: {
     type: Boolean,
     index: true
+  },
+  attributes: {
+    type: Object,
   },
   createdBy: {
     type: String,

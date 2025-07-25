@@ -3,9 +3,9 @@ process.env.NODE_ENV = 'test';
 process.env.GPTKEY = "fakegptkey";
 process.env.LOG_LEVEL = 'critical'
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
-process.env.PINECONE_INDEX = "test_index";
+process.env.PINECONE_INDEX = "test-index";
 process.env.PINECONE_TYPE = "pod";
-process.env.PINECONE_INDEX_HYBRID = "test_index_hybrid";
+process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
 
@@ -69,7 +69,7 @@ describe('KbRoute', () => {
 
                             res.should.have.status(200);
                             expect(res.body.length).to.equal(1);
-                            expect(res.body[0].engine.index_name).to.equal('test_index')
+                            expect(res.body[0].engine.index_name).to.equal('test-index')
 
                             let namespace_id = res.body[0].id;
 
@@ -1149,7 +1149,7 @@ describe('KbRoute', () => {
                         expect(res.body.name).to.equal('MyCustomNamespace');
                         should.exist(res.body.engine)
                         expect(res.body.engine.name).to.equal('pinecone');
-                        expect(res.body.engine.type).to.equal('pod');
+                        expect(res.body.engine.type).to.equal('serverless');
 
                         // Get again all namespace. A new default namespace should not be created.
                         chai.request(server)

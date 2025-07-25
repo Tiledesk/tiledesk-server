@@ -321,9 +321,8 @@ router.post('/qa', async (req, res) => {
 
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
-  data.hybrid = ns.hybrid;
 
-  if (data.engine.type === 'serverless') {
+  if (ns.hybrid === true) {
     data.search_type = 'hybrid';
   }
 
@@ -463,7 +462,7 @@ router.get('/namespace/all', async (req, res) => {
 
   let project_id = req.projectid;
 
-  Namespace.find({ id_project: project_id }).lean().exec((err, namespaces) => {
+  Namespace.find({ id_project: project_id }).lean().exec( async (err, namespaces) => {
 
     if (err) {
       winston.error("find namespaces error: ", err);
@@ -500,7 +499,18 @@ router.get('/namespace/all', async (req, res) => {
 
     } else {
 
-      const namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      let namespaceObjArray = [];
+      if (req.query.count) {
+        namespaceObjArray = await Promise.all(
+          namespaces.map(async ({ _id, __v, ...keepAttrs }) => {
+            const count = await KB.countDocuments({ id_project: keepAttrs.id_project, namespace: keepAttrs.id });
+            return { ...keepAttrs, count };
+          })
+        );
+      } else {
+        namespaceObjArray = namespaces.map(({ _id, __v, ...keepAttrs }) => keepAttrs)
+      }
+        
       winston.debug("namespaceObjArray: ", namespaceObjArray);
       return res.status(200).send(namespaceObjArray);
     }
@@ -1528,10 +1538,12 @@ router.post('/sitemap', async (req, res) => {
 
   const sitemap = new Sitemapper({
     url: sitemap_url,
-    timeout: 15000
+    timeout: 15000,
+    debug: true
   });
 
   sitemap.fetch().then((data) => {
+    // TODO - check on data.errors to catch error
     winston.debug("data: ", data);
     res.status(200).send(data);
   }).catch((err) => {

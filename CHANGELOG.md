@@ -5,6 +5,26 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.8
+- Added: migration file to migrate namespace engine
+
+# 2.11.7
+- Hotfix: solved bug on findProjectUsersAllAndAvailableWithOperatingHours_group on searching group
+
+# 2.11.6
+- Added: possibility to enable/disable groups
+- Updated: delete project user endpoint to logical delete
+- Updated: tybot-connector to 2.0.23
+- Updated: get all namespace adding counter
+- Added: attributes field in groups model
+
+# 2.11.5
+- Added: log in requestService
+
+# 2.11.4
+- Added: authentication via Keycloak
+- Added: project settings fields for allowed_urls, allowed_urls_list, allow_send_emoji
+
 # 2.10.104
 - Update: standard/hybrid namespace management
 - Update: tybot-connector to 2.0.21

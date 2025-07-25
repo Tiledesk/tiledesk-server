@@ -1757,7 +1757,7 @@ class RequestService {
 
 
           if (err) {
-            winston.error("Error getting closing request ", err);
+            winston.error("Error getting closing request with request_id: " + request_id, err);
             return reject(err);
           }
           if (!request) {
