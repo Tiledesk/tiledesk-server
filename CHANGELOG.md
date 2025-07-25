@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.9
+- Changed: oauth2 endpoints in auth route
+- Updated: improved project users management (soft delete)
+
 # 2.11.8
 - Added: migration file to migrate namespace engine
 
