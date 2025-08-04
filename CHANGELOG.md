@@ -6,6 +6,7 @@
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
 # 2.11.10
+- Updated: whatsapp module listener
 - Updated: whatsapp-connector to 0.1.85
 - Updated: tybot-connector to 2.0.26
 - Updated: vxml-connector to 0.1.77
