@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.11.10
+# 2.11.11
 - Updated: whatsapp module listener
 - Updated: whatsapp-connector to 0.1.86
 
