@@ -833,7 +833,7 @@ router.get('/oauth2/callback',
     
     if (req.session.redirect_url) {
       const separator = req.session.redirect_url.includes('?') ? '&' : '?';
-      url = req.session.redirect_url+ separator + "jwt=JWT "+token;
+      url = req.session.redirect_url+ separator + "token=JWT "+token;
     }
 
     if (req.session.forced_redirect_url) {
