@@ -5,6 +5,11 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.11.10
+- Updated: whatsapp-connector to 0.1.85
+- Updated: tybot-connector to 2.0.26
+- Updated: vxml-connector to 0.1.77
+
 # 2.11.9
 - Changed: oauth2 endpoints in auth route
 - Updated: improved project users management (soft delete)
