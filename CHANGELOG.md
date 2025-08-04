@@ -7,6 +7,10 @@
 
 # 2.11.10
 - Updated: whatsapp module listener
+- Updated: whatsapp-connector to 0.1.86
+
+# 2.11.10
+- Updated: whatsapp module listener
 - Updated: whatsapp-connector to 0.1.85
 - Updated: tybot-connector to 2.0.26
 - Updated: vxml-connector to 0.1.77
