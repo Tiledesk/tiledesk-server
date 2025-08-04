@@ -825,15 +825,15 @@ router.get('/oauth2/callback',
     winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: ", dashboard_base_url);
   
     let homeurl = "/#/";
-  
-    if (req.session.redirect_url) {
-      homeurl = req.session.redirect_url;
-    }
-  
-
+      
     const separator = homeurl.includes('?') ? '&' : '?';
     var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
-  
+    
+    if (req.session.redirect_url) {
+      const separator = req.session.redirect_url.includes('?') ? '&' : '?';
+      url = req.session.redirect_url+ separator + "jwt=JWT "+token;
+    }
+
     if (req.session.forced_redirect_url) {
       const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
       url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
