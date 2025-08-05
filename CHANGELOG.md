@@ -5,7 +5,7 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.1
+# 2.13.2
 - Bug fix: wrong endpoint for hybrid qa
 
 # 2.13.0
