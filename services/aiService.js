@@ -200,7 +200,7 @@ class AiService {
 
   askNamespace(data) {
     let base_url = kb_endpoint_qa;
-    if (data.hybrid) {
+    if (data.hybrid || data.search_type === 'hybrid') {
       base_url = kb_endpoint_qa_gpu;
     }
     winston.debug("[OPENAI SERVICE] kb endpoint: " + base_url);
