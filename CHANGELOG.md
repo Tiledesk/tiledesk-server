@@ -5,6 +5,9 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.12.1
+- Bug fix: wrong endpoint for hybrid qa
+
 # 2.12.0
 - Updated: whatsapp module listener
 - Updated: whatsapp-connector to 1.0.0
