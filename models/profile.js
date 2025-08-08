@@ -1,8 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var winston = require('../config/winston');
-const { customAlphabet } = require('nanoid');
-const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 6);
 let isCommunity = false;
 if (process.env.COMMUNITY_VERSION === true || process.env.COMMUNITY_VERSION === 'true') {
   isCommunity = true;
@@ -23,7 +21,7 @@ var ProfileSchema = new Schema({
   agents: {
     type: Number,
     default: function() {
-      return (isCommunity) ? 5 : 0;
+      return (isCommunity) ? 1000 : 0;
     }
   },
   type: {
@@ -33,7 +31,17 @@ var ProfileSchema = new Schema({
     }
   },
   quotes: {
-    type: Object
+    type: Object,
+    default: function() {
+      if (isCommunity) {
+        return {
+          chatbots: 10000,
+          kbs: 10000,
+          namespace: 10000,
+        }
+      }
+      return undefined;
+    }
   },
   customization: {
     type: Object,
