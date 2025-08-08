@@ -91,7 +91,7 @@ let default_engine = {
 
 let default_engine_hybrid = {
   name: process.env.VECTOR_STORE_NAME || "pinecone",
-  type: process.env.INDEX_TYPE_HYBRID || process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "severless",
+  type: process.env.INDEX_TYPE_HYBRID || "severless",
   apikey: "",
   vector_size: process.env.VECTOR_SIZE || 1536,
   index_name: process.env.INDEX_NAME_HYBRID || process.env.PINECONE_INDEX_HYBRID || "llm-sample-index-hybrid",
