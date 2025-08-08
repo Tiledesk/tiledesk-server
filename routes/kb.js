@@ -68,20 +68,10 @@ let default_engine = {
   apikey: "",
   vector_size: process.env.VECTOR_SIZE || 1536,
   index_name: process.env.INDEX_NAME || process.env.PINECONE_INDEX || "llm-sample-index",
-  host: process.env.VECTOR_STORE_HOST,
-  port: process.env.VECTOR_STORE_PORT,
-  deployment: process.env.VECTOR_STORE_DEPLOYMENT
-}
-
-// let default_engine = {
-//   name: "qdrant",  //qdrant         // process.env.VECTOR_STORE_NAME || pinecone
-//   type: "none",                     // process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "serverless"
-//   vector_size: 1536,                // process.env.VECTOR_SIZE || 1536
-//   index_name: "test-index-qdrant",  // process.env.INDEX_NAME || process.env.PINECONE_INDEX || "llm-index"
-//   host: "qdrant",                   // process.env.VECTOR_STORE_HOST
-//   port: 6333,                       // process.env.VECTOR_STORE_PORT
-//   deployment: "local"               // process.env.VECTOR_STORE_DEPLOYMENT
-// }
+  ...(process.env.VECTOR_STORE_HOST && { host: process.env.VECTOR_STORE_HOST }),
+  ...(process.env.VECTOR_STORE_PORT && { port: process.env.VECTOR_STORE_PORT }),
+  ...(process.env.VECTOR_STORE_DEPLOYMENT && { deployment: process.env.VECTOR_STORE_DEPLOYMENT })
+};
 
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
