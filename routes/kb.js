@@ -78,11 +78,6 @@ let default_preview_settings = {
   //context: "You are an awesome AI Assistant."
 }
 
-PINECONE_INDEX: tiledesk-llm-prod-standard
-PINECONE_INDEX_HYBRID: tiledesk-llm-prod
-PINECONE_TYPE: serverless
-
-
 let default_engine = {
   name: process.env.VECTOR_STORE_NAME || "pinecone",
   type: process.env.INDEX_TYPE || process.env.PINECONE_TYPE || "severless",
