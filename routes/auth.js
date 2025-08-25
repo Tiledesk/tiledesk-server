@@ -714,11 +714,11 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 // res.redirect("/auth/profile/");
 
   var user = req.user;
-  winston.debug("user", user);
+  winston.info("user /google/callback", user);
   // winston.info("req._toParam: "+ req._toParam);
   // winston.info("req.query.redirect_url: "+ req.query.redirect_url);
   // winston.info("req.query.state: "+ req.query.state);
-  winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
+  winston.info("req.session.redirect_url: "+ req.session.redirect_url);
   
 
   var userJson = user.toObject();
@@ -747,7 +747,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   // res.json(returnObject);
 
   let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
-  winston.debug("Google Redirect dashboard_base_url: ", dashboard_base_url);
+  winston.info("Google Redirect dashboard_base_url: ", dashboard_base_url);
 
   let homeurl = "/#/";
 
@@ -761,7 +761,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
   }
 
-  winston.debug("Google Redirect: "+ url);
+  winston.info("Google Redirect: "+ url);
 
   res.redirect(url);
 
