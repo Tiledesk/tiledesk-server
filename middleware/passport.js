@@ -472,33 +472,33 @@ if (enableGoogleSignin==true) {
   },
   function(issuer, profile, cb) {
 
-    winston.debug("issuer: "+issuer)
-    winston.debug("profile", profile)
+    winston.info("issuer: "+issuer)
+    winston.info("profile", profile)
     // winston.info("cb", cb)
 
     var email = profile.emails[0].value;
-    winston.debug("email: "+email)   
+    winston.info("email: "+email)   
 
     var query = {providerId : issuer, subject: profile.id};
-    winston.debug("query", query)
+    winston.info("query", query)
 
     Auth.findOne(query, function(err, cred){     
-    winston.debug("cred", cred, err)
+    winston.info("cred", cred, err)
 
       // db.get('SELECT * FROM federated_credentials WHERE provider = ? AND subject = ?', [
       // issuer,
       // profile.id
     // ], function(err, cred) {
 
-    winston.debug("11")
+    winston.info("11")
 
 
       if (err) { return cb(err); }
 
-      winston.debug("12")
+      winston.info("12")
 
       if (!cred) {
-        winston.debug("13")
+        winston.info("13")
         // The Google account has not logged in to this app before.  Create a
         // new user record and link it to the Google account.
 
@@ -516,7 +516,7 @@ if (enableGoogleSignin==true) {
 
           // if (err) { return cb(err); }
 
-          winston.debug("savedUser", savedUser)    
+          winston.info("savedUser", savedUser)    
 
           var auth = new Auth({
             providerId: issuer,
@@ -534,7 +534,7 @@ if (enableGoogleSignin==true) {
 
             if (err) { return cb(err); }
 
-            winston.debug("authSaved", authSaved)    
+            winston.info("authSaved", authSaved)    
 
             // var user = {
             //   id: id.toString(),
@@ -559,7 +559,7 @@ if (enableGoogleSignin==true) {
         });
       } else {
 
-        winston.debug("else")
+        winston.info("else")
         // The Google account has previously logged in to the app.  Get the
         // user record linked to the Google account and log the user in.
 
@@ -567,7 +567,7 @@ if (enableGoogleSignin==true) {
           email: email, status: 100
         }, 'email firstname lastname password emailverified id', function (err, user) {
 
-          winston.debug("user",user, err);
+          winston.info("user",user, err);
         // db.get('SELECT * FROM users WHERE id = ?', [ cred.user_id ], function(err, user) {
           if (err) { return cb(err); }
           if (!user) { return cb(null, false); }
