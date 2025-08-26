@@ -266,14 +266,20 @@ router.post('/scrape/status', async (req, res) => {
 
 router.post('/qa', async (req, res) => {
 
+  const tstart = Date.now();
+  console.log("[TIMER] Start qa processing on ", tstart);
+
   let project_id = req.projectid;
   let publicKey = false;
   let data = req.body;
 
+  const t0 = Date.now();
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
     res.status(500).send({ success: false, error: err })
   })
+  const t0e = Date.now();
+  console.log(`[TIMER] All namespaces found in ${t0e - t0}ms`);
 
   if (!namespaces || namespaces.length == 0) {
     let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
@@ -281,13 +287,17 @@ router.post('/qa', async (req, res) => {
     res.status(403).send(alert);
   }
 
+  const t1 = Date.now();
   let namespaceIds = namespaces.map(namespace => namespace.id);
   if (!namespaceIds.includes(data.namespace)) {
     return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
   }
+  const t1e = Date.now();
+  console.log(`[TIMER] Namespace found in ${t1e - t1}ms`);
   
   winston.debug("/qa data: ", data);
 
+  const t2 = Date.now();
   if (!data.gptkey) {
     let gptkey = await getKeyFromIntegrations(project_id);
     if (!gptkey) {
@@ -299,9 +309,12 @@ router.post('/qa', async (req, res) => {
     }
     data.gptkey = gptkey;
   }
+  const t2e = Date.now();
+  console.log(`[TIMER] Openai key setted in ${t2e - t2}ms`);
 
   let obj = { createdAt: new Date() };
 
+  const t3 = Date.now();
   let quoteManager = req.app.get('quote_manager');
   if (publicKey === true) {
     let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
@@ -309,6 +322,8 @@ router.post('/qa', async (req, res) => {
       return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
     }
   }
+  const t3e = Date.now();
+  console.log(`[TIMER] Quota availability checked in ${t3e - t3}ms`);
 
   // Check if "Advanced Mode" is active. In such case the default_context must be not appended
   if (!data.advancedPrompt) {
@@ -319,6 +334,7 @@ router.post('/qa', async (req, res) => {
     }
   }
 
+  const t4 = Date.now();
   let ns = namespaces.find(n => n.id === data.namespace);
   data.engine = ns.engine || default_engine;
 
@@ -334,11 +350,18 @@ router.post('/qa', async (req, res) => {
   }
 
   data.debug = true;
+  const t4e = Date.now();
+  console.log(`[TIMER] Engine setted in ${t4e - t4}ms`);
 
+  const t5 = Date.now();
   aiService.askNamespace(data).then((resp) => {
+    const t5e = Date.now();
+    console.log(`[TIMER] Namespaced queried in ${t5e - t5}ms`);
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
+    const t6 = Date.now()
     if (publicKey === true) {
       let multiplier = MODELS_MULTIPLIER[data.model];
       if (!multiplier) {
@@ -350,8 +373,11 @@ router.post('/qa', async (req, res) => {
 
       let incremented_key = quoteManager.incrementTokenCount(req.project, obj);
       winston.verbose("incremented_key: ", incremented_key);
+      const t6e = Date.now();
+      console.log(`[TIMER] Quota incremented in ${t6e - t6}ms`);
     }
   
+    console.log(`[TIMER] Execution completed in ${Date.now() - tstart}ms`);
     return res.status(200).send(answer);
 
   }).catch((err) => {
