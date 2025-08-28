@@ -1626,6 +1626,9 @@ router.post('/sitemap/import', async (req, res) => {
     type: 'sitemap',
     content: "",
     namespace: namespace_id,
+    scrape_type: scrape_type,
+    scrape_options: scrape_options,
+    refresh_rate: refresh_rate
   }
 
   let saved_content;
