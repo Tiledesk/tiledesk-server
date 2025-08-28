@@ -1619,6 +1619,10 @@ router.post('/sitemap/import', async (req, res) => {
   // }
 
 
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
+
   let sitemap_content = {
     id_project: project_id,
     name: sitemap_url,
@@ -1638,10 +1642,6 @@ router.post('/sitemap/import', async (req, res) => {
     winston.error("Error saving content: ", err);
     return res.status(500).send({ success: false, error: err });
   }
-
-  let scrape_type = req.body.scrape_type;
-  let scrape_options = req.body.scrape_options;
-  let refresh_rate = req.body.refresh_rate;
 
   let kbs = urls.map((url) => {
     let kb = {
