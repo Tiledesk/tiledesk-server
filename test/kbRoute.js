@@ -720,6 +720,57 @@ describe('KbRoute', () => {
 
         }).timeout(10000)
 
+        it('import-sitemap', (done) => {
+
+            var email = "test-signup-" + Date.now() + "@email.com";
+            var pwd = "pwd";
+          
+            userService.signup(email, pwd, "Test Firstname", "Test Lastname").then((savedUser) => {
+                projectService.create("test-kb-import-sitemap", savedUser._id).then((savedProject) => {
+
+                    chai.request(server)
+                        .get('/' + savedProject._id + '/kb/namespace/all')
+                        .auth(email, pwd)
+                        .end((err, res) => {
+                            
+                            if (err) { console.error("err: ", err); }
+                            if (log) { console.log("res.body: ", res.body) }
+
+                            res.should.have.status(200)
+                            expect(res.body.length).to.equal(1);
+
+                            let namespace_id = res.body[0].id;
+
+                            let content = {
+                                name: "https://www.sitemaps.org/sitemap.xml",
+                                type: "sitemap",
+                                source: "https://www.sitemaps.org/sitemap.xml",
+                                content: "",
+                                namespace: namespace_id
+                            }
+
+                            chai.request(server)
+                                .post('/' + savedProject._id + '/kb/sitemap/import?namespace=' + namespace_id)
+                                .auth(email, pwd)
+                                .send(content)
+                                .end((err, res) => {
+
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body: ", res.body) }
+
+                                    res.should.have.status(200)
+                                    should.exist(res.body[0]._id);
+                                    should.exist(res.body[0].sitemap_origin_id);
+                                    expect(res.body[0].sitemap_origin).to.equal("https://www.sitemaps.org/sitemap.xml");
+
+                                    done();
+                                })
+
+                        })
+                })
+            })
+        })
+
         it('scrape-single', (done) => {
 
             var email = "test-signup-" + Date.now() + "@email.com";

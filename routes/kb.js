@@ -10,7 +10,6 @@ const aiService = require('../services/aiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
 var configGlobal = require('../config/global');
-const Sitemapper = require('sitemapper');
 var mongoose = require('mongoose');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
@@ -19,6 +18,7 @@ var parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
+const Sitemapper = require('sitemapper');
 
 const AMQP_MANAGER_URL = process.env.AMQP_MANAGER_URL;
 const JOB_TOPIC_EXCHANGE = process.env.JOB_TOPIC_EXCHANGE_TRAIN || 'tiledesk-trainer';
@@ -711,7 +711,6 @@ router.post('/namespace', async (req, res) => {
   let quoteManager = req.app.get('quote_manager');
   let limits = await quoteManager.getPlanLimits(req.project);
   let ns_limit = limits.namespace;
-  //console.log("Limit of namespaces for current plan " + ns_limit);
 
   if (namespaces.length >= ns_limit) {
     return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: ns_limit });
@@ -903,7 +902,6 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   // })
   
 })
-
 
 router.put('/namespace/:id', async (req, res) => {
 
@@ -1551,6 +1549,161 @@ router.post('/sitemap', async (req, res) => {
     res.status(500).send({ success: false, error: err });
   })
 
+})
+
+router.post('/sitemap/import', async (req, res) => {
+
+  let project_id = req.projectid;
+  let namespace_id = req.query.namespace;
+  let content = req.body;
+
+  if (content.type !== "sitemap") {
+    return res.status(403).send({success: false, error: "Endpoint available for sitemap type only." });
+  }
+
+  if (!namespace_id) {
+    return res.status(400).send({ success: false, error: "queryParam 'namespace' is not defined" })
+  }
+  
+  let namespace = await Namespace.findOne({ id: namespace_id }).catch((err) => {
+    winston.error("find namespace error: ", err)
+    return res.status(500).send({ success: false, error: err })
+  })
+
+  if (!namespace) {
+    const alert = `Namespace ${namespace_id} does not exist.`;
+    winston.warn(alert);
+    return res.status(404).send({ success: false, error: alert });
+  }
+
+  if (namespace.id_project.toString() !== project_id) {
+    const alert = `Not allowed. Namespace ${namespace_id} does not belong to the current project.`;
+    winston.warn(alert);
+    return res.status(403).send({ success: false, error: alert });
+  }
+
+  let sitemap_url = req.body.source;
+
+  // let quoteManager = req.app.get('quote_manager');
+  // let limits = await quoteManager.getPlanLimits(req.project);
+  // let kbs_limit = limits.kbs;
+  // winston.verbose("Limit of kbs for current plan: " + kbs_limit);
+
+  // let kbs_count = await KB.countDocuments({ id_project: project_id }).exec();
+  // winston.verbose("Kbs count: " + kbs_count);
+
+  const sitemap = new Sitemapper({
+    url: sitemap_url,
+    timeout: 15000,
+    debug: false
+  });
+
+  const data = await sitemap.fetch().catch((err) => {
+    winston.error("Error fetching sitemap: ", err);
+    return res.status(200).send({ success: false, error: err });
+  })
+
+  if (data.errors && data.errors.length > 0) {
+    winston.error("An error occurred during sitemap fetch: ", data.errors[0])
+    return res.status(500).send({ success: false, error: "Unable to fecth sitemap due to an error: " + data.errors[0].message})
+  }
+
+  const urls = Array.isArray(data.sites) ? data.sites : [];
+  if (urls.length === 0) {
+    return res.status(400).send({ success: false, error: "No url found on sitemap" });
+  }
+
+  // let total_count = kbs_count + 1 + urls.length;
+  // if (total_count > kbs_limit) {
+  //   return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
+  // }
+
+
+  let sitemap_content = {
+    id_project: project_id,
+    name: sitemap_url,
+    source: sitemap_url,
+    type: 'sitemap',
+    content: "",
+    namespace: namespace_id,
+  }
+
+  let saved_content;
+  try {
+    saved_content = await KB.findOneAndUpdate({ id_project: project_id, type: 'sitemap', source: sitemap_url, namespace: namespace_id }, sitemap_content, { upsert: true, new: true }).exec();
+  } catch (err) {
+    winston.error("Error saving content: ", err);
+    return res.status(500).send({ success: false, error: err });
+  }
+
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
+
+  let kbs = urls.map((url) => {
+    let kb = {
+      id_project: project_id,
+      name: url,
+      source: url,
+      type: 'url',
+      content: "",
+      namespace: namespace_id,
+      status: -1,
+      sitemap_origin_id: saved_content._id,
+      sitemap_origin: saved_content.source,
+      scrape_type: scrape_type,
+      refresh_rate: refresh_rate
+    };
+    if (!kb.scrape_type) {
+      kb.scrape_type = 2;
+    }
+    if (kb.scrape_type == 2) {
+      kb.scrape_options = {
+        tags_to_extract: ["body"],
+        unwanted_tags: [],
+        unwanted_classnames: []
+      };
+    } else {
+      kb.scrape_options = scrape_options;
+    }
+    return kb;
+  });
+
+  // Build bulk ops
+  let operations = kbs.map(doc => {
+    return {
+      updateOne: {
+        filter: { id_project: doc.id_project, type: 'url', source: doc.source, namespace: namespace_id },
+        update: doc,
+        upsert: true,
+        returnOriginal: false
+      }
+    }
+  });
+  
+  saveBulk(operations, kbs, project_id, namespace_id).then(async (result) => {
+
+    let engine = namespace.engine || default_engine;
+    let hybrid = namespace.hybrid;
+    let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
+
+    let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
+    resources = resources.map(({ _id, scrape_options, ...rest }) => {
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
+    });
+    winston.verbose("resources to be sent to worker: ", resources);
+
+    if (process.env.NODE_ENV !== 'test') {
+      scheduleScrape(resources, hybrid);
+    }
+
+    //return res.status(200).send({ success: true, sitemap: saved_content, urls_imported: result.length });
+    return res.status(200).send(result);
+
+  }).catch((err) => {
+    winston.error("Unable to save sitemap urls in bulk ", err)
+    return res.status(500).send({ success: false, error: "Unable to save sitemap urls: ", err });
+  })
 })
 
 router.put('/:kb_id', async (req, res) => {
