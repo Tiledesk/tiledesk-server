@@ -1618,6 +1618,9 @@ router.post('/sitemap/import', async (req, res) => {
   //   return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   // }
 
+  let scrape_type = req.body.scrape_type;
+  let scrape_options = req.body.scrape_options;
+  let refresh_rate = req.body.refresh_rate;
 
   let sitemap_content = {
     id_project: project_id,
@@ -1638,10 +1641,6 @@ router.post('/sitemap/import', async (req, res) => {
     winston.error("Error saving content: ", err);
     return res.status(500).send({ success: false, error: err });
   }
-
-  let scrape_type = req.body.scrape_type;
-  let scrape_options = req.body.scrape_options;
-  let refresh_rate = req.body.refresh_rate;
 
   let kbs = urls.map((url) => {
     let kb = {
