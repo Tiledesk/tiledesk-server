@@ -1694,6 +1694,13 @@ router.post('/sitemap/import', async (req, res) => {
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
       return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
     });
+
+    let { name, status, __v, createdAt, updatedAt, id_project, ...sitemap_content} = saved_content;
+    let { _id, scrape_options, ...rest } = sitemap_content;
+
+    let sitemap_resource = { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest };
+
+    resources.unshift(sitemap_resource);
     winston.verbose("resources to be sent to worker: ", resources);
 
     if (process.env.NODE_ENV !== 'test') {
