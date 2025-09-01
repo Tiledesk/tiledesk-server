@@ -4,7 +4,7 @@ process.env.GPTKEY = "fakegptkey";
 process.env.LOG_LEVEL = 'critical'
 process.env.KB_WEBHOOK_TOKEN = "testtoken"
 process.env.PINECONE_INDEX = "test-index";
-process.env.PINECONE_TYPE = "pod";
+process.env.PINECONE_TYPE = "serverless";
 process.env.PINECONE_INDEX_HYBRID = "test-index-hybrid";
 process.env.PINECONE_TYPE_HYBRID = "serverless";
 process.env.ADMIN_EMAIL = "admin@tiledesk.com";
@@ -493,10 +493,10 @@ describe('KbRoute', () => {
                             if (err) { console.error("err: ", err); }
                             if (log) { console.log("res.body: ", res.body) }
 
-                            res.should.have.status(403);
+                            res.should.have.status(404);
                             res.should.be.a('object')
                             expect(res.body.success).to.equal(false);
-                            let error_response = "No namespace found for the selected project " + savedProject._id + ". Cannot add content to a non-existent namespace."
+                            let error_response = "Namespace not found with id 123456"
                             expect(res.body.error).to.equal(error_response);
 
                             done();
@@ -540,10 +540,10 @@ describe('KbRoute', () => {
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
 
-                                    res.should.have.status(403);
+                                    res.should.have.status(404);
                                     res.should.be.a('object');
                                     expect(res.body.success).to.equal(false);
-                                    let error_response = "Not allowed. The namespace does not belong to the current project."
+                                    let error_response = "Namespace not found with id fakenamespaceid";
                                     expect(res.body.error).to.equal(error_response);
 
                                     done();
