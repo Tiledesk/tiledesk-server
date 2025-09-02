@@ -116,18 +116,91 @@ router.post('/scrape/single', async (req, res) => {
   let data = req.body;
   winston.debug("/scrape/single data: ", data);
 
-  let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
-    winston.error("find namespaces error: ", err)
-    res.status(500).send({ success: false, error: err })
-  })
+  let namespace;
+  try {
+    namespace = await aiManager.checkNamespace(project_id, data.namespace);
+  } catch (err) {
+    let errorCode = err?.errorCode ?? 500;
+    return res.status(errorCode).send({ success: false, error: err.error });
+  } 
 
-  if (!namespaces || namespaces.length == 0) {
-    let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
-    winston.warn(alert);
-    res.status(403).send(alert);
+  if (data.type === "sitemap") {
+
+    const urls = await aiManager.fetchSitemap(data.source).catch((err) => {
+      winston.error("Error fetching sitemap: ", err);
+      return res.status(500).send({ success: false, error: err });
+    })
+
+    if (urls.length === 0) {
+      return res.status(400).send({ success: false, error: "No url found on sitemap" });
+    }
+
+    let sitemapKb;
+    try {
+      sitemapKb = await KB.findById(data.id);
+    } catch (err) {
+      winston.error("Error finding sitemap content with id " +  data.id);
+      return res.status(500).send({ success: false, error: "Error finding sitemap content with id " + data.id });
+    }
+
+    if (!sitemapKb) {
+      return res.status(404).send({ success: false, error: "Content not found with id " + data.id });
+    }
+    
+    let existingKbs;
+    try {
+      existingKbs = await KB.find({ id_project: project_id, namespace: data.namespace, sitemap_origin_id: data.id }).lean().exec();
+    } catch(err) {
+      winston.error("Error finding existing contents: ", err);
+      return res.status(500).send({ success: false, error: "Error finding existing sitemap contents" });
+    }
+
+    const result = await aiManager.foundSitemapChanges(existingKbs, urls).catch((err) => {
+      winston.error("Error finding sitemap differecens ", err);
+      return res.status(400).send({ success: false, error: "Error finding sitemap differecens" });
+    })
+
+    if (!result) return; // esco qui
+
+    const { addedUrls, removedIds } = result;
+
+    if (removedIds.length > 0) {
+      const idsSet = new Set(removedIds);
+      const kbsToDelete = existingKbs.filter(obj => idsSet.has(obj._id));
+
+      aiManager.removeMultipleContents(namespace, kbsToDelete).catch((err) => {
+        winston.error("Error deleting multiple contents: ", err);
+      })
+    }
+
+    if (addedUrls.length > 0) {
+      const options = {
+        sitemap_origin_id: sitemapKb._id,
+        sitemap_origin: sitemapKb.source,
+        scrape_type: sitemapKb.scrape_type,
+        scrape_options: sitemapKb.scrape_options,
+        refresh_rate: sitemapKb.refresh_rate
+      }
+      aiManager.addMultipleUrls(namespace, addedUrls, options).catch((err) => {
+        winston.error("(webhook) error adding multiple urls contents: ", err);
+      })
+    }
+
+    return res.status(200).send({ success: true, message: "Content queued for reindexing", added_urls: addedUrls.length, removed_url: removedIds.length });
   }
 
-  let namespaceIds = namespaces.map(namespace => namespace.id);
+  // let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
+  //   winston.error("find namespaces error: ", err)
+  //   res.status(500).send({ success: false, error: err })
+  // })
+
+  // if (!namespaces || namespaces.length == 0) {
+  //   let alert = "No namespace found for the selected project " + project_id + ". Cannot add content to a non-existent namespace."
+  //   winston.warn(alert);
+  //   res.status(403).send(alert);
+  // }
+
+  // let namespaceIds = namespaces.map(namespace => namespace.id);
 
   KB.findById(data.id, (err, kb) => {
     if (err) {
@@ -139,10 +212,6 @@ router.post('/scrape/single', async (req, res) => {
       return res.status(404).send({ success: false, error: "Unable to find the kb requested" })
     }
     else {
-
-      if (!namespaceIds.includes(kb.namespace)) {
-        return res.status(403).send({ success: false, error: "Not allowed. The namespace does not belong to the current project." })
-      }
 
       let json = {
         id: kb._id,
