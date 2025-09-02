@@ -1545,10 +1545,12 @@ router.post('/sitemap/import', async (req, res) => {
   //   return res.status(403).send({ success: false, error: "Cannot exceed the number of resources in the current plan", plan_limit: kbs_limit })
   // }
 
-
-  let scrape_type = req.body.scrape_type;
-  let scrape_options = req.body.scrape_options;
   let refresh_rate = req.body.refresh_rate;
+  let scrape_type = req.body.scrape_type ?? 2;
+  let scrape_options = req.body.scrape_options;
+  if (scrape_type === 2 && scrape_options == null) {
+    scrape_options = aiManager.setDefaultScrapeOptions();
+  }
 
   let sitemap_content = {
     id_project: project_id,
@@ -1570,77 +1572,22 @@ router.post('/sitemap/import', async (req, res) => {
     return res.status(500).send({ success: false, error: err });
   }
 
-  let kbs = urls.map((url) => {
-    let kb = {
-      id_project: project_id,
-      name: url,
-      source: url,
-      type: 'url',
-      content: "",
-      namespace: namespace_id,
-      status: -1,
-      sitemap_origin_id: saved_content._id,
-      sitemap_origin: saved_content.source,
-      scrape_type: scrape_type,
-      refresh_rate: refresh_rate
-    };
-    if (!kb.scrape_type) {
-      kb.scrape_type = 2;
-    }
-    if (kb.scrape_type == 2) {
-      kb.scrape_options = {
-        tags_to_extract: ["body"],
-        unwanted_tags: [],
-        unwanted_classnames: []
-      };
-    } else {
-      kb.scrape_options = scrape_options;
-    }
-    return kb;
-  });
-
-  // Build bulk ops
-  let operations = kbs.map(doc => {
-    return {
-      updateOne: {
-        filter: { id_project: doc.id_project, type: 'url', source: doc.source, namespace: namespace_id },
-        update: doc,
-        upsert: true,
-        returnOriginal: false
-      }
-    }
-  });
+  const options = {
+    sitemap_origin_id: saved_content._id,
+    sitemap_origin: saved_content.source,
+    scrape_type: saved_content.scrape_type,
+    scrape_options: saved_content.scrape_options,
+    refresh_rate: saved_content.refresh_rate
+  }
   
-  aiManager.saveBulk(operations, kbs, project_id, namespace_id).then(async (result) => {
-
-    let engine = namespace.engine || default_engine;
-    let hybrid = namespace.hybrid;
-    let webhook = apiUrl + '/webhook/kb/status?token=' + KB_WEBHOOK_TOKEN;
-
-    let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
-    resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
-    });
-
-    let { name, status, __v, createdAt, updatedAt, id_project, ...sitemap_content} = saved_content;
-    let { _id, scrape_options, ...rest } = sitemap_content;
-
-    let sitemap_resource = { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest };
-
-    resources.unshift(sitemap_resource);
-    winston.verbose("resources to be sent to worker: ", resources);
-
-    if (process.env.NODE_ENV !== 'test') {
-      aiManager.scheduleScrape(resources, hybrid);
-    }
-
-    //return res.status(200).send({ success: true, sitemap: saved_content, urls_imported: result.length });
-    return res.status(200).send(result);
-
-  }).catch((err) => {
-    winston.error("Unable to save sitemap urls in bulk ", err)
-    return res.status(500).send({ success: false, error: "Unable to save sitemap urls: ", err });
-  })
+  let result;
+  try {
+    result = await aiManager.addMultipleUrls(namespace, urls, options);
+    return res.status(200).send(saved_content);
+  } catch (err) {
+    return res.status(500).send({ success: false, error: "Unable to add multiple urls from sitemap due to an error." });
+  }  
+  
 })
 
 router.put('/:kb_id', async (req, res) => {
