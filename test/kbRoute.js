@@ -757,10 +757,10 @@ describe('KbRoute', () => {
 
                                     if (err) { console.error("err: ", err); }
                                     if (log) { console.log("res.body: ", res.body) }
-
                                     res.should.have.status(200)
                                     should.exist(res.body[0]._id);
                                     should.exist(res.body[0].sitemap_origin_id);
+                                    let sitemap_content = res.body.find(e => e.type === 'sitemap');
                                     expect(res.body[0].sitemap_origin).to.equal("https://www.sitemaps.org/sitemap.xml");
 
                                     done();

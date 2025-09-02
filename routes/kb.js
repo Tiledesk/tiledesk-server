@@ -1583,7 +1583,8 @@ router.post('/sitemap/import', async (req, res) => {
   let result;
   try {
     result = await aiManager.addMultipleUrls(namespace, urls, options);
-    return res.status(200).send(saved_content);
+    result.push(saved_content);
+    return res.status(200).send(result);
   } catch (err) {
     return res.status(500).send({ success: false, error: "Unable to add multiple urls from sitemap due to an error." });
   }  
@@ -1650,73 +1651,74 @@ router.delete('/:kb_id', async (req, res) => {
     return res.status(errorCode).send({ success: false, error: err.error });
   }
 
-  if (kb.type === "sitemap") {
-
-    let kbs = KB.find({ id_project: project_id, namespace: namespace_id, sitemap_origin_id: kb_id }).catch((err) => {
-      winston.error("find kbs error: ", err);
-      return res.status(500).send({ success: false, error: err });
-    })
-
-    if (!kbs) return;
-
-    try {
-      let result = await aiManager.removeMultipleContents(namespace, kbs);
-      winston.verbose("remove multiple contents result: ", result);
-    } catch (err) {
-      winston.error("remove multiple contents error: ", err);
-      return res.status(500).send({ success: false, error: err });
-    }
-
-    KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
-      if (err) {
-        winston.error("Delete kb error: ", err);
-        return res.status(500).send({ success: false, error: err });
-      }
-      res.status(200).send(deletedKb);
-    })
-
-  } else {
-
-    let data = {
-      id: kb_id,
-      namespace: namespace_id
-    }
-    data.engine = namespace.engine || default_engine;
-    winston.verbose("/:delete_id data: ", data);
-
-    aiService.deleteIndex(data).then((resp) => {
-      winston.debug("delete resp: ", resp.data);
-      if (resp.data.success === true) {
-        KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
-
-          if (err) {
-            winston.error("Delete kb error: ", err);
-            return res.status(500).send({ success: false, error: err });
-          }
-          res.status(200).send(deletedKb);
-        })
-
-      } else {
-        winston.verbose("resp.data: ", resp.data);
-
-        KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4, 100, 300, 400] } }, (err, deletedKb) => {
-          if (err) {
-            winston.error("findOneAndDelete err: ", err);
-            return res.status(500).send({ success: false, error: "Unable to delete the content due to an error" })
-          }
-          else if (!deletedKb) {
-            winston.verbose("Unable to delete the content in indexing status")
-            return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
-          } else {
-            res.status(200).send(deletedKb);
-          }
-        })
-      }
-    }).catch((err) => {
-      let status = err.response?.status || 500;
-      res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
-    })
+  let data = {
+    id: kb_id,
+    namespace: namespace_id
   }
+  data.engine = namespace.engine || default_engine;
+  winston.verbose("/:delete_id data: ", data);
+
+  aiService.deleteIndex(data).then((resp) => {
+    winston.debug("delete resp: ", resp.data);
+    if (resp.data.success === true) {
+      KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
+
+        if (err) {
+          winston.error("Delete kb error: ", err);
+          return res.status(500).send({ success: false, error: err });
+        }
+        res.status(200).send(deletedKb);
+      })
+
+    } else {
+      winston.verbose("resp.data: ", resp.data);
+
+      KB.findOneAndDelete({ _id: kb_id, status: { $in: [-1, 3, 4, 100, 300, 400] } }, (err, deletedKb) => {
+        if (err) {
+          winston.error("findOneAndDelete err: ", err);
+          return res.status(500).send({ success: false, error: "Unable to delete the content due to an error" })
+        }
+        else if (!deletedKb) {
+          winston.verbose("Unable to delete the content in indexing status")
+          return res.status(500).send({ success: false, error: "Unable to delete the content in indexing status" })
+        } else {
+          res.status(200).send(deletedKb);
+        }
+      })
+    }
+  }).catch((err) => {
+    let status = err.response?.status || 500;
+    res.status(status).send({ success: false, statusText: err.response.statusText, error: err.response.data.detail });
+  })
+
+  // if (kb.type === "sitemap") {
+
+  //   let kbs = KB.find({ id_project: project_id, namespace: namespace_id, sitemap_origin_id: kb_id }).catch((err) => {
+  //     winston.error("find kbs error: ", err);
+  //     return res.status(500).send({ success: false, error: err });
+  //   })
+
+  //   if (!kbs) return;
+
+  //   try {
+  //     let result = await aiManager.removeMultipleContents(namespace, kbs);
+  //     winston.verbose("remove multiple contents result: ", result);
+  //   } catch (err) {
+  //     winston.error("remove multiple contents error: ", err);
+  //     return res.status(500).send({ success: false, error: err });
+  //   }
+
+  //   KB.findByIdAndDelete(kb_id, (err, deletedKb) => {
+  //     if (err) {
+  //       winston.error("Delete kb error: ", err);
+  //       return res.status(500).send({ success: false, error: err });
+  //     }
+  //     res.status(200).send(deletedKb);
+  //   })
+
+  // } else {
+
+  //}
 })
 
 
