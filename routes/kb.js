@@ -394,7 +394,6 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
   }
 
-  
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
   
@@ -405,6 +404,7 @@ router.post('/qa', async (req, res) => {
   data.debug = true;
 
   aiService.askNamespace(data).then((resp) => {
+
     winston.debug("qa resp: ", resp.data);
     let answer = resp.data;
 
