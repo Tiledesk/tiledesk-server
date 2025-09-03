@@ -1225,6 +1225,10 @@ router.get('/:kb_id', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
+    if (!kb) {
+      return res.status(404).send({ success: false, error: "Content not found with id " + kb_id });
+    }
+
     return res.status(200).send(kb);
   })
 })
