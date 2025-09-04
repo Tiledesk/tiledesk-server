@@ -5,6 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.13
+- Bug fix: slug duplicated error on publish chatbot
+- Updated: whatsapp-connector to 1.0.5
+
 # 2.13.12
 - Updated: whatsapp-connector to 1.0.4
 
