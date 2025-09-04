@@ -643,7 +643,6 @@ router.post('/namespace', async (req, res) => {
   let body = req.body;
   winston.debug("add namespace body: ", body);
 
-  console.log("default_engine: ", default_engine)
   var namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
@@ -652,7 +651,6 @@ router.post('/namespace', async (req, res) => {
     preview_settings: default_preview_settings,
     engine: default_engine
   })
-  console.log("new_namespace: ", new_namespace);
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -665,7 +663,6 @@ router.post('/namespace', async (req, res) => {
   let quoteManager = req.app.get('quote_manager');
   let limits = await quoteManager.getPlanLimits(req.project);
   let ns_limit = limits.namespace;
-  //console.log("Limit of namespaces for current plan " + ns_limit);
 
   if (namespaces.length >= ns_limit) {
     return res.status(403).send({ success: false, error: "Maximum number of resources reached for the current plan", plan_limit: ns_limit });
@@ -677,7 +674,6 @@ router.post('/namespace', async (req, res) => {
       return res.status(500).send({ success: false, error: err });
     }
 
-    console.log("savedNamespace: ", savedNamespace);
     let namespaceObj = savedNamespace.toObject();
     delete namespaceObj._id;
     delete namespaceObj.__v;
