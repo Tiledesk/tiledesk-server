@@ -73,6 +73,24 @@ let default_engine = {
   ...(process.env.VECTOR_STORE_DEPLOYMENT && { deployment: process.env.VECTOR_STORE_DEPLOYMENT })
 };
 
+let embedding;
+if (process.env.EMBEDDINGS_PROVIDER && process.env.EMBEDDINGS_NAME && process.env.EMBEDDINGS_DIMENSION) {
+  embedding = {
+    provider: process.env.EMBEDDINGS_PROVIDER,                // huggingface
+    name: process.env.EMBEDDINGS_NAME,                        // BAA/bge-m3 
+    dimension: process.env.EMBEDDINGS_DIMENSION               // 1024
+  };
+}
+
+let embedding_qa;
+if (process.env.EMBEDDINGS_PROVIDER && process.env.EMBEDDINGS_NAME) { // ?? process.env.EMBEDDINGS_KEY is specified in real time or setted on ENV?
+  embedding_qa = {
+    embedding_provider: process.env.EMBEDDINGS_PROVIDER,     // huggingface
+    embedding_model: process.env.EMBEDDINGS_NAME,             // BAAI/bge-m3
+    embedding_key: "",
+  }
+}
+
 
 //let default_context = "Answer if and ONLY if the answer is contained in the context provided. If the answer is not contained in the context provided ALWAYS answer with <NOANS>\n{context}"
 //let default_context = "You are an helpful assistant for question-answering tasks.\nUse ONLY the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know.\nIf none of the retrieved context answer the question, add this word to the end <NOANS>\n\n{context}";
@@ -306,6 +324,10 @@ router.post('/qa', async (req, res) => {
 
   if (data.engine.type === 'serverless') {
     data.search_type = 'hybrid';
+  }
+
+  if (embedding_qa) {
+    data.embedding = embedding;
   }
 
   
@@ -854,7 +876,6 @@ router.post('/namespace/import/:id', upload.single('uploadFile'), async (req, re
   
 })
 
-
 router.put('/namespace/:id', async (req, res) => {
 
   let namespace_id = req.params.id;
@@ -1226,6 +1247,10 @@ router.post('/', async (req, res) => {
         json.hybrid = true;
       }
 
+      if (embedding) {
+        json.embedding = embedding;
+      }
+
       let resources = [];
 
       resources.push(json);
@@ -1357,7 +1382,7 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project, ...keepAttrs }) => keepAttrs)
     resources = resources.map(({ _id, scrape_options, ...rest }) => {
-      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, engine: engine, hybrid: hybrid, ...rest}
+      return { id: _id, webhook: webhook, parameters_scrape_type_4: scrape_options, embedding: embedding, engine: engine, hybrid: hybrid, ...rest}
     });
     winston.verbose("resources to be sent to worker: ", resources);
 
@@ -1467,7 +1492,7 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
-          return { id: _id, webhooh: webhook, engine: engine, ...rest };
+          return { id: _id, webhooh: webhook, embedding: embedding, engine: engine, ...rest };
         })
         winston.verbose("resources to be sent to worker: ", resources);
         if (process.env.NODE_ENV !== 'test') {
