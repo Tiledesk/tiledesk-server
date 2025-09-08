@@ -217,9 +217,13 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const RateManager = require('./services/RateManager');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
+
+let rm = new RateManager({ tdCache: tdCache });
+
 
 var modulesManager = undefined;
 try {
@@ -255,7 +259,7 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('rate_manager', rm);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
