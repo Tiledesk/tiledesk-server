@@ -75,6 +75,7 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
@@ -90,6 +91,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -260,6 +264,7 @@ app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
 app.set('rate_manager', rm);
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
