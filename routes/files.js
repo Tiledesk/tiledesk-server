@@ -5,6 +5,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
 var pathlib = require('path');
+var mongoose = require('mongoose');
 
 
 var router = express.Router();
@@ -38,8 +39,20 @@ curl -u andrea.leo@f21.it:123456 \
   */
 
 router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
+  winston.debug("files/users");
 
-  winston.verbose("files/users")
+  //file_retention
+  mongoose.connection.db.collection('files.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+    // https://www.mongodb.com/docs/manual/tutorial/expire-data/#specify-expiration-with-a-ttl-index
+     
+    if (err) {
+      winston.error("Error updating files.chunks");
+    }
+      winston.debug("files.chunks updated", updates);
+
+  });
+
+ 
   return res.status(201).json({
     message: 'File uploded successfully',
     filename: req.file.filename
@@ -58,10 +71,21 @@ curl \
 
 router.post('/public', upload.single('file'), (req, res, next) => {
   winston.debug("files/public")
-      return res.status(201).json({
-          message: 'File uploded successfully',
-          filename: req.file.filename
-      });    
+
+  //file_retention
+  mongoose.connection.db.collection('files.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+    if (err) {
+      winston.error("Error updating files.chunks");
+    }
+      winston.debug("files.chunks updated", updates);
+
+  });
+
+
+  return res.status(201).json({
+      message: 'File uploded successfully',
+      filename: req.file.filename
+  });    
 });
 
 
