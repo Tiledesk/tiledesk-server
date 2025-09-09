@@ -84,8 +84,16 @@ var jwthistory = undefined;
 try {
   jwthistory = require('@tiledesk-ent/tiledesk-server-jwthistory');
 } catch(err) {
-  winston.debug("jwthistory not present");
+  winston.info("jwthistory not present", err);
 }
+
+let JWT_HISTORY_ENABLED = false;
+if (process.env.JWT_HISTORY_ENABLED==true || process.env.JWT_HISTORY_ENABLED=="true") {
+  JWT_HISTORY_ENABLED = true;
+}
+winston.debug("JWT_HISTORY_ENABLED: " + JWT_HISTORY_ENABLED);
+
+
 
 module.exports = function(passport) {
     
@@ -247,7 +255,7 @@ module.exports = function(passport) {
 
   passport.use(new JwtStrategy(opts, async(req, jwt_payload, done)  => {
   // passport.use(new JwtStrategy(opts, function(req, jwt_payload, done) {
-    winston.debug("jwt_payload",jwt_payload);
+    winston.verbose("jwt_payload",jwt_payload);
     // console.log("req",req);
     
 
@@ -281,9 +289,10 @@ module.exports = function(passport) {
       winston.debug("req.disablePassportEntityCheck enabled");
       return done(null, jwt_payload);
     }
+    winston.debug("jwthistory passport",jwthistory);
 
     //TODO check into DB if JWT is revoked 
-    if (jwthistory) {
+    if (jwthistory && JWT_HISTORY_ENABLED==true) {
       var jwtRevoked = await jwthistory.isJWTRevoked(jwt_payload.jti);
       winston.debug("passport jwt jwtRevoked: "+ jwtRevoked);
       if (jwtRevoked) {
@@ -472,6 +481,9 @@ if (enableGoogleSignin==true) {
   },
   function(issuer, profile, cb) {
 
+    console.log('GOOGLE issuer ----> ', issuer)
+    console.log('GOOGLE profile ----> ', profile)
+
     winston.debug("issuer: "+issuer)
     winston.debug("profile", profile)
     // winston.info("cb", cb)
@@ -482,7 +494,8 @@ if (enableGoogleSignin==true) {
     var query = {providerId : issuer, subject: profile.id};
     winston.debug("query", query)
 
-    Auth.findOne(query, function(err, cred){     
+    Auth.findOne(query, function(err, cred){   
+    console.log('GOOGLE Auth.findOne cred ----> ', cred, err)  
     winston.debug("cred", cred, err)
 
       // db.get('SELECT * FROM federated_credentials WHERE provider = ? AND subject = ?', [
@@ -562,11 +575,11 @@ if (enableGoogleSignin==true) {
         winston.debug("else")
         // The Google account has previously logged in to the app.  Get the
         // user record linked to the Google account and log the user in.
-
+        console.log('GOOGLE User.findOne ----> ', email)  
         User.findOne({
           email: email, status: 100
         }, 'email firstname lastname password emailverified id', function (err, user) {
-
+          console.log('GOOGLE User.findOne return ----> ', user, err)
           winston.debug("user",user, err);
         // db.get('SELECT * FROM users WHERE id = ?', [ cred.user_id ], function(err, user) {
           if (err) { return cb(err); }
