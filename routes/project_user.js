@@ -58,7 +58,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
       let roles = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
-      Project_user.findOne({ id_project: id_project, id_user: user._id, role: { $in: roles }}, (err, puser) => {
+      Project_user.findOne({ id_project: id_project, id_user: user._id, roleType: RoleConstants.TYPE_AGENTS }, (err, puser) => {
         if (err) {
           winston.error("Error inviting an already existing user: ", err);
           return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
@@ -138,6 +138,7 @@ router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), v
     // role: RoleConstants.USER,   
     // - Create project_user endpoint by agent (Ticketing) now is with Guest Role      
     role: RoleConstants.GUEST,
+    roleType : RoleConstants.TYPE_USERS,   
     user_available: false,
     tags: req.body.tags, 
     createdBy: req.user.id,
@@ -349,6 +350,20 @@ router.delete('/:project_userid', [passport.authenticate(['basic', 'jwt'], { ses
   }
 });
 
+router.get('/me', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res, next) {
+  if (!req.project) {
+    return res.status(404).send({ success: false, msg: 'Project not found.' });
+  }
+  var project_user = req.projectuser;
+
+  var pu = project_user.toJSON();
+   
+  pu.isBusy = ProjectUserUtil.isBusy(project_user, req.project.settings && req.project.settings.max_agent_assigned_chat);
+  res.json([pu]);
+
+
+});
+
 router.get('/:project_userid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['subscription'])], function (req, res) {
   // router.get('/details/:project_userid', function (req, res) {
   // winston.debug("PROJECT USER ROUTES - req projectid", req.projectid);
@@ -475,12 +490,17 @@ router.get('/users/:user_id', [passport.authenticate(['basic', 'jwt'], { session
  */                                                                                       
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription'])], function (req, res) {
 
-  var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
+  // rolequery
+  // var role = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
+  var query;
   if (req.query.role) {
     role = req.query.role;
+    winston.debug("role", role);
+    query =  {id_project: req.projectid, role: { $in : role } };
+  } else {
+     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
-  winston.debug("role", role);
 
   var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
 
