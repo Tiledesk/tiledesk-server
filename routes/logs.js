@@ -87,35 +87,36 @@ router.post('/whatsapp', async (req, res) => {
 })
 
 
-router.get('/flows/:request_id', async (req, res) => {
+router.get('/flows/:id', async (req, res) => {
+    const id = req.params.id;
+    const { timestamp, direction, logLevel, type } = req.query;
 
-    let request_id = req.params.request_id;
-    const { timestamp, direction, logLevel } = req.query;
-
-    if (!request_id) {
-        return res.status(400).send({ success: false, error: "Missing required parameter 'request_id'." });
+    if (!id) {
+        return res.status(400).send({ success: false, error: "Missing required parameter 'id'." });
     }
+
+    // Determine if we're searching by request_id or webhook_id
+    const isWebhook = type === 'webhook';
+    const queryField = isWebhook ? 'webhook_id' : 'request_id';
 
     let method;
 
     if (!timestamp) {
-        method = logsService.getLastRows(request_id, 20, logLevel);
+        method = logsService.getLastRows(id, 20, logLevel, queryField);
     } else if (direction === 'prev') {
-        logsService.get
-        method = logsService.getOlderRows(request_id, 10, logLevel, new Date(timestamp));
+        method = logsService.getOlderRows(id, 10, logLevel, new Date(timestamp), queryField);
     } else if (direction === 'next') {
-        method = logsService.getNewerRows(request_id, 10, logLevel, new Date(timestamp))
+        method = logsService.getNewerRows(id, 10, logLevel, new Date(timestamp), queryField);
     } else {
-        return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."})
+        return res.status(400).send({ success: false, error: "Missing or invalid 'direction' parameter. Use 'prev' or 'next'."});
     }
 
     method.then((logs) => {
         res.status(200).send(logs);
     }).catch((err) => {
         res.status(500).send({ success: false, error: "Error fetching logs: " + err.message });
-    })
-
-})
+    });
+});
 
 
 router.get('/flows/auth/:request_id', async (req, res) => {

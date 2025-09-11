@@ -5,6 +5,135 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.15
+- Bug fix: email quota reached sent to project admin
+
+# 2.13.14
+- Bug fix: slug duplicated error on publish chatbot
+- Updated: whatsapp-connector to 1.0.5
+
+# 2.13.12
+- Updated: whatsapp-connector to 1.0.4
+
+# 2.13.11
+- Updated: whatsapp-jobworker to 0.0.13
+
+# 2.13.10
+- Updated: whatsapp-connector to 1.0.4-rc4
+
+# 2.13.9
+- Updated: whatsapp-connector to 1.0.4-rc3
+
+# 2.13.8
+- Updated: whatsapp-connector to 1.0.4-rc2
+
+# 2.13.7
+- Updated: tybot-connector to 2.0.27
+
+# 2.13.6
+- Updated: whatsapp-connector to 1.0.3
+
+# 2.13.5
+- Updated: whatsapp-connector to 1.0.2
+
+# 2.13.4
+- Updated: whatsapp-connector to 1.0.1
+
+# 2.13.2
+- Bug fix: wrong endpoint for hybrid qa
+
+# 2.13.0
+- Updated: whatsapp module listener
+- Updated: whatsapp-connector to 1.0.0
+- Updated: tybot-connector to 2.0.26
+- Updated: vxml-connector to 0.1.77
+
+# 2.11.12 (deprecated)
+- Updated: whatsapp-connector to 0.1.87
+
+# 2.11.11 (deprecated)
+- Updated: whatsapp module listener
+- Updated: whatsapp-connector to 0.1.86
+
+# 2.11.10 (deprecated)
+- Updated: whatsapp module listener
+- Updated: whatsapp-connector to 0.1.85
+- Updated: tybot-connector to 2.0.26
+- Updated: vxml-connector to 0.1.77
+
+# 2.11.9
+- Changed: oauth2 endpoints in auth route
+- Updated: improved project users management (soft delete)
+
+# 2.11.8
+- Added: migration file to migrate namespace engine
+
+# 2.11.7
+- Hotfix: solved bug on findProjectUsersAllAndAvailableWithOperatingHours_group on searching group
+
+# 2.11.6
+- Added: possibility to enable/disable groups
+- Updated: delete project user endpoint to logical delete
+- Updated: tybot-connector to 2.0.23
+- Updated: get all namespace adding counter
+- Added: attributes field in groups model
+
+# 2.11.5
+- Added: log in requestService
+
+# 2.11.4
+- Added: authentication via Keycloak
+- Added: project settings fields for allowed_urls, allowed_urls_list, allow_send_emoji
+
+# 2.10.104
+- Update: standard/hybrid namespace management
+- Update: tybot-connector to 2.0.21
+
+# 2.10.102
+- Update: substituted encode with DOMPurify.sanitize for direct email
+
+# 2.10.101
+- Update: messenger-connector to 0.1.27
+- Update: multi-worker to 0.3.3
+- Added: endpoints for unanswered questions
+- Update: endppoints to static logs
+- Improved knowledge base import/export
+
+# 2.10.100
+- Update: removed verbose logs
+
+# 2.10.99
+- Update: messenger-connector to 0.1.24
+
+# 2.10.98
+- Update: whatsapp-connector to 0.1.84
+
+# 2.10.97
+- Added: support for hybrid search
+- Added: support for chunks_only option
+- Added: support for native logs
+- Bug fix: unexpceted indexing run of all urls in the project
+- Added: BASE_FILE_URL to twilio voice listener
+
+# 2.10.95 (Aborted)
+- Added: support for hybrid search
+- Added: support for chunks_only option
+- Added: support for native logs
+
+# 2.10.94
+- Update: fix uncaughtException in tagSchedule method
+
+# 2.10.93
+- Added: endpoints to import/export namespaces
+
+# 2.10.92
+- Updated voice-twilio-connector to 0.1.22
+- Bug fix: tags scheduling
+
+# 2.10.91
+- Updated: /qa service to return chunks (debug: true)
+- Updated: tybot-connector to 2.0.15
+
 # 2.10.89
 - Added: modified field in faq_kb model
 - Added: chatbot template refactoring
