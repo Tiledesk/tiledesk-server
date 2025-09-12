@@ -499,10 +499,10 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
     winston.debug("role", role);
     query =  {id_project: req.projectid, role: { $in : role } };
   } else {
-     query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
+    query =  {id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS };
   }
 
-  var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
+  // var query = { id_project: req.projectid, role: { $in : role }, trashed: { $ne: true } };
 
   if (req.query.presencestatus) {
     query["presence.status"] = req.query.presencestatus;
