@@ -16,6 +16,7 @@ var passport = require('passport');
 require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var roleChecker = require('../middleware/has-role');
+const roleConstants = require('../models/roleConstants');
 
 
 router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
@@ -101,6 +102,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
             id_project: id_project,
             id_user: user._id,
             role: req.body.role,
+            roleType : roleConstants.TYPE_AGENTS,
             user_available: user_available,
             createdBy: req.user.id,
             updatedBy: req.user.id
