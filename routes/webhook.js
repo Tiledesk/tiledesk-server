@@ -276,7 +276,7 @@ async function scheduleScrape(resources) {
       if (err) {
         winston.error("Scheduling error: ", err);
       } else {
-        winston.info("Scheduling result: ", result);
+        winston.verbose("Scheduling result: ", result);
       }
     });
   })
