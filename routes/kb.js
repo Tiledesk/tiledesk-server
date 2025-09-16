@@ -1388,8 +1388,9 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
+    let embedding;
     if (ns.embeddings) {
-      json.embedding = ns.embeddings;
+      embedding = ns.embeddings;
     }
 
     let hybrid;
@@ -1506,8 +1507,9 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
+        let embedding;
         if (ns.embeddings) {
-          json.embedding = ns.embeddings;
+          embedding = ns.embeddings;
         }
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
