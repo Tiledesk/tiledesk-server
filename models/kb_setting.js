@@ -39,6 +39,17 @@ var EngineSchema = new Schema({
   _id: false  // This is schema is always used as an embedded object inside NamespaceSchema
 })
 
+var EmbeddingsSchema = new Schema({
+  embedding: {
+    type: Object,
+    required: false
+  },
+  embedding_qa: {
+    type: Object,
+    required: false
+  }
+})
+
 var NamespaceSchema = new Schema({
   id_project: {
     type: String,
@@ -62,6 +73,10 @@ var NamespaceSchema = new Schema({
   },
   engine: {
     type: EngineSchema,
+    required: false
+  },
+  embeddings: {
+    type: EmbeddingsSchema,
     required: false
   }
 }, {
@@ -167,9 +182,10 @@ KBSchema.index({ namespace: 1, type: 1 })
 
 // DEPRECATED
 const KBSettings = mongoose.model('KBSettings', KBSettingSchema); 
-const Engine = mongoose.model('Engine', EngineSchema)
-const Namespace = mongoose.model('Namespace', NamespaceSchema)
-const KB = mongoose.model('KB', KBSchema)
+const Engine = mongoose.model('Engine', EngineSchema);
+const Embeddings = mongoose.model('Embeddings', EmbeddingsSchema);
+const Namespace = mongoose.model('Namespace', NamespaceSchema);
+const KB = mongoose.model('KB', KBSchema);
 
 // module.exports = {
 //   KBSettings: KBSettings,
@@ -180,5 +196,6 @@ module.exports = {
   KBSettings: KBSettings,
   Namespace: Namespace,
   Engine: Engine,
+  Embeddings: Embeddings,
   KB: KB
 }

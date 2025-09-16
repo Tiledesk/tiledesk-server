@@ -484,6 +484,13 @@ router.get('/namespace/all', async (req, res) => {
         engine: default_engine
       })
 
+      if (embedding && embedding_qa) {
+        new_namespace.embeddings = {
+          embedding: embedding,
+          embedding_qa: embedding_qa
+        };
+      }
+
       new_namespace.save((err, savedNamespace) => {
         if (err) {
           winston.error("create default namespace error: ", err);
@@ -673,6 +680,13 @@ router.post('/namespace', async (req, res) => {
     preview_settings: default_preview_settings,
     engine: default_engine
   })
+
+  if (embedding && embedding_qa) {
+    new_namespace.embeddings = {
+      embedding: embedding,
+      embedding_qa: embedding_qa
+    };
+  }
 
   let namespaces = await Namespace.find({ id_project: project_id }).catch((err) => {
     winston.error("find namespaces error: ", err)
@@ -1247,8 +1261,8 @@ router.post('/', async (req, res) => {
         json.hybrid = true;
       }
 
-      if (embedding) {
-        json.embedding = embedding;
+      if (ns.embeddings) {
+        json.embedding = ns.embeddings;
       }
 
       let resources = [];
@@ -1374,6 +1388,9 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
 
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
+    if (ns.embeddings) {
+      json.embedding = ns.embeddings;
+    }
 
     let hybrid;
     if (engine.type === 'serverless') {
@@ -1489,6 +1506,9 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
 
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
+        if (ns.embeddings) {
+          json.embedding = ns.embeddings;
+        }
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
         resources = resources.map(({ _id, ...rest}) => {
