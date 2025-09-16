@@ -48,6 +48,8 @@ var EmbeddingsSchema = new Schema({
     type: Object,
     required: false
   }
+}, {
+  _id: false
 })
 
 var NamespaceSchema = new Schema({
