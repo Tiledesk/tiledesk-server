@@ -4,6 +4,7 @@ const uuidv4 = require('uuid/v4');
 var jwt = require('jsonwebtoken');
 var winston = require('../config/winston');
 const errorCodes = require("../errorCodes");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 const port = process.env.PORT || '3000';
 let TILEBOT_ENDPOINT = "http://localhost:" + port + "/modules/tilebot/";;
@@ -44,6 +45,9 @@ class WebhookService {
                 }
                 let json_value = JSON.parse(value);
                 payload.preloaded_request_id = json_value.request_id;
+                payload.draft = true;
+            }  else {
+                payload.preloaded_request_id = "automation-request-" + webhook.id_project + "-" + new ObjectId() + "-" + webhook.webhook_id;
             }
 
             let token = await this.generateChatbotToken(chatbot);
