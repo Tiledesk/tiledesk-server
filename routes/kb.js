@@ -335,6 +335,9 @@ router.post('/qa', async (req, res) => {
   }
 
   data.debug = true;
+  data.reranking = true;
+  data.reranking_multiplier = 3;
+  data.reranker_model = "cross-encoder/ms-marco-MiniLM-L-6-v2";
 
   aiService.askNamespace(data).then((resp) => {
     winston.debug("qa resp: ", resp.data);
