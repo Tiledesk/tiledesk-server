@@ -326,10 +326,9 @@ router.post('/qa', async (req, res) => {
     data.search_type = 'hybrid';
   }
 
-  if (embedding_qa) {
-    data.embedding = embedding_qa;
-  }
-
+  if (ns.embeddings?.embedding_qa) {
+    data.embedding = ns.embeddings.embedding_qa;
+  } 
   
   delete data.advancedPrompt;
   winston.verbose("ask data: ", data);
@@ -1261,8 +1260,8 @@ router.post('/', async (req, res) => {
         json.hybrid = true;
       }
 
-      if (ns.embeddings) {
-        json.embedding = ns.embeddings;
+      if (ns.embeddings?.embedding) {
+        json.embedding = ns.embeddings.embedding;
       }
 
       let resources = [];
@@ -1389,8 +1388,8 @@ router.post('/multi', upload.single('uploadFile'), async (req, res) => {
     let ns = namespaces.find(n => n.id === namespace_id);
     let engine = ns.engine || default_engine;
     let embedding;
-    if (ns.embeddings) {
-      embedding = ns.embeddings;
+    if (ns.embeddings?.embedding) {
+      embedding = ns.embeddings.embedding;
     }
 
     let hybrid;
@@ -1508,8 +1507,8 @@ router.post('/csv', upload.single('uploadFile'), async (req, res) => {
         let ns = namespaces.find(n => n.id === namespace_id);
         let engine = ns.engine || default_engine;
         let embedding;
-        if (ns.embeddings) {
-          embedding = ns.embeddings;
+        if (ns.embeddings?.embedding) {
+          embedding = ns.embeddings.embedding;
         }
 
         let resources = result.map(({ name, status, __v, createdAt, updatedAt, id_project,  ...keepAttrs }) => keepAttrs)
