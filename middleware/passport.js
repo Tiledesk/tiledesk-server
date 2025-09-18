@@ -658,29 +658,29 @@ if (enableOauth2Signin==true) {
     scope: ['openid'],
   },
   function(accessToken, refreshToken, params, profile, cb) {
-    winston.debug("params", params);
+    winston.debug("(OAuth2Strategy) params", params);
 
 
     const token = jwt.decode(accessToken); // user id lives in here
-    winston.debug("token", token);
+    winston.debug("(OAuth2Strategy) token", token);
 
     const profileInfo = jwt.decode(params.access_token); // user email lives in here
-    winston.debug("profileInfo", profileInfo);
+    winston.debug("(OAuth2Strategy) profileInfo", profileInfo);
 
-    winston.debug("profile", profile);
+    winston.debug("(OAuth2Strategy) profile", profile);
 
-    winston.debug("accessToken", accessToken);
+    winston.debug("(OAuth2Strategy) accessToken", accessToken);
 
-    winston.debug("refreshToken", refreshToken);
+    winston.debug("(OAuth2Strategy) refreshToken", refreshToken);
 
     var issuer = token.iss;
     var email = profile.email;
 
     var query = {providerId : issuer, subject: profile.keycloakId};
-    winston.debug("query", query)
+    winston.debug("(OAuth2Strategy) query", query)
 
     Auth.findOne(query, function(err, cred){     
-      winston.debug("cred", cred, err);
+      winston.debug("(OAuth2Strategy) cred", cred, err);
       if (err) { return cb(err); }
       if (!cred) {
 
@@ -691,7 +691,7 @@ if (enableOauth2Signin==true) {
         User.findOne({email: email, status: 100}, 'email firstname lastname emailverified id', function(err, user){
           if (err) { return cb(err); }
 
-          winston.debug('user found: ', user)
+          winston.debug('(OAuth2Strategy) findOne - user found: ', user)
           //create new Auth for the already existing user
           if(user){
             //user already exist
@@ -702,7 +702,7 @@ if (enableOauth2Signin==true) {
             });
             auth.save(function (err, authSaved) {    
               if (err) { return cb(err); }
-              winston.debug("authSaved", authSaved);
+              winston.debug("(OAuth2Strategy) authSaved", authSaved);
   
               return cb(null, user);
             });
@@ -717,7 +717,7 @@ if (enableOauth2Signin==true) {
             // signup ( email, password, firstname, lastname, emailverified) {
             userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true).then(function (savedUser) {
 
-              winston.debug("savedUser", savedUser)    
+              winston.debug("(OAuth2Strategy) userService signup -> savedUser", savedUser)    
 
               var auth = new Auth({
                 providerId: issuer,
@@ -726,25 +726,17 @@ if (enableOauth2Signin==true) {
               });
               auth.save(function (err, authSaved) {    
                 if (err) { return cb(err); }
-                winston.debug("authSaved", authSaved);
+                winston.debug("(OAuth2Strategy) authSaved", authSaved);
 
                 return cb(null, savedUser);
               });
             }).catch(function(err) {
-                winston.error("Error signup oauth ", err);
+                winston.error("(OAuth2Strategy) Error signup oauth ", err);
                 return cb(err);        
             });
 
           }
-
-
         })
-
-
-
-
-
-
 
         // // The oauth account has not logged in to this app before.  Create a
         // // new user record and link it to the oauth account.
