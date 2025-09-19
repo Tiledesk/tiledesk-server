@@ -680,9 +680,9 @@ if (enableOauth2Signin==true) {
       if (err) { return cb(err); }
       if (!cred) {
 
-        /*controlla utente
-        1. utente c'è -> crea l'auth e ritorna utente
-        2. utente non c'è -> sign up + crea nuova auth + ritorna utente
+        /*check user
+        1. if user exists -> create auth and return user
+        2. if user does not exist -> sign up + create new auth + return user
         */
         User.findOne({email: email, status: 100}, 'email firstname lastname emailverified id', function(err, user){
           if (err) { return cb(err); }
