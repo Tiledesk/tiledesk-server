@@ -700,13 +700,13 @@ if (enableOauth2Signin==true) {
               if (err) { return cb(err); }
               winston.debug("authSaved", authSaved);
   
-              return cb(null, savedUser);
+              return cb(null, user);
             });
           }
 
           if(!user){
             //user not exist -> create one
-            
+
             // The oauth account has not logged in to this app before.  Create a
             // new user record and link it to the oauth account.
             var password = uniqid()
