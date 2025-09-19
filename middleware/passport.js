@@ -679,30 +679,92 @@ if (enableOauth2Signin==true) {
       winston.debug("cred", cred, err);
       if (err) { return cb(err); }
       if (!cred) {
-        // The oauth account has not logged in to this app before.  Create a
-        // new user record and link it to the oauth account.
-          var password = uniqid()
-        // signup ( email, password, firstname, lastname, emailverified) {
-          userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true)
-          .then(function (savedUser) {
 
-          winston.debug("savedUser", savedUser)    
+        /*controlla utente
+        1. utente c'è -> crea l'auth e ritorna utente
+        2. utente non c'è -> sign up + crea nuova auth + ritorna utente
+        */
+        User.findOne({email: email, status: 100}, 'email firstname lastname emailverified id', function(err, user){
+          if (err) { return cb(err); }
 
-          var auth = new Auth({
-            providerId: issuer,
-            email: email,
-            subject: profile.keycloakId,
-          });
-          auth.save(function (err, authSaved) {    
-            if (err) { return cb(err); }
-            winston.debug("authSaved", authSaved);
+          winston.debug('user found: ', user)
+          //create new Auth for the already existing user
+          if(user){
+            //user already exist
+            var auth = new Auth({
+              providerId: issuer,
+              email: email,
+              subject: profile.keycloakId,
+            });
+            auth.save(function (err, authSaved) {    
+              if (err) { return cb(err); }
+              winston.debug("authSaved", authSaved);
+  
+              return cb(null, savedUser);
+            });
+          }
 
-            return cb(null, savedUser);
-          });
-        }).catch(function(err) {
-            winston.error("Error signup oauth ", err);
-            return cb(err);        
-        });
+          if(!user){
+            //user not exist -> create one
+            
+            // The oauth account has not logged in to this app before.  Create a
+            // new user record and link it to the oauth account.
+            var password = uniqid()
+            // signup ( email, password, firstname, lastname, emailverified) {
+            userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true).then(function (savedUser) {
+
+              winston.debug("savedUser", savedUser)    
+
+              var auth = new Auth({
+                providerId: issuer,
+                email: email,
+                subject: profile.keycloakId,
+              });
+              auth.save(function (err, authSaved) {    
+                if (err) { return cb(err); }
+                winston.debug("authSaved", authSaved);
+
+                return cb(null, savedUser);
+              });
+            }).catch(function(err) {
+                winston.error("Error signup oauth ", err);
+                return cb(err);        
+            });
+
+          }
+
+
+        })
+
+
+
+
+
+
+
+        // // The oauth account has not logged in to this app before.  Create a
+        // // new user record and link it to the oauth account.
+        // var password = uniqid()
+        // // signup ( email, password, firstname, lastname, emailverified) {
+        // userService.signup(email, password,  profileInfo.name || profileInfo.preferred_username, "", true).then(function (savedUser) {
+
+        //   winston.debug("savedUser", savedUser)    
+
+        //   var auth = new Auth({
+        //     providerId: issuer,
+        //     email: email,
+        //     subject: profile.keycloakId,
+        //   });
+        //   auth.save(function (err, authSaved) {    
+        //     if (err) { return cb(err); }
+        //     winston.debug("authSaved", authSaved);
+
+        //     return cb(null, savedUser);
+        //   });
+        // }).catch(function(err) {
+        //     winston.error("Error signup oauth ", err);
+        //     return cb(err);        
+        // });
       } else {
         // The Oauth account has previously logged in to the app.  Get the
         // user record linked to the Oauth account and log the user in.
