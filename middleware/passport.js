@@ -675,6 +675,7 @@ if (enableOauth2Signin==true) {
 
     var issuer = token.iss;
     var email = profile.email;
+    var username = profile.username;
 
     var query = {providerId : issuer, subject: profile.keycloakId};
     winston.debug("(OAuth2Strategy) query", query)
@@ -688,7 +689,7 @@ if (enableOauth2Signin==true) {
         1. if user exists -> create auth and return user
         2. if user does not exist -> sign up + create new auth + return user
         */
-        User.findOne({email: email, status: 100}, 'email firstname lastname emailverified id', function(err, user){
+        User.findOne({email: { $regex: '^' + username, $options: 'i' }, status: 100}, 'email firstname lastname emailverified id', function(err, user){
           if (err) { return cb(err); }
 
           winston.debug('(OAuth2Strategy) findOne - user found: ', user)
@@ -766,19 +767,19 @@ if (enableOauth2Signin==true) {
         // user record linked to the Oauth account and log the user in.
 
         User.findOne({
-          email: email, status: 100
+          email: { $regex: '^' + username, $options: 'i' }, status: 100
         }, 'email firstname lastname emailverified id', function (err, user) {
 
-          winston.debug("user",user, err);
+          winston.debug("(OAuth2Strategy) user",user, err);
           // winston.debug("usertoJSON()",user.toJSON());
 
           if (err) { 
-            winston.error("Error getting user",user, err);
+            winston.error("(OAuth2Strategy) Error getting user",user, err);
             return cb(err); 
           }
 
           if (!user) { 
-            winston.info("User not found",user, err);
+            winston.info("(OAuth2Strategy) User not found",user, err);
             return cb(null, false); 
           }
 
