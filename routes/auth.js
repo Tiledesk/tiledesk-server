@@ -811,7 +811,7 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
 
   var user = req.user;
   winston.debug("(/oauth2/callback) user", user);
-  winston.debug("(/oauth2/callback) req.session.redirect_url: " + req.session.redirect_url);
+  winston.debug("(/oauth2/callback) state.redirect_url: " + state.redirect_url);
   var userJson = user.toObject();
 
   delete userJson.password;
@@ -841,15 +841,15 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   const separator = homeurl.includes('?') ? '&' : '?';
   var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
   
-  if (req.session.redirect_url) {
-    const separator = req.session.redirect_url.includes('?') ? '&' : '?';
-    url = req.session.redirect_url+ separator + "token=JWT "+token;
+  if (state?.redirect_url) {
+    const separator = state.redirect_url.includes('?') ? '&' : '?';
+    url = state.redirect_url+ separator + "token=JWT "+token;
   }
 
-  console.log('(/oauth2/callback) check forced_redirect_url: ', req.session.forced_redirect_url)
-  if (req.session.forced_redirect_url) {
-    const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
-    url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+  console.log('(/oauth2/callback) check forced_redirect_url: ', state.forced_redirect_url)
+  if (state?.forced_redirect_url) {
+    const separator = state.forced_redirect_url.includes('?') ? '&' : '?';
+    url = state.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
     console.log('(/oauth2/callback) url with forced_redirect_url: ', url)
   }
 
