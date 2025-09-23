@@ -792,8 +792,8 @@ router.get("/oauth2", function (req, res, next) {
 
 router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
   winston.debug("'/oauth2/callback: ", req.query);
-  winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
-  winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
+  winston.debug("/oauth2/callback --> req.session.redirect_url" + req.session.redirect_url);
+  winston.debug("/oauth2/callback --> req.session.forced_redirect_url" + req.session.forced_redirect_url);
 
   var user = req.user;
   winston.debug("(/oauth2/callback) user", user);
@@ -821,7 +821,7 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   // res.json(returnObject);
 
   let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
-  winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: ", dashboard_base_url);
+  winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: "+ dashboard_base_url);
 
   let homeurl = "/#/";
     
