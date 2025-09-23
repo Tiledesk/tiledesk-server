@@ -783,7 +783,12 @@ router.get("/oauth2", function (req, res, next) {
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
   req.session.save(() => {
-    passport.authenticate('oauth2')(req, res, next);
+    passport.authenticate('oauth2',{
+      state: JSON.stringify({
+        redirect_url: req.query.redirect_url,
+        forced_redirect_url: req.query.forced_redirect_url
+      })
+    })(req, res, next);
   });
 
   // passport.authenticate(
@@ -798,6 +803,11 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   winston.debug("'/oauth2/callback: ", req.query);
   winston.debug("/oauth2/callback --> req.session.redirect_url" + req.session.redirect_url);
   winston.debug("/oauth2/callback --> req.session.forced_redirect_url" + req.session.forced_redirect_url);
+
+  console.log("/oauth2/callback req.query :", req.query);
+  const state = JSON.parse(req.query.state);
+  console.log("/oauth2/callback redirect_url:", state.redirect_url);
+  console.log("/oauth2/callback forced_redirect_url:", state.forced_redirect_url);
 
   var user = req.user;
   winston.debug("(/oauth2/callback) user", user);
