@@ -74,8 +74,12 @@ winston.info('Authentication Google Signin enabled : ' + enableGoogleSignin);
 
 
 var enableOauth2Signin = false;
+var oauth2EmailDomain = null;
 if (process.env.OAUTH2_SIGNIN_ENABLED=="true" || process.env.OAUTH2_SIGNIN_ENABLED == true) {
   enableOauth2Signin = true;
+  if(process.env.OAUTH2_EMAIL_DOMAIN){
+    oauth2EmailDomain = process.env.OAUTH2_EMAIL_DOMAIN
+  }
 }
 winston.info('Authentication Oauth2 Signin enabled : ' + enableOauth2Signin);
 
@@ -689,7 +693,7 @@ if (enableOauth2Signin==true) {
         1. if user exists -> create auth and return user
         2. if user does not exist -> sign up + create new auth + return user
         */
-        User.findOne({email: { $regex: '^' + username + '@', $options: 'i' }, status: 100}, 'email firstname lastname emailverified id', function(err, user){
+        User.findOne({email: { $regex: '^' + username + '@' + oauth2EmailDomain , $options: 'i' }, status: 100}, 'email firstname lastname emailverified id', function(err, user){
           if (err) { return cb(err); }
 
           winston.debug('(OAuth2Strategy) findOne - user found: ', user)
@@ -767,7 +771,7 @@ if (enableOauth2Signin==true) {
         // user record linked to the Oauth account and log the user in.
 
         User.findOne({
-          email: { $regex: '^' + username + '@' , $options: 'i' }, status: 100
+          email: { $regex: '^' + username + '@' + oauth2EmailDomain , $options: 'i' }, status: 100
         }, 'email firstname lastname emailverified id', function (err, user) {
 
           winston.debug("(OAuth2Strategy) user",user, err);
