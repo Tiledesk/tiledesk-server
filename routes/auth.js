@@ -800,14 +800,14 @@ router.get("/oauth2", function (req, res, next) {
 //   passport.authenticate('oauth2'));
 
 router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
-  winston.debug("'/oauth2/callback: ", req.query);
-  winston.debug("/oauth2/callback --> req.session.redirect_url" + req.session.redirect_url);
-  winston.debug("/oauth2/callback --> req.session.forced_redirect_url" + req.session.forced_redirect_url);
+  winston.debug("'(/oauth2/callback): ", req.query);
+  winston.debug("(/oauth2/callback) --> req.session.redirect_url" + req.session.redirect_url);
+  winston.debug("(/oauth2/callback) --> req.session.forced_redirect_url" + req.session.forced_redirect_url);
 
-  console.log("/oauth2/callback req.query :", req.query);
+  console.log("(/oauth2/callback) req.query :", req.query);
   const state = JSON.parse(req.query.state);
-  console.log("/oauth2/callback redirect_url:", state.redirect_url);
-  console.log("/oauth2/callback forced_redirect_url:", state.forced_redirect_url);
+  console.log("(/oauth2/callback) redirect_url:", state.redirect_url);
+  console.log("(/oauth2/callback) forced_redirect_url:", state.forced_redirect_url);
 
   var user = req.user;
   winston.debug("(/oauth2/callback) user", user);
@@ -838,7 +838,6 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
   winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: "+ dashboard_base_url);
 
   let homeurl = "/#/";
-    
   const separator = homeurl.includes('?') ? '&' : '?';
   var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
   
@@ -847,9 +846,11 @@ router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false 
     url = req.session.redirect_url+ separator + "token=JWT "+token;
   }
 
+  console.log('(/oauth2/callback) check forced_redirect_url: ', req.session.forced_redirect_url)
   if (req.session.forced_redirect_url) {
     const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
     url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+    console.log('(/oauth2/callback) url with forced_redirect_url: ', url)
   }
 
   winston.debug("(/oauth2/callback) Google Redirect: " + url);
