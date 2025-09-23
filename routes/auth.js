@@ -782,9 +782,13 @@ router.get("/oauth2", function (req, res, next) {
   winston.debug("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
-  passport.authenticate(
-    'oauth2'
-  )(req, res, next);
+  req.session.save(() => {
+    passport.authenticate('oauth2')(req, res, next);
+  });
+
+  // passport.authenticate(
+  //   'oauth2'
+  // )(req, res, next);
 });
 
 // router.get('/oauth2',
