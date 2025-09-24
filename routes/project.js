@@ -460,6 +460,10 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   if (req.body["settings.allowed_urls_list"]!=undefined) {
     update["settings.allowed_urls_list"] = req.body["settings.allowed_urls_list"];
   }
+
+  if (req.body["settings.allowed_upload_extentions"]!=undefined) {
+    update["settings.allowed_upload_extentions"] = req.body["settings.allowed_upload_extentions"];
+  }
   
   if (req.body.widget!=undefined) {
     update.widget = req.body.widget;
