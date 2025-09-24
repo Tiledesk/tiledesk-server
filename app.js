@@ -127,6 +127,7 @@ var quotes = require('./routes/quotes');
 var integration = require('./routes/integration')
 var kbsettings = require('./routes/kbsettings');
 var kb = require('./routes/kb');
+var unanswered = require('./routes/unanswered');
 
 // var admin = require('./routes/admin');
 var faqpub = require('./routes/faqpub');
@@ -344,7 +345,12 @@ if (process.env.DISABLE_SESSION_STRATEGY==true ||  process.env.DISABLE_SESSION_S
           store: redisStore,
           resave: false, // required: force lightweight session keep alive (touch)
           saveUninitialized: false, // recommended: only save session when data exists
-          secret: sessionSecret
+          secret: sessionSecret,
+          cookie: {
+            secure: true,           // ✅ Use HTTPS
+            httpOnly: true,         // ✅ Only accessible by the server (not client-side JS)
+            sameSite: 'None'        // ✅ Allows cross-origin (e.g., Keycloak on a different domain)
+          }
         })
       )
       winston.info("Express Session with Redis enabled with Secret: " + sessionSecret);
@@ -615,6 +621,7 @@ app.use('/:projectid/quotes', [passport.authenticate(['basic', 'jwt'], { session
 app.use('/:projectid/integration', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], integration )
 
 app.use('/:projectid/kbsettings', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], kbsettings);
+app.use('/:projectid/kb/unanswered', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], unanswered);
 app.use('/:projectid/kb', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('admin', ['bot','subscription'])], kb);
 
 app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], logs);

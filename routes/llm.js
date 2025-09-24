@@ -5,6 +5,7 @@ let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
 const multer = require('multer');
 const fileUtils = require('../utils/fileUtils');
+const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 
 let MAX_UPLOAD_FILE_SIZE = process.env.MAX_UPLOAD_FILE_SIZE;
 let uploadlimits = undefined;
@@ -22,6 +23,7 @@ router.post('/preview', async (req, res) => {
     let id_project = req.projectid;
     let body = req.body;
     let key;
+    let publicKey = false;
 
     if (!body.llm) {
         return res.status(400).send({ success: false, error: "Missing required parameter 'llm'" });
@@ -33,15 +35,36 @@ router.post('/preview', async (req, res) => {
     })
 
     if (!integration) {
-        winston.verbose("Integration for " + body.llm + " not found.")
-        return res.status(404).send({ success: false, error: "Integration for " + body.llm + " not found."})
+        winston.verbose("Integration not found for " + body.llm)
+        if (body.llm === "openai") {
+            winston.verbose("Try to retrieve shared OpenAI key")
+            if (!process.env.GPTKEY) {
+                winston.error("Shared key for OpenAI not configured.");
+                return res.status(404).send({ success: false, error: "No key found for " + body.llm });
+            }
+            key = process.env.GPTKEY;
+            publicKey = true;
+            winston.verbose("Using shared OpenAI key as fallback.");
+        } else {
+            winston.verbose("Integration for " + body.llm + " not found.")
+            return res.status(404).send({ success: false, error: "Integration for " + body.llm + " not found." })
+        }
+    } else {
+        if (!integration?.value?.apikey && body.llm !== "ollama") {
+            return res.status(422).send({ success: false, error: "The key provided for " + body.llm + " is not valid or undefined." });
+        }
+        key = integration.value.apikey;
     }
 
-    if (!integration?.value?.apikey && body.llm !== 'ollama') {
-        return res.status(422).send({ success: false, error: "The key provided for " + body.llm + " is not valid or undefined." })
-    }
+    let obj = { createdAt: new Date() };
 
-    key = integration.value.apikey;
+    let quoteManager = req.app.get('quote_manager');
+    if (publicKey === true) {
+        let isAvailable = await quoteManager.checkQuote(req.project, obj, 'tokens');
+        if (isAvailable === false) {
+            return res.status(403).send({ success: false, message: "Tokens quota exceeded", error_code: 13001})
+        }
+    }
 
     let json = {
         question: body.question,
@@ -70,6 +93,16 @@ router.post('/preview', async (req, res) => {
 
     aiService.askllm(json).then((response) => {
         winston.verbose("Askllm response: ", response);
+        if (publicKey === true) {
+            let multiplier = MODELS_MULTIPLIER[json.model];
+            if (!multiplier) {
+                multiplier = 1;
+                winston.info("No multiplier found for AI model " + json.model)
+            }
+            obj.multiplier = multiplier;
+            obj.tokens = response.data?.prompt_token_size || 0;
+            quoteManager.incrementTokenCount(req.project, obj);
+        }
         res.status(200).send(response.data)
     }).catch((err) => {
         if (err.response?.data?.detail[0]) {

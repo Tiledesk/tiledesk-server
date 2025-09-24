@@ -240,7 +240,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         }
         // console.log("department", department);
         if (!department) {
-          winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+          // TODO: error log removed due to attempt to reduces logs when no department is found
+          winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
           return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
@@ -358,8 +359,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
-
-    return Group.find({ _id: department.id_group }).exec(function (err, group) {
+    return Group.find({ _id: department.id_group, $or: [ { enabled: true }, { enabled: { $exists: false } } ] }).exec(function (err, group) {
       if (err) {
         winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
@@ -562,7 +562,8 @@ getDefaultDepartment(projectid) {
       }
       // console.log("department", department);
       if (!department) {
-        winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
         return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
       }
       winston.debug('department ', department);
@@ -601,6 +602,21 @@ getDefaultDepartment(projectid) {
   }
 }
 
+  /**
+   * Checks if the group belongs to a department of the project
+   * @param {String} projectId
+   * @param {String} groupId
+   * @returns {Promise<Boolean>} true if the group belongs to a department of the project, otherwise false
+   */
+  async isGroupInProjectDepartment(projectId, groupId) {
+    try {
+      const department = await Department.findOne({ id_project: projectId, id_group: groupId });
+      return !!department;
+    } catch (err) {
+      winston.error('Error in isGroupInProjectDepartment', err);
+      return false;
+    }
+  }
 
 
 }
