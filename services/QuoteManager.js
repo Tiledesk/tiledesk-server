@@ -381,6 +381,12 @@ class QuoteManager {
                 perc: ((quotes.email.quote / limits['email']) * 100).toFixed(1)
             }
         }
+        if (quotes.voice_duration) {
+            quotes_obj.voice_duration = {
+                quote: Math.round(quotes.voice_duration.quote / 60),
+                perc: ((quotes.voice_duration.quote / limits['voice_duration']) * 100).toFixed(1)
+            }
+        }
         return quotes_obj
     }
 

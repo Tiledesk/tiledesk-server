@@ -51,6 +51,9 @@ class EmailEvent extends EventEmitter {
                     if (data.type == 'email') {
                         resource_name = 'Chatbot Email'
                     }
+                    if (data.type == 'voice_duration') {
+                        resource_name = 'Voice Minutes'
+                    }
                     
                     const emailService = require('../services/emailService'); // imported here to ensure that the emailService instance was already created
 

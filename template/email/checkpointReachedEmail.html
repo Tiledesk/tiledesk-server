@@ -57,6 +57,13 @@
                         <td style="border: 1px solid #ddd; padding: 8px;">{{email_quote}}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{{email_perc}}%</td>
                       </tr>
+                      {{#if voice_quote}}
+                      <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">Voice Minutes</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{voice_quote}}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{voice_perc}}%</td>
+                      </tr>
+                      {{/if}}
                     </table>
                     <p style="text-align: center; font-size: 14px; color: #777;">This is an automated message. Please do not reply.</p>
                     <div style="text-align: center; margin-top: 20px; padding: 20px;">
