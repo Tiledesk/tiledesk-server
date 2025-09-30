@@ -773,27 +773,25 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 
 
-router.get("/oauth2", function(req,res,next){
-  winston.debug("redirect_url: "+ req.query.redirect_url );
+router.get("/oauth2", function (req, res, next) {
+  winston.debug("(oauth2) redirect_url: " + req.query.redirect_url);
   req.session.redirect_url = req.query.redirect_url;
 
-  winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
+  winston.debug("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
   passport.authenticate(
     'oauth2'
-  )(req,res,next);
+  )(req, res, next);
 });
 
 // router.get('/oauth2',
 //   passport.authenticate('oauth2'));
 
-router.get('/oauth2/callback',
-  passport.authenticate('oauth2', { session: false}),
-  function(req, res) {
-    winston.debug("'/oauth2/callback: ", req.query);
-    winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
-    winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
+router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
+  winston.debug("'/oauth2/callback: ", req.query);
+  winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
+  winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
 
     var user = req.user;
     winston.debug("user", user);
@@ -845,8 +843,7 @@ router.get('/oauth2/callback',
     res.redirect(url);
   
 
-    
-  });
+});
 
 router.get(
   "/keycloak",

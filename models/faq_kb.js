@@ -169,20 +169,28 @@ var Faq_kbSchema = new Schema({
 Faq_kbSchema.pre("save", async function (next) {
   // Check if the document is new and if the slug has not been set manually
   if (this.isNew) {
-    
-    let baseSlug = this.slug;
-    if (!this.slug) {
-      baseSlug = generateSlug(this.name);
-    }
+
+    let baseSlug = this.slug || generateSlug(this.name);
     let uniqueSlug = baseSlug;
 
-    const existingCount = await mongoose.model("faq_kb").countDocuments({
+    const existingDocs = await mongoose.model("faq_kb").find({
       id_project: this.id_project,
       slug: { $regex: `^${baseSlug}(?:-\\d+)?$` }
-    });
+    }, { slug: 1 });
 
-    if (existingCount > 0) {
-      uniqueSlug = `${baseSlug}-${existingCount}`;
+    if (existingDocs.length > 0) {
+      let maxNumber = 0;
+      existingDocs.forEach(doc => {
+        const match = doc.slug.match(new RegExp(`^${baseSlug}-(\\d+)$`));
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num > maxNumber) maxNumber = num;
+        }
+      });
+
+      if (existingDocs.some(doc => doc.slug === baseSlug)) {
+        uniqueSlug = `${baseSlug}-${maxNumber + 1}`;
+      }
     }
 
     this.slug = uniqueSlug;
