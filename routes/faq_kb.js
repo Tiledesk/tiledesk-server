@@ -350,6 +350,10 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
       }
     }
 
+    if (!updatedFaq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+    }
+
     botEvent.emit('faqbot.update', updatedFaq_kb);
     res.json(updatedFaq_kb);
   });
@@ -370,6 +374,10 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
   Faq_kb.findOneAndUpdate({ _id: chatbot_id, id_project: id_project }, update, { new: true }, (err, updatedFaq_kb) => {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    if (!updatedFaq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     Faq.updateMany({ id_faq_kb: req.params.faq_kbid }, update, (err, result) => {
@@ -398,9 +406,9 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot'
     }
 
     if (!updatedBot) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
-
+    
     if (!updatedBot.attributes) {
       winston.debug("empty attributes")
       updatedBot.attributes = {};
@@ -660,7 +668,7 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   }
 
   if (!chatbot) {
-    return res.status(500).send({ success: false, message: "Unable to get chatbot" });
+    return res.status(500).send({ success: false, message: "Unable to get chatbot to be forked" });
   }
 
   if (!globals) {
@@ -693,8 +701,10 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
 router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
 
-  let id_faq_kb = req.params.id_faq_kb;
-  winston.debug('import on id_faq_kb: ' + id_faq_kb);
+  let chatbot_id = req.params.id_faq_kb;
+  let id_project = req.projectid;
+
+  winston.debug('import on id_faq_kb: ' + chatbot_id);
 
   winston.debug('import with option create: ' + req.query.create);
   winston.debug('import with option replace: ' + req.query.replace);
@@ -801,18 +811,18 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // *****************************
   else {
 
-    if (!id_faq_kb) {
+    if (!chatbot_id) {
       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
     }
 
-    let chatbot = Faq_kb.findById(id_faq_kb).catch((err) => {
-      winston.error("Error finding chatbot with id " + id_faq_kb);
-      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + id_faq_kb, error: err });
+    let chatbot = Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
+      winston.error("Error finding chatbot with id " + chatbot_id);
+      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
     })
 
     if (!chatbot) {
-      winston.error("Chatbot not found with id " + id_faq_kb);
-      return res.status(404).send({ success: false, message: "Chatbot not found with id " + id_faq_kb });
+      winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
+      return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     if (json.webhook_enabled) {
@@ -849,7 +859,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       }
     }
 
-    let updatedChatbot = await Faq_kb.findByIdAndUpdate(id_faq_kb, chatbot, { new: true }).catch((err) => {
+    let updatedChatbot = await Faq_kb.findByIdAndUpdate(chatbot._id, chatbot, { new: true }).catch((err) => {
       winston.error("Error updating chatbot");
       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
     })
@@ -860,11 +870,11 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     // **** REPLACE TRUE option ****
     // *****************************
     if (req.query.replace === 'true') {
-      let result = await Faq.deleteMany({ id_faq_kb: id_faq_kb }).catch((err) => {
-        winston.error("Unable to delete all existing faqs with id_faq_kb " + id_faq_kb);
+      let result = await Faq.deleteMany({ id_faq_kb: chatbot._id }).catch((err) => {
+        winston.error("Unable to delete all existing faqs with id_faq_kb " + chatbot._id);
       })
 
-      winston.verbose("All faq for chatbot " + id_faq_kb + " deleted successfully")
+      winston.verbose("All faq for chatbot " + chatbot._id + " deleted successfully")
       winston.debug("DeleteMany faqs result ", result);
     }
 
@@ -893,7 +903,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
         // *******************************
         if (req.query.overwrite == "true") {
 
-          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
+          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: chatbot._id, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
             winston.error("Unable to create faq: ", err);
           })
 
