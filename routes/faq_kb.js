@@ -656,13 +656,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   try {
     chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
   } catch (err) {
-    console.log("err!!!: ", err)
     return res.status(500).send({ success: false, error: "Unable to get chatbot to be forked"});
   }
-
-  // let chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
-  // winston.debug("chatbot: ", chatbot)
-  console.log("chatbot: ", chatbot);
 
   if (!chatbot) {
     return res.status(500).send({ success: false, message: "Unable to get chatbot" });

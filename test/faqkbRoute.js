@@ -620,7 +620,7 @@ describe('FaqKBRoute', () => {
 
                         class chatbot_service {
                             async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {
-                                return nechatbot_mock.existing_chatbot_mock;
+                                return chatbot_mock.existing_chatbot_mock;
                             }
 
                             async createBot(api_url, token, chatbot, project_id) {
@@ -685,7 +685,6 @@ describe('FaqKBRoute', () => {
 
                             class chatbot_service {
                                 async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {
-                                    console.log("\n\nget bot!")
                                     return new Promise((resolve, reject) => {
                                         reject({ success: false, msg: "Chatbot not found" })
                                     })
@@ -725,7 +724,11 @@ describe('FaqKBRoute', () => {
 
                                             if (err) { console.error("err: ", err); }
                                             if (log) { console.log("res.body: ", res.body); }
-                                            console.log("res.body: ", res.body);
+                                            
+                                            res.should.have.status(500);
+                                            res.body.should.be.a('object');
+                                            expect(res.body.success).to.equal(false);
+                                            expect(res.body.error).to.equal("Unable to get chatbot to be forked");
                                             done();
                                         })
 
