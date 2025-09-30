@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 const project_user = require('../models/project_user');
 var winston = require('../config/winston');
 const user = require('../models/user');
+const roleConstants = require('../models/roleConstants');
 
 class EmailEvent extends EventEmitter {
     constructor() {
@@ -16,7 +17,7 @@ class EmailEvent extends EventEmitter {
             // TODO setImmediate here?
             winston.debug("emailEvent data: ", data);
         
-            project_user.findOne({ id_project: data.id_project }, (err, puser) => {
+            project_user.findOne({ id_project: data.id_project, role: roleConstants.OWNER }, (err, puser) => {
         
                 if (err) {
                     winston.error("error finding owner user: " + err);
@@ -49,6 +50,9 @@ class EmailEvent extends EventEmitter {
                     }
                     if (data.type == 'email') {
                         resource_name = 'Chatbot Email'
+                    }
+                    if (data.type == 'voice_duration') {
+                        resource_name = 'Voice Minutes'
                     }
                     
                     const emailService = require('../services/emailService'); // imported here to ensure that the emailService instance was already created

@@ -22,7 +22,6 @@ router.post('/', async (req, res) => {
 
     winston.debug("quotes: ", quotes);
     res.status(200).send({ success: true, quotes: quotes, slot: currentSlot });
-
 })
 
 router.get('/:type', async (req, res) => {

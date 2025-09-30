@@ -1870,6 +1870,9 @@ class EmailService {
     let email_quote = quotes.email.quote;
     let email_perc = quotes.email.perc;
 
+    let voice_quote = quotes.voice_duration.quote;
+    let voice_perc = quotes.voice_duration.perc;
+
     let replacements = {
       firstname: firstname,
       project_name: project_name,
@@ -1880,7 +1883,9 @@ class EmailService {
       tokens_quote: tokens_quote,
       tokens_perc: tokens_perc,
       email_quote: email_quote,
-      email_perc: email_perc
+      email_perc: email_perc,
+      voice_quote: voice_quote,
+      voice_perc: voice_perc
     }
 
     html = template(replacements);

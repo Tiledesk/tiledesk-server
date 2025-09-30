@@ -201,15 +201,16 @@ router.get('/', async (req, res, next) => {
           winston.debug("project", project);
 
           // This code filters the project settings to only include the properties
-          // 'allowed_urls', 'allowed_urls_list', and 'allowed_send_emoji', removing all others.
+          // 'allowed_urls', 'allowed_urls_list', 'allowed_send_emoji' and 'allowed_upload_extentions' removing all others.
           // Removed the "-settings" command from the query that excluded the entire "settings" field from the selection
           if (project && project.settings) {
-            const { allowed_urls, allowed_urls_list, allow_send_emoji } = project.settings;
+            const { allowed_urls, allowed_urls_list, allow_send_emoji, allowed_upload_extentions } = project.settings;
             project.settings = {};
             Object.assign(project.settings, 
               allowed_urls !== undefined ? { allowed_urls } : {},
               allowed_urls_list !== undefined ? { allowed_urls_list } : {},
-              allow_send_emoji !== undefined ? { allow_send_emoji } : {}
+              allow_send_emoji !== undefined ? { allow_send_emoji } : {},
+              allowed_upload_extentions !== undefined ? { allowed_upload_extentions } : {}
             );
           }
 
