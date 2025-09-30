@@ -33,6 +33,7 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -569,7 +570,8 @@ router.put('/:requestid/assign', function (req, res) {
 
         return res.json(updatedRequest);
       }).catch(function (error) {
-        winston.error('Error changing the department.', error)
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose('Error changing the department.', error)
         return res.status(500).send({ success: false, msg: 'Error changing the department.' });
       })
     });
@@ -585,7 +587,8 @@ router.put('/:requestid/departments', function (req, res) {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 });
@@ -619,7 +622,8 @@ router.put('/:requestid/agent', async (req, res) => {
 
     return res.json(updatedRequest);
   }).catch(function (error) {
-    winston.error('Error changing the department.', error)
+    // TODO: error log removed due to attempt to reduces logs when no department is found
+    winston.verbose('Error changing the department.', error)
     return res.status(500).send({ success: false, msg: 'Error changing the department.' });
   })
 

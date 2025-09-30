@@ -113,9 +113,12 @@ router.get('/me', function (req, res, next) {
   winston.debug("isObjectId:"+ isObjectId);
 
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000}, preflight:false};
+  var query = { "id_project": req.projectid, "status": {$lt:1000} };
+  
+  if (!(req.query.preflight === "true" || req.query.preflight === true)) {
+    query.preflight = false;
+  }
 
-    
   if (isObjectId) {
     query["snapshot.requester.id_user"] = user_id;
     // query.id_user = mongoose.Types.ObjectId(contact_id);

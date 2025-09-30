@@ -107,8 +107,6 @@ router.post('/signup',
           if (!skipVerificationEmail) {
 
             let verify_email_code = uniqid();
-            console.log("(Auth) verify_email_code: ", verify_email_code);
-
             let redis_client = req.app.get('redis_client');
             let key = "emailverify:verify-" + verify_email_code;
             let obj = { _id: savedUser._id, email: savedUser.email}
@@ -775,78 +773,73 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 
 
 
-router.get("/oauth2", function(req,res,next){
-  winston.debug("redirect_url: "+ req.query.redirect_url );
+router.get("/oauth2", function (req, res, next) {
+  winston.debug("(oauth2) redirect_url: " + req.query.redirect_url);
   req.session.redirect_url = req.query.redirect_url;
 
-  winston.debug("forced_redirect_url: "+ req.query.forced_redirect_url );
+  winston.debug("(oauth2) forced_redirect_url: " + req.query.forced_redirect_url);
   req.session.forced_redirect_url = req.query.forced_redirect_url;
 
   passport.authenticate(
-      'oauth2'
-  )(req,res,next);
+    'oauth2'
+  )(req, res, next);
 });
 
 // router.get('/oauth2',
 //   passport.authenticate('oauth2'));
 
-  router.get('/oauth2/callback',
-  passport.authenticate('oauth2', { session: false}),
-  function(req, res) {
-    winston.debug("'/oauth2/callback: ");
-    
-    var user = req.user;
-    winston.debug("user", user);
-    winston.debug("req.session.redirect_url: "+ req.session.redirect_url);
-    
-  
-    var userJson = user.toObject();
-    
-    delete userJson.password;
-  
-  
-      var signOptions = {     
-        issuer:  'https://tiledesk.com',       
-        subject:  'user',
-        audience:  'https://tiledesk.com',
-        jwtid: uuidv4()
-  
-      };
-  
-      var alg = process.env.GLOBAL_SECRET_ALGORITHM;
-      if (alg) {
-        signOptions.algorithm = alg;
-      }
-  
-  
-    var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
-  
-  
-    // return the information including token as JSON
-    // res.json(returnObject);
-  
-    let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
-    winston.debug("Google Redirect dashboard_base_url: ", dashboard_base_url);
-  
-    let homeurl = "/#/";
-  
-    if (req.session.redirect_url) {
-      homeurl = req.session.redirect_url;
-    }
-  
-    var url = dashboard_base_url+homeurl+"?token=JWT "+token;
-  
-    if (req.session.forced_redirect_url) {
-      url = req.session.forced_redirect_url+"?jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
-    }
-  
-    winston.debug("Google Redirect: "+ url);
-  
-    res.redirect(url);
-  
+router.get('/oauth2/callback', passport.authenticate('oauth2', { session: false }), function (req, res) {
+  winston.debug("'/oauth2/callback: ", req.query);
+  winston.debug("/oauth2/callback --> req.session.redirect_url", req.session.redirect_url);
+  winston.debug("/oauth2/callback --> req.session.forced_redirect_url", req.session.forced_redirect_url);
 
+  var user = req.user;
+  winston.debug("(/oauth2/callback) user", user);
+  winston.debug("(/oauth2/callback) req.session.redirect_url: " + req.session.redirect_url);
+  var userJson = user.toObject();
+
+  delete userJson.password;
+
+  var signOptions = {
+    issuer: 'https://tiledesk.com',
+    subject: 'user',
+    audience: 'https://tiledesk.com',
+    jwtid: uuidv4()
+
+  };
+
+  var alg = process.env.GLOBAL_SECRET_ALGORITHM;
+  if (alg) {
+    signOptions.algorithm = alg;
+  }
+
+  var token = jwt.sign(userJson, configSecret, signOptions); //priv_jwt pp_jwt              
+
+  // return the information including token as JSON
+  // res.json(returnObject);
+
+  let dashboard_base_url = process.env.EMAIL_BASEURL || config.baseUrl;
+  winston.debug("(/oauth2/callback) Google Redirect dashboard_base_url: ", dashboard_base_url);
+
+  let homeurl = "/#/";
     
-  });
+  const separator = homeurl.includes('?') ? '&' : '?';
+  var url = dashboard_base_url+homeurl+ separator + "token=JWT "+token;
+  
+  if (req.session.redirect_url) {
+    const separator = req.session.redirect_url.includes('?') ? '&' : '?';
+    url = req.session.redirect_url+ separator + "token=JWT "+token;
+  }
+
+  if (req.session.forced_redirect_url) {
+    const separator = req.session.forced_redirect_url.includes('?') ? '&' : '?';
+    url = req.session.forced_redirect_url+ separator + "jwt=JWT "+token;  //attention we use jwt= (ionic) instead token=(dashboard) for ionic 
+  }
+
+  winston.debug("(/oauth2/callback) Google Redirect: " + url);
+
+  res.redirect(url);
+});
 
 router.get(
   "/keycloak",

@@ -77,6 +77,7 @@ class ProjectService {
 
   async getCachedProject(id_project) {
     return new Promise((resolve, reject) => {
+      // winston.info("main_flow_cache_3 getCachedProject"); it is cached
       let q = Project.findOne({ _id: id_project, status: 100 });
       if (cacheEnabler.project) {
         q.cache(cacheUtil.longTTL, "projects:id:" + id_project)  //project_cache

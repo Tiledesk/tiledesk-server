@@ -85,6 +85,7 @@ roundRobin(operatorSelectedEvent) {
         participants: { $exists: true, $ne: [] }};
       
       winston.debug('query', query);            
+      winston.info("main_flow_cache_3 department find last request");
 
       // let lastRequests = await 
       // requestcachefarequi nocachepopulatereqired
@@ -225,14 +226,26 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
 
 
       let query;
+      var cacheKey;
       if (departmentid == 'default' || departmentid == undefined) {
         query = { default: true, id_project: projectid };
+        cacheKey =  projectid+":departments:default";
       } else {
         query = { _id: departmentid };
+        cacheKey =  projectid+":departments:id:"+departmentid;
       }
+      winston.info("main_flow_cache_2 departmentService getOperators");
+      
        // console.log('query', query);
-      return Department.findOne(query).exec(function (err, department) {
-        // return Department.findOne(query).exec().then(function (department) {
+      var q = Department.findOne(query);
+      
+      if (cacheEnabler.department) {
+        winston.info("cacheKey: "+cacheKey);
+        q.cache(cacheUtil.defaultTTL, cacheKey);
+        winston.debug("cacheEnabler.lead enabled");
+      }
+
+      return q.exec(function (err, department) {
 
         if (err) {
           winston.error('-- > 1 DEPT FIND BY ID ERR ', err)
@@ -240,7 +253,8 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
         }
         // console.log("department", department);
         if (!department) {
-          winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+          // TODO: error log removed due to attempt to reduces logs when no department is found
+          winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
           return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
         }
         // console.log('OPERATORS - »»» DETECTED ROUTING ', department.routing)
@@ -374,8 +388,7 @@ getOperators(departmentid, projectid, nobot, disableWebHookCall, context) {
   var that = this;
 
   return new Promise(function (resolve, reject) {
-
-    return Group.find({ _id: department.id_group }).exec(function (err, group) {
+    return Group.find({ _id: department.id_group, $or: [ { enabled: true }, { enabled: { $exists: false } } ] }).exec(function (err, group) {
       if (err) {
         winston.error('D-2 GROUP -> [ FIND PROJECT USERS: ALL and AVAILABLE (with OH) ] -> ERR ', err)
         return reject(err);
@@ -590,7 +603,8 @@ getDefaultDepartment(projectid) {
       }
       // console.log("department", department);
       if (!department) {
-        winston.error("Department not found for projectid: "+ projectid +" for query: ", query, context);
+        // TODO: error log removed due to attempt to reduces logs when no department is found
+        winston.verbose("Department not found for projectid: "+ projectid +" for query: ", query, context);
         return reject({ success: false, msg: 'Department not found for projectid: '+ projectid +' for query: ' + JSON.stringify(query) });
       }
       winston.debug('department ', department);
@@ -629,6 +643,21 @@ getDefaultDepartment(projectid) {
   }
 }
 
+  /**
+   * Checks if the group belongs to a department of the project
+   * @param {String} projectId
+   * @param {String} groupId
+   * @returns {Promise<Boolean>} true if the group belongs to a department of the project, otherwise false
+   */
+  async isGroupInProjectDepartment(projectId, groupId) {
+    try {
+      const department = await Department.findOne({ id_project: projectId, id_group: groupId });
+      return !!department;
+    } catch (err) {
+      winston.error('Error in isGroupInProjectDepartment', err);
+      return false;
+    }
+  }
 
 
 }

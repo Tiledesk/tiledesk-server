@@ -224,8 +224,6 @@ class RoleChecker {
             
           }
           
-              
-      
           if (project_user) {
             
             req.projectuser = project_user;

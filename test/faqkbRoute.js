@@ -7,7 +7,7 @@ var projectService = require('../services/projectService');
 var userService = require('../services/userService');
 var faqService = require('../services/faqService');
 
-let chatbot_mock = require('./chatbot-mock');
+let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
 
 
@@ -748,7 +748,7 @@ describe('FaqKBRoute', () => {
                         .post('/' + savedProject._id + '/faq_kb/importjson/' + null + "?create=true")
                         .auth(email, pwd)
                         .set('Content-Type', 'text/plain')
-                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-json-rules.txt')), 'example-json-rules')
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err); }
@@ -810,7 +810,7 @@ describe('FaqKBRoute', () => {
                                 .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb)
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-json-rules.txt')), 'example-json-rules')
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err); }
@@ -868,7 +868,7 @@ describe('FaqKBRoute', () => {
                                         .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb)
                                         .auth(email, pwd)
                                         .set('Content-Type', 'text/plain')
-                                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json-rules.txt')), 'example-json-rules')
+                                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-json-rules.txt')), 'example-json-rules')
                                         .end((err, res) => {
 
                                             if (err) { console.error("err: ", err); }
@@ -915,7 +915,7 @@ describe('FaqKBRoute', () => {
                                 .post('/' + savedProject._id + '/faq_kb/importjson/' + id_faq_kb)
                                 .auth(email, pwd)
                                 .set('Content-Type', 'text/plain')
-                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-json.txt')), 'example-json.txt')
+                                .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-json.txt')), 'example-json.txt')
                                 .end((err, res) => {
 
                                     if (err) { console.error("err: ", err) };
@@ -1080,7 +1080,7 @@ describe('FaqKBRoute', () => {
                         .post('/' + savedProject._id + '/faq_kb/importjson/null?create=true')
                         .auth(email, pwd)
                         .set('Content-Type', 'text/plain')
-                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './example-webhook-json.txt')), 'example-webhook-json.txt')
+                        .attach('uploadFile', fs.readFileSync(path.resolve(__dirname, './fixtures/example-webhook-json.txt')), 'example-webhook-json.txt')
                         .end((err, res) => {
 
                             if (err) { console.error("err: ", err) };

@@ -8,10 +8,10 @@
  var labelEvent = require("../../event/labelEvent");
  var integrationEvent = require("../../event/integrationEvent");
 
- var triggerEventEmitter = require("../trigger/event/triggerEventEmitter");
- var subscriptionEvent = require("../../event/subscriptionEvent");   
- var roleEvent = require("../../event/roleEvent");   
-
+ var triggerEventEmitter = require("../trigger/event/triggerEventEmitter"); 
+ var subscriptionEvent =  require("../../event/subscriptionEvent"); 
+ var leadEvent = require("../../event/leadEvent"); 
+ var roleEvent = require("../../event/roleEvent");
  var winston = require('../../config/winston');
 
  var cachegoose = require('cachegoose');
@@ -22,7 +22,7 @@
  
  async function del(client, key, callback) {
     key = "cacheman:cachegoose-cache:" + key;
-    winston.debug("key: "+key)
+    winston.debug("final key: "+key)
    
     // client.del(key, function (err, data) {
     //     if (err) {
@@ -53,6 +53,8 @@
  }
 
  function listen(client) {
+
+    winston.debug("Listening cache");
 
     projectEvent.on("project.create", function(project) {
         setImmediate(() => {
@@ -217,6 +219,17 @@
             }else {
                 winston.verbose("NOT invalidating widget cache for non admins project_user role");//tested
             }
+
+
+
+
+            key = project_user.id_project+":project_users:query:teammates:available";
+            winston.verbose("Deleting cache for project_user.update with key: " + key);
+            del(client._cache._engine.client, key, function (err, reply) { 
+                winston.debug("Deleted cache for project_user.updat",reply);
+                winston.verbose("Deleted cache for project_user.updat",{err:err});
+            });
+
             
         });
     });
@@ -320,11 +333,20 @@
                 winston.verbose("Created cache for request.create.simple",{err:err});
             });
 
+            var key = request.id_project+":requests:request_id:"+request.request_id+":basic";
+            winston.verbose("Creating cache for request.create.basic with key: " + key);
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
+                winston.debug("Created cache for request.create.basic",reply);
+                winston.verbose("Created cache for request.create.basic",{err:err});
+            });
+
         })
     });
 
     function invalidatRequestSimple(client, project_id, rid, request_id) {
+       
         var key = project_id+":requests:id:"+rid+":simple";
+        winston.debug("Deleting cache for invalidatRequestSimple with key: " + key);
         winston.verbose("Deleting cache for widgets with key: " + key);
 
         // found del
@@ -354,12 +376,13 @@
             winston.verbose("Deleted cache for invalidatRequestSimple",{err:err});
         });   
 
+        // dont invalidate :basic cache for request.update it is only contains basic info like (request_id, etc)
 
     }
 
 
     requestEvent.on("request.create", function(request) {
-        setImmediate(() => {
+        // setImmediate(() => { run immediatly this code and not defering in the next node loop becasue it is important to find immediarlely the hit when a new request is created. for request.create many code try to find from the db the request with populated fields. So it is important to sync save to the cache the request created to better use the cache for the subsequent query
             var key = request.id_project+":requests:id:"+request.id;
             winston.verbose("Creating cache for request.create with key: " + key);
 
@@ -383,7 +406,7 @@
             //     winston.verbose("Deleted cache for request.create",{err:err});
             // });   
 
-        });
+        // });
     });
 
 
@@ -444,6 +467,14 @@
 
             invalidatRequestSimple(client, request.id_project, request.id, request.request_id)
 
+
+            //delete basic cache only in request.delete event
+            var key = request.id_project+":requests:request_id:"+request.request_id+":basic";
+            winston.verbose("Creating cache for request.close with key: " + key);
+            client.set(key, request, cacheUtil.defaultTTL, (err, reply) => {
+                winston.debug("Created cache for request.close",reply);
+                winston.verbose("Created cache for request.close",{err:err});
+            });
         });
     });
 
@@ -604,6 +635,15 @@
                 winston.debug("Created cache for department.create",reply);
                 winston.verbose("Created cache for department.create",{err:err});
             });
+
+            if (department.default==true) {
+                key = department.id_project+":departments:default";
+                winston.verbose("Creating cache for department.create default with key: " + key);
+                client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Created cache for department.create default",reply);
+                    winston.verbose("Created cache for department.create default",{err:err});
+                });
+            }
             
             // TODO COMMENTA NON USATO
             // key = department.id_project+":departments:query:*";        
@@ -629,6 +669,15 @@
                 winston.debug("Created cache for department.update",reply);
                 winston.verbose("Created cache for department.update",{err:err});
             });    
+
+            if (department.default==true) {
+                key = department.id_project+":departments:default";
+                winston.verbose("Creating cache for department.create default with key: " + key);
+                client.set(key, department, cacheUtil.defaultTTL, (err, reply) => {
+                    winston.debug("Created cache for department.create default",reply);
+                    winston.verbose("Created cache for department.create default",{err:err});
+                });
+            }
 
             // TODO COMMENTA NON USATO
             // key = department.id_project+":departments:query:*";        
@@ -656,6 +705,17 @@
                 winston.verbose("Deleted cache for department.delete",{err:err});
             });
 
+            if (department.default==true) {
+                key = department.id_project+":departments:default";
+                winston.verbose("Deleting cache for department.delete default with key: " + key);
+                // found del
+                del(client._cache._engine.client, key, function (err, reply) {  //tested
+                // client.del(key, (err, reply) => {
+                    winston.debug("Deleted cache for department.delete default",reply);
+                    winston.verbose("Deleted cache for department.delete default",{err:err});
+                });
+            }
+
             // TODO COMMENTA NON USATO
             // key = department.id_project+":departments:query:*";        
             // winston.verbose("Deleting cache for department.delete with key: " + key);
@@ -670,17 +730,17 @@
         });
     });
 
+    // winston.info("labelEvent init");
 
     labelEvent.on("label.create", function(label) { 
         setImmediate(() => {    
-
-            // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
-            // winston.verbose("Deleting cache for label.create with key: " + key);
+            var key = label.id_project+":labels";        
+            winston.verbose("Deleting cache for label.create with key: " + key);
+            del(client._cache._engine.client, key, function (err, reply) {  
             // client.del(key, function (err, reply) {
-            //     winston.debug("Deleted cache for label.create",reply);
-            //     winston.verbose("Deleted cache for label.create",{err:err});
-            // });   
+                winston.debug("Deleted cache for label.create",reply);
+                winston.verbose("Deleted cache for label.create",{err:err});
+            });   
         });
     });
 
@@ -689,43 +749,91 @@
     labelEvent.on("label.update", function(label) {        
         setImmediate(() => {    
 
-            // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
-            // winston.verbose("Deleting cache for label.update with key: " + key);
+            var key = label.id_project+":labels";        
+            winston.verbose("Deleting cache for label.update with key: " + key);
+            del(client._cache._engine.client, key, function (err, reply) {  
             // client.del(key, function (err, reply) {
-            //     winston.debug("Deleted cache for label.update",reply);
-            //     winston.verbose("Deleted cache for label.update",{err:err});
-            // });   
+                winston.debug("Deleted cache for label.update",reply);
+                winston.verbose("Deleted cache for label.update",{err:err});
+            });   
         });
     });
 
 
     labelEvent.on("label.clone", function(label) {    
         setImmediate(() => {       
-            
-            // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
-            // winston.verbose("Deleting cache for label.clone with key: " + key);
+            var key = label.id_project+":labels";        
+            winston.verbose("Deleting cache for label.clone with key: " + key);
+            del(client._cache._engine.client, key, function (err, reply) {  
             // client.del(key, function (err, reply) {
-            //     winston.debug("Deleted cache for label.clone",reply);
-            //     winston.verbose("Deleted cache for label.clone",{err:err});
-            // });   
+                winston.debug("Deleted cache for label.clone",reply);
+                winston.verbose("Deleted cache for label.clone",{err:err});
+            });   
         });
     });
 
 
     labelEvent.on("label.delete", function(label) {     
         setImmediate(() => {         
-
-            // TODO COMMENTA NON USATO
-            // var key = label.id_project+":labels:query:*";        
-            // winston.verbose("Deleting cache for label.delete with key: " + key);
+            var key = label.id_project+":labels";        
+            winston.verbose("Deleting cache for label.delete with key: " + key);
+            del(client._cache._engine.client, key, function (err, reply) {  
             // client.del(key, function (err, reply) {
-            //     winston.debug("Deleted cache for label.delete",reply);
-            //     winston.verbose("Deleted cache for label.delete",{err:err});
-            // });   
+                winston.debug("Deleted cache for label.delete",reply);
+                winston.verbose("Deleted cache for label.delete",{err:err});
+            });   
         });
     });
+
+
+
+    // TODO ADD lead invalidation
+    leadEvent.on("lead.create", function(lead) {     
+        setImmediate(() => {         
+
+            var key = lead.id_project+":leads:lead_id:"+lead.lead_id;
+            winston.verbose("Creating cache for lead.create with key: " + key);
+            client.set(key, lead, cacheUtil.defaultTTL, (err, reply) => {
+                winston.debug("Created cache for lead.create",reply);
+                winston.verbose("Created cache for lead.create",{err:err});
+            });
+                   
+        });
+    });
+
+
+
+    leadEvent.on("lead.update", function(lead) {  
+        setImmediate(() => {
+            var key = lead.id_project+":leads:lead_id:"+lead.lead_id;
+            winston.verbose("Creating cache for lead.update with key: " + key);
+            client.set(key, lead, cacheUtil.defaultTTL, (err, reply) => {
+                winston.debug("Created cache for lead.update",reply);
+                winston.verbose("Created cache for lead.update",{err:err});
+            });               
+        });
+    });
+
+    leadEvent.on("lead.delete", function(lead) { 
+        setImmediate(() => {
+            var key = lead.id_project+":leads:lead_id:"+lead.lead_id;
+            winston.verbose("Deleting cache for lead.delete with key: " + key);
+            // found del
+            del(client._cache._engine.client, key, function (err, reply) {  //tested
+            // client.del(key, (err, reply) => {
+                winston.debug("Deleted cache for lead.delete",reply);
+                winston.verbose("Deleted cache for lead.delete",{err:err});
+            });          
+        });
+    });
+
+
+
+
+
+
+
+
 
     // l'evento è relativo a tutte le integrazioni, è sufficiente solo un evento
     // per create, update, delete di una singola creation
@@ -958,7 +1066,7 @@ module.exports = function (mongoose, option) {
           });
 
         var client = cachegoose._cache;
-        // winston.info("client client", client);
+        // winston.info("client cache client", client);
         // winston.info("client _cache._engine", client._cache._engine);
         // winston.info("client _cache._engine.client", client._cache._engine.client);
         listen(client);

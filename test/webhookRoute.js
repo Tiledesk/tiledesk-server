@@ -1,10 +1,12 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 process.env.LOG_LEVEL = 'error';
+process.env.BUCKET_WH_CAPACITY = 2
+process.env.BUCKET_WH_REFILL_RATE = 2 / 60;
 
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');
-let chatbot_mock = require('./chatbot-mock');
+let chatbot_mock = require('./mock/chatbotMock');
 let log = false;
 
 //Require the dev-dependencies
@@ -613,6 +615,85 @@ describe('WebhookRoute', () => {
                                     });
 
                             })
+                    });
+            });
+        });
+    })
+
+    it('webhook-rate-limit', (done) => {
+
+        var email = "test-signup-" + Date.now() + "@email.com";
+        var pwd = "pwd";
+
+        userService.signup(email, pwd, "Test Firstname", "Test lastname").then(function (savedUser) {
+            projectService.create("test-webhook-create", savedUser._id).then(function (savedProject) {
+
+                chai.request(server)
+                    .post('/' + savedProject._id + '/faq_kb')
+                    .auth(email, pwd)
+                    .send({ name: "testbot", type: "tilebot", subtype: "webhook", language: "en", template: "blank" })
+                    .end((err, res) => {
+
+                        if (err) { console.error("err: ", err); }
+                        if (log) { console.log("res.body", res.body); }
+
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+
+                        let chatbot_id = res.body._id;
+                        let webhook_intent_id = "3bfda939-ff76-4762-bbe0-fc0f0dc4c777"
+
+                        chai.request(server)
+                            .post('/' + savedProject._id + '/webhooks/')
+                            .auth(email, pwd)
+                            .send({ chatbot_id: chatbot_id, block_id: webhook_intent_id })
+                            .end((err, res) => {
+
+                                if (err) { console.error("err: ", err); }
+                                if (log) { console.log("res.body", res.body); }
+
+                                res.should.have.status(200);
+                                res.body.should.be.a('object');
+
+                                let webhook_id = res.body.webhook_id;
+
+                                let iterations = 4;
+                                let interval = 1000;
+                                async function send(i) {
+                                    chai.request(server)
+                                        .post('/webhook/' + webhook_id)
+                                        .auth(email, pwd)
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body", res.body); }
+                                            
+                                            if (i !== 3) {
+                                                res.should.have.status(200);
+                                                res.body.should.be.a('object');
+                                                expect(res.body.success).to.equal(true);
+                                                expect(res.body.message).to.equal("Webhook disabled in test mode");
+                                            } else {
+                                                res.should.have.status(429);
+                                                res.body.should.be.a('object');
+                                                expect(res.body.message).to.equal("Rate limit exceeded");
+                                            }
+
+                                            i += 1;
+                                            if (i < iterations) {
+                                                setTimeout(() => {
+                                                    send(i)
+                                                }, interval);
+                                            } else {
+                                                done();
+                                            }
+                                    });
+                                }
+                                send(0);
+
+                        
+                            });
+
                     });
             });
         });
