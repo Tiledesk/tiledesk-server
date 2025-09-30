@@ -620,7 +620,7 @@ describe('FaqKBRoute', () => {
 
                         class chatbot_service {
                             async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {
-                                return chatbot_mock.existing_chatbot_mock;
+                                return nechatbot_mock.existing_chatbot_mock;
                             }
 
                             async createBot(api_url, token, chatbot, project_id) {
@@ -672,6 +672,69 @@ describe('FaqKBRoute', () => {
 
 
         })
+
+        it('fork-chatbot-private-not-permitted', (done) => {
+            var email_user1 = "user1-signup-" + Date.now() + "@email.com";
+            var email_user2 = "user2-signup-" + (Date.now() + 1) + "@email.com";
+            var pwd = "pwd";
+
+            userService.signup(email_user1, pwd, "User1 Firstname", "User1 lastname").then(function (user1) {
+                userService.signup(email_user2, pwd, "User2 Firstname", "User2 lastname").then(function (user2) {
+                    projectService.create("project1", user1._id).then(function (currentProject) {
+                        projectService.create("project2", user2._id).then(function (landingProject) {
+
+                            class chatbot_service {
+                                async getBotById(id, published, api_url, chatbot_templates_api_url, token, project_id) {
+                                    console.log("\n\nget bot!")
+                                    return new Promise((resolve, reject) => {
+                                        reject({ success: false, msg: "Chatbot not found" })
+                                    })
+                                }
+    
+                                async createBot(api_url, token, chatbot, project_id) {
+                                    return chatbot_mock.empty_chatbot_mock
+                                }
+    
+                                async importFaqs(api_url, id_faq_kb, token, chatbot, project_id) {
+                                    return chatbot_mock.import_faqs_res_mock
+                                }
+                            }
+
+                            server.set('chatbot_service', new chatbot_service());
+
+                            chai.request(server)
+                                .post('/' + currentProject._id + '/faq_kb')
+                                .auth(email_user1, pwd)
+                                .send({ "name": "chatbot1", type: "tilebot", language: 'en', public: "false", template: "blank" })
+                                .end((err, res) => {
+                                    if (err) { console.error("err: ", err); }
+                                    if (log) { console.log("res.body", res.body); }
+
+                                    res.should.have.status(200);
+                                    res.body.should.be.a('object');
+                                    expect(res.body.name).to.equal("chatbot1");
+                                    expect(res.body.language).to.equal("en");
+                                    expect(res.body.public).to.equal(false);
+
+                                    const chatbot_id = res.body._id;
+
+                                    chai.request(server)
+                                        .post('/' + landingProject._id + '/faq_kb/fork/' + chatbot_id + "?public=false&projectid=" + landingProject._id)
+                                        .auth(email_user2, pwd)
+                                        .end((err, res) => {
+
+                                            if (err) { console.error("err: ", err); }
+                                            if (log) { console.log("res.body: ", res.body); }
+                                            console.log("res.body: ", res.body);
+                                            done();
+                                        })
+
+                                });
+                        });
+                    });
+                });
+            });
+        });
 
         it('fork-chatbot-public', (done) => {
             var email_user1 = "user1-signup-" + Date.now() + "@email.com";
