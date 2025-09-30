@@ -75,6 +75,7 @@ var connection = mongoose.connect(databaseUri, { "useNewUrlParser": true, "autoI
   winston.info("Mongoose connection done on host: "+mongoose.connection.host + " on port: " + mongoose.connection.port + " with name: "+ mongoose.connection.name)// , mongoose.connection.db);
 });
 if (process.env.MONGOOSE_DEBUG==="true") {
+  winston.info("Mongoose log enabled");
   mongoose.set('debug', true);
 }
 mongoose.set('useFindAndModify', false); // https://mongoosejs.com/docs/deprecations.html#-findandmodify-
@@ -90,6 +91,9 @@ let tdCache = new TdCache({
 });
 
 tdCache.connect();
+
+var cacheManager = require('./utils/cacheManager');
+cacheManager.setClient(tdCache);
 
 // ROUTES DECLARATION
 var troubleshooting = require('./routes/troubleshooting');
@@ -146,6 +150,7 @@ var property = require('./routes/property');
 var segment = require('./routes/segment');
 var webhook = require('./routes/webhook');
 var webhooks = require('./routes/webhooks');
+var roles = require('./routes/roles');
 var copilot = require('./routes/copilot');
 
 var bootDataLoader = require('./services/bootDataLoader');
@@ -217,9 +222,13 @@ var BanUserNotifier = require('./services/banUserNotifier');
 BanUserNotifier.listen();
 const { ChatbotService } = require('./services/chatbotService');
 const { QuoteManager } = require('./services/QuoteManager');
+const RateManager = require('./services/RateManager');
 
 let qm = new QuoteManager({ tdCache: tdCache });
 qm.start();
+
+let rm = new RateManager({ tdCache: tdCache });
+
 
 var modulesManager = undefined;
 try {
@@ -255,7 +264,8 @@ app.set('view engine', 'jade');
 app.set('chatbot_service', new ChatbotService())
 app.set('redis_client', tdCache);
 app.set('quote_manager', qm);
-
+app.set('rate_manager', rm);
+app.set('trust proxy', true);
 
 // TODO DELETE IT IN THE NEXT RELEASE
 if (process.env.ENABLE_ALTERNATIVE_CORS_MIDDLEWARE === "true") {  
@@ -627,6 +637,7 @@ app.use('/:projectid/logs', [passport.authenticate(['basic', 'jwt'], { session: 
 
 app.use('/:projectid/webhooks', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], webhooks);
 app.use('/:projectid/copilot', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], copilot);
+app.use('/:projectid/roles', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('agent')], roles);
 
 
 if (pubModulesManager) {
