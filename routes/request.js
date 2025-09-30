@@ -33,6 +33,7 @@ const RoleConstants = require('../models/roleConstants');
 const eventService = require('../pubmodules/events/eventService');
 const { Scheduler } = require('../services/Scheduler');
 const faq_kb = require('../models/faq_kb');
+const JobManager = require('@tiledesk/tiledesk-multi-worker');
 //const JobManager = require('../utils/jobs-worker-queue-manager-v2/JobManagerV2');
 
 // var messageService = require('../services/messageService');
@@ -1055,8 +1056,8 @@ router.delete('/:requestid', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1111,8 +1112,8 @@ router.delete('/id/:id', function (req, res) {
 
   var projectuser = req.projectuser;
 
-
-  if (projectuser.role != "owner") {
+  // request_role_check
+  if (!projectuser.hasPermissionOrRole('request_delete', 'owner')){
     return res.status(403).send({ success: false, msg: 'Unauthorized.' });
   }
 
@@ -1173,15 +1174,23 @@ router.get('/', function (req, res, next) {
 
   if (req.user instanceof Subscription) {
     // All request 
-  } else if (projectuser && (projectuser.role == "owner" || projectuser.role == "admin")) {
+    winston.debug("Subscription All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_all', ["owner", "admin"])) {
     // All request 
-    // Per uni mostrare solo quelle proprie quindi solo participants
-    if (req.query.mine) {
-      query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
-    }
-  } else {
+    winston.debug("hasPermissionOrRole All request ");
+  } else if (projectuser.hasPermissionOrRole('request_read_group', ["agent"])) {
+
     query["$or"] = [{ "snapshot.agents.id_user": req.user.id }, { "participants": req.user.id }];
+
+  } 
+  // else if (projectuser.hasPermissionOrRole('request_read_mine', ["????"])) {
+  //   query["participants"] = req.user.id;
+  // }
+  else {
+    query["participants"] = req.user.id;
+    // generate empty requests response
   }
+
 
   if (req.query.dept_id) {
     query.department = req.query.dept_id;
