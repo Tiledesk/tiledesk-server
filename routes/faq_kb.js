@@ -174,7 +174,10 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug('ASK BOT ', req.body);
 
-  Faq_kb.findById(req.body.id_faq_kb).exec(function (err, faq_kb) {
+  const chatbot_id = req.body.id_faq_kb;
+  const id_project = req.projectid;
+
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).exec(function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -185,7 +188,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
     winston.debug('faq_kb.type :' + faq_kb.type);
     if (faq_kb.type == "internal" || faq_kb.type == "tilebot") {
 
-      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb, "question": req.body.question };
+      var query = { "id_project": id_project, "id_faq_kb": chatbot_id, "question": req.body.question };
 
       Faq.find(query)
         .lean().
