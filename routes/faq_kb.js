@@ -556,9 +556,11 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
  */
 router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res) {
 
-
   winston.debug("req.query", req.query);
-  winston.debug("GET FAQ-KB req projectid", req.projectid);
+
+  const id_project = req.projectid;
+  winston.debug("GET FAQ-KB req projectid " + id_project);
+
 
   let restricted_mode = false;
 
@@ -572,7 +574,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  let query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
+  let query = { id_project: id_project, trashed: { $in: [null, false] } };
 
   if (restricted_mode === true) {
     query.agents_available = {
@@ -584,22 +586,18 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
     query.type = { $ne: "identity" }
   }
 
-  let search_obj = { "$search": req.query.text };
-
   if (req.query.text) {
-    if (req.query.language) {
-      search_obj["$language"] = req.query.language;
-    }
+    const search_obj = { $search: req.query.text };
+    if (req.query.language) search_obj.$language = req.query.language;
     query.$text = search_obj;
   }
 
-  if (req.query.public) {
-    query.public = req.query.public;
-  }
-
-  if (req.query.certified) {
-    query.certified = req.query.certified;
-  }
+  const allowedFilters = ["public", "certified"];
+  allowedFilters.forEach(f => {
+    if (req.query[f] !== undefined) {
+      query[f] = req.query[f];
+    }
+  });
 
   winston.debug("query", query);
 
