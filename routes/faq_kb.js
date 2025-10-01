@@ -667,12 +667,15 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   let token = req.headers.authorization;
 
   let cs = req.app.get('chatbot_service')
-
-  let chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
-  winston.debug("chatbot: ", chatbot)
+  let chatbot;
+  try {
+    chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
+  } catch (err) {
+    return res.status(500).send({ success: false, error: "Unable to get chatbot to be forked"});
+  }
 
   if (!chatbot) {
-    return res.status(500).send({ success: false, message: "Unable to get chatbot" });
+    return res.status(500).send({ success: false, message: "Unable to get chatbot to be forked" });
   }
 
   if (!globals) {
@@ -953,65 +956,69 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
 
   winston.debug("exporting bot...")
 
-  let id_faq_kb = req.params.id_faq_kb;
+  const chatbot_id = req.params.id_faq_kb;
+  const id_project = req.projectid;
 
-  Faq_kb.findById(id_faq_kb, (err, faq_kb) => {
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, (err, faq_kb) => {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error getting bot.' });
-    } else {
-      winston.debug('FAQ-KB: ', faq_kb)
+    }
+    
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+    }
 
-      faqService.getAll(id_faq_kb).then((faqs) => {
+    winston.debug('FAQ-KB: ', faq_kb)
 
-        // delete from exclude map intent_id
-        const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+    faqService.getAll(chatbot_id).then((faqs) => {
 
-        if (!req.query.globals) {
-          winston.verbose("Delete globals from attributes!")
-          if (faq_kb.attributes) {
-            delete faq_kb.attributes.globals;
-          }
+      // delete from exclude map intent_id
+      const intents = faqs.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
+
+      if (!req.query.globals) {
+        winston.verbose("Delete globals from attributes!")
+        if (faq_kb.attributes) {
+          delete faq_kb.attributes.globals;
         }
+      }
 
-        let json = {
-          webhook_enabled: faq_kb.webhook_enabled,
-          webhook_url: faq_kb.webhook_url,
-          language: faq_kb.language,
-          name: faq_kb.name,
-          slug: faq_kb.slug,
-          type: faq_kb.type,
-          subtype: faq_kb.subtype,
-          description: faq_kb.description,
-          attributes: faq_kb.attributes,
+      let json = {
+        webhook_enabled: faq_kb.webhook_enabled,
+        webhook_url: faq_kb.webhook_url,
+        language: faq_kb.language,
+        name: faq_kb.name,
+        slug: faq_kb.slug,
+        type: faq_kb.type,
+        subtype: faq_kb.subtype,
+        description: faq_kb.description,
+        attributes: faq_kb.attributes,
+        intents: intents
+      }
+
+      if (req.query.intentsOnly == 'true') {
+        let intents_obj = {
           intents: intents
         }
+        let intents_string = JSON.stringify(intents_obj);
+        res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
+        return res.send(intents_string);
 
-        if (req.query.intentsOnly == 'true') {
-          let intents_obj = {
-            intents: intents
-          }
-          let intents_string = JSON.stringify(intents_obj);
-          res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
-          return res.send(intents_string);
+      } else {
 
-        } else {
+        // if (req.query.file == "false") {
+        //   return res.status(200).send(json);
+        // }
+        let json_string = JSON.stringify(json);
+        res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
+        return res.send(json_string);
+      }
 
-          // if (req.query.file == "false") {
-          //   return res.status(200).send(json);
-          // }
-          let json_string = JSON.stringify(json);
-          res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
-          return res.send(json_string);
-        }
-
-      }).catch((err) => {
-        winston.error('GET FAQ ERROR: ', err)
-        return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
-      })
-    }
+    }).catch((err) => {
+      winston.error('GET FAQ ERROR: ', err)
+      return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
+    })
   })
-
 })
 
 router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
