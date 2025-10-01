@@ -545,12 +545,15 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
 
   winston.debug(req.query);
 
-  Faq_kb.findById(req.params.faq_kbid).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
+  const chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
+
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     var signOptions = {
