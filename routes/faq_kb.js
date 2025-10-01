@@ -132,11 +132,10 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
 
 router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
 
-  const chatbot_id = req.body.id_faq_kb;
-  const id_project = req.projectid;
+  let id_faq_kb = req.body.id_faq_kb;
   let webhook_enabled = req.body.webhook_enabled;
 
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project}, async (err, chatbot) => {
+  Faq_kb.findById(id_faq_kb, async (err, chatbot) => {
     if (err) {
       return res.status(400).send({ success: false, error: err })
     }
@@ -146,10 +145,10 @@ router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
     if (chatbot.intentsEngine === 'tiledesk-ai') {
 
       // Option 1: emit event
-      //faqBotEvent.emit('faq_train.train', chatbot_id, webhook_enabled);
+      //faqBotEvent.emit('faq_train.train', id_faq_kb, webhook_enabled);
 
       // Option 2: call service directly
-      trainingService.train(null, chatbot_id, webhook_enabled).then((training_result) => {
+      trainingService.train(null, id_faq_kb, webhook_enabled).then((training_result) => {
         winston.info("training result: ", training_result);
         let response = {
           succes: true,
@@ -175,10 +174,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug('ASK BOT ', req.body);
 
-  const chatbot_id = req.body.id_faq_kb;
-  const id_project = req.projectid;
-
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).exec(function (err, faq_kb) {
+  Faq_kb.findById(req.body.id_faq_kb).exec(function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
@@ -189,7 +185,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
     winston.debug('faq_kb.type :' + faq_kb.type);
     if (faq_kb.type == "internal" || faq_kb.type == "tilebot") {
 
-      var query = { "id_project": id_project, "id_faq_kb": chatbot_id, "question": req.body.question };
+      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb, "question": req.body.question };
 
       Faq.find(query)
         .lean().
@@ -310,32 +306,67 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
   const id_project = req.projectid;
 
   var update = {};
-  const allowedFields = [
-    'name',
-    'description',
-    'url',
-    'webhook_url',
-    'webhook_enabled',
-    'type',
-    'trashed',
-    'public',
-    'certified',
-    'mainCategory',
-    'intentsEngine',
-    'tags',
-    'trained',
-    'short_description',
-    'title',
-    'certifiedTags',
-    'agents_available',
-    'slug'
-  ];
+  if (req.body.name != undefined) {
+    update.name = req.body.name;
+  }
+  if (req.body.description != undefined) {
+    update.description = req.body.description;
+  }
+  if (req.body.url != undefined) {
+    update.url = req.body.url;
+  }
+  if (req.body.webhook_url != undefined) {
+    update.webhook_url = req.body.webhook_url;
+  }
+  if (req.body.webhook_enabled != undefined) {
+    update.webhook_enabled = req.body.webhook_enabled;
+  }
+  if (req.body.type != undefined) {
+    update.type = req.body.type;
+  }
+  if (req.body.trashed != undefined) {
+    update.trashed = req.body.trashed;
+  }
+  if (req.body.public != undefined) {
+    update.public = req.body.public;
+  }
+  if (req.body.certified != undefined) {
+    update.certified = req.body.certified;
+  }
+  if (req.body.mainCategory != undefined) {
+    update.mainCategory = req.body.mainCategory;
+  }
+  if (req.body.intentsEngine != undefined) {
+    update.intentsEngine = req.body.intentsEngine;
+  }
 
-  allowedFields.forEach(f => {
-    if (req.body[f] !== undefined) {
-      update[f] = req.body[f];
-    }
-  });
+  if (req.body.tags != undefined) {
+    update.tags = req.body.tags;
+  }
+
+  if (req.body.trained != undefined) {
+    update.trained = req.body.trained;
+  }
+
+  if (req.body.short_description != undefined) {
+    update.short_description = req.body.short_description
+  }
+
+  if (req.body.title != undefined) {
+    update.title = req.body.title
+  }
+
+  if (req.body.certifiedTags != undefined) {
+    update.certifiedTags = req.body.certifiedTags
+  }
+
+  if (req.body.agents_available != undefined) {
+    update.agents_available = req.body.agents_available
+  }
+
+  if (req.body.slug != undefined) {
+    update.slug = req.body.slug;
+  }
 
   update.modified = true;
   
@@ -350,10 +381,6 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
       }
     }
 
-    if (!updatedFaq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
-    }
-
     botEvent.emit('faqbot.update', updatedFaq_kb);
     res.json(updatedFaq_kb);
   });
@@ -362,8 +389,6 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), (req, res) => {
 
   winston.debug("update language: ", req.params);
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
 
   let update = {};
   if (req.params.language != undefined) {
@@ -371,13 +396,9 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
   }
 
   winston.debug("update", update);
-  Faq_kb.findOneAndUpdate({ _id: chatbot_id, id_project: id_project }, update, { new: true }, (err, updatedFaq_kb) => {
+  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true }, (err, updatedFaq_kb) => {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
-    }
-
-    if (!updatedFaq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     Faq.updateMany({ id_faq_kb: req.params.faq_kbid }, update, (err, result) => {
@@ -395,20 +416,17 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
 router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
-
   // TODO use service method
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, function (err, updatedBot) {
+  Faq_kb.findById(req.params.faq_kbid, function (err, updatedBot) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
     if (!updatedBot) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
-    
+
     if (!updatedBot.attributes) {
       winston.debug("empty attributes")
       updatedBot.attributes = {};
@@ -445,16 +463,9 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);
 
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
-
-  Faq_kb.findOneAndDelete({ _id: chatbot_id, id_project: id_project }, function (err, faq_kb) {
+  Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
-    }
-
-    if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
     /**
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
@@ -468,15 +479,12 @@ router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 
   winston.debug(req.query);
 
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
-
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, function (err, faq_kb) {   //TODO add cache_bot_here
+  Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
 
     if (req.query.departmentid) {
@@ -514,8 +522,8 @@ router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 
 router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async function (req, res) {
 
-  const id_project = req.projectid;
-  const chatbot_id = req.params.faq_kbid;
+  let id_project = req.projectid;
+  let chatbot_id = req.params.faq_kbid;
 
   let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
     .sort({ publishedAt: -1 })
@@ -534,15 +542,12 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
 
   winston.debug(req.query);
 
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
-
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
+  Faq_kb.findById(req.params.faq_kbid).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
 
     var signOptions = {
@@ -576,11 +581,9 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
  */
 router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res) {
 
+
   winston.debug("req.query", req.query);
-
-  const id_project = req.projectid;
-  winston.debug("GET FAQ-KB req projectid " + id_project);
-
+  winston.debug("GET FAQ-KB req projectid", req.projectid);
 
   let restricted_mode = false;
 
@@ -594,7 +597,7 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
    * if filter only for 'trashed = false', 
    * the bots created before the implementation of the 'trashed' property are not returned 
    */
-  let query = { id_project: id_project, trashed: { $in: [null, false] } };
+  let query = { "id_project": req.projectid, "trashed": { $in: [null, false] } };
 
   if (restricted_mode === true) {
     query.agents_available = {
@@ -606,18 +609,22 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
     query.type = { $ne: "identity" }
   }
 
+  let search_obj = { "$search": req.query.text };
+
   if (req.query.text) {
-    const search_obj = { $search: req.query.text };
-    if (req.query.language) search_obj.$language = req.query.language;
+    if (req.query.language) {
+      search_obj["$language"] = req.query.language;
+    }
     query.$text = search_obj;
   }
 
-  const allowedFilters = ["public", "certified"];
-  allowedFilters.forEach(f => {
-    if (req.query[f] !== undefined) {
-      query[f] = req.query[f];
-    }
-  });
+  if (req.query.public) {
+    query.public = req.query.public;
+  }
+
+  if (req.query.certified) {
+    query.certified = req.query.certified;
+  }
 
   winston.debug("query", query);
 
@@ -660,15 +667,12 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
   let token = req.headers.authorization;
 
   let cs = req.app.get('chatbot_service')
-  let chatbot;
-  try {
-    chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
-  } catch (err) {
-    return res.status(500).send({ success: false, error: "Unable to get chatbot to be forked"});
-  }
+
+  let chatbot = await cs.getBotById(id_faq_kb, public, api_url, chatbot_templates_api_url, token, current_project_id, globals);
+  winston.debug("chatbot: ", chatbot)
 
   if (!chatbot) {
-    return res.status(500).send({ success: false, message: "Unable to get chatbot to be forked" });
+    return res.status(500).send({ success: false, message: "Unable to get chatbot" });
   }
 
   if (!globals) {
@@ -701,10 +705,8 @@ router.post('/fork/:id_faq_kb', roleChecker.hasRole('admin'), async (req, res) =
 
 router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.single('uploadFile'), async (req, res) => {
 
-  let chatbot_id = req.params.id_faq_kb;
-  let id_project = req.projectid;
-
-  winston.debug('import on id_faq_kb: ' + chatbot_id);
+  let id_faq_kb = req.params.id_faq_kb;
+  winston.debug('import on id_faq_kb: ' + id_faq_kb);
 
   winston.debug('import with option create: ' + req.query.create);
   winston.debug('import with option replace: ' + req.query.replace);
@@ -811,18 +813,18 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // *****************************
   else {
 
-    if (!chatbot_id) {
+    if (!id_faq_kb) {
       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
     }
 
-    let chatbot = Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
-      winston.error("Error finding chatbot with id " + chatbot_id);
-      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
+    let chatbot = Faq_kb.findById(id_faq_kb).catch((err) => {
+      winston.error("Error finding chatbot with id " + id_faq_kb);
+      return res.status(404).send({ success: false, message: "Error finding chatbot with id " + id_faq_kb, error: err });
     })
 
     if (!chatbot) {
-      winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
-      return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      winston.error("Chatbot not found with id " + id_faq_kb);
+      return res.status(404).send({ success: false, message: "Chatbot not found with id " + id_faq_kb });
     }
 
     if (json.webhook_enabled) {
@@ -859,7 +861,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       }
     }
 
-    let updatedChatbot = await Faq_kb.findByIdAndUpdate(chatbot._id, chatbot, { new: true }).catch((err) => {
+    let updatedChatbot = await Faq_kb.findByIdAndUpdate(id_faq_kb, chatbot, { new: true }).catch((err) => {
       winston.error("Error updating chatbot");
       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
     })
@@ -870,11 +872,11 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     // **** REPLACE TRUE option ****
     // *****************************
     if (req.query.replace === 'true') {
-      let result = await Faq.deleteMany({ id_faq_kb: chatbot._id }).catch((err) => {
-        winston.error("Unable to delete all existing faqs with id_faq_kb " + chatbot._id);
+      let result = await Faq.deleteMany({ id_faq_kb: id_faq_kb }).catch((err) => {
+        winston.error("Unable to delete all existing faqs with id_faq_kb " + id_faq_kb);
       })
 
-      winston.verbose("All faq for chatbot " + chatbot._id + " deleted successfully")
+      winston.verbose("All faq for chatbot " + id_faq_kb + " deleted successfully")
       winston.debug("DeleteMany faqs result ", result);
     }
 
@@ -903,7 +905,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
         // *******************************
         if (req.query.overwrite == "true") {
 
-          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: chatbot._id, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
+          let savingResult = await Faq.findOneAndUpdate({ id_faq_kb: id_faq_kb, intent_display_name: intent.intent_display_name }, new_faq, { new: true, upsert: true, rawResult: true }).catch((err) => {
             winston.error("Unable to create faq: ", err);
           })
 
@@ -951,69 +953,65 @@ router.get('/exportjson/:id_faq_kb', roleChecker.hasRole('admin'), (req, res) =>
 
   winston.debug("exporting bot...")
 
-  const chatbot_id = req.params.id_faq_kb;
-  const id_project = req.projectid;
+  let id_faq_kb = req.params.id_faq_kb;
 
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, (err, faq_kb) => {
+  Faq_kb.findById(id_faq_kb, (err, faq_kb) => {
     if (err) {
       winston.error('GET FAQ-KB ERROR ', err)
       return res.status(500).send({ success: false, msg: 'Error getting bot.' });
-    }
-    
-    if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
-    }
+    } else {
+      winston.debug('FAQ-KB: ', faq_kb)
 
-    winston.debug('FAQ-KB: ', faq_kb)
+      faqService.getAll(id_faq_kb).then((faqs) => {
 
-    faqService.getAll(chatbot_id).then((faqs) => {
+        // delete from exclude map intent_id
+        const intents = faqs.map(({ _id, id_project, topic, status, id_faq_kb, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
 
-      // delete from exclude map intent_id
-      const intents = faqs.map(({ _id, id_project, topic, status, chatbot_id, createdBy, createdAt, updatedAt, __v, ...keepAttrs }) => keepAttrs)
-
-      if (!req.query.globals) {
-        winston.verbose("Delete globals from attributes!")
-        if (faq_kb.attributes) {
-          delete faq_kb.attributes.globals;
+        if (!req.query.globals) {
+          winston.verbose("Delete globals from attributes!")
+          if (faq_kb.attributes) {
+            delete faq_kb.attributes.globals;
+          }
         }
-      }
 
-      let json = {
-        webhook_enabled: faq_kb.webhook_enabled,
-        webhook_url: faq_kb.webhook_url,
-        language: faq_kb.language,
-        name: faq_kb.name,
-        slug: faq_kb.slug,
-        type: faq_kb.type,
-        subtype: faq_kb.subtype,
-        description: faq_kb.description,
-        attributes: faq_kb.attributes,
-        intents: intents
-      }
-
-      if (req.query.intentsOnly == 'true') {
-        let intents_obj = {
+        let json = {
+          webhook_enabled: faq_kb.webhook_enabled,
+          webhook_url: faq_kb.webhook_url,
+          language: faq_kb.language,
+          name: faq_kb.name,
+          slug: faq_kb.slug,
+          type: faq_kb.type,
+          subtype: faq_kb.subtype,
+          description: faq_kb.description,
+          attributes: faq_kb.attributes,
           intents: intents
         }
-        let intents_string = JSON.stringify(intents_obj);
-        res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
-        return res.send(intents_string);
 
-      } else {
+        if (req.query.intentsOnly == 'true') {
+          let intents_obj = {
+            intents: intents
+          }
+          let intents_string = JSON.stringify(intents_obj);
+          res.set({ "Content-Disposition": "attachment; filename=\"intents.json\"" });
+          return res.send(intents_string);
 
-        // if (req.query.file == "false") {
-        //   return res.status(200).send(json);
-        // }
-        let json_string = JSON.stringify(json);
-        res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
-        return res.send(json_string);
-      }
+        } else {
 
-    }).catch((err) => {
-      winston.error('GET FAQ ERROR: ', err)
-      return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
-    })
+          // if (req.query.file == "false") {
+          //   return res.status(200).send(json);
+          // }
+          let json_string = JSON.stringify(json);
+          res.set({ "Content-Disposition": "attachment; filename=\"bot.json\"" });
+          return res.send(json_string);
+        }
+
+      }).catch((err) => {
+        winston.error('GET FAQ ERROR: ', err)
+        return res.status(500).send({ success: false, msg: 'Error getting faqs.' });
+      })
+    }
   })
+
 })
 
 router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, res) {
