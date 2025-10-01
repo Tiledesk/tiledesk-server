@@ -309,67 +309,32 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
   const id_project = req.projectid;
 
   var update = {};
-  if (req.body.name != undefined) {
-    update.name = req.body.name;
-  }
-  if (req.body.description != undefined) {
-    update.description = req.body.description;
-  }
-  if (req.body.url != undefined) {
-    update.url = req.body.url;
-  }
-  if (req.body.webhook_url != undefined) {
-    update.webhook_url = req.body.webhook_url;
-  }
-  if (req.body.webhook_enabled != undefined) {
-    update.webhook_enabled = req.body.webhook_enabled;
-  }
-  if (req.body.type != undefined) {
-    update.type = req.body.type;
-  }
-  if (req.body.trashed != undefined) {
-    update.trashed = req.body.trashed;
-  }
-  if (req.body.public != undefined) {
-    update.public = req.body.public;
-  }
-  if (req.body.certified != undefined) {
-    update.certified = req.body.certified;
-  }
-  if (req.body.mainCategory != undefined) {
-    update.mainCategory = req.body.mainCategory;
-  }
-  if (req.body.intentsEngine != undefined) {
-    update.intentsEngine = req.body.intentsEngine;
-  }
+  const allowedFields = [
+    'name',
+    'description',
+    'url',
+    'webhook_url',
+    'webhook_enabled',
+    'type',
+    'trashed',
+    'public',
+    'certified',
+    'mainCategory',
+    'intentsEngine',
+    'tags',
+    'trained',
+    'short_description',
+    'title',
+    'certifiedTags',
+    'agents_available',
+    'slug'
+  ];
 
-  if (req.body.tags != undefined) {
-    update.tags = req.body.tags;
-  }
-
-  if (req.body.trained != undefined) {
-    update.trained = req.body.trained;
-  }
-
-  if (req.body.short_description != undefined) {
-    update.short_description = req.body.short_description
-  }
-
-  if (req.body.title != undefined) {
-    update.title = req.body.title
-  }
-
-  if (req.body.certifiedTags != undefined) {
-    update.certifiedTags = req.body.certifiedTags
-  }
-
-  if (req.body.agents_available != undefined) {
-    update.agents_available = req.body.agents_available
-  }
-
-  if (req.body.slug != undefined) {
-    update.slug = req.body.slug;
-  }
+  allowedFields.forEach(f => {
+    if (req.body[f] !== undefined) {
+      update[f] = req.body[f];
+    }
+  });
 
   update.modified = true;
   
@@ -382,6 +347,10 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
       } else {
         return res.status(500).send({ success: false, msg: 'Error updating object.' });
       }
+    }
+
+    if (!updatedFaq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     botEvent.emit('faqbot.update', updatedFaq_kb);
