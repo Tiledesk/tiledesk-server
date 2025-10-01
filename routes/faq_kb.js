@@ -534,15 +534,12 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
 
   winston.debug(req.query);
 
-  const chatbot_id = req.params.faq_kbid;
-  const id_project = req.projectid;
-
-  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
+  Faq_kb.findById(req.params.faq_kbid).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+      return res.status(404).send({ success: false, msg: 'Object not found.' });
     }
 
     var signOptions = {
@@ -569,6 +566,46 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
     res.json({ "jwt": token });
   });
 });
+
+// router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
+
+//   winston.debug(req.query);
+
+//   const chatbot_id = req.params.faq_kbid;
+//   const id_project = req.projectid;
+
+//   Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).select("+secret").exec(function (err, faq_kb) {   //TODO add cache_bot_here
+//     if (err) {
+//       return res.status(500).send({ success: false, msg: 'Error getting object.' });
+//     }
+//     if (!faq_kb) {
+//       return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
+//     }
+
+//     var signOptions = {
+//       issuer: 'https://tiledesk.com',
+//       subject: 'bot',
+//       audience: 'https://tiledesk.com/bots/' + faq_kb._id,
+//       jwtid: uuidv4()
+//     };
+
+//     // TODO metti bot_? a user._id
+
+//     // tolgo description, attributes
+//     let botPayload = faq_kb.toObject();
+
+//     let botSecret = botPayload.secret;
+//     // winston.info("botSecret: " + botSecret);
+
+//     delete botPayload.secret;
+//     delete botPayload.description;
+//     delete botPayload.attributes;
+
+//     var token = jwt.sign(botPayload, botSecret, signOptions);
+
+//     res.json({ "jwt": token });
+//   });
+// });
 
 /**
  * This endpoint should be the only one reachble with role agent.
