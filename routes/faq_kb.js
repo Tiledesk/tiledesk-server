@@ -331,9 +331,9 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
     'slug'
   ];
 
-  allowedFields.forEach(function(field) {
-    if (req.body[field] !== undefined) {
-      update[field] = req.body[field];
+  allowedFields.forEach(f => {
+    if (req.body[f] !== undefined) {
+      update[f] = req.body[f];
     }
   });
 
