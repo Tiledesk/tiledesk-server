@@ -719,7 +719,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     json = req.body;
   }
 
-  winston.debug("json source " + json)
+  winston.debug("json source " + json_string)
 
   // ****************************
   // **** CREATE TRUE option ****
@@ -811,10 +811,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // *****************************
   else {
 
-    console.log("(import) ***********************")
-    console.log("(import) chatbot_id: ", chatbot_id);
     if (!chatbot_id) {
-      console.log("return no chatbot_id");
       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
     }
 
@@ -822,14 +819,12 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       winston.error("Error finding chatbot with id " + chatbot_id);
       return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
     })
-    console.log("(import) chatbot: ", chatbot);
 
     if (!chatbot) {
       winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
       return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
-    console.log("(import) json: ", json);
     if (json.webhook_enabled) {
       chatbot.webhook_enabled = json.webhook_enabled;
     }
@@ -869,7 +864,6 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
     })
 
-    console.log("(import) updatedChatbot: ", updatedChatbot);
     botEvent.emit('faqbot.update', updatedChatbot);
 
     // *****************************
@@ -940,21 +934,16 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           if (faq) {
             winston.debug("new intent created: ", faq)
             faqBotEvent.emit('faq.create', faq);
-          } else {
-            console.log("(import) faq not created");
           }
         }
       })
     }
 
     if (updatedChatbot) {
-      console.log("(import) return updatedChatbot")
       return res.send(updatedChatbot);
     } else {
-      console.log("(import) return chatbot")
       return res.send(chatbot);
     }
-    console.log("(import) *********************** end")
   }
 })
 
