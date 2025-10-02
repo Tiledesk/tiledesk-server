@@ -132,10 +132,11 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
 
 router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
 
-  let id_faq_kb = req.body.id_faq_kb;
+  const chatbot_id = req.body.id_faq_kb;
+  const id_project = req.projectid;
   let webhook_enabled = req.body.webhook_enabled;
 
-  Faq_kb.findById(id_faq_kb, async (err, chatbot) => {
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project}, async (err, chatbot) => {
     if (err) {
       return res.status(400).send({ success: false, error: err })
     }
@@ -145,10 +146,10 @@ router.post('/aitrain/', roleChecker.hasRole('admin'), async (req, res) => {
     if (chatbot.intentsEngine === 'tiledesk-ai') {
 
       // Option 1: emit event
-      //faqBotEvent.emit('faq_train.train', id_faq_kb, webhook_enabled);
+      //faqBotEvent.emit('faq_train.train', chatbot_id, webhook_enabled);
 
       // Option 2: call service directly
-      trainingService.train(null, id_faq_kb, webhook_enabled).then((training_result) => {
+      trainingService.train(null, chatbot_id, webhook_enabled).then((training_result) => {
         winston.info("training result: ", training_result);
         let response = {
           succes: true,
@@ -361,6 +362,8 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), (req, res) => {
 
   winston.debug("update language: ", req.params);
+  const chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
 
   let update = {};
   if (req.params.language != undefined) {
@@ -368,9 +371,13 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
   }
 
   winston.debug("update", update);
-  Faq_kb.findByIdAndUpdate(req.params.faq_kbid, update, { new: true }, (err, updatedFaq_kb) => {
+  Faq_kb.findOneAndUpdate({ _id: chatbot_id, id_project: id_project }, update, { new: true }, (err, updatedFaq_kb) => {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
+    }
+
+    if (!updatedFaq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     Faq.updateMany({ id_faq_kb: req.params.faq_kbid }, update, (err, result) => {
@@ -388,17 +395,20 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
 router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {   //TODO add cache_bot_here
   var data = req.body;
 
+  const chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
+
   // TODO use service method
-  Faq_kb.findById(req.params.faq_kbid, function (err, updatedBot) {
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, function (err, updatedBot) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
     }
 
     if (!updatedBot) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
-
+    
     if (!updatedBot.attributes) {
       winston.debug("empty attributes")
       updatedBot.attributes = {};
@@ -435,9 +445,16 @@ router.delete('/:faq_kbid', roleChecker.hasRole('admin'), function (req, res) {
 
   winston.debug(req.body);
 
-  Faq_kb.remove({ _id: req.params.faq_kbid }, function (err, faq_kb) {
+  const chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
+
+  Faq_kb.findOneAndDelete({ _id: chatbot_id, id_project: id_project }, function (err, faq_kb) {
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });
+    }
+
+    if (!faq_kb) {
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
     /**
      * WARNING: faq_kb is the operation result, not the faq_kb object. The event subscriber will not receive the object as expected.
@@ -451,12 +468,15 @@ router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 
   winston.debug(req.query);
 
-  Faq_kb.findById(req.params.faq_kbid, function (err, faq_kb) {   //TODO add cache_bot_here
+  const chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
+
+  Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }, function (err, faq_kb) {   //TODO add cache_bot_here
     if (err) {
       return res.status(500).send({ success: false, msg: 'Error getting object.' });
     }
     if (!faq_kb) {
-      return res.status(404).send({ success: false, msg: 'Object not found.' });
+      return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
     if (req.query.departmentid) {
@@ -494,8 +514,8 @@ router.get('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 
 router.get('/:faq_kbid/published', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), async function (req, res) {
 
-  let id_project = req.projectid;
-  let chatbot_id = req.params.faq_kbid;
+  const id_project = req.projectid;
+  const chatbot_id = req.params.faq_kbid;
 
   let published_chatbots = await faq_kb.find({ id_project: id_project, root_id: chatbot_id })
     .sort({ publishedAt: -1 })
@@ -699,7 +719,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
     json = req.body;
   }
 
-  winston.debug("json source " + json_string)
+  winston.debug("json source " + json)
 
   // ****************************
   // **** CREATE TRUE option ****
@@ -791,7 +811,10 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
   // *****************************
   else {
 
+    console.log("(import) ***********************")
+    console.log("(import) chatbot_id: ", chatbot_id);
     if (!chatbot_id) {
+      console.log("return no chatbot_id");
       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
     }
 
@@ -799,12 +822,14 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       winston.error("Error finding chatbot with id " + chatbot_id);
       return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
     })
+    console.log("(import) chatbot: ", chatbot);
 
     if (!chatbot) {
       winston.error("Chatbot not found with id " + chatbot_id + " for project " + id_project);
       return res.status(404).send({ success: false, message: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
+    console.log("(import) json: ", json);
     if (json.webhook_enabled) {
       chatbot.webhook_enabled = json.webhook_enabled;
     }
@@ -844,6 +869,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       return res.status(400).send({ success: false, message: "Error updating chatbot", error: err })
     })
 
+    console.log("(import) updatedChatbot: ", updatedChatbot);
     botEvent.emit('faqbot.update', updatedChatbot);
 
     // *****************************
@@ -914,16 +940,21 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
           if (faq) {
             winston.debug("new intent created: ", faq)
             faqBotEvent.emit('faq.create', faq);
+          } else {
+            console.log("(import) faq not created");
           }
         }
       })
     }
 
     if (updatedChatbot) {
+      console.log("(import) return updatedChatbot")
       return res.send(updatedChatbot);
     } else {
+      console.log("(import) return chatbot")
       return res.send(chatbot);
     }
+    console.log("(import) *********************** end")
   }
 })
 
