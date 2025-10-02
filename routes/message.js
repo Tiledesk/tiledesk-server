@@ -252,7 +252,12 @@ async (req, res)  => {
     } else {
 
       winston.debug("request  exists", request.toObject());
+      console.log("(messages) sender ", sender);
+      console.log("(messages) req.user._id ", req.user._id);
       console.log("(messages) request exists ", request.toObject());
+      if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+        console.log("is a form")        
+      }
       
       return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
         request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, 
