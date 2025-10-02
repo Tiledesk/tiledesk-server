@@ -5,9 +5,10 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
-# 2.13.18
+# 2.13.19
 - Improved: llm preview to support openai models
 - Updated: 2.0.30
+- Fix tokens usage for llm preview
 
 # 2.13.17
 - Updated: whatsapp-connector to 1.0.7
