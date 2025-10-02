@@ -252,6 +252,7 @@ async (req, res)  => {
     } else {
 
       winston.debug("request  exists", request.toObject());
+      console.log("(messages) request exists ", request.toObject());
       
       return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
         request.id_project, null, messageStatus, req.body.attributes, req.body.type, req.body.metadata, 
