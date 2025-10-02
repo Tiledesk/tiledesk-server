@@ -818,7 +818,7 @@ router.post('/importjson/:id_faq_kb', roleChecker.hasRole('admin'), upload.singl
       return res.status(400).send({ success: false, message: "With replace or overwrite option a id_faq_kb must be provided" })
     }
 
-    let chatbot = Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
+    let chatbot = await Faq_kb.findOne({ _id: chatbot_id, id_project: id_project }).catch((err) => {
       winston.error("Error finding chatbot with id " + chatbot_id);
       return res.status(404).send({ success: false, message: "Error finding chatbot with id " + chatbot_id, error: err });
     })
