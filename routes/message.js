@@ -45,7 +45,7 @@ router.post('/',
 // ],
 async (req, res)  => {
 
-  winston.debug('req.body post message', req.body);
+  winston.info('req.body post message', req.body);
   winston.debug('req.params: ', req.params);
   winston.debug('req.params.request_id: ' + req.params.request_id);
 
