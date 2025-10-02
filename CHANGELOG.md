@@ -5,6 +5,15 @@
 🚀        IN PRODUCTION                        🚀
 (https://www.npmjs.com/package/@tiledesk/tiledesk-server/v/2.3.77) 
 
+# 2.13.17
+- Updated: whatsapp-connector to 1.0.7
+
+# 2.13.16
+- Updated: whatsapp-connector to 1.0.6
+
+# 2.13.15
+- Bug fix: email quota reached sent to project admin
+
 # 2.13.14
 - Bug fix: slug duplicated error on publish chatbot
 - Updated: whatsapp-connector to 1.0.5
