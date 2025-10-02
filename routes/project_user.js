@@ -58,7 +58,7 @@ router.post('/invite', [passport.authenticate(['basic', 'jwt'], { session: false
 
       //let roles = [RoleConstants.OWNER, RoleConstants.ADMIN, RoleConstants.SUPERVISOR, RoleConstants.AGENT];
 
-      return Project_user.find({ id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, projectuser) {      
+      return Project_user.find({ id_project: req.projectid, roleType: RoleConstants.TYPE_AGENTS, status: "active"}, function (err, puser) {      
         if (err) {
           winston.error("Error inviting an already existing user: ", err);
           return res.status(500).send({ success: false, msg: "An error occurred on inviting user " + email + " on project " + id_project })
