@@ -5,6 +5,7 @@ require('../middleware/passport')(passport);
 var validtoken = require('../middleware/valid-token')
 var winston = require('../config/winston');
 var pathlib = require('path');
+var mongoose = require('mongoose');
 
 var router = express.Router();
 
@@ -103,14 +104,35 @@ router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false 
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
-     fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
-
-      sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
-        //in prod nn genera thumb
-        if (err) { winston.error("Error generating thumbnail", err); }
-        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+      //file_retention
+      mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+        if (err) {
+          winston.error("Error updating files.chunks");
+        }
+        winston.debug("files.chunks updated", updates);    
       });
 
+     fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
+
+      sharp(buffer).resize(200, 200).toBuffer( async (err, resizeImage, info) => {
+        //in prod nn genera thumb
+        if (err) { winston.error("Error generating thumbnail", err); }
+        await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+
+        let thumFile = await fileService.find(thumFilename);
+        winston.debug("thumFile", thumFile);    
+
+         //file_retention for thumFile
+        mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+          if (err) {
+            winston.error("Error updating files.chunks");
+          }
+          winston.debug("files.chunks updated", updates);    
+        });
+       
+      });
+
+    
       return res.status(201).json({
           message: 'Image uploded successfully',
           filename: encodeURIComponent(req.file.filename),
@@ -163,12 +185,33 @@ uploadFixedFolder.single('file'), (req, res, next) => {
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;
 
 
+       //file_retention
+      mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+        if (err) {
+          winston.error("Error updating files.chunks");
+        }
+        winston.debug("files.chunks updated", updates);    
+      });
+
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
-      sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+      sharp(buffer).resize(200, 200).toBuffer(async (err, resizeImage, info) => {
         //in prod nn genera thumb
         if (err) { winston.error("Error generating thumbnail", err); }
-        fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+        await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
+
+        let thumFile = await fileService.find(thumFilename);
+        winston.debug("thumFile", thumFile);    
+
+         //file_retention for thumFile
+        mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+          if (err) {
+            winston.error("Error updating files.chunks");
+          }
+          winston.debug("files.chunks updated", updates);    
+        });
+       
+
       });
 
       return res.status(201).json({
@@ -448,15 +491,35 @@ router.post('/public', (req, res, next) => {
 
      var thumFilename = destinationFolder+'thumbnails_200_200-' + req.file.originalname;          
 
+      //file_retention
+    mongoose.connection.db.collection('images.chunks').updateMany({"files_id": req.file.id},{ "$set": { "uploadDate": req.file.uploadDate } }, function (err, updates) {
+      if (err) {
+        winston.error("Error updating files.chunks");
+      }
+        winston.debug("files.chunks updated", updates);
+  
+    });
+
 
      fileService.getFileDataAsBuffer(req.file.filename).then(function(buffer) {
 
-        sharp(buffer).resize(200, 200).toBuffer((err, resizeImage, info) => {
+        sharp(buffer).resize(200, 200).toBuffer(async (err, resizeImage, info) => {
             if (err) { winston.error("Error generating thumbnail", err); }
-            fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
-        });
+            await fileService.createFile ( thumFilename, resizeImage, undefined, undefined);
 
+             let thumFile = await fileService.find(thumFilename);
+              winston.debug("thumFile", thumFile);    
 
+              //file_retention for thumFile
+              mongoose.connection.db.collection('images.chunks').updateMany({"files_id": thumFile._id},{ "$set": { "uploadDate": thumFile.uploadDate } }, function (err, updates) {
+                if (err) {
+                  winston.error("Error updating files.chunks");
+                }
+                winston.debug("files.chunks updated", updates);    
+              });
+       
+        });    
+        
         return res.status(201).json({
             message: 'Image uploded successfully',
             filename: encodeURIComponent(req.file.filename),
