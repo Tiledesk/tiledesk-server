@@ -1981,6 +1981,23 @@ class RequestService {
             winston.error('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
             return reject('Request not found for request_id ' + request_id + ' and id_project ' + id_project);
           }
+
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (Array.isArray(request.participantsAgents)) {
+              if (request.participantsAgents.length === 1) {
+                winston.error('Cannot add participants: participantsAgents already has one element for request_id ' + request_id + ' and id_project ' + id_project);
+                return reject('Cannot add participants: only one participant allowed for this request');
+              } else if (request.participantsAgents.length === 0) {
+                if (Array.isArray(newparticipants) && newparticipants.length === 1) {
+                  // ok, allow to add one participant
+                } else {
+                  winston.error('Can only add one participant for request_id ' + request_id + ' and id_project ' + id_project);
+                  return reject('Can only add one participant for this request');
+                }
+              }
+            }
+          }
+          
           var oldParticipants = request.participants;
           winston.debug('oldParticipants', oldParticipants);
           winston.debug('newparticipants', newparticipants);
