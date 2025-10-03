@@ -260,7 +260,14 @@ async (req, res)  => {
       
 
           winston.debug("request  exists", request.toObject());
+          console.log("(messages) sender ", sender);
+          console.log("(messages) req.user._id ", req.user._id);
           console.log("(messages) request exists ", request.toObject());
+          if (request.channel?.name === 'form' || request.channel?.name === 'email') {
+            if (!sender && request.participantsAgents?.[0] !== req.user.id) {
+              return res.status(403).send({ success: false, message: "Error creating message", err: "You don't belong the conversation" });
+            }
+          }
          
                // create(sender, senderFullname, recipient, text, id_project, createdBy, status, attributes, type, metadata, language, channel_type, channel) {                 
               return messageService.create(sender || req.user._id, fullname, req.params.request_id, req.body.text,
