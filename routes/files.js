@@ -28,7 +28,26 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.info("Max upload file size is infinity");
 }
-const upload = multer({ storage: fileService.getStorage("files"),limits: uploadlimits});
+
+let files_allowed = process.env.UPLOAD_FILES_ALLOW_LIST || "text/plain,application/octet-stream,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,audio/mpeg,application/json,application/pdf";
+winston.info("Files upload allowed list "+ files_allowed);
+
+
+const fileFilter = (req, file, cb) => {
+    winston.debug("fileFilter "+ files_allowed);
+  if (files_allowed==="*" || (files_allowed && files_allowed.length>0 && files_allowed.split(",").indexOf(file.mimetype)>-1) ) {
+     winston.debug("file.mimetype allowed: "+ file.mimetype);
+      cb(null, true);
+  } else {
+      winston.debug("file.mimetype not allowed. " + file.mimetype);
+      // cb(null, false);
+      cb(new multer.MulterError('fileFilter not allowed'))
+  }
+}
+
+
+const upload = multer({ storage: fileService.getStorage("files"),  fileFilter: fileFilter, limits: uploadlimits}).single('file');
+
 
 /*
 curl -u andrea.leo@f21.it:123456 \
@@ -37,17 +56,33 @@ curl -u andrea.leo@f21.it:123456 \
 
   */
 
-router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], upload.single('file'), (req, res, next) => {
+router.post('/users', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken],  (req, res, next) => {
 
-  winston.verbose("files/users")
-  return res.status(201).json({
-    message: 'File uploded successfully',
-    filename: req.file.filename
-  });
+  winston.debug("files/users");
+   upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the file.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the file.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the file.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the file.'});
+    }
+
+    // Everything went fine.
+    return res.status(201).json({
+      message: 'File uploded successfully',
+      filename: req.file.filename
+    });
+  })
 
 });
 
 /*
+
+
 curl \
   -F "file=@/Users/andrealeo/dev/chat21/tiledesk-server-dev-org/README.md" \
   http://localhost:3000/files/public/
@@ -56,12 +91,26 @@ curl \
 
   */
 
-router.post('/public', upload.single('file'), (req, res, next) => {
-  winston.debug("files/public")
+router.post('/public', (req, res, next) => {
+  winston.debug("files/public");
+
+   upload(req, res, function (err) {
+    winston.debug('upload:'+ err);
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      winston.error('Permission denied uploading the file.', err);
+      return res.status(403).send({success: false, msg: 'Permission denied uploading the file.'});
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      winston.error('Error uploading the file.', err);
+      return res.status(500).send({success: false, msg: 'Error uploading the file.'});
+    }
+
       return res.status(201).json({
           message: 'File uploded successfully',
           filename: req.file.filename
       });    
+  });
 });
 
 
