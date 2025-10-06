@@ -165,8 +165,8 @@
 
             "INFO_SUPPORT_USER_ADDED_SUBJECT":"tu",
             "INFO_SUPPORT_USER_ADDED_YOU_VERB":"sei stato aggiunto ",
-            "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"si è unito",
-            "INFO_SUPPORT_USER_ADDED_VERB":"alla chat",
+            "INFO_SUPPORT_USER_ADDED_COMPLEMENT":"alla chat",
+            "INFO_SUPPORT_USER_ADDED_VERB":"si è unito",
             "INFO_SUPPORT_CHAT_REOPENED":"Chat riaperta",
             "INFO_SUPPORT_CHAT_CLOSED":"Chat chiusa",
             "INFO_SUPPORT_LEAD_UPDATED":"Contatto aggiornato",
