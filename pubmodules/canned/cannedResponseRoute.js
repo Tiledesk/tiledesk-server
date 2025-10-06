@@ -38,29 +38,28 @@ router.post('/', function (req, res) {
 
 router.put('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
   let user_role = req.projectuser.role;
   
   var update = {};
-  
-  if (req.body.title!=undefined) {
-    update.title = req.body.title; 
-  }  
-  if (req.body.text!=undefined) {
-    update.text = req.body.text;   
-  }
-  if (req.body.attributes!=undefined) {
-    update.attributes = req.body.attributes;
-  }
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  const allowedFields = ['title', 'text', 'attributes']
+
+  allowedFields.forEach(f => {
+    if (req.body[f] !== undefined) {
+      update[f] = req.body[f];
+    }
+  })
+  
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -98,17 +97,18 @@ router.put('/:cannedResponseid', async function (req, res) {
 
 router.delete('/:cannedResponseid', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
   let user_role = req.projectuser.role;
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -133,7 +133,7 @@ router.delete('/:cannedResponseid', async function (req, res) {
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
-  CannedResponse.findByIdAndUpdate(req.params.cannedResponseid, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
+  CannedResponse.findByIdAndUpdate(canned_id, {status: 1000}, { new: true, upsert: true }, function (err, updatedCannedResponse) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error updating object.' });
@@ -146,16 +146,18 @@ router.delete('/:cannedResponseid', async function (req, res) {
 
 router.delete('/:cannedResponseid/physical', async function (req, res) {
   winston.debug(req.body);
-  let canned_id = req.params.cannedResponseid;
+  const canned_id = req.params.cannedResponseid;
+  const id_project = req.projectid;
+  let user_role = req.projectuser.role;
 
-  let canned = await CannedResponse.findById(canned_id).catch((err) => {
+  let canned = await CannedResponse.findOne({ _id: canned_id, id_project: id_project }).catch((err) => {
     winston.error("Error finding canned response: ", err);
     return res.status(500).send({ success: false, error: "General error: cannot find the canned response with id " + canned_id })
   })
 
   if (!canned) {
     winston.verbose("Canned response with id " + canned_id + " not found.");
-    return res.status(404).send({ success: false, error: "Canned response with id " + canned_id + " not found." })
+    return res.status(404).send({ success: false, error: "Canned response not found with id " + canned_id + " for project " + id_project })
   }
 
   /**
@@ -180,7 +182,7 @@ router.delete('/:cannedResponseid/physical', async function (req, res) {
     return res.status(401).send({ success: false, error: "Unauthorized"})
   }
 
-  CannedResponse.remove({ _id: req.params.cannedResponseid }, function (err, cannedResponse) {
+  CannedResponse.remove({ _id: canned_id }, function (err, cannedResponse) {
     if (err) {
       winston.error('--- > ERROR ', err);
       return res.status(500).send({ success: false, msg: 'Error deleting object.' });

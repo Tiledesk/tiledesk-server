@@ -16,7 +16,7 @@ var Department = require('../models/department');
 var Faq = require('../models/faq');
 var faqBotSupport = require('../services/faqBotSupport');
 var Project_user = require("../models/project_user");
-
+var RoleConstants = require('../models/roleConstants');
 var expect = chai.expect;
 var assert = chai.assert;
 
@@ -255,7 +255,8 @@ describe('bot', () => {
                 // _id: new mongoose.Types.ObjectId(),
                 id_project: savedProject._id.toString(),
                 id_user: savedUser2._id.toString(),
-                role: "agent",           
+                role: RoleConstants.AGENT,
+                roleType : RoleConstants.TYPE_AGENTS,     
                 user_available: true, 
                 createdBy: savedUser._id,
                 updatedBy: savedUser._id
