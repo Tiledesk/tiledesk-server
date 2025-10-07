@@ -3,18 +3,18 @@
 
 // Modules imports
 const express = require('express');
-var router = express.Router();
-var config = require('../config/database'); 
-var jwt = require('jsonwebtoken');
-var validtoken = require('../middleware/valid-token');
-var requestUtil = require('../utils/requestUtil');
-var Project = require('../models/project');
-var winston = require('../config/winston');
+let router = express.Router();
+let config = require('../config/database'); 
+let jwt = require('jsonwebtoken');
+let validtoken = require('../middleware/valid-token');
+let requestUtil = require('../utils/requestUtil');
+let Project = require('../models/project');
+let winston = require('../config/winston');
 
 // deprecated??
 router.post('/decode', validtoken, function (req, res) {
 
-    // var project_id = req.query.project_id;
+    // let project_id = req.query.project_id;
 
     // winston.debug("project_id", project_id);
 
@@ -43,12 +43,12 @@ router.post('/decode', validtoken, function (req, res) {
 
         try {
           winston.debug("requestUtil", requestUtil);
-            var token = requestUtil.getToken(req.headers);
+            let token = requestUtil.getToken(req.headers);
 
 
             winston.debug("token", token);
             // verify a token symmetric - synchronous
-            var decoded = jwt.verify(token, project.jwtSecret);
+            let decoded = jwt.verify(token, project.jwtSecret);
             
             winston.debug("decoded", decoded);
       
@@ -99,8 +99,8 @@ router.post('/decode', validtoken, function (req, res) {
           return res.status(404).send({ success: false, msg: 'Project hasnt  a jwtSecret' });
         }
 
-        var token = jwt.sign(req.body, project.jwtSecret,{ expiresIn: 300 });
-        // var token = jwt.sign(req.body, project.jwtSecret);
+        let token = jwt.sign(req.body, project.jwtSecret,{ expiresIn: 300 });
+        // let token = jwt.sign(req.body, project.jwtSecret);
 
 
      

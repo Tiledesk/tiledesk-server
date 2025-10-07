@@ -1,15 +1,15 @@
-var express = require('express');
-var router = express.Router();
-var Project = require("../models/project");
-var winston = require('../config/winston');
-var Project_user = require("../models/project_user");
-var operatingHoursService = require("../services/operatingHoursService");
-var AnalyticResult = require("../models/analyticResult");
-var Department = require("../models/department");
-var RoleConstants = require("../models/roleConstants");
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
-var pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
+let express = require('express');
+let router = express.Router();
+let Project = require("../models/project");
+let winston = require('../config/winston');
+let Project_user = require("../models/project_user");
+let operatingHoursService = require("../services/operatingHoursService");
+let AnalyticResult = require("../models/analyticResult");
+let Department = require("../models/department");
+let RoleConstants = require("../models/roleConstants");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
+let pubModulesManager = require('../pubmodules/pubModulesManager');  // on constructor init is undefined beacusae pub module is loaded after
 // console.log("pubModulesManager.cache", pubModulesManager.cache);
 const Faq_kb = require("../models/faq_kb");
 
@@ -27,11 +27,11 @@ router.get('/', async (req, res, next) => {
     winston.debug(req.projectid);
 
 
-    var getIp = function() {
+    let getIp = function() {
       return new Promise(function (resolve, reject) {
         // console.log("getIp")
-      //  var ip = req.ip;
-      var ip = req.headers['x-forwarded-for'] || 
+      //  let ip = req.ip;
+      let ip = req.headers['x-forwarded-for'] || 
        req.connection.remoteAddress || 
        req.socket.remoteAddress ||
        (req.connection.socket ? req.connection.socket.remoteAddress : null);
@@ -49,7 +49,7 @@ router.get('/', async (req, res, next) => {
       cacheClient = pubModulesManager.cache._cache._cache;  //_cache._cache to jump directly to redis modules without cacheoose wrapper (don't support await)
     }
 
-    var cacheKey = req.projectid+":widgets";
+    let cacheKey = req.projectid+":widgets";
     
     if (cacheEnabler.widgets && cacheClient) {
       winston.debug("Getting cache for widgets key: " + cacheKey);       
@@ -73,7 +73,7 @@ router.get('/', async (req, res, next) => {
     }
     // console.log("/widgets without cache found");
 
-    var availableUsers = function() {
+    let availableUsers = function() {
       winston.debug('availableUsers:');
       return new Promise(function (resolve, reject) {
         if (!req.project) {
@@ -106,7 +106,7 @@ router.get('/', async (req, res, next) => {
       });
   };
 
-  var waiting = function() {
+  let waiting = function() {
     return new Promise(function (resolve, reject) {
       AnalyticResult.aggregate([
         //last 4
@@ -127,7 +127,7 @@ router.get('/', async (req, res, next) => {
 
   
 
-  var botsRules = function() {
+  let botsRules = function() {
     return new Promise(function (resolve, reject) {
       Faq_kb.find({ "id_project": req.projectid, "trashed": { $in: [null, false] } }, function (err, bots) {
         winston.debug("bots",bots);
@@ -152,11 +152,11 @@ router.get('/', async (req, res, next) => {
   }
 
   
-  var getDepartments = function(req) {
+  let getDepartments = function(req) {
 
     return new Promise(function (resolve, reject) {
 
-      var query = { "id_project": req.projectid, "status": 1 };
+      let query = { "id_project": req.projectid, "status": 1 };
 
       winston.debug("req.project:" + JSON.stringify(req.project));
       
@@ -181,7 +181,7 @@ router.get('/', async (req, res, next) => {
   }
 
 
-  var getProject = function(req) {
+  let getProject = function(req) {
     winston.debug('getProject.');
 
     return new Promise(function (resolve, reject) {
@@ -292,23 +292,23 @@ router.get('/', async (req, res, next) => {
 
   router.get('/ip', function(req, res, next) {
   
-     var xforwarded = req.headers['x-forwarded-for'];
+     let xforwarded = req.headers['x-forwarded-for'];
      winston.info('xforwarded'+ xforwarded);
 
-     var connectionRemoteAddress  = req.connection.remoteAddress;
+     let connectionRemoteAddress  = req.connection.remoteAddress;
      winston.info('connectionRemoteAddress'+ connectionRemoteAddress);
 
-     var socketRemoteAddress = req.socket.remoteAddress;
+     let socketRemoteAddress = req.socket.remoteAddress;
      winston.info('socketRemoteAddress'+ socketRemoteAddress);
 
     if (req.connection.socket ) {
-      var connectionSocketRemoteAddress = req.connection.socket.remoteAddress;
+      let connectionSocketRemoteAddress = req.connection.socket.remoteAddress;
       winston.info('connectionSocketRemoteAddress'+ connectionSocketRemoteAddress);
 
     }
     
 
-    var ip = req.headers['x-forwarded-for'] || 
+    let ip = req.headers['x-forwarded-for'] || 
      req.connection.remoteAddress || 
      req.socket.remoteAddress ||
      (req.connection.socket ? req.connection.socket.remoteAddress : null);

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Namespace, UnansweredQuestion } = require('../models/kb_setting');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 
 // Add a new unanswered question
 router.post('/', async (req, res) => {

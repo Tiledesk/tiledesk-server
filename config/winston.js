@@ -3,7 +3,7 @@ var winston = require('winston');
 var config = require('./database');
 
 var level = process.env.LOG_LEVEL || 'info'
-// console.log("level",level);
+console.log("\n\nlevel",level);
 
 var options = {
     file: {

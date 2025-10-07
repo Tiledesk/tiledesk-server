@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
+let express = require('express');
+let router = express.Router({mergeParams: true});
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var roleChecker = require('../middleware/has-role');
+let validtoken = require('../middleware/valid-token')
+let roleChecker = require('../middleware/has-role');
 
 
 

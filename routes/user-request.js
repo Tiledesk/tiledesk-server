@@ -1,12 +1,12 @@
-var express = require('express');
-var router = express.Router();
-var Request = require("../models/request");
-var winston = require('../config/winston');
-var moment = require('moment');
+let express = require('express');
+let router = express.Router();
+let Request = require("../models/request");
+let winston = require('../config/winston');
+let moment = require('moment');
 const requestEvent = require('../event/requestEvent');
 const { check, validationResult } = require('express-validator');
-var requestService = require('../services/requestService');
-var mongoose = require('mongoose');
+let requestService = require('../services/requestService');
+let mongoose = require('mongoose');
 
 
 router.patch('/:requestid/rating', function (req, res) {
@@ -86,7 +86,7 @@ router.get('/me', function (req, res, next) {
 
   const DEFAULT_LIMIT = 40;
 
-  var limit = DEFAULT_LIMIT; // Number of request per page
+  let limit = DEFAULT_LIMIT; // Number of request per page
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
@@ -96,24 +96,24 @@ router.get('/me', function (req, res, next) {
   }
 
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('REQUEST ROUTE - SKIP PAGE ', skip);
 
 
-  var user_id = req.user._id;
+  let user_id = req.user._id;
   winston.debug('REQUEST ROUTE - user_id:  '+user_id);
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(user_id);
+  let isObjectId = mongoose.Types.ObjectId.isValid(user_id);
   winston.debug("isObjectId:"+ isObjectId);
 
 
-  var query = { "id_project": req.projectid, "status": {$lt:1000} };
+  let query = { "id_project": req.projectid, "status": {$lt:1000} };
   
   if (!(req.query.preflight === "true" || req.query.preflight === true)) {
     query.preflight = false;
@@ -142,7 +142,7 @@ router.get('/me', function (req, res, next) {
     query.$text = { "$search": req.query.full_text };
   }
 
-  var history_search = false;
+  let history_search = false;
 
   if (req.query.status) {
     winston.debug('req.query.status', req.query.status);
@@ -208,17 +208,17 @@ router.get('/me', function (req, res, next) {
   if ( history_search === true && req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
 
-    var startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
+    let startdate = moment().subtract(14, "days").format("YYYY-MM-DD");
 
-    var enddate = moment().format("YYYY-MM-DD");
+    let enddate = moment().format("YYYY-MM-DD");
 
     winston.debug('»»» REQUEST ROUTE - startdate ', startdate);
     winston.debug('»»» REQUEST ROUTE - enddate ', enddate);
 
-    var enddatePlusOneDay=  moment(new Date()).add(1, 'days').toDate()
+    let enddatePlusOneDay=  moment(new Date()).add(1, 'days').toDate()
     winston.debug('»»» REQUEST ROUTE - enddate + 1 days: ', enddatePlusOneDay);
 
-    // var enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
+    // let enddatePlusOneDay = "2019-09-17T00:00:00.000Z"
 
     query.createdAt = { $gte: new Date(Date.parse(startdate)).toISOString(), $lte: new Date(enddatePlusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
@@ -236,35 +236,35 @@ router.get('/me', function (req, res, next) {
 
     /**
      * USING TIMESTAMP  in MS    */
-    // var formattedStartDate = new Date(+req.query.start_date);
-    // var formattedEndDate = new Date(+req.query.end_date);
+    // let formattedStartDate = new Date(+req.query.start_date);
+    // let formattedEndDate = new Date(+req.query.end_date);
     // query.createdAt = { $gte: formattedStartDate, $lte: formattedEndDate }
 
     /**
      * USING MOMENT      */
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    var endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let endDate = moment(req.query.end_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED START DATE ', startDate);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE ', endDate);
 
     // ADD ONE DAY TO THE END DAY
-    var date = new Date(endDate);
-    var newdate = new Date(date);
-    var endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
+    let date = new Date(endDate);
+    let newdate = new Date(date);
+    let endDate_plusOneDay = newdate.setDate(newdate.getDate() + 1);
     winston.debug('REQUEST ROUTE - REQ QUERY FORMATTED END DATE + 1 DAY ', endDate_plusOneDay);
-    // var endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
-    // var endDate_plusOneDay =   endDate.add(1).day();
-    // var toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
+    // let endDate_plusOneDay =   moment('2018-09-03').add(1, 'd')
+    // let endDate_plusOneDay =   endDate.add(1).day();
+    // let toDate = new Date(Date.parse(endDate_plusOneDay)).toISOString()
 
     query.createdAt = { $gte: new Date(Date.parse(startDate)).toISOString(), $lte: new Date(endDate_plusOneDay).toISOString() }
     winston.debug('REQUEST ROUTE - QUERY CREATED AT ', query.createdAt);
 
   } else if (req.query.start_date && !req.query.end_date) {
     winston.debug('REQUEST ROUTE - REQ QUERY END DATE IS EMPTY (so search only for start date)');
-    var startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    let startDate = moment(req.query.start_date, 'DD/MM/YYYY').format('YYYY-MM-DD');
 
-    var range = { $gte: new Date(Date.parse(startDate)).toISOString() };
+    let range = { $gte: new Date(Date.parse(startDate)).toISOString() };
     if (req.query.filterRangeField) {
       query[req.query.filterRangeField] = range;
     }else {
@@ -309,26 +309,26 @@ router.get('/me', function (req, res, next) {
   }
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   winston.debug("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   winston.debug("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
 
   winston.verbose('REQUEST ROUTE - REQUEST FIND ', query);
 
-  var projection = undefined;
+  let projection = undefined;
 
   if (req.query.full_text) {  
     winston.debug('fulltext projection'); 
@@ -336,7 +336,7 @@ router.get('/me', function (req, res, next) {
     projection = {score: { $meta: "textScore" } };
   }
   // requestcachefarequi populaterequired
-  var q1 = Request.find(query, projection).
+  let q1 = Request.find(query, projection).
     skip(skip).limit(limit);
 
 
@@ -375,15 +375,15 @@ router.get('/me', function (req, res, next) {
     // TODO if ?onlycount=true do not perform find query but only 
     // set q1 to undefined; to skip query
 
-  var q2 =  Request.countDocuments(query).exec();
+  let q2 =  Request.countDocuments(query).exec();
 
-  var promises = [
+  let promises = [
     q1,
     q2
   ];
 
   Promise.all(promises).then(function(results) {
-    var objectToReturn = {
+    let objectToReturn = {
       perPage: limit,
       count: results[1],
       requests: results[0]

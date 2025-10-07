@@ -1,13 +1,13 @@
-var PendingInvitation = require("../models/pending-invitation");
-var express = require('express');
-var router = express.Router();
+let PendingInvitation = require("../models/pending-invitation");
+let express = require('express');
+let router = express.Router();
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-// var pendingInvitationService = require("../services/pendingInvitationService");
-var emailService = require("../services/emailService");
-var winston = require('../config/winston');
+let validtoken = require('../middleware/valid-token')
+// let pendingInvitationService = require("../services/pendingInvitationService");
+let emailService = require("../services/emailService");
+let winston = require('../config/winston');
 
 router.get('/resendinvite/:pendinginvitationid', function (req, res) {
 
@@ -45,11 +45,11 @@ router.post('/', function (req, res) {
 
   winston.debug(req.body);
 
-  var email = req.body.email;
+  let email = req.body.email;
   if (email) {
     email = email.toLowerCase();
   }
-  var newPendingInvitation = new PendingInvitation({
+  let newPendingInvitation = new PendingInvitation({
     email: email,
     role: req.body.role,
     id_project: req.id_projectid,
@@ -70,9 +70,9 @@ router.put('/:pendinginvitationid', function (req, res) {
 
   winston.debug('PENDING INVITATION UPDATE - BODY ', req.body);
 
-  var update = {};
+  let update = {};
 
-  var email = req.body.email;
+  let email = req.body.email;
   if (email) {
     email = email.toLowerCase();
   }

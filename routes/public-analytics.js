@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
-var AnalyticResult = require("../models/analyticResult");
-var mongoose = require('mongoose');
-var winston = require('../config/winston');
-// var cacheUtil = require('../utils/cacheUtil');
+let express = require('express');
+let router = express.Router();
+let AnalyticResult = require("../models/analyticResult");
+let mongoose = require('mongoose');
+let winston = require('../config/winston');
+// let cacheUtil = require('../utils/cacheUtil');
 
 
   router.get('/waiting/current', function(req, res) {

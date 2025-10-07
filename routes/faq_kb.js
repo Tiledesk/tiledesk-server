@@ -1,21 +1,21 @@
-var express = require('express');
-var router = express.Router();
-var Faq_kb = require("../models/faq_kb");
-var Faq = require("../models/faq");
-var Department = require("../models/department");
-var faqService = require("../services/faqService");
+let express = require('express');
+let router = express.Router();
+let Faq_kb = require("../models/faq_kb");
+let Faq = require("../models/faq");
+let Department = require("../models/department");
+let faqService = require("../services/faqService");
 const botEvent = require('../event/botEvent');
 const faqBotEvent = require('../event/faqBotEvent');
-var winston = require('../config/winston');
-var httpUtil = require("../utils/httpUtil");
+let winston = require('../config/winston');
+let httpUtil = require("../utils/httpUtil");
 const { forEach } = require('lodash');
-var multer = require('multer')
-var configGlobal = require('../config/global');
+let multer = require('multer')
+let configGlobal = require('../config/global');
 const faq = require('../models/faq');
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
 const trainingService = require('../services/trainingService');
-var roleChecker = require('../middleware/has-role');
+let roleChecker = require('../middleware/has-role');
 const roleConstants = require('../models/roleConstants');
 const errorCodes = require('../errorCodes');
 const faq_kb = require('../models/faq_kb');
@@ -32,7 +32,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({ limits: uploadlimits });
+let upload = multer({ limits: uploadlimits });
 
 
 router.post('/', roleChecker.hasRole('admin'), async function (req, res) {
@@ -75,13 +75,13 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
     winston.debug('faq_kb.type :' + faq_kb.type);
     if (faq_kb.type == "internal" && faq_kb.url) {
 
-      var train = {
+      let train = {
         language: faq_kb.language,
         nlu: []
       };
       winston.info("train", train);
 
-      var query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
+      let query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
 
       Faq.find(query)
         .limit(10000)
@@ -94,11 +94,11 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
             winston.info("faqs exact", faqs);
 
             faqs.forEach(function (f) {
-              var intent = {
+              let intent = {
                 intent: f.intent_display_name,
                 examples: []
               }
-              var questions = f.question.split("\n");
+              let questions = f.question.split("\n");
               winston.info("questions", questions);
 
               questions.forEach(function (q) {
@@ -111,7 +111,7 @@ router.post('/train', roleChecker.hasRole('admin'), function (req, res) {
             winston.info("train", train);
 
             try {
-              var trainHttp = await httpUtil.call(faq_kb.url + "/trainandload", undefined, train, "POST");
+              let trainHttp = await httpUtil.call(faq_kb.url + "/trainandload", undefined, train, "POST");
             } catch (e) {
               winston.error("error training", e);
             }
@@ -189,7 +189,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
     winston.debug('faq_kb.type :' + faq_kb.type);
     if (faq_kb.type == "internal" || faq_kb.type == "tilebot") {
 
-      var query = { "id_project": id_project, "id_faq_kb": chatbot_id, "question": req.body.question };
+      let query = { "id_project": id_project, "id_faq_kb": chatbot_id, "question": req.body.question };
 
       Faq.find(query)
         .lean().
@@ -203,13 +203,13 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
             faqs.forEach(f => {
               f.score = 100;
             });
-            var result = { hits: faqs };
+            let result = { hits: faqs };
 
             res.json(result);
           } else {
             query = { "id_project": req.projectid, "id_faq_kb": req.body.id_faq_kb };
 
-            var search_obj = { "$search": req.body.question };
+            let search_obj = { "$search": req.body.question };
 
             if (faq_kb.language) {
               search_obj["$language"] = faq_kb.language;
@@ -229,7 +229,7 @@ router.post('/askbot', roleChecker.hasRole('admin'), function (req, res) {
 
                 winston.debug("faqs", faqs);
 
-                var result = { hits: faqs };
+                let result = { hits: faqs };
                 res.json(result);
               });
           }
@@ -309,7 +309,7 @@ router.put('/:faq_kbid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
   const chatbot_id = req.params.faq_kbid;
   const id_project = req.projectid;
 
-  var update = {};
+  let update = {};
   const allowedFields = [
     'name',
     'description',
@@ -393,7 +393,7 @@ router.put('/:faq_kbid/language/:language', roleChecker.hasRoleOrTypes('admin', 
 })
 
 router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {   //TODO add cache_bot_here
-  var data = req.body;
+  let data = req.body;
 
   const chatbot_id = req.params.faq_kbid;
   const id_project = req.projectid;
@@ -417,7 +417,7 @@ router.patch('/:faq_kbid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot'
     winston.debug(" updatedBot attributes", updatedBot.attributes)
 
     Object.keys(data).forEach(function (key) {
-      var val = data[key];
+      let val = data[key];
       winston.debug("data attributes " + key + " " + val)
       updatedBot.attributes[key] = val;
     });
@@ -545,7 +545,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
       return res.status(404).send({ success: false, msg: "Chatbot not found with id " + chatbot_id + " for project " + id_project });
     }
 
-    var signOptions = {
+    let signOptions = {
       issuer: 'https://tiledesk.com',
       subject: 'bot',
       audience: 'https://tiledesk.com/bots/' + faq_kb._id,
@@ -564,7 +564,7 @@ router.get('/:faq_kbid/jwt', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscr
     delete botPayload.description;
     delete botPayload.attributes;
 
-    var token = jwt.sign(botPayload, botSecret, signOptions);
+    let token = jwt.sign(botPayload, botSecret, signOptions);
 
     res.json({ "jwt": token });
   });
@@ -1021,7 +1021,7 @@ router.post('/:faq_kbid/training', roleChecker.hasRole('admin'), function (req, 
   winston.debug(req.body);
   winston.info(req.params.faq_kbid + "/training called");
 
-  var update = {};
+  let update = {};
   update.trained = true;
   // update._id = req.params.faq_kbid;
 

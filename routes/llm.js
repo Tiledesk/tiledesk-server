@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const aiService = require('../services/aiService');
 const multer = require('multer');
@@ -16,7 +16,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({limits: uploadlimits});
+let upload = multer({limits: uploadlimits});
 
 router.post('/preview', async (req, res) => {
 

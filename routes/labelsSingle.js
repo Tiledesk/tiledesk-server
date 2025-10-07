@@ -1,11 +1,11 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
-var Label = require("../models/label");
-var winston = require('../config/winston');
-var passport = require('passport');
+let express = require('express');
+let router = express.Router({mergeParams: true});
+let Label = require("../models/label");
+let winston = require('../config/winston');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var roleChecker = require('../middleware/has-role')
+let validtoken = require('../middleware/valid-token')
+let roleChecker = require('../middleware/has-role')
 
 
 // router.post('/',  function (req, res) {
@@ -17,7 +17,7 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
  if (Array.isArray(req.body)) {
 
   req.body.forEach(function(lab,index) {
-    var newLabel = new Label({
+    let newLabel = new Label({
       lang: lab.lang,
       key: lab.key,
       message: lab.message,
@@ -48,7 +48,7 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
 
  }else {
 
-  var newLabel = new Label({
+  let newLabel = new Label({
     lang: req.body.lang,
     key: req.body.key,
     message: req.body.message,
@@ -109,7 +109,7 @@ router.delete('/:labelid',  [passport.authenticate(['basic', 'jwt'], { session: 
 
 router.get('/:lang', function (req, res) {
  
-  var query = { "id_project": req.projectid,"lang": req.params.lang};
+  let query = { "id_project": req.projectid,"lang": req.params.lang};
 
  
   winston.debug("query", query);

@@ -1,21 +1,20 @@
-var express = require('express');
-var { Namespace, KB, Engine } = require('../models/kb_setting');
-// var { KB } = require('../models/kb_setting');
-// var { Engine } = require('../models/kb_setting')
-var router = express.Router();
-var winston = require('../config/winston');
-var multer = require('multer')
-var upload = multer()
+let express = require('express');
+let { Namespace, KB, Engine } = require('../models/kb_setting');
+// let { KB } = require('../models/kb_setting');
+// let { Engine } = require('../models/kb_setting')
+let router = express.Router();
+let winston = require('../config/winston');
+let multer = require('multer')
 const aiService = require('../services/aiService');
 const JobManager = require('../utils/jobs-worker-queue-manager/JobManagerV2');
 const { Scheduler } = require('../services/Scheduler');
-var configGlobal = require('../config/global');
+let configGlobal = require('../config/global');
 const Sitemapper = require('sitemapper');
-var mongoose = require('mongoose');
+let mongoose = require('mongoose');
 const faq = require('../models/faq');
 const faq_kb = require('../models/faq_kb');
 let Integration = require('../models/integrations');
-var parsecsv = require("fast-csv");
+let parsecsv = require("fast-csv");
 
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 const { kbTypes } = require('../models/kbConstants');
@@ -36,7 +35,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({limits: uploadlimits});
+let upload = multer({limits: uploadlimits});
 
 
 let jobManager = new JobManager(AMQP_MANAGER_URL, {
@@ -690,7 +689,7 @@ router.post('/namespace', async (req, res) => {
     }
   }
 
-  var namespace_id = mongoose.Types.ObjectId();
+  let namespace_id = mongoose.Types.ObjectId();
   let new_namespace = new Namespace({
     id_project: project_id,
     id: namespace_id,

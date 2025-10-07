@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var { KBSettings } = require('../models/kb_setting');
-var aiService = require('../services/aiService');
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let { KBSettings } = require('../models/kb_setting');
+let aiService = require('../services/aiService');
+let winston = require('../config/winston');
 const { QuoteManager } = require('../services/QuoteManager');
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');
 

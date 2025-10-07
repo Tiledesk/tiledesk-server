@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
-var Subscription = require("../models/subscription");
-var SubscriptionLog = require("../models/subscriptionLog");
-var subscriptionEvent = require("../event/subscriptionEvent");
-var winston = require('../config/winston');
+let express = require('express');
+let router = express.Router();
+let Subscription = require("../models/subscription");
+let SubscriptionLog = require("../models/subscriptionLog");
+let subscriptionEvent = require("../event/subscriptionEvent");
+let winston = require('../config/winston');
 
 //space
 
@@ -12,7 +12,7 @@ router.post('/', function (req, res) {
   winston.debug(req.body);
   winston.debug("req.user", req.user);
 
-  var subscription = new Subscription({
+  let subscription = new Subscription({
     target: req.body.target,
     event: req.body.event,
     id_project: req.projectid,
@@ -95,14 +95,14 @@ router.get('/', function (req, res) {
 
 router.get('/history', function (req, res) {
 
-  var limit = 40; // Number of leads per page
-  var page = 0;
+  let limit = 40; // Number of leads per page
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('Subscription ROUTE - SKIP PAGE ', skip);
 
 

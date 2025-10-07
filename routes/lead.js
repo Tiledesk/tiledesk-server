@@ -1,14 +1,14 @@
-var express = require('express');
-var router = express.Router();
-var Lead = require("../models/lead");
-var LeadConstants = require("../models/leadConstants");
-var winston = require('../config/winston');
-var leadService = require("../services/leadService");
+let express = require('express');
+let router = express.Router();
+let Lead = require("../models/lead");
+let LeadConstants = require("../models/leadConstants");
+let winston = require('../config/winston');
+let leadService = require("../services/leadService");
 csv = require('csv-express');
 csv.separator = ';';
 const leadEvent = require('../event/leadEvent');
-var Segment = require("../models/segment");
-var Segment2MongoConverter = require("../utils/segment2mongoConverter");
+let Segment = require("../models/segment");
+let Segment2MongoConverter = require("../utils/segment2mongoConverter");
 
 
 router.post('/', function (req, res) {
@@ -24,7 +24,7 @@ router.post('/', function (req, res) {
 
 router.put('/:leadid', function (req, res) {
   winston.debug(req.body);
-  var update = {};
+  let update = {};
   
     if (req.body.fullname!=undefined) {
       update.fullname = req.body.fullname;
@@ -154,7 +154,7 @@ router.put('/:leadid/tag', async (req, res) => {
 
 
 router.patch('/:leadid/attributes',  function (req, res) {
-  var data = req.body;
+  let data = req.body;
 
   // TODO use service method
 
@@ -176,7 +176,7 @@ router.patch('/:leadid/attributes',  function (req, res) {
       winston.debug(" lead attributes", lead.attributes)
         
         Object.keys(data).forEach(function(key) {
-          var val = data[key];
+          let val = data[key];
           winston.debug("data attributes "+key+" " +val)
           lead.attributes[key] = val;
         });     
@@ -205,7 +205,7 @@ router.patch('/:leadid/attributes',  function (req, res) {
 //.post and .patch for /properties are equals
 
 router.post('/:leadid/properties',  function (req, res) {
-  var data = req.body;
+  let data = req.body;
 
   // TODO use service method
 
@@ -227,7 +227,7 @@ router.post('/:leadid/properties',  function (req, res) {
       winston.debug(" lead properties", lead.properties)
         
         Object.keys(data).forEach(function(key) {
-          var val = data[key];
+          let val = data[key];
           winston.debug("data attributes "+key+" " +val)
           lead.properties[key] = val;
         });     
@@ -254,7 +254,7 @@ router.post('/:leadid/properties',  function (req, res) {
 
 
 router.patch('/:leadid/properties',  function (req, res) {
-  var data = req.body;
+  let data = req.body;
 
   // TODO use service method
 
@@ -276,7 +276,7 @@ router.patch('/:leadid/properties',  function (req, res) {
       winston.debug(" lead properties", lead.properties)
         
         Object.keys(data).forEach(function(key) {
-          var val = data[key];
+          let val = data[key];
           winston.debug("data attributes "+key+" " +val)
           lead.properties[key] = val;
         });     
@@ -305,7 +305,7 @@ router.patch('/:leadid/properties',  function (req, res) {
 
 // router.put('/:leadid', function (req, res) {
 //   winston.debug(req.body);
-//   var update = {};
+//   let update = {};
   
 //   // trasforma in patch altrimenti nn va
 //     update.fullname = req.body.fullname;
@@ -365,7 +365,7 @@ router.delete('/:leadid', function (req, res) {
 router.delete('/:leadid/physical', function (req, res) {
   winston.debug(req.body);
 
-  var projectuser = req.projectuser;
+  let projectuser = req.projectuser;
 
 
   if (projectuser.role != "owner" ) {
@@ -389,15 +389,15 @@ router.delete('/:leadid/physical', function (req, res) {
 
 // DOWNLOAD leads AS CSV
 router.get('/csv', function (req, res, next) {
-  var limit = 100000; // Number of leads per page
-  var page = 0;
+  let limit = 100000; // Number of leads per page
+  let page = 0;
   if (req.query.page) {
     page = req.query.page;
   }
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
-  var query = { "id_project": req.projectid, "status": {$lt: LeadConstants.DELETED}};
+  let query = { "id_project": req.projectid, "status": {$lt: LeadConstants.DELETED}};
 
   if (req.query.full_text) {
     winston.debug('LEAD ROUTE req.query.fulltext', req.query.full_text);
@@ -409,19 +409,19 @@ router.get('/csv', function (req, res, next) {
     query.email = req.query.email;
   }
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
   winston.debug("direction", direction);
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
   winston.debug("sortField", sortField);
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -463,24 +463,24 @@ router.get('/:leadid', function (req, res) {
 
 router.get('/', async(req, res) => {
 
-  var limit = 40; // Number of request per page
+  let limit = 40; // Number of request per page
 
   if (req.query.limit) {    
     limit = parseInt(req.query.limit);
     winston.debug('LEAD ROUTE - limit: '+limit);
   }
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('LEAD ROUTE - SKIP PAGE ', skip);
 
 
-  var query = {};
+  let query = {};
 
 
   if (req.query.segment) {
@@ -531,17 +531,17 @@ router.get('/', async(req, res) => {
   winston.debug("query", query);
 
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   }
 
-  var sortField = "createdAt";
+  let sortField = "createdAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   }
 
-  var sortQuery = {};
+  let sortQuery = {};
   sortQuery[sortField] = direction;
 
   winston.debug("sort query", sortQuery);
@@ -566,7 +566,7 @@ router.get('/', async(req, res) => {
       //  collection.count is deprecated, and will be removed in a future version. Use Collection.countDocuments or Collection.estimatedDocumentCount instead
       return Lead.countDocuments(query, function (err, totalRowCount) {
 
-        var objectToReturn = {
+        let objectToReturn = {
           perPage: limit,
           count: totalRowCount,
           leads: leads

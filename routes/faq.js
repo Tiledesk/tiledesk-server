@@ -1,19 +1,19 @@
-var express = require('express');
-var router = express.Router();
-var Faq = require("../models/faq");
-var Faq_kb = require("../models/faq_kb");
-var multer = require('multer')
+let express = require('express');
+let router = express.Router();
+let Faq = require("../models/faq");
+let Faq_kb = require("../models/faq_kb");
+let multer = require('multer')
 const faqBotEvent = require('../event/faqBotEvent');
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 const faqEvent = require('../event/faqBotEvent')
 
-var parsecsv = require("fast-csv");
+let parsecsv = require("fast-csv");
 const botEvent = require('../event/botEvent');
 const uuidv4 = require('uuid/v4');
 csv = require('csv-express');
 csv.separator = ';';
 const axios = require("axios").default;
-var configGlobal = require('../config/global');
+let configGlobal = require('../config/global');
 const roleConstants = require('../models/roleConstants');
 const roleChecker = require('../middleware/has-role');
 const { ChatbotService } = require('../services/chatbotService');
@@ -30,7 +30,7 @@ if (MAX_UPLOAD_FILE_SIZE) {
 } else {
   winston.debug("Max upload file size is infinity");
 }
-var upload = multer({limits: uploadlimits});
+let upload = multer({limits: uploadlimits});
 
 
 // POST CSV FILE UPLOAD FROM CLIENT
@@ -40,13 +40,13 @@ router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscript
   winston.debug(' -> DELIMITER ', req.body.delimiter);
   winston.debug(' -> FILE ', req.file);
 
-  var id_faq_kb = req.body.id_faq_kb;
+  let id_faq_kb = req.body.id_faq_kb;
   winston.debug('id_faq_kb: ' + id_faq_kb);
 
-  var delimiter = req.body.delimiter || ";";
+  let delimiter = req.body.delimiter || ";";
   winston.debug('delimiter: ' + delimiter);
 
-  var csv = req.file.buffer.toString('utf8');
+  let csv = req.file.buffer.toString('utf8');
   winston.debug("--> csv: ", csv)
   // winston.debug(' -> CSV STRING ', csv);
 
@@ -73,14 +73,14 @@ router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscript
 
         winston.debug('--> PARSED CSV ', data);
 
-        var question = data[0]
-        //var answer = data[1]
-        var intent_id = data[2];
-        var intent_display_name = data[3];
-        var webhook_enabled = data[4];
+        let question = data[0]
+        //let answer = data[1]
+        let intent_id = data[2];
+        let intent_display_name = data[3];
+        let webhook_enabled = data[4];
 
 
-        var actions = [
+        let actions = [
           {
             _tdActionType: "reply",
             _tdActionId: uuidv4(),
@@ -104,15 +104,15 @@ router.post('/uploadcsv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscript
           }
         ]
 
-        var webhook_enabled_boolean = false;
+        let webhook_enabled_boolean = false;
         if (webhook_enabled) {
           webhook_enabled_boolean = (webhook_enabled == 'true');
         }
-        // var row = {question: element.question, answer: element.answer, 
+        // let row = {question: element.question, answer: element.answer, 
         //   intent_id: element.intent_id, intent_display_name: element.intent_display_name,
         //   webhook_enabled: element.webhook_enabled || false }
 
-        var newFaq = new Faq({
+        let newFaq = new Faq({
           id_faq_kb: id_faq_kb,
           question: question,
           //answer: answer,
@@ -165,7 +165,7 @@ router.post('/', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), f
     }
     winston.debug('faq_kb ', faq_kb.toJSON());
 
-    var newFaq = new Faq({
+    let newFaq = new Faq({
       _id: req.body._id,
       id_faq_kb: req.body.id_faq_kb,
       question: req.body.question,
@@ -365,7 +365,7 @@ router.patch('/:faqid/attributes', roleChecker.hasRoleOrTypes('admin', ['bot', '
     winston.debug("updatedFaq attributes", updatedFaq.attributes);
 
     Object.keys(data).forEach(function (key) {
-      var val = data[key];
+      let val = data[key];
       winston.debug("data attributes" + key + " " + val);
       updatedFaq.attributes[key] = val;
     })
@@ -403,7 +403,7 @@ router.put('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'
   }
   let id_faq_kb = req.body.id_faq_kb;
 
-  var update = {};
+  let update = {};
 
   if (req.body.intent != undefined) {
     update.intent = req.body.intent;
@@ -541,7 +541,7 @@ router.delete('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscripti
 
 // EXPORT FAQ TO CSV
 router.get('/csv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']), function (req, res) {
-  var query = {};
+  let query = {};
 
   winston.debug('req.query', req.query);
 
@@ -556,9 +556,9 @@ router.get('/csv', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription']),
       winston.debug('EXPORT FAQS TO CSV ERR', err)
       return (err)
     };
-    var csv = [];
+    let csv = [];
     faqs.forEach(function (element) {
-      var row = {
+      let row = {
         question: element.question, answer: element.answer,
         intent_id: element.intent_id, intent_display_name: element.intent_display_name,
         webhook_enabled: element.webhook_enabled || false
@@ -590,7 +590,7 @@ router.get('/:faqid', roleChecker.hasRoleOrTypes('admin', ['bot', 'subscription'
 
 
 router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), function (req, res, next) {
-  var query = {};
+  let query = {};
 
   winston.debug("GET ALL FAQ OF THE BOT ID (req.query): ", req.query);
 
@@ -605,20 +605,20 @@ router.get('/', roleChecker.hasRoleOrTypes('agent', ['bot', 'subscription']), fu
     query.id_faq_kb = req.query.id_faq_kb;
   }
 
-  var limit = 3000; // Number of request per page
+  let limit = 3000; // Number of request per page
 
   if (req.query.limit) {
     limit = parseInt(req.query.limit);
     winston.debug('faq ROUTE - limit: ' + limit);
   }
 
-  var page = 0;
+  let page = 0;
 
   if (req.query.page) {
     page = req.query.page;
   }
 
-  var skip = page * limit;
+  let skip = page * limit;
   winston.debug('faq ROUTE - SKIP PAGE ', skip);
 
 

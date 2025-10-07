@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 const { QuoteManager } = require('../services/QuoteManager');
 let winston = require('../config/winston');
 const { MODELS_MULTIPLIER } = require('../utils/aiUtils');

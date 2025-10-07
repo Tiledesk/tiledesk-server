@@ -1,9 +1,9 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 
-var User = require("../models/user");
-var winston = require('../config/winston');
-var mongoose = require('mongoose');
+let User = require("../models/user");
+let winston = require('../config/winston');
+let mongoose = require('mongoose');
 
 
 
@@ -12,9 +12,9 @@ var mongoose = require('mongoose');
 // sponz: realizza mini servizio senza sec
 router.get('/:userid', function (req, res) {
   winston.debug("users");
-  var userid = req.params.userid;
+  let userid = req.params.userid;
 
-  var isObjectId = mongoose.Types.ObjectId.isValid(userid);
+  let isObjectId = mongoose.Types.ObjectId.isValid(userid);
   winston.debug("isObjectId:"+ isObjectId);
 
   if (!isObjectId) {

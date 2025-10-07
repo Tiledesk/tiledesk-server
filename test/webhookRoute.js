@@ -1,6 +1,6 @@
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
-process.env.LOG_LEVEL = 'error';
+process.env.LOG_LEVEL = 'critical';
 
 var projectService = require('../services/projectService');
 var userService = require('../services/userService');

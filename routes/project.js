@@ -1,34 +1,34 @@
-var express = require('express');
-var router = express.Router();
-var Project = require("../models/project");
-var projectEvent = require("../event/projectEvent");
-var projectService = require("../services/projectService");
-var projectUserService = require("../services/projectUserService");
+let express = require('express');
+let router = express.Router();
+let Project = require("../models/project");
+let projectEvent = require("../event/projectEvent");
+let projectService = require("../services/projectService");
+let projectUserService = require("../services/projectUserService");
 
-var Project_user = require("../models/project_user");
+let Project_user = require("../models/project_user");
 
-var operatingHoursService = require("../services/operatingHoursService");
-var Department = require('../models/department');
-var Group = require('../models/group');
+let operatingHoursService = require("../services/operatingHoursService");
+let Department = require('../models/department');
+let Group = require('../models/group');
 
-var winston = require('../config/winston');
-var roleChecker = require('../middleware/has-role');
-var config = require('../config/database');
+let winston = require('../config/winston');
+let roleChecker = require('../middleware/has-role');
+let config = require('../config/database');
 
 // THE THREE FOLLOWS IMPORTS  ARE USED FOR AUTHENTICATION IN THE ROUTE
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var RoleConstants = require("../models/roleConstants");
-var cacheUtil = require('../utils/cacheUtil');
-var orgUtil = require("../utils/orgUtil");
-var cacheEnabler = require("../services/cacheEnabler");
-var mongoose = require('mongoose');
+let validtoken = require('../middleware/valid-token')
+let RoleConstants = require("../models/roleConstants");
+let cacheUtil = require('../utils/cacheUtil');
+let orgUtil = require("../utils/orgUtil");
+let cacheEnabler = require("../services/cacheEnabler");
+let mongoose = require('mongoose');
 
-var jwt = require('jsonwebtoken');
+let jwt = require('jsonwebtoken');
 // CHECK IT ASAP!!!!
 let configSecret = process.env.GLOBAL_SECRET || config.secret;
-var pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
+let pKey = process.env.GLOBAL_SECRET_OR_PRIVATE_KEY;
 // console.log("pKey",pKey);
 
 if (pKey) {
@@ -36,7 +36,7 @@ if (pKey) {
 }
 
 let pubConfigSecret = process.env.GLOBAL_SECRET || config.secret;
-var pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
+let pubKey = process.env.GLOBAL_SECRET_OR_PUB_KEY;
 if (pubKey) {
   pubConfigSecret = pubKey.replace(/\\n/g, '\n');
 }
@@ -118,7 +118,7 @@ router.delete('/:projectid', [passport.authenticate(['basic', 'jwt'], { session:
 //     /**
 //      * modify the project profile here
 //      */
-//     var update = {};
+//     let update = {};
 
 //     if (req.body.name!=undefined) {
 //       update.name = req.body.name;
@@ -259,7 +259,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
   
   winston.debug('UPDATE PROJECT REQ BODY ', req.body);
 
-  var update = {};
+  let update = {};
   let updating_quotes = false;
 
   if (req.body.profile) {
@@ -524,7 +524,7 @@ router.put('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('PATCH PROJECT REQ BODY ', req.body);
 
-  var update = {};
+  let update = {};
   
   if (req.body.name!=undefined) {
     update.name = req.body.name;
@@ -680,7 +680,7 @@ router.patch('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: 
 });
 
 router.patch('/:projectid/attributes', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
-  var data = req.body;
+  let data = req.body;
 
   // TODO use service method
 
@@ -702,7 +702,7 @@ router.patch('/:projectid/attributes', [passport.authenticate(['basic', 'jwt'], 
       winston.debug(" updatedProject attributes", updatedProject.attributes)
         
         Object.keys(data).forEach(function(key) {
-          var val = data[key];
+          let val = data[key];
           winston.debug("data attributes "+key+" " +val)
           updatedProject.attributes[key] = val;
         });     
@@ -731,7 +731,7 @@ router.patch('/:projectid/attributes', [passport.authenticate(['basic', 'jwt'], 
 router.post('/:projectid/ban', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
   winston.debug('PATCH PROJECT REQ BODY ', req.body);
 
-  var ban = {};
+  let ban = {};
   ban.id = req.body.id;
   ban.ip = req.body.ip;
 
@@ -885,19 +885,19 @@ router.get('/:projectid', [passport.authenticate(['basic', 'jwt'], { session: fa
 router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken], function (req, res) {
   winston.debug('REQ USER ID ', req.user._id);
 
-  var direction = -1; //-1 descending , 1 ascending
+  let direction = -1; //-1 descending , 1 ascending
   if (req.query.direction) {
     direction = req.query.direction;
   } 
   winston.debug("direction",direction);
 
-  var sortField = "updatedAt";
+  let sortField = "updatedAt";
   if (req.query.sort) {
     sortField = req.query.sort;
   } 
   winston.debug("sortField",sortField);
 
-  var sortQuery={};
+  let sortQuery={};
   sortQuery[sortField] = direction;
 
 
@@ -929,14 +929,14 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
         if (org!=undefined) {
           winston.debug("org!=undefined");
 
-          var project_users = project_users.filter(function (projectUser) {
+          let project_users = project_users.filter(function (projectUser) {
             if (projectUser.id_project.organization && projectUser.id_project.organization === org ) {
               winston.debug("keep");
               return true;
             }
           });
 
-        /* for (var i = 0; i < project_users.length; i++) { 
+        /* for (let i = 0; i < project_users.length; i++) { 
             winston.info("project_users[i].id_project.organization: " + project_users[i].id_project.organization);
             if (project_users[i].id_project.organization && project_users[i].id_project.organization === org ) {
               //keep
@@ -948,7 +948,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
           }*/
         } else {
 
-            var project_users = project_users.filter(function (projectUser) {
+            let project_users = project_users.filter(function (projectUser) {
               if (projectUser.id_project.organization == undefined ) {
                 // winston.info("keep");
                 return true;
@@ -957,7 +957,7 @@ router.get('/', [passport.authenticate(['basic', 'jwt'], { session: false }), va
           
 
           /*
-          for (var i = 0; i < project_users.length; i++) { 
+          for (let i = 0; i < project_users.length; i++) { 
             winston.info("project_users[i].id_project.organization: " + project_users[i].id_project.organization);
             if (project_users[i].id_project.organization) {
               project_users.splice(i, 1); // 2nd parameter means remove one item only

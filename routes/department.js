@@ -1,23 +1,23 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
-var Department = require("../models/department");
-var departmentService = require("../services/departmentService");
+let express = require('express');
+let router = express.Router({mergeParams: true});
+let Department = require("../models/department");
+let departmentService = require("../services/departmentService");
 
-var passport = require('passport');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var roleChecker = require('../middleware/has-role');
+let validtoken = require('../middleware/valid-token')
+let roleChecker = require('../middleware/has-role');
 
-var winston = require('../config/winston');
-var cacheUtil = require('../utils/cacheUtil');
+let winston = require('../config/winston');
+let cacheUtil = require('../utils/cacheUtil');
 
-var departmentEvent = require("../event/departmentEvent");
+let departmentEvent = require("../event/departmentEvent");
 
 
 router.post('/', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')], function (req, res) {
 
   winston.debug("DEPT REQ BODY ", req.body);
-  var newDepartment = new Department({
+  let newDepartment = new Department({
       routing: req.body.routing,
       name: req.body.name,
       description: req.body.description,
@@ -52,7 +52,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 
   winston.debug(req.body);
 
-  var update = {};
+  let update = {};
 
   // qui errore su visibile invisible
   // if (req.body.id_bot!=undefined) {
@@ -97,7 +97,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 
     winston.debug(req.body);
   
-    var update = {};
+    let update = {};
   
    
     if (req.body.status!=undefined) {
@@ -140,7 +140,7 @@ router.put('/:departmentid', [passport.authenticate(['basic', 'jwt'], { session:
 router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRoleOrTypes('agent', ['bot','subscription'])], async (req, res) => {
   winston.debug("Getting department operators req.projectid: "+req.projectid);
   
-  var disableWebHookCall = undefined;
+  let disableWebHookCall = undefined;
   if (req.query.disableWebHookCall) {
     disableWebHookCall = (req.query.disableWebHookCall == 'true') ;
   }
@@ -150,8 +150,8 @@ router.get('/:departmentid/operators', [passport.authenticate(['basic', 'jwt'], 
   // getOperators(departmentid, projectid, nobot) {
 
 
-    var context = {req:req};
-    var operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall, context);
+    let context = {req:req};
+    let operatorsResult = await departmentService.getOperators(req.params.departmentid, req.projectid, req.query.nobot, disableWebHookCall, context);
     winston.debug("Getting department operators operatorsResult", operatorsResult);
 
     delete operatorsResult.context;
@@ -174,7 +174,7 @@ router.get('/allstatus', [passport.authenticate(['basic', 'jwt'], { session: fal
 
   winston.debug("## GET ALL DEPTS req.project ", req.project)
 
-  var query = { "id_project": req.projectid, status: { $gte:  0 } }; // nascondi quelli con status = hidden (-1) for dashboard
+  let query = { "id_project": req.projectid, status: { $gte:  0 } }; // nascondi quelli con status = hidden (-1) for dashboard
                                             //secondo me qui manca un parentesi tonda per gli or
   if (req.project && req.project.profile && (req.project.profile.type === 'free' && req.project.trialExpired === true) || (req.project.profile.type === 'payment' && req.project.isActiveSubscription === false)) {
 
@@ -222,7 +222,7 @@ router.get('/:departmentid', function (req, res) {
   if (departmentid == "default") {
     winston.debug("departmentid", departmentid);
 
-    var query = {};
+    let query = {};
     // winston.debug("req.query", req.query);
 
     // if (req.appid) {
@@ -262,7 +262,7 @@ router.get('/', function (req, res) {
   winston.debug("req.query.sort", req.query.sort);
 
 
-  var query = { "id_project": req.projectid, "status": 1 };
+  let query = { "id_project": req.projectid, "status": 1 };
   winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.projectid ', req.projectid);
   if (req.project && req.project.profile) {
     winston.debug('GET DEPTS FILTERED FOR STATUS === 1 req.project.profile.type ', req.project.profile.type);

@@ -1,19 +1,19 @@
-var express = require('express');
-var router = express.Router({mergeParams: true});
-var Label = require("../models/label");
-var winston = require('../config/winston');
-var passport = require('passport');
+let express = require('express');
+let router = express.Router({mergeParams: true});
+let Label = require("../models/label");
+let winston = require('../config/winston');
+let passport = require('passport');
 require('../middleware/passport')(passport);
-var validtoken = require('../middleware/valid-token')
-var roleChecker = require('../middleware/has-role')
-var labelService = require("../services/labelService");
-var labelEvent = require("../event/labelEvent");
-var mongoose = require('mongoose');
+let validtoken = require('../middleware/valid-token')
+let roleChecker = require('../middleware/has-role')
+let labelService = require("../services/labelService");
+let labelEvent = require("../event/labelEvent");
+let mongoose = require('mongoose');
 
 const { check, validationResult } = require('express-validator');
 
 
-var Schema = mongoose.Schema,
+let Schema = mongoose.Schema,
    ObjectId = Schema.ObjectId;
 
 
@@ -38,17 +38,17 @@ check('lang').notEmpty(),
   }
 
 
-  var lang = req.body.lang;
+  let lang = req.body.lang;
   winston.debug("lang: " + lang);
   
-  var pickedLang = req.labels.find(l => l.lang === lang);
+  let pickedLang = req.labels.find(l => l.lang === lang);
 
   if (!pickedLang){
-    var pickedLangPivot = req.labels.find(l => l.lang === "EN");
+    let pickedLangPivot = req.labels.find(l => l.lang === "EN");
     pickedLangPivot.lang = lang;
     pickedLang = pickedLangPivot;
   }
-  var newLabel = pickedLang;
+  let newLabel = pickedLang;
   winston.debug("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
@@ -63,7 +63,7 @@ check('lang').notEmpty(),
           data: [newLabel]
         });
       }else {
-        var foundIndex = -1;
+        let foundIndex = -1;
         label.data.forEach(function(l, index){
             if (l.lang == lang ) {
               foundIndex = index;
@@ -103,7 +103,7 @@ check('lang').notEmpty(),
  
 
 router.get('/default/:lang', function (req, res) {
-  var pickedLang = req.labels.find(l => l.lang === req.params.lang);
+  let pickedLang = req.labels.find(l => l.lang === req.params.lang);
 
   res.json(pickedLang);
 });
@@ -114,12 +114,12 @@ router.get('/default/:lang', function (req, res) {
 
 router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
  
-  var lang = req.body.lang;
+  let lang = req.body.lang;
   winston.debug("lang: " + lang);
 
 
 
-  var newLabel = {lang: lang, data: req.body.data};
+  let newLabel = {lang: lang, data: req.body.data};
   winston.debug("newLabel: " ,newLabel);
 
   Label.findOne({id_project:req.projectid}, function(err, label) {
@@ -134,7 +134,7 @@ router.post('/',  [passport.authenticate(['basic', 'jwt'], { session: false }), 
           data: [newLabel]
         });
       }else {
-        var foundIndex = -1;
+        let foundIndex = -1;
         label.data.forEach(function(l, index){
             if (l.lang == lang ) {
               foundIndex = index;
@@ -189,7 +189,7 @@ router.delete('/',  [passport.authenticate(['basic', 'jwt'], { session: false })
 
 // curl -v -X DELETE -H 'Content-Type:application/json' -u andrea.leo@f21.it:123456 http://localhost:3000/1235/labels/EN
 router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: false }), validtoken, roleChecker.hasRole('admin')],function (req, res, next) {
-  var lang = req.params.lang;
+  let lang = req.params.lang;
   winston.debug("lang: " + lang);
 
 
@@ -200,7 +200,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
       if (!label) {
         return res.status(404).send({ success: false, msg: 'Object not found.' });
       }else {
-        var foundIndex = -1;
+        let foundIndex = -1;
         label.data.forEach(function(l, index){
             if (l.lang == lang ) {
               foundIndex = index;
@@ -208,7 +208,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
         });
         winston.debug("foundIndex: " + foundIndex);
         if (foundIndex>-1) {
-          var idData = label.data[foundIndex]._id;
+          let idData = label.data[foundIndex]._id;
           label.data.id(idData).remove();
         }else {
           return res.status(404).send({ success: false, msg: 'Object not found.' });
@@ -239,7 +239,7 @@ router.delete('/:lang',  [passport.authenticate(['basic', 'jwt'], { session: fal
 // return all the project labels merging db with widget.json
 router.get('/', function (req, res) {
  
-  var query = { "id_project": req.projectid};
+  let query = { "id_project": req.projectid};
 
   winston.debug("query /", query);
 
@@ -258,10 +258,10 @@ router.get('/', function (req, res) {
         returnval = {data: req.labels};
       } else {
         returnval = labels;
-        // var dataAsObj = {...req.labels, ...labels.data }
-        // var data = Object.values(dataAsObj);
+        // let dataAsObj = {...req.labels, ...labels.data }
+        // let data = Object.values(dataAsObj);
         req.labels.forEach(elementDef => {
-          var pickedLang = labels.data.find(l => l.lang === elementDef.lang);
+          let pickedLang = labels.data.find(l => l.lang === elementDef.lang);
           if (!pickedLang) {
             returnval.data.push(elementDef);
           }
@@ -282,7 +282,7 @@ router.get('/', function (req, res) {
 
 router.get('/:lang', async (req, res) => {
   // get a specific project language merged with default (widget.json) but if not found return Pivot
-  var labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
+  let labels = await labelService.getAllByLanguage(req.projectid, req.params.lang);
   return res.json(labels);
 
 });

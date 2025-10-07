@@ -1,32 +1,32 @@
-var express = require('express');
+let express = require('express');
 
 // https://stackoverflow.com/questions/28977253/express-router-undefined-params-with-router-use-when-split-across-files
-var router = express.Router({mergeParams: true});
+let router = express.Router({mergeParams: true});
 
-var Message = require("../models/message");
-var Request = require("../models/request");
-var Lead = require("../models/lead");
+let Message = require("../models/message");
+let Request = require("../models/request");
+let Lead = require("../models/lead");
 
-var requestService = require('../services/requestService');
-var messageService = require('../services/messageService');
-var leadService = require('../services/leadService');
-var winston = require('../config/winston');
+let requestService = require('../services/requestService');
+let messageService = require('../services/messageService');
+let leadService = require('../services/leadService');
+let winston = require('../config/winston');
 
-var MessageConstants = require("../models/messageConstants");
+let MessageConstants = require("../models/messageConstants");
 
-var cacheUtil = require('../utils/cacheUtil');
-var cacheEnabler = require("../services/cacheEnabler");
+let cacheUtil = require('../utils/cacheUtil');
+let cacheEnabler = require("../services/cacheEnabler");
 
 const { check, validationResult } = require('express-validator');
 
-var Project_user = require("../models/project_user");
-var mongoose = require('mongoose');
-var PromiseUtil = require("../utils/promiseUtil");
+let Project_user = require("../models/project_user");
+let mongoose = require('mongoose');
+let PromiseUtil = require("../utils/promiseUtil");
 
 csv = require('csv-express');
 csv.separator = ';';
 
-// var roleChecker = require('../middleware/has-role');
+// let roleChecker = require('../middleware/has-role');
 
 router.post('/', 
 // [
@@ -56,10 +56,10 @@ async (req, res)  => {
 
   // TODO se sei agent non puoi cambiare sender
   // verificare validazione invio immagine senza caption 
-  var project_user = req.projectuser;
-  var sender = req.body.sender;
-  var fullname = req.body.senderFullname || req.user.fullName;
-  var email = req.body.email || req.user.email;
+  let project_user = req.projectuser;
+  let sender = req.body.sender;
+  let fullname = req.body.senderFullname || req.user.fullName;
+  let email = req.body.email || req.user.email;
 
   let messageStatus = req.body.status || MessageConstants.CHAT_MESSAGE_STATUS.SENDING;
   winston.debug('messageStatus: ' + messageStatus);
@@ -103,10 +103,10 @@ async (req, res)  => {
 
           if (sender) {
 
-            var isObjectId = mongoose.Types.ObjectId.isValid(sender);
+            let isObjectId = mongoose.Types.ObjectId.isValid(sender);
             winston.debug("isObjectId:"+ isObjectId);
         
-              var queryProjectUser = {id_project:req.projectid, status: "active" };
+              let queryProjectUser = {id_project:req.projectid, status: "active" };
         
             if (isObjectId) {
               queryProjectUser.id_user = sender;
@@ -129,7 +129,7 @@ async (req, res)  => {
               email = project_user.id_user.email;
               winston.debug("pu email: "+ email);
             } else if (project_user.uuid_user) {
-              var lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
+              let lead = await Lead.findOne({lead_id: project_user.uuid_user, id_project: req.projectid});
               winston.debug("lead: ",lead);
               if (lead) {
                 fullname = lead.fullname;
@@ -154,7 +154,7 @@ async (req, res)  => {
 
             
         
-            var new_request = {                                     
+            let new_request = {                                     
               request_id: req.params.request_id, 
               project_user_id: project_user._id, 
               lead_id: createdLead._id, 
@@ -358,7 +358,7 @@ async (req, res)  => {
     return res.status(422).json({ errors: errors.array() });
   }
   
-  var project_user = req.projectuser;
+  let project_user = req.projectuser;
 
   let q = Request.findOne({request_id: req.params.request_id, id_project: req.projectid}); 
   // if (cacheEnabler.request) {

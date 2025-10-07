@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
-var winston = require('../config/winston');
+let winston = require('../config/winston');
 let Integration = require('../models/integrations');
 const cacheEnabler = require('../services/cacheEnabler');
-var cacheUtil = require('../utils/cacheUtil');
+let cacheUtil = require('../utils/cacheUtil');
 const integrationEvent = require('../event/integrationEvent');
 
 
